@@ -106,6 +106,7 @@ The caller of this method can check if the return operation is a success or a fa
 
 >When used in an **Asp.Net Core** application, you will need to add the :
 [Xpandables.Net.AspNetCore](https://www.nuget.org/packages/Xpandables.Net.AspNetCore)  NuGet package that will provides helpers to automatically manage *IResult* responses.
+It also provides a middleware that will automatically convert an failure *OperationResult* to *ValidationProblem*.
 
 ```csharp
 
