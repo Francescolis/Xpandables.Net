@@ -83,15 +83,3 @@ public interface IQueryHandlerWrapper<TResult>
     ValueTask<OperationResult<TResult>> HandleAsync(
         IQuery<TResult> query, CancellationToken cancellationToken = default);
 }
-
-internal sealed class QueryHandlerWrapper<TQuery, TResult>(
-    IQueryHandler<TQuery, TResult> decoratee) : IQueryHandlerWrapper<TResult>
-    where TQuery : notnull, IQuery<TResult>
-{
-    private readonly IQueryHandler<TQuery, TResult> _decoratee =
-        decoratee ?? throw new ArgumentNullException($"{decoratee} : {nameof(TQuery)}.{nameof(TResult)}");
-
-    public async ValueTask<OperationResult<TResult>> HandleAsync(
-        IQuery<TResult> query, CancellationToken cancellationToken = default)
-        => await _decoratee.HandleAsync((TQuery)query, cancellationToken).ConfigureAwait(false);
-}

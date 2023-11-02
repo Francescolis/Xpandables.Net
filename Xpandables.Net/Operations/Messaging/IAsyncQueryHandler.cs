@@ -81,15 +81,3 @@ public interface IAsyncQueryHandlerWrapper<TResult>
     /// <returns>An enumerator of <typeparamref name="TResult"/> that can be asynchronously enumerated.</returns>
     IAsyncEnumerable<TResult> HandleAsync(IAsyncQuery<TResult> query, CancellationToken cancellationToken = default);
 }
-
-internal sealed class AsyncQueryHandlerWrapper<TQuery, TResult>(
-    IAsyncQueryHandler<TQuery, TResult> decoratee) : IAsyncQueryHandlerWrapper<TResult>
-    where TQuery : notnull, IAsyncQuery<TResult>
-{
-    private readonly IAsyncQueryHandler<TQuery, TResult> _decoratee =
-        decoratee ?? throw new ArgumentNullException($"{decoratee} : {nameof(TQuery)}.{nameof(TResult)}");
-
-    public IAsyncEnumerable<TResult> HandleAsync(
-        IAsyncQuery<TResult> query, CancellationToken cancellationToken = default)
-        => _decoratee.HandleAsync((TQuery)query, cancellationToken);
-}

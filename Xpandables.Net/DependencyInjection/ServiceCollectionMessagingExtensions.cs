@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
 {
     internal readonly static MethodInfo AddCommandHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXCommandHandler))!;
     internal readonly static MethodInfo AddQueryHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXQueryHandler))!;
+    internal readonly static MethodInfo AddAsyncQueryHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXAsyncQueryHandler))!;
 
     /// <summary>
     /// Registers the <typeparamref name="TDispatcher"/> type as <see cref="IDispatcher"/> 
@@ -61,6 +62,7 @@ public static class ServiceCollectionExtensions
     /// Registers the <typeparamref name="TCommandHandler"/> to the services with 
     /// scope life time using the factory if specified.
     /// </summary>
+    /// <remarks>You can refer to the command handler using the <see cref="CommandHandler{TCommand}"/> delegate.</remarks>
     /// <typeparam name="TCommand">The type of the command.</typeparam>
     /// <typeparam name="TCommandHandler">The type of the command handler.</typeparam>
     /// <param name="services">The collection of services.</param>
@@ -75,10 +77,13 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeScopeLifeTime<ICommandHandler<TCommand>, TCommandHandler>(implementationHandlerFactory);
+        services.DoRegisterTypeScopeLifeTime<ICommandHandler<TCommand>, TCommandHandler>(
+            implementationHandlerFactory);
 
         services.AddScoped<CommandHandler<TCommand>>(
-            provider => provider.GetRequiredService<ICommandHandler<TCommand>>().HandleAsync);
+            provider => provider
+                .GetRequiredService<ICommandHandler<TCommand>>()
+                .HandleAsync);
 
         return services;
     }
@@ -87,6 +92,7 @@ public static class ServiceCollectionExtensions
     /// Registers all <see cref="ICommandHandler{TCommand}"/> implementations found in 
     /// the assemblies to the services with scope life time.
     /// </summary>
+    /// <remarks>You can refer to the command handler using the <see cref="CommandHandler{TCommand}"/> delegate.</remarks>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
@@ -123,6 +129,7 @@ public static class ServiceCollectionExtensions
     /// Registers the <typeparamref name="TQueryHandler"/> to the services with scope 
     /// life time using the factory if specified.
     /// </summary>
+    /// <remarks>You can refer to the command handler using the <see cref="QueryHandler{TQuery, TResult}"/> delegate.</remarks>
     /// <typeparam name="TQuery">Type of the query that will be used as argument.</typeparam>
     /// <typeparam name="TResult">Type of the result of the query.</typeparam>
     /// <typeparam name="TQueryHandler">The type of the query handler.</typeparam>
@@ -138,10 +145,13 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeScopeLifeTime<IQueryHandler<TQuery, TResult>, TQueryHandler>(implementationQueryFactory);
+        services.DoRegisterTypeScopeLifeTime<IQueryHandler<TQuery, TResult>, TQueryHandler>(
+            implementationQueryFactory);
 
         services.AddScoped<QueryHandler<TQuery, TResult>>(
-            provider => provider.GetRequiredService<IQueryHandler<TQuery, TResult>>().HandleAsync);
+            provider => provider
+                .GetRequiredService<IQueryHandler<TQuery, TResult>>()
+                .HandleAsync);
 
         return services;
     }
@@ -150,6 +160,8 @@ public static class ServiceCollectionExtensions
     /// Registers the <see cref="IQueryHandler{TQuery, TResult}"/> implementations to 
     /// the services with scoped life time.
     /// </summary>
+    /// <remarks>You can refer to the command handler 
+    /// using the <see cref="QueryHandler{TQuery, TResult}"/> delegate.</remarks>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// if not set, the calling assembly will be used.</param>
@@ -170,6 +182,82 @@ public static class ServiceCollectionExtensions
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
             typeof(IQueryHandler<,>),
             AddQueryHandlerMethod,
+            assemblies);
+    }
+
+    /// <summary>
+    /// Registers the async query handler wrapper necessary to 
+    /// resolve handlers using type inference.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXAsyncQueryHandlerWrapper(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddTransient(typeof(AsyncQueryHandlerWrapper<,>));
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the <typeparamref name="TAsyncQueryHandler"/> to the services with 
+    /// scope life time using the factory if specified.
+    /// </summary>
+    /// <remarks>You can refer to the command handler 
+    /// using the <see cref="AsyncQueryHandler{TQuery, TResult}"/> delegate.</remarks>
+    /// <typeparam name="TAsyncQuery">Type of the query that will be used as argument.</typeparam>
+    /// <typeparam name="TResult">Type of the result of the query.</typeparam>
+    /// <typeparam name="TAsyncQueryHandler">The type of the query handler.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="implementationAsyncQueryFactory">The factory that creates the query handler.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXAsyncQueryHandler<TAsyncQuery, TResult, TAsyncQueryHandler>(
+        this IServiceCollection services,
+        Func<IServiceProvider, TAsyncQueryHandler>? implementationAsyncQueryFactory = default)
+        where TAsyncQuery : notnull, IAsyncQuery<TResult>
+        where TAsyncQueryHandler : class, IAsyncQueryHandler<TAsyncQuery, TResult>
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.DoRegisterTypeScopeLifeTime<IAsyncQueryHandler<TAsyncQuery, TResult>, TAsyncQueryHandler>(
+            implementationAsyncQueryFactory);
+
+        services.AddScoped<AsyncQueryHandler<TAsyncQuery, TResult>>(
+            provider => provider
+                .GetRequiredService<IAsyncQueryHandler<TAsyncQuery, TResult>>()
+                .HandleAsync);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the <see cref="IAsyncQueryHandler{TQuery, TResult}"/> 
+    /// implementations to the services with scoped life time.
+    /// </summary>
+    /// <remarks>You can refer to the command handler 
+    /// using the <see cref="AsyncQueryHandler{TQuery, TResult}"/> delegate.</remarks>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types. 
+    /// if not set, the calling assembly will be used.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
+    /// <remarks>The query wrapper is also registered.</remarks>
+    public static IServiceCollection AddXAsyncQueryHandlers(
+        this IServiceCollection services, params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
+        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+
+        services.AddXAsyncQueryHandlerWrapper();
+
+        return services.DoRegisterInterfaceWithMethodFromAssemblies(
+            typeof(IAsyncQueryHandler<,>),
+            AddAsyncQueryHandlerMethod,
             assemblies);
     }
 }
