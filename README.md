@@ -12,12 +12,8 @@ Feel free to fork this project, make your own changes and create a pull request.
 The **Optional< T>** type allows to create a named value or a variable that contains a value or not.
 An **Optional** has an underlying type and can hold a value of that type, or it might not have a value.
 
-- Is a struct, so it is a value type.
-- Is immutable, so it can't be changed once it has been created.
-- Is a generic type, so it can hold a value of any type.
-- Is a monad, so it can be used in LINQ expressions.
-- Is a value object, so it can be used as a key in a dictionary.
-- Implements **IEnumerable< T>**, so it can be used in a foreach loop.
+- Is a struct, immutable, a generic type, so it can hold a value of any type.
+- Is a monad, implements **IEnumerable< T>**, so it can be used in a foreach loop.
 
 Creating an Optional : Some or Empty
 
@@ -48,7 +44,7 @@ var result = optional.Bind(value => value.Length);
 
 ```
 
-## IOperationResult
+## OperationResult
 
 Allows to create methods that return the status of an execution.
 
@@ -68,7 +64,7 @@ The non generic type has the following properties :
 - An *ElementCollection* **Errors** property that stores errors. Each error is a predefined *ElementEntry* struct which contains the error key and the error message and/or exceptions.
 - A *HttpStatusCode* **StatusCode** property that contains the status code of the execution. The status code from the ***System.Net.HttpStatusCode***.
 - A *boolean* **IsGeneric** to determine whether or not the current instance is generic.
-- A *boolean* **IsSuccess** and **IsFailure** to determine whether or not the operation is a success or a failure.
+- A *boolean* **IsSuccess** and **IsFailure** to determine whether or not the operation is a success or a failure according to ***System.Net.HttpStatusCode***.
 - A *string* **Title** that contains the operation summary problem from the execution operation.
 - A *string* **Detail** that contains he operation explanation specific to the execution operation.
 
@@ -99,6 +95,7 @@ The method returns an OperationResult* struct.
 To do so, you can use the specific extension method according to your needs :
 
 - **OperationResults** which is a factory to create specifics results from *Ok* to *InternalServerError*.
+- build your owns using the **IOperationResult.ISuccessBuilder** or **IOperationResult.IFailureBuilder**
 
 Each extension method allows you to add errors, headers, Uri or a value to the target operation result.
 The key here in error can be the name of the member that has the error.
@@ -106,7 +103,7 @@ The caller of this method can check if the return operation is a success or a fa
 
 >When used in an **Asp.Net Core** application, you will need to add the :
 [Xpandables.Net.AspNetCore](https://www.nuget.org/packages/Xpandables.Net.AspNetCore)  NuGet package that will provides helpers to automatically manage *IResult* responses.
-It also provides with a middleware that will automatically convert a failure *OperationResult* to *ValidationProblem* or *Problem* according to the StatusCode.
+It also provides with a middleware that will automatically convert a failure *OperationResult* to *ValidationProblem*, *Problem* or result, according to the StatusCode.
 
 ```csharp
 
