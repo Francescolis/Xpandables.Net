@@ -34,6 +34,15 @@ public sealed class ValidatorUnitTest
     private const string UserName = "MyName";
     private const string Password = "MyPassword";
 
+    private readonly IServiceProvider _serviceProvider;
+    public ValidatorUnitTest()
+    {
+        _serviceProvider = new ServiceCollection()
+            .AddXValidatorGenerics()
+            .AddXValidators()
+            .BuildServiceProvider();
+    }
+
     [Theory]
     [InlineData("MyName", "password")]
     public void Validator_Throws_OperationResultException(string userName, string password)
@@ -67,13 +76,7 @@ public sealed class ValidatorUnitTest
     [Fact]
     public void ValidatorRegistration_Should_Return_Validator()
     {
-        IServiceProvider serviceProvider =
-            new ServiceCollection()
-            .AddXValidatorGenerics()
-            .AddXValidators()
-            .BuildServiceProvider();
-
-        var validators = serviceProvider
+        var validators = _serviceProvider
             .GetService<ICompositeValidator<Login>>();
 
         validators.Should().NotBeNull();

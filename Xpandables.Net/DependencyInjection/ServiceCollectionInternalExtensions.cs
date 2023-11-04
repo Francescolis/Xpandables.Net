@@ -85,4 +85,135 @@ internal static class ServiceCollectionInternalExtensions
 
         return services;
     }
+
+    // TODO : find a way to remove try catch
+    internal static IServiceCollection DecorateOpenGenerics(
+           this IServiceCollection services,
+           Type serviceType,
+           Type decoratorType)
+    {
+        foreach (Type[] argument in services.GetArgumentTypes(serviceType))
+        {
+            try
+            {
+                var closedServiceType = serviceType.MakeGenericType(argument);
+                var closedDecoratorType = decoratorType.MakeGenericType(argument);
+
+                services.DecorateDescriptors(
+                    closedServiceType,
+                    descriptor => descriptor.DecorateDescriptor(closedDecoratorType));
+            }
+            catch
+            {
+                // violated generic constraints
+                continue;
+            }
+        }
+
+        return services;
+    }
+
+    internal static Type[] GetGenericParameterTypeConstraints(this Type serviceType)
+        => serviceType
+            .GetGenericArguments()
+            .SelectMany(s => s.GetGenericParameterConstraints())
+            .ToArray();
+
+    internal static Type[][] GetArgumentTypes(
+        this IServiceCollection services,
+        Type serviceType)
+        => services
+            .Where(x => !x.ServiceType.IsGenericTypeDefinition
+                && IsSameGenericType(x.ServiceType, serviceType))
+            .Select(x => x.ServiceType.GenericTypeArguments)
+            .ToArray();
+
+    internal static bool IsSameGenericType(Type t1, Type t2)
+        => t1.IsGenericType
+            && t2.IsGenericType
+            && t1.GetGenericTypeDefinition() == t2.GetGenericTypeDefinition();
+
+    internal static IServiceCollection DecorateDescriptors(
+        this IServiceCollection services,
+        Type serviceType,
+        Func<ServiceDescriptor, ServiceDescriptor> decorator)
+    {
+        foreach (var descriptor in services.GetServiceDescriptors(serviceType))
+        {
+            var index = services.IndexOf(descriptor);
+            services[index] = decorator(descriptor);
+        }
+
+        return services;
+    }
+
+    internal static ServiceDescriptor DecorateDescriptor(
+         this ServiceDescriptor descriptor,
+         Type decoratorType)
+         => descriptor.WithFactory(
+             provider => ActivatorUtilities
+                .CreateInstance(
+                    provider,
+                    decoratorType,
+                    provider.GetInstance(descriptor)));
+
+    internal static ServiceDescriptor DecorateDescriptor<TService>(
+         this ServiceDescriptor descriptor,
+         Func<TService, IServiceProvider, TService> decorator)
+         where TService : class
+         => descriptor.WithFactory(
+             provider => decorator(
+                 (TService)provider.GetInstance(descriptor),
+                 provider));
+
+    internal static ServiceDescriptor DecorateDescriptor<TService>(
+        this ServiceDescriptor descriptor,
+        Func<TService, TService> decorator)
+        where TService : class
+        => descriptor.WithFactory(
+            provider => decorator((TService)provider.GetInstance(descriptor)));
+
+    internal static ServiceDescriptor[] GetServiceDescriptors(
+         this IServiceCollection services,
+         Type serviceType)
+         => services
+            .Where(service => service.ServiceType == serviceType)
+        .ToArray();
+
+    internal static ServiceDescriptor WithFactory(
+        this ServiceDescriptor descriptor,
+        Func<IServiceProvider, object> factory)
+    {
+        _ = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
+        _ = factory ?? throw new ArgumentNullException(nameof(factory));
+
+        return ServiceDescriptor
+            .Describe(
+                descriptor.ServiceType,
+                factory,
+                descriptor.Lifetime);
+    }
+
+    internal static object GetInstance(
+        this IServiceProvider serviceProvider,
+        ServiceDescriptor descriptor)
+    {
+        _ = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _ = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
+
+        if (descriptor.ImplementationInstance != null)
+            return descriptor.ImplementationInstance;
+
+        if (descriptor.ImplementationType != null)
+            return ActivatorUtilities
+                .GetServiceOrCreateInstance(
+                    serviceProvider,
+                    descriptor.ImplementationType);
+
+        if (descriptor.ImplementationFactory is { })
+            return descriptor.ImplementationFactory(serviceProvider);
+
+        throw new InvalidOperationException(
+            $"Unable to get instance from descriptor {descriptor.ServiceType.Name}.");
+    }
 }

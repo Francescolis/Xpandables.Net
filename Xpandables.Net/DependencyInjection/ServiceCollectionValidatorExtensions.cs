@@ -20,6 +20,8 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Xpandables.Net.Decorators;
+using Xpandables.Net.Operations.Messaging;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -32,6 +34,9 @@ public static partial class ServiceCollectionExtensions
     /// Registers validation behavior to commands and queries 
     /// that are decorated with the <see cref="IValidateDecorator"/> to the services
     /// with transient life time.
+    /// <see cref="ValidatorAsyncQueryDecorator{TQuery, TResult}"/>,
+    /// <see cref="ValidatorCommandDecorator{TCommand}"/>,
+    /// <see cref="ValidatorQueryDecorator{TQuery, TResult}"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
@@ -40,10 +45,10 @@ public static partial class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddTransient(typeof(ICompositeValidator<>), typeof(CompositeValidator<>));
-        //services.XTryDecorate(typeof(ICommandHandler<>), typeof(ValidatorCommandDecorator<>));
-        //services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(ValidatorAsyncQueryDecorator<,>));
-        //services.XTryDecorate(typeof(IQueryHandler<,>), typeof(ValidatorQueryDecorator<,>));
+        services.XTryDecorate(typeof(ICommandHandler<>), typeof(ValidatorCommandDecorator<>));
+        services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(ValidatorAsyncQueryDecorator<,>));
+        services.XTryDecorate(typeof(IQueryHandler<,>), typeof(ValidatorQueryDecorator<,>));
+
         return services;
     }
 
