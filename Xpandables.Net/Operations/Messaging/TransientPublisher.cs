@@ -35,6 +35,9 @@
 ************************************************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Aggregates.DomainEvents;
+using Xpandables.Net.Aggregates.IntegrationEvents;
+
 namespace Xpandables.Net.Operations.Messaging;
 
 internal sealed class TransientPublisher(

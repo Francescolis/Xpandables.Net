@@ -14,16 +14,14 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.Primitives;
-
-namespace Xpandables.Net.Operations.Messaging;
+namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
 /// Defines a marker interface to be used to mark an object to act as a domain event for a specific aggregate.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of the aggregate id.</typeparam>
 public interface IDomainEvent<TAggregateId>
-    where TAggregateId : struct, IPrimitive<TAggregateId, Guid>
+    where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
     /// Gets the version of the associated aggregate.

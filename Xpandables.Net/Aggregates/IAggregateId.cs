@@ -16,29 +16,18 @@
 ************************************************************************************************************/
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.Operations.Messaging;
+namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Helper class used to create a domain event with aggregate.
+/// Represents the unique identifier for an aggregate that contains a <see cref="Guid"/> as key.
 /// </summary>
-/// <typeparam name="TAggregateId">The type of aggregate.</typeparam>
-/// <remarks>Initializes a new instance of <see cref="DomainEvent{TAggregateId}"/>.</remarks>
-abstract record class DomainEvent<TAggregateId> : IDomainEvent<TAggregateId>
-    where TAggregateId : struct, IPrimitive<TAggregateId, Guid>
+public interface IAggregateId : IPrimitive<Guid> { }
+
+/// <summary>
+/// Represents the unique identifier for an aggregate that contains a <see cref="Guid"/> as key.
+/// </summary>
+/// <typeparam name="TAggregateId">The type that implements this interface</typeparam>
+public interface IAggregateId<TAggregateId> : IAggregateId, IPrimitive<TAggregateId, Guid>
+    where TAggregateId : struct, IAggregateId<TAggregateId>
 {
-    ///<inheritdoc/>
-    public required ulong Version { get; init; }
-
-    ///<inheritdoc/>
-    public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.UtcNow;
-
-    ///<inheritdoc/>
-    public Guid Id { get; init; } = Guid.NewGuid();
-
-    /// <inheritdoc/>
-    public IDomainEvent<TAggregateId> WithVersion(ulong version)
-        => this with { Version = Version + 1 };
-
-    /// <inheritdoc/>
-    public required TAggregateId AggregateId { get; init; }
 }

@@ -19,6 +19,9 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Xpandables.Net.Aggregates;
+using Xpandables.Net.Aggregates.DomainEvents;
+using Xpandables.Net.Aggregates.IntegrationEvents;
 using Xpandables.Net.Operations.Messaging;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -31,6 +34,8 @@ public static class ServiceCollectionExtensions
     internal readonly static MethodInfo AddCommandHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXCommandHandler))!;
     internal readonly static MethodInfo AddQueryHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXQueryHandler))!;
     internal readonly static MethodInfo AddAsyncQueryHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXAsyncQueryHandler))!;
+    internal readonly static MethodInfo AddDomainEventHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXDomainEventHandler))!;
+    internal readonly static MethodInfo AddIntegrationEventHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXIntegrationEventHandler))!;
 
     /// <summary>
     /// Registers the <typeparamref name="TDispatcher"/> type as <see cref="IDispatcher"/> 
@@ -104,6 +109,8 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
+
+        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
             typeof(ICommandHandler<>),
@@ -258,6 +265,118 @@ public static class ServiceCollectionExtensions
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
             typeof(IAsyncQueryHandler<,>),
             AddAsyncQueryHandlerMethod,
+            assemblies);
+    }
+
+    /// <summary>
+    /// Registers the <typeparamref name="TDomainEventHandler"/> to the services 
+    /// with scope life time using the factory if specified.
+    /// </summary>
+    /// <typeparam name="TDomainEvent">The type of the domain event</typeparam>
+    /// <typeparam name="TAggregateId">the type of aggregate Id.</typeparam>
+    /// <typeparam name="TDomainEventHandler">The type of the domain event handler.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="implementationHandlerFactory">The factory that creates the domain event handler.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXDomainEventHandler<TDomainEvent, TAggregateId, TDomainEventHandler>(
+        this IServiceCollection services,
+        Func<IServiceProvider, TDomainEventHandler>? implementationHandlerFactory = default)
+        where TDomainEventHandler : class, IDomainEventHandler<TDomainEvent, TAggregateId>
+        where TDomainEvent : notnull, IDomainEvent<TAggregateId>
+        where TAggregateId : struct, IAggregateId<TAggregateId>
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.DoRegisterTypeScopeLifeTime
+            <IDomainEventHandler<TDomainEvent, TAggregateId>, TDomainEventHandler>(
+            implementationHandlerFactory);
+
+        services.AddScoped<DomainEventHandler<TDomainEvent>>(
+            provider => provider
+                .GetRequiredService<IDomainEventHandler<TDomainEvent, TAggregateId>>()
+                .HandleAsync);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the <see cref="IDomainEventHandler{TDomainEvent, TAggregateId}"/> 
+    /// implementations to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types. 
+    /// If not set, the calling assembly will be used.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
+    public static IServiceCollection AddXDomainEventHandlers(
+        this IServiceCollection services,
+        params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
+        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+
+        return services.DoRegisterInterfaceWithMethodFromAssemblies(
+            typeof(IDomainEventHandler<,>),
+            AddDomainEventHandlerMethod,
+            assemblies);
+    }
+
+    /// <summary>
+    /// Adds the <typeparamref name="TIntegrationEventHandler"/> to the services 
+    /// with scope life time using the factory if specified.
+    /// </summary>
+    /// <typeparam name="TIntegrationEvent">The type of the integration event.</typeparam>
+    /// <typeparam name="TIntegrationEventHandler">The type of the integration event handler.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="implementationHandlerFactory">The factory that creates the integration event handler.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXIntegrationEventHandler<TIntegrationEvent, TIntegrationEventHandler>(
+        this IServiceCollection services,
+        Func<IServiceProvider, TIntegrationEventHandler>? implementationHandlerFactory = default)
+        where TIntegrationEventHandler : class, IIntegrationEventHandler<TIntegrationEvent>
+        where TIntegrationEvent : notnull, IIntegrationEvent
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.DoRegisterTypeScopeLifeTime
+            <IIntegrationEventHandler<TIntegrationEvent>, TIntegrationEventHandler>(
+            implementationHandlerFactory);
+
+        services.AddScoped<IntegrationEventHandler<TIntegrationEvent>>(
+            provider => provider
+                .GetRequiredService<IIntegrationEventHandler<TIntegrationEvent>>()
+                .HandleAsync);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the <see cref="IIntegrationEventHandler{TIntegrationEvent}"/> 
+    /// implementations to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types. 
+    /// If not set, the calling assembly will be used.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
+    public static IServiceCollection AddXIntegrationEventHandlers(
+        this IServiceCollection services,
+        params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
+        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+
+        return services.DoRegisterInterfaceWithMethodFromAssemblies(
+            typeof(IIntegrationEventHandler<>),
+            AddIntegrationEventHandlerMethod,
             assemblies);
     }
 }

@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Operations.Messaging;
+namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
 /// Represents a method signature to be used to apply 
@@ -39,7 +39,7 @@ public delegate ValueTask<OperationResult> DomainEventHandler<in T>(
 /// <typeparam name="TDomainEvent">The domain event type.</typeparam>
 public interface IDomainEventHandler<in TDomainEvent, in TAggregateId>
     where TDomainEvent : notnull, IDomainEvent<TAggregateId>
-    where TAggregateId : struct, IPrimitive<TAggregateId, Guid>
+    where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
     ///  Asynchronously handles the domain event of specific type.

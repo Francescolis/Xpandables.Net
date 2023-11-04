@@ -14,7 +14,10 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-namespace Xpandables.Net.Operations.Messaging;
+
+using Xpandables.Net.Operations;
+
+namespace Xpandables.Net.Aggregates.IntegrationEvents;
 
 /// <summary>
 /// Represents a method signature to be used to apply 

@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Aggregates.DomainEvents;
 
-namespace Xpandables.Net.Operations.Messaging;
+namespace Xpandables.Net.Aggregates.IntegrationEvents;
 
 /// <summary>
 /// Represents an Event Router helper class used to wrap a domain 
@@ -27,7 +27,7 @@ namespace Xpandables.Net.Operations.Messaging;
 public sealed record IntegrationEventWrapper<TDomainEvent, TAggregateId> :
     IntegrationEvent, IIntegrationEvent<TDomainEvent, TAggregateId>
     where TDomainEvent : notnull, IDomainEvent<TAggregateId>
-    where TAggregateId : struct, IPrimitive<TAggregateId, Guid>
+    where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     ///<inheritdoc/>
     public TDomainEvent DomainEvent { get; }

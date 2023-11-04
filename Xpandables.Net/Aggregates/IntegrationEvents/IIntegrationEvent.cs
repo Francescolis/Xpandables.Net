@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Aggregates.DomainEvents;
 
-namespace Xpandables.Net.Operations.Messaging;
+namespace Xpandables.Net.Aggregates.IntegrationEvents;
 
 /// <summary>
 /// Defines a marker interface to be used to mark an object to act as an integration event.
@@ -48,7 +48,7 @@ public interface IIntegrationEvent
 /// <typeparam name="TAggregateId">the aggregate Id type.</typeparam>
 public interface IIntegrationEvent<out TDomainEvent, out TAggregateId> : IIntegrationEvent
     where TDomainEvent : notnull, IDomainEvent<TAggregateId>
-    where TAggregateId : struct, IPrimitive<TAggregateId, Guid>
+    where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
     /// Gets the domain event associated with the integration event.

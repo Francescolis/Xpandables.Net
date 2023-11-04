@@ -14,16 +14,29 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-namespace Xpandables.Net.Operations.Messaging;
+namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
-/// Represents an integration event.
+/// Helper class used to create a domain event with aggregate.
 /// </summary>
-public abstract record IntegrationEvent : IIntegrationEvent
+/// <typeparam name="TAggregateId">The type of aggregate.</typeparam>
+/// <remarks>Initializes a new instance of <see cref="DomainEvent{TAggregateId}"/>.</remarks>
+public abstract record class DomainEvent<TAggregateId> : IDomainEvent<TAggregateId>
+    where TAggregateId : struct, IAggregateId<TAggregateId>
 {
-    /// <inheritdoc/>
+    ///<inheritdoc/>
+    public required ulong Version { get; init; }
+
+    ///<inheritdoc/>
+    public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.UtcNow;
+
+    ///<inheritdoc/>
     public Guid Id { get; init; } = Guid.NewGuid();
 
     /// <inheritdoc/>
-    public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.Now;
+    public IDomainEvent<TAggregateId> WithVersion(ulong version)
+        => this with { Version = Version + 1 };
+
+    /// <inheritdoc/>
+    public required TAggregateId AggregateId { get; init; }
 }

@@ -25,10 +25,8 @@ internal static class ServiceCollectionInternalExtensions
          this IServiceCollection services,
          Type interType,
          MethodInfo method,
-         params Assembly[] assemblies)
+         Assembly[] assemblies)
     {
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
-
         var genericTypes = DoGetGenericTypeMatchingServiceType(interType, assemblies);
 
         foreach (var generic in genericTypes)
@@ -49,7 +47,7 @@ internal static class ServiceCollectionInternalExtensions
     internal readonly record struct GenericTypes(Type Type, IEnumerable<Type> Interfaces);
     internal static IEnumerable<GenericTypes> DoGetGenericTypeMatchingServiceType(
            Type serviceType,
-           params Assembly[] assemblies)
+           Assembly[] assemblies)
     {
         return assemblies.SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
