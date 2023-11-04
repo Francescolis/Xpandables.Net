@@ -72,7 +72,7 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     where TValue : notnull
 {
     /// <summary>
-    /// Returns a default instance of <typeparamref name="TPrimitive"/> class.
+    /// Returns a default instance of <typeparamref name="TPrimitive"/>.
     /// </summary>
     /// <returns>An instance of <typeparamref name="TPrimitive"/>.</returns>
     static abstract TPrimitive DefaultInstance();
