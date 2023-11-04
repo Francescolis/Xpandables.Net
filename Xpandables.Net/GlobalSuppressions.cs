@@ -49,3 +49,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Decorators.PersistenceIntegrationEventHandler")]
 [assembly: SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Repositories.IPersistenceDecorator")]
 [assembly: SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Operations.IOperationResultDecorator")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Decorators.OperationResultQueryDecorator`2")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Operations.OperationResultContext")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Decorators.OperationResultAsyncQueryDecorator`2")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Decorators.OperationResultCommandDecorator`1")]
