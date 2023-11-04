@@ -19,7 +19,10 @@ using System.ComponentModel.DataAnnotations;
 
 using FluentAssertions;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Xpandables.Net.Decorators;
+using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Messaging;
 using Xpandables.Net.Validators;
@@ -61,7 +64,23 @@ public sealed class ValidatorUnitTest
         result.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
     }
 
-    public readonly record struct Login(string UserLogin, string UserPassword) : ICommand, IValidateDecorator;
+    [Fact]
+    public void ValidatorRegistration_Should_Return_Validator()
+    {
+        IServiceProvider serviceProvider =
+            new ServiceCollection()
+            .AddXValidatorGenerics()
+            .AddXValidators()
+            .BuildServiceProvider();
+
+        var validators = serviceProvider
+            .GetService<ICompositeValidator<Login>>();
+
+        validators.Should().NotBeNull();
+    }
+
+    public readonly record struct Login(string UserLogin, string UserPassword)
+        : ICommand, IValidateDecorator;
 
     public sealed class HandleLogin : ICommandHandler<Login>
     {

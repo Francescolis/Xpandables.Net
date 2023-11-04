@@ -29,7 +29,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// <summary>
 /// Provides with a set of static methods to register messaging services.
 /// </summary>
-public static class ServiceCollectionExtensions
+public static partial class ServiceCollectionExtensions
 {
     internal readonly static MethodInfo AddCommandHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXCommandHandler))!;
     internal readonly static MethodInfo AddQueryHandlerMethod = typeof(ServiceCollectionExtensions).GetMethod(nameof(AddXQueryHandler))!;
@@ -82,7 +82,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeScopeLifeTime<ICommandHandler<TCommand>, TCommandHandler>(
+        services.DoRegisterTypeServiceLifeTime<ICommandHandler<TCommand>, TCommandHandler>(
             implementationHandlerFactory);
 
         services.AddScoped<CommandHandler<TCommand>>(
@@ -152,7 +152,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeScopeLifeTime<IQueryHandler<TQuery, TResult>, TQueryHandler>(
+        services.DoRegisterTypeServiceLifeTime<IQueryHandler<TQuery, TResult>, TQueryHandler>(
             implementationQueryFactory);
 
         services.AddScoped<QueryHandler<TQuery, TResult>>(
@@ -228,7 +228,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeScopeLifeTime<IAsyncQueryHandler<TAsyncQuery, TResult>, TAsyncQueryHandler>(
+        services.DoRegisterTypeServiceLifeTime<IAsyncQueryHandler<TAsyncQuery, TResult>, TAsyncQueryHandler>(
             implementationAsyncQueryFactory);
 
         services.AddScoped<AsyncQueryHandler<TAsyncQuery, TResult>>(
@@ -288,7 +288,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeScopeLifeTime
+        services.DoRegisterTypeServiceLifeTime
             <IDomainEventHandler<TDomainEvent, TAggregateId>, TDomainEventHandler>(
             implementationHandlerFactory);
 
@@ -343,7 +343,7 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeScopeLifeTime
+        services.DoRegisterTypeServiceLifeTime
             <IIntegrationEventHandler<TIntegrationEvent>, TIntegrationEventHandler>(
             implementationHandlerFactory);
 

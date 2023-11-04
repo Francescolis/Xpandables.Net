@@ -63,9 +63,10 @@ internal static class ServiceCollectionInternalExtensions
                         && inter.GetGenericTypeDefinition() == serviceType)));
     }
 
-    internal static IServiceCollection DoRegisterTypeScopeLifeTime<TInterface, TImplementation>(
+    internal static IServiceCollection DoRegisterTypeServiceLifeTime<TInterface, TImplementation>(
          this IServiceCollection services,
-         Func<IServiceProvider, TImplementation>? implFactory = default)
+         Func<IServiceProvider, TImplementation>? implFactory = default,
+         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
          where TInterface : class
          where TImplementation : class, TInterface
     {
@@ -74,13 +75,13 @@ internal static class ServiceCollectionInternalExtensions
                 new ServiceDescriptor(
                     typeof(TInterface),
                     implFactory,
-                    ServiceLifetime.Scoped));
+                    serviceLifetime));
         else
             services.Add(
                 new ServiceDescriptor(
                     typeof(TInterface),
                     typeof(TImplementation),
-                    ServiceLifetime.Scoped));
+                    serviceLifetime));
 
         return services;
     }
