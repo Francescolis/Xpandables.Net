@@ -42,11 +42,13 @@ public partial record struct Optional<T> : IEnumerable<T>
     /// <summary>
     /// Determines whether the current instance is empty.
     /// </summary>
+    [MemberNotNullWhen(false, nameof(Value), nameof(_value))]
     public readonly bool IsEmpty => !HasValue;
 
     /// <summary>
     /// Determines whether the current instance is not empty.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(Value), nameof(_value))]
     public readonly bool IsNotEmpty => HasValue;
 
     ///<inheritdoc/>
