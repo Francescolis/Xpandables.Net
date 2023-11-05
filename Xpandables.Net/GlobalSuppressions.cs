@@ -53,3 +53,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Operations.OperationResultContext")]
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Decorators.OperationResultAsyncQueryDecorator`2")]
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Decorators.OperationResultCommandDecorator`1")]
+[assembly: SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Aggregates.Snapshots.IMemento")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Operations.Messaging.TransientScheduler")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Aggregates.IntegrationEvents.IntegrationEventSourcing")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Aggregates.IntegrationEvents.IntegrationEventOutbox")]
