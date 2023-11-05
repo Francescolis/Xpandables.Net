@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using System.Buffers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -22,7 +24,7 @@ namespace Xpandables.Net.Extensions;
 /// <summary>
 /// Provides with methods to extend use of <see cref="JsonDocument"/>.
 /// </summary>
-public static class JsonDocumentExtensions
+public static partial class XpandablesExtensions
 {
     /// <summary>
     /// Converts the current document to a <see cref="JsonDocument"/> using the specified options.
@@ -53,4 +55,125 @@ public static class JsonDocumentExtensions
 
         return JsonDocument.Parse(documentString, documentOptions);
     }
+
+    /// <summary>
+    /// Deserializes the current JSON element to an object of specified type.
+    /// </summary>
+    /// <param name="element">The JSON text to parse.</param>
+    /// <param name="returnType">The type of the object to convert to and return.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <returns>A returnType representation of the JSON value.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="returnType"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The JsonElement.ValueKind of this value 
+    /// is System.Text.Json.JsonValueKind.Undefined.</exception>
+    /// <exception cref="ObjectDisposedException">The parent System.Text.Json.JsonDocument has been disposed.</exception>
+    /// <exception cref="JsonException">The JSON is invalid. -or- returnType is not compatible with the JSON. -or- 
+    /// There is remaining data in the span beyond a single JSON value.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible System.Text.Json.Serialization.JsonConverter 
+    /// for returnType or its serializable members.</exception>
+    public static object? ToObject(
+        this JsonElement element,
+        Type returnType,
+        JsonSerializerOptions? options = default)
+    {
+        ArgumentNullException.ThrowIfNull(returnType);
+
+        var bufferWriter = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(bufferWriter);
+        element.WriteTo(writer);
+        writer.Flush();
+
+        return JsonSerializer.Deserialize(bufferWriter.WrittenSpan, returnType, options);
+    }
+
+    /// <summary>
+    /// Deserializes the current JSON document to an object of specified type.
+    /// </summary>
+    /// <param name="document">The JSON document to parse.</param>
+    /// <param name="returnType">The type of the object to convert to and return.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <returns>A returnType representation of the JSON value.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="returnType"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="document"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The JsonElement.ValueKind of this value 
+    /// is System.Text.Json.JsonValueKind.Undefined.</exception>
+    /// <exception cref="ObjectDisposedException">The parent System.Text.Json.JsonDocument has been disposed.</exception>
+    /// <exception cref="JsonException">The JSON is invalid. -or- returnType is not compatible with the JSON. -or- 
+    /// There is remaining data in the span beyond a single JSON value.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible System.Text.Json.Serialization.JsonConverter 
+    /// for returnType or its serializable members.</exception>
+    public static object? ToObject(
+        this JsonDocument document,
+        Type returnType,
+        JsonSerializerOptions? options = default)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        return document.RootElement.ToObject(returnType, options);
+    }
+
+    /// <summary>
+    /// Deserializes the current JSON document to an object of specified <typeparamref name="T"/> type.
+    /// </summary>
+    /// <typeparam name="T">The target type of the UTF-8 encoded text.</typeparam>
+    /// <param name="document">The JSON document to parse.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <returns>A <typeparamref name="T"/> representation of the JSON value.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="document"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The JsonElement.ValueKind of this 
+    /// value is System.Text.Json.JsonValueKind.Undefined.</exception>
+    /// <exception cref="ObjectDisposedException">The parent System.Text.Json.JsonDocument has been disposed.</exception>
+    /// <exception cref="JsonException">The JSON is invalid. -or- returnType is not compatible with the JSON. -or- 
+    /// There is remaining data in the span beyond a single JSON value.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible System.Text.Json.Serialization.JsonConverter 
+    /// for returnType or its serializable members.</exception>
+    public static T? ToObject<T>(
+        this JsonDocument document,
+        JsonSerializerOptions? options = default)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        return document.RootElement.ToObject<T>(options);
+    }
+
+    /// <summary>
+    /// Deserializes the current JSON element to an object of specified <typeparamref name="T"/> type.
+    /// </summary>
+    /// <typeparam name="T">The target type of the UTF-8 encoded text.</typeparam>
+    /// <param name="element">The JSON text to parse.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <returns>A <typeparamref name="T"/> representation of the JSON value.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="element"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The JsonElement.ValueKind of this 
+    /// value is System.Text.Json.JsonValueKind.Undefined.</exception>
+    /// <exception cref="ObjectDisposedException">The parent System.Text.Json.JsonDocument has been disposed.</exception>
+    /// <exception cref="JsonException">The JSON is invalid. -or- returnType is not compatible with the JSON. -or- 
+    /// There is remaining data in the span beyond a single JSON value.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible System.Text.Json.Serialization.JsonConverter 
+    /// for returnType or its serializable members.</exception>
+    public static T? ToObject<T>(
+        this JsonElement element,
+        JsonSerializerOptions? options = default)
+        => element.ToObject(typeof(T), options) is { } result ? (T)result : default;
+
+    /// <summary>
+    /// Converts the current <see cref="JsonDocument"/> to a string.
+    /// </summary>
+    /// <param name="document">An instance of document to parse.</param>
+    /// <returns>A string representation of the <see cref="JsonDocument"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="document"/> is null.</exception>
+    public static string ToJsonString(this JsonDocument document)
+    {
+        _ = document ?? throw new ArgumentNullException(nameof(document));
+#pragma warning disable IDE0063 // Use simple 'using' statement
+        using (var stream = new MemoryStream())
+        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+        {
+            document.WriteTo(writer);
+            writer.Flush();
+            return Encoding.UTF8.GetString(stream.ToArray());
+        }
+#pragma warning restore IDE0063 // Use simple 'using' statement
+    }
+
 }

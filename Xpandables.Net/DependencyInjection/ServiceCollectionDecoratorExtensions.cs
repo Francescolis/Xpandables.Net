@@ -18,9 +18,28 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Aggregates;
+using Xpandables.Net.Decorators;
+
 namespace Xpandables.Net.DependencyInjection;
 public static partial class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds the snapShot decorator to the <see cref="IAggregateStore{TAggregate, TAggregateId}"/> type implementation, that adds
+    /// snapShot behavior to aggregate store. You may need to define the <see cref="SnapShotOptions"/> in the configuration file.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXSnapshotDecorator(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.XTryDecorate(typeof(IAggregateStore<,>), typeof(SnapshotStoreDecorator<,>));
+
+        return services;
+    }
+
     /// <summary>
     /// Ensures that the supplied <typeparamref name="TDecorator"/> decorator is returned, wrapping the
     /// original registered <typeparamref name="TService"/>, by injecting that service type into the

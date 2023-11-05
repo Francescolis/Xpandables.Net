@@ -22,7 +22,7 @@ namespace Xpandables.Net.Extensions;
 /// <summary>
 /// Provides with logger extensions.
 /// </summary>
-public static partial class LoggerExtensions
+public static partial class XpandablesExtensions
 {
     /// <summary>
     /// Logs a warning message when there is no event handler implementation found.

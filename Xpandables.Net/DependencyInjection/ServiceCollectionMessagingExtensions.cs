@@ -22,7 +22,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.IntegrationEvents;
+using Xpandables.Net.Decorators;
 using Xpandables.Net.Operations.Messaging;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -378,5 +380,176 @@ public static partial class ServiceCollectionExtensions
             typeof(IIntegrationEventHandler<>),
             AddIntegrationEventHandlerMethod,
             assemblies);
+    }
+
+    /// <summary>
+    /// Configures the <see cref="ICommandHandler{TCommand}"/>, <see cref="IIntegrationEventHandler{TNotification}"/>,
+    /// <see cref="IQueryHandler{TQuery, TResult}"/>, <see cref="IDomainEventHandler{TAggregateId, TDomainEvent}"/>
+    /// and <see cref="IAsyncQueryHandler{TQuery, TResult}"/> behaviors.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types. 
+    /// If not set, the calling assembly will be used.</param>
+    /// <param name="configureOptions">A delegate to configure the <see cref="HandlerOptions"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXHandlersOptions(
+        this IServiceCollection services,
+        Action<HandlerOptions> configureOptions,
+        params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
+        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+
+        var definedOptions = new HandlerOptions();
+        configureOptions.Invoke(definedOptions);
+
+        if (definedOptions.IsPersistenceEnabled)
+        {
+            services.AddXPersistenceCommandDecorator();
+            services.AddXPersistenceIntegrationEventDecorator();
+        }
+
+        if (definedOptions.IsTransactionEnabled)
+        {
+            services.AddXTransactionCommandDecorator();
+        }
+
+        if (definedOptions.IsValidatorEnabled)
+        {
+            services.AddXValidatorDecorators();
+        }
+
+        if (definedOptions.IsVisitorEnabled)
+        {
+            services.AddXVisitorDecorators();
+        }
+
+        if (definedOptions.IsOperationResultContextEnabled)
+        {
+            services.AddXOperationResultContextDecorator();
+        }
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers persistence behavior to commands that are decorated with 
+    /// the <see cref="IPersistenceDecorator"/> to the services
+    /// with transient life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXPersistenceCommandDecorator(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.XTryDecorate(typeof(ICommandHandler<>), typeof(PersistenceCommandDecorator<>));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers persistence behavior to integration events that are decorated 
+    /// with the <see cref="IPersistenceDecorator"/> to the services
+    /// with transient life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXPersistenceIntegrationEventDecorator(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.XTryDecorate(typeof(IIntegrationEventHandler<>), typeof(PersistenceIntegrationEventDecorator<>));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers transaction scope behavior to commands that 
+    /// are decorated with the <see cref="ITransactionDecorator"/>
+    /// to the services
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXTransactionCommandDecorator(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.XTryDecorate(typeof(ICommandHandler<>), typeof(TransactionCommandDecorator<>));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the persistence command handler delegate to be used to 
+    /// apply persistence to commands decorated with <see cref="IPersistenceDecorator"/>.
+    /// The delegate is use by the <see cref="PersistenceCommandDecorator{TCommand}"/>.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="persistenceHandlerBuilder">The persistence command handler factory.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// or <paramref name="persistenceHandlerBuilder"/> is null.</exception>
+    public static IServiceCollection AddXPersistenceCommandHandler(
+        this IServiceCollection services,
+        Func<IServiceProvider, PersistenceCommandHandler> persistenceHandlerBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(persistenceHandlerBuilder);
+
+        services.TryAddScoped(persistenceHandlerBuilder);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the persistence integration event handler delegate to be used to 
+    /// apply persistence to integration events decorated with <see cref="IPersistenceDecorator"/>.
+    /// The delegate is use by the <see cref="PersistenceIntegrationEventDecorator{TNotification}"/>.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="persistenceHandlerBuilder">The persistence integration event handler factory.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> or 
+    /// <paramref name="persistenceHandlerBuilder"/> is null.</exception>
+    public static IServiceCollection AddXPersistenceIntegrationEventHandler(
+        this IServiceCollection services,
+        Func<IServiceProvider, PersistenceIntegrationEventHandler> persistenceHandlerBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(persistenceHandlerBuilder);
+
+        services.TryAddScoped(persistenceHandlerBuilder);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the transaction command handler delegate to be used to apply 
+    /// transaction to commands decorated with <see cref="ITransactionDecorator"/>.
+    /// The delegate is use by the <see cref="TransactionCommandDecorator{TCommand}"/>.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="transactionHandlerBuilder">The transaction command handler factory.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// or <paramref name="transactionHandlerBuilder"/> is null.</exception>
+    public static IServiceCollection AddXTransactionCommandHandler(
+        this IServiceCollection services,
+        Func<IServiceProvider, TransactionCommandHandler> transactionHandlerBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(transactionHandlerBuilder);
+
+        services.TryAddScoped(transactionHandlerBuilder);
+
+        return services;
     }
 }

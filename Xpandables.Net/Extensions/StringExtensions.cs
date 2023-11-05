@@ -1,0 +1,536 @@
+﻿
+/************************************************************************************************************
+ * Copyright (C) 2023 Francis-Black EWANE
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+************************************************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Reflection;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Xpandables.Net.Extensions;
+
+/// <summary>
+/// Provides a set of <see langword="static"/> methods for <see cref="string"/>.
+/// </summary>
+public static partial class XpandablesExtensions
+{
+    /// <summary>
+    /// Replaces the argument object into the current text equivalent <see cref="string"/>
+    /// using the default <see cref="CultureInfo.InvariantCulture"/>.
+    /// </summary>
+    /// <param name="value">The format string.</param>
+    /// <param name="args">The object to be formatted.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null or
+    /// <paramref name="args"/> is null.</exception>
+    /// <exception cref="FormatException">The format is invalid.</exception>
+    /// <returns>value <see cref="string"/> filled with <paramref name="args"/>.</returns>
+    public static string StringFormat(this string value, params object[] args)
+        => value.StringFormat(CultureInfo.InvariantCulture, args);
+
+    /// <summary>
+    /// Replaces the argument object into the current text equivalent <see cref="string"/> using the specified culture.
+    /// </summary>
+    /// <param name="value">The format string.</param>
+    /// <param name="cultureInfo">CultureInfo to be used.</param>
+    /// <param name="args">The object to be formatted.</param>
+    /// <returns>value <see cref="string"/> filled with <paramref name="args"/></returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="value"/> 
+    /// or <paramref name="cultureInfo"/> or <paramref name="args"/> is null.</exception>    
+    /// <exception cref="FormatException">The format is invalid.</exception>
+    public static string StringFormat(this string value, CultureInfo cultureInfo, params object[] args)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(cultureInfo);
+
+        return string.Format(cultureInfo, value, args);
+    }
+
+    /// <summary>
+    /// Parses the text representing a single JSON value into an instance of the 
+    /// anonymous type specified by a generic type parameter.
+    /// </summary>
+    /// <typeparam name="T">The anonymous type.</typeparam>
+    /// <param name="json">The JSON data to parse.</param>
+    /// <param name="_">The anonymous instance.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <returns> A T representation of the JSON value.</returns>
+    /// <exception cref="JsonException">The JSON is invalid or T is not compatible with the JSON or 
+    /// There is remaining data in the string beyond a single JSON value.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible <see cref="JsonConverter"/> 
+    /// for T or its serializable members.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="json"/> is null.</exception>
+    public static T? DeserializeAnonymousType<T>(this string json, T _, JsonSerializerOptions? options = default)
+         => JsonSerializer.Deserialize<T>(json, options);
+
+    /// <summary>
+    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of 
+    /// an anonymous type specified by a generic type parameter. The stream will be read to completion.
+    /// </summary>
+    /// <typeparam name="T">The anonymous type.</typeparam>
+    /// <param name="stream">The JSON data to parse.</param>
+    /// <param name="_">The anonymous instance.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <returns> A T representation of the JSON value.</returns>
+    /// <exception cref="JsonException">The JSON is invalid or T is not compatible with the JSON or 
+    /// There is remaining data in the stream.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible <see cref="JsonConverter"/> 
+    /// for T or its serializable members.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="stream"/> is null.</exception>
+    public static ValueTask<T?> DeserializeAnonymousTypeAsync<T>(
+        this Stream stream,
+        T _,
+        JsonSerializerOptions? options = default,
+        CancellationToken cancellationToken = default)
+        => JsonSerializer.DeserializeAsync<T>(stream, options, cancellationToken);
+
+    /// <summary>
+    /// Serializes the current instance to JSON string using <see cref="System.Text.Json"/>.
+    /// </summary>
+    /// <param name="source">The object to act on.</param>
+    /// <param name="options">The serializer options to be applied.</param>
+    /// <returns>A JSOn string representation of the object.</returns>
+    /// <exception cref="NotSupportedException">There is no compatible 
+    /// System.Text.Json.Serialization.JsonConverter for TValue or its serializable members.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentException">inputType is not compatible with value.</exception>
+    /// <exception cref="NotSupportedException"> There is no compatible System.Text.Json.Serialization.JsonConverter 
+    /// for inputType or its serializable members.</exception>
+    public static string ToJsonString<T>(this T source, JsonSerializerOptions? options = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        return JsonSerializer.Serialize(source, source.GetType(), options);
+    }
+
+    /// <summary>
+    /// Concatenates all the elements of an <see cref="IEnumerable{T}"/>,
+    /// using the specified string separator between each element.
+    /// </summary>
+    /// <typeparam name="TSource">The generic type parameter.</typeparam>
+    /// <param name="collection">The collection to act on.</param>
+    /// <param name="separator">The string to use as a separator.
+    /// Separator is included in the returned string only if value has more than one element.</param>
+    /// <returns>A string that consists of the elements in value delimited by the separator string.
+    /// If value is an empty array, the method returns String.Empty.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="collection"/> is null.</exception>
+    /// <exception cref="OutOfMemoryException">The length of the resulting string overflows 
+    /// the maximum allowed length (<see cref="int.MaxValue"/>).</exception>
+    public static string StringJoin<TSource>(this IEnumerable<TSource> collection, string separator)
+        => string.Join(separator, collection);
+
+    /// <summary>
+    /// Concatenates all the elements of an <see cref="IEnumerable{T}"/>,
+    /// using the specified char separator between each element.
+    /// </summary>
+    /// <typeparam name="TSource">The generic type parameter.</typeparam>
+    /// <param name="collection">The collection to act on.</param>
+    /// <param name="separator">The string to use as a separator.
+    /// Separator is included in the returned string only if value has more than one element.</param>
+    /// <returns>A string that consists of the elements in value delimited by the separator string.
+    /// If value is an empty array, the method returns String.Empty.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="collection"/> is null.</exception>
+    /// <exception cref="OutOfMemoryException">The length of the resulting string overflows the 
+    /// maximum allowed length (<see cref="int.MaxValue"/>).</exception>
+    public static string StringJoin<TSource>(this IEnumerable<TSource> collection, char separator)
+        => string.Join(separator.ToString(CultureInfo.InvariantCulture), collection);
+
+    /// <summary>
+    /// Tries to convert a string to the specified value type.
+    /// </summary>
+    /// <typeparam name="TResult">Type source.</typeparam>
+    /// <param name="value">The string value.</param>
+    /// <param name="result">The string value converted to the specified value type.</param>
+    /// <param name="valueTypeException">The handled exception during conversion.</param>
+    /// <returns>Returns <see langword="true"/> if conversion OK and <see langword="false"/> otherwise.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="value"/> is null or empty.</exception>
+    public static bool TryToValueType<TResult>(
+        this string value,
+        [MaybeNullWhen(returnValue: false)] out TResult result,
+        [MaybeNullWhen(returnValue: true)] out Exception valueTypeException)
+        where TResult : struct, IComparable, IFormattable, IConvertible, IComparable<TResult>, IEquatable<TResult>
+    {
+        try
+        {
+            valueTypeException = default;
+            result = (TResult)Convert.ChangeType(value, typeof(TResult), CultureInfo.CurrentCulture);
+            return true;
+        }
+        catch (Exception exception) when (exception is InvalidCastException
+                                        || exception is FormatException
+                                        || exception is OverflowException)
+        {
+            valueTypeException = exception;
+            result = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to parse the text representing a single JSON value into a <typeparamref name="T"/> type.
+    /// </summary>
+    /// <typeparam name="T">The type of the result.</typeparam>
+    /// <param name="json">JSON text to parse.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <param name="returnObject">The instance of the object if successful otherwise null.</param>
+    /// <param name="exception">The handler exception during deserialization.</param>
+    /// <returns>Returns <see langword="true"/> if deserialization is OK and <see langword="false"/> otherwise.</returns>
+    public static bool TryDeserialize<T>(
+        this string json,
+        JsonSerializerOptions options,
+        [MaybeNullWhen(returnValue: false)] out object returnObject,
+        [MaybeNullWhen(returnValue: true)] out Exception exception)
+        => json.TryDeserialize(typeof(T), options, out returnObject, out exception);
+
+    /// <summary>
+    /// Tries to parse the text representing a single JSON value into a <typeparamref name="T"/> type.
+    /// </summary>
+    /// <typeparam name="T">The type of the result.</typeparam>
+    /// <param name="json">JSON text to parse.</param>
+    /// <param name="returnObject">The instance of the object if successful otherwise null.</param>
+    /// <param name="exception">The handler exception during deserialization.</param>
+    /// <returns>Returns <see langword="true"/> if deserialization is OK and <see langword="false"/> otherwise.</returns>
+    public static bool TryDeserialize<T>(
+        this string json,
+        [MaybeNullWhen(returnValue: false)] out object returnObject,
+        [MaybeNullWhen(returnValue: true)] out Exception exception)
+        => json.TryDeserialize(typeof(T), out returnObject, out exception);
+
+    /// <summary>
+    /// Tries to parse the text representing a single JSON value into a <paramref name="returnType"/>.
+    /// </summary>
+    /// <param name="json">JSON text to parse.</param>
+    /// <param name="returnType">The type of the object to convert to and return.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <param name="returnObject">The instance of the object if successful otherwise null.</param>
+    /// <param name="exception">The handler exception during deserialization.</param>
+    /// <returns>Returns <see langword="true"/> if deserialization is OK and <see langword="false"/> otherwise.</returns>
+    public static bool TryDeserialize(
+        this string json,
+        Type returnType,
+        JsonSerializerOptions options,
+        [MaybeNullWhen(returnValue: false)] out object returnObject,
+        [MaybeNullWhen(returnValue: true)] out Exception exception)
+    {
+        try
+        {
+            exception = default;
+            returnObject = JsonSerializer.Deserialize(json, returnType, options);
+            return returnObject is not null;
+        }
+        catch (Exception ex) when (ex is ArgumentNullException or JsonException or NotSupportedException)
+        {
+            exception = ex;
+            returnObject = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to parse the text representing a single JSON value into a <paramref name="returnType"/>.
+    /// </summary>
+    /// <param name="json">JSON text to parse.</param>
+    /// <param name="returnType">The type of the object to convert to and return.</param>
+    /// <param name="returnObject">The instance of the object if successful otherwise null.</param>
+    /// <param name="exception">The handler exception during deserialization.</param>
+    /// <returns>Returns <see langword="true"/> if deserialization is OK and <see langword="false"/> otherwise.</returns>
+    public static bool TryDeserialize(
+        this string json,
+        Type returnType,
+        [MaybeNullWhen(returnValue: false)] out object returnObject,
+        [MaybeNullWhen(returnValue: true)] out Exception exception)
+    {
+        try
+        {
+            exception = default;
+            returnObject = JsonSerializer.Deserialize(json, returnType);
+            return returnObject is not null;
+        }
+        catch (Exception ex) when (ex is ArgumentNullException or JsonException or NotSupportedException)
+        {
+            exception = ex;
+            returnObject = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to convert the provided value into a <see cref="string"/>.
+    /// </summary>
+    /// <param name="value">JSON text to parse.</param>
+    /// <param name="inputType">The type of the <paramref name="value"/> to convert.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <param name="returnString">A <see cref="string"/> representation of the value.</param>
+    /// <param name="exception">The handler exception during deserialization.</param>
+    /// <returns>Returns <see langword="true"/> if serialization is OK and <see langword="false"/> otherwise.</returns>
+    public static bool TrySerialize(
+        this object value,
+        Type inputType,
+        JsonSerializerOptions options,
+        [MaybeNullWhen(returnValue: false)] out string returnString,
+        [MaybeNullWhen(returnValue: true)] out Exception exception)
+    {
+        try
+        {
+            exception = default;
+            returnString = JsonSerializer.Serialize(value, inputType, options);
+            return returnString is not null;
+        }
+        catch (Exception ex) when (ex is ArgumentNullException or ArgumentException or NotSupportedException)
+        {
+            exception = ex;
+            returnString = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to convert the provided value into a <see cref="string"/>.
+    /// </summary>
+    /// <param name="value">JSON text to parse.</param>
+    /// <param name="inputType">The type of the <paramref name="value"/> to convert.</param>
+    /// <param name="returnString">A <see cref="string"/> representation of the value.</param>
+    /// <param name="exception">The handler exception during deserialization.</param>
+    /// <returns>Returns <see langword="true"/> if serialization is OK and <see langword="false"/> otherwise.</returns>
+    public static bool TrySerialize(
+        this object value,
+        Type inputType,
+        [MaybeNullWhen(returnValue: false)] out string returnString,
+        [MaybeNullWhen(returnValue: true)] out Exception exception)
+    {
+        try
+        {
+            exception = default;
+            returnString = JsonSerializer.Serialize(value, inputType);
+            return returnString is not null;
+        }
+        catch (Exception ex) when (ex is ArgumentNullException or ArgumentException or NotSupportedException)
+        {
+            exception = ex;
+            returnString = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to convert the provided value into a <see cref="string"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">JSON text to parse.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <param name="returnString">A <see cref="string"/> representation of the value.</param>
+    /// <param name="exception">The handler exception during deserialization.</param>
+    /// <returns>Returns <see langword="true"/> if deserialization is OK and <see langword="false"/> otherwise.</returns>
+    public static bool TrySerialize<T>(
+        this object value,
+        JsonSerializerOptions options,
+        [MaybeNullWhen(returnValue: false)] out string returnString,
+        [MaybeNullWhen(returnValue: true)] out Exception exception)
+        => value.TrySerialize(typeof(T), options, out returnString, out exception);
+
+    /// <summary>
+    /// Tries to convert the provided value into a <see cref="string"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">JSON text to parse.</param>
+    /// <param name="returnString">A <see cref="string"/> representation of the value.</param>
+    /// <param name="exception">The handler exception during deserialization.</param>
+    /// <returns>Returns <see langword="true"/> if deserialization is OK and <see langword="false"/> otherwise.</returns>
+    public static bool TrySerialize<T>(
+        this object value,
+        [MaybeNullWhen(returnValue: false)] out string returnString,
+        [MaybeNullWhen(returnValue: true)] out Exception exception)
+        => value.TrySerialize(typeof(T), out returnString, out exception);
+
+    /// <summary>
+    /// Adds a query string to the given path.
+    /// </summary>
+    /// <param name="path">The path to act on.</param>
+    /// <param name="queryString">The collection of keys values to be added.</param>
+    /// <returns>The path with the query string added.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="path"/> is <see langword="null"/>.</exception>
+    public static string AddQueryString(this string path, IDictionary<string, string?>? queryString)
+    {
+        // From MS internal code
+        ArgumentNullException.ThrowIfNull(path);
+
+        if (queryString is null)
+            return path;
+
+        var anchorIndex = path.IndexOf('#', StringComparison.InvariantCulture);
+        var uriToBeAppended = path;
+        var anchorText = "";
+
+        // If there is an anchor, then the query string must be inserted before its first occurrence.
+        if (anchorIndex != -1)
+        {
+            anchorText = path[anchorIndex..];
+            uriToBeAppended = path[..anchorIndex];
+        }
+
+#pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
+        var queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCulture);
+#pragma warning restore CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
+        var hasQuery = queryIndex != -1;
+
+        var sb = new StringBuilder();
+        sb.Append(uriToBeAppended);
+        foreach (var parameter in queryString)
+        {
+            sb.Append(hasQuery ? '&' : '?');
+            sb.Append(UrlEncoder.Default.Encode(parameter.Key));
+            sb.Append('=');
+            sb.Append(parameter.Value is null ? null : UrlEncoder.Default.Encode(parameter.Value));
+            hasQuery = true;
+        }
+
+        sb.Append(anchorText);
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Tries to get the type specified by its name from the loaded assemblies.
+    /// </summary>
+    /// <param name="typeName">The type name.</param>
+    /// <param name="type">The type result if found.</param>
+    /// <param name="typeException">The handled execution exception.</param>
+    /// <returns>Returns <see langword="true"/> if get OK and <see langword="false"/> otherwise.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="typeName"/> is null.</exception>
+    public static bool TryGetTypeFromTypeName(
+        this string typeName,
+        [MaybeNullWhen(returnValue: false)] out Type type,
+        [MaybeNullWhen(returnValue: true)] out Exception typeException)
+    {
+        _ = typeName ?? throw new ArgumentNullException(nameof(typeName));
+
+        try
+        {
+            typeException = default;
+            type = Type.GetType(typeName, true, true);
+            if (type is null)
+            {
+                typeException = new ArgumentNullException(nameof(type), "Type not found.");
+                return false;
+            }
+            return true;
+        }
+        catch (Exception exception) when (exception is TargetInvocationException
+                                    || exception is TypeLoadException
+                                    || exception is ArgumentException
+                                    || exception is FileNotFoundException
+                                    || exception is FileLoadException
+                                    || exception is BadImageFormatException)
+        {
+            typeException = exception;
+            type = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to get type from its string name.
+    /// </summary>
+    /// <param name="typeName">The name of the type to find.</param>
+    /// <param name="foundType">The found type.</param>
+    /// <param name="typeException">The handled type exception.</param>
+    /// <returns>Returns <see langword="true"/> if OK and <see langword="false"/> otherwise.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="typeName"/> is null.</exception>
+    public static bool TryGetType(
+        this string typeName,
+        [MaybeNullWhen(returnValue: false)] out Type foundType,
+        [MaybeNullWhen(returnValue: true)] out Exception typeException)
+    {
+        _ = typeName ?? throw new ArgumentNullException(nameof(typeName));
+
+        try
+        {
+            typeException = default;
+            foundType = Type.GetType(typeName, true, true);
+            if (foundType is null)
+            {
+                typeException = new ArgumentException("Expected type not found.");
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception exception) when (exception is TargetInvocationException
+                                        || exception is TypeLoadException
+                                        || exception is ArgumentException
+                                        || exception is FileNotFoundException
+                                        || exception is FileLoadException
+                                        || exception is BadImageFormatException)
+        {
+            typeException = exception;
+            foundType = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to get the type from string, if not found, try to load from the assembly.
+    /// </summary>
+    /// <param name="typeName">The name of the type to find.</param>
+    /// <param name="assemblyName">The assembly to act on.</param>
+    /// <param name="foundType">The found type.</param>
+    /// <param name="typeException">The handled type exception.</param>
+    /// <returns>Returns <see langword="true"/> if OK and <see langword="false"/> otherwise.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="typeName"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="assemblyName"/> is null.</exception>
+    public static bool TryGetType(
+        this string typeName,
+        string assemblyName,
+        [MaybeNullWhen(returnValue: false)] out Type foundType,
+        [MaybeNullWhen(returnValue: true)] out Exception typeException)
+    {
+        _ = typeName ?? throw new ArgumentNullException(nameof(typeName));
+        _ = assemblyName ?? throw new ArgumentNullException(nameof(assemblyName));
+
+        if (typeName.TryGetType(out foundType, out typeException))
+            return true;
+
+        if (!assemblyName.TryLoadAssembly(out var assembly, out typeException))
+        {
+            foundType = default;
+            return false;
+        }
+
+        try
+        {
+            typeException = default;
+            foundType = Array
+                .Find(assembly!
+                    .GetExportedTypes(), type => type.FullName!.Equals(typeName, StringComparison.OrdinalIgnoreCase));
+
+            if (foundType is null)
+            {
+                typeException = new ArgumentException("Expected type not found.");
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception exception) when (exception is NotSupportedException || exception is FileNotFoundException)
+        {
+            typeException = exception;
+            return false;
+        }
+    }
+
+}

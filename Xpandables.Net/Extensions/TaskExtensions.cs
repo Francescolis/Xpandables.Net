@@ -20,7 +20,7 @@ namespace Xpandables.Net.Extensions;
 /// <summary>
 /// Provides a set of <see langword="static"/> methods for tasks.
 /// </summary>
-public static class TaskExtensions
+public static partial class XpandablesExtensions
 {
     private static readonly TaskFactory TaskFactory
         = new(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);

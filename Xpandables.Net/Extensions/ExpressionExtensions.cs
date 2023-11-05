@@ -21,7 +21,7 @@ namespace Xpandables.Net.Extensions;
 /// <summary>
 /// Provides with <see cref="Expression{TDelegate}"/> extensions.
 /// </summary>
-public static class ExpressionExtensions
+public static partial class XpandablesExtensions
 {
     /// <summary>
     /// Gets a set of Expressions representing the parameters which will be passed to the constructor.
