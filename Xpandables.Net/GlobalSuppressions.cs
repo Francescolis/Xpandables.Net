@@ -57,3 +57,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Operations.Messaging.TransientScheduler")]
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Aggregates.IntegrationEvents.IntegrationEventSourcing")]
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Aggregates.IntegrationEvents.IntegrationEventOutbox")]
+[assembly: SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Repositories.ITransactionDecorator")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Decorators.SnapshotStoreDecorator`2")]
