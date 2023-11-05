@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using System.ComponentModel;
+
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Aggregates;
@@ -21,7 +23,17 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Represents the unique identifier for an aggregate that contains a <see cref="Guid"/> as key.
 /// </summary>
-public interface IAggregateId : IPrimitive<Guid> { }
+public interface IAggregateId : IPrimitive<Guid>
+{
+    /// <summary>
+    /// Gets a value indicating whether or not the underlying 
+    /// primitive is new (string.IsNullOrEmpty(AsString())).
+    /// </summary>
+    public new bool IsNew() => Value == Guid.Empty;
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    bool IPrimitive.IsNew() => IsNew();
+}
 
 /// <summary>
 /// Represents the unique identifier for an aggregate that contains a <see cref="Guid"/> as key.

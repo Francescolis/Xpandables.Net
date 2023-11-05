@@ -66,6 +66,58 @@ public static partial class ServiceCollectionExtensions
         => services.AddXDispatcher<Dispatcher>();
 
     /// <summary>
+    /// Registers the <typeparamref name="TTransientPublisher"/> type as <see cref="ITransientPublisher"/> 
+    /// to the services with scoped life time.
+    /// </summary>
+    /// <typeparam name="TTransientPublisher">The type that implements <see cref="ITransientPublisher"/>.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXTransientPublisher<TTransientPublisher>(this IServiceCollection services)
+        where TTransientPublisher : class, ITransientPublisher
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddScoped<ITransientPublisher, TTransientPublisher>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the default <see cref="ITransientPublisher"/> implementation to the services with scoped life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXTransientPublisher(this IServiceCollection services)
+        => services.AddXTransientPublisher<TransientPublisher>();
+
+    /// <summary>
+    /// Registers the <typeparamref name="TTransientSubscriber"/> type as <see cref="ITransientSubscriber"/> 
+    /// to the services with scoped life time.
+    /// </summary>
+    /// <typeparam name="TTransientSubscriber">The type that implements <see cref="ITransientSubscriber"/>.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXTransientSubscriber<TTransientSubscriber>(this IServiceCollection services)
+        where TTransientSubscriber : class, ITransientSubscriber
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddScoped<ITransientSubscriber, TTransientSubscriber>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the default <see cref="ITransientSubscriber"/> implementation to the services with scoped life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXTransientSubscriber(this IServiceCollection services)
+        => services.AddXTransientPublisher<TransientPublisherSubscriber>();
+
+    /// <summary>
     /// Registers the <typeparamref name="TCommandHandler"/> to the services with 
     /// scope life time using the factory if specified.
     /// </summary>
@@ -381,6 +433,52 @@ public static partial class ServiceCollectionExtensions
             AddIntegrationEventHandlerMethod,
             assemblies);
     }
+
+    /// <summary>
+    /// Registers and configures the <see cref="ICommandHandler{TCommand}"/>, <see cref="IIntegrationEventHandler{TNotification}"/>,
+    /// <see cref="IQueryHandler{TQuery, TResult}"/>, <see cref="IDomainEventHandler{TAggregateId, TDomainEvent}"/>
+    /// and <see cref="IAsyncQueryHandler{TQuery, TResult}"/> behaviors.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types. If not set, the calling assembly will be used.</param>
+    /// <param name="configureOptions">A delegate to configure the <see cref="HandlerOptions"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXHandlers(
+        this IServiceCollection services,
+        Action<HandlerOptions> configureOptions,
+        params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
+
+        services.AddXCommandHandlers(assemblies);
+        services.AddXQueryHandlers(assemblies);
+        services.AddXAsyncQueryHandlers(assemblies);
+        services.AddXDomainEventHandlers(assemblies);
+        services.AddXIntegrationEventHandlers(assemblies);
+
+        return services.AddXHandlersOptions(configureOptions, assemblies);
+    }
+
+    /// <summary>
+    /// Registers and configures the <see cref="ICommandHandler{TCommand}"/>, <see cref="IIntegrationEventHandler{TNotification}"/>,
+    /// <see cref="IQueryHandler{TQuery, TResult}"/>, <see cref="IDomainEventHandler{TAggregateId, TDomainEvent}"/>
+    /// and <see cref="IAsyncQueryHandler{TQuery, TResult}"/> behaviors.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types. If not set, the calling assembly will be used.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXHandlers(
+        this IServiceCollection services,
+        params Assembly[] assemblies) => services.AddXHandlers(_ => { }, assemblies);
 
     /// <summary>
     /// Configures the <see cref="ICommandHandler{TCommand}"/>, <see cref="IIntegrationEventHandler{TNotification}"/>,
