@@ -542,7 +542,7 @@ public static class NotifyPropertyExtensions
                             new ArgumentException($"The {property.Name} owns a dependency on {dependency} which one depends on {property.Name}."));
                     }
 
-                    dependencies.Add(dependency, new List<string> { property.Name });
+                    dependencies.Add(dependency, [property.Name]);
                 }
 
                 bool PredicateFindDependency(string value) => value == dependency;
