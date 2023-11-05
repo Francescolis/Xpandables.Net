@@ -59,3 +59,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Aggregates.IntegrationEvents.IntegrationEventOutbox")]
 [assembly: SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Repositories.ITransactionDecorator")]
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Decorators.SnapshotStoreDecorator`2")]
+[assembly: SuppressMessage("Reliability", "CA2008:Do not create tasks without passing a TaskScheduler", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Extensions.TaskExtensions.RunSync(System.Func{System.Threading.Tasks.Task})")]
+[assembly: SuppressMessage("Reliability", "CA2008:Do not create tasks without passing a TaskScheduler", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Extensions.TaskExtensions.RunSync``1(System.Func{System.Threading.Tasks.Task{``0}})~``0")]
