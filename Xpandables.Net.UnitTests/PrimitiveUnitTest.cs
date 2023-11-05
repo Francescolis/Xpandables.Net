@@ -48,7 +48,7 @@ public sealed class PrimitiveUnitTest
     {
         public static string DefaultValue => "NOEMAIL@EMAIL.COM";
 
-        public static Email CreateInstance(string value) => new Email(value);
+        public static Email CreateInstance(string value) => new(value);
 
         public static Email DefaultInstance() => new(DefaultValue);
 
