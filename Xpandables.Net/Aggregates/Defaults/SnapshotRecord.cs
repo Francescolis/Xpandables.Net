@@ -43,10 +43,11 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
         ulong version = descriptor.Version;
         string name = descriptor.Instance.GetTypeName();
         var memento = descriptor.Instance.CreateMemento();
+        string mementoTypeName = memento.GetTypeName();
 
         JsonDocument data = memento.ToJsonDocument(options);
 
-        return new(objectId, version, name, data);
+        return new(objectId, version, name, mementoTypeName, data);
     }
 
     /// <summary>
@@ -61,8 +62,8 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
     {
         ArgumentNullException.ThrowIfNull(record);
 
-        if (Type.GetType(record.MementoTypeName) is { } eventType)
-            if (record.Data.Deserialize(eventType, options) is IMemento memento)
+        if (Type.GetType(record.MementoTypeName) is { } mementoType)
+            if (record.Data.Deserialize(mementoType, options) is IMemento memento)
                 return Optional.Some(memento);
 
         return Optional.Empty<IMemento>();
@@ -72,11 +73,13 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
     private SnapShotRecord(
         Guid objectId,
         ulong version,
+        string objectTypeName,
         string mementoTypeName,
         JsonDocument data)
     {
         Id = Guid.NewGuid();
         ObjectId = objectId;
+        ObjectTypeName = objectTypeName;
         MementoTypeName = mementoTypeName;
         Version = version;
         Data = data;
@@ -95,7 +98,12 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
     public ulong Version { get; }
 
     /// <summary>
-    /// Gets the memento object type name.
+    /// Gets the object type name.
+    /// </summary>
+    public string ObjectTypeName { get; }
+
+    /// <summary>
+    /// Gets the memento type name.
     /// </summary>
     public string MementoTypeName { get; }
 

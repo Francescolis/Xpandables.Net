@@ -28,7 +28,27 @@ public abstract class Entity : IEntity
     /// <summary>
     /// Initializes a new instance of <see cref="Entity"/>.
     /// </summary>
-    protected Entity() { }
+    protected Entity()
+    {
+        OnCreated += (s, e) => CreatedOn = DateTime.UtcNow;
+        OnUpdated += (s, e) => UpdatedOn = DateTime.UtcNow;
+        OnDeleted += (s, e) => InactiveOn = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Occurs when the underlying instance is created.
+    /// </summary>
+    public event EventHandler? OnCreated;
+
+    /// <summary>
+    /// Occurs when the underlying instance is deleted.
+    /// </summary>
+    public event EventHandler? OnDeleted;
+
+    /// <summary>
+    /// Occurs when the underlying instance is updated.
+    /// </summary>
+    public event EventHandler? OnUpdated;
 
     ///<inheritdoc/>
     [Key]
@@ -62,6 +82,10 @@ public abstract class Entity : IEntity
         Status = EntityStatus.INACTIVE;
         InactiveOn = DateTime.UtcNow;
     }
+
+    void IEntity.OnCreation() => OnCreated?.Invoke(this, EventArgs.Empty);
+    void IEntity.OnDeletion() => OnDeleted?.Invoke(this, EventArgs.Empty);
+    void IEntity.OnUpdate() => OnUpdated?.Invoke(this, EventArgs.Empty);
 }
 
 /// <summary>

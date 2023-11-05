@@ -100,7 +100,7 @@ public sealed class PrimitiveJsonConverterFactory : JsonConverterFactory
             .GetGenericArguments();
 
         Type jsonPrimitiveConverterType = typeof(PrimitiveJsonConverter<,>)
-            .MakeGenericType([typeToConvert, .. valueTypes]);
+            .MakeGenericType([.. valueTypes]);
 
         return Activator.CreateInstance(jsonPrimitiveConverterType) as JsonConverter;
     }

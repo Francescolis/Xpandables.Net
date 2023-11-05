@@ -25,6 +25,21 @@ namespace Xpandables.Net.Repositories;
 public interface IEntity
 {
     /// <summary>
+    /// Occurs when the underlying instance is created.
+    /// </summary>
+    event EventHandler? OnCreated;
+
+    /// <summary>
+    /// Occurs when the underlying instance is deleted.
+    /// </summary>
+    event EventHandler? OnDeleted;
+
+    /// <summary>
+    /// Occurs when the underlying instance is updated.
+    /// </summary>
+    event EventHandler? OnUpdated;
+
+    /// <summary>
     /// Gets the object unique identity.
     /// </summary>
     object Id { get; }
@@ -70,6 +85,11 @@ public interface IEntity
     /// Marks the underlying instance as inactive and sets the inactive date time.
     /// </summary>
     void SetStatusInactive();
+
+    // For internal use
+    internal void OnCreation();
+    internal void OnDeletion();
+    internal void OnUpdate();
 
 }
 
