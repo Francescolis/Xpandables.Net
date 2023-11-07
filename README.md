@@ -221,7 +221,8 @@ public sealed record AddPersonCommand : ICommand;
 public sealed class AddPersonCommandHandler : ICommandHandler<AddPersonCommand>
 {
     public ValueTask<IOperationResult> HandleAsync(
-        AddPersonCommand command, CancellationToken cancellationToken = default)
+        AddPersonCommand command, 
+        CancellationToken cancellationToken = default)
     {
         // your code ...
 
@@ -245,7 +246,8 @@ public sealed class AddPersonCommandHandlerLoggingDecorator :
         => (_logger, _decoratee) = (logger, decoratee);
 
     public async ValueTask<OperationResult> HandleAsync(
-        AddPersonCommand command, CancellationToken cancellationToken = default)
+        AddPersonCommand command, 
+        CancellationToken cancellationToken = default)
     {
         _logger.Information(...);
         
@@ -279,16 +281,19 @@ public sealed class CommandLoggingDecorator<TCommand> : ICommandHandler<TCommand
     private readonly ILogger<TCommand> _logger;
     
     public CommandLoggingDecorator(
-        ILogger<TCommand> logger, ICommandHandler<TCommand> decoratee)
+        ILogger<TCommand> logger, 
+        ICommandHandler<TCommand> decoratee)
         => (_logger, _ decoratee) = (logger, decoratee);
 
     public async ValueTask<OperationResult> HandleAsync(
-         TCommand command, CancellationToken cancellationToken = default)
+         TCommand command, 
+         CancellationToken cancellationToken = default)
     {
         _logger.Information(...);
         
         var response = await _decoratee
-            .HandleAsync(command, cancellationToken).configureAwait(false);
+            .HandleAsync(command, cancellationToken)
+            .configureAwait(false);
         
         _logger.Information(...)
         
@@ -318,20 +323,23 @@ public interface IQueryHandler<TQuery, TResult>
     where TQuery : notnull, IQuery<TResult> 
 {
     ValueTask<IOperationResult<TResult>> HandleAsync(
-        TQuery query, CancellationToken cancellationToken = default);
+        TQuery query, 
+        CancellationToken cancellationToken = default);
 }
 public interface IAsyncQueryHandler<TQuery, TResult>
     where TQuery : notnull, IAsyncQuery<TResult> 
 {
     IAsyncEnumerable<TResult> HandleAsync(
-        TQuery query, CancellationToken cancellationToken = default);
+        TQuery query, 
+        CancellationToken cancellationToken = default);
 }
 
 public interface ICommandHandler<TCommand>
     where TCommand : notnull, ICommand
 {
     ValueTask<IOperationResult> HandleAsync(
-        TCommand command, CancellationToken cancellationToken = default);
+        TCommand command, 
+        CancellationToken cancellationToken = default);
 }
 
 ```
@@ -354,13 +362,16 @@ public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand
     public AddProductCommandHandler(ProductContext uow) => _uow = uow;
 
     public async ValueTask<OperationResult> HandleAsync(
-        AddProductCommand command, CancellationToken cancellationToken)
+        AddProductCommand command, 
+        CancellationToken cancellationToken)
     {
         // create the new product instance : 'With' is static method to build a product
         var product = Product.With(command.Id, command.Name, command.Description);
 
         // insert the new product in the collection of products
-        await _uow.Products.AddAsync(product, cancellationToken).ConfigureAwait(false);
+        await _uow.Products
+            .AddAsync(product, cancellationToken)
+            .ConfigureAwait(false);
     }
 }
 ```
@@ -388,8 +399,9 @@ public sealed class AddProductCommandValidator<AddProductCommand> :
         // this is just for demo
         // we just need to know if a record with
         // the specified id already exist
-        var isFound = await _uow.Products.CountAsync(x=>x.Id == command.Id,
-            cancellationToken).ConfigureAwait(false) > 0;
+        var isFound = await _uow.Products
+            .CountAsync(x=>x.Id == command.Id, cancellationToken)
+            .ConfigureAwait(false) > 0;
 
         if( isFound ) // duplicate
         {
@@ -428,7 +440,8 @@ public sealed class GetProductQueryHandler :
     public GetProductQueryHandler(ProductContext uow) => _uow = uow;
 
     public async ValueTask<OperationResult<ProductDTO?>> HandleAsync(
-        GetProductQuery query, CancellationToken cancellationToken = default)
+        GetProductQuery query, 
+        CancellationToken cancellationToken = default)
     {
         // You can make a search using a query or the key
 
@@ -479,7 +492,8 @@ var serviceProvider = new ServiceCollection()
     var dispatcher = serviceProvider.GetRequiredService<IDispatcher>();
     var addProduct = new AddProductCommand("Kamersoft 8", "Kamersoft.Net Library");
     IOperationResult result = await dispatcher
-        .SendAsync(addProduct).ConfigureAwait(false);
+        .SendAsync(addProduct)
+        .ConfigureAwait(false);
 
     // check the result
     ...
