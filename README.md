@@ -44,6 +44,55 @@ var result = optional.Bind(value => value.Length);
 
 ```
 
+Change the return value of a function : Reduce
+
+```csharp
+
+public string GetName()
+{
+	Optional<Name> optional = function call;
+
+    return optional
+        .Reduce("No Name");
+
+    // If the optional has a value, the function value will be returned.
+    // If the optional is empty, the Reduce value will be returned.
+}
+
+```
+
+Apply serialization to an Optional : Serialize/Deserialize
+
+```csharp
+
+// value type
+readonly record struct Name(string Value);
+
+var optional = Optional.Some(new Name("Hello World"));
+var result = JsonSerializer.Serialize(optional);
+// result : Value = "Hello World"
+
+// reference type
+sealed record class Name(string Value);
+
+var optional = Optional.Some(new Name("Hello World"));
+var result = JsonSerializer.Serialize(optional);
+// result : string = "{\"Value\":\"Hello World\"}"
+
+// anonymous type
+var optional = Optional.Some(new { Name = "Hello World" });
+var result = JsonSerializer.Serialize(optional);
+// result : string = "{\"Name\":\"Hello World\"}"
+
+var deserialized = result.DeserializeAnonymousType(Optional.Some(new { Name = string.Empty }));
+// or you can use the same anonymous variable
+// var deserialized = result.DeserializeAnonymousType(optional);
+
+// DeserializeAnonymousType is an extension method that allows to deserialize an anonymous type
+// the method is defined in the Xpandables.Net.Extensions namespace
+
+```
+
 ## OperationResult
 
 Allows to create methods that return the status of an execution.

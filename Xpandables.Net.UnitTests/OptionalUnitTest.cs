@@ -18,6 +18,7 @@ using System.Text.Json;
 
 using FluentAssertions;
 
+using Xpandables.Net.Extensions;
 using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.UnitTests;
@@ -46,7 +47,12 @@ public sealed class OptionalUnitTest
         var json = JsonSerializer.Serialize(optional);
         var deserialized = JsonSerializer.Deserialize<Optional<StructType>>(json);
 
+        var op = Optional.Some(new { Name = value });
+        var json1 = JsonSerializer.Serialize(op);
+        var deserialized1 = json1.DeserializeAnonymousType(op);
+
         optional.Should().BeEquivalentTo(deserialized);
+        op.Should().BeEquivalentTo(deserialized1);
     }
 
     [Fact]
