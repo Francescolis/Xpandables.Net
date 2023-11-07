@@ -28,6 +28,20 @@ namespace Xpandables.Net.DependencyInjection;
 public static partial class ServiceCollectionExtensions
 {
     /// <summary>
+    /// Registers the <see cref="IHttpClientBuildProvider"/> default implementation to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
+    public static IServiceCollection AddXHttpClientBuildProvider(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddScoped<IHttpClientBuildProvider, HttpClientBuildProviderInternal>();
+        return services;
+    }
+
+    /// <summary>
     /// Registers the <see cref="IHttpClientRequestBuilder"/> default implementation to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -37,7 +51,7 @@ public static partial class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddScoped<IHttpClientRequestBuilder, HttpClientRequestBuilder>();
+        services.TryAddScoped<IHttpClientRequestBuilder, HttpClientRequestBuilderInternal>();
         return services;
     }
 

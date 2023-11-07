@@ -52,7 +52,7 @@ public interface IHttpClientRequestBuilder
            where TSource : class;
 }
 
-internal sealed class HttpClientRequestBuilder(IServiceProvider serviceProvider) : IHttpClientRequestBuilder
+internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceProvider) : IHttpClientRequestBuilder
 {
     public ValueTask<HttpRequestMessage> BuildHttpRequestAsync<TSource>(
         TSource source,

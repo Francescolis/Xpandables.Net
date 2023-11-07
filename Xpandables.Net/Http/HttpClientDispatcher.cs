@@ -22,11 +22,10 @@ namespace Xpandables.Net.Http;
 
 // Used as default implementation for IHttpClientDispatcher
 internal sealed class DefaultHttpClientDispatcher(
-    IHttpClientRequestBuilder httpRestClientRequestBuilder,
-    IHttpClientResponseBuilder httpRestClientResponseBuilder,
+    IHttpClientBuildProvider httpClientBuildProvider,
     HttpClient httpClient,
     JsonSerializerOptions? jsonSerializerOptions)
-    : HttpClientDispatcher(httpRestClientRequestBuilder, httpRestClientResponseBuilder, httpClient, jsonSerializerOptions)
+    : HttpClientDispatcher(httpClientBuildProvider, httpClient, jsonSerializerOptions)
 {
 }
 
@@ -42,13 +41,14 @@ public abstract class HttpClientDispatcher : Disposable, IHttpClientDispatcher
 
     ///<inheritdoc/>
     protected HttpClientDispatcher(
-        IHttpClientRequestBuilder httpRestClientRequestBuilder,
-        IHttpClientResponseBuilder httpRestClientResponseBuilder,
+        IHttpClientBuildProvider httpClientBuildProvider,
         HttpClient httpClient,
         JsonSerializerOptions? jsonSerializerOptions)
     {
-        _httpRestClientRequestBuilder = httpRestClientRequestBuilder ?? throw new ArgumentNullException(nameof(httpRestClientRequestBuilder));
-        _httpRestClientResponseBuilder = httpRestClientResponseBuilder ?? throw new ArgumentNullException(nameof(httpRestClientResponseBuilder));
+        _httpRestClientRequestBuilder = httpClientBuildProvider?.RequestBuilder
+            ?? throw new ArgumentNullException(nameof(httpClientBuildProvider));
+        _httpRestClientResponseBuilder = httpClientBuildProvider?.ResponseBuilder
+            ?? throw new ArgumentNullException(nameof(httpClientBuildProvider));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _jsonSerializerOptions = jsonSerializerOptions;
     }

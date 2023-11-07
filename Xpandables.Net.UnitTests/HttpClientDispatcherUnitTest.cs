@@ -36,6 +36,7 @@ public sealed class HttpClientDispatcherUnitTest
             .AddSingleton(new JsonSerializerOptions(JsonSerializerDefaults.Web))
             .AddXHttpClientRequestBuilder()
             .AddXHttpClientResponseBuilder()
+            .AddXHttpClientBuildProvider()
             .AddXHttpClientDispatcher<IHttpMonkeyDispatcher, HttpMonkeyDispatcher>(_ => "token", (_, httpClient) =>
             {
                 httpClient.BaseAddress = new Uri("https://www.montemagno.com/");
@@ -79,7 +80,8 @@ public sealed class HttpClientDispatcherUnitTest
 
         var expectedResult = JsonSerializer.Serialize(request.PatchOperations);
 
-        HttpRequestMessage message = await _httpClientRequestBuilder.BuildHttpRequestAsync(request, _dispatcher.HttpClient, new(JsonSerializerDefaults.Web));
+        HttpRequestMessage message = await _httpClientRequestBuilder
+            .BuildHttpRequestAsync(request, _dispatcher.HttpClient, new(JsonSerializerDefaults.Web));
 
         Assert.NotNull(message.Content);
 
@@ -107,13 +109,11 @@ interface IHttpMonkeyDispatcher : IHttpClientDispatcher
 }
 
 sealed class HttpMonkeyDispatcher(
-    IHttpClientRequestBuilder httpRestClientRequestBuilder,
-    IHttpClientResponseBuilder httpRestClientResponseBuilder,
+    IHttpClientBuildProvider httpClientBuildProvider,
     HttpClient httpClient,
     JsonSerializerOptions? jsonSerializerOptions)
     : HttpClientDispatcher(
-        httpRestClientRequestBuilder,
-        httpRestClientResponseBuilder,
+        httpClientBuildProvider,
         httpClient,
         jsonSerializerOptions), IHttpMonkeyDispatcher
 {
