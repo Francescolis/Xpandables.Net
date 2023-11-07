@@ -50,8 +50,7 @@ Change the return value of a function : Reduce
 
 public string GetName()
 {
-	Optional<Name> optional = function call;
-
+    Optional<Name> optional = function call;
     return optional
         .Reduce("No Name");
 
@@ -155,9 +154,38 @@ The caller of this method can check if the return operation is a success or a fa
 It also provides with a middleware that will automatically convert a failure *OperationResult* to *ValidationProblem*, *Problem* or result, according to the StatusCode.
 
 ```csharp
+// Minimal Api
+// You need to the following code in the Program.cs file
+
+builder.Services.AddXOperationResultMinimalMiddleware();
+...
+app.UseXOperationResultMinimalMiddleware();
+
+app.MapGet("/api/users", (string name) =>
+{
+    if(CheckThatValueIsNotNull(name) is { IsFailure : true} failure)
+        return failure.ToMinimalResult();
+
+    // ...get the user
+	OperationResult<User> resultUser = DoGetUser(...);
+	
+    return result.ToMinimalResult();
+})
+.WithXValidatorFilter();
+
+// WithXValidatorFilter is an extension method that allows to use the validator filter
+// to automatically validate the request according to the specified type.
+// and allows you to use custom validation impelementation using **IValidator** interface.
+
+// Controller
+// You need to the following code in the Program.cs file
+
+builder.Services.AddXOperationResultControllerMiddleware();
+...
+app.UseXOperationResultControllerMiddleware();
 
 [HttpGet]
-public IResult GetUserByName(string? name)
+public IResult GetUserByName(string name)
 {
     if(CheckThatValueIsNotNull(name) is { isFailure : true} failure)
         return failure.ToMinimalResult();
@@ -165,12 +193,12 @@ public IResult GetUserByName(string? name)
     // ...get the user
 	OperationResult<User> resultUser = DoGetUser(...);
 	
-    return result.ToMinimalResult();
+    return result;
 }
 
 ```
 
-In this case, if the *name* is null, the operation result from the method will be converted to an implementation of *IResult* using the extension method **ToMinimalResult**, that will produce a perfect response with all needed information.
+In the Minimal Api case, if the *name* is null, the operation result from the method will be converted to an implementation of *IResult* using the extension method **ToMinimalResult**, that will produce a perfect response with all needed information.
 
 >You can also use the **OperationResultException** to throw a specific exception that contains a failure *OperationResult* when you are not able to return an *OperationResult* instance.
 All the operation result instances are serializable with a specific case for **Asp.Net Core** application, the produced response Content will contains the serialized *Result* property value if available in the operation result.
