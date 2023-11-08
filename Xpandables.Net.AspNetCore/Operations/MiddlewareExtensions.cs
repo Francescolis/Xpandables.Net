@@ -58,12 +58,19 @@ internal static class MiddlewareExtensions
 
         if (controller is not null)
         {
-            var validationProblem = GetControllerValidationProblemDetails(controller, context, operationResult);
-            await validationProblem.ExecuteResultAsync(controller.ControllerContext).ConfigureAwait(false);
+            var validationProblem = GetControllerValidationProblemDetails(
+                controller,
+                context,
+                operationResult);
+
+            await validationProblem
+                .ExecuteResultAsync(controller.ControllerContext)
+                .ConfigureAwait(false);
         }
         else
         {
-            await OnOperationResultAsync(context, operationResult).ConfigureAwait(false);
+            await OnOperationResultAsync(context, operationResult)
+                .ConfigureAwait(false);
         }
     }
 
@@ -74,12 +81,19 @@ internal static class MiddlewareExtensions
     {
         if (controller is not null)
         {
-            var validationProblem = GetControllerValidationProblemDetails(controller, context, exception.OperationResult);
-            await validationProblem.ExecuteResultAsync(controller.ControllerContext).ConfigureAwait(false);
+            var validationProblem = GetControllerValidationProblemDetails(
+                controller,
+                context,
+                exception.OperationResult);
+
+            await validationProblem
+                .ExecuteResultAsync(controller.ControllerContext)
+                .ConfigureAwait(false);
         }
         else
         {
-            await OnOperationResultAsync(context, exception.OperationResult).ConfigureAwait(false);
+            await OnOperationResultAsync(context, exception.OperationResult)
+                .ConfigureAwait(false);
         }
     }
 
@@ -92,17 +106,26 @@ internal static class MiddlewareExtensions
 
         if (controller is not null)
         {
-            var validationProblem = GetControllerValidationProblemDetails(controller, context, operationResult);
-            await validationProblem.ExecuteResultAsync(controller.ControllerContext).ConfigureAwait(false);
+            var validationProblem = GetControllerValidationProblemDetails(
+                controller,
+                context,
+                operationResult);
+
+            await validationProblem
+                .ExecuteResultAsync(controller.ControllerContext)
+                .ConfigureAwait(false);
         }
         else
         {
-            await OnOperationResultAsync(context, operationResult).ConfigureAwait(false);
+            await OnOperationResultAsync(context, operationResult)
+                .ConfigureAwait(false);
         }
     }
 
 
-    internal static async Task OnOperationResultAsync(HttpContext context, IOperationResult operationResult)
+    internal static async Task OnOperationResultAsync(
+        HttpContext context,
+        IOperationResult operationResult)
     {
         var minimalResult = operationResult.ToMinimalResult();
 
@@ -114,18 +137,28 @@ internal static class MiddlewareExtensions
         Exception exception,
         OperationResultController? controller = default)
     {
-        if (exception is UnauthorizedAccessException && await context.GetAuthenticateSchemeAsync().ConfigureAwait(false) is { } scheme)
+        if (exception is UnauthorizedAccessException
+            && await context.GetAuthenticateSchemeAsync()
+                .ConfigureAwait(false) is { } scheme)
             context.Response.Headers.Append(HeaderNames.WWWAuthenticate, scheme);
 
         if (controller is not null)
         {
-            var problemDetails = GetControllerProblemDetails(controller, context, exception);
-            await problemDetails.ExecuteResultAsync(controller.ControllerContext).ConfigureAwait(false);
+            var problemDetails = GetControllerProblemDetails(
+                controller,
+                context,
+                exception);
+
+            await problemDetails
+                .ExecuteResultAsync(controller.ControllerContext)
+                .ConfigureAwait(false);
         }
         else
         {
             var problemDetails = context.GetProblemDetails(exception);
-            await problemDetails.ExecuteAsync(context).ConfigureAwait(false);
+            await problemDetails
+                .ExecuteAsync(context)
+                .ConfigureAwait(false);
         }
     }
 
@@ -151,10 +184,16 @@ internal static class MiddlewareExtensions
         HttpContext context,
         Exception exception)
     {
-        var statusCode = exception is UnauthorizedAccessException ? HttpStatusCode.Unauthorized : HttpStatusCode.InternalServerError;
+        var statusCode = exception is UnauthorizedAccessException
+            ? HttpStatusCode.Unauthorized
+
+            : HttpStatusCode.InternalServerError;
 
         var problemDetails = controller.Problem(
-            (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development" ? $"{exception}" : statusCode.GetProblemDetail(),
+            (Environment.GetEnvironmentVariable(
+                "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
+                ? $"{exception}"
+                : statusCode.GetProblemDetail(),
             context.Request.Path,
             (int)statusCode,
             statusCode.GetProblemTitle());
@@ -164,7 +203,9 @@ internal static class MiddlewareExtensions
 
     internal static OperationResultController GetExceptionController(HttpContext context)
     {
-        var controller = context.RequestServices.GetRequiredService<OperationResultController>();
+        var controller = context.RequestServices
+            .GetRequiredService<OperationResultController>();
+
         controller.ControllerContext = new ControllerContext(
             new ActionContext(
                 context,
@@ -178,7 +219,9 @@ internal static class MiddlewareExtensions
     {
         if (exception is ValidationException validation)
         {
-            return validation.ValidationResult.ToOperationResult().GetValidationProblemDetails(context);
+            return validation.ValidationResult
+                .ToOperationResult()
+                .GetValidationProblemDetails(context);
         }
 
         if (exception is OperationResultException operationResultException)
@@ -186,10 +229,15 @@ internal static class MiddlewareExtensions
             return operationResultException.OperationResult.ToMinimalResult();
         }
 
-        var statusCode = exception is UnauthorizedAccessException ? HttpStatusCode.Unauthorized : HttpStatusCode.InternalServerError;
+        var statusCode = exception is UnauthorizedAccessException
+            ? HttpStatusCode.Unauthorized
+            : HttpStatusCode.InternalServerError;
 
         var problemDetails = Results.Problem(
-            (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development" ? $"{exception}" : statusCode.GetProblemDetail(),
+            (Environment.GetEnvironmentVariable(
+                "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
+                ? $"{exception}"
+                : statusCode.GetProblemDetail(),
             context.Request.Path,
             (int)statusCode,
             statusCode.GetProblemTitle());
@@ -197,7 +245,9 @@ internal static class MiddlewareExtensions
         return problemDetails;
     }
 
-    internal static IResult GetValidationProblemDetails(this IOperationResult operationResult, HttpContext context)
+    internal static IResult GetValidationProblemDetails(
+        this IOperationResult operationResult,
+        HttpContext context)
     {
         var statusCode = operationResult.StatusCode;
 
@@ -214,7 +264,8 @@ internal static class MiddlewareExtensions
     internal static string GetProblemDetail(this HttpStatusCode statusCode)
          => statusCode switch
          {
-             HttpStatusCode.InternalServerError or HttpStatusCode.Unauthorized => I18nXpandables.HttpStatusCodeProblemDetailInternalError,
+             HttpStatusCode.InternalServerError or HttpStatusCode.Unauthorized =>
+                I18nXpandables.HttpStatusCodeProblemDetailInternalError,
              _ => I18nXpandables.HttpStatusCodeProblemDetailPropertyError
          };
 
@@ -234,9 +285,17 @@ internal static class MiddlewareExtensions
     {
         if (context.RequestServices.GetService<IAuthenticationSchemeProvider>() is { } authenticationSchemeProvider)
         {
-            var requestSchemes = await authenticationSchemeProvider.GetRequestHandlerSchemesAsync().ConfigureAwait(false);
-            var defaultSchemes = await authenticationSchemeProvider.GetDefaultAuthenticateSchemeAsync().ConfigureAwait(false);
-            var allSchemes = await authenticationSchemeProvider.GetAllSchemesAsync().ConfigureAwait(false);
+            var requestSchemes = await authenticationSchemeProvider
+                .GetRequestHandlerSchemesAsync()
+                .ConfigureAwait(false);
+
+            var defaultSchemes = await authenticationSchemeProvider
+                .GetDefaultAuthenticateSchemeAsync()
+                .ConfigureAwait(false);
+
+            var allSchemes = await authenticationSchemeProvider
+                .GetAllSchemesAsync()
+                .ConfigureAwait(false);
 
             var scheme = requestSchemes.FirstOrDefault() ?? defaultSchemes ?? allSchemes.FirstOrDefault();
             if (scheme is not null)

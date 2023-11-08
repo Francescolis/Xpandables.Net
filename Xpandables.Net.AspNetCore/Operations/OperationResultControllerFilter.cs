@@ -35,6 +35,8 @@ internal sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFil
 {
     private static async Task OnFailureExecutionAsync(ResultExecutingContext context, IOperationResult operation)
     {
+        await Task.CompletedTask.ConfigureAwait(false);
+
         var controller = BuildExceptionController(context);
 
         var statusCode = operation.StatusCode;
@@ -46,14 +48,10 @@ internal sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFil
             (int)statusCode,
             statusCode.GetProblemTitle(),
             modelStateDictionary: operation.Errors.Any() ? modelStateDictionary : null);
-
-        await context.HttpContext.AddHeaderIfUnauthorized(operation).ConfigureAwait(false);
     }
 
     private static async Task OnSuccessExecutionAsync(ResultExecutingContext context, IOperationResult operation)
     {
-        context.HttpContext.AddLocationUrlIfAvailable(operation);
-
         await context.HttpContext.WriteBodyIfAvailableAsync(operation).ConfigureAwait(false);
 
         if (operation is IOperationResult<BinaryEntry> fileResult)
@@ -74,6 +72,8 @@ internal sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFil
         if (context.Result is ObjectResult objectResult && objectResult.Value is IOperationResult operationResult)
         {
             context.HttpContext.AddLocationUrlIfAvailable(operationResult);
+            context.HttpContext.AddHeadersIfAvailable(operationResult);
+            await context.HttpContext.AddHeaderIfUnauthorized(operationResult).ConfigureAwait(false);
 
             if (operationResult.IsFailure)
             {

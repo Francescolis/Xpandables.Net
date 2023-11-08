@@ -37,33 +37,33 @@ public sealed class OperationResultMinimal(IOperationResult operationResult) : I
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
-        httpContext.Response.StatusCode = (int)operationResult.StatusCode;
+        httpContext.Response.StatusCode = (int)_operationResult.StatusCode;
 
         httpContext.AddLocationUrlIfAvailable(_operationResult);
         httpContext.AddHeadersIfAvailable(_operationResult);
         await httpContext.AddHeaderIfUnauthorized(_operationResult).ConfigureAwait(false);
 
-        if (operationResult.StatusCode == System.Net.HttpStatusCode.Created)
+        if (_operationResult.StatusCode == System.Net.HttpStatusCode.Created)
         {
-            await httpContext.ResultCreatedAsync(operationResult).ConfigureAwait(false);
+            await httpContext.ResultCreatedAsync(_operationResult).ConfigureAwait(false);
             return;
         }
 
-        if (operationResult.Result.IsNotEmpty && operationResult.Result.Value is BinaryEntry { Content: not null } file)
+        if (_operationResult.Result.IsNotEmpty && _operationResult.Result.Value is BinaryEntry { Content: not null } file)
         {
             await httpContext.WriteFileBodyAsync(file).ConfigureAwait(false);
             return;
         }
 
-        if (IOperationResult.IsSuccessStatusCode(operationResult.StatusCode))
+        if (IOperationResult.IsSuccessStatusCode(_operationResult.StatusCode))
         {
-            await httpContext.WriteBodyIfAvailableAsync(operationResult).ConfigureAwait(false);
+            await httpContext.WriteBodyIfAvailableAsync(_operationResult).ConfigureAwait(false);
             return;
         }
 
-        if (IOperationResult.IsFailureStatusCode(operationResult.StatusCode))
+        if (IOperationResult.IsFailureStatusCode(_operationResult.StatusCode))
         {
-            var result = operationResult.GetValidationProblemDetails(httpContext);
+            var result = _operationResult.GetValidationProblemDetails(httpContext);
 
             await result.ExecuteAsync(httpContext).ConfigureAwait(false);
         }
