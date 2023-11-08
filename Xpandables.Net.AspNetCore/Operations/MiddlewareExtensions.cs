@@ -129,31 +129,6 @@ internal static class MiddlewareExtensions
         }
     }
 
-    internal static async Task AddOperationResultContext(HttpContext context)
-    {
-        await Task.Yield();
-
-        if (context.RequestServices.GetService<IOperationResultContext>() is { } resultContext && !context.Response.HasStarted)
-        {
-            if (resultContext.OnSuccess.IsNotEmpty
-                && IOperationResult.IsSuccessStatusCode((HttpStatusCode)context.Response.StatusCode))
-                await ApplyOperationResult(resultContext.OnSuccess.Value).ConfigureAwait(false);
-
-            if (resultContext.OnFailure.IsNotEmpty
-                && IOperationResult.IsFailureStatusCode((HttpStatusCode)context.Response.StatusCode))
-                await ApplyOperationResult(resultContext.OnFailure.Value).ConfigureAwait(false);
-        }
-
-        async Task ApplyOperationResult(IOperationResult result)
-        {
-            context.AddHeadersIfAvailable(result);
-
-            context.AddLocationUrlIfAvailable(result);
-
-            await context.AddHeaderIfUnauthorized(result).ConfigureAwait(false);
-        }
-    }
-
     internal static ActionResult GetControllerValidationProblemDetails(
         OperationResultController controller,
         HttpContext context,

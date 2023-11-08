@@ -59,7 +59,7 @@ public sealed record class HandlerOptions
 
     /// <summary>
     /// Enables operation result context behavior to commands/queries 
-    /// that are decorated with the <see cref="IOperationResultDecorator"/> interface.
+    /// that are decorated with the <see cref="IOperationResultContextDecorator"/> interface.
     /// </summary>
     public HandlerOptions UseOperationResultContext()
     {

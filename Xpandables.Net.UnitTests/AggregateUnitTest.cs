@@ -172,14 +172,14 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore<DomainEventRe
     }
 }
 public readonly record struct CreatePersonRequestCommand(Guid Id, string FirstName, string LastName)
-    : ICommand, IPersistenceDecorator, IOperationResultDecorator;
+    : ICommand, IPersistenceDecorator, IOperationResultContextDecorator;
 public sealed class CreatePersonRequestCommandHandler(
     IAggregateStore<Person, PersonId> aggregateStore,
-    IOperationResultContext resultContext) : ICommandHandler<CreatePersonRequestCommand>
+    IOperationResultContextFinalizer resultContext) : ICommandHandler<CreatePersonRequestCommand>
 {
     private readonly IAggregateStore<Person, PersonId> _aggregateStore = aggregateStore
         ?? throw new ArgumentNullException(nameof(aggregateStore));
-    private readonly IOperationResultContext _resultContext = resultContext
+    private readonly IOperationResultContextFinalizer _resultContext = resultContext
         ?? throw new ArgumentNullException(nameof(resultContext));
 
     public async ValueTask<OperationResult> HandleAsync(
@@ -196,10 +196,14 @@ public sealed class CreatePersonRequestCommandHandler(
 
         Person person = Person.Create(personId, command.FirstName, command.LastName);
 
-        _resultContext.OnSuccess = OperationResults
-            .Ok()
-            .WithHeader(nameof(PersonId), personId)
-            .Build();
+        _resultContext.Finalizer = op => op.IsSuccess switch
+            {
+                true => OperationResults
+                 .Ok()
+                 .WithHeader(nameof(PersonId), personId)
+                 .Build(),
+                _ => op
+            };
 
         await _aggregateStore.AppendAsync(person, cancellationToken).ConfigureAwait(false);
         return OperationResults.Ok().Build();

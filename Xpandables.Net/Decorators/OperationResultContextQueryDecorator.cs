@@ -18,14 +18,14 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Messaging;
 
 namespace Xpandables.Net.Decorators;
-internal sealed class OperationResultQueryDecorator<TQuery, TResult>(
-    IQueryHandler<TQuery, TResult> decoratee, IOperationResultContext operationResultContext)
+internal sealed class OperationResultContextQueryDecorator<TQuery, TResult>(
+    IQueryHandler<TQuery, TResult> decoratee, IOperationResultContextFinalizer operationResultContext)
     : IQueryHandler<TQuery, TResult>
-    where TQuery : notnull, IQuery<TResult>, IOperationResultDecorator
+    where TQuery : notnull, IQuery<TResult>, IOperationResultContextDecorator
 {
     private readonly IQueryHandler<TQuery, TResult> _decoratee = decoratee
         ?? throw new ArgumentNullException(nameof(decoratee));
-    private readonly IOperationResultContext _operationResultContext
+    private readonly IOperationResultContextFinalizer _operationResultContext
         = operationResultContext ?? throw new ArgumentNullException(nameof(operationResultContext));
 
     public async ValueTask<OperationResult<TResult>> HandleAsync(
@@ -36,18 +36,20 @@ internal sealed class OperationResultQueryDecorator<TQuery, TResult>(
             .HandleAsync(query, cancellationToken)
             .ConfigureAwait(false);
 
-        if (result.IsSuccess && _operationResultContext.OnSuccess.IsNotEmpty)
-            return _operationResultContext
-                .OnSuccess
-                .Value
-                .ToOperationResult<TResult>();
+        try
+        {
+            if (_operationResultContext.Finalizer is not null)
+                result = _operationResultContext.Finalizer.Invoke(result).ToOperationResult<TResult>();
 
-        if (result.IsFailure && _operationResultContext.OnFailure.IsNotEmpty)
-            return _operationResultContext
-                .OnFailure
-                .Value
-                .ToOperationResult<TResult>();
-
-        return result;
+            return result;
+        }
+        catch (Exception exception) when (exception is not ArgumentNullException)
+        {
+            return OperationResults
+                .InternalError<TResult>()
+                .WithTitle(nameof(OperationResultContextQueryDecorator<TQuery, TResult>))
+                .WithError(nameof(OperationResultContextQueryDecorator<TQuery, TResult>), exception)
+                .Build();
+        }
     }
 }

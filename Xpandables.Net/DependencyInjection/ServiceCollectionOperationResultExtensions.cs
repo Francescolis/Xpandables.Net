@@ -25,7 +25,7 @@ namespace Xpandables.Net.DependencyInjection;
 public static partial class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds the implementation of <see cref="IOperationResultContext"/> to 
+    /// Adds the implementation of <see cref="IOperationResultContextFinalizer"/> to 
     /// the services with scoped life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -35,13 +35,13 @@ public static partial class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddScoped<IOperationResultContext, OperationResultContext>();
+        services.TryAddScoped<IOperationResultContextFinalizer, OperationResultContextFinalizerInternal>();
         return services;
     }
 
     /// <summary>
     /// Adds operation result correlation behavior to commands and queries 
-    /// that are decorated with the <see cref="IOperationResultDecorator"/> to the services.
+    /// that are decorated with the <see cref="IOperationResultContextDecorator"/> to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
@@ -50,9 +50,9 @@ public static partial class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.XTryDecorate(typeof(ICommandHandler<>), typeof(OperationResultCommandDecorator<>));
-        services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(OperationResultAsyncQueryDecorator<,>));
-        services.XTryDecorate(typeof(IQueryHandler<,>), typeof(OperationResultQueryDecorator<,>));
+        services.XTryDecorate(typeof(ICommandHandler<>), typeof(OperationResultContextCommandDecorator<>));
+        services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(OperationResultContextAsyncQueryDecorator<,>));
+        services.XTryDecorate(typeof(IQueryHandler<,>), typeof(OperationResultContextQueryDecorator<,>));
 
         return services;
     }

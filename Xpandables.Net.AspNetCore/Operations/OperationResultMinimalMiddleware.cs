@@ -43,8 +43,6 @@ public sealed class OperationResultMinimalMiddleware : IMiddleware
 
         try
         {
-            context.Response.OnStarting(() => AddOperationResultContext(context));
-
             await next(context).ConfigureAwait(false);
         }
         catch (Exception exception) when (!context.Response.HasStarted && _bypassResponseHasStarted)

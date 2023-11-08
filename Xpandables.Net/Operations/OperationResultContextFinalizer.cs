@@ -14,11 +14,8 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.Optionals;
-
 namespace Xpandables.Net.Operations;
-internal sealed class OperationResultContext : IOperationResultContext
+internal sealed class OperationResultContextFinalizerInternal : IOperationResultContextFinalizer
 {
-    public Optional<OperationResult> OnSuccess { get; set; } = Optional.Empty<OperationResult>();
-    public Optional<OperationResult> OnFailure { get; set; } = Optional.Empty<OperationResult>();
+    public OperationResultContextFinalizer? Finalizer { get; set; }
 }

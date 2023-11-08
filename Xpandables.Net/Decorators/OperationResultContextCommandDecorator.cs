@@ -18,14 +18,14 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Messaging;
 
 namespace Xpandables.Net.Decorators;
-internal sealed class OperationResultCommandDecorator<TCommand>(
-    ICommandHandler<TCommand> decoratee, IOperationResultContext operationResultContext)
+internal sealed class OperationResultContextCommandDecorator<TCommand>(
+    ICommandHandler<TCommand> decoratee, IOperationResultContextFinalizer operationResultContext)
     : ICommandHandler<TCommand>
-    where TCommand : notnull, ICommand, IOperationResultDecorator
+    where TCommand : notnull, ICommand, IOperationResultContextDecorator
 {
     private readonly ICommandHandler<TCommand> _decoratee = decoratee
         ?? throw new ArgumentNullException(nameof(decoratee));
-    private readonly IOperationResultContext _operationResultContext = operationResultContext
+    private readonly IOperationResultContextFinalizer _operationResultContext = operationResultContext
         ?? throw new ArgumentNullException(nameof(operationResultContext));
 
     public async ValueTask<OperationResult> HandleAsync(
@@ -36,16 +36,20 @@ internal sealed class OperationResultCommandDecorator<TCommand>(
             .HandleAsync(command, cancellationToken)
             .ConfigureAwait(false);
 
-        if (result.IsSuccess && _operationResultContext.OnSuccess.IsNotEmpty)
-            return _operationResultContext
-                .OnSuccess
-                .Value;
+        try
+        {
+            if (_operationResultContext.Finalizer is not null)
+                result = _operationResultContext.Finalizer.Invoke(result);
 
-        if (result.IsFailure && _operationResultContext.OnFailure.IsNotEmpty)
-            return _operationResultContext
-                .OnFailure
-                .Value;
-
-        return result;
+            return result;
+        }
+        catch (Exception exception) when (exception is not ArgumentNullException)
+        {
+            return OperationResults
+                .InternalError()
+                .WithTitle(nameof(OperationResultContextCommandDecorator<TCommand>))
+                .WithError(nameof(OperationResultContextCommandDecorator<TCommand>), exception)
+                .Build();
+        }
     }
 }

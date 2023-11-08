@@ -20,14 +20,14 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Messaging;
 
 namespace Xpandables.Net.Decorators;
-internal sealed class OperationResultAsyncQueryDecorator<TQuery, TResult>(
-    IAsyncQueryHandler<TQuery, TResult> decoratee, IOperationResultContext operationResultContext)
+internal sealed class OperationResultContextAsyncQueryDecorator<TQuery, TResult>(
+    IAsyncQueryHandler<TQuery, TResult> decoratee, IOperationResultContextFinalizer operationResultContext)
     : IAsyncQueryHandler<TQuery, TResult>
-    where TQuery : notnull, IAsyncQuery<TResult>, IOperationResultDecorator
+    where TQuery : notnull, IAsyncQuery<TResult>, IOperationResultContextDecorator
 {
     private readonly IAsyncQueryHandler<TQuery, TResult> _decoratee = decoratee
         ?? throw new ArgumentNullException(nameof(decoratee));
-    private readonly IOperationResultContext _operationResultContext =
+    private readonly IOperationResultContextFinalizer _operationResultContext =
         operationResultContext ?? throw new ArgumentNullException(nameof(operationResultContext));
 
     public async IAsyncEnumerable<TResult> HandleAsync(
@@ -46,11 +46,14 @@ internal sealed class OperationResultAsyncQueryDecorator<TQuery, TResult>(
             {
                 resultExist = await asyncEnumerator.MoveNextAsync().ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                if (_operationResultContext.OnFailure.IsNotEmpty)
+                if (_operationResultContext.Finalizer is not null)
                 {
-                    throw new OperationResultException(_operationResultContext.OnFailure.Value);
+                    if (_operationResultContext.Finalizer(exception.ToOperationResult()) is { IsFailure: true } failure)
+                    {
+                        throw new OperationResultException(failure);
+                    }
                 }
                 else
                 {
