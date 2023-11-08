@@ -19,7 +19,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Aggregates.Defaults;
-using Xpandables.Net.Converters;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Configurations;
@@ -41,7 +40,7 @@ public sealed class DomainEventRecordTypeConfiguration : IEntityTypeConfiguratio
         builder.Property(p => p.Id);
         builder.Property(p => p.AggregateIdName);
         builder.Property(p => p.AggregateId);
-        builder.Property(p => p.Data).HasJsonDocumentConversion();
+        builder.Property(p => p.Data);
         builder.Property(p => p.TypeFullName);
         builder.Property(p => p.TypeName);
         builder.Property(p => p.Version);

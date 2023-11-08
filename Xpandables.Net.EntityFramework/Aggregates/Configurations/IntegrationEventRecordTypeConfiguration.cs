@@ -19,7 +19,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Aggregates.Defaults;
-using Xpandables.Net.Converters;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Configurations;
@@ -38,7 +37,7 @@ public sealed class IntegrationEventRecordTypeConfiguration : IEntityTypeConfigu
         builder.HasKey(p => p.Id);
         builder.HasIndex(p => p.Id).IsUnique();
 
-        builder.Property(p => p.Data).HasJsonDocumentConversion();
+        builder.Property(p => p.Data);
         builder.Property(p => p.TypeFullName);
 
         builder.HasQueryFilter(f => f.Status != EntityStatus.INACTIVE);

@@ -19,7 +19,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Aggregates.Defaults;
-using Xpandables.Net.Converters;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Configurations;
@@ -40,7 +39,8 @@ public sealed class SnapShotRecordTypeConfiguration : IEntityTypeConfiguration<S
 
         builder.Property(p => p.ObjectId);
         builder.Property(p => p.ObjectTypeName);
-        builder.Property(p => p.Data).HasJsonDocumentConversion();
+        builder.Property(p => p.MementoTypeName);
+        builder.Property(p => p.Data);
         builder.Property(p => p.Version);
 
         builder.HasQueryFilter(f => f.Status != EntityStatus.INACTIVE);
