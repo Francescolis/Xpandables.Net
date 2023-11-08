@@ -22,7 +22,7 @@ namespace Xpandables.Net.I18n {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class I18nXpandables {
+    public class I18nXpandables {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace Xpandables.Net.I18n {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Xpandables.Net.I18n.I18nXpandables", typeof(I18nXpandables).Assembly);
@@ -51,7 +51,7 @@ namespace Xpandables.Net.I18n {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to L&apos;action &apos;{0}&apos; a échoué. Voir les détails dans l&apos;exception..
         /// </summary>
-        internal static string ActionSpecifiedFailedSeeException {
+        public static string ActionSpecifiedFailedSeeException {
             get {
                 return ResourceManager.GetString("ActionSpecifiedFailedSeeException", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Echec de l&apos;ajout de l&apos;aggrégat..
         /// </summary>
-        internal static string AggregateFailedToAppend {
+        public static string AggregateFailedToAppend {
             get {
                 return ResourceManager.GetString("AggregateFailedToAppend", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Echec à la création de l&apos;aggrégat de type &apos;{0}&apos;..
         /// </summary>
-        internal static string AggregateFailedToCreateInstance {
+        public static string AggregateFailedToCreateInstance {
             get {
                 return ResourceManager.GetString("AggregateFailedToCreateInstance", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Echec d lecture de l&apos;aggrégat..
         /// </summary>
-        internal static string AggregateFailedToRead {
+        public static string AggregateFailedToRead {
             get {
                 return ResourceManager.GetString("AggregateFailedToRead", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to {0} ne peut pas être vide.
         /// </summary>
-        internal static string CanNotBeNull {
+        public static string CanNotBeNull {
             get {
                 return ResourceManager.GetString("CanNotBeNull", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to L&apos;évènement avec la même clé {0} existe déjà dans la collection..
         /// </summary>
-        internal static string EventSourcingDomainEventAlreadyExist {
+        public static string EventSourcingDomainEventAlreadyExist {
             get {
                 return ResourceManager.GetString("EventSourcingDomainEventAlreadyExist", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to La notification {0} existe déjà dans la collection..
         /// </summary>
-        internal static string EventSourcingNotificationAlreadyExists {
+        public static string EventSourcingNotificationAlreadyExists {
             get {
                 return ResourceManager.GetString("EventSourcingNotificationAlreadyExists", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Conflit Trouvé.
         /// </summary>
-        internal static string HttpStatusCodeConflict {
+        public static string HttpStatusCodeConflict {
             get {
                 return ResourceManager.GetString("HttpStatusCodeConflict", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Exécution Refusée.
         /// </summary>
-        internal static string HttpStatusCodeForbidden {
+        public static string HttpStatusCodeForbidden {
             get {
                 return ResourceManager.GetString("HttpStatusCodeForbidden", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Erreur Interne.
         /// </summary>
-        internal static string HttpStatusCodeInternalServerError {
+        public static string HttpStatusCodeInternalServerError {
             get {
                 return ResourceManager.GetString("HttpStatusCodeInternalServerError", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Resource Indisponible.
         /// </summary>
-        internal static string HttpStatusCodeLocked {
+        public static string HttpStatusCodeLocked {
             get {
                 return ResourceManager.GetString("HttpStatusCodeLocked", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Enregistrement Non Trouvé.
         /// </summary>
-        internal static string HttpStatusCodeNotFound {
+        public static string HttpStatusCodeNotFound {
             get {
                 return ResourceManager.GetString("HttpStatusCodeNotFound", resourceCulture);
             }
@@ -171,7 +171,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Consulter l&apos;erreur ou contacter l&apos;administrateur pour plus de détails.
         /// </summary>
-        internal static string HttpStatusCodeProblemDetailInternalError {
+        public static string HttpStatusCodeProblemDetailInternalError {
             get {
                 return ResourceManager.GetString("HttpStatusCodeProblemDetailInternalError", resourceCulture);
             }
@@ -180,7 +180,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Consulter les erreurs pour plus de détails.
         /// </summary>
-        internal static string HttpStatusCodeProblemDetailPropertyError {
+        public static string HttpStatusCodeProblemDetailPropertyError {
             get {
                 return ResourceManager.GetString("HttpStatusCodeProblemDetailPropertyError", resourceCulture);
             }
@@ -189,7 +189,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Erreur de Validation.
         /// </summary>
-        internal static string HttpStatusCodeRequestValidation {
+        public static string HttpStatusCodeRequestValidation {
             get {
                 return ResourceManager.GetString("HttpStatusCodeRequestValidation", resourceCulture);
             }
@@ -198,7 +198,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Accès Non Autorisé.
         /// </summary>
-        internal static string HttpStatusCodeUnauthorized {
+        public static string HttpStatusCodeUnauthorized {
             get {
                 return ResourceManager.GetString("HttpStatusCodeUnauthorized", resourceCulture);
             }
@@ -207,7 +207,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de convertir un model valide en opération d&apos;erreur.
         /// </summary>
-        internal static string OperationResultCanNotConvertModelState {
+        public static string OperationResultCanNotConvertModelState {
             get {
                 return ResourceManager.GetString("OperationResultCanNotConvertModelState", resourceCulture);
             }
@@ -216,7 +216,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Echec de l&apos;ajout de la notification..
         /// </summary>
-        internal static string OutboxFailedToAppendNotification {
+        public static string OutboxFailedToAppendNotification {
             get {
                 return ResourceManager.GetString("OutboxFailedToAppendNotification", resourceCulture);
             }
@@ -225,7 +225,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Accès impossible au chemin de l&apos;assembly..
         /// </summary>
-        internal static string PathAssemblyUnavailable {
+        public static string PathAssemblyUnavailable {
             get {
                 return ResourceManager.GetString("PathAssemblyUnavailable", resourceCulture);
             }
@@ -234,7 +234,7 @@ namespace Xpandables.Net.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Le type {0} doit implémenter {1}..
         /// </summary>
-        internal static string TypeMustImplement {
+        public static string TypeMustImplement {
             get {
                 return ResourceManager.GetString("TypeMustImplement", resourceCulture);
             }

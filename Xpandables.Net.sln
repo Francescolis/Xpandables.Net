@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0D6A6CBF-BCC3-4744-9A29-8CF6FDEF7863}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Resources.Designer.t4 = Resources.Designer.t4
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.UnitTests", "Xpandables.Net.UnitTests\Xpandables.Net.UnitTests.csproj", "{890A33B7-CD84-4656-935F-92812FB68CF3}"
@@ -61,7 +62,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_NeutralResourcesLanguage = fr-FR
 		SolutionGuid = {ED5B36FA-0F71-47A7-BE1E-A0FFC836A6B1}
+		RESX_NeutralResourcesLanguage = fr-FR
 	EndGlobalSection
 EndGlobal
