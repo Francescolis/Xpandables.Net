@@ -29,12 +29,19 @@ namespace Xpandables.Net.Operations;
 /// <exception cref="ArgumentNullException">The <paramref name="operationResult"/> is null.</exception>
 public sealed class OperationResultMinimal(IOperationResult operationResult) : IResult
 {
+    private readonly IOperationResult _operationResult = operationResult
+        ?? throw new ArgumentNullException(nameof(operationResult));
+
     ///<inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
         httpContext.Response.StatusCode = (int)operationResult.StatusCode;
+
+        httpContext.AddLocationUrlIfAvailable(_operationResult);
+        httpContext.AddHeadersIfAvailable(_operationResult);
+        await httpContext.AddHeaderIfUnauthorized(_operationResult).ConfigureAwait(false);
 
         if (operationResult.StatusCode == System.Net.HttpStatusCode.Created)
         {
