@@ -14,6 +14,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using Xpandables.Net.Extensions;
+using Xpandables.Net.I18n;
+
 namespace Xpandables.Net.Aggregates.IntegrationEvents;
 
 internal sealed class IntegrationEventSourcing : IIntegrationEventSourcing
@@ -25,7 +28,8 @@ internal sealed class IntegrationEventSourcing : IIntegrationEventSourcing
 
         if (_events.Exists(e => e.Id == @event.Id) == true)
             throw new InvalidOperationException(
-                $"The integration event {@event.Id} already exist in the collection");
+                I18nXpandables.EventSourcingNotificationAlreadyExists
+                .StringFormat(@event.Id));
 
         _events.Add(@event);
     }

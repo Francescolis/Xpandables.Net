@@ -16,6 +16,7 @@
  *
 ************************************************************************************************************/
 using Xpandables.Net.Collections;
+using Xpandables.Net.I18n;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aggregates.IntegrationEvents;
@@ -53,7 +54,7 @@ internal sealed class IntegrationEventOutbox(
         {
             return OperationResults
                 .InternalError()
-                .WithDetail("Append notification Outbox failed.")
+                .WithDetail(I18nXpandables.OutboxFailedToAppendNotification)
                 .WithError(nameof(IIntegrationEventOutbox), exception)
                 .Build();
         }
@@ -75,7 +76,7 @@ internal sealed class IntegrationEventOutbox(
         {
             return OperationResults
                 .InternalError()
-                .WithDetail("Append notification Outbox failed.")
+                .WithDetail(I18nXpandables.OutboxFailedToAppendNotification)
                 .WithError(nameof(IIntegrationEventOutbox), exception)
                 .Build();
         }

@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using Xpandables.Net.Extensions;
+using Xpandables.Net.I18n;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Messaging;
 using Xpandables.Net.Repositories;
@@ -81,8 +83,9 @@ public sealed class TransactionCommandDecorator<TCommand>(
         {
             return OperationResults
                 .InternalError()
-                .WithDetail(exception.Message)
-                .WithError("Transaction command failed !", exception)
+                .WithDetail(I18nXpandables.ActionSpecifiedFailedSeeException
+                    .StringFormat(nameof(TransactionCommandDecorator<TCommand>)))
+                .WithError(nameof(TransactionCommandDecorator<TCommand>), exception)
                 .Build();
         }
     }

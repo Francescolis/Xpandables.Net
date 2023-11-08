@@ -12,9 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.UnitTests", "Xpandables.Net.UnitTests\Xpandables.Net.UnitTests.csproj", "{890A33B7-CD84-4656-935F-92812FB68CF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.AspNetCore", "Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj", "{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.AspNetCore", "Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj", "{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.EntityFramework", "Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj", "{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.EntityFramework", "Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj", "{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +61,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		RESX_NeutralResourcesLanguage = fr-FR
 		SolutionGuid = {ED5B36FA-0F71-47A7-BE1E-A0FFC836A6B1}
 	EndGlobalSection
 EndGlobal

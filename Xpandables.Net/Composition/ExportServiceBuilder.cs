@@ -20,6 +20,9 @@ using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.Reflection;
 
+using Xpandables.Net.Extensions;
+using Xpandables.Net.I18n;
+
 namespace Xpandables.Net.Composition;
 
 /// <summary>
@@ -74,7 +77,9 @@ public sealed class ExportServiceBuilder
                                         || exception is PathTooLongException
                                         || exception is ReflectionTypeLoadException)
         {
-            throw new InvalidOperationException("Building exports failed. See inner exception.", exception);
+            throw new InvalidOperationException(
+                I18nXpandables.ActionSpecifiedFailedSeeException.StringFormat(nameof(ExportServiceBuilder)),
+                exception);
         }
     }
 }

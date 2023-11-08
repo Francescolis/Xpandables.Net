@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using Xpandables.Net.Extensions;
+using Xpandables.Net.I18n;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Messaging;
 using Xpandables.Net.Repositories;
@@ -82,7 +84,8 @@ public sealed class PersistenceCommandDecorator<TCommand>(
         {
             return OperationResults
                 .InternalError()
-                .WithDetail("Persistence command failed.")
+                .WithDetail(I18nXpandables.ActionSpecifiedFailedSeeException
+                    .StringFormat(nameof(PersistenceCommandDecorator<TCommand>)))
                 .WithError(nameof(PersistenceCommandDecorator<TCommand>), exception)
                 .Build();
         }

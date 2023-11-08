@@ -17,6 +17,9 @@
 ************************************************************************************************************/
 using System.Diagnostics;
 
+using Xpandables.Net.Extensions;
+using Xpandables.Net.I18n;
+
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
@@ -41,7 +44,7 @@ public static class AggregateExtensions
         {
             if (Activator.CreateInstance(typeof(TAggregate), true) is not TAggregate aggregate)
                 throw new InvalidOperationException(
-                    $"{typeof(TAggregate).Name} Unable to create a new instance of aggregate.",
+                    I18nXpandables.AggregateFailedToCreateInstance.StringFormat(typeof(TAggregate).Name),
                     new ArgumentNullException(typeof(TAggregate).Name, "Null value."));
 
             return aggregate;
@@ -49,7 +52,8 @@ public static class AggregateExtensions
         catch (Exception exception)
         {
             throw new InvalidOperationException(
-                $"{typeof(TAggregate).Name} Unable to create a new instance of aggregate.", exception);
+                I18nXpandables.AggregateFailedToCreateInstance.StringFormat(typeof(TAggregate).Name),
+                exception);
         }
     }
 }

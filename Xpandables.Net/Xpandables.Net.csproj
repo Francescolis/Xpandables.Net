@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
+		<NeutralLanguage>fr-FR</NeutralLanguage>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>C:\Users\fewan\DevOps\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
@@ -63,11 +64,26 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0-rc.2.23479.6" />
-	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23479.6" />
-	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-rc.2.23479.6" />
-	  <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-rc.2.23479.6" />
-	  <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0-rc.2.23479.6" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0-rc.2.23479.6" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.2.23479.6" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-rc.2.23479.6" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-rc.2.23479.6" />
+		<PackageReference Include="System.ComponentModel.Composition" Version="8.0.0-rc.2.23479.6" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="I18n\I18nXpandables.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>I18nXpandables.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="I18n\I18nXpandables.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>I18nXpandables.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
 	</ItemGroup>
 
 </Project>

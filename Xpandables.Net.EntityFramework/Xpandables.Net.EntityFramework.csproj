@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
+		<NeutralLanguage>fr-FR</NeutralLanguage>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>C:\Users\fewan\DevOps\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
@@ -47,11 +48,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Xpandables.Net.ico" />
+		<None Remove="Xpandables.Net.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="Xpandables.Net.ico" />
+		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -67,12 +68,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-rc.2.23480.1" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0-rc.2.23480.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-rc.2.23480.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0-rc.2.23480.1" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
+		<ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
 	</ItemGroup>
 
 </Project>

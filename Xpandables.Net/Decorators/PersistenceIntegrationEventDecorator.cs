@@ -15,6 +15,8 @@
  *
 ************************************************************************************************************/
 using Xpandables.Net.Aggregates.IntegrationEvents;
+using Xpandables.Net.Extensions;
+using Xpandables.Net.I18n;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Repositories;
 
@@ -80,7 +82,8 @@ public sealed class PersistenceIntegrationEventDecorator<TIntegrationEvent>(
         {
             return OperationResults
                 .InternalError()
-                .WithDetail("Persistence integration event decorator failed.")
+                .WithDetail(I18nXpandables.ActionSpecifiedFailedSeeException
+                    .StringFormat(nameof(PersistenceIntegrationEventDecorator<TIntegrationEvent>)))
                 .WithError(nameof(PersistenceIntegrationEventDecorator<TIntegrationEvent>), exception)
                 .Build();
         }

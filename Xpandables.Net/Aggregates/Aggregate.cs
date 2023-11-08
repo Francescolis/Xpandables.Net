@@ -20,6 +20,7 @@ using System.Collections.Immutable;
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Collections;
 using Xpandables.Net.Extensions;
+using Xpandables.Net.I18n;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -144,11 +145,15 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
 
         if (!eventType.GetInterfaces().Exists(i => i.IsGenericType && i == typeof(IDomainEvent<TAggregateId>)))
             throw new ArgumentException(
-                $"The '{eventType.GetNameWithoutGenericArity()}' must implement 'IDomainEvent<>' interface.");
+                I18nXpandables.TypeMustImplement
+                .StringFormat(
+                    eventType.GetNameWithoutGenericArity(),
+                    typeof(IDomainEvent<>).GetNameWithoutGenericArity()));
 
         if (!_eventHandlers.TryAdd(eventType, eventHandler))
-            throw new ArgumentException($"An element with the same key '{eventType.GetNameWithoutGenericArity()}' " +
-                                        $"already exists in the collection");
+            throw new ArgumentException(
+                I18nXpandables.EventSourcingDomainEventAlreadyExist
+                    .StringFormat(eventType.GetNameWithoutGenericArity()));
     }
 
     /// <summary>

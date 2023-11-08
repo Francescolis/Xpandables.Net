@@ -17,6 +17,8 @@
 ************************************************************************************************************/
 using System.Reflection;
 
+using Xpandables.Net.I18n;
+
 namespace Xpandables.Net.Composition;
 
 /// <summary>
@@ -53,6 +55,6 @@ public sealed record class ExportServiceOptions
             if (System.IO.Path.GetDirectoryName(assembly.Location) is string directoryName)
                 return directoryName;
 
-        throw new InvalidOperationException("Unable to access the path of the current assembly.");
+        throw new InvalidOperationException(I18nXpandables.PathAssemblyUnavailable);
     }
 }

@@ -16,6 +16,7 @@
 ************************************************************************************************************/
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.IntegrationEvents;
+using Xpandables.Net.I18n;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Messaging;
 
@@ -82,7 +83,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
         {
             return OperationResults
                 .InternalError()
-                .WithDetail("Failed to append Aggregate")
+                .WithDetail(I18nXpandables.AggregateFailedToAppend)
                 .WithError(nameof(Aggregate<TAggregateId>), exception)
                 .Build();
         }
@@ -112,7 +113,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
         {
             return OperationResults
                 .InternalError<TAggregate>()
-                .WithDetail("Failed to read Aggregate")
+                .WithDetail(I18nXpandables.AggregateFailedToRead)
                 .WithError(nameof(Aggregate<TAggregateId>), exception)
                 .Build();
         }

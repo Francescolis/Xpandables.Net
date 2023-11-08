@@ -28,6 +28,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.Extensions;
+using Xpandables.Net.I18n;
 
 namespace Xpandables.Net.Operations;
 internal static class MiddlewareExtensions
@@ -237,20 +239,20 @@ internal static class MiddlewareExtensions
     internal static string GetProblemDetail(this HttpStatusCode statusCode)
          => statusCode switch
          {
-             HttpStatusCode.InternalServerError or HttpStatusCode.Unauthorized => "Please refer to the errors/or contact administrator for additional details",
-             _ => "Please refer to the errors property for additional details"
+             HttpStatusCode.InternalServerError or HttpStatusCode.Unauthorized => I18nXpandables.HttpStatusCodeProblemDetailInternalError,
+             _ => I18nXpandables.HttpStatusCodeProblemDetailPropertyError
          };
 
     internal static string GetProblemTitle(this HttpStatusCode statusCode)
          => statusCode switch
          {
-             HttpStatusCode.NotFound => "Request Not Found",
-             HttpStatusCode.Locked => "Request Locked",
-             HttpStatusCode.Conflict => "Request Conflict",
-             HttpStatusCode.Unauthorized => "Unauthorized Access",
-             HttpStatusCode.Forbidden => "Forbidden Access",
-             HttpStatusCode.InternalServerError => "Internal Error",
-             _ => "Request Validation Errors"
+             HttpStatusCode.NotFound => I18nXpandables.HttpStatusCodeNotFound,
+             HttpStatusCode.Locked => I18nXpandables.HttpStatusCodeLocked,
+             HttpStatusCode.Conflict => I18nXpandables.HttpStatusCodeConflict,
+             HttpStatusCode.Unauthorized => I18nXpandables.HttpStatusCodeUnauthorized,
+             HttpStatusCode.Forbidden => I18nXpandables.HttpStatusCodeForbidden,
+             HttpStatusCode.InternalServerError => I18nXpandables.HttpStatusCodeInternalServerError,
+             _ => I18nXpandables.HttpStatusCodeRequestValidation
          };
 
     internal static async Task<string?> GetAuthenticateSchemeAsync(this HttpContext context)
@@ -314,7 +316,8 @@ internal static class MiddlewareExtensions
     internal static async Task ResultCreatedAsync(this HttpContext context, IOperationResult operation)
     {
         if (operation.LocationUrl.IsEmpty)
-            throw new InvalidOperationException($"IOperationResult.LocationUrl can not be null");
+            throw new InvalidOperationException(I18nXpandables.CanNotBeNull
+                .StringFormat("IOperationResult.LocationUrl"));
 
         var result = operation.Result.IsNotEmpty switch
         {
@@ -330,7 +333,8 @@ internal static class MiddlewareExtensions
         HttpStatusCode statusCode = HttpStatusCode.BadRequest)
     {
         _ = modelState ?? throw new ArgumentNullException(nameof(modelState));
-        if (modelState.IsValid) throw new ArgumentException("Unable to retrieve a failed operation from a valid model state");
+        if (modelState.IsValid) throw new ArgumentException(
+            I18nXpandables.OperationResultCanNotConvertModelState);
 
         return OperationResults.Failure(statusCode)
             .WithErrors(ElementCollection.With(
