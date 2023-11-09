@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using Microsoft.Extensions.Options;
+
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.Snapshots;
@@ -25,7 +27,7 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
     IAggregateStore<TAggregate, TAggregateId> decoratee,
     IDomainEventStore<DomainEventRecord> eventStore,
     ISnapshotStore snapShotStore,
-    SnapShotOptions snapShotOptions) : IAggregateStore<TAggregate, TAggregateId>
+    IOptions<SnapShotOptions> snapShotOptions) : IAggregateStore<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>, IOriginator
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
@@ -35,7 +37,7 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
         ?? throw new ArgumentNullException(nameof(eventStore));
     private readonly ISnapshotStore _snapShotStore = snapShotStore
         ?? throw new ArgumentNullException(nameof(snapShotStore));
-    private readonly SnapShotOptions _snapShotOptions = snapShotOptions
+    private readonly SnapShotOptions _snapShotOptions = snapShotOptions.Value
         ?? throw new ArgumentNullException(nameof(snapShotOptions));
 
     public async ValueTask<OperationResult> AppendAsync(

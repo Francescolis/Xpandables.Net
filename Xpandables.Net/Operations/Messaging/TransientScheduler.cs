@@ -17,6 +17,7 @@
 ************************************************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.IntegrationEvents;
@@ -28,14 +29,14 @@ namespace Xpandables.Net.Operations.Messaging;
 
 internal sealed class TransientScheduler(
     IServiceScopeFactory scopeFactory,
-    SchedulerOptions options,
+    IOptions<SchedulerOptions> options,
     ILogger<TransientScheduler> logger)
     : BackgroundServiceBase<TransientScheduler>, ITransientScheduler
 {
     private int _attempts;
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory
         ?? throw new ArgumentNullException(nameof(scopeFactory));
-    private readonly SchedulerOptions _options = options
+    private readonly SchedulerOptions _options = options.Value
         ?? throw new ArgumentNullException(nameof(options));
     private readonly ILogger<TransientScheduler> _logger = logger
         ?? throw new ArgumentNullException(nameof(logger));
