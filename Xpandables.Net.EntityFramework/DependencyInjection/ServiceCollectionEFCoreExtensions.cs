@@ -117,7 +117,7 @@ public static partial class ServiceCollectionExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXNotificationStore(this IServiceCollection services)
+    public static IServiceCollection AddXIntegrationEventStore(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -132,11 +132,11 @@ public static partial class ServiceCollectionExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXSnapShotStore(this IServiceCollection services)
+    public static IServiceCollection AddXSnapshotStore(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddXSnapShotStore<SnapShotStore>();
+        services.AddXSnapshotStore<SnapshotStore>();
 
         return services;
     }

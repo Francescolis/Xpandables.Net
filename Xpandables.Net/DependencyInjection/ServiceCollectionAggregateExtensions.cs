@@ -100,12 +100,12 @@ public static partial class ServiceCollectionExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXSnapShotStore<TSnapShotStore>(this IServiceCollection services)
-        where TSnapShotStore : class, ISnapshotStore
+    public static IServiceCollection AddXSnapshotStore<TSnapshotStore>(this IServiceCollection services)
+        where TSnapshotStore : class, ISnapshotStore
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddScoped<ISnapshotStore, TSnapShotStore>();
+        services.TryAddScoped<ISnapshotStore, TSnapshotStore>();
 
         return services;
     }

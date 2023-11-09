@@ -30,7 +30,7 @@ namespace Xpandables.Net.Aggregates;
 /// <see cref="ISnapshotStore"/> implementation.
 /// </summary>
 ///<inheritdoc/>
-public sealed class SnapShotStore(DomainDataContext dataContext, JsonSerializerOptions serializerOptions) : ISnapshotStore
+public sealed class SnapshotStore(DomainDataContext dataContext, JsonSerializerOptions serializerOptions) : ISnapshotStore
 {
     ///<inheritdoc/>
     public async ValueTask PersistAsSnapShotAsync(SnapShotDescriptor descriptor, CancellationToken cancellationToken = default)
