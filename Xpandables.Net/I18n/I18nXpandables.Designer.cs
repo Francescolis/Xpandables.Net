@@ -115,6 +115,15 @@ namespace Xpandables.Net.I18n {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pas d&apos;Integration Event Handler trouve.
+        /// </summary>
+        public static string EventSourcingNoIntegrationEventHandler {
+            get {
+                return ResourceManager.GetString("EventSourcingNoIntegrationEventHandler", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to La notification {0} existe déjà dans la collection..
         /// </summary>
         public static string EventSourcingNotificationAlreadyExists {

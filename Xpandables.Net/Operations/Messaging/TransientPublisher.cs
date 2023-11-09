@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.IntegrationEvents;
+using Xpandables.Net.I18n;
 
 namespace Xpandables.Net.Operations.Messaging;
 
@@ -47,13 +48,18 @@ internal sealed class TransientPublisher(
         }
         else if (@event.GetType().GetInterfaces().Any(i => !i.IsGenericType && i == typeof(IIntegrationEvent)))
         {
-            var integrationHandlers = _serviceProvider.GetServices<IntegrationEventHandler<T>>();
+            var integrationHandlers = _serviceProvider.GetServices<IntegrationEventHandler<T>>().ToList();
             foreach (var handler in integrationHandlers)
             {
                 if (await handler.Invoke(@event, cancellationToken).ConfigureAwait(false) is { IsFailure: true } failureOperation)
                     return failureOperation;
             }
 
+            if (integrationHandlers.Count <= 0)
+                return OperationResults
+                    .BadRequest()
+                    .WithError(ElementEntry.UndefinedKey, I18nXpandables.EventSourcingNoIntegrationEventHandler)
+                    .Build();
         }
 
         return OperationResults

@@ -19,7 +19,6 @@ using System.Text.Json;
 
 using Xpandables.Net.Aggregates.Snapshots;
 using Xpandables.Net.Extensions;
-using Xpandables.Net.Optionals;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Defaults;
@@ -56,7 +55,7 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
     /// <param name="record">The record to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of event built from the entity.</returns>
-    public static Optional<IMemento> ToSnapShotDescriptor(
+    public static IMemento? ToSnapShotDescriptor(
         SnapShotRecord record,
         JsonSerializerOptions? options)
     {
@@ -64,9 +63,9 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
 
         if (Type.GetType(record.MementoTypeName) is { } mementoType)
             if (record.Data.Deserialize(mementoType, options) is IMemento memento)
-                return Optional.Some(memento);
+                return memento;
 
-        return Optional.Empty<IMemento>();
+        return default;
     }
 
     ///<inheritdoc/>

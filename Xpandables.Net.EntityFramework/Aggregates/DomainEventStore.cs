@@ -15,7 +15,6 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Extensions;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -56,24 +56,22 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
     }
 
     ///<inheritdoc/>
-    public async IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
+    public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
         TAggregateId aggregateId,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+         CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(aggregateId);
 
         string aggregateIdName = typeof(TAggregateId).GetNameWithoutGenericArity();
 
-        await foreach (DomainEventRecord entity in
-            dataContext.Events
+        return dataContext.Events
+            .AsNoTracking()
             .Where(e => e.AggregateId == aggregateId.Value && e.AggregateIdName == aggregateIdName)
             .OrderBy(e => e.Version)
-            .AsAsyncEnumerable())
-        {
-            if (DomainEventRecord.ToDomainEventRecord<TAggregateId>(entity, serializerOptions) is IDomainEvent<TAggregateId> { } @event)
-                yield return @event;
-        }
+            .Select(s => DomainEventRecord.ToDomainEventRecord<TAggregateId>(s, serializerOptions))
+            .OfType<IDomainEvent<TAggregateId>>()
+            .AsAsyncEnumerable();
     }
 
     ///<inheritdoc/>
@@ -83,7 +81,8 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        return filter.GetQueryableFiltered(dataContext.Events).AsAsyncEnumerable();
+        return filter.GetQueryableFiltered(dataContext.Events.AsNoTracking())
+            .AsAsyncEnumerable();
     }
 
     ///<inheritdoc/>
@@ -95,6 +94,7 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
         foreach (IDisposable disposable in _disposables)
             disposable?.Dispose();
 
-        await base.DisposeAsync(disposing).ConfigureAwait(false);
+        await base.DisposeAsync(disposing)
+            .ConfigureAwait(false);
     }
 }

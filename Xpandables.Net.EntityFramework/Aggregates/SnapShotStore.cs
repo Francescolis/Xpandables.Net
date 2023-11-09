@@ -61,11 +61,10 @@ public sealed class SnapshotStore(DomainDataContext dataContext, JsonSerializerO
         if (entity is null)
             return Optional.Empty<T>();
 
-        var optional = SnapShotRecord.ToSnapShotDescriptor(entity, serializerOptions);
-        if (optional.IsEmpty)
+        if (SnapShotRecord.ToSnapShotDescriptor(entity, serializerOptions) is not IMemento memento)
             return Optional.Empty<T>();
 
-        instance.SetMemento(optional.Value);
+        instance.SetMemento(memento);
         return instance;
     }
 }

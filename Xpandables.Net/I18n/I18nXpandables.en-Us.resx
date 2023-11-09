@@ -157,4 +157,7 @@
   <data name="OperationResultCanNotConvertModelState" xml:space="preserve">
     <value>Unable to retrieve a failed operation from a valid model state</value>
   </data>
+  <data name="EventSourcingNoIntegrationEventHandler" xml:space="preserve">
+    <value>Integration Event Handler not found</value>
+  </data>
 </root>

@@ -20,7 +20,6 @@ using System.Text.Json;
 
 using Xpandables.Net.Aggregates.IntegrationEvents;
 using Xpandables.Net.Extensions;
-using Xpandables.Net.Optionals;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Defaults;
@@ -57,17 +56,19 @@ public sealed class IntegrationEventRecord : Entity<Guid>, IDisposable
     /// <param name="record">The record to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of integration event built from the entity.</returns>
-    public static Optional<IIntegrationEvent> ToIntegrationEvent(
+    public static IIntegrationEvent? ToIntegrationEvent(
         IntegrationEventRecord record,
         JsonSerializerOptions? options)
     {
         ArgumentNullException.ThrowIfNull(record);
 
-        if (Type.GetType(record.TypeFullName) is not { } eventType)
-            return default;
+        if (!(Type.GetType(record.TypeFullName) is { } eventType))
+        {
+            return null;
+        }
 
         object? eventObject = record.Data.Deserialize(eventType, options);
-        return (eventObject as IIntegrationEvent).AsOptional();
+        return eventObject as IIntegrationEvent;
     }
 
     ///<inheritdoc/>

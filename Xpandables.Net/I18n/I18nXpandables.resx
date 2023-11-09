@@ -157,4 +157,7 @@
   <data name="OperationResultCanNotConvertModelState" xml:space="preserve">
     <value>Impossible de convertir un model valide en opération d'erreur</value>
   </data>
+  <data name="EventSourcingNoIntegrationEventHandler" xml:space="preserve">
+    <value>Pas d'Integration Event Handler trouve</value>
+  </data>
 </root>

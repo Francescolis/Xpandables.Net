@@ -20,7 +20,6 @@ using System.Text.Json;
 
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Extensions;
-using Xpandables.Net.Optionals;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Defaults;
@@ -64,7 +63,7 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
     /// <param name="record">The record to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of domain event built from the entity.</returns>
-    public static Optional<IDomainEvent<TAggregateId>> ToDomainEventRecord<TAggregateId>(
+    public static IDomainEvent<TAggregateId>? ToDomainEventRecord<TAggregateId>(
         DomainEventRecord record,
         JsonSerializerOptions? options)
         where TAggregateId : struct, IAggregateId<TAggregateId>
@@ -75,7 +74,7 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
             return default;
 
         object? eventObject = record.Data.Deserialize(eventType, options);
-        return (eventObject as IDomainEvent<TAggregateId>).AsOptional();
+        return eventObject as IDomainEvent<TAggregateId>;
     }
 
     /// <summary>

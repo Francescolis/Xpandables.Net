@@ -40,24 +40,33 @@ public sealed class IntegrationEventStore(
 {
     private IDisposable[] _disposables = [];
 #pragma warning disable CA2213 // Disposable fields should be disposed
-    private readonly DomainDataContext _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
+    private readonly DomainDataContext _dataContext = dataContext
+        ?? throw new ArgumentNullException(nameof(dataContext));
 #pragma warning restore CA2213 // Disposable fields should be disposed
-    private readonly JsonSerializerOptions _serializerOptions = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
+    private readonly JsonSerializerOptions _serializerOptions = serializerOptions
+        ?? throw new ArgumentNullException(nameof(serializerOptions));
 
     ///<inheritdoc/>
-    public async ValueTask AppendAsync(IIntegrationEvent @event, CancellationToken cancellationToken = default)
+    public async ValueTask AppendAsync(
+        IIntegrationEvent @event,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        IntegrationEventRecord disposable = IntegrationEventRecord.FromIntegrationEvent(@event, _serializerOptions);
+        IntegrationEventRecord disposable = IntegrationEventRecord
+            .FromIntegrationEvent(@event, _serializerOptions);
+
         Array.Resize(ref _disposables, _disposables.Length + 1);
         _disposables[^1] = disposable;
 
-        await _dataContext.Notifications.AddAsync(disposable, cancellationToken).ConfigureAwait(false);
+        await _dataContext.Notifications.AddAsync(disposable, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
-    public async ValueTask DeleteAsync(Guid eventId, CancellationToken cancellationToken = default)
+    public async ValueTask DeleteAsync(
+        Guid eventId,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(eventId);
 
@@ -73,13 +82,12 @@ public sealed class IntegrationEventStore(
         CancellationToken cancellationToken = default)
     {
         return _dataContext.Notifications
-        .AsNoTracking()
-        .Skip(pagination.Index * pagination.Size)
-        .Take(pagination.Size)
-        .Select(e => IntegrationEventRecord.ToIntegrationEvent(e, _serializerOptions))
-        .Where(w => w.IsNotEmpty)
-        .Select(s => s.Value)
-        .AsAsyncEnumerable();
+            .AsNoTracking()
+            .Skip(pagination.Index * pagination.Size)
+            .Take(pagination.Size)
+            .Select(e => IntegrationEventRecord.ToIntegrationEvent(e, _serializerOptions))
+            .OfType<IIntegrationEvent>()
+            .AsAsyncEnumerable();
     }
 
 
@@ -92,6 +100,7 @@ public sealed class IntegrationEventStore(
         foreach (IDisposable disposable in _disposables)
             disposable?.Dispose();
 
-        await base.DisposeAsync(disposing).ConfigureAwait(false);
+        await base.DisposeAsync(disposing)
+            .ConfigureAwait(false);
     }
 }

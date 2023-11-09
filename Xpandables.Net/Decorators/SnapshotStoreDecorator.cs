@@ -20,6 +20,7 @@ using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.Snapshots;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Decorators;
 
@@ -117,6 +118,7 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
                            .ConfigureAwait(false))
             {
                 DomainEventRecord.ToDomainEventRecord<TAggregateId>(eventRecord, default)
+                    .AsOptional()
                     .Map(@event => aggregate.LoadFromHistory(@event));
             }
         }
