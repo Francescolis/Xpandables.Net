@@ -85,6 +85,7 @@ public sealed class IntegrationEventStore(
             .AsNoTracking()
             .Skip(pagination.Index * pagination.Size)
             .Take(pagination.Size)
+            .OrderBy(o => o.Id)
             .Select(e => IntegrationEventRecord.ToIntegrationEvent(e, _serializerOptions))
             .OfType<IIntegrationEvent>()
             .AsAsyncEnumerable();
