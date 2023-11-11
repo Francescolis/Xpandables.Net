@@ -43,6 +43,6 @@ public sealed class SnapShotRecordTypeConfiguration : IEntityTypeConfiguration<S
         builder.Property(p => p.Data);
         builder.Property(p => p.Version);
 
-        builder.HasQueryFilter(f => f.Status != EntityStatus.INACTIVE);
+        builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }
 }

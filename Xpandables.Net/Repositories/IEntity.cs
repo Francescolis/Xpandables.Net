@@ -62,7 +62,7 @@ public interface IEntity
     /// <summary>
     /// Gets the inactive date of the underlying instance if exist.
     /// </summary>
-    DateTime? InactiveOn { get; }
+    DateTime? DeletedOn { get; }
 
     /// <summary>
     /// Gets a value indicating whether or not the 
@@ -77,14 +77,36 @@ public interface IEntity
     public bool IsInactive => Status == EntityStatus.INACTIVE;
 
     /// <summary>
+    /// Gets a value indicating whether or not the 
+    /// underlying instance is marked as <see cref="EntityStatus.SUSPENDED"/>.
+    /// </summary>
+    public bool IsSuspended => Status == EntityStatus.SUSPENDED;
+
+    /// <summary>
+    /// Gets a value indicating whether or not the 
+    /// underlying instance is marked as <see cref="EntityStatus.DELETED"/>.
+    /// </summary>
+    public bool IsDeleted => Status == EntityStatus.DELETED;
+
+    /// <summary>
     /// Marks the underlying instance as active and sets the update date time.
     /// </summary>
     void SetStatusActive();
 
     /// <summary>
-    /// Marks the underlying instance as inactive and sets the inactive date time.
+    /// Marks the underlying instance as inactive and sets the update date time.
     /// </summary>
     void SetStatusInactive();
+
+    /// <summary>
+    /// Marks the underlying instance as suspended and sets the update date time.
+    /// </summary>
+    void SetStatusSuspended();
+
+    /// <summary>
+    /// Marks the underlying instance as deleted and sets the deleted date time.
+    /// </summary>
+    void SetStatusDeleted();
 
     // For internal use
     internal void OnCreation();
@@ -108,3 +130,4 @@ public interface IEntity<TId> : IEntity
     [JsonIgnore, EditorBrowsable(EditorBrowsableState.Never)]
     object IEntity.Id => Id;
 }
+

@@ -32,7 +32,7 @@ public abstract class Entity : IEntity
     {
         OnCreated += (s, e) => CreatedOn = DateTime.UtcNow;
         OnUpdated += (s, e) => UpdatedOn = DateTime.UtcNow;
-        OnDeleted += (s, e) => InactiveOn = DateTime.UtcNow;
+        OnDeleted += (s, e) => DeletedOn = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -62,12 +62,14 @@ public abstract class Entity : IEntity
     public DateTime CreatedOn { get; protected set; } = DateTime.UtcNow;
 
     ///<inheritdoc/>
-    ///<remarks>This property is automatically set by the <see cref="IEntity.SetStatusActive"/> method.</remarks>
+    ///<remarks>This property is automatically 
+    ///set by the <see cref="IEntity.SetStatusActive"/> method.</remarks>
     public DateTime? UpdatedOn { get; protected set; }
 
     ///<inheritdoc/>
-    /// <remarks>This property is automatically set by the <see cref="IEntity.SetStatusInactive"/> method.</remarks>
-    public DateTime? InactiveOn { get; protected set; }
+    /// <remarks>This property is automatically 
+    /// set by the <see cref="IEntity.SetStatusInactive"/> method.</remarks>
+    public DateTime? DeletedOn { get; protected set; }
 
     /// <inheritdoc/>
     public void SetStatusActive()
@@ -80,7 +82,21 @@ public abstract class Entity : IEntity
     public void SetStatusInactive()
     {
         Status = EntityStatus.INACTIVE;
-        InactiveOn = DateTime.UtcNow;
+        DeletedOn = DateTime.UtcNow;
+    }
+
+    /// <inheritdoc/>
+    public void SetStatusSuspended()
+    {
+        Status = EntityStatus.SUSPENDED;
+        UpdatedOn = DateTime.UtcNow;
+    }
+
+    /// <inheritdoc/>
+    public void SetStatusDeleted()
+    {
+        Status = EntityStatus.DELETED;
+        DeletedOn = DateTime.UtcNow;
     }
 
     void IEntity.OnCreation() => OnCreated?.Invoke(this, EventArgs.Empty);

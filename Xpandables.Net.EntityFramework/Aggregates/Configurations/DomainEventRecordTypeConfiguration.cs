@@ -45,6 +45,6 @@ public sealed class DomainEventRecordTypeConfiguration : IEntityTypeConfiguratio
         builder.Property(p => p.TypeName);
         builder.Property(p => p.Version);
 
-        builder.HasQueryFilter(f => f.Status != EntityStatus.INACTIVE);
+        builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }
 }

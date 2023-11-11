@@ -27,7 +27,17 @@ public static class EntityStatus
     public static string ACTIVE => new(nameof(ACTIVE));
 
     /// <summary>
-    /// It is not currently functioning (logical deletion)
+    /// It is not currently functioning (has been not active for a long time)
     /// </summary>
     public static string INACTIVE => new(nameof(INACTIVE));
+
+    /// <summary>
+    /// It is deleted (logical deletion)
+    /// </summary>
+    public static string DELETED => new(nameof(DELETED));
+
+    /// <summary>
+    /// It is suspended (for any reason)
+    /// </summary>
+    public static string SUSPENDED => new(nameof(SUSPENDED));
 }

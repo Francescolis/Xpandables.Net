@@ -40,6 +40,6 @@ public sealed class IntegrationEventRecordTypeConfiguration : IEntityTypeConfigu
         builder.Property(p => p.Data);
         builder.Property(p => p.TypeFullName);
 
-        builder.HasQueryFilter(f => f.Status != EntityStatus.INACTIVE);
+        builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }
 }
