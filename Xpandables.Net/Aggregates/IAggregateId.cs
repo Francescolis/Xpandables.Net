@@ -27,7 +27,7 @@ public interface IAggregateId : IPrimitive<Guid>
 {
     /// <summary>
     /// Gets a value indicating whether or not the underlying 
-    /// primitive is new (string.IsNullOrEmpty(AsString())).
+    /// Id is new (Value == Guid.Empty).
     /// </summary>
     public new bool IsNew() => Value == Guid.Empty;
 
