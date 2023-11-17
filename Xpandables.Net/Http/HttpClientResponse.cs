@@ -46,7 +46,8 @@ public class HttpClientResponse(
     /// <summary>
     /// Gets the <see cref="HttpClientException"/> that holds the handled exception.
     /// </summary>
-    public HttpClientException? Exception { get; } = exception;
+    [AllowNull]
+    public HttpClientException Exception { get; } = exception;
 
     /// <summary>
     /// Determines whether or not the instance contains an exception.
@@ -83,6 +84,7 @@ public class HttpClientResponse(
     /// Determines whether or not the response status is valid.
     /// Returns <see langword="true"/> if so, otherwise <see langword="false"/>.
     /// </summary>
+    [MemberNotNullWhen(false, nameof(Exception))]
     public bool IsValid => IOperationResult.IsSuccessStatusCode(StatusCode);
 
     internal virtual bool IsGeneric => false;
