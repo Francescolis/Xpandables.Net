@@ -39,9 +39,12 @@ internal sealed class IntegrationEventOutbox(
 
         try
         {
-            await foreach (IIntegrationEvent @event in _eventSourcing.GetIntegrationEvents().ToAsyncEnumerable())
+            await foreach (IIntegrationEvent @event in _eventSourcing
+                .GetIntegrationEvents()
+                .ToAsyncEnumerable())
             {
-                await _eventStore.AppendAsync(@event, cancellationToken).ConfigureAwait(false);
+                await _eventStore.AppendAsync(@event, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             _eventSourcing.MarkIntegrationEventsAsCommitted();
@@ -66,7 +69,8 @@ internal sealed class IntegrationEventOutbox(
     {
         try
         {
-            await _eventStore.AppendAsync(@event, cancellationToken).ConfigureAwait(false);
+            await _eventStore.AppendAsync(@event, cancellationToken)
+                .ConfigureAwait(false);
 
             return OperationResults
                    .Ok()
