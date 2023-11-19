@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.IntegrationEvents;
 using Xpandables.Net.Primitives;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -74,7 +75,9 @@ public sealed class IntegrationEventStore(
         await _dataContext.Notifications
             .Where(e => e.Id == eventId)
             .ExecuteUpdateAsync(e => e
-                .SetProperty(p => p.ErrorMessage, p => $"{exception}"),
+                .SetProperty(p => p.ErrorMessage, p => $"{exception}")
+                .SetProperty(p => p.UpdatedOn, p => DateTime.UtcNow)
+                .SetProperty(p => p.Status, p => EntityStatus.INACTIVE),
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -89,7 +92,10 @@ public sealed class IntegrationEventStore(
         await _dataContext.Notifications
             .Where(e => e.Id == eventId)
             .ExecuteUpdateAsync(e => e
-                .SetProperty(p => p.ErrorMessage, p => null),
+                .SetProperty(p => p.ErrorMessage, p => null)
+                .SetProperty(p => p.UpdatedOn, p => DateTime.UtcNow)
+                .SetProperty(p => p.DeletedOn, p => DateTime.UtcNow)
+                .SetProperty(p => p.Status, p => EntityStatus.DELETED),
                 cancellationToken)
             .ConfigureAwait(false);
     }
