@@ -17,7 +17,6 @@
 ************************************************************************************************************/
 using System.Linq.Expressions;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -93,13 +92,13 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
             expression = expression.And(x => x.AggregateId == filter.AggregateId.Value);
 
         if (filter.AggregateIdName is not null)
-            expression = expression.And(x => Regex.IsMatch(filter.AggregateIdName, x.AggregateIdName));
+            expression = expression.And(x => EF.Functions.Like(x.AggregateIdName, $"%{filter.AggregateIdName}%"));
 
         if (filter.Id is not null)
             expression = expression.And(x => x.Id == filter.Id);
 
         if (filter.EventTypeName is not null)
-            expression = expression.And(x => Regex.IsMatch(filter.EventTypeName, x.TypeName));
+            expression = expression.And(x => EF.Functions.Like(x.TypeName, $"%{filter.EventTypeName}%"));
 
         if (filter.Version is not null)
             expression = expression.And(x => x.Version > filter.Version.Value);
