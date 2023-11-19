@@ -75,11 +75,13 @@ public sealed class IntegrationEventRecord : Entity<Guid>, IDisposable
     private IntegrationEventRecord(
         Guid id,
         string typeFullName,
-        JsonDocument data)
+        JsonDocument data,
+        string? errorMessage = default)
     {
         Id = id;
         TypeFullName = typeFullName;
         Data = data;
+        ErrorMessage = errorMessage;
     }
 
     /// <inheritdoc/>
@@ -87,6 +89,9 @@ public sealed class IntegrationEventRecord : Entity<Guid>, IDisposable
 
     ///<inheritdoc/>
     public JsonDocument Data { get; }
+
+    ///<inheritdoc/>
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Releases the <see cref="Data"/> resource.

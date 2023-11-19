@@ -111,18 +111,27 @@ internal sealed class TransientScheduler(
 
         await foreach (IIntegrationEvent @event in eventStore.ReadAsync(pagination, cancellationToken))
         {
-            OperationResult operationResult = await publisher
-                .PublishAsync((dynamic)@event, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (operationResult.IsFailure)
-                _logger.ErrorExecutingProcess(
-                    nameof(TransientScheduler),
-                    new OperationResultException(operationResult));
-            else
-                await eventStore
-                    .DeleteAsync(@event.Id, cancellationToken: cancellationToken)
+            try
+            {
+                OperationResult operationResult = await publisher
+                    .PublishAsync((dynamic)@event, cancellationToken)
                     .ConfigureAwait(false);
+
+                if (operationResult.IsFailure)
+                    await eventStore
+                        .SetErrorAsync(@event.Id, new OperationResultException(operationResult), cancellationToken)
+                        .ConfigureAwait(false);
+                else
+                    await eventStore
+                        .MarkAsProcessedAsync(@event.Id, cancellationToken)
+                        .ConfigureAwait(false);
+            }
+            catch (Exception exception) when (exception is ArgumentNullException)
+            {
+                await eventStore
+                    .SetErrorAsync(@event.Id, exception, cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

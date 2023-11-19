@@ -64,7 +64,23 @@ public sealed class IntegrationEventStore(
     }
 
     ///<inheritdoc/>
-    public async ValueTask DeleteAsync(
+    public async ValueTask SetErrorAsync(
+        Guid eventId,
+        Exception exception,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(eventId);
+
+        await _dataContext.Notifications
+            .Where(e => e.Id == eventId)
+            .ExecuteUpdateAsync(e => e
+                .SetProperty(p => p.ErrorMessage, p => $"{exception}"),
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    ///<inheritdoc/>
+    public async ValueTask MarkAsProcessedAsync(
         Guid eventId,
         CancellationToken cancellationToken = default)
     {
@@ -72,7 +88,9 @@ public sealed class IntegrationEventStore(
 
         await _dataContext.Notifications
             .Where(e => e.Id == eventId)
-            .ExecuteDeleteAsync(cancellationToken)
+            .ExecuteUpdateAsync(e => e
+                .SetProperty(p => p.ErrorMessage, p => null),
+                cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -83,6 +101,7 @@ public sealed class IntegrationEventStore(
     {
         return _dataContext.Notifications
             .AsNoTracking()
+            .Where(e => e.UpdatedOn == null && e.ErrorMessage == null && e.DeletedOn == null)
             .Skip(pagination.Index * pagination.Size)
             .Take(pagination.Size)
             .OrderBy(o => o.Id)

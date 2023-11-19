@@ -39,16 +39,29 @@ public interface IIntegrationEventStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously delete the specified integration event.
+    /// Asynchronously sets the exception that occurred while processing the specified integration event.
     /// </summary>
-    /// <param name="eventId">The integration event id to delete.</param>
+    /// <param name="eventId">The integration event id to act on.</param>
+    /// <param name="exception">The handled exception.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="eventId"/> is null.</exception>   
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    ValueTask DeleteAsync(Guid eventId, CancellationToken cancellationToken = default);
+    ValueTask SetErrorAsync(Guid eventId, Exception exception, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously marks the specified integration event as processed.
+    /// </summary>
+    /// <param name="eventId">The integration event id to marked as processed.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe 
+    /// while waiting for the task to complete.</param>
+    /// <returns>A value that represents an asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="eventId"/> is null.</exception>   
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
+    ValueTask MarkAsProcessedAsync(Guid eventId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously returns a collection of integration events matching the filter.

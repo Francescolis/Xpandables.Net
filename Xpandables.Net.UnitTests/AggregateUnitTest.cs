@@ -117,11 +117,21 @@ public sealed class NotificationStoreText : Disposable, IIntegrationEventStore
         CancellationToken _ = default)
     {
         return _store.Values
+            .Where(e => e.Exception == null)
             .Select(s => s.Event)
             .ToAsyncEnumerable();
     }
 
-    public async ValueTask DeleteAsync(
+    public async ValueTask SetErrorAsync(
+        Guid eventId,
+        Exception exception,
+        CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+        _store[eventId] = _store[eventId] with { Exception = exception.ToString() };
+    }
+
+    public async ValueTask MarkAsProcessedAsync(
         Guid eventId,
         CancellationToken _ = default)
     {
