@@ -15,19 +15,22 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using System.Linq.Expressions;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Extensions;
+using Xpandables.Net.Operations.Expressions;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// <see cref="IDomainEventStore{TDomainEventRecord}"/> implementation.
+/// <see cref="IDomainEventStore"/> implementation.
 /// </summary>
 /// <remarks>
 /// Initializes the event store.
@@ -36,7 +39,7 @@ namespace Xpandables.Net.Aggregates;
 /// <param name="serializerOptions"></param>
 /// <exception cref="ArgumentNullException"></exception>
 public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializerOptions serializerOptions)
-    : Disposable, IDomainEventStore<DomainEventRecord>
+    : Disposable, IDomainEventStore
 {
     private IDisposable[] _disposables = [];
 
@@ -75,14 +78,60 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
     }
 
     ///<inheritdoc/>
-    public IAsyncEnumerable<TResult> ReadAsync<TResult>(
-       IDomainEventFilter<DomainEventRecord, TResult> filter,
-       CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
+       DomainEventFilterCriteria filter,
+#pragma warning disable CA1725 // Parameter names should match base declaration
+       CancellationToken cancellation = default)
+#pragma warning restore CA1725 // Parameter names should match base declaration
+        where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        return filter.GetQueryableFiltered(dataContext.Events.AsNoTracking())
-            .AsAsyncEnumerable();
+        var expression = QueryExpressionFactory.Create<DomainEventRecord>();
+
+        if (filter.AggregateId is not null)
+            expression = expression.And(x => x.AggregateId == filter.AggregateId.Value);
+
+        if (filter.AggregateIdName is not null)
+            expression = expression.And(x => Regex.IsMatch(filter.AggregateIdName, x.AggregateIdName));
+
+        if (filter.Id is not null)
+            expression = expression.And(x => x.Id == filter.Id);
+
+        if (filter.EventTypeName is not null)
+            expression = expression.And(x => Regex.IsMatch(filter.EventTypeName, x.TypeName));
+
+        if (filter.Version is not null)
+            expression = expression.And(x => x.Version > filter.Version.Value);
+
+        if (filter.FromCreatedOn is not null)
+            expression = expression.And(x => x.CreatedOn >= filter.FromCreatedOn.Value);
+
+        if (filter.ToCreatedOn is not null)
+            expression = expression.And(x => x.CreatedOn <= filter.ToCreatedOn.Value);
+
+        if (filter.DataCriteria is not null)
+        {
+            _ = Expression.Invoke(
+                filter.DataCriteria,
+                Expression.PropertyOrField(
+                    DomainEventFilterCriteria.EventEntityParameter,
+                    nameof(DomainEventRecord.Data)));
+
+            var dataCriteria = Expression.Lambda<Func<DomainEventRecord, bool>>(
+                DomainEventFilterCriteria.EventEntityVisitor.Visit(filter.DataCriteria.Body),
+                DomainEventFilterCriteria.EventEntityVisitor.Parameter);
+
+            expression = expression.And(dataCriteria);
+        }
+
+        return dataContext.Events
+             .AsNoTracking()
+             .Where(expression)
+             .OrderBy(e => e.Version)
+             .Select(s => DomainEventRecord.ToDomainEventRecord<TAggregateId>(s, serializerOptions))
+             .OfType<IDomainEvent<TAggregateId>>()
+             .AsAsyncEnumerable();
     }
 
     ///<inheritdoc/>

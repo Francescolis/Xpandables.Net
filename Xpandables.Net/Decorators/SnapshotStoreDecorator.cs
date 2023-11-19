@@ -20,13 +20,12 @@ using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.Snapshots;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Decorators;
 
 internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
     IAggregateStore<TAggregate, TAggregateId> decoratee,
-    IDomainEventStore<DomainEventRecord> eventStore,
+    IDomainEventStore eventStore,
     ISnapshotStore snapShotStore,
     IOptions<SnapShotOptions> snapShotOptions) : IAggregateStore<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>, IOriginator
@@ -34,7 +33,7 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
 {
     private readonly IAggregateStore<TAggregate, TAggregateId> _decoratee = decoratee
         ?? throw new ArgumentNullException(nameof(decoratee));
-    private readonly IDomainEventStore<DomainEventRecord> _eventStore = eventStore
+    private readonly IDomainEventStore _eventStore = eventStore
         ?? throw new ArgumentNullException(nameof(eventStore));
     private readonly ISnapshotStore _snapShotStore = snapShotStore
         ?? throw new ArgumentNullException(nameof(snapShotStore));
@@ -105,21 +104,20 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
 
         // because the snapshot is not aligned with the last events,
         // we need to add those events if available
-        var filter = new DomainEventFilter
+        var filter = new DomainEventFilterCriteria
         {
             AggregateId = aggregateId.Value,
-            Criteria = x => x.Version > aggregate.Version,
-            OrderBy = x => x.OrderBy(o => o.Version)
+            AggregateIdName = typeof(TAggregateId).Name,
+            Version = aggregate.Version
         };
 
         try
         {
-            await foreach (var eventRecord in _eventStore.ReadAsync(filter, cancellationToken)
-                           .ConfigureAwait(false))
+            await foreach (var @event in _eventStore
+                .ReadAsync<TAggregateId>(filter, cancellationToken)
+                .ConfigureAwait(false))
             {
-                DomainEventRecord.ToDomainEventRecord<TAggregateId>(eventRecord, default)
-                    .AsOptional()
-                    .Map(@event => aggregate.LoadFromHistory(@event));
+                aggregate.LoadFromHistory(@event);
             }
         }
         catch (Exception exception) when (exception is not ArgumentNullException)

@@ -14,18 +14,15 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
 /// Represents a set of methods to append/read domain events to/from store.
 /// </summary>
-/// <typeparam name="TDomainEventRecord">The type of the record used 
-/// to persist domain event.</typeparam>
-public interface IDomainEventStore<TDomainEventRecord> : IDisposable
-    where TDomainEventRecord : class, IEntity
+public interface IDomainEventStore : IDisposable
 {
     /// <summary>
     /// Asynchronously appends the specified domain event to the store.
@@ -65,13 +62,14 @@ public interface IDomainEventStore<TDomainEventRecord> : IDisposable
     /// Asynchronously returns a collection of results from domain events matching the filter.
     /// if not found, returns an empty collection.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
     /// <param name="filter">The filter to search domain events for.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <returns>An enumerator of <typeparamref name="TResult"/> type that can be asynchronously enumerated.</returns>
+    /// <returns>An enumerator of <typeparamref name="TAggregateId"/> type that can be asynchronously enumerated.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="filter"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
-    IAsyncEnumerable<TResult> ReadAsync<TResult>(
-        IDomainEventFilter<TDomainEventRecord, TResult> filter,
-        CancellationToken cancellationToken = default);
+    IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
+        DomainEventFilterCriteria filter,
+        CancellationToken cancellationToken = default)
+        where TAggregateId : struct, IAggregateId<TAggregateId>;
 }

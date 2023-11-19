@@ -22,7 +22,6 @@ using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.IntegrationEvents;
 using Xpandables.Net.Operations.Messaging;
-using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
 public static partial class ServiceCollectionExtensions
@@ -157,25 +156,23 @@ public static partial class ServiceCollectionExtensions
         => services.AddXTransientScheduler<TransientScheduler>();
 
     /// <summary>
-    /// Registers the implementation as <see cref="IDomainEventStore{TDomainEventRecord}"/> 
+    /// Registers the implementation as <see cref="IDomainEventStore"/> 
     /// to the services with scope life time.
     /// </summary>
-    /// <typeparam name="TDomainEventRecord">Type of the domain entity.</typeparam>
     /// <typeparam name="TDomainEventStore">The type of that 
-    /// implements <see cref="IDomainEventStore{TDomainEventRecord}"/>.</typeparam>
+    /// implements <see cref="IDomainEventStore"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
     public static IServiceCollection AddXDomainEventStore
-        <TDomainEventRecord, TDomainEventStore>(this IServiceCollection services)
-        where TDomainEventRecord : class, IEntity
-        where TDomainEventStore : class, IDomainEventStore<TDomainEventRecord>
+        <TDomainEventStore>(this IServiceCollection services)
+        where TDomainEventStore : class, IDomainEventStore
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IDomainEventStore<TDomainEventRecord>),
+                typeof(IDomainEventStore),
                 typeof(TDomainEventStore),
                 ServiceLifetime.Scoped));
 

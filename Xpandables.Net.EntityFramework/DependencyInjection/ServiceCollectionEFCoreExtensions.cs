@@ -19,7 +19,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -99,7 +98,7 @@ public static partial class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers the default implementation as <see cref="IDomainEventStore{TDomainEventRecord}"/> to the services with scope life time.
+    /// Registers the default implementation as <see cref="IDomainEventStore"/> to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
@@ -108,7 +107,7 @@ public static partial class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddXDomainEventStore<DomainEventRecord, DomainEventStore>();
+        return services.AddXDomainEventStore<DomainEventStore>();
     }
 
     /// <summary>

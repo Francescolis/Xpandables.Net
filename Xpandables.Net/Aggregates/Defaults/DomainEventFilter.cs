@@ -132,18 +132,3 @@ public record DomainEventFilter<TResult> : IDomainEventFilter<DomainEventRecord,
         return expression;
     }
 }
-
-internal sealed class EntityVisitor : ExpressionVisitor
-{
-    internal readonly ParameterExpression Parameter;
-    private readonly Expression _expression;
-
-    internal EntityVisitor(Type parameterType, string member)
-    {
-        Parameter = Expression.Parameter(parameterType);
-        _expression = Expression.PropertyOrField(Parameter, member);
-    }
-
-    protected override Expression VisitParameter(ParameterExpression node)
-        => node.Type == _expression.Type ? _expression : base.VisitParameter(node);
-}

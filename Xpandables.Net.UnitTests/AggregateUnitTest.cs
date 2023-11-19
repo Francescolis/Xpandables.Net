@@ -49,7 +49,7 @@ public sealed class AggregateUnitTest
             .AddXTransientPublisher()
             .AddXIntegrationEventSourcing()
             .AddXIntegrationEventOutbox()
-            .AddXDomainEventStore<DomainEventRecord, EventStoreTest>()
+            .AddXDomainEventStore<EventStoreTest>()
             .AddXIntegrationEventStore<NotificationStoreText>()
             .BuildServiceProvider();
 
@@ -117,7 +117,7 @@ public sealed class NotificationStoreText : Disposable, IIntegrationEventStore
         CancellationToken _ = default)
     {
         return _store.Values
-            .Where(e => e.Exception == null)
+            .Where(e => e.Exception == null && e.Status == EntityStatus.ACTIVE)
             .Select(s => s.Event)
             .ToAsyncEnumerable();
     }
@@ -138,12 +138,12 @@ public sealed class NotificationStoreText : Disposable, IIntegrationEventStore
         if (!_store.TryGetValue(eventId, out IntegrationEventRecord _))
             throw new InvalidOperationException($"Unable to find integration event with id : {eventId}");
 
-        _store.Remove(eventId);
+        _store[eventId] = _store[eventId] with { Exception = null, Status = EntityStatus.DELETED };
 
         await ValueTask.CompletedTask.ConfigureAwait(false);
     }
 }
-public sealed class EventStoreTest : Disposable, IDomainEventStore<DomainEventRecord>
+public sealed class EventStoreTest : Disposable, IDomainEventStore
 {
     private static readonly Dictionary<Guid, List<IDomainEvent<PersonId>>> _store = [];
 
@@ -175,8 +175,10 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore<DomainEventRe
             .ToAsyncEnumerable();
     }
 
-    public IAsyncEnumerable<TResult> ReadAsync<TResult>(
-        IDomainEventFilter<DomainEventRecord, TResult> filter, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
+        DomainEventFilterCriteria filter,
+        CancellationToken cancellationToken = default)
+        where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         throw new NotImplementedException();
     }

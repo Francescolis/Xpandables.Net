@@ -30,10 +30,14 @@ namespace Xpandables.Net.Aggregates;
 /// <see cref="ISnapshotStore"/> implementation.
 /// </summary>
 ///<inheritdoc/>
-public sealed class SnapshotStore(DomainDataContext dataContext, JsonSerializerOptions serializerOptions) : ISnapshotStore
+public sealed class SnapshotStore(
+    DomainDataContext dataContext,
+    JsonSerializerOptions serializerOptions) : ISnapshotStore
 {
     ///<inheritdoc/>
-    public async ValueTask PersistAsSnapShotAsync(SnapShotDescriptor descriptor, CancellationToken cancellationToken = default)
+    public async ValueTask PersistAsSnapShotAsync(
+        SnapShotDescriptor descriptor,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
@@ -43,12 +47,16 @@ public sealed class SnapshotStore(DomainDataContext dataContext, JsonSerializerO
     }
 
     ///<inheritdoc/>
-    public async ValueTask<Optional<T>> ReadFromSnapShotAsync<T>(Guid objectId, CancellationToken cancellationToken = default)
+    public async ValueTask<Optional<T>> ReadFromSnapShotAsync<T>(
+        Guid objectId,
+        CancellationToken cancellationToken = default)
         where T : class, IOriginator
     {
         ArgumentNullException.ThrowIfNull(objectId);
 
-        T instance = (T)Activator.CreateInstance(typeof(T))!;
+        T instance = (T?)Activator.CreateInstance(typeof(T), true)
+            ?? throw new InvalidOperationException(I18n.I18nXpandables.AggregateFailedToCreateInstance
+            .StringFormat(typeof(T).GetNameWithoutGenericArity()));
 
         string objectTypeName = instance.GetTypeName();
         using var entity = await dataContext.SnapShots
@@ -61,7 +69,7 @@ public sealed class SnapshotStore(DomainDataContext dataContext, JsonSerializerO
         if (entity is null)
             return Optional.Empty<T>();
 
-        if (SnapShotRecord.ToSnapShotDescriptor(entity, serializerOptions) is not IMemento memento)
+        if (SnapShotRecord.ToMemento(entity, serializerOptions) is not IMemento memento)
             return Optional.Empty<T>();
 
         instance.SetMemento(memento);

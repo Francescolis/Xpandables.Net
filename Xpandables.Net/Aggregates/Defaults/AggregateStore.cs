@@ -35,13 +35,13 @@ namespace Xpandables.Net.Aggregates.Defaults;
 /// <param name="eventOutbox"></param>
 /// <exception cref="ArgumentNullException"></exception>
 public sealed class AggregateStore<TAggregate, TAggregateId>(
-    IDomainEventStore<DomainEventRecord> eventStore,
+    IDomainEventStore eventStore,
     ITransientPublisher eventPublisher,
     IIntegrationEventOutbox eventOutbox) : IAggregateStore<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
-    private readonly IDomainEventStore<DomainEventRecord> _eventStore = eventStore
+    private readonly IDomainEventStore _eventStore = eventStore
         ?? throw new ArgumentNullException(nameof(eventStore));
     private readonly ITransientPublisher _eventPublisher = eventPublisher
         ?? throw new ArgumentNullException(nameof(eventPublisher));

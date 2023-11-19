@@ -50,12 +50,12 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
     }
 
     /// <summary>
-    /// Converts a record to a snapShot.
+    /// Converts a record to a <see cref="IMemento"/>.
     /// </summary>
     /// <param name="record">The record to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of event built from the entity.</returns>
-    public static IMemento? ToSnapShotDescriptor(
+    public static IMemento? ToMemento(
         SnapShotRecord record,
         JsonSerializerOptions? options)
     {
