@@ -44,7 +44,7 @@ public interface IDomainEventSourcing<TAggregateId>
     /// <param name="events">The collection of domain events to act with.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="events"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
-    void LoadFromHistory(IOrderedEnumerable<IDomainEvent<TAggregateId>> events);
+    void LoadFromHistory(IEnumerable<IDomainEvent<TAggregateId>> events);
 
     /// <summary>
     /// Applies the history specified domain event to the underlying object.

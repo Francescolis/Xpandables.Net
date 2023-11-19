@@ -30,11 +30,14 @@ public sealed record class SpecificationNot<TSource> : Specification<TSource>
     private readonly ISpecification<TSource> _other;
 
     /// <summary>
-    /// Returns a new instance of <see cref="SpecificationNot{TSource}"/> class with the specification for Not.
+    /// Returns a new instance of <see cref="SpecificationNot{TSource}"/> 
+    /// class with the specification for Not.
     /// </summary>
     /// <param name="other">The specification to convert to Not.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="other"/> is null.</exception>exception>
-    public SpecificationNot(ISpecification<TSource> other) => _other = other ?? throw new ArgumentNullException(nameof(other));
+    /// <exception cref="ArgumentNullException">The <paramref name="other"/> 
+    /// is null.</exception>exception>
+    public SpecificationNot(ISpecification<TSource> other)
+        => _other = other ?? throw new ArgumentNullException(nameof(other));
 
     ///<inheritdoc/>
     protected sealed override void ApplySpecification(TSource source)

@@ -84,28 +84,28 @@ public static class SpecificationExtensions
         => new SpecificationNot<TSource>(specification);
 
     /// <summary>
-    /// Returns a boolean value that determines whether or not the specified specification is satisfied by the target source.
+    /// Returns a boolean value that determines whether or not the source satisfied to the specified specification.
     /// If so, returns <see langword="true"/>, otherwise <see langword="false"/>.
     /// </summary>
     /// <typeparam name="TSource">The type of the object to check for.</typeparam>
     /// <param name="source">The target object to check for.</param>
     /// <param name="specification">The specification to be applied.</param>
     /// <returns><see langword="true"/> if specification is satisfied, otherwise <see langword="false"/>.</returns>
-    public static bool Is<TSource>(this TSource source, ISpecification<TSource> specification)
+    public static bool SatisfiesTo<TSource>(this TSource source, ISpecification<TSource> specification)
     {
         ArgumentNullException.ThrowIfNull(specification);
         return specification.IsSatisfiedBy(source);
     }
 
     /// <summary>
-    /// Returns a boolean value that determines whether or not the specified specification is satisfied by the collection of items.
+    /// Returns a boolean value that determines whether or not the collection of items satisfy to the.
     /// If so, returns <see langword="true"/>, otherwise <see langword="false"/>.
     /// </summary>
     /// <typeparam name="TSource">The type of the object to check for.</typeparam>
     /// <param name="sources">The collection of items to check for.</param>
     /// <param name="specification">The specification to be applied.</param>
     /// <returns><see langword="true"/> if specification is satisfied by all items, otherwise <see langword="false"/>.</returns>
-    public static bool Are<TSource>(this IEnumerable<TSource> sources, ISpecification<TSource> specification)
+    public static bool SatisfyTo<TSource>(this IEnumerable<TSource> sources, ISpecification<TSource> specification)
     {
         ArgumentNullException.ThrowIfNull(specification);
         return sources.All(specification.IsSatisfiedBy);

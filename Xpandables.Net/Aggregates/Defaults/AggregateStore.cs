@@ -98,7 +98,8 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
 
         try
         {
-            TAggregate aggregate = AggregateExtensions.CreateEmptyAggregateInstance<TAggregate, TAggregateId>();
+            TAggregate aggregate = AggregateExtensions
+                .CreateEmptyAggregateInstance<TAggregate, TAggregateId>();
 
             await foreach (var @event in _eventStore.ReadAsync(aggregateId, cancellationToken))
             {

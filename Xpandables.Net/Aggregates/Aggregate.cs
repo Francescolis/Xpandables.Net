@@ -59,7 +59,7 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
         => _events.OrderBy(o => o.Version).ToImmutableArray();
 
     /// <inheritdoc/>
-    public void LoadFromHistory(IOrderedEnumerable<IDomainEvent<TAggregateId>> events)
+    public void LoadFromHistory(IEnumerable<IDomainEvent<TAggregateId>> events)
     {
         ArgumentNullException.ThrowIfNull(events);
 
@@ -69,7 +69,8 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
         }
     }
 
-    void IDomainEventSourcing<TAggregateId>.LoadFromHistory(IDomainEvent<TAggregateId> @event)
+    void IDomainEventSourcing<TAggregateId>.LoadFromHistory(
+        IDomainEvent<TAggregateId> @event)
     {
         Mutate(@event);
         Version = @event.Version;

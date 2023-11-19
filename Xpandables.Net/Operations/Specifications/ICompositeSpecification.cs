@@ -18,8 +18,10 @@
 namespace Xpandables.Net.Operations.Specifications;
 
 /// <summary>
-/// Defines one method which returns boolean to assert that a collection of specifications is satisfied or not.
-/// method used to check whether or not the specification is satisfied by the <typeparamref name="TSource"/> object.
+/// Defines one method which returns boolean to assert that a collection 
+/// of specifications is satisfied or not.
+/// method used to check whether or not the specification is satisfied 
+/// by the <typeparamref name="TSource"/> object.
 /// </summary>
 /// <typeparam name="TSource">Type of the argument to be validated.</typeparam>
 public interface ICompositeSpecification<TSource> : ISpecification<TSource>
@@ -30,7 +32,8 @@ public interface ICompositeSpecification<TSource> : ISpecification<TSource>
 /// </summary>
 /// <typeparam name="TSource">The type of the object to check for.</typeparam>
 [Serializable]
-public record class CompositeSpecification<TSource> : Specification<TSource>, ICompositeSpecification<TSource>
+public record class CompositeSpecification<TSource> :
+    Specification<TSource>, ICompositeSpecification<TSource>
 {
     private readonly IEnumerable<ISpecification<TSource>> _specificationInstances;
 

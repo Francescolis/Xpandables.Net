@@ -38,14 +38,18 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
     public OperationResult Result { get; protected set; } = OperationResults.Ok().Build();
 
     /// <summary>
-    /// Returns a value that determines whether or not the specification is satisfied by the source object.
+    /// Returns a value that determines whether or not the specification 
+    /// is satisfied by the source object.
     /// </summary>
-    /// <remarks>To customize its behavior, you must override the <see cref="ApplySpecification(TSource)"/> method.</remarks>
+    /// <remarks>To customize its behavior, you must override the 
+    /// <see cref="ApplySpecification(TSource)"/> method.</remarks>
     /// <param name="source">The target source to check specification on.</param>
-    /// <returns><see langword="true"/>if the specification is satisfied, otherwise <see langword="false"/> and in that case, 
+    /// <returns><see langword="true"/>if the specification is satisfied, 
+    /// otherwise <see langword="false"/> and in that case, 
     /// the <see cref="Result"/> must contain a failure <see cref="IOperationResult"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     public bool IsSatisfiedBy(TSource source)
     {
         ApplySpecification(source);
@@ -53,12 +57,15 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
     }
 
     /// <summary>
-    /// When overridden in derived class, this method will do the actual job of checking that the source satisfies 
-    /// to the specification, if not satisfies to the specification, set the <see cref="Result"/> property to a failure <see cref="IOperationResult"/>.
+    /// When overridden in derived class, this method will do the 
+    /// actual job of checking that the source satisfies 
+    /// to the specification, if not satisfies to the specification, 
+    /// set the <see cref="Result"/> property to a failure <see cref="IOperationResult"/>.
     /// The default <see cref="Result"/> is <see cref="OperationResults.Ok()"/>.
     /// </summary>
     /// <param name="source">The target source to be checked.</param>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     protected abstract void ApplySpecification(TSource source);
 
     /// <summary>

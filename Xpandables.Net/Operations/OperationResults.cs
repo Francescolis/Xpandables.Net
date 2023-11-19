@@ -30,6 +30,7 @@ public sealed class OperationResults
     /// Returns the <see cref="IOperationResult.ISuccessBuilder"/> 
     /// builder with the specified status code.
     /// </summary>
+    /// <remarks>Throws an exception if the status code is not a success.</remarks>
     /// <param name="statusCode">The status code for the builder.</param>
     /// <returns>An instance of a type that implements <see cref="IOperationResult.ISuccessBuilder"/> 
     /// holding commands that can be chained.</returns>
@@ -40,6 +41,7 @@ public sealed class OperationResults
     /// Returns the <see cref="IOperationResult.ISuccessBuilder{TResult}"/> 
     /// builder with the specified status code.
     /// </summary>
+    /// <remarks>Throws an exception if the status code is not a success.</remarks>
     /// <param name="statusCode">The status code for the builder.</param>
     /// <returns>An instance of a type that implements <see cref="IOperationResult.ISuccessBuilder{TResult}"/> 
     /// holding commands that can be chained.</returns>
@@ -51,6 +53,7 @@ public sealed class OperationResults
     /// Returns the <see cref="IOperationResult.IFailureBuilder"/> 
     /// builder with the specified status code.
     /// </summary>
+    /// <remarks>Throws an exception if the status code is not a failure.</remarks>
     /// <param name="statusCode">The status code for the builder.</param>
     /// <returns>An instance of a type that implements <see cref="IOperationResult.IFailureBuilder"/> 
     /// holding commands that can be chained.</returns>
@@ -62,6 +65,7 @@ public sealed class OperationResults
     /// Returns the <see cref="IOperationResult.IFailureBuilder{TResult}"/> 
     /// builder with the specified status code.
     /// </summary>
+    /// <remarks>Throws an exception if the status code is not a failure.</remarks>
     /// <param name="statusCode">The status code for the builder.</param>
     /// <returns>An instance of a type that implements <see cref="IOperationResult.IFailureBuilder{TResult}"/> 
     /// holding commands that can be chained.</returns>

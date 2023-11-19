@@ -34,9 +34,8 @@ internal sealed class IntegrationEventSourcing : IIntegrationEventSourcing
         _events.Add(@event);
     }
 
-    public IOrderedEnumerable<IIntegrationEvent> GetIntegrationEvents()
-        => _events.OrderBy(o => o.OccurredOn)
-            ?? Enumerable.Empty<IIntegrationEvent>().OrderBy(o => o.OccurredOn);
+    public IEnumerable<IIntegrationEvent> GetIntegrationEvents()
+        => _events.OrderBy(o => o.OccurredOn);
 
     public void MarkIntegrationEventsAsCommitted() => _events.Clear();
 }

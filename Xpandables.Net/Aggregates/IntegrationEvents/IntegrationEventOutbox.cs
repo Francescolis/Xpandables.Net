@@ -32,40 +32,31 @@ internal sealed class IntegrationEventOutbox(
 
     public async ValueTask<OperationResult> AppendAsync(CancellationToken cancellationToken = default)
     {
-        if (!_eventSourcing.GetIntegrationEvents().Any())
-            return OperationResults
-                .Ok()
-                .Build();
-
-        try
+        await foreach (IIntegrationEvent @event in _eventSourcing
+            .GetIntegrationEvents()
+            .ToAsyncEnumerable())
         {
-            await foreach (IIntegrationEvent @event in _eventSourcing
-                .GetIntegrationEvents()
-                .ToAsyncEnumerable())
-            {
-                await _eventStore.AppendAsync(@event, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            _eventSourcing.MarkIntegrationEventsAsCommitted();
-
-            return OperationResults
-                   .Ok()
-                   .Build();
+            if (await DoAppendAsync(@event, cancellationToken)
+                .ConfigureAwait(false) is { IsFailure: true } failureOperation)
+                return failureOperation;
         }
-        catch (Exception exception) when (exception is not ArgumentNullException)
-        {
-            return OperationResults
-                .InternalError()
-                .WithDetail(I18nXpandables.OutboxFailedToAppendNotification)
-                .WithError(nameof(IIntegrationEventOutbox), exception)
-                .Build();
-        }
+
+        _eventSourcing.MarkIntegrationEventsAsCommitted();
+
+        return OperationResults
+               .Ok()
+               .Build();
     }
 
     public async ValueTask<OperationResult> AppendAsync(
         IIntegrationEvent @event,
         CancellationToken cancellationToken = default)
+        => await DoAppendAsync(@event, cancellationToken)
+            .ConfigureAwait(false);
+
+    private async ValueTask<OperationResult> DoAppendAsync(
+        IIntegrationEvent @event,
+        CancellationToken cancellationToken)
     {
         try
         {

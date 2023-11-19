@@ -31,7 +31,8 @@ public sealed record class SpecificationAnd<TSource> : Specification<TSource>
     private readonly ISpecification<TSource> _right;
 
     /// <summary>
-    /// Returns a new instance of <see cref="SpecificationAnd{TSource}"/> class with the specifications for composition.
+    /// Returns a new instance of <see cref="SpecificationAnd{TSource}"/> 
+    /// class with the specifications for composition.
     /// </summary>
     /// <param name="left">The specification for the left side.</param>
     /// <param name="right">The specification for the right side.</param>

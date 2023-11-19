@@ -33,7 +33,7 @@ public interface IIntegrationEventSourcing
     /// Returns a collection of registered integration events for the control flow.
     /// </summary>
     /// <returns>An ordered list of integration events.</returns>
-    IOrderedEnumerable<IIntegrationEvent> GetIntegrationEvents();
+    IEnumerable<IIntegrationEvent> GetIntegrationEvents();
 
     /// <summary>
     /// Marks all integration events as committed.
