@@ -101,8 +101,8 @@ internal sealed class TransientScheduler(
     {
         using var service = _scopeFactory.CreateAsyncScope();
 
-        ITransientPublisher publisher = service.ServiceProvider
-            .GetRequiredService<ITransientPublisher>();
+        IIntegrationEventPublisher publisher = service.ServiceProvider
+            .GetRequiredService<IIntegrationEventPublisher>();
 
         IIntegrationEventStore eventStore = service.ServiceProvider
             .GetRequiredService<IIntegrationEventStore>();

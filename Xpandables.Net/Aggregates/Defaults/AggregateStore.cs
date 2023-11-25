@@ -18,7 +18,6 @@ using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.IntegrationEvents;
 using Xpandables.Net.I18n;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Operations.Messaging;
 
 namespace Xpandables.Net.Aggregates.Defaults;
 
@@ -36,14 +35,14 @@ namespace Xpandables.Net.Aggregates.Defaults;
 /// <exception cref="ArgumentNullException"></exception>
 public sealed class AggregateStore<TAggregate, TAggregateId>(
     IDomainEventStore eventStore,
-    ITransientPublisher eventPublisher,
+    IDomainEventPublisher<TAggregateId> eventPublisher,
     IIntegrationEventOutbox eventOutbox) : IAggregateStore<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     private readonly IDomainEventStore _eventStore = eventStore
         ?? throw new ArgumentNullException(nameof(eventStore));
-    private readonly ITransientPublisher _eventPublisher = eventPublisher
+    private readonly IDomainEventPublisher<TAggregateId> _eventPublisher = eventPublisher
         ?? throw new ArgumentNullException(nameof(eventPublisher));
     private readonly IIntegrationEventOutbox _eventOutbox = eventOutbox
         ?? throw new ArgumentNullException(nameof(eventOutbox));

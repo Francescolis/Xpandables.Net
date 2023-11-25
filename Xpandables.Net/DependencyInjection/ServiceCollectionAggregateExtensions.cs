@@ -226,4 +226,70 @@ public static partial class ServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Registers the default <see cref="IIntegrationEventPublisher"/> implementation to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXIntegrationEventPublisher(this IServiceCollection services)
+        => services.AddXIntegrationEventPublisher<IntegrationEventPublisher>();
+
+    /// <summary>
+    /// Registers the <typeparamref name="TIntegrationEventPublisher"/> 
+    /// as <see cref="IIntegrationEventPublisher"/> type implementation 
+    /// to the services with scope life time.
+    /// </summary>
+    /// <typeparam name="TIntegrationEventPublisher">The integration event publisher type implementation.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXIntegrationEventPublisher<TIntegrationEventPublisher>(
+        this IServiceCollection services)
+        where TIntegrationEventPublisher : class, IIntegrationEventPublisher
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IIntegrationEventPublisher),
+                typeof(TIntegrationEventPublisher),
+                ServiceLifetime.Scoped));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the default <see cref="IDomainEventPublisher{TAggregateId}"/> 
+    /// implementation to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXDomainEventPublisher(this IServiceCollection services)
+        => services.AddXDomainEventPublisher(typeof(DomainEventPublisher<>));
+
+    /// <summary>
+    /// Registers the <paramref name="domainEventPublisherType"/> as 
+    /// <see cref="IDomainEventPublisher{TAggregateId}"/> type implementation 
+    /// to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="domainEventPublisherType">The domain event publisher type implementation.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXDomainEventPublisher(
+        this IServiceCollection services, Type domainEventPublisherType)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IDomainEventPublisher<>),
+                domainEventPublisherType,
+                ServiceLifetime.Scoped));
+
+        return services;
+    }
 }
