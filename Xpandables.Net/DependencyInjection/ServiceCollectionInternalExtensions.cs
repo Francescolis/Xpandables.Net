@@ -124,9 +124,28 @@ internal static class ServiceCollectionInternalExtensions
         Type serviceType)
         => services
             .Where(x => !x.ServiceType.IsGenericTypeDefinition
-                && IsSameGenericType(x.ServiceType, serviceType))
+                && IsSameGenericType(x.ServiceType, serviceType)
+                && !typeof(Delegate).IsAssignableFrom(x.ServiceType))
             .Select(x => x.ServiceType.GenericTypeArguments)
+            .Distinct(new ArgumentTypeComparer())
             .ToArray();
+
+    internal sealed class ArgumentTypeComparer : IEqualityComparer<Type[]>
+    {
+        public bool Equals(Type[]? x, Type[]? y)
+        {
+            return (x, y) switch
+            {
+                (null, null) => true,
+                (null, _) => false,
+                (_, null) => false,
+                _ => x.SequenceEqual(y)
+            };
+        }
+
+        public int GetHashCode(Type[] obj)
+            => obj.Aggregate(0, (current, type) => current ^ type.GetHashCode());
+    }
 
     internal static bool IsSameGenericType(Type t1, Type t2)
         => t1.IsGenericType

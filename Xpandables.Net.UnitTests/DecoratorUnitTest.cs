@@ -26,7 +26,7 @@ using Xpandables.Net.Validators;
 namespace Xpandables.Net.UnitTests;
 
 public sealed record QueryDecorated(Guid Id) : IQuery<string>, IValidateDecorator;
-public sealed class QueryDecoratedHandler : IQueryHandler<QueryDecorated, string>
+public sealed class QueryDecoratedHandlerA : IQueryHandler<QueryDecorated, string>
 {
     public async ValueTask<OperationResult<string>> HandleAsync(
         QueryDecorated query,
@@ -34,10 +34,37 @@ public sealed class QueryDecoratedHandler : IQueryHandler<QueryDecorated, string
     {
         await Task.Yield();
         return OperationResults
-            .Ok("Product")
+            .Ok("Product A")
             .Build();
     }
 }
+
+public sealed class QueryDecoratedHandlerB : IQueryHandler<QueryDecorated, string>
+{
+    public async ValueTask<OperationResult<string>> HandleAsync(
+        QueryDecorated query,
+        CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+        return OperationResults
+            .Ok("Product B")
+            .Build();
+    }
+}
+
+public sealed class QueryDecoratedHandlerC : IQueryHandler<QueryDecorated, string>
+{
+    public async ValueTask<OperationResult<string>> HandleAsync(
+        QueryDecorated query,
+        CancellationToken cancellationToken = default)
+    {
+        await Task.Yield();
+        return OperationResults
+            .Ok("Product C")
+            .Build();
+    }
+}
+
 public sealed class CustomValidationQueryDecorator<TQuery, TResult>(
     IQueryHandler<TQuery, TResult> handler) : IQueryHandler<TQuery, TResult>
     where TQuery : IQuery<TResult>, IValidateDecorator
@@ -74,6 +101,17 @@ public sealed class DecoratorUnitTest
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<CustomValidationQueryDecorator<QueryDecorated, string>>();
+    }
+
+    [Fact]
+    public void Decorator_Should_Match_Number_Registered()
+    {
+        var handlers = _serviceProvider
+            .GetServices<IQueryHandler<QueryDecorated, string>>();
+
+        handlers.Should().Contain(
+            handler => handler.GetType() == typeof(CustomValidationQueryDecorator<QueryDecorated, string>));
+        handlers.Should().HaveCount(3);
     }
 
 }
