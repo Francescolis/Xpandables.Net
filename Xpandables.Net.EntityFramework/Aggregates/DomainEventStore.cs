@@ -69,7 +69,7 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
 
         return dataContext.Events
             .AsNoTracking()
-            .Where(e => e.AggregateId == aggregateId.Value && e.AggregateIdName == aggregateIdName)
+            .Where(e => e.AggregateId == aggregateId.Value && e.AggregateIdTypeName == aggregateIdName)
             .OrderBy(e => e.Version)
             .Select(s => DomainEventRecord.ToDomainEventRecord<TAggregateId>(s, serializerOptions))
             .OfType<IDomainEvent<TAggregateId>>()
@@ -114,14 +114,14 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
 
         if (filter.AggregateIdTypeName is not null)
             expression = expression.And(x =>
-            EF.Functions.Like(x.AggregateIdName, $"%{filter.AggregateIdTypeName}%"));
+            EF.Functions.Like(x.AggregateIdTypeName, $"%{filter.AggregateIdTypeName}%"));
 
         if (filter.Id is not null)
             expression = expression.And(x => x.Id == filter.Id);
 
         if (filter.EventTypeName is not null)
             expression = expression.And(x =>
-            EF.Functions.Like(x.TypeName, $"%{filter.EventTypeName}%"));
+            EF.Functions.Like(x.EventTypeName, $"%{filter.EventTypeName}%"));
 
         if (filter.Version is not null)
             expression = expression.And(x =>

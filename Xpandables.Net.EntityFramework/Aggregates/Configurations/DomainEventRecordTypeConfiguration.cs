@@ -35,14 +35,14 @@ public sealed class DomainEventRecordTypeConfiguration : IEntityTypeConfiguratio
 
         builder.Property(p => p.Id).IsRequired();
         builder.HasKey(p => p.Id);
-        builder.HasIndex(p => new { p.Id, p.TypeName, p.Version }).IsUnique();
+        builder.HasIndex(p => new { p.Id, p.EventTypeName, p.Version }).IsUnique();
 
         builder.Property(p => p.Id);
-        builder.Property(p => p.AggregateIdName);
+        builder.Property(p => p.AggregateIdTypeName);
         builder.Property(p => p.AggregateId);
         builder.Property(p => p.Data);
-        builder.Property(p => p.TypeFullName);
-        builder.Property(p => p.TypeName);
+        builder.Property(p => p.EventTypeFullName);
+        builder.Property(p => p.EventTypeName);
         builder.Property(p => p.Version);
 
         builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);

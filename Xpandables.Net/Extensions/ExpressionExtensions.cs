@@ -77,4 +77,154 @@ public static partial class XpandablesExtensions
             ?.Member.Name ??
             throw new ArgumentException("A member expression is expected.");
     }
+
+    internal static IQueryable ApplyFilter(this IQueryable queryable, LambdaExpression lambdaExpression)
+    {
+        var whereCallExpression = Expression.Call(
+            typeof(Queryable),
+            "Where",
+            [queryable.ElementType],
+            queryable.Expression,
+            lambdaExpression);
+
+        return queryable.Provider.CreateQuery(whereCallExpression);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterEqualExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.Equal(propertyExpression, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterNotEqualExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.NotEqual(propertyExpression, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterGreaterThanExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.GreaterThan(propertyExpression, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterGreaterThanOrEqualExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.GreaterThanOrEqual(propertyExpression, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterLessThanExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.LessThan(propertyExpression, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterLessThanOrEqualExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.LessThanOrEqual(propertyExpression, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterContainsExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.Call(propertyExpression, typeof(TValue).GetMethod(
+            nameof(string.Contains),
+            [typeof(TValue)])!, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterNotContainsExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.Not(Expression.Call(propertyExpression, typeof(TValue).GetMethod(
+            nameof(string.Contains),
+            [typeof(TValue)])!, valueExpression));
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterStartsWithExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.Call(propertyExpression, typeof(TValue).GetMethod(nameof(string.StartsWith), [typeof(TValue)])!, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterNotStartsWithExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.Not(Expression.Call(propertyExpression, typeof(TValue).GetMethod(
+            nameof(string.StartsWith),
+            [typeof(TValue)])!, valueExpression));
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterEndsWithExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.Call(propertyExpression, typeof(TValue).GetMethod(
+            nameof(string.EndsWith),
+            [typeof(TValue)])!, valueExpression);
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterNotEndsWithExpression<TProperty, TValue>(this TProperty property, TValue value)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var valueExpression = Expression.Constant(value, typeof(TValue));
+        var equalityExpression = Expression.Not(Expression.Call(propertyExpression, typeof(TValue).GetMethod(
+            nameof(string.EndsWith),
+            [typeof(TValue)])!, valueExpression));
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterIsNullExpression<TProperty, TValue>(this TProperty property)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var equalityExpression = Expression.Equal(propertyExpression, Expression.Constant(null, typeof(TValue)));
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
+
+    internal static Expression<Func<TValue, bool>> CreateFilterIsNotNullExpression<TProperty, TValue>(this TProperty property)
+    {
+        var parameter = Expression.Parameter(typeof(TProperty), "x");
+
+        var propertyExpression = Expression.Property(parameter, typeof(TProperty).GetProperty(nameof(property))!);
+        var equalityExpression = Expression.NotEqual(propertyExpression, Expression.Constant(null, typeof(TValue)));
+        return Expression.Lambda<Func<TValue, bool>>(equalityExpression, parameter);
+    }
 }

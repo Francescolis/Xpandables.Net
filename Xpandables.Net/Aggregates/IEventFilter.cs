@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Text.Json;
 
+using Xpandables.Net.Extensions;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Aggregates;
@@ -90,7 +91,61 @@ public interface IEventFilter
     /// <summary>
     /// Gets the filtered queryable.
     /// </summary>
-    IQueryable GetQueryableFiltered(IQueryable queryable);
+    public IQueryable GetQueryableFiltered(IQueryable queryable)
+    {
+        ArgumentNullException.ThrowIfNull(queryable);
+
+        if (AggregateId is not null)
+        {
+            var aggregateIfFilter = XpandablesExtensions
+                .CreateFilterEqualExpression(nameof(AggregateId), AggregateId.Value);
+            queryable = queryable.ApplyFilter(aggregateIfFilter);
+        }
+
+        if (AggregateIdTypeName is not null)
+        {
+            var aggregateIdTypeNameFilter = XpandablesExtensions
+                .CreateFilterEqualExpression(nameof(AggregateIdTypeName), AggregateIdTypeName);
+            queryable = queryable.ApplyFilter(aggregateIdTypeNameFilter);
+        }
+
+        if (Id is not null)
+        {
+            var idFilter = XpandablesExtensions
+                .CreateFilterEqualExpression(nameof(Id), Id.Value);
+            queryable = queryable.ApplyFilter(idFilter);
+        }
+
+        if (EventTypeName is not null)
+        {
+            var eventTypeNameFilter = XpandablesExtensions
+                .CreateFilterEqualExpression(nameof(EventTypeName), EventTypeName);
+            queryable = queryable.ApplyFilter(eventTypeNameFilter);
+        }
+
+        if (Version is not null)
+        {
+            var versionFilter = XpandablesExtensions
+                .CreateFilterGreaterThanExpression(nameof(Version), Version.Value);
+            queryable = queryable.ApplyFilter(versionFilter);
+        }
+
+        if (FromCreatedOn is not null)
+        {
+            var fromCreatedOnFilter = XpandablesExtensions
+                .CreateFilterGreaterThanOrEqualExpression("CreatedOn", FromCreatedOn.Value);
+            queryable = queryable.ApplyFilter(fromCreatedOnFilter);
+        }
+
+        if (ToCreatedOn is not null)
+        {
+            var toCreatedOnFilter = XpandablesExtensions
+                .CreateFilterLessThanOrEqualExpression("CreatedOn", ToCreatedOn.Value);
+            queryable = queryable.ApplyFilter(toCreatedOnFilter);
+        }
+
+        return queryable;
+    }
 }
 
 /// <summary>

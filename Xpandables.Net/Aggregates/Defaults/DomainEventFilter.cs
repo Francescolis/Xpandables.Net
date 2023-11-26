@@ -52,13 +52,13 @@ public record DomainEventFilter<TResult> : EventFilter<DomainEventRecord, TResul
             x.AggregateId == AggregateId.Value);
 
         if (AggregateIdTypeName is not null)
-            expression = expression.And(x => x.AggregateIdName == AggregateIdTypeName);
+            expression = expression.And(x => x.AggregateIdTypeName == AggregateIdTypeName);
 
         if (Id is not null)
             expression = expression.And(x => x.Id == Id);
 
         if (EventTypeName is not null)
-            expression = expression.And(x => x.TypeName == EventTypeName);
+            expression = expression.And(x => x.EventTypeName == EventTypeName);
 
         if (Version is not null)
             expression = expression.And(x =>

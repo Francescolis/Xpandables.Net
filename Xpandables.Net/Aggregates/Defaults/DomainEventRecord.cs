@@ -70,7 +70,7 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
     {
         ArgumentNullException.ThrowIfNull(record);
 
-        if (Type.GetType(record.TypeFullName) is not { } eventType)
+        if (Type.GetType(record.EventTypeFullName) is not { } eventType)
             return default;
 
         object? eventObject = record.Data.Deserialize(eventType, options);
@@ -86,7 +86,7 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
     /// <summary>
     /// Contains the string representation of the .Net aggregate Id type name.
     /// </summary>
-    public string AggregateIdName { get; }
+    public string AggregateIdTypeName { get; }
 
     /// <summary>
     /// Gets the aggregate identifier.
@@ -96,12 +96,12 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
     /// <summary>
     /// Contains the string representation of the .Net event type name.
     /// </summary>
-    public string TypeName { get; }
+    public string EventTypeName { get; }
 
     /// <summary>
     /// Contains the string representation of the .Net event full assembly qualified type name.
     /// </summary>
-    public string TypeFullName { get; }
+    public string EventTypeFullName { get; }
 
     /// <summary>
     /// Contains the representation of the event as <see cref="JsonDocument"/>.
@@ -120,17 +120,17 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
     ///inheritdoc/>
     private DomainEventRecord(
         Guid aggregateId,
-        string aggregateIdName,
+        string aggregateIdTypeName,
         ulong version,
-        string typeName,
-        string typeFullName,
+        string eventTypeName,
+        string eventTypeFullName,
         JsonDocument data)
     {
         AggregateId = aggregateId;
-        AggregateIdName = aggregateIdName;
+        AggregateIdTypeName = aggregateIdTypeName;
         Version = version;
-        TypeName = typeName;
-        TypeFullName = typeFullName;
+        EventTypeName = eventTypeName;
+        EventTypeFullName = eventTypeFullName;
         Data = data;
     }
 }

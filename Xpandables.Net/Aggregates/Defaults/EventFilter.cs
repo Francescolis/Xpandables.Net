@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Text.Json;
 
@@ -26,7 +25,7 @@ namespace Xpandables.Net.Aggregates.Defaults;
 /// <summary>
 /// Provides with base criteria for domain event filtering.
 /// </summary>
-public abstract record EventFilter : IEventFilter
+public record EventFilter : IEventFilter
 {
     ///<inheritdoc/>
     public Guid? Id { get; init; }
@@ -54,9 +53,6 @@ public abstract record EventFilter : IEventFilter
 
     ///<inheritdoc/>
     public Pagination? Pagination { get; init; }
-
-    ///<inheritdoc/>
-    public abstract IQueryable GetQueryableFiltered(IQueryable queryable);
 }
 
 /// <summary>
@@ -105,11 +101,6 @@ public abstract record EventFilter<TEventRecord> : EventFilter, IEventFilter<TEv
 
         return queryable.Select(Selector);
     }
-
-    ///<inheritdoc/>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public override IQueryable GetQueryableFiltered(IQueryable queryable)
-        => GetQueryableFiltered((IQueryable<TEventRecord>)queryable);
 }
 
 /// <summary>
