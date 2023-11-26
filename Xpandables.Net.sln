@@ -17,46 +17,40 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.AspNetCore",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.EntityFramework", "Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj", "{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.Repositories", "Xpandables.Net.Repositories\Xpandables.Net.Repositories.csproj", "{0806C66D-4A2B-4CD0-8F00-CC8041867C8B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.States", "Xpandables.Net.States\Xpandables.Net.States.csproj", "{9AD491A8-FCA9-4236-987C-6BD6C2137B4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
-		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C7787848-BFE7-4A2C-B7A4-E036E52F0C9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7787848-BFE7-4A2C-B7A4-E036E52F0C9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7787848-BFE7-4A2C-B7A4-E036E52F0C9F}.Debug|x64.ActiveCfg = Debug|x64
 		{C7787848-BFE7-4A2C-B7A4-E036E52F0C9F}.Debug|x64.Build.0 = Debug|x64
-		{C7787848-BFE7-4A2C-B7A4-E036E52F0C9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7787848-BFE7-4A2C-B7A4-E036E52F0C9F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C7787848-BFE7-4A2C-B7A4-E036E52F0C9F}.Release|x64.ActiveCfg = Release|x64
 		{C7787848-BFE7-4A2C-B7A4-E036E52F0C9F}.Release|x64.Build.0 = Release|x64
-		{890A33B7-CD84-4656-935F-92812FB68CF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{890A33B7-CD84-4656-935F-92812FB68CF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{890A33B7-CD84-4656-935F-92812FB68CF3}.Debug|x64.ActiveCfg = Debug|x64
 		{890A33B7-CD84-4656-935F-92812FB68CF3}.Debug|x64.Build.0 = Debug|x64
-		{890A33B7-CD84-4656-935F-92812FB68CF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{890A33B7-CD84-4656-935F-92812FB68CF3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{890A33B7-CD84-4656-935F-92812FB68CF3}.Release|x64.ActiveCfg = Release|x64
 		{890A33B7-CD84-4656-935F-92812FB68CF3}.Release|x64.Build.0 = Release|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Debug|x64.ActiveCfg = Debug|x64
 		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Debug|x64.Build.0 = Debug|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Release|x64.ActiveCfg = Release|x64
 		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Release|x64.Build.0 = Release|x64
-		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Debug|x64.ActiveCfg = Debug|x64
 		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Debug|x64.Build.0 = Debug|x64
-		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Release|x64.ActiveCfg = Release|x64
 		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Release|x64.Build.0 = Release|x64
+		{0806C66D-4A2B-4CD0-8F00-CC8041867C8B}.Debug|x64.ActiveCfg = Debug|x64
+		{0806C66D-4A2B-4CD0-8F00-CC8041867C8B}.Debug|x64.Build.0 = Debug|x64
+		{0806C66D-4A2B-4CD0-8F00-CC8041867C8B}.Release|x64.ActiveCfg = Release|x64
+		{0806C66D-4A2B-4CD0-8F00-CC8041867C8B}.Release|x64.Build.0 = Release|x64
+		{9AD491A8-FCA9-4236-987C-6BD6C2137B4D}.Debug|x64.ActiveCfg = Debug|x64
+		{9AD491A8-FCA9-4236-987C-6BD6C2137B4D}.Debug|x64.Build.0 = Debug|x64
+		{9AD491A8-FCA9-4236-987C-6BD6C2137B4D}.Release|x64.ActiveCfg = Release|x64
+		{9AD491A8-FCA9-4236-987C-6BD6C2137B4D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
