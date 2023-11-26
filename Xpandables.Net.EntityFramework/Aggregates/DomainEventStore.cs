@@ -78,56 +78,14 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
 
     ///<inheritdoc/>
     public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
-       DomainEventFilterCriteria filter,
-#pragma warning disable CA1725 // Parameter names should match base declaration
-       CancellationToken cancellation = default)
-#pragma warning restore CA1725 // Parameter names should match base declaration
+       IEventFilter filter,
+       CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        var expression = QueryExpressionFactory.Create<DomainEventRecord>();
-
-        if (filter.AggregateId is not null)
-            expression = expression.And(x => x.AggregateId == filter.AggregateId.Value);
-
-        if (filter.AggregateIdName is not null)
-            expression = expression.And(x => EF.Functions.Like(x.AggregateIdName, $"%{filter.AggregateIdName}%"));
-
-        if (filter.Id is not null)
-            expression = expression.And(x => x.Id == filter.Id);
-
-        if (filter.EventTypeName is not null)
-            expression = expression.And(x => EF.Functions.Like(x.TypeName, $"%{filter.EventTypeName}%"));
-
-        if (filter.Version is not null)
-            expression = expression.And(x => x.Version > filter.Version.Value);
-
-        if (filter.FromCreatedOn is not null)
-            expression = expression.And(x => x.CreatedOn >= filter.FromCreatedOn.Value);
-
-        if (filter.ToCreatedOn is not null)
-            expression = expression.And(x => x.CreatedOn <= filter.ToCreatedOn.Value);
-
-        if (filter.DataCriteria is not null)
-        {
-            _ = Expression.Invoke(
-                filter.DataCriteria,
-                Expression.PropertyOrField(
-                    DomainEventFilterCriteria.EventEntityParameter,
-                    nameof(DomainEventRecord.Data)));
-
-            var dataCriteria = Expression.Lambda<Func<DomainEventRecord, bool>>(
-                DomainEventFilterCriteria.EventEntityVisitor.Visit(filter.DataCriteria.Body),
-                DomainEventFilterCriteria.EventEntityVisitor.Parameter);
-
-            expression = expression.And(dataCriteria);
-        }
-
-        return dataContext.Events
-             .AsNoTracking()
-             .Where(expression)
-             .OrderBy(e => e.Version)
+        return filter.GetQueryableFiltered(dataContext.Events.AsNoTracking())
+            .AsRequired<IQueryable<DomainEventRecord>>()
              .Select(s => DomainEventRecord.ToDomainEventRecord<TAggregateId>(s, serializerOptions))
              .OfType<IDomainEvent<TAggregateId>>()
              .AsAsyncEnumerable();
@@ -144,5 +102,54 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
 
         await base.DisposeAsync(disposing)
             .ConfigureAwait(false);
+    }
+
+    private static QueryExpression<DomainEventRecord, bool> BuildQueryExpression(IEventFilter filter)
+    {
+        var expression = QueryExpressionFactory.Create<DomainEventRecord>();
+
+        if (filter.AggregateId is not null)
+            expression = expression.And(x =>
+            x.AggregateId == filter.AggregateId.Value);
+
+        if (filter.AggregateIdTypeName is not null)
+            expression = expression.And(x =>
+            EF.Functions.Like(x.AggregateIdName, $"%{filter.AggregateIdTypeName}%"));
+
+        if (filter.Id is not null)
+            expression = expression.And(x => x.Id == filter.Id);
+
+        if (filter.EventTypeName is not null)
+            expression = expression.And(x =>
+            EF.Functions.Like(x.TypeName, $"%{filter.EventTypeName}%"));
+
+        if (filter.Version is not null)
+            expression = expression.And(x =>
+            x.Version > filter.Version.Value);
+
+        if (filter.FromCreatedOn is not null)
+            expression = expression.And(x =>
+            x.CreatedOn >= filter.FromCreatedOn.Value);
+
+        if (filter.ToCreatedOn is not null)
+            expression = expression.And(x =>
+            x.CreatedOn <= filter.ToCreatedOn.Value);
+
+        if (filter.DataCriteria is not null)
+        {
+            _ = Expression.Invoke(
+                filter.DataCriteria,
+                Expression.PropertyOrField(
+                    EventFilterEntityVisitor.EventEntityParameter,
+                    nameof(DomainEventRecord.Data)));
+
+            var dataCriteria = Expression.Lambda<Func<DomainEventRecord, bool>>(
+                EventFilterEntityVisitor.EventEntityVisitor.Visit(filter.DataCriteria.Body),
+                EventFilterEntityVisitor.EventEntityVisitor.Parameter);
+
+            expression = expression.And(dataCriteria);
+        }
+
+        return expression;
     }
 }

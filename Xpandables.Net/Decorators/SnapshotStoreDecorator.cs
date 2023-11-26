@@ -104,10 +104,10 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
 
         // because the snapshot is not aligned with the last events,
         // we need to add those events if available
-        var filter = new DomainEventFilterCriteria
+        var filter = new DomainEventFilter
         {
             AggregateId = aggregateId.Value,
-            AggregateIdName = typeof(TAggregateId).Name,
+            AggregateIdTypeName = typeof(TAggregateId).Name,
             Version = aggregate.Version
         };
 

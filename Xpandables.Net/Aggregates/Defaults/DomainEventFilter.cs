@@ -15,35 +15,23 @@
  *
 ************************************************************************************************************/
 using System.Linq.Expressions;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 
-using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Operations.Expressions;
-
-using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Aggregates.Defaults;
 
 /// <summary>
 /// Specifies criteria with projection for domain event records.
 /// </summary>
-public record DomainEventFilter : DomainEventFilter<DomainEventRecord>
-{
-    ///<inheritdoc/>
-    public sealed override Expression<Func<DomainEventRecord, DomainEventRecord>> Selector => x => x;
-}
+public record DomainEventFilter : DomainEventFilter<DomainEventRecord> { }
 
 /// <summary>
 /// Specifies criteria with projection for domain event records to a specific result.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 /// <remarks>You must at least provides a value for the "Selector".</remarks>
-public record DomainEventFilter<TResult> : IDomainEventFilter<DomainEventRecord, TResult>
+public record DomainEventFilter<TResult> : EventFilter<DomainEventRecord, TResult>
 {
-    internal static readonly ParameterExpression EventEntityParameter = Expression.Parameter(typeof(DomainEventRecord));
-    internal static readonly EntityVisitor EventEntityVisitor = new(typeof(DomainEventRecord), nameof(DomainEventRecord.Data));
-
     /// <summary>
     /// Creates a new instance of <see cref="DomainEventFilter{TResult}"/> to filter domain event records 
     /// and return result of <typeparamref name="TResult"/> type.
@@ -51,80 +39,50 @@ public record DomainEventFilter<TResult> : IDomainEventFilter<DomainEventRecord,
     /// <remarks>You must at least provides a value for the "Selector".</remarks>
     public DomainEventFilter() { }
 
-    ///<inheritdoc/>
-    public Guid? AggregateId { get; init; }
-
-    ///<inheritdoc/>
-    public Guid? Id { get; init; }
-
-    ///<inheritdoc/>
-    public string? AggregateIdName { get; init; }
-
-    ///<inheritdoc/>
-    public string? EventTypeName { get; init; }
-
-    ///<inheritdoc/>
-    public DateTime? FromCreatedOn { get; init; }
-
-    ///<inheritdoc/>
-    public DateTime? ToCreatedOn { get; init; }
-
-    ///<inheritdoc/>
-    public Expression<Func<JsonDocument, bool>>? DataCriteria { get; init; }
-
-    ///<inheritdoc/>
-    public Pagination? Pagination { get; init; }
-
-    ///<inheritdoc/>
-    public Func<IQueryable<DomainEventRecord>, IOrderedQueryable<DomainEventRecord>>? OrderBy { get; init; }
-
-    ///<inheritdoc/>
-    public virtual Expression<Func<DomainEventRecord, TResult>> Selector { get; init; } = default!;
-
-    readonly Expression<Func<DomainEventRecord, bool>>? _criteria;
-
-    ///<inheritdoc/>
-    public Expression<Func<DomainEventRecord, bool>> Criteria
-    {
-        get => _criteria is not null ? GetExpression().And(_criteria) : GetExpression();
-        init => _criteria = value;
-    }
-
     /// <summary>
     /// Returns the expression criteria based on the underlying arguments.
     /// </summary>
     /// <returns>An object of <see cref="Expression{TDelegate}"/>.</returns>
-    protected QueryExpression<DomainEventRecord, bool> GetExpression()
+    protected override QueryExpression<DomainEventRecord, bool> GetExpression()
     {
         var expression = QueryExpressionFactory.Create<DomainEventRecord>();
 
         if (AggregateId is not null)
-            expression = expression.And(x => x.AggregateId == AggregateId.Value);
+            expression = expression.And(x =>
+            x.AggregateId == AggregateId.Value);
 
-        if (AggregateIdName is not null)
-            expression = expression.And(x => Regex.IsMatch(AggregateIdName, x.AggregateIdName));
+        if (AggregateIdTypeName is not null)
+            expression = expression.And(x => x.AggregateIdName == AggregateIdTypeName);
 
         if (Id is not null)
             expression = expression.And(x => x.Id == Id);
 
         if (EventTypeName is not null)
-            expression = expression.And(x => Regex.IsMatch(EventTypeName, x.TypeName));
+            expression = expression.And(x => x.TypeName == EventTypeName);
+
+        if (Version is not null)
+            expression = expression.And(x =>
+            x.Version > Version.Value);
 
         if (FromCreatedOn is not null)
-            expression = expression.And(x => x.CreatedOn >= FromCreatedOn.Value);
+            expression = expression.And(x =>
+            x.CreatedOn >= FromCreatedOn.Value);
 
         if (ToCreatedOn is not null)
-            expression = expression.And(x => x.CreatedOn <= ToCreatedOn.Value);
+            expression = expression.And(x =>
+            x.CreatedOn <= ToCreatedOn.Value);
 
         if (DataCriteria is not null)
         {
             _ = Expression.Invoke(
                 DataCriteria,
-                Expression.PropertyOrField(EventEntityParameter, nameof(DomainEventRecord.Data)));
+                Expression.PropertyOrField(
+                    EventFilterEntityVisitor.EventEntityParameter,
+                    nameof(DomainEventRecord.Data)));
 
             var dataCriteria = Expression.Lambda<Func<DomainEventRecord, bool>>(
-                EventEntityVisitor.Visit(DataCriteria.Body),
-                EventEntityVisitor.Parameter);
+                EventFilterEntityVisitor.EventEntityVisitor.Visit(DataCriteria.Body),
+                EventFilterEntityVisitor.EventEntityVisitor.Parameter);
 
             expression = expression.And(dataCriteria);
         }

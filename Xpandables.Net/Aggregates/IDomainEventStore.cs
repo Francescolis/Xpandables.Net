@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.DomainEvents;
 
 namespace Xpandables.Net.Aggregates;
@@ -69,7 +68,7 @@ public interface IDomainEventStore : IDisposable
     /// <exception cref="ArgumentNullException">The <paramref name="filter"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
-        DomainEventFilterCriteria filter,
+        IEventFilter filter,
         CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>;
 }

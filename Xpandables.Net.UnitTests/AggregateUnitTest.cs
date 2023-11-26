@@ -22,7 +22,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Defaults;
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.IntegrationEvents;
 using Xpandables.Net.Collections;
@@ -46,7 +45,8 @@ public sealed class AggregateUnitTest
             .AddXPersistenceCommandHandler(_ => ct => ValueTask.FromResult(OperationResults.Ok().Build()))
             .AddXAggregateStoreDefault()
             .AddXOperationResultContext()
-            .AddXTransientPublisher()
+            .AddXDomainEventPublisher()
+            .AddXIntegrationEventPublisher()
             .AddXIntegrationEventSourcing()
             .AddXIntegrationEventOutbox()
             .AddXDomainEventStore<EventStoreTest>()
@@ -176,7 +176,7 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore
     }
 
     public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
-        DomainEventFilterCriteria filter,
+        IEventFilter filter,
         CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
