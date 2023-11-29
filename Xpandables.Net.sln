@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.UnitTests", "Xpandables.Net.UnitTests\Xpandables.Net.UnitTests.csproj", "{890A33B7-CD84-4656-935F-92812FB68CF3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.AspNetCore", "Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj", "{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.EntityFramework", "Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj", "{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.Repositories", "Xpandables.Net.Repositories\Xpandables.Net.Repositories.csproj", "{0806C66D-4A2B-4CD0-8F00-CC8041867C8B}"
@@ -53,6 +51,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.DependencyIn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.HostedServices", "Xpandables.Net.HostedServices\Xpandables.Net.HostedServices.csproj", "{40CFC8FD-97C5-4587-83C7-8E97588EAF33}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Repositories.EntityFramework", "Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj", "{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Operations.AspNetCore", "Xpandables.Net.Operations.AspNetCore\Xpandables.Net.Operations.AspNetCore.csproj", "{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Http.AspNetCore", "Xpandables.Net.Http.AspNetCore\Xpandables.Net.Http.AspNetCore.csproj", "{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Composition.AspNetCore", "Xpandables.Net.Composition.AspNetCore\Xpandables.Net.Composition.AspNetCore.csproj", "{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,14 +83,6 @@ Global
 		{890A33B7-CD84-4656-935F-92812FB68CF3}.Release|Any CPU.Build.0 = Release|x64
 		{890A33B7-CD84-4656-935F-92812FB68CF3}.Release|x64.ActiveCfg = Release|x64
 		{890A33B7-CD84-4656-935F-92812FB68CF3}.Release|x64.Build.0 = Release|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Debug|Any CPU.Build.0 = Debug|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Debug|x64.ActiveCfg = Debug|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Debug|x64.Build.0 = Debug|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Release|Any CPU.ActiveCfg = Release|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Release|Any CPU.Build.0 = Release|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Release|x64.ActiveCfg = Release|x64
-		{E2EC71D2-6D91-40FD-8DE0-C39E43FB03A3}.Release|x64.Build.0 = Release|x64
 		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Debug|Any CPU.Build.0 = Debug|x64
 		{EBAFFCC4-5617-4101-946F-5BC0AD1A59CE}.Debug|x64.ActiveCfg = Debug|x64
@@ -237,6 +235,38 @@ Global
 		{40CFC8FD-97C5-4587-83C7-8E97588EAF33}.Release|Any CPU.Build.0 = Release|Any CPU
 		{40CFC8FD-97C5-4587-83C7-8E97588EAF33}.Release|x64.ActiveCfg = Release|x64
 		{40CFC8FD-97C5-4587-83C7-8E97588EAF33}.Release|x64.Build.0 = Release|x64
+		{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}.Debug|x64.ActiveCfg = Debug|x64
+		{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}.Debug|x64.Build.0 = Debug|x64
+		{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}.Release|x64.ActiveCfg = Release|x64
+		{F36FB5C1-7631-44E6-83C7-10B61EBB11FA}.Release|x64.Build.0 = Release|x64
+		{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}.Debug|x64.ActiveCfg = Debug|x64
+		{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}.Debug|x64.Build.0 = Debug|x64
+		{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}.Release|Any CPU.Build.0 = Release|Any CPU
+		{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}.Release|x64.ActiveCfg = Release|x64
+		{321D86C5-7CB9-4BEC-AAA3-D6EC7FBF4253}.Release|x64.Build.0 = Release|x64
+		{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}.Debug|x64.ActiveCfg = Debug|x64
+		{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}.Debug|x64.Build.0 = Debug|x64
+		{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}.Release|x64.ActiveCfg = Release|x64
+		{5453E5BD-0349-4AA3-B68A-70B1DE8567A1}.Release|x64.Build.0 = Release|x64
+		{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}.Debug|x64.ActiveCfg = Debug|x64
+		{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}.Debug|x64.Build.0 = Debug|x64
+		{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}.Release|x64.ActiveCfg = Release|x64
+		{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

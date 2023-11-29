@@ -75,6 +75,21 @@ public interface IEntity
     public bool IsDeleted => Status == EntityStatus.DELETED;
 
     /// <summary>
+    /// Sets the creation date time.
+    /// </summary>
+    void SetCreatedOn();
+
+    /// <summary>
+    /// Sets the update date time.
+    /// </summary>
+    void SetUpdatedOn();
+
+    /// <summary>
+    /// Sets the deleted date time.
+    /// </summary>
+    void SetDeletedOn();
+
+    /// <summary>
     /// Marks the underlying instance as active and sets the update date time.
     /// </summary>
     void SetStatusActive();

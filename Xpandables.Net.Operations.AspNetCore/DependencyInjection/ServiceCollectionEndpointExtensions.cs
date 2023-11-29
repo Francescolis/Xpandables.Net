@@ -18,9 +18,10 @@
 using System.Reflection;
 
 using Microsoft.AspNetCore.Builder;
-using Xpandables.Net.AspNetCore;
-using Xpandables.Net.Collections;
+
+using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
+using Xpandables.Net.Primitives.Collections;
 
 namespace Xpandables.Net.DependencyInjection;
 

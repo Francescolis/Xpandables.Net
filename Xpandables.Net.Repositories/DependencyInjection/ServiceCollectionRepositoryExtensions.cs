@@ -24,6 +24,9 @@ using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
 
+/// <summary>
+/// Provides with methods to register repositories to the services collection.
+/// </summary>
 public static class ServiceCollectionRepositoryExtensions
 {
     internal readonly static MethodInfo AddRepositoryMethod = typeof(ServiceCollectionRepositoryExtensions).GetMethod(nameof(AddXRepository))!;

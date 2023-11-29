@@ -31,11 +31,13 @@ public static partial class XpandablesExtensions
     /// </summary>
     /// <param name="task">Task method to execute</param>
     public static void RunSync(this Func<Task> task)
+#pragma warning disable CA2008 // Do not create tasks without passing a TaskScheduler
         => TaskFactory
             .StartNew(task)
             .Unwrap()
             .GetAwaiter()
             .GetResult();
+#pragma warning restore CA2008 // Do not create tasks without passing a TaskScheduler
 
     /// <summary>
     /// Executes an async Task{T} method which has a T return type synchronously
@@ -45,9 +47,11 @@ public static partial class XpandablesExtensions
     /// <param name="task">Task{T} method to execute</param>
     /// <returns></returns>
     public static TResult RunSync<TResult>(this Func<Task<TResult>> task)
+#pragma warning disable CA2008 // Do not create tasks without passing a TaskScheduler
         => TaskFactory
             .StartNew(task)
             .Unwrap()
             .GetAwaiter()
             .GetResult();
+#pragma warning restore CA2008 // Do not create tasks without passing a TaskScheduler
 }

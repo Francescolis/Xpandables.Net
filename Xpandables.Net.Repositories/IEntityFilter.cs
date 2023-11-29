@@ -42,7 +42,8 @@ public interface IEntityFilter<TEntity, TResult>
     /// Specifies the filter criteria to be applied on specific type entities.
     /// </summary>
     /// <remarks>You can set the value to <code>Criteria = x => true;</code> 
-    /// to return all entities of the specific type.</remarks>
+    /// to return all entities of the specific type, or you can use
+    /// the <see langword="Specification"/> pattern.</remarks>
     Expression<Func<TEntity, bool>>? Criteria { get; }
 
     /// <summary>

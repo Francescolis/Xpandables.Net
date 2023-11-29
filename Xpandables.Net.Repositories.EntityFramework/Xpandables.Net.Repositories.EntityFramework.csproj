@@ -13,10 +13,10 @@
 	  <AnalysisLevel>preview-all</AnalysisLevel>
 	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	  <Title>Xpandables.Net.DependencyInjection</Title>
+	  <Title>Xpandables.Net.Repositories.EntityFramework</Title>
 	  <Authors>Francis-Black EWANE</Authors>
 	  <Company>Kamersoft.Net</Company>
-	  <Description>A utility library in .Net8.0 to easily add dependency injection..</Description>
+	  <Description>A utility library in .Net8.0 to easily add entityframeowkr repository pattern.</Description>
 	  <Copyright>Copyright © 2023 Francis-Black EWANE</Copyright>
 	  <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -32,7 +32,7 @@
 	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	  <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-	  <PackageTags>Validator;Visitor;Transaction;Persistence;OperationResultFinalizer;</PackageTags>
+	  <PackageTags>DataContext;UnitOfWork;IRepository;IEntity;IUnitOfWork;</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -68,9 +68,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Xpandables.Net.Repositories\Xpandables.Net.Repositories.csproj" />
   </ItemGroup>
 
 </Project>

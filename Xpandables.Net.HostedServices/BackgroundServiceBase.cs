@@ -14,6 +14,10 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using Microsoft.Extensions.Hosting;
+
+using Xpandables.Net.Operations;
+
 namespace Xpandables.Net.HostedServices;
 
 /// <summary>

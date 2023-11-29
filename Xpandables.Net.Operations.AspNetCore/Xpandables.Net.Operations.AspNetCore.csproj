@@ -13,10 +13,10 @@
 		<AnalysisLevel>preview-all</AnalysisLevel>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Title>Xpandables.Net.AspNetCore</Title>
+		<Title>Xpandables.Net.Operations.AspNetCore</Title>
 		<Authors>Francis-Black EWANE</Authors>
 		<Company>Kamersoft.Net</Company>
-		<Description>A utility library in .Net8.0 that adds AspNetCore behaviors to Xpandables.Net</Description>
+		<Description>A utility library in .Net8.0 to easily add IOperationResult interface to AspNetCore.</Description>
 		<Copyright>Copyright © 2023 Francis-Black EWANE</Copyright>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -32,8 +32,26 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<PackageTags>CQRS;DDD;Optional;Command;Query;Dispatcher;Aggregate;OperationResult;Decorator;Specification;State;HttpClient;Interception;Visitor</PackageTags>
+		<PackageTags>IOperationResult;IOperationResultBuilder</PackageTags>
 	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<WarningLevel>9999</WarningLevel>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+		<WarningsNotAsErrors>CA1812;</WarningsNotAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<WarningLevel>9999</WarningLevel>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+		<WarningsNotAsErrors>CA1812;</WarningsNotAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Remove="Xpandables.Net.ico" />
@@ -42,22 +60,6 @@
 	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-		<WarningLevel>9999</WarningLevel>
-		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-		<WarningLevel>9999</WarningLevel>
-		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="..\.editorconfig" Link=".editorconfig" />
@@ -69,6 +71,12 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Xpandables.Net.DependencyInjection\Xpandables.Net.DependencyInjection.csproj" />
+		<ProjectReference Include="..\Xpandables.Net.Extensions\Xpandables.Net.Extensions.csproj" />
+		<ProjectReference Include="..\Xpandables.Net.Validators\Xpandables.Net.Validators.csproj" />
 	</ItemGroup>
 
 </Project>

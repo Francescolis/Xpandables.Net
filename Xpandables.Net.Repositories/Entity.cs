@@ -40,7 +40,7 @@ public abstract class Entity : IEntity
 
     ///<inheritdoc/>
     ///<remarks>This property is automatically set by the constructor.</remarks>
-    public DateTime CreatedOn { get; protected set; } = DateTime.UtcNow;
+    public DateTime CreatedOn { get; protected internal set; } = DateTime.UtcNow;
 
     ///<inheritdoc/>
     ///<remarks>This property is automatically 
@@ -53,10 +53,19 @@ public abstract class Entity : IEntity
     public DateTime? DeletedOn { get; protected set; }
 
     /// <inheritdoc/>
+    public void SetCreatedOn() => CreatedOn = DateTime.UtcNow;
+
+    /// <inheritdoc/>
+    public void SetUpdatedOn() => UpdatedOn = DateTime.UtcNow;
+
+    /// <inheritdoc/>
+    public void SetDeletedOn() => DeletedOn = DateTime.UtcNow;
+
+    /// <inheritdoc/>
     public void SetStatusActive()
     {
         Status = EntityStatus.ACTIVE;
-        UpdatedOn = DateTime.UtcNow;
+        SetUpdatedOn();
         DeletedOn = null;
     }
 
@@ -64,7 +73,7 @@ public abstract class Entity : IEntity
     public void SetStatusInactive()
     {
         Status = EntityStatus.INACTIVE;
-        UpdatedOn = DateTime.UtcNow;
+        SetUpdatedOn();
         DeletedOn = null;
     }
 
@@ -72,7 +81,7 @@ public abstract class Entity : IEntity
     public void SetStatusSuspended()
     {
         Status = EntityStatus.SUSPENDED;
-        UpdatedOn = DateTime.UtcNow;
+        SetUpdatedOn();
         DeletedOn = null;
     }
 
@@ -80,7 +89,7 @@ public abstract class Entity : IEntity
     public void SetStatusDeleted()
     {
         Status = EntityStatus.DELETED;
-        UpdatedOn = DateTime.UtcNow;
+        SetUpdatedOn();
         DeletedOn = DateTime.UtcNow;
     }
 }
