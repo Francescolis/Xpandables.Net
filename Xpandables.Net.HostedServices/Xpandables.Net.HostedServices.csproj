@@ -1,0 +1,79 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net8.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <Platforms>x64</Platforms>
+	  <NeutralLanguage>fr-FR</NeutralLanguage>
+	  <SignAssembly>True</SignAssembly>
+	  <AssemblyOriginatorKeyFile>C:\Users\fewan\DevOps\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+	  <ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
+	  <PackageIcon>Xpandables.Net.png</PackageIcon>
+	  <AnalysisLevel>preview-all</AnalysisLevel>
+	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	  <Title>Xpandables.Net.HostedServices</Title>
+	  <Authors>Francis-Black EWANE</Authors>
+	  <Company>Kamersoft.Net</Company>
+	  <Description>A utility library in .Net8.0 to easily add hosted services.</Description>
+	  <Copyright>Copyright © 2023 Francis-Black EWANE</Copyright>
+	  <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
+	  <PackageReleaseNotes>Add Http Client Dispatcher</PackageReleaseNotes>
+	  <PackageOutputPath>C:\Users\fewan\DevOps\Nugets\</PackageOutputPath>
+	  <NeutralLanguage>en-GB</NeutralLanguage>
+	  <Version>8.0.0</Version>
+	  <AssemblyVersion>8.0.0</AssemblyVersion>
+	  <FileVersion>8.0.0</FileVersion>
+	  <PackageVersion>8.0.0</PackageVersion>
+	  <IncludeSymbols>True</IncludeSymbols>
+	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	  <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+	  <PackageTags>IBackgroundService;</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+	  <WarningLevel>9999</WarningLevel>
+	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+	  <WarningLevel>9999</WarningLevel>
+	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <None Remove="Xpandables.Net.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <Content Include="Xpandables.Net.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <None Include="..\.editorconfig" Link=".editorconfig" />
+	  <None Include="..\README.md">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+	  </None>
+	  <None Include="..\Xpandables.Net.png">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+	  </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Xpandables.Net.DependencyInjection\Xpandables.Net.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.Operations\Xpandables.Net.Operations.csproj" />
+  </ItemGroup>
+
+</Project>

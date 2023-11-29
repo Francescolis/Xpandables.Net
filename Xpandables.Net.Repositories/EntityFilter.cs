@@ -17,6 +17,8 @@
 ************************************************************************************************************/
 using System.Linq.Expressions;
 
+using Xpandables.Net.Primitives;
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
