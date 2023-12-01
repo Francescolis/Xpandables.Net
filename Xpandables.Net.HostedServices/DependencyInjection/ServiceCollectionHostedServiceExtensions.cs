@@ -62,4 +62,23 @@ public static class ServiceCollectionHostedServiceExtensions
         return services;
     }
 
+    /// <summary>
+    /// Adds the specified background service implementation event scheduler of <see cref="ITransientScheduler"/>
+    /// to manage integration event publishing.
+    /// </summary>
+    /// <typeparam name="TTransientScheduler">The type that implements <see cref="ITransientScheduler"/>.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXTransientScheduler
+        <TTransientScheduler>(this IServiceCollection services)
+        where TTransientScheduler : BackgroundServiceBase<TTransientScheduler>, ITransientScheduler
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddXBackgroundService<ITransientScheduler, TTransientScheduler>();
+
+        return services;
+    }
+
 }

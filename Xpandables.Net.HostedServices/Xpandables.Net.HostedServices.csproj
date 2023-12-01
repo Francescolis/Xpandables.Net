@@ -39,12 +39,14 @@
 	  <WarningLevel>9999</WarningLevel>
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+	  <WarningsNotAsErrors>CA1812;</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 	  <WarningLevel>9999</WarningLevel>
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+	  <WarningsNotAsErrors>CA1812;</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -72,7 +74,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xpandables.Net.DependencyInjection\Xpandables.Net.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.IntegrationEvents\Xpandables.Net.IntegrationEvents.csproj" />
     <ProjectReference Include="..\Xpandables.Net.Operations\Xpandables.Net.Operations.csproj" />
   </ItemGroup>
 
