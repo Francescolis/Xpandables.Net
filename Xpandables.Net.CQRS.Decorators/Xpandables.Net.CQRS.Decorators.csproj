@@ -70,7 +70,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xpandables.Net.CQRS\Xpandables.Net.CQRS.csproj" />
     <ProjectReference Include="..\Xpandables.Net.Interception\Xpandables.Net.Interception.csproj" />
     <ProjectReference Include="..\Xpandables.Net.Validators\Xpandables.Net.Validators.csproj" />
     <ProjectReference Include="..\Xpandables.Net.Visitors\Xpandables.Net.Visitors.csproj" />

@@ -67,10 +67,4 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.DependencyInjection\Xpandables.Net.DependencyInjection.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Expressions\Xpandables.Net.Expressions.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Operations\Xpandables.Net.Operations.csproj" />
-	</ItemGroup>
-
 </Project>

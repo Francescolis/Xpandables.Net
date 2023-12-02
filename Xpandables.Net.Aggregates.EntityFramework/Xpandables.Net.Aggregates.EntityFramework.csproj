@@ -72,7 +72,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xpandables.Net.Aggregates\Xpandables.Net.Aggregates.csproj" />
     <ProjectReference Include="..\Xpandables.Net.Expressions\Xpandables.Net.Expressions.csproj" />
     <ProjectReference Include="..\Xpandables.Net.Extensions\Xpandables.Net.Extensions.csproj" />
     <ProjectReference Include="..\Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj" />

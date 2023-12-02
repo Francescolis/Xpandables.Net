@@ -71,8 +71,4 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Xpandables.Net.Repositories\Xpandables.Net.Repositories.csproj" />
-  </ItemGroup>
-
 </Project>
