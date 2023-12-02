@@ -17,7 +17,7 @@
 ************************************************************************************************************/
 using FluentAssertions;
 
-using Xpandables.Net.Text;
+using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.UnitTests;
 
@@ -25,9 +25,10 @@ public sealed class StringCryptographerUnitTest
 {
     [Theory]
     [InlineData("ValueToBeEncrypted", 12)]
-    public async Task Assert_Value_KeySize_CanBeEncrypted(string value, ushort keySize)
+    public void Assert_Value_KeySize_CanBeEncrypted(string value, ushort keySize)
     {
-        EncryptedValue encrypted = await StringCryptographer.EncryptAsync(value, keySize);
+        string key = StringGenerator.Generate(keySize);
+        EncryptedValue encrypted = StringCryptographer.Encrypt(value, key);
 
         encrypted.Should().NotBeNull();
         encrypted.Key.Length.Should().Be(keySize);
@@ -35,14 +36,14 @@ public sealed class StringCryptographerUnitTest
 
     [Theory]
     [InlineData("ValueToBeEncrypted")]
-    public async Task Assert_Value_WithDefaultKeyAndSalt_Encrypted_Decrypted(string value)
+    public void Assert_Value_WithDefaultKeyAndSalt_Encrypted_Decrypted(string value)
     {
-        EncryptedValue encrypted = await StringCryptographer.EncryptAsync(value);
+        EncryptedValue encrypted = StringCryptographer.Encrypt(value);
 
         encrypted.Should().NotBeNull();
         encrypted.Key.Should().NotBeNull();
 
-        string result = await StringCryptographer.DecryptAsync(encrypted);
+        string result = StringCryptographer.Decrypt(encrypted);
 
         result.Should().NotBeNull();
         result.Should().Be(value);
@@ -50,13 +51,13 @@ public sealed class StringCryptographerUnitTest
 
     [Theory]
     [InlineData("ValueToBeEncrypted")]
-    public async Task Assert_Value_WithDefaultKeyAndSalt_Encrypted_IsEqualTo_Value(string value)
+    public void Assert_Value_WithDefaultKeyAndSalt_Encrypted_IsEqualTo_Value(string value)
     {
-        EncryptedValue encrypted = await StringCryptographer.EncryptAsync(value);
+        EncryptedValue encrypted = StringCryptographer.Encrypt(value);
 
         encrypted.Should().NotBeNull();
         encrypted.Key.Should().NotBeNull();
 
-        (await StringCryptographer.AreEqualAsync(encrypted, value)).Should().Be(true);
+        StringCryptographer.AreEqual(encrypted, value).Should().Be(true);
     }
 }

@@ -21,10 +21,10 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Decorators;
+using Xpandables.Net.CQRS;
+using Xpandables.Net.CQRS.Decorators;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Operations.Messaging;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.UnitTests;

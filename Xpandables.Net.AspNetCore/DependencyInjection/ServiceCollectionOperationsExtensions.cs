@@ -21,25 +21,30 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Xpandables.Net.AspNetCore;
-using Xpandables.Net.Text;
+
+using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
 /// Provides method to register services.
 /// </summary>
-public static partial class ServiceCollectionExtensions
+public static class ServiceCollectionOperationsExtensions
 {
     /// <summary>
-    /// Adds the default <see cref="OperationResultSerializationConfigureOptions"/> to the services that configures the <see cref="Microsoft.AspNetCore.Http.Json.JsonOptions"/>
-    /// converters with <see cref="JsonStringEnumConverter"/>, <see cref="OperationResultJsonConverterFactory"/>,<see cref="JsonDateOnlyConverter"/>,
-    /// <see cref="JsonNullableDateOnlyConverter"/>, <see cref="JsonTimeOnlyConverter"/> and <see cref="JsonNullableTimeOnlyConverter"/>.    
+    /// Adds the default <see cref="OperationResultSerializationConfigureOptions"/> to the services 
+    /// that configures the <see cref="Microsoft.AspNetCore.Http.Json.JsonOptions"/>
+    /// converters with <see cref="JsonStringEnumConverter"/>, 
+    /// <see cref="OperationResultJsonConverterFactory"/>,<see cref="JsonDateOnlyConverter"/>,
+    /// <see cref="JsonNullableDateOnlyConverter"/>, <see cref="JsonTimeOnlyConverter"/> 
+    /// and <see cref="JsonNullableTimeOnlyConverter"/>.    
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    /// <remarks>For <see cref="DateOnly"/> and <see cref="TimeOnly"/> types, you need to configure swagger with builder.Services.AddSwaggerGen(options =>
+    /// <remarks>For <see cref="DateOnly"/> and <see cref="TimeOnly"/> types, you need to 
+    /// configure swagger with builder.Services.AddSwaggerGen(options =>
     /// <para>options.MapType{DateOnly}(() => new OpenApiSchema { Type = "string", Format = "date" }); </para>
     /// <para>options.MapType{TimeOnly}(() => new OpenApiSchema { Type = "string", Format = "time" });); </para>
     /// </remarks>
@@ -47,9 +52,11 @@ public static partial class ServiceCollectionExtensions
         => services.AddXOperationResultSerializationConfigureOptions<OperationResultSerializationConfigureOptions>();
 
     /// <summary>
-    /// Adds the specified <typeparamref name="TOperationResultSerializationConfigureOptions"/> to the services.
+    /// Adds the specified <typeparamref name="TOperationResultSerializationConfigureOptions"/> 
+    /// to the services.
     /// </summary>
-    /// <typeparam name="TOperationResultSerializationConfigureOptions">the type of operation result JSON configure.</typeparam>
+    /// <typeparam name="TOperationResultSerializationConfigureOptions">the type 
+    /// of operation result JSON configure.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
@@ -74,7 +81,8 @@ public static partial class ServiceCollectionExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultControllerConfigureFormatterOptions(this IServiceCollection services)
+    public static IServiceCollection AddXOperationResultControllerConfigureFormatterOptions(
+        this IServiceCollection services)
         => services.AddXOperationResultControllerConfigureFormatterOptions<OperationResultControllerConfigureFormatterOptions>();
 
     /// <summary>

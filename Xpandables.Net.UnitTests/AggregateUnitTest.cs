@@ -23,12 +23,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Aggregates.IntegrationEvents;
-using Xpandables.Net.Collections;
+using Xpandables.Net.CQRS;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Operations.Messaging;
 using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.UnitTests;
@@ -40,11 +40,11 @@ public sealed class AggregateUnitTest
     {
         IServiceProvider serviceProvider = new ServiceCollection()
             .AddLogging()
-            .AddXHandlers(options => options.UsePersistence().UseOperationResultContext())
+            .AddXCQRSHandlers(options => options.UsePersistence().UseOperationResult())
             .AddXDispatcher()
             .AddXPersistenceCommandHandler(_ => ct => ValueTask.FromResult(OperationResults.Ok().Build()))
-            .AddXAggregateStoreDefault()
-            .AddXOperationResultContext()
+            .AddXAggregateStore()
+            .AddXOperationResultFinalizer()
             .AddXDomainEventPublisher()
             .AddXIntegrationEventPublisher()
             .AddXIntegrationEventSourcing()
@@ -176,7 +176,7 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore
     }
 
     public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
-        IEventFilter filter,
+        IDomainEventFilter filter,
         CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
@@ -184,14 +184,14 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore
     }
 }
 public readonly record struct CreatePersonRequestCommand(Guid Id, string FirstName, string LastName)
-    : ICommand, IPersistenceDecorator, IOperationResultContextDecorator;
+    : ICommand, IPersistenceDecorator, IOperationResultDecorator;
 public sealed class CreatePersonRequestCommandHandler(
     IAggregateStore<Person, PersonId> aggregateStore,
-    IOperationResultContextFinalizer resultContext) : ICommandHandler<CreatePersonRequestCommand>
+    IOperationResultFinalizer resultContext) : ICommandHandler<CreatePersonRequestCommand>
 {
     private readonly IAggregateStore<Person, PersonId> _aggregateStore = aggregateStore
         ?? throw new ArgumentNullException(nameof(aggregateStore));
-    private readonly IOperationResultContextFinalizer _resultContext = resultContext
+    private readonly IOperationResultFinalizer _resultContext = resultContext
         ?? throw new ArgumentNullException(nameof(resultContext));
 
     public async ValueTask<OperationResult> HandleAsync(

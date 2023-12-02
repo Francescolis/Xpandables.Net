@@ -21,6 +21,7 @@ using System.Text.Json;
 using FluentAssertions;
 
 using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.UnitTests;
 public sealed class OperationResultUnitTest
@@ -95,7 +96,7 @@ public sealed class OperationResultUnitTest
     [InlineData(HttpStatusCode.Accepted)]
     public void OperationResult_Should_Be_Success(HttpStatusCode statusCode)
     {
-        var action = () => IOperationResult.EnsureSuccessStatusCode(statusCode);
+        var action = () => statusCode.EnsureSuccessStatusCode();
 
         action().Should().Be(statusCode);
     }
@@ -104,7 +105,7 @@ public sealed class OperationResultUnitTest
     [InlineData(HttpStatusCode.BadRequest)]
     public void OperationResult_Should_Be_Failure(HttpStatusCode statusCode)
     {
-        var action = () => IOperationResult.EnsureSuccessStatusCode(statusCode);
+        var action = () => statusCode.EnsureSuccessStatusCode();
 
         action.Should().Throw<InvalidOperationException>();
     }

@@ -18,7 +18,7 @@ using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-using Xpandables.Net.Extensions;
+using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Converters;
 /// <summary>
@@ -29,7 +29,7 @@ public sealed class JsonDocumentConverter : ValueConverter<JsonDocument, string>
     ///<inheritdoc/>
     public JsonDocumentConverter()
         : base(
-            v => v.ToJsonString(),
+            v => v.ToJsonString(null),
             v => JsonDocument.Parse(v, default))
     { }
 }

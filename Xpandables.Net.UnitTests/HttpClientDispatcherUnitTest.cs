@@ -44,7 +44,7 @@ public sealed class HttpClientDispatcherUnitTest
                 httpClient.DefaultRequestHeaders.Accept.Clear();
                 httpClient.DefaultRequestHeaders
                     .Accept
-                    .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(Parameters.ContentType.Json));
+                    .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(HttpClientParameters.ContentType.Json));
             });
 
         var provider = services.BuildServiceProvider();
@@ -71,9 +71,9 @@ public sealed class HttpClientDispatcherUnitTest
         {
             PatchOperationsBuilder = req => new List<IPatchOperation>
             {
-                Parameters.Patch.Add(nameof(req.Name), req.Name),
-                Parameters.Patch.Add(nameof(req.BirthDate), req.BirthDate),
-                Parameters.Patch.Replace(nameof(req.Age), req.Age)
+                HttpClientParameters.Patch.Add(nameof(req.Name), req.Name),
+                HttpClientParameters.Patch.Add(nameof(req.BirthDate), req.BirthDate),
+                HttpClientParameters.Patch.Replace(nameof(req.Age), req.Age)
             }
         };
 
@@ -94,14 +94,15 @@ public sealed class HttpClientDispatcherUnitTest
 
 [HttpClient(Path = "/api/call",
     IsNullable = false, IsSecured = false,
-    Location = Parameters.Location.Body, ContentType = Parameters.ContentType.JsonPatch,
-    Method = Parameters.Method.PATCH)]
+    Location = HttpClientParameters.Location.Body, ContentType = HttpClientParameters.ContentType.JsonPatch,
+    Method = HttpClientParameters.Method.PATCH)]
 sealed record Request(string Name, DateTime BirthDate, int Age) : HttpRequestPatch<Request>, IHttpClientRequest;
 readonly record struct CountryRequest(string? Name = default);
 
 readonly record struct Monkey(string Name, string Location, string Details, string Image, int Population, double Latitude, double Longitude);
 
-[HttpClient(Path = "monkeys.json", IsSecured = false, IsNullable = true, Method = Parameters.Method.GET, Location = Parameters.Location.Body)]
+[HttpClient(Path = "monkeys.json", IsSecured = false, IsNullable = true,
+    Method = HttpClientParameters.Method.GET, Location = HttpClientParameters.Location.Body)]
 sealed record Query : IHttpClientAsyncRequest<Monkey>;
 interface IHttpMonkeyDispatcher : IHttpClientDispatcher
 {

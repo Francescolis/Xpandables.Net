@@ -20,11 +20,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Aggregates.IntegrationEvents;
-using Xpandables.Net.Collections;
+using Xpandables.Net.CQRS;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Operations.Messaging;
+using Xpandables.Net.Primitives.Collections;
 
 namespace Xpandables.Net.UnitTests;
 

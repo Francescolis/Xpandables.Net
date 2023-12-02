@@ -48,12 +48,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="HostedServices\**" />
-	  <EmbeddedResource Remove="HostedServices\**" />
-	  <None Remove="HostedServices\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
@@ -72,11 +66,25 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+		<PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="DependencyInjection\" />
+		<Compile Update="Primitives\I18n\I18nXpandables.Designer.cs">
+			<DependentUpon>I18nXpandables.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Primitives\I18n\I18nXpandables.resx">
+			<LastGenOutput>I18nXpandables.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
 	</ItemGroup>
 
 </Project>

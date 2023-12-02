@@ -18,8 +18,8 @@ using System.Text.Json;
 
 using FluentAssertions;
 
-using Xpandables.Net.Extensions;
 using Xpandables.Net.Optionals;
+using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.UnitTests;
 

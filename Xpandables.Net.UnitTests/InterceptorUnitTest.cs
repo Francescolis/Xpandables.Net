@@ -18,10 +18,11 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.CQRS;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Interception;
+using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Operations.Messaging;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.UnitTests;
 

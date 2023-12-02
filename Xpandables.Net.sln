@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.Composition"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.CQRS", "Xpandables.Net.CQRS\Xpandables.Net.CQRS.csproj", "{7574416C-684A-4414-B748-E22BE977327A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Aggregates", "Xpandables.Net.Aggregates\Xpandables.Net.Aggregates.csproj", "{198EBD95-6B30-41C2-8F6B-7D8CCAC67921}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.Aggregates", "Xpandables.Net.Aggregates\Xpandables.Net.Aggregates.csproj", "{198EBD95-6B30-41C2-8F6B-7D8CCAC67921}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.CQRS.Decorators", "Xpandables.Net.CQRS.Decorators\Xpandables.Net.CQRS.Decorators.csproj", "{DCDC4DBA-7D3E-455B-B1CA-67BA010C3A74}"
 EndProject
@@ -55,11 +55,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.Http.AspNetC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.Composition.AspNetCore", "Xpandables.Net.Composition.AspNetCore\Xpandables.Net.Composition.AspNetCore.csproj", "{AF59A639-A0A3-4440-80CD-A6D9EFB8641A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.SnapShots", "Xpandables.Net.SnapShots\Xpandables.Net.SnapShots.csproj", "{072545FE-9CC7-4466-80FF-69EEAC426C9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.SnapShots", "Xpandables.Net.SnapShots\Xpandables.Net.SnapShots.csproj", "{072545FE-9CC7-4466-80FF-69EEAC426C9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.IntegrationEvents", "Xpandables.Net.IntegrationEvents\Xpandables.Net.IntegrationEvents.csproj", "{73DA92BB-28C6-469E-BA48-B81E315CA477}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.IntegrationEvents", "Xpandables.Net.IntegrationEvents\Xpandables.Net.IntegrationEvents.csproj", "{73DA92BB-28C6-469E-BA48-B81E315CA477}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Aggregates.EntityFramework", "Xpandables.Net.Aggregates.EntityFramework\Xpandables.Net.Aggregates.EntityFramework.csproj", "{D8433B0F-234A-4CEC-9849-C84C0E736460}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.Aggregates.EntityFramework", "Xpandables.Net.Aggregates.EntityFramework\Xpandables.Net.Aggregates.EntityFramework.csproj", "{D8433B0F-234A-4CEC-9849-C84C0E736460}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net", "Xpandables.Net\Xpandables.Net.csproj", "{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.AspNetCore", "Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj", "{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.EntityFramework", "Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj", "{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -277,12 +283,36 @@ Global
 		{D8433B0F-234A-4CEC-9849-C84C0E736460}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D8433B0F-234A-4CEC-9849-C84C0E736460}.Release|x64.ActiveCfg = Release|x64
 		{D8433B0F-234A-4CEC-9849-C84C0E736460}.Release|x64.Build.0 = Release|x64
+		{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}.Debug|Any CPU.Build.0 = Debug|x64
+		{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}.Debug|x64.ActiveCfg = Debug|x64
+		{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}.Debug|x64.Build.0 = Debug|x64
+		{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}.Release|Any CPU.ActiveCfg = Release|x64
+		{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}.Release|Any CPU.Build.0 = Release|x64
+		{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}.Release|x64.ActiveCfg = Release|x64
+		{EBFC03E0-A820-44A9-8CF3-5AB7BCA1275B}.Release|x64.Build.0 = Release|x64
+		{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}.Debug|Any CPU.Build.0 = Debug|x64
+		{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}.Debug|x64.ActiveCfg = Debug|x64
+		{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}.Debug|x64.Build.0 = Debug|x64
+		{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}.Release|Any CPU.ActiveCfg = Release|x64
+		{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}.Release|Any CPU.Build.0 = Release|x64
+		{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}.Release|x64.ActiveCfg = Release|x64
+		{ADDB3240-06E0-4100-806A-6A9C5AF0E1A2}.Release|x64.Build.0 = Release|x64
+		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Debug|Any CPU.Build.0 = Debug|x64
+		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Debug|x64.ActiveCfg = Debug|x64
+		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Debug|x64.Build.0 = Debug|x64
+		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Release|Any CPU.ActiveCfg = Release|x64
+		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Release|Any CPU.Build.0 = Release|x64
+		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Release|x64.ActiveCfg = Release|x64
+		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {ED5B36FA-0F71-47A7-BE1E-A0FFC836A6B1}
 		RESX_NeutralResourcesLanguage = fr-FR
+		SolutionGuid = {ED5B36FA-0F71-47A7-BE1E-A0FFC836A6B1}
 	EndGlobalSection
 EndGlobal

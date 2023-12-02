@@ -18,8 +18,7 @@ using System.Net;
 
 using Moq;
 
-using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.IntegrationEvents;
+using Xpandables.Net.IntegrationEvents;
 
 namespace Xpandables.Net.UnitTests;
 public sealed class IntegrationEventOutboxUnitTest

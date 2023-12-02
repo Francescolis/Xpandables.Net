@@ -25,7 +25,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// <summary>
 /// Provides method to register services.
 /// </summary>
-public static partial class ServiceCollectionExtensions
+public static class ServiceCollectionValidatorExtensions
 {
     /// <summary>
     /// Applies the validation filter factory to the request of the target route(s).

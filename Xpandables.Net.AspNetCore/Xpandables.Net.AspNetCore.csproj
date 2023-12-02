@@ -71,4 +71,8 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
+	</ItemGroup>
+
 </Project>
