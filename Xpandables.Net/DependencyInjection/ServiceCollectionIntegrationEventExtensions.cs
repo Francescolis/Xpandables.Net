@@ -22,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.IntegrationEvents.Messaging;
-using Xpandables.Net.Messaging;
 
 namespace Xpandables.Net.DependencyInjection;
 

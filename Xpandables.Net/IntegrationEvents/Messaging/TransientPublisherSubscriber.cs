@@ -15,11 +15,10 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.IntegrationEvents.Messaging;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.Messaging;
+namespace Xpandables.Net.IntegrationEvents.Messaging;
 
 /// <summary>
 /// Implements <see cref="ITransientPublisher"/> and <see cref="ITransientSubscriber"/> interfaces.

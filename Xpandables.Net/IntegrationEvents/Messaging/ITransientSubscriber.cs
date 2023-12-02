@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-namespace Xpandables.Net.Messaging;
+namespace Xpandables.Net.IntegrationEvents.Messaging;
 
 /// <summary>
 /// Defines a method to automatically subscribe to events.
