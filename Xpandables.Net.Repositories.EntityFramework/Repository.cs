@@ -20,6 +20,8 @@ using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 
+using Xpandables.Net.Optionals;
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
@@ -50,7 +52,7 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
         ?? throw new ArgumentNullException(nameof(context));
 
     ///<inheritdoc/>
-    public virtual async ValueTask<TEntity?> TryFindByKeyAsync<TKey>(
+    public virtual async ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable
@@ -60,7 +62,7 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
             .ConfigureAwait(false);
 
     ///<inheritdoc/>
-    public virtual async ValueTask<TResult?> TryFindAsync<TResult>(
+    public virtual async ValueTask<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
     {

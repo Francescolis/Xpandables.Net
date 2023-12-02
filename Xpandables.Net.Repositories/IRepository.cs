@@ -17,6 +17,8 @@
 ************************************************************************************************************/
 using System.Linq.Expressions;
 
+using Xpandables.Net.Optionals;
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
@@ -29,30 +31,30 @@ public interface IRepository<TEntity>
 {
     /// <summary>
     /// Tries to return an entity of the <typeparamref name="TEntity"/> type that matches the key.
-    /// If not found, returns the <see langword="default"/> value of the type.
+    /// If not found, returns an empty result.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <param name="key">Defines the key that entity should meet to be returned.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents an object of <typeparamref name="TEntity"/> 
-    /// type that meets the criteria or <see langword="default"/> if not found.</returns>
+    /// <returns>A task that represents an optional that may contain a value if found of <typeparamref name="TEntity"/> 
+    /// type that meets the criteria or empty if not found.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="key"/> is null.</exception>
     /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
-    ValueTask<TEntity?> TryFindByKeyAsync<TKey>(TKey key, CancellationToken cancellationToken = default)
+    ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(TKey key, CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable;
 
     /// <summary>
     /// Tries to return the first entity of the <typeparamref name="TEntity"/> type that matches the filter.
-    /// If not found, returns the <see langword="default"/> value of the type.
+    /// If not found, returns an empty optional.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="filter">A function to test each element for a condition.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents an object of <typeparamref name="TEntity"/> type 
-    /// that meets the criteria or <see langword="default"/> if not found.</returns>
+    /// <returns>A task that represents an optional that may contain a value if found of <typeparamref name="TResult"/> 
+    /// type that meets the criteria or empty if not found.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="filter"/> is null.</exception>
     /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
-    ValueTask<TResult?> TryFindAsync<TResult>(
+    ValueTask<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default);
 
