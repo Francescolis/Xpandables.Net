@@ -106,7 +106,7 @@ public sealed class IntegrationEventStore(
     {
         return _dataContext.Integrations
             .AsNoTracking()
-            .Where(e => e.UpdatedOn == null && e.ErrorMessage == null && e.DeletedOn == null)
+            .Where(e => e.ErrorMessage == null && e.DeletedOn == null && e.Status == EntityStatus.ACTIVE)
             .Skip(pagination.Index * pagination.Size)
             .Take(pagination.Size)
             .OrderBy(o => o.Id)

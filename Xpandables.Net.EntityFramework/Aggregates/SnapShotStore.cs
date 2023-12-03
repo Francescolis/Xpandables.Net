@@ -40,11 +40,7 @@ public sealed class SnapShotStore(
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
-
-#pragma warning disable CA2000 // Dispose objects before losing scope
         SnapShotRecord entity = SnapShotRecord.FromSnapShotDescriptor(descriptor, serializerOptions);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
         await dataContext.SnapShots.AddAsync(entity, cancellationToken).ConfigureAwait(false);
     }
 

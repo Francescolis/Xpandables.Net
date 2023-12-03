@@ -82,4 +82,13 @@ public static class ServiceCollectionHostedServiceExtensions
         return services;
     }
 
+    /// <summary>
+    /// Adds the default background service implementation event scheduler of <see cref="ITransientScheduler"/>
+    /// to manage integration event publishing.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXTransientScheduler(this IServiceCollection services)
+        => services.AddXTransientScheduler<TransientScheduler>();
 }
