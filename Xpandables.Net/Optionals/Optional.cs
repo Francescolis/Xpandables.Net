@@ -163,7 +163,7 @@ public partial record struct Optional<T> : IEnumerable<T>
     /// <param name="defaultValue">The value to be returned if the instance is empty.</param>
     /// <returns>The value from the instance if exists or the <paramref name="defaultValue"/>.</returns>
     [return: NotNullIfNotNull(nameof(_value))]
-    public readonly T? ValueOrDefault(T? defaultValue)
+    public readonly T ValueOrDefault(T defaultValue)
     {
         if (HasValue)
             return Value;

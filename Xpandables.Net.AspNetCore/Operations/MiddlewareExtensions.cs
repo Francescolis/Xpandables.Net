@@ -329,7 +329,7 @@ internal static class MiddlewareExtensions
         if (operation.Result.IsNotEmpty)
             await context.Response.WriteAsJsonAsync(
                 operation.Result.ValueOrDefault(),
-                operation.Result.GetType())
+                operation.Result.Value.GetType())
                 .ConfigureAwait(false);
     }
 

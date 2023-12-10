@@ -101,7 +101,8 @@ public partial interface IOperationResult<TResult> : IOperationResult
     new Optional<TResult> Result { get; }
 
     [JsonIgnore]
-    Optional<object> IOperationResult.Result => Result;
+    Optional<object> IOperationResult.Result
+        => Result.IsNotEmpty ? Optional.Some<object>(Result.Value) : Optional.Empty<object>();
 
     /// <summary>
     /// Determines whether or not the current instance is generic.

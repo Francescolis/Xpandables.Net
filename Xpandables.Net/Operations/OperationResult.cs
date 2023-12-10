@@ -185,7 +185,7 @@ public readonly record struct OperationResult<TResult> : IOperationResult<TResul
     public OperationResult ToOperationResult()
         => new(
             StatusCode,
-            Result,
+            Result.IsNotEmpty ? Optional.Some<object>(Result.Value) : Optional.Empty<object>(),
             LocationUrl,
             Errors,
             Headers,

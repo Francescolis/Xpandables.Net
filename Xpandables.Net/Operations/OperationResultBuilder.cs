@@ -183,7 +183,8 @@ internal abstract class Builder<TBuilder, TResult> :
 
     TBuilder IOperationResult.IResultBuilder<TBuilder, TResult>.WithResult(TResult result)
     {
-        _result = result ?? throw new ArgumentNullException(nameof(result));
+        _ = result ?? throw new ArgumentNullException(nameof(result));
+        _result = Optional.Some<object>(result);
         return (this as TBuilder)!;
     }
 }

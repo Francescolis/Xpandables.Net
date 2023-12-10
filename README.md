@@ -106,15 +106,15 @@ by using some extensions that can automatically convert an *OperationResult* to 
 
 The non generic type has the following properties :
 
-- An *object* **Result**, a nullable property that qualifies or contains information about an operation return if available. You should call the method **HasResult()** before accessing the property to avoid a *NullReferenceException*.
-- A *string* **LocationUrl**, a nullable property that contains the URL mostly used with the status code **Created** in the web environment. You should call the method H**asLocationUrl()** before accessing the property to avoid a *NullReferenceException*.
+- An Optional *object* **Result**, a property that qualifies or contains information about an operation return if available. You should call the method **HasResult()** before accessing the property to avoid a *NullReferenceException*.
+- An Optional *string* **LocationUrl**, a property that contains the URL mostly used with the status code **Created** in the web environment. You should call the method H**asLocationUrl()** before accessing the property to avoid a *NullReferenceException*.
 - An *ElementCollection* **Headers** property that contains a collection of headers if available. *ElementCollection* is a predefined record struct that contains a collection of *ElementEntry* with useful methods.
 - An *ElementCollection* **Errors** property that stores errors. Each error is a predefined *ElementEntry* struct which contains the error key and the error message and/or exceptions.
 - A *HttpStatusCode* **StatusCode** property that contains the status code of the execution. The status code from the ***System.Net.HttpStatusCode***.
 - A *boolean* **IsGeneric** to determine whether or not the current instance is generic.
 - A *boolean* **IsSuccess** and **IsFailure** to determine whether or not the operation is a success or a failure according to ***System.Net.HttpStatusCode***.
-- A *string* **Title** that contains the operation summary problem from the execution operation.
-- A *string* **Detail** that contains he operation explanation specific to the execution operation.
+- An Optional *string* **Title** that contains the operation summary problem from the execution operation.
+- An Optional *string* **Detail** that contains he operation explanation specific to the execution operation.
 
 The generic type overrides the *object* **Result** to *TResult* type.
 
@@ -175,7 +175,7 @@ app.MapGet("/api/users", (string name) =>
 
 // WithXValidatorFilter is an extension method that allows to use the validator filter
 // to automatically validate the request according to the specified type.
-// and allows you to use custom validation impelementation using **IValidator** interface.
+// and allows you to use custom validation implementation using **IValidator** interface.
 
 // Controller
 // You need to the following code in the Program.cs file
