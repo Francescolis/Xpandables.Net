@@ -220,7 +220,7 @@ public sealed record AddPersonCommand : ICommand;
 
 public sealed class AddPersonCommandHandler : ICommandHandler<AddPersonCommand>
 {
-    public ValueTask<IOperationResult> HandleAsync(
+    public ValueTask<OperationResult> HandleAsync(
         AddPersonCommand command, 
         CancellationToken cancellationToken = default)
     {
@@ -322,7 +322,7 @@ public interface ICommand {}
 public interface IQueryHandler<TQuery, TResult>
     where TQuery : notnull, IQuery<TResult> 
 {
-    ValueTask<IOperationResult<TResult>> HandleAsync(
+    ValueTask<OperationResult<TResult>> HandleAsync(
         TQuery query, 
         CancellationToken cancellationToken = default);
 }
@@ -337,7 +337,7 @@ public interface IAsyncQueryHandler<TQuery, TResult>
 public interface ICommandHandler<TCommand>
     where TCommand : notnull, ICommand
 {
-    ValueTask<IOperationResult> HandleAsync(
+    ValueTask<OperationResult> HandleAsync(
         TCommand command, 
         CancellationToken cancellationToken = default);
 }
@@ -372,6 +372,15 @@ public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand
         await _uow.Products
             .AddAsync(product, cancellationToken)
             .ConfigureAwait(false);
+
+        //...
+
+        // you can return the product id or the product itself
+        return OperationResults
+			.Ok(product)
+			.Build();
+        // or 
+        return OperationResults.Ok().Build();
     }
 }
 ```

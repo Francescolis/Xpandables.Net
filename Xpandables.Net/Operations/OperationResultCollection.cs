@@ -36,9 +36,9 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     ///<inheritdoc/>
     public static ElementCollection With(string key, params string[] values) => new(key, values);
     ///<inheritdoc/>
-    public static ElementCollection With(ElementEntry header) => new(header);
+    public static ElementCollection With(ElementEntry entry) => new(entry);
     ///<inheritdoc/>
-    public static ElementCollection With(IList<ElementEntry> headers) => new(headers.ToList());
+    public static ElementCollection With(IList<ElementEntry> entries) => new(entries.ToList());
 
     ///<inheritdoc/>
     public ElementCollection() => _items = [];
