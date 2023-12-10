@@ -19,7 +19,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using Xpandables.Net.Expressions;
-using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Specifications;
 
@@ -34,40 +33,18 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
     /// </summary>
     protected Specification() { }
 
-    ///<inheritdoc/>
-    ///<remarks>The default value is <see cref="OperationResults.Ok()"/>.</remarks>
-    public OperationResult Result { get; protected set; } = OperationResults.Ok().Build();
-
     /// <summary>
     /// Returns a value that determines whether or not the specification 
     /// is satisfied by the source object.
     /// </summary>
-    /// <remarks>To customize its behavior, you must override the 
-    /// <see cref="ApplySpecification(TSource)"/> method.</remarks>
     /// <param name="source">The target source to check specification on.</param>
     /// <returns><see langword="true"/>if the specification is satisfied, 
-    /// otherwise <see langword="false"/> and in that case, 
-    /// the <see cref="Result"/> must contain a failure <see cref="IOperationResult"/>.</returns>
+    /// otherwise <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    public bool IsSatisfiedBy(TSource source)
-    {
-        ApplySpecification(source);
-        return Result.IsSuccess;
-    }
-
-    /// <summary>
-    /// When overridden in derived class, this method will do the 
-    /// actual job of checking that the source satisfies 
-    /// to the specification, if not satisfies to the specification, 
-    /// set the <see cref="Result"/> property to a failure <see cref="IOperationResult"/>.
-    /// The default <see cref="Result"/> is <see cref="OperationResults.Ok()"/>.
-    /// </summary>
-    /// <param name="source">The target source to be checked.</param>
-    /// <exception cref="InvalidOperationException">The operation failed. 
-    /// See inner exception.</exception>
-    protected abstract void ApplySpecification(TSource source);
+    public virtual bool IsSatisfiedBy(TSource source)
+        => GetExpression().Compile().Invoke(source);
 
     /// <summary>
     /// Returns the unique hash code for the current instance.
@@ -131,7 +108,7 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
 #pragma warning restore CA2225 // Operator overloads have named alternates
     {
         ArgumentNullException.ThrowIfNull(other, nameof(other));
-        return other.IsSatisfiedBy;
+        return other;
     }
 
     /// <summary>
@@ -143,7 +120,7 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
 #pragma warning restore CA2225 // Operator overloads have named alternates
     {
         ArgumentNullException.ThrowIfNull(other, nameof(other));
-        return other.GetExpression();
+        return other;
     }
 
     /// <summary>Returns a string that represents the current expression.</summary>

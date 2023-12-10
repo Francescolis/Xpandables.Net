@@ -16,7 +16,6 @@
  *
 ************************************************************************************************************/
 using Xpandables.Net.Expressions;
-using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Specifications;
 
@@ -37,15 +36,8 @@ public interface ISpecification<TSource> : IQueryExpression<TSource>
     /// </summary>
     /// <param name="source">The target source to check specification on.</param>
     /// <returns><see langword="true"/>if the specification is satisfied, 
-    /// otherwise <see langword="false"/> and in that case, 
-    /// the <see cref="Result"/> must contain a failure <see cref="IOperationResult"/>.</returns>
+    /// otherwise <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     bool IsSatisfiedBy(TSource source);
-
-    /// <summary>
-    /// If <see cref="IsSatisfiedBy(TSource)"/> is <see langword="false"/>, 
-    /// the property should be a failure <see cref="IOperationResult"/>.
-    /// </summary>
-    OperationResult Result { get; }
 }

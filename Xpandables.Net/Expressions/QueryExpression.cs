@@ -107,14 +107,8 @@ public abstract record class QueryExpression<TSource, TResult> : IQueryExpressio
 /// This class is a helper that provides a default implementation for <see cref="IQueryExpression{TSource}"/> with <see cref="bool"/> as result.
 /// </summary>
 /// <typeparam name="TSource">The data source type.</typeparam>
-public record class QueryExpression<TSource> : QueryExpression<TSource, bool>, IQueryExpression<TSource>
+public abstract record class QueryExpression<TSource> : QueryExpression<TSource, bool>, IQueryExpression<TSource>
 {
-    /// <summary>
-    /// When implemented in derived class, this method will return the expression
-    /// to be used for the <see langword="Where"/> clause in a query.
-    /// </summary>
-    public override Expression<Func<TSource, bool>> GetExpression() => _ => true;
-
     ///<inheritdoc/>
 #pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Expression<Func<TSource, bool>>(

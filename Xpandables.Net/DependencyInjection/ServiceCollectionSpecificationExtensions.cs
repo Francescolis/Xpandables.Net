@@ -18,7 +18,6 @@
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Specifications;
 
@@ -29,21 +28,6 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionSpecificationExtensions
 {
     internal readonly static MethodInfo AddSpecificationMethod = typeof(ServiceCollectionSpecificationExtensions).GetMethod(nameof(AddXSpecification))!;
-
-    /// <summary>
-    /// Registers the generic <see cref="ICompositeSpecification{TSource}"/>
-    /// implementations to the services with transient life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXSpecificationComposite(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAddTransient(typeof(ICompositeSpecification<>), typeof(CompositeSpecification<>));
-        return services;
-    }
 
     /// <summary>
     /// Registers the <typeparamref name="TSpecification"/> to the services with 

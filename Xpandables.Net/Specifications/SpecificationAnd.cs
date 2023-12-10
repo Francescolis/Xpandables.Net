@@ -44,22 +44,6 @@ public sealed record class SpecificationAnd<TSource> : Specification<TSource>
         _right = right ?? throw new ArgumentNullException(nameof(right));
     }
 
-    ///<inheritdoc/>
-    protected sealed override void ApplySpecification(TSource source)
-    {
-        if (!_left.IsSatisfiedBy(source) && _right.IsSatisfiedBy(source))
-            Result = _left.Result;
-        else if (_left.IsSatisfiedBy(source) && !_right.IsSatisfiedBy(source))
-        {
-            Result = _right.Result;
-        }
-        else if (!_left.IsSatisfiedBy(source) && !_right.IsSatisfiedBy(source))
-        {
-            _left.Result.Errors.Merge(_right.Result.Errors);
-            Result = _left.Result;
-        }
-    }
-
     /// <summary>
     /// Returns the expression to be used for the clause <see langword="Where"/> in a query.
     /// </summary>

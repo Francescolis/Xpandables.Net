@@ -39,13 +39,6 @@ public sealed record class SpecificationNot<TSource> : Specification<TSource>
     public SpecificationNot(ISpecification<TSource> other)
         => _other = other ?? throw new ArgumentNullException(nameof(other));
 
-    ///<inheritdoc/>
-    protected sealed override void ApplySpecification(TSource source)
-    {
-        if (!_other.IsSatisfiedBy(source))
-            Result = _other.Result;
-    }
-
     /// <summary>
     /// Returns the expression to be used for the clause <see langword="Where"/> in a query.
     /// </summary>

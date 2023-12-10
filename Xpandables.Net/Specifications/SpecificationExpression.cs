@@ -17,8 +17,6 @@
 ************************************************************************************************************/
 using System.Linq.Expressions;
 
-using Xpandables.Net.Operations;
-
 namespace Xpandables.Net.Specifications;
 
 internal sealed record class SpecificationExpression<TSource> : Specification<TSource>
@@ -29,14 +27,4 @@ internal sealed record class SpecificationExpression<TSource> : Specification<TS
         _expression = expression ?? throw new ArgumentNullException(nameof(expression));
 
     public override Expression<Func<TSource, bool>> GetExpression() => _expression;
-
-    ///<inheritdoc/>
-    protected override void ApplySpecification(TSource source)
-    {
-        if (!GetExpression().Compile()(source))
-            Result = OperationResults
-                .BadRequest()
-                .WithError(nameof(source), $"The source does not satisfy the specification '{GetType().Name}'")
-                .Build();
-    }
 }
