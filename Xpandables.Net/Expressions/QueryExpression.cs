@@ -35,17 +35,7 @@ public abstract record class QueryExpression<TSource, TResult> : IQueryExpressio
     /// Returns the unique hash code for the current instance.
     /// </summary>
     /// <returns><see cref="int"/> value.</returns>
-    public override int GetHashCode()
-    {
-        var hash = GetExpression().GetHashCode();
-
-        foreach (var param in GetExpression().Parameters)
-        {
-            if (param != null) hash = HashCode.Combine(hash, param.GetHashCode());
-        }
-
-        return hash;
-    }
+    public override int GetHashCode() => GetExpression().GetHashCode();
 
     ///<inheritdoc/>
     public static implicit operator Expression<Func<TSource, TResult>>(

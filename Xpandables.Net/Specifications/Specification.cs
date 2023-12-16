@@ -47,23 +47,6 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
         => GetExpression().Compile().Invoke(source);
 
     /// <summary>
-    /// Returns the unique hash code for the current instance.
-    /// </summary>
-    /// <returns><see cref="int"/> value.</returns>
-    public override int GetHashCode()
-    {
-        var hash = GetExpression().GetHashCode();
-        hash = hash * 17 + GetExpression().Parameters.Count;
-        foreach (var param in GetExpression().Parameters)
-        {
-            hash *= 17;
-            if (param != null) hash += param.GetHashCode();
-        }
-
-        return hash;
-    }
-
-    /// <summary>
     /// Returns a composite specification from the two specifications using the And operator.
     /// </summary>
     /// <param name="left">The left specification.</param>
