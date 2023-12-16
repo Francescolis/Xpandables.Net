@@ -91,7 +91,7 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
 #pragma warning restore CA2225 // Operator overloads have named alternates
     {
         ArgumentNullException.ThrowIfNull(other, nameof(other));
-        return other;
+        return other.GetExpression().Compile();
     }
 
     /// <summary>
@@ -103,7 +103,7 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
 #pragma warning restore CA2225 // Operator overloads have named alternates
     {
         ArgumentNullException.ThrowIfNull(other, nameof(other));
-        return other;
+        return other.GetExpression();
     }
 
     /// <summary>Returns a string that represents the current expression.</summary>
