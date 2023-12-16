@@ -33,7 +33,12 @@ public partial record struct Optional<T> : IEnumerable<T>
 {
     private object? _value = null;
 
-    internal readonly T Value => (T)_value!;
+    /// <summary>
+    /// Gets the underlying value.
+    /// </summary>
+    /// <remarks>First call <see cref="IsNotEmpty"/> before accessing the value.
+    /// May throws <see cref="NullReferenceException"/>.</remarks>
+    public readonly T Value => (T)_value!;
 
     [MemberNotNullWhen(true, nameof(Value), nameof(_value))]
     private readonly bool HasValue => _value is not null;

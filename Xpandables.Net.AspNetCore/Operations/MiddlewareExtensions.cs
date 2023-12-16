@@ -310,7 +310,7 @@ internal static class MiddlewareExtensions
     {
         if (operation.LocationUrl.IsNotEmpty)
             context.Response.Headers.Location =
-                new Microsoft.Extensions.Primitives.StringValues(operation.LocationUrl.ValueOrDefault());
+                new Microsoft.Extensions.Primitives.StringValues(operation.LocationUrl.Value);
     }
 
     internal static void AddHeadersIfAvailable(this HttpContext context, IOperationResult operation)
@@ -328,7 +328,7 @@ internal static class MiddlewareExtensions
     {
         if (operation.Result.IsNotEmpty)
             await context.Response.WriteAsJsonAsync(
-                operation.Result.ValueOrDefault(),
+                operation.Result.Value,
                 operation.Result.Value.GetType())
                 .ConfigureAwait(false);
     }
@@ -356,8 +356,8 @@ internal static class MiddlewareExtensions
 
         var result = operation.Result.IsNotEmpty switch
         {
-            true => Results.Created(new Uri(operation.LocationUrl.ValueOrDefault()!), operation.Result.ValueOrDefault()),
-            _ => Results.Created(new Uri(operation.LocationUrl.ValueOrDefault()!), default)
+            true => Results.Created(new Uri(operation.LocationUrl.Value), operation.Result.Value),
+            _ => Results.Created(new Uri(operation.LocationUrl.Value), default)
         };
 
         await result.ExecuteAsync(context).ConfigureAwait(false);

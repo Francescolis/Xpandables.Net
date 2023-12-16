@@ -51,7 +51,7 @@ public sealed class OperationResultMinimal(IOperationResult operationResult) : I
             return;
         }
 
-        if (_operationResult.Result.IsNotEmpty && _operationResult.Result.ValueOrDefault()
+        if (_operationResult.Result.IsNotEmpty && _operationResult.Result.Value
             is BinaryEntry { Content: not null } file)
         {
             await httpContext.WriteFileBodyAsync(file).ConfigureAwait(false);

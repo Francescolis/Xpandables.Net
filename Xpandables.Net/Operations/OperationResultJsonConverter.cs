@@ -49,7 +49,7 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
         ArgumentNullException.ThrowIfNull(value);
 
         if (value.Result.IsNotEmpty)
-            JsonSerializer.Serialize(writer, value.Result.ValueOrDefault(), value.Result.GetType(), options);
+            JsonSerializer.Serialize(writer, value.Result.Value, value.Result.Value.GetType(), options);
     }
 }
 
@@ -93,7 +93,7 @@ public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperat
         ArgumentNullException.ThrowIfNull(value);
 
         if (value.Result.IsNotEmpty)
-            JsonSerializer.Serialize(writer, value.Result.ValueOrDefault(), typeof(TValue), options);
+            JsonSerializer.Serialize(writer, value.Result.Value, typeof(TValue), options);
     }
 }
 
