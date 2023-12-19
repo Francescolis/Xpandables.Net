@@ -174,7 +174,7 @@ internal abstract class Builder<TBuilder, TResult> :
     OperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
         => new(
             _statusCode,
-            _result.Bind(o => ((TResult?)o).AsOptional()),
+            _result.Bind<TResult>(o => o is TResult value ? value : default),
             _uri,
             _errors,
             _headers,
