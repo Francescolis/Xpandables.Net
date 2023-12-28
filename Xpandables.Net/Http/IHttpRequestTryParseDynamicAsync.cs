@@ -45,7 +45,7 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
         /// <param name="context">The <see langword="HttpContext"/> instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public virtual static ValueTask<TRequest?> BindAsync(dynamic context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(dynamic context, ParameterInfo parameter)
         {
             var dictionary = ((IEnumerable<KeyValuePair<string, object?>>)context.Request.RouteValues)
                 .ToDictionary(d => d.Key, d => d.Value);
@@ -68,7 +68,7 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
         /// <param name="context">The <see langword="HttpContext"/> instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public virtual static ValueTask<TRequest?> BindAsync(dynamic context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(dynamic context, ParameterInfo parameter)
         {
             var dictionary = ((IEnumerable<KeyValuePair<string, StringValues>>)context.Request.Headers)
                 .ToDictionary(d => d.Key, d => (string?)d.Value);
@@ -91,7 +91,7 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
         /// <param name="context">The <see langword="HttpContext"/> instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public virtual static ValueTask<TRequest?> BindAsync(dynamic context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(dynamic context, ParameterInfo parameter)
         {
             var dictionary = ((IEnumerable<KeyValuePair<string, StringValues>>)context.Request.Query)
                 .ToDictionary(d => d.Key, d => (string?)d.Value);

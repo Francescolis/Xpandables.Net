@@ -45,7 +45,7 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <param name="context">The <see cref="HttpContext"/> instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public virtual static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
         {
             ArgumentNullException.ThrowIfNull(context);
 
@@ -69,7 +69,7 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <param name="context">The <see cref="HttpContext"/> instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public virtual static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
         {
             ArgumentNullException.ThrowIfNull(context);
 
@@ -93,7 +93,7 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <param name="context">The <see cref="HttpContext"/> instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public virtual static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
         {
             ArgumentNullException.ThrowIfNull(context);
 

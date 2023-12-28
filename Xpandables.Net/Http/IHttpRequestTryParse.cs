@@ -35,7 +35,7 @@ public interface IHttpRequestTryParse<TRequest>
     /// <param name="provider">An instance of provider used to control formatting.</param>
     /// <param name="result">An instance of <typeparamref name="TRequest"/> if binding successful or null.</param>
     /// <returns><see langword="true"/> if parse successful otherwise <see langword="false"/>.</returns>
-    public static virtual bool TryParse(string? value, IFormatProvider provider, out TRequest? result)
+    public static bool TryParse(string? value, IFormatProvider provider, out TRequest? result)
     {
         result = default;
 
