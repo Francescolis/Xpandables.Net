@@ -30,7 +30,6 @@ namespace Xpandables.Net.Http;
 /// </summary>
 /// <typeparam name="TRequest">The type of the custom binding parameter.</typeparam>
 public interface IHttpRequestTryParseDynamicAsync<TRequest>
-    where TRequest : notnull
 {
     /// <summary>
     /// For route binding sources in minimal Api for asynchronous processes.

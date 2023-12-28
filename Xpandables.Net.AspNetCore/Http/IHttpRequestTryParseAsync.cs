@@ -30,7 +30,6 @@ namespace Xpandables.Net.Http;
 /// </summary>
 /// <typeparam name="TRequest">The type of the route parameter.</typeparam>
 public interface IHttpRequestTryParseAsync<TRequest>
-    where TRequest : notnull
 {
     /// <summary>
     /// For route binding sources in minimal Api for asynchronous processes.

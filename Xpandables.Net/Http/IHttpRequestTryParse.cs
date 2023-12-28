@@ -26,7 +26,6 @@ namespace Xpandables.Net.Http;
 /// </summary>
 /// <typeparam name="TRequest">The type of the custom binding parameter.</typeparam>
 public interface IHttpRequestTryParse<TRequest>
-    where TRequest : notnull
 {
     /// <summary>
     /// The method discovered by <see langword="RequestDelegateFactory"/> on types used as parameters of route
@@ -36,9 +35,12 @@ public interface IHttpRequestTryParse<TRequest>
     /// <param name="provider">An instance of provider used to control formatting.</param>
     /// <param name="result">An instance of <typeparamref name="TRequest"/> if binding successful or null.</param>
     /// <returns><see langword="true"/> if parse successful otherwise <see langword="false"/>.</returns>
-    public static virtual bool TryParse(string value, IFormatProvider provider, out TRequest? result)
+    public static virtual bool TryParse(string? value, IFormatProvider provider, out TRequest? result)
     {
-        ArgumentNullException.ThrowIfNull(value, nameof(value));
+        result = default;
+
+        if (value is null)
+            return false;
 
         var dict = value.Split(',').Chunk(2).ToDictionary(d => d[0], d => d[1]);
 
