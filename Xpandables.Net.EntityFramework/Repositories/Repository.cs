@@ -15,10 +15,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-
 using Microsoft.EntityFrameworkCore;
+
+using System.Linq.Expressions;
 
 using Xpandables.Net.Optionals;
 
@@ -35,20 +34,18 @@ namespace Xpandables.Net.Repositories;
 /// </remarks>
 /// <param name="context">The data context to act on.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="context"/> is null.</exception>
-
 /// <summary>
 /// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
 /// You must derive from this class to customize its behaviors.
 /// </summary>
 /// <remarks>This is considered as anti-pattern, DbContext already provides abstracted data access.</remarks>
-[method: SetsRequiredMembers]
 public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
     where TEntity : class, IEntity
 {
     /// <summary>
     /// Gets the current context instance.
     /// </summary>
-    public required virtual DataContext Context { get; init; } = context
+    protected DataContext Context { get; init; } = context
         ?? throw new ArgumentNullException(nameof(context));
 
     ///<inheritdoc/>
@@ -186,4 +183,33 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
             Context.Entry(entity).CurrentValues.SetValues(updated);
         }
     }
+}
+
+/// <summary>
+/// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
+/// You must derive from this class to customize its behaviors.
+/// </summary>
+/// <remarks>This is considered as anti-pattern, DbContext already provides abstracted data access.</remarks>
+/// <typeparam name="TEntity">The Domain object type.</typeparam>
+/// <typeparam name="TDataContext">The type of the data context.</typeparam>
+/// <remarks>
+/// Initializes a new instance of <see cref="Repository{TEntity}"/> with the context to act on.
+/// </remarks>
+/// <param name="context">The data context to act on.</param>
+/// <exception cref="ArgumentNullException">The <paramref name="context"/> is null.</exception>
+/// <summary>
+/// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
+/// You must derive from this class to customize its behaviors.
+/// </summary>
+/// <remarks>This is considered as anti-pattern, DbContext already provides abstracted data access.</remarks>
+public class Repository<TEntity, TDataContext>(TDataContext context)
+    : Repository<TEntity>(context)
+    where TEntity : class, IEntity
+    where TDataContext : DataContext
+{
+    /// <summary>
+    /// Gets the current context instance.
+    /// </summary>
+    protected new TDataContext Context { get; init; } = context
+        ?? throw new ArgumentNullException(nameof(context));
 }

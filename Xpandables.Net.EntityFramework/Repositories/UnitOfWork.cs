@@ -79,7 +79,11 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
 
     ///<inheritdoc/>
     public virtual IRepository<TEntity> GetRepository<TEntity>()
-        where TEntity : class, IEntity => new Repository<TEntity>(Context);
+        where TEntity : class, IEntity
+    {
+        Type repositoryType = typeof(Repository<,>).MakeGenericType(typeof(TEntity), Context.GetType());
+        return (IRepository<TEntity>)Activator.CreateInstance(repositoryType, Context)!;
+    }
 }
 
 /// <summary>
@@ -99,4 +103,8 @@ public class UnitOfWork<TDataContext>(TDataContext context)
     /// Gets the current <typeparamref name="TDataContext"/> instance.
     /// </summary>
     protected new TDataContext Context { get; } = context;
+
+    ///<inheritdoc/>
+    public override IRepository<TEntity> GetRepository<TEntity>()
+        => new Repository<TEntity, TDataContext>(Context);
 }
