@@ -18,25 +18,24 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
-using Xpandables.Net.IntegrationEvents;
+using Xpandables.Net.HostedServices;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.HostedServices;
+namespace Xpandables.Net.IntegrationEvents;
 
-internal sealed class TransientScheduler(
+internal sealed class IntegrationEventTransientScheduler(
     IServiceScopeFactory scopeFactory,
-    IOptions<SchedulerOptions> options,
-    ILogger<TransientScheduler> logger)
-    : BackgroundServiceBase<TransientScheduler>, ITransientScheduler
+    IOptions<IntegrationEventSchedulerOptions> options,
+    ILogger<IntegrationEventTransientScheduler> logger)
+    : BackgroundServiceBase<IntegrationEventTransientScheduler>, IIntegrationEventTransientScheduler
 {
     private int _attempts;
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory
         ?? throw new ArgumentNullException(nameof(scopeFactory));
-    private readonly SchedulerOptions _options = options.Value
+    private readonly IntegrationEventSchedulerOptions _options = options.Value
         ?? throw new ArgumentNullException(nameof(options));
-    private readonly ILogger<TransientScheduler> _logger = logger
+    private readonly ILogger<IntegrationEventTransientScheduler> _logger = logger
         ?? throw new ArgumentNullException(nameof(logger));
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -57,17 +56,15 @@ internal sealed class TransientScheduler(
             }
             catch (OperationCanceledException cancelException)
             {
-                _logger.CancelExecutingProcess(nameof(TransientScheduler), cancelException);
+                _logger.CancelExecutingProcess(nameof(IntegrationEventTransientScheduler), cancelException);
                 IsRunning = false;
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                _logger.ErrorExecutingProcess(nameof(TransientScheduler), exception);
+                _logger.ErrorExecutingProcess(nameof(IntegrationEventTransientScheduler), exception);
 
                 if (++_attempts > _options.MaxAttempts)
                 {
-                    _logger.RetryExecutingProcess(nameof(TransientScheduler), _attempts, _options.DelayBetweenAttempts);
-
                     using var cancellationSource = CancellationTokenSource
                         .CreateLinkedTokenSource(stoppingToken, new CancellationToken(true));
 
@@ -77,6 +74,8 @@ internal sealed class TransientScheduler(
 
                     return;
                 }
+
+                _logger.RetryExecutingProcess(nameof(IntegrationEventTransientScheduler), _attempts, _options.DelayMilliSeconds);
             }
         }
     }

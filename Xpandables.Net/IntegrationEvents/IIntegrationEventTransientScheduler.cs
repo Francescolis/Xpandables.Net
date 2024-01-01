@@ -15,24 +15,20 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-namespace Xpandables.Net.HostedServices;
+using Xpandables.Net.HostedServices;
+
+namespace Xpandables.Net.IntegrationEvents;
 
 /// <summary>
-/// Defines the <see cref="ITransientScheduler"/> options.
+/// Defines the <see cref="IIntegrationEventTransientScheduler"/> options.
 /// </summary>
-public sealed record class SchedulerOptions
+public sealed record class IntegrationEventSchedulerOptions
 {
     /// <summary>
     /// The delay between two executions.
     /// </summary>
     /// <remarks>The default value is 15000.</remarks>
     public int DelayMilliSeconds { get; init; } = 15000;
-
-    /// <summary>
-    /// The delay between two  attempts.
-    /// </summary>
-    /// <remarks>The default value is 15000.</remarks>
-    public int DelayBetweenAttempts { get; init; } = 15000;
 
     /// <summary>
     /// The total number of events to load for each thread.
@@ -50,4 +46,4 @@ public sealed record class SchedulerOptions
 /// <summary>
 /// Provides with a method to schedule events when requested.
 /// </summary>
-public interface ITransientScheduler : IBackgroundService { }
+public interface IIntegrationEventTransientScheduler : IBackgroundService { }
