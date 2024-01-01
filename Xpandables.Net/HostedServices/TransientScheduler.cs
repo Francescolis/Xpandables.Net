@@ -44,17 +44,14 @@ internal sealed class TransientScheduler(
         IsRunning = true;
         _attempts = 0;
 
-        await Task.Yield();
+        using PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(_options.DelayMilliSeconds));
 
-        while (!stoppingToken.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested
+            && await periodicTimer.WaitForNextTickAsync(stoppingToken)
+                                    .ConfigureAwait(false))
         {
-#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                await Task.Delay(
-                    TimeSpan.FromMilliseconds(_options.DelayMilliSeconds), stoppingToken)
-                    .ConfigureAwait(false);
-
                 await DoExecuteAsync(stoppingToken)
                     .ConfigureAwait(false);
             }
@@ -63,35 +60,24 @@ internal sealed class TransientScheduler(
                 _logger.CancelExecutingProcess(nameof(TransientScheduler), cancelException);
                 IsRunning = false;
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not OperationCanceledException)
             {
                 _logger.ErrorExecutingProcess(nameof(TransientScheduler), exception);
 
-                if (++_attempts <= _options.MaxAttempts)
+                if (++_attempts > _options.MaxAttempts)
                 {
-                    try
-                    {
-                        await Task.Delay(
-                            _options.DelayBetweenAttempts, stoppingToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException cancelException)
-                    {
-                        // if stoppingToken is canceled, the process will return and terminate itself.
-                        _logger.CancelExecutingProcess(nameof(TransientScheduler), cancelException);
+                    _logger.RetryExecutingProcess(nameof(TransientScheduler), _attempts, _options.DelayBetweenAttempts);
 
-                        IsRunning = false;
-                    }
+                    using var cancellationSource = CancellationTokenSource
+                        .CreateLinkedTokenSource(stoppingToken, new CancellationToken(true));
+
+                    stoppingToken = cancellationSource.Token;
+                    await StopServiceAsync(stoppingToken)
+                        .ConfigureAwait(false);
 
                     return;
                 }
-
-                IsRunning = false;
-                stoppingToken = CancellationTokenSource.CreateLinkedTokenSource(
-                    stoppingToken, new CancellationToken(true))
-                    .Token;
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
     }
 
@@ -124,7 +110,7 @@ internal sealed class TransientScheduler(
                         .MarkAsProcessedAsync(@event.Id, cancellationToken)
                         .ConfigureAwait(false);
             }
-            catch (Exception exception) when (exception is ArgumentNullException)
+            catch (Exception exception) when (exception is not ArgumentNullException)
             {
                 await eventStore
                     .SetErrorAsync(@event.Id, exception, cancellationToken)

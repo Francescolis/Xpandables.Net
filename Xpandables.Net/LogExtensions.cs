@@ -49,6 +49,21 @@ public static partial class LogExtensions
         Exception exception);
 
     /// <summary>
+    /// Logs a warning message when retrying to execute a process.
+    /// </summary>
+    /// <param name="logger"></param>
+    /// <param name="processName"></param>
+    /// <param name="retryCount"></param>
+    /// <param name="delay"></param>
+    [LoggerMessage(EventId = 3, Level = LogLevel.Warning,
+               Message = "Retrying to execute {processName} ({retryCount}) in {delay} ms")]
+    public static partial void RetryExecutingProcess(
+        this ILogger logger,
+        string processName,
+        int retryCount,
+        int delay);
+
+    /// <summary>
     /// Logs a warning message when a cancellation occurred when executing a process.
     /// </summary>
     /// <param name="logger"></param>
