@@ -72,7 +72,7 @@ public static class ServiceCollectionHostedServiceExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXTransientScheduler
+    public static IServiceCollection AddXIntegrationEventTransientScheduler
         <TTransientScheduler>(this IServiceCollection services)
         where TTransientScheduler : BackgroundServiceBase<TTransientScheduler>, IIntegrationEventTransientScheduler
     {
@@ -91,5 +91,5 @@ public static class ServiceCollectionHostedServiceExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
     public static IServiceCollection AddXIntegrationEventTransientScheduler(this IServiceCollection services)
-        => services.AddXTransientScheduler<IntegrationEventTransientScheduler>();
+        => services.AddXIntegrationEventTransientScheduler<IntegrationEventTransientScheduler>();
 }
