@@ -41,4 +41,6 @@ public static class EntityStatus
     /// It is suspended (for any reason)
     /// </summary>
     public static string SUSPENDED => new(nameof(SUSPENDED));
+
+    internal static string UPDATED => new(nameof(UPDATED));
 }

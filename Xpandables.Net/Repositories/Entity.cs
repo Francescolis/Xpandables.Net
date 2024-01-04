@@ -39,58 +39,47 @@ public abstract class Entity : IEntity
     public string Status { get; protected set; } = EntityStatus.ACTIVE;
 
     ///<inheritdoc/>
-    ///<remarks>This property is automatically set by the constructor.</remarks>
     public DateTime CreatedOn { get; protected internal set; } = DateTime.UtcNow;
 
     ///<inheritdoc/>
-    ///<remarks>This property is automatically 
-    ///set by the <see cref="IEntity.SetStatusActive"/> method.</remarks>
     public DateTime? UpdatedOn { get; protected set; }
 
     ///<inheritdoc/>
-    /// <remarks>This property is automatically 
-    /// set by the <see cref="IEntity.SetStatusInactive"/> method.</remarks>
     public DateTime? DeletedOn { get; protected set; }
 
     /// <inheritdoc/>
-    public void SetCreatedOn() => CreatedOn = DateTime.UtcNow;
-
-    /// <inheritdoc/>
-    public void SetUpdatedOn() => UpdatedOn = DateTime.UtcNow;
-
-    /// <inheritdoc/>
-    public void SetDeletedOn() => DeletedOn = DateTime.UtcNow;
-
-    /// <inheritdoc/>
-    public void SetStatusActive()
+    public virtual void SetStatus(string status)
     {
-        Status = EntityStatus.ACTIVE;
-        SetUpdatedOn();
-        DeletedOn = null;
-    }
+        _ = status ?? throw new ArgumentNullException(nameof(status));
 
-    /// <inheritdoc/>
-    public void SetStatusInactive()
-    {
-        Status = EntityStatus.INACTIVE;
-        SetUpdatedOn();
-        DeletedOn = null;
-    }
+        // if the status is updated, we just update the updated on date
+        if (status.Equals(EntityStatus.UPDATED, StringComparison.OrdinalIgnoreCase))
+        {
+            UpdatedOn = DateTime.UtcNow;
+            return;
+        }
 
-    /// <inheritdoc/>
-    public void SetStatusSuspended()
-    {
-        Status = EntityStatus.SUSPENDED;
-        SetUpdatedOn();
-        DeletedOn = null;
-    }
+        Status = status;
 
-    /// <inheritdoc/>
-    public void SetStatusDeleted()
-    {
-        Status = EntityStatus.DELETED;
-        SetUpdatedOn();
-        DeletedOn = DateTime.UtcNow;
+        if (status.Equals(EntityStatus.ACTIVE, StringComparison.OrdinalIgnoreCase))
+        {
+            if (UpdatedOn is not null)
+                UpdatedOn = DateTime.UtcNow;
+        }
+        else
+        {
+            UpdatedOn = DateTime.UtcNow;
+        }
+
+        if (!status.Equals(EntityStatus.DELETED, StringComparison.OrdinalIgnoreCase))
+        {
+            if (DeletedOn is not null)
+                DeletedOn = null;
+        }
+        else
+        {
+            DeletedOn = DateTime.UtcNow;
+        }
     }
 }
 

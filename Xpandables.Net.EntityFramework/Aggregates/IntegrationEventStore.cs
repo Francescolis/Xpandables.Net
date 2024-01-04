@@ -15,9 +15,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Text.Json;
-
 using Microsoft.EntityFrameworkCore;
+
+using System.Text.Json;
 
 using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.Primitives;
@@ -39,12 +39,6 @@ public sealed class IntegrationEventStore(
     JsonSerializerOptions serializerOptions) : Disposable, IIntegrationEventStore
 {
     private IDisposable[] _disposables = [];
-#pragma warning disable CA2213 // Disposable fields should be disposed
-    private readonly DomainDataContext _dataContext = dataContext
-        ?? throw new ArgumentNullException(nameof(dataContext));
-#pragma warning restore CA2213 // Disposable fields should be disposed
-    private readonly JsonSerializerOptions _serializerOptions = serializerOptions
-        ?? throw new ArgumentNullException(nameof(serializerOptions));
 
     ///<inheritdoc/>
     public async ValueTask AppendAsync(
@@ -54,12 +48,12 @@ public sealed class IntegrationEventStore(
         ArgumentNullException.ThrowIfNull(@event);
 
         IntegrationEventRecord disposable = IntegrationEventRecord
-            .FromIntegrationEvent(@event, _serializerOptions);
+            .FromIntegrationEvent(@event, serializerOptions);
 
         Array.Resize(ref _disposables, _disposables.Length + 1);
         _disposables[^1] = disposable;
 
-        await _dataContext.Integrations.AddAsync(disposable, cancellationToken)
+        await dataContext.Integrations.AddAsync(disposable, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -71,7 +65,7 @@ public sealed class IntegrationEventStore(
     {
         ArgumentNullException.ThrowIfNull(eventId);
 
-        await _dataContext.Integrations
+        await dataContext.Integrations
             .Where(e => e.Id == eventId)
             .ExecuteUpdateAsync(e => e
                 .SetProperty(p => p.ErrorMessage, p => $"{exception}")
@@ -88,7 +82,7 @@ public sealed class IntegrationEventStore(
     {
         ArgumentNullException.ThrowIfNull(eventId);
 
-        await _dataContext.Integrations
+        await dataContext.Integrations
             .Where(e => e.Id == eventId)
             .ExecuteUpdateAsync(e => e
                 .SetProperty(p => p.ErrorMessage, p => null)
@@ -104,13 +98,13 @@ public sealed class IntegrationEventStore(
         Pagination pagination,
         CancellationToken cancellationToken = default)
     {
-        return _dataContext.Integrations
+        return dataContext.Integrations
             .AsNoTracking()
             .Where(e => e.ErrorMessage == null && e.DeletedOn == null && e.Status == EntityStatus.ACTIVE)
             .Skip(pagination.Index * pagination.Size)
             .Take(pagination.Size)
             .OrderBy(o => o.Id)
-            .Select(e => IntegrationEventRecord.ToIntegrationEvent(e, _serializerOptions))
+            .Select(e => IntegrationEventRecord.ToIntegrationEvent(e, serializerOptions))
             .OfType<IIntegrationEvent>()
             .AsAsyncEnumerable();
     }

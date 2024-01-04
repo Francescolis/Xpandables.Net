@@ -38,7 +38,7 @@ public abstract class DataContext : DbContext
             if (e.FromQuery || e.Entry.State != EntityState.Added || e.Entry.Entity is not IEntity entity)
                 return;
 
-            entity.SetCreatedOn();
+            entity.SetStatus(EntityStatus.ACTIVE);
         };
 
         ChangeTracker.StateChanged += (sender, e) =>
@@ -46,10 +46,7 @@ public abstract class DataContext : DbContext
             if (e.NewState != EntityState.Modified || e.Entry.Entity is not IEntity entity)
                 return;
 
-            entity.SetUpdatedOn();
-
-            if (entity.IsDeleted)
-                entity.SetDeletedOn();
+            entity.SetStatus(EntityStatus.UPDATED);
         };
     }
 }

@@ -609,7 +609,7 @@ public static class TypeExtensions
         if (source.GetType().GetProperty(propertyName) is not { } propertyInfo)
             throw new ArgumentException($"Property {propertyName} does not exist in the {source.GetType().Name}.");
 
-        if (propertyInfo.GetSetMethod() is not { })
+        if (propertyInfo.GetSetMethod(true) is not { })
             throw new ArgumentException($"Property {propertyInfo.Name} is not settable.");
 
         if (value is not null && !propertyInfo.PropertyType.IsInstanceOfType(value))
@@ -660,7 +660,7 @@ public static class TypeExtensions
         if (source.GetType().GetProperty(propertyName) is not { } propertyInfo)
             throw new ArgumentException($"Property {propertyName} does not exist in the {source.GetType().Name}.");
 
-        if (propertyInfo.GetSetMethod() is not { })
+        if (propertyInfo.GetSetMethod(true) is not { })
             throw new ArgumentException($"Property {propertyInfo.Name} is not settable.");
 
         if (value is not null && !propertyInfo.PropertyType.IsInstanceOfType(value))

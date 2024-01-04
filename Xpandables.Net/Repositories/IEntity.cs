@@ -46,7 +46,7 @@ public interface IEntity
     DateTime? UpdatedOn { get; }
 
     /// <summary>
-    /// Gets the inactive date of the underlying instance if exist.
+    /// Gets the deletion date of the underlying instance if exist.
     /// </summary>
     DateTime? DeletedOn { get; }
 
@@ -75,39 +75,9 @@ public interface IEntity
     public bool IsDeleted => Status == EntityStatus.DELETED;
 
     /// <summary>
-    /// Sets the creation date time.
+    /// Sets the status of the underlying instance and sets the update date time.
     /// </summary>
-    void SetCreatedOn();
-
-    /// <summary>
-    /// Sets the update date time.
-    /// </summary>
-    void SetUpdatedOn();
-
-    /// <summary>
-    /// Sets the deleted date time.
-    /// </summary>
-    void SetDeletedOn();
-
-    /// <summary>
-    /// Marks the underlying instance as active and sets the update date time.
-    /// </summary>
-    void SetStatusActive();
-
-    /// <summary>
-    /// Marks the underlying instance as inactive and sets the update date time.
-    /// </summary>
-    void SetStatusInactive();
-
-    /// <summary>
-    /// Marks the underlying instance as suspended and sets the update date time.
-    /// </summary>
-    void SetStatusSuspended();
-
-    /// <summary>
-    /// Marks the underlying instance as deleted and sets the deleted date time.
-    /// </summary>
-    void SetStatusDeleted();
+    void SetStatus(string status);
 }
 
 /// <summary>
