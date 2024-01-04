@@ -36,11 +36,13 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// </summary>
     /// <typeparam name="TEntity">The type of the target entity.</typeparam>
     /// <returns>An instance of an object that implements <see cref="IRepository{TEntity}"/> interface.</returns>
-    IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, IEntity;
+    IRepository<TEntity> GetRepository<TEntity>() 
+        where TEntity : class, IEntity;
 }
 
 /// <summary>
 /// Provides with the base unit of work interface for a specific data context.
 /// </summary>
 /// <typeparam name="TDataContext">The type of the context.</typeparam>
-public interface IUnitOfWork<TDataContext> : IUnitOfWork where TDataContext : class { }
+public interface IUnitOfWork<TDataContext> : IUnitOfWork 
+    where TDataContext : class { }

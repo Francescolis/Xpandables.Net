@@ -79,11 +79,8 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
 
     ///<inheritdoc/>
     public virtual IRepository<TEntity> GetRepository<TEntity>()
-        where TEntity : class, IEntity
-    {
-        Type repositoryType = typeof(Repository<,>).MakeGenericType(typeof(TEntity), Context.GetType());
-        return (IRepository<TEntity>)Activator.CreateInstance(repositoryType, Context)!;
-    }
+        where TEntity : class, IEntity 
+        => new Repository<TEntity>(Context);
 }
 
 /// <summary>
