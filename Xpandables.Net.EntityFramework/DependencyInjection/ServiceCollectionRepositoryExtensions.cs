@@ -64,14 +64,12 @@ public static class ServiceCollectionRepositoryExtensions
         => services.AddScoped<IUnitOfWork, UnitOfWork<TDataContext>>();
 
     /// <summary>
-    /// Registers the default generic <see cref="IUnitOfWork{TDataContext}"/> implementation to the services with scope life time.
+    /// Registers the default generic <see cref="IUnitOfWork{TDataContext}"/> implementation
+    /// to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXUnitOfWorks(this IServiceCollection services)
-    {
-        services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
-        return services;
-    }
+    public static IServiceCollection AddXUnitOfWorks(this IServiceCollection services) 
+        => services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
 }
