@@ -24,7 +24,6 @@ namespace Xpandables.Net.Repositories;
 /// <summary>
 /// Represents a set of methods to read/write objects from a data store.
 /// </summary>
-/// <remarks>This is considered as anti-pattern, the EFCore DbContext for example already provides abstract data access.</remarks>
 /// <typeparam name="TEntity">The entity object type.</typeparam>
 public interface IRepository<TEntity>
     where TEntity : class, IEntity

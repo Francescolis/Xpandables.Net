@@ -27,7 +27,6 @@ namespace Xpandables.Net.Repositories;
 /// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
 /// You must derive from this class to customize its behaviors.
 /// </summary>
-/// <remarks>This is considered as anti-pattern, DbContext already provides abstracted data access.</remarks>
 /// <typeparam name="TEntity">The Domain object type.</typeparam>
 /// <remarks>
 /// Initializes a new instance of <see cref="Repository{TEntity}"/> with the context to act on.
@@ -38,7 +37,6 @@ namespace Xpandables.Net.Repositories;
 /// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
 /// You must derive from this class to customize its behaviors.
 /// </summary>
-/// <remarks>This is considered as anti-pattern, DbContext already provides abstracted data access.</remarks>
 public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
     where TEntity : class, IEntity
 {
@@ -189,11 +187,10 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
 /// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
 /// You must derive from this class to customize its behaviors.
 /// </summary>
-/// <remarks>This is considered as anti-pattern, DbContext already provides abstracted data access.</remarks>
 /// <typeparam name="TEntity">The Domain object type.</typeparam>
 /// <typeparam name="TDataContext">The type of the data context.</typeparam>
 /// <remarks>
-/// Initializes a new instance of <see cref="Repository{TEntity}"/> with the context to act on.
+/// Initializes a new instance of <see cref="Repository{TEntity, TDataContext}"/> with the context to act on.
 /// </remarks>
 /// <param name="context">The data context to act on.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="context"/> is null.</exception>
@@ -201,7 +198,6 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
 /// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
 /// You must derive from this class to customize its behaviors.
 /// </summary>
-/// <remarks>This is considered as anti-pattern, DbContext already provides abstracted data access.</remarks>
 public class Repository<TEntity, TDataContext>(TDataContext context)
     : Repository<TEntity>(context)
     where TEntity : class, IEntity
