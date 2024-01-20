@@ -36,7 +36,7 @@ namespace Xpandables.Net;
 /// </remarks>
 /// <param name="name">The name of the target property which changes are notified to the decorated property.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null.</exception>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
 public sealed class NotifyPropertyChangedForAttribute(string name) : Attribute
 {
     /// <summary>
@@ -512,7 +512,7 @@ public static class NotifyPropertyExtensions
 
         foreach (var property in properties)
         {
-            var attributes = (from a in property.GetCustomAttributes<NotifyPropertyChangedForAttribute>(true) select a.Name).ToArray();
+            var attributes = (from a in property.GetCustomAttributes<NotifyPropertyChangedForAttribute>(false) select a.Name).ToArray();
 
             foreach (var dependency in attributes)
             {
