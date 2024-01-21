@@ -66,7 +66,7 @@ public sealed class OperationResultMinimal(IOperationResult operationResult) : I
 
         if (_operationResult.StatusCode.IsFailureStatusCode())
         {
-            var result = _operationResult.GetValidationProblemDetails(httpContext);
+            IResult result = _operationResult.GetValidationProblemDetails(httpContext);
 
             await result.ExecuteAsync(httpContext).ConfigureAwait(false);
         }

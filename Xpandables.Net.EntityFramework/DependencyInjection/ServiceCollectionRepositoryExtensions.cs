@@ -47,7 +47,7 @@ public static class ServiceCollectionRepositoryExtensions
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        services.AddDbContext<TDataContext>(optionsAction, contextLifetime, optionsLifetime);
+        _ = services.AddDbContext<TDataContext>(optionsAction, contextLifetime, optionsLifetime);
         return services;
     }
 
@@ -70,6 +70,6 @@ public static class ServiceCollectionRepositoryExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXUnitOfWorks(this IServiceCollection services) 
+    public static IServiceCollection AddXUnitOfWorks(this IServiceCollection services)
         => services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
 }

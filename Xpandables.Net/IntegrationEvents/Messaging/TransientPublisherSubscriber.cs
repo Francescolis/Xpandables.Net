@@ -41,7 +41,7 @@ public sealed class TransientPublisherSubscriber : Disposable, ITransientPublish
         {
             OperationResult result = OperationResults.Ok().Build();
 
-            foreach (var subscriber in GetHandlersOf<T>())
+            foreach (object subscriber in GetHandlersOf<T>())
             {
                 switch (subscriber)
                 {
@@ -82,7 +82,7 @@ public sealed class TransientPublisherSubscriber : Disposable, ITransientPublish
     {
         if (disposing)
         {
-            foreach (var value in _subscribers.Value!.Values)
+            foreach (List<object> value in _subscribers.Value!.Values)
                 value.Clear();
 
             _subscribers.Value!.Clear();
@@ -94,7 +94,7 @@ public sealed class TransientPublisherSubscriber : Disposable, ITransientPublish
     private List<object> GetHandlersOf<T>()
         where T : notnull
     {
-        var result = _subscribers.Value!.GetValueOrDefault(typeof(T));
+        List<object>? result = _subscribers.Value!.GetValueOrDefault(typeof(T));
         if (result is null)
         {
             result = [];

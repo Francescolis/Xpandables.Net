@@ -53,7 +53,7 @@ public sealed class IntegrationEventStore(
         Array.Resize(ref _disposables, _disposables.Length + 1);
         _disposables[^1] = disposable;
 
-        await dataContext.Integrations.AddAsync(disposable, cancellationToken)
+        _ = await dataContext.Integrations.AddAsync(disposable, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -65,7 +65,7 @@ public sealed class IntegrationEventStore(
     {
         ArgumentNullException.ThrowIfNull(eventId);
 
-        await dataContext.Integrations
+        _ = await dataContext.Integrations
             .Where(e => e.Id == eventId)
             .ExecuteUpdateAsync(e => e
                 .SetProperty(p => p.ErrorMessage, p => $"{exception}")
@@ -82,7 +82,7 @@ public sealed class IntegrationEventStore(
     {
         ArgumentNullException.ThrowIfNull(eventId);
 
-        await dataContext.Integrations
+        _ = await dataContext.Integrations
             .Where(e => e.Id == eventId)
             .ExecuteUpdateAsync(e => e
                 .SetProperty(p => p.ErrorMessage, p => null)

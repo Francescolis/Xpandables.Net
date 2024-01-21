@@ -66,7 +66,7 @@ public static class DispatcherExtensions
             Type queryWrapperType = typeof(QueryHandlerWrapper<,>)
                 .MakeGenericType(query.GetType(), typeof(TResult));
 
-            var handler = (IQueryHandlerWrapper<TResult>)dispatcher
+            IQueryHandlerWrapper<TResult> handler = (IQueryHandlerWrapper<TResult>)dispatcher
                 .GetRequiredService(queryWrapperType);
 
             return await handler.HandleAsync(query, cancellationToken).ConfigureAwait(false);
@@ -105,7 +105,7 @@ public static class DispatcherExtensions
             Type queryWrapperType = typeof(AsyncQueryHandlerWrapper<,>)
                 .MakeGenericType(query.GetType(), typeof(TResult));
 
-            var handler = (IAsyncQueryHandlerWrapper<TResult>)dispatcher
+            IAsyncQueryHandlerWrapper<TResult> handler = (IAsyncQueryHandlerWrapper<TResult>)dispatcher
                 .GetRequiredService(queryWrapperType);
 
             return handler.HandleAsync(query, cancellationToken);

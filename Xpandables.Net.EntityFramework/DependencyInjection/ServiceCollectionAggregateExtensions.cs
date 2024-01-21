@@ -50,7 +50,7 @@ public static class ServiceCollectionAggregateExtensions
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        services.AddDbContext<DomainDataContext>(optionsAction, contextLifetime, optionsLifetime);
+        _ = services.AddDbContext<DomainDataContext>(optionsAction, contextLifetime, optionsLifetime);
         return services;
     }
 
@@ -92,7 +92,7 @@ public static class ServiceCollectionAggregateExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddXSnapshotStore<SnapShotStore>();
+        _ = services.AddXSnapshotStore<SnapShotStore>();
 
         return services;
     }

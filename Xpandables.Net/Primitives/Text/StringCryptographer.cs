@@ -76,7 +76,7 @@ public static class StringCryptographer
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var comp = Encrypt(value, encrypted.Key, encrypted.Salt);
+        EncryptedValue comp = Encrypt(value, encrypted.Key, encrypted.Salt);
         return comp == encrypted;
     }
 
@@ -96,7 +96,7 @@ public static class StringCryptographer
 
         try
         {
-            var salt = new byte[length];
+            byte[] salt = new byte[length];
             using RandomNumberGenerator random = RandomNumberGenerator.Create();
 
             random.GetNonZeroBytes(salt);
@@ -124,10 +124,10 @@ public static class StringCryptographer
             keyBytes = SHA256.HashData(keyBytes);
             string encryptedDecryptedString;
 
-            using (var memoryStream = new MemoryStream())
+            using (MemoryStream memoryStream = new())
             {
-                using var aes = Aes.Create();
-                using var rfcKey = new Rfc2898DeriveBytes(keyBytes, saltBytes, 1000, HashAlgorithmName.SHA256);
+                using Aes aes = Aes.Create();
+                using Rfc2898DeriveBytes rfcKey = new(keyBytes, saltBytes, 1000, HashAlgorithmName.SHA256);
                 rfcKey.IterationCount = 100000;
 
                 if (isEncryption) aes.Padding = PaddingMode.PKCS7;
@@ -144,18 +144,18 @@ public static class StringCryptographer
                     cryptoStream.Write(valueBytes, 0, valueBytes.Length);
                 }
 #pragma warning restore CA5401
-                var encryptedDescripted = memoryStream.ToArray();
+                byte[] encryptedDescripted = memoryStream.ToArray();
                 encryptedDecryptedString = isEncryption ? Convert.ToBase64String(encryptedDescripted) : Encoding.UTF8.GetString(encryptedDescripted);
             }
 
             return isEncryption ? new EncryptedValue(key, encryptedDecryptedString, salt) : encryptedDecryptedString;
         }
         catch (Exception exception) when (exception is EncoderFallbackException
-                                              || exception is ObjectDisposedException
-                                              || exception is ArgumentException
-                                              || exception is ArgumentOutOfRangeException
-                                              || exception is NotSupportedException
-                                              || exception is TargetInvocationException)
+                                              or ObjectDisposedException
+                                              or ArgumentException
+                                              or ArgumentOutOfRangeException
+                                              or NotSupportedException
+                                              or TargetInvocationException)
         {
             throw new InvalidOperationException("Cryptography failed. See inner exception.", exception);
         }

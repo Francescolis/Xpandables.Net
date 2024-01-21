@@ -53,7 +53,7 @@ public static partial class ServiceCollectionExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        var endpointRouteTypes = assemblies.SelectMany(ass => ass.GetExportedTypes())
+        List<Type> endpointRouteTypes = assemblies.SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                 && !type.IsInterface
                 && !type.IsGenericType
@@ -62,9 +62,9 @@ public static partial class ServiceCollectionExtensions
             .Select(type => type)
             .ToList();
 
-        foreach (var endpointRouteType in endpointRouteTypes)
+        foreach (Type endpointRouteType in endpointRouteTypes)
         {
-            (Activator.CreateInstance(endpointRouteType) as IEndpointRoute)
+            _ = (Activator.CreateInstance(endpointRouteType) as IEndpointRoute)
                 .AsOptional()
                 .Map(route => route.AddRoutes(builder));
         }

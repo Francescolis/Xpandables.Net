@@ -32,7 +32,7 @@ public sealed class OperationResultControllerValidationFilterAttribute : ActionF
 
         if (!context.ModelState.IsValid)
         {
-            var operationResult = context.ModelState.ToOperationResult();
+            IOperationResult operationResult = context.ModelState.ToOperationResult();
             context.Result = new BadRequestObjectResult(operationResult);
         }
     }

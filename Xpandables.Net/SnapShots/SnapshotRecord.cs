@@ -42,7 +42,7 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
         Guid objectId = descriptor.ObjectId;
         ulong version = descriptor.Version;
         string name = descriptor.Instance.GetTypeName();
-        var memento = descriptor.Instance.CreateMemento();
+        IMemento memento = descriptor.Instance.CreateMemento();
         string mementoTypeName = memento.GetTypeName();
 
         JsonDocument data = memento.ToJsonDocument(options);

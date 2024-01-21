@@ -169,9 +169,7 @@ public static class ServiceCollectionAggregateExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.XTryDecorate(typeof(IAggregateStore<,>), typeof(SnapshotStoreDecorator<,>));
-
-        return services;
+        return services.XTryDecorate(typeof(IAggregateStore<,>), typeof(SnapshotStoreDecorator<,>));
     }
 
     /// <summary>
@@ -194,16 +192,16 @@ public static class ServiceCollectionAggregateExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeServiceLifeTime
+        _ = services
+            .DoRegisterTypeServiceLifeTime
             <IDomainEventHandler<TDomainEvent, TAggregateId>, TDomainEventHandler>(
             implementationHandlerFactory);
 
-        services.AddScoped<DomainEventHandler<TDomainEvent, TAggregateId>>(
+        return services
+            .AddScoped<DomainEventHandler<TDomainEvent, TAggregateId>>(
             provider => provider
                 .GetRequiredService<IDomainEventHandler<TDomainEvent, TAggregateId>>()
                 .HandleAsync);
-
-        return services;
     }
 
     /// <summary>

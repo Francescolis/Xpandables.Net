@@ -33,18 +33,18 @@ public sealed class DomainEventRecordTypeConfiguration : IEntityTypeConfiguratio
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Property(p => p.Id).IsRequired();
-        builder.HasKey(p => p.Id);
-        builder.HasIndex(p => new { p.Id, p.EventTypeName, p.Version }).IsUnique();
+        _ = builder.Property(p => p.Id).IsRequired();
+        _ = builder.HasKey(p => p.Id);
+        _ = builder.HasIndex(p => new { p.Id, p.EventTypeName, p.Version }).IsUnique();
 
-        builder.Property(p => p.Id);
-        builder.Property(p => p.AggregateIdTypeName);
-        builder.Property(p => p.AggregateId);
-        builder.Property(p => p.Data);
-        builder.Property(p => p.EventTypeFullName);
-        builder.Property(p => p.EventTypeName);
-        builder.Property(p => p.Version);
+        _ = builder.Property(p => p.Id);
+        _ = builder.Property(p => p.AggregateIdTypeName);
+        _ = builder.Property(p => p.AggregateId);
+        _ = builder.Property(p => p.Data);
+        _ = builder.Property(p => p.EventTypeFullName);
+        _ = builder.Property(p => p.EventTypeName);
+        _ = builder.Property(p => p.Version);
 
-        builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
+        _ = builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }
 }

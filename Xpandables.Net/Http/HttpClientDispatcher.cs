@@ -31,32 +31,35 @@ internal sealed class DefaultHttpClientDispatcher(
 /// <summary>
 /// This helper class allows the application author to implement the <see cref="IHttpClientDispatcher"/> interface.
 /// </summary>
-public abstract class HttpClientDispatcher : Disposable, IHttpClientDispatcher
+///<inheritdoc/>
+public abstract class HttpClientDispatcher(
+    IHttpClientBuildProvider httpClientBuildProvider,
+    HttpClient httpClient,
+    JsonSerializerOptions? jsonSerializerOptions) : Disposable, IHttpClientDispatcher
 {
-    private readonly IHttpClientRequestBuilder _httpRestClientRequestBuilder;
-    private readonly IHttpClientResponseBuilder _httpRestClientResponseBuilder;
-    private readonly HttpClient _httpClient;
-    private readonly JsonSerializerOptions? _jsonSerializerOptions;
-
-    ///<inheritdoc/>
-    protected HttpClientDispatcher(
-        IHttpClientBuildProvider httpClientBuildProvider,
-        HttpClient httpClient,
-        JsonSerializerOptions? jsonSerializerOptions)
-    {
-        _httpRestClientRequestBuilder = httpClientBuildProvider?.RequestBuilder
+    private readonly IHttpClientRequestBuilder _httpRestClientRequestBuilder = httpClientBuildProvider?.RequestBuilder
             ?? throw new ArgumentNullException(nameof(httpClientBuildProvider));
-        _httpRestClientResponseBuilder = httpClientBuildProvider?.ResponseBuilder
+    private readonly IHttpClientResponseBuilder _httpRestClientResponseBuilder = httpClientBuildProvider?.ResponseBuilder
             ?? throw new ArgumentNullException(nameof(httpClientBuildProvider));
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _jsonSerializerOptions = jsonSerializerOptions;
-    }
+    private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+    private readonly JsonSerializerOptions? _jsonSerializerOptions = jsonSerializerOptions;
 
     ///<inheritdoc/>
     public HttpClient HttpClient => _httpClient;
 
     ///<inheritdoc/>
     public JsonSerializerOptions? SerializerOptions => _jsonSerializerOptions;
+
+    ///<inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _httpClient.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
 
     ///<inheritdoc/>
     public virtual async ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
@@ -80,13 +83,13 @@ public abstract class HttpClientDispatcher : Disposable, IHttpClientDispatcher
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is ArgumentNullException
-                                           || exception is ArgumentException
-                                           || exception is InvalidOperationException
-                                           || exception is OperationCanceledException
-                                           || exception is HttpRequestException
-                                           || exception is TaskCanceledException
-                                           || exception is TimeoutException
-                                           || exception is WebException)
+                                           or ArgumentException
+                                           or InvalidOperationException
+                                           or OperationCanceledException
+                                           or HttpRequestException
+                                           or TaskCanceledException
+                                           or TimeoutException
+                                           or WebException)
         {
             return new HttpClientResponse<IAsyncEnumerable<TResult>>(
                 HttpStatusCode.BadRequest,
@@ -119,13 +122,13 @@ public abstract class HttpClientDispatcher : Disposable, IHttpClientDispatcher
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is ArgumentNullException
-                                        || exception is ArgumentException
-                                        || exception is InvalidOperationException
-                                        || exception is OperationCanceledException
-                                        || exception is HttpRequestException
-                                        || exception is TaskCanceledException
-                                        || exception is TimeoutException
-                                        || exception is WebException)
+                                        or ArgumentException
+                                        or InvalidOperationException
+                                        or OperationCanceledException
+                                        or HttpRequestException
+                                        or TaskCanceledException
+                                        or TimeoutException
+                                        or WebException)
         {
             return new HttpClientResponse(
                 HttpStatusCode.BadRequest,
@@ -157,13 +160,13 @@ public abstract class HttpClientDispatcher : Disposable, IHttpClientDispatcher
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is ArgumentNullException
-                                        || exception is ArgumentException
-                                        || exception is InvalidOperationException
-                                        || exception is OperationCanceledException
-                                        || exception is HttpRequestException
-                                        || exception is TaskCanceledException
-                                        || exception is TimeoutException
-                                        || exception is WebException)
+                                        or ArgumentException
+                                        or InvalidOperationException
+                                        or OperationCanceledException
+                                        or HttpRequestException
+                                        or TaskCanceledException
+                                        or TimeoutException
+                                        or WebException)
         {
             return new HttpClientResponse<TResult>(
                 HttpStatusCode.BadRequest,

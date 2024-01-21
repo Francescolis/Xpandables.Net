@@ -40,7 +40,7 @@ public sealed class FromModelBinderProvider : IModelBinderProvider
 
         if (context.Metadata.IsComplexType)
         {
-            var metaData = (DefaultModelMetadata)context.Metadata;
+            DefaultModelMetadata metaData = (DefaultModelMetadata)context.Metadata;
 
             if (metaData.Attributes.Attributes.OfType<FromHeaderAttribute>().FirstOrDefault() is not null)
                 return new BinderTypeModelBinder(typeof(FromModelBinder<FromHeaderAttribute>));

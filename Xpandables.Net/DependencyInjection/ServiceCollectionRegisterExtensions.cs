@@ -50,7 +50,7 @@ public static class ServiceCollectionRegisterExtensions
         if (assemblies.Length == 0)
             assemblies = [Assembly.GetCallingAssembly()];
 
-        var serviceRegisters = assemblies.SelectMany(ass => ass.GetExportedTypes())
+        List<Type> serviceRegisters = assemblies.SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                            && type is { IsInterface: false, IsGenericType: false }
                            && Array.Exists(
@@ -59,7 +59,7 @@ public static class ServiceCollectionRegisterExtensions
             .Select(type => type)
             .ToList();
 
-        foreach (var serviceRegister in serviceRegisters)
+        foreach (Type? serviceRegister in serviceRegisters)
         {
             if (Activator.CreateInstance(serviceRegister) is IServiceRegister route)
             {
@@ -83,7 +83,7 @@ public static class ServiceCollectionRegisterExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddTransient(typeof(Lazy<>), typeof(LazyResolved<>));
+        _ = services.AddTransient(typeof(Lazy<>), typeof(LazyResolved<>));
         return services;
     }
 }

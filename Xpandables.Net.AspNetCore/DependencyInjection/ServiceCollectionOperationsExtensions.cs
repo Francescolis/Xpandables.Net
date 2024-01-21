@@ -66,7 +66,7 @@ public static class ServiceCollectionOperationsExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services
+        _ = services
             .AddSingleton<IConfigureOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>,
             TOperationResultSerializationConfigureOptions>();
         return services;
@@ -98,7 +98,7 @@ public static class ServiceCollectionOperationsExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton<IConfigureOptions<JsonOptions>, TOperationResultConfigureJsonOptions>();
+        _ = services.AddSingleton<IConfigureOptions<JsonOptions>, TOperationResultConfigureJsonOptions>();
         return services;
     }
 
@@ -126,7 +126,7 @@ public static class ServiceCollectionOperationsExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton<IConfigureOptions<MvcOptions>, TOperationResultControllerConfigureMvcOptions>();
+        _ = services.AddSingleton<IConfigureOptions<MvcOptions>, TOperationResultControllerConfigureMvcOptions>();
         return services;
     }
 
@@ -141,7 +141,7 @@ public static class ServiceCollectionOperationsExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddScoped<OperationResultController>();
+        _ = services.AddScoped<OperationResultController>();
         return services;
     }
 
@@ -156,8 +156,8 @@ public static class ServiceCollectionOperationsExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddScoped<OperationResultControllerMiddleware>();
-        services.AddScoped<OperationResultControllerMiddleware>();
+        _ = services.AddScoped<OperationResultControllerMiddleware>();
+        _ = services.AddScoped<OperationResultControllerMiddleware>();
         return services;
     }
 
@@ -171,7 +171,7 @@ public static class ServiceCollectionOperationsExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddScoped<OperationResultMinimalMiddleware>();
+        _ = services.AddScoped<OperationResultMinimalMiddleware>();
         return services;
     }
 
@@ -187,7 +187,7 @@ public static class ServiceCollectionOperationsExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.UseMiddleware<OperationResultControllerMiddleware>();
+        _ = builder.UseMiddleware<OperationResultControllerMiddleware>();
 
         return builder;
     }
@@ -204,7 +204,7 @@ public static class ServiceCollectionOperationsExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.UseMiddleware<OperationResultMinimalMiddleware>();
+        _ = builder.UseMiddleware<OperationResultMinimalMiddleware>();
 
         return builder;
     }

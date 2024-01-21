@@ -33,16 +33,16 @@ public sealed class SnapShotRecordTypeConfiguration : IEntityTypeConfiguration<S
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Property(p => p.Id).IsRequired();
-        builder.HasKey(p => p.Id);
-        builder.HasIndex(p => p.Id).IsUnique();
+        _ = builder.Property(p => p.Id).IsRequired();
+        _ = builder.HasKey(p => p.Id);
+        _ = builder.HasIndex(p => p.Id).IsUnique();
 
-        builder.Property(p => p.ObjectId);
-        builder.Property(p => p.ObjectTypeName);
-        builder.Property(p => p.MementoTypeName);
-        builder.Property(p => p.Data);
-        builder.Property(p => p.Version);
+        _ = builder.Property(p => p.ObjectId);
+        _ = builder.Property(p => p.ObjectTypeName);
+        _ = builder.Property(p => p.MementoTypeName);
+        _ = builder.Property(p => p.Data);
+        _ = builder.Property(p => p.Version);
 
-        builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
+        _ = builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }
 }

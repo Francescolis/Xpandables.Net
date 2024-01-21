@@ -61,7 +61,7 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(httpClient);
 
-        var attribute = ReadHttpRestClientAttribute(source, serviceProvider);
+        HttpClientAttribute attribute = ReadHttpRestClientAttribute(source, serviceProvider);
 
         attribute.Path ??= "/";
 
@@ -74,7 +74,7 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
 
         attribute.Uri = new Uri(attribute.Path, UriKind.Relative);
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        var httpRequestMessage = new HttpRequestMessage(new HttpMethod(attribute.Method.ToString()), attribute.Uri);
+        HttpRequestMessage httpRequestMessage = new(new HttpMethod(attribute.Method.ToString()), attribute.Uri);
 #pragma warning restore CA2000 // Dispose objects before losing scope
         httpRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
         httpRequestMessage.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(Thread.CurrentThread.CurrentCulture.Name));
@@ -84,14 +84,17 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
 
         if (!attribute.IsNullable && (attribute.Location & Location.Body) == Location.Body)
         {
+#pragma warning disable CA2000 // Dispose objects before losing scope
             httpRequestMessage.Content = attribute.BodyFormat switch
             {
                 BodyFormat.ByteArray => ReadByteArrayContent(source),
                 BodyFormat.FormUrlEncoded => ReadFormUrlEncodedContent(source),
                 BodyFormat.Multipart => ReadMultipartContent(source, attribute),
                 BodyFormat.Stream => ReadStreamContent(source),
-                _ => ReadStringContent(source, attribute, serializerOptions)
+                BodyFormat.String => ReadStringContent(source, attribute, serializerOptions),
+                _ => throw new NotImplementedException($"Unknown body format : {attribute.BodyFormat}")
             };
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             if (httpRequestMessage.Content is not null && httpRequestMessage.Content.Headers.ContentType is null)
                 httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue(attribute.ContentType);
@@ -126,7 +129,7 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (pathString.Count == 0)
             return path;
 
-        foreach (var parameter in pathString)
+        foreach (KeyValuePair<string, string> parameter in pathString)
             path = path.Replace(
                 $"{{{parameter.Key}}}",
                 parameter.Value,
@@ -147,7 +150,7 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (source is not IHttpRequestPathString pathStringRequest)
             return;
 
-        var pathString = pathStringRequest.GetPathStringSource();
+        IDictionary<string, string> pathString = pathStringRequest.GetPathStringSource();
         attribute.Path = AddPathString(attribute.Path!, pathString);
     }
 
@@ -163,7 +166,7 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (source is not IHttpRequestQueryString queryStringRequest)
             return;
 
-        var queryString = queryStringRequest.GetQueryStringSource();
+        IDictionary<string, string?>? queryString = queryStringRequest.GetQueryStringSource();
         attribute.Path = attribute.Path!.AddQueryString(queryString);
     }
 
@@ -181,9 +184,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (source is not IHttpRequestCookie cookieLocationRequest)
             return;
 
-        var cookieSource = cookieLocationRequest.GetCookieSource();
-        foreach (var parameter in cookieSource)
-            httpRequestMessage.Options.TryAdd(parameter.Key, parameter.Value);
+        IDictionary<string, object?> cookieSource = cookieLocationRequest.GetCookieSource();
+        foreach (KeyValuePair<string, object?> parameter in cookieSource)
+            _ = httpRequestMessage.Options.TryAdd(parameter.Key, parameter.Value);
     }
 
     internal static void WriteLocationHeader<TSource>(
@@ -198,7 +201,7 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         ValidateInterfaceImplementation<IHttpRequestHeader>(source);
         if (source is not IHttpRequestHeader headerLocationRequest) return;
 
-        var headerSource = headerLocationRequest.GetHeadersSource();
+        IDictionary<string, IEnumerable<string?>> headerSource = headerLocationRequest.GetHeadersSource();
         if (headerLocationRequest.GetHeaderModelName() is string modelName)
         {
             string headerValue = string.Join(",", headerSource.Select(x => $"{x.Key},{string.Join(";", x.Value)}"));
@@ -206,9 +209,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         }
         else
         {
-            foreach (var parameter in headerSource)
+            foreach (KeyValuePair<string, IEnumerable<string?>> parameter in headerSource)
             {
-                httpRequestMessage.Headers.Remove(parameter.Key);
+                _ = httpRequestMessage.Headers.Remove(parameter.Key);
                 httpRequestMessage.Headers.Add(parameter.Key, parameter.Value);
             }
         }
@@ -288,7 +291,7 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         ValidateInterfaceImplementation<IHttpRequestMultipart>(source);
         if (source is not IHttpRequestMultipart multipartRequest) return default;
 
-        var multipartContent = new MultipartFormDataContent();
+        MultipartFormDataContent multipartContent = [];
         if (ReadStreamContent(multipartRequest) is { } streamContent)
             multipartContent.Add(streamContent, multipartRequest.GetName(), multipartRequest.GetFileName());
 

@@ -114,7 +114,7 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
             }
             catch (Exception exception)
             {
-                invocation.AddException(
+                _ = invocation.AddException(
                     new InvalidOperationException(
                         $"The interceptor {_interceptor.GetType().Name} throws an exception.",
                         exception));

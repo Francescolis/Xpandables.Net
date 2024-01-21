@@ -47,16 +47,16 @@ public class Validator<TArgument>(IServiceProvider serviceProvider) : IValidator
     /// <returns>Returns a result state that contains validation information.</returns>
     public virtual OperationResult Validate(TArgument argument)
     {
-        var validationResults = new List<ValidationResult>();
-        var validationContext = new ValidationContext(argument, _serviceProvider, null);
+        List<ValidationResult> validationResults = [];
+        ValidationContext validationContext = new(argument, _serviceProvider, null);
 
         if (!Validator.TryValidateObject(argument, validationContext, validationResults, true))
         {
             ElementCollection errors = [];
 
-            foreach (var validationResult in validationResults)
+            foreach (ValidationResult validationResult in validationResults)
             {
-                foreach (var member in validationResult.MemberNames.Where(member => validationResult.ErrorMessage is not null))
+                foreach (string? member in validationResult.MemberNames.Where(member => validationResult.ErrorMessage is not null))
                 {
                     errors.Add(member, validationResult.ErrorMessage!);
                 }

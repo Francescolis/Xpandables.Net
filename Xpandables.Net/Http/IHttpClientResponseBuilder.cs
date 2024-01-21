@@ -115,7 +115,7 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
         }
         else
         {
-            var binary = await DoReadContentAsync(httpResponse, stream, cancellationToken).ConfigureAwait(false);
+            BinaryEntry binary = await DoReadContentAsync(httpResponse, stream, cancellationToken).ConfigureAwait(false);
             result = binary is not TResult r ? default : r;
         }
 
@@ -132,12 +132,12 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
             Stream stream,
             CancellationToken cancellationToken)
         {
-            using var memoryStream = new MemoryStream();
+            using MemoryStream memoryStream = new();
             await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-            var content = memoryStream.ToArray();
-            var fileName = httpResponse.Content.Headers.ContentDisposition!.FileName!;
-            var contentType = httpResponse.Content.Headers.ContentType!.MediaType!;
-            var extension = Path.GetExtension(fileName).TrimStart('.');
+            byte[] content = memoryStream.ToArray();
+            string fileName = httpResponse.Content.Headers.ContentDisposition!.FileName!;
+            string contentType = httpResponse.Content.Headers.ContentType!.MediaType!;
+            string extension = Path.GetExtension(fileName).TrimStart('.');
 
             return new BinaryEntry(fileName, content, contentType, extension);
         }
@@ -212,9 +212,9 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
             JsonSerializerOptions? serializerOptions = default,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            using var blockingCollection = new BlockingCollection<TResult>();
+            using BlockingCollection<TResult> blockingCollection = [];
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-            await using var blockingCollectionIterator = new AsyncEnumerable<TResult>(
+            await using IAsyncEnumerator<TResult> blockingCollectionIterator = new AsyncEnumerable<TResult>(
                 blockingCollection.GetConsumingEnumerable(cancellationToken))
                 .GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
@@ -237,9 +237,9 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
             JsonSerializerOptions? serializerOptions = default,
             CancellationToken cancellationToken = default)
         {
-            using var jsonStreamReader = new Utf8JsonStreamReader(stream, 32 * 1024);
+            using Utf8JsonStreamReader jsonStreamReader = new(stream, 32 * 1024);
 
-            jsonStreamReader.Read();
+            _ = jsonStreamReader.Read();
             while (jsonStreamReader.Read())
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -258,7 +258,7 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
         }
     }
 
-    static async ValueTask<HttpClientException?> BuildExceptionAsync(HttpResponseMessage httpResponse)
+    private static async ValueTask<HttpClientException?> BuildExceptionAsync(HttpResponseMessage httpResponse)
     {
         return await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false) switch
         {

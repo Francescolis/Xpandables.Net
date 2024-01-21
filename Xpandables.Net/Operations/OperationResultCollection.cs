@@ -51,14 +51,14 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
 
         _items ??= [];
 
-        foreach (var item in items)
+        foreach (ElementEntry item in items)
         {
             _items.Add(item);
         }
     }
 
     /// <inheritdoc/>
-    public ElementEntry? this[string key] => TryGet(key, out var element) ? element : null;
+    public ElementEntry? this[string key] => TryGet(key, out ElementEntry? element) ? element : null;
 
     /// <summary>
     /// Determines whether or not the errors collection contains an undefined key. Mostly used for exception.
@@ -83,7 +83,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
 
         if (_items.Find(i => i.Key.Equals(element.Key, StringComparison.OrdinalIgnoreCase)) is { Key: { } } existsItem)
         {
-            _items.Remove(existsItem);
+            _ = _items.Remove(existsItem);
             element = existsItem = existsItem with { Values = existsItem.Values.Union(element.Values).ToArray() };
         }
 
@@ -105,7 +105,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     {
         ArgumentNullException.ThrowIfNull(elements);
 
-        foreach (var item in elements)
+        foreach (ElementEntry item in elements)
         {
             _items.Add(item);
         }

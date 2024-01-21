@@ -54,10 +54,10 @@ public static class InterceptorFactory
         ArgumentNullException.ThrowIfNull(interceptor);
         ArgumentNullException.ThrowIfNull(instance);
 
-        var proxyType = typeof(InterceptorProxy<>)
+        MethodInfo proxyType = typeof(InterceptorProxy<>)
             .GetMethod("CreateProxy", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)!
             .MakeGenericMethod(interfaceType);
 
-        return proxyType.Invoke(null, new[] { instance, interceptor })!;
+        return proxyType.Invoke(null, [instance, interceptor])!;
     }
 }

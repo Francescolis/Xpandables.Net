@@ -50,8 +50,8 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
         ulong version = @event.Version;
         string typeName = @event.GetTypeName();
         string typeFullName = @event.GetTypeFullName();
-        var data = @event.ToJsonDocument(options);
-        var aggregateIdName = typeof(TAggregateId).GetNameWithoutGenericArity();
+        JsonDocument data = @event.ToJsonDocument(options);
+        string aggregateIdName = typeof(TAggregateId).GetNameWithoutGenericArity();
 
         return new(aggregateId, aggregateIdName, version, typeName, typeFullName, data);
     }

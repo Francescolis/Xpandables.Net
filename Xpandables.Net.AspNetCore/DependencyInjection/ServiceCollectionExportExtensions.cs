@@ -67,12 +67,12 @@ public static class ServiceCollectionExportExtensions
         ArgumentNullException.ThrowIfNull(environment);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        var definedOptions = new ExportServiceOptions();
+        ExportServiceOptions definedOptions = new();
         configureOptions.Invoke(definedOptions);
 
         ServiceExportExtensions.ApplyServiceExports<IUseServiceExport>(definedOptions, exportServices =>
         {
-            foreach (var export in exportServices)
+            foreach (IUseServiceExport export in exportServices)
                 export.UseServices(application, environment);
         });
 

@@ -41,7 +41,7 @@ public sealed class CompositeVisitor<TElement>(IEnumerable<IVisitor<TElement>> v
     {
         ArgumentNullException.ThrowIfNull(element);
 
-        foreach (var visitor in _visitorInstances.OrderBy(o => o.Order))
+        foreach (IVisitor<TElement> visitor in _visitorInstances.OrderBy(o => o.Order))
         {
             await visitor.VisitAsync(element).ConfigureAwait(false);
         }

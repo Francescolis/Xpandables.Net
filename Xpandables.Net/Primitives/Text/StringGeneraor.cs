@@ -75,10 +75,10 @@ public static class StringGenerator
         while (stringResult.Length < length)
         {
             random.GetBytes(uintBuffer, offset, count);
-            var number = BitConverter.ToUInt32(uintBuffer, 0);
+            uint number = BitConverter.ToUInt32(uintBuffer, 0);
 
             if (number < max)
-                stringResult.Append(lookupCharacters[(int)(number % lookupCharacters.Length)]);
+                _ = stringResult.Append(lookupCharacters[(int)(number % lookupCharacters.Length)]);
         }
 
         return stringResult.ToString();

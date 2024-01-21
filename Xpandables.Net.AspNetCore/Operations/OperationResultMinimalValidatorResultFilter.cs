@@ -42,7 +42,7 @@ public sealed class OperationResultMinimalValidatorResultFilter<TBindingRequest>
             OperationResult operation = await validator.ValidateAsync(request).ConfigureAwait(false);
             if (operation.IsFailure)
             {
-                var operationResultException = operation.ToOperationResultException();
+                OperationResultException operationResultException = operation.ToOperationResultException();
                 throw operationResultException;
             }
         }

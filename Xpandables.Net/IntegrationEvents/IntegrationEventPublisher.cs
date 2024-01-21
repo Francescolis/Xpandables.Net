@@ -36,7 +36,7 @@ internal sealed class IntegrationEventPublisher(
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        var handlers = _serviceProvider
+        List<IIntegrationEventHandler<TIntegrationEvent>> handlers = _serviceProvider
             .GetServices<IIntegrationEventHandler<TIntegrationEvent>>()
             .ToList();
 
@@ -49,7 +49,7 @@ internal sealed class IntegrationEventPublisher(
                 .Build();
 
 
-        foreach (var handler in handlers)
+        foreach (IIntegrationEventHandler<TIntegrationEvent>? handler in handlers)
         {
             if (await handler.HandleAsync(@event, cancellationToken).ConfigureAwait(false)
                 is { IsFailure: true } failedOperation)

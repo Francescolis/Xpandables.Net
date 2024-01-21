@@ -84,10 +84,10 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeServiceLifeTime<ICommandHandler<TCommand>, TCommandHandler>(
+        _ = services.DoRegisterTypeServiceLifeTime<ICommandHandler<TCommand>, TCommandHandler>(
             implementationHandlerFactory);
 
-        services.AddScoped<CommandHandler<TCommand>>(
+        _ = services.AddScoped<CommandHandler<TCommand>>(
             provider => provider
                 .GetRequiredService<ICommandHandler<TCommand>>()
                 .HandleAsync);
@@ -154,10 +154,10 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeServiceLifeTime<IQueryHandler<TQuery, TResult>, TQueryHandler>(
+        _ = services.DoRegisterTypeServiceLifeTime<IQueryHandler<TQuery, TResult>, TQueryHandler>(
             implementationQueryFactory);
 
-        services.AddScoped<QueryHandler<TQuery, TResult>>(
+        _ = services.AddScoped<QueryHandler<TQuery, TResult>>(
             provider => provider
                 .GetRequiredService<IQueryHandler<TQuery, TResult>>()
                 .HandleAsync);
@@ -186,7 +186,7 @@ public static class ServiceCollectionCQRSExtensions
 
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
-        services.AddXQueryHandlerWrapper();
+        _ = services.AddXQueryHandlerWrapper();
 
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
             typeof(IQueryHandler<,>),
@@ -230,10 +230,10 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeServiceLifeTime<IAsyncQueryHandler<TAsyncQuery, TResult>, TAsyncQueryHandler>(
+        _ = services.DoRegisterTypeServiceLifeTime<IAsyncQueryHandler<TAsyncQuery, TResult>, TAsyncQueryHandler>(
             implementationAsyncQueryFactory);
 
-        services.AddScoped<AsyncQueryHandler<TAsyncQuery, TResult>>(
+        _ = services.AddScoped<AsyncQueryHandler<TAsyncQuery, TResult>>(
             provider => provider
                 .GetRequiredService<IAsyncQueryHandler<TAsyncQuery, TResult>>()
                 .HandleAsync);
@@ -262,7 +262,7 @@ public static class ServiceCollectionCQRSExtensions
 
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
-        services.AddXAsyncQueryHandlerWrapper();
+        _ = services.AddXAsyncQueryHandlerWrapper();
 
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
             typeof(IAsyncQueryHandler<,>),
@@ -289,9 +289,9 @@ public static class ServiceCollectionCQRSExtensions
         if (assemblies.Length == 0)
             assemblies = [Assembly.GetCallingAssembly()];
 
-        services.AddXCommandHandlers(assemblies);
-        services.AddXQueryHandlers(assemblies);
-        services.AddXAsyncQueryHandlers(assemblies);
+        _ = services.AddXCommandHandlers(assemblies);
+        _ = services.AddXQueryHandlers(assemblies);
+        _ = services.AddXAsyncQueryHandlers(assemblies);
 
         return services;
     }
@@ -321,9 +321,9 @@ public static class ServiceCollectionCQRSExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        services.AddXCQRSHandlers(assemblies);
+        _ = services.AddXCQRSHandlers(assemblies);
 
-        return services.AddXCQRSOptions(configureOptions, assemblies);
+        return services.AddXCQRSOptions(configureOptions);
     }
 
     /// <summary>
@@ -332,48 +332,42 @@ public static class ServiceCollectionCQRSExtensions
     /// and <see cref="IAsyncQueryHandler{TQuery, TResult}"/> options behaviors.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <param name="assemblies">The assemblies to scan for implemented types. 
-    /// If not set, the calling assembly will be used.</param>
     /// <param name="configureOptions">A delegate to configure the <see cref="CQRSOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
     public static IServiceCollection AddXCQRSOptions(
         this IServiceCollection services,
-        Action<CQRSOptions> configureOptions,
-        params Assembly[] assemblies)
+        Action<CQRSOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
-        ArgumentNullException.ThrowIfNull(assemblies);
 
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
-
-        var definedOptions = new CQRSOptions();
+        CQRSOptions definedOptions = new();
         configureOptions.Invoke(definedOptions);
 
         if (definedOptions.IsPersistenceEnabled)
         {
-            services.AddXPersistenceCommandDecorator();
+            _ = services.AddXPersistenceCommandDecorator();
         }
 
         if (definedOptions.IsTransactionEnabled)
         {
-            services.AddXTransactionCommandDecorator();
+            _ = services.AddXTransactionCommandDecorator();
         }
 
         if (definedOptions.IsValidatorEnabled)
         {
-            services.AddXValidatorDecorators();
+            _ = services.AddXValidatorDecorators();
         }
 
         if (definedOptions.IsVisitorEnabled)
         {
-            services.AddXVisitorDecorators();
+            _ = services.AddXVisitorDecorators();
         }
 
         if (definedOptions.IsOperationResultEnabled)
         {
-            services.AddXOperationResultDecorator();
+            _ = services.AddXOperationResultDecorator();
         }
 
         return services;
@@ -391,7 +385,7 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.XTryDecorate(typeof(ICommandHandler<>), typeof(PersistenceCommandDecorator<>));
+        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(PersistenceCommandDecorator<>));
 
         return services;
     }
@@ -408,7 +402,7 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.XTryDecorate(typeof(ICommandHandler<>), typeof(TransactionCommandDecorator<>));
+        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(TransactionCommandDecorator<>));
 
         return services;
     }
@@ -472,9 +466,9 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.XTryDecorate(typeof(ICommandHandler<>), typeof(ValidatorCommandDecorator<>));
-        services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(ValidatorAsyncQueryDecorator<,>));
-        services.XTryDecorate(typeof(IQueryHandler<,>), typeof(ValidatorQueryDecorator<,>));
+        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(ValidatorCommandDecorator<>));
+        _ = services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(ValidatorAsyncQueryDecorator<,>));
+        _ = services.XTryDecorate(typeof(IQueryHandler<,>), typeof(ValidatorQueryDecorator<,>));
 
         return services;
     }
@@ -491,9 +485,9 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.XTryDecorate(typeof(ICommandHandler<>), typeof(VisitorCommandDecorator<>));
-        services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(VisitorAsyncQueryDecorator<,>));
-        services.XTryDecorate(typeof(IQueryHandler<,>), typeof(VisitorQueryDecorator<,>));
+        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(VisitorCommandDecorator<>));
+        _ = services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(VisitorAsyncQueryDecorator<,>));
+        _ = services.XTryDecorate(typeof(IQueryHandler<,>), typeof(VisitorQueryDecorator<,>));
         return services;
     }
 
@@ -508,9 +502,9 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.XTryDecorate(typeof(ICommandHandler<>), typeof(OperationResultCommandDecorator<>));
-        services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(OperationResultAsyncQueryDecorator<,>));
-        services.XTryDecorate(typeof(IQueryHandler<,>), typeof(OperationResultQueryDecorator<,>));
+        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(OperationResultCommandDecorator<>));
+        _ = services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(OperationResultAsyncQueryDecorator<,>));
+        _ = services.XTryDecorate(typeof(IQueryHandler<,>), typeof(OperationResultQueryDecorator<,>));
 
         return services;
     }
@@ -578,11 +572,11 @@ public static class ServiceCollectionCQRSExtensions
 
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
-        var genericHandlerInterfaceTypes = new[]
-        {
+        Type[] genericHandlerInterfaceTypes =
+        [
             typeof(IQueryHandler<,>),
             typeof(ICommandHandler<>),
-        };
+        ];
 
         var handlers = assemblies
             .SelectMany(ass => ass.GetExportedTypes())
@@ -601,13 +595,13 @@ public static class ServiceCollectionCQRSExtensions
                         && genericHandlerInterfaceTypes.Contains(i.GetGenericTypeDefinition()))
             });
 
-        services.AddTransient(interceptorType);
+        _ = services.AddTransient(interceptorType);
         foreach (var hander in handlers)
-            foreach (var typeInterface in hander.Interfaces)
+            foreach (Type typeInterface in hander.Interfaces)
             {
-                services.XTryDecorate(typeInterface, (instance, provider) =>
+                _ = services.XTryDecorate(typeInterface, (instance, provider) =>
                 {
-                    var interceptor = (IInterceptor)provider.GetRequiredService(interceptorType);
+                    IInterceptor interceptor = (IInterceptor)provider.GetRequiredService(interceptorType);
                     return InterceptorFactory.CreateProxy(typeInterface, interceptor, instance);
                 });
             }

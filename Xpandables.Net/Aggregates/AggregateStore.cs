@@ -101,7 +101,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
             TAggregate aggregate = AggregateExtensions
                 .CreateEmptyAggregateInstance<TAggregate, TAggregateId>();
 
-            await foreach (var @event in _eventStore.ReadAsync(aggregateId, cancellationToken))
+            await foreach (IDomainEvent<TAggregateId> @event in _eventStore.ReadAsync(aggregateId, cancellationToken))
             {
                 aggregate.LoadFromHistory(@event);
             }

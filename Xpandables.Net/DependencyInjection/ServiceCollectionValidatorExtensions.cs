@@ -44,7 +44,7 @@ public static class ServiceCollectionValidatorExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddTransient(typeof(IValidator<>), typeof(Validator<>));
-        services.AddTransient(typeof(ICompositeValidator<>), typeof(CompositeValidator<>));
+        services.TryAddTransient(typeof(ICompositeValidator<>), typeof(CompositeValidator<>));
         return services;
     }
 
@@ -66,7 +66,7 @@ public static class ServiceCollectionValidatorExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeServiceLifeTime<IValidator<TArgument>, TValidator>(
+        _ = services.DoRegisterTypeServiceLifeTime<IValidator<TArgument>, TValidator>(
             implementationFactory,
             ServiceLifetime.Transient);
 

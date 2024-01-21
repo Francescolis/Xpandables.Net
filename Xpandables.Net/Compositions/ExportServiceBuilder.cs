@@ -62,20 +62,20 @@ public sealed class ExportServiceBuilder
 
         try
         {
-            var directoryCatalog = options.SearchSubDirectories
+            ComposablePartCatalog directoryCatalog = options.SearchSubDirectories
                 ? new RecursiveDirectoryCatalog(options.Path, options.SearchPattern)
-                : (ComposablePartCatalog)new DirectoryCatalog(options.Path, options.SearchPattern);
+                : new DirectoryCatalog(options.Path, options.SearchPattern);
 
-            using var aggregateCatalog = new AggregateCatalog(directoryCatalog);
+            using AggregateCatalog aggregateCatalog = new(directoryCatalog);
             Composer = new CompositionContainer(aggregateCatalog, true);
             Composer.ComposeParts(target);
         }
         catch (Exception exception) when (exception is NotSupportedException
-                                        || exception is DirectoryNotFoundException
-                                        || exception is UnauthorizedAccessException
-                                        || exception is ArgumentException
-                                        || exception is PathTooLongException
-                                        || exception is ReflectionTypeLoadException)
+                                        or DirectoryNotFoundException
+                                        or UnauthorizedAccessException
+                                        or ArgumentException
+                                        or PathTooLongException
+                                        or ReflectionTypeLoadException)
         {
             throw new InvalidOperationException(
                 I18nXpandables.ActionSpecifiedFailedSeeException.StringFormat(nameof(ExportServiceBuilder)),

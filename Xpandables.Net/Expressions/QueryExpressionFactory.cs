@@ -55,8 +55,8 @@ public static class QueryExpressionFactory
 
         if (propertyExpression.NodeType == ExpressionType.Constant)
         {
-            var expression = propertyExpression as Expression;
-            var constantExpression = expression as ConstantExpression;
+            Expression expression = propertyExpression;
+            ConstantExpression? constantExpression = expression as ConstantExpression;
             return constantExpression?.Value!.ToString();
         }
 
@@ -85,8 +85,8 @@ public static class QueryExpressionFactory
     {
         ArgumentNullException.ThrowIfNull(propertyOrFieldName);
 
-        var paramExpr = Expression.Parameter(typeof(TSource));
-        var bodyExpr = Expression.PropertyOrField(paramExpr, propertyOrFieldName);
+        ParameterExpression paramExpr = Expression.Parameter(typeof(TSource));
+        MemberExpression bodyExpr = Expression.PropertyOrField(paramExpr, propertyOrFieldName);
         return Expression.Lambda<Func<TSource, TProperty>>(bodyExpr, paramExpr);
     }
 }
@@ -123,7 +123,7 @@ public static class QueryExpressionFactory<TResult>
         ArgumentNullException.ThrowIfNull(left);
         ArgumentNullException.ThrowIfNull(right);
 
-        var invokedExpr = Expression.Invoke(right, left.Parameters!);
+        InvocationExpression invokedExpr = Expression.Invoke(right, left.Parameters!);
         return Expression.Lambda<Func<TSource, TResult>>(Expression.AndAlso(left.Body, invokedExpr), left.Parameters);
     }
 
@@ -143,7 +143,7 @@ public static class QueryExpressionFactory<TResult>
         ArgumentNullException.ThrowIfNull(left);
         ArgumentNullException.ThrowIfNull(right);
 
-        var invokedExpr = Expression.Invoke(right, left.Parameters!);
+        InvocationExpression invokedExpr = Expression.Invoke(right, left.Parameters!);
         return Expression.Lambda<Func<TSource, TResult>>(Expression.OrElse(left.Body, invokedExpr), left.Parameters);
     }
 
@@ -156,7 +156,7 @@ public static class QueryExpressionFactory<TResult>
     /// <exception cref="ArgumentNullException">The <paramref name="expression"/>is null.</exception>
     public static Expression<Func<TSource, TResult>> Not<TSource>(Expression<Func<TSource, TResult>> expression)
     {
-        var left = expression ?? throw new ArgumentNullException(nameof(expression));
+        Expression<Func<TSource, TResult>> left = expression ?? throw new ArgumentNullException(nameof(expression));
 
         return Expression.Lambda<Func<TSource, TResult>>(Expression.Not(left.Body), left.Parameters);
     }

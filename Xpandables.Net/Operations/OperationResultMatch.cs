@@ -17,7 +17,7 @@
 ************************************************************************************************************/
 namespace Xpandables.Net.Operations;
 
-class OperationResultMatch : IOperationResultMatch
+internal class OperationResultMatch : IOperationResultMatch
 {
     private readonly OperationResult _operationResult;
 

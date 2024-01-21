@@ -83,11 +83,11 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
         TAggregate? aggregate = default;
         try
         {
-            var optionalResult = await _snapShotStore
+            Optionals.Optional<TAggregate> optionalResult = await _snapShotStore
                 .ReadFromSnapShotAsync<TAggregate>(aggregateId.Value, cancellationToken)
                 .ConfigureAwait(false);
 
-            optionalResult.Map(result => aggregate = result);
+            _ = optionalResult.Map(result => aggregate = result);
         }
         catch (Exception exception) when (exception is not ArgumentNullException)
         {
@@ -104,7 +104,7 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
 
         // because the snapshot is not aligned with the last events,
         // we need to add those events if available
-        var filter = new DomainEventFilter
+        DomainEventFilter filter = new()
         {
             AggregateId = aggregateId.Value,
             AggregateIdTypeName = typeof(TAggregateId).Name,
@@ -113,7 +113,7 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
 
         try
         {
-            await foreach (var @event in _eventStore
+            await foreach (IDomainEvent<TAggregateId>? @event in _eventStore
                 .ReadAsync<TAggregateId>(filter, cancellationToken)
                 .ConfigureAwait(false))
             {

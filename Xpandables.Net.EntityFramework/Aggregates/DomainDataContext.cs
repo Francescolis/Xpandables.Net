@@ -41,9 +41,9 @@ public sealed class DomainDataContext(DbContextOptions<DomainDataContext> contex
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new DomainEventRecordTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new IntegrationEventRecordTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new SnapShotRecordTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new DomainEventRecordTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new IntegrationEventRecordTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new SnapShotRecordTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

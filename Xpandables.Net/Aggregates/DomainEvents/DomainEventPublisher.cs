@@ -38,7 +38,7 @@ internal sealed class DomainEventPublisher<TAggregateId>(
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        var handlers = _serviceProvider
+        List<IDomainEventHandler<TDomainEvent, TAggregateId>> handlers = _serviceProvider
             .GetServices<IDomainEventHandler<TDomainEvent, TAggregateId>>()
             .ToList();
 
@@ -50,7 +50,7 @@ internal sealed class DomainEventPublisher<TAggregateId>(
                     I18nXpandables.EventSourcingNoIntegrationEventHandler)
                 .Build();
 
-        foreach (var handler in handlers)
+        foreach (IDomainEventHandler<TDomainEvent, TAggregateId>? handler in handlers)
         {
             if (await handler.HandleAsync(@event, cancellationToken).ConfigureAwait(false)
                 is { IsFailure: true } failureOperation)

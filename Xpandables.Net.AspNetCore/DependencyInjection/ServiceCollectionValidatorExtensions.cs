@@ -36,7 +36,7 @@ public static class ServiceCollectionValidatorExtensions
         where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
-        builder.AddEndpointFilterFactory(OperationResultMinimalValidatorFilterFactory.MinimalFilterFactory);
+        _ = builder.AddEndpointFilterFactory(OperationResultMinimalValidatorFilterFactory.MinimalFilterFactory);
 
         return builder;
     }
@@ -67,7 +67,7 @@ public static class ServiceCollectionValidatorExtensions
         where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
-        builder.AddEndpointFilter(new OperationResultMinimalValidatorFilter().InvokeAsync);
+        _ = builder.AddEndpointFilter(new OperationResultMinimalValidatorFilter().InvokeAsync);
 
         return builder;
     }

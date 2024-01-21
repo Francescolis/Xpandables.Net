@@ -49,10 +49,10 @@ public static class ServiceCollectionInterceptorExtensions
         if (!typeof(TInterface).IsInterface)
             throw new ArgumentException($"{typeof(TInterface).Name} must be an interface.");
 
-        services.AddTransient<TInterceptor>();
-        services.XTryDecorate<TInterface>((instance, provider) =>
+        _ = services.AddTransient<TInterceptor>();
+        _ = services.XTryDecorate<TInterface>((instance, provider) =>
         {
-            var interceptor = provider.GetRequiredService<TInterceptor>();
+            TInterceptor interceptor = provider.GetRequiredService<TInterceptor>();
             return InterceptorFactory.CreateProxy(interceptor, instance);
         });
 
@@ -90,10 +90,10 @@ public static class ServiceCollectionInterceptorExtensions
         if (!typeof(IInterceptor).IsAssignableFrom(interceptorType))
             throw new ArgumentException($"{nameof(interceptorType)} must implement {nameof(IInterceptor)}.");
 
-        services.AddTransient(interceptorType);
-        services.XTryDecorate(interfaceType, (instance, provider) =>
+        _ = services.AddTransient(interceptorType);
+        _ = services.XTryDecorate(interfaceType, (instance, provider) =>
         {
-            var interceptor = (IInterceptor)provider.GetRequiredService(interceptorType);
+            IInterceptor interceptor = (IInterceptor)provider.GetRequiredService(interceptorType);
             return InterceptorFactory.CreateProxy(interfaceType, interceptor, instance);
         });
 
@@ -130,15 +130,15 @@ public static class ServiceCollectionInterceptorExtensions
 
         foreach (var decoInterf in decoratedInterfaces)
         {
-            foreach (var type in assemblies.SelectMany(ass => ass.GetExportedTypes())
+            foreach (Type type in assemblies.SelectMany(ass => ass.GetExportedTypes())
                 .Where(type => !type.IsAbstract
                     && !type.IsInterface
                     && type.IsClass
                     && decoInterf.Type.IsAssignableFrom(type)))
             {
-                services.XTryDecorate(decoInterf.Type, (instance, provider) =>
+                _ = services.XTryDecorate(decoInterf.Type, (instance, provider) =>
                 {
-                    var interceptor = decoInterf.Attribute.Create(provider);
+                    IInterceptor interceptor = decoInterf.Attribute.Create(provider);
                     return InterceptorFactory.CreateProxy(decoInterf.Type, interceptor, instance);
                 });
             }

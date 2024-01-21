@@ -51,11 +51,11 @@ public static class ServiceCollectionIntegrationEventExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeServiceLifeTime
+        _ = services.DoRegisterTypeServiceLifeTime
             <IIntegrationEventHandler<TIntegrationEvent>, TIntegrationEventHandler>(
             implementationHandlerFactory);
 
-        services.AddScoped<IntegrationEventHandler<TIntegrationEvent>>(
+        _ = services.AddScoped<IntegrationEventHandler<TIntegrationEvent>>(
             provider => provider
                 .GetRequiredService<IIntegrationEventHandler<TIntegrationEvent>>()
                 .HandleAsync);

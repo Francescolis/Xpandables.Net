@@ -40,13 +40,13 @@ internal static class MiddlewareExtensions
         BadHttpRequestException exception,
         OperationResultController? controller = default)
     {
-        var startParameterNameIndex = exception.Message.IndexOf('"', StringComparison.InvariantCulture) + 1;
-        var endParameterNameIndex = exception.Message.IndexOf('"', startParameterNameIndex);
+        int startParameterNameIndex = exception.Message.IndexOf('"', StringComparison.InvariantCulture) + 1;
+        int endParameterNameIndex = exception.Message.IndexOf('"', startParameterNameIndex);
 
-        var parameterName = exception.Message[startParameterNameIndex..endParameterNameIndex];
+        string parameterName = exception.Message[startParameterNameIndex..endParameterNameIndex];
         parameterName = parameterName.Split(" ")[1].Trim();
 
-        var errorMessage = exception.Message
+        string errorMessage = exception.Message
             .Replace("\\", string.Empty, StringComparison.InvariantCulture)
             .Replace("\"", string.Empty, StringComparison.InvariantCulture);
 
@@ -59,7 +59,7 @@ internal static class MiddlewareExtensions
 
         if (controller is not null)
         {
-            var validationProblem = GetControllerValidationProblemDetails(
+            ActionResult validationProblem = GetControllerValidationProblemDetails(
                 controller,
                 context,
                 operationResult);
@@ -82,7 +82,7 @@ internal static class MiddlewareExtensions
     {
         if (controller is not null)
         {
-            var validationProblem = GetControllerValidationProblemDetails(
+            ActionResult validationProblem = GetControllerValidationProblemDetails(
                 controller,
                 context,
                 exception.OperationResult);
@@ -103,11 +103,11 @@ internal static class MiddlewareExtensions
         ValidationException exception,
         OperationResultController? controller = default)
     {
-        var operationResult = exception.ValidationResult.ToOperationResult();
+        OperationResult operationResult = exception.ValidationResult.ToOperationResult();
 
         if (controller is not null)
         {
-            var validationProblem = GetControllerValidationProblemDetails(
+            ActionResult validationProblem = GetControllerValidationProblemDetails(
                 controller,
                 context,
                 operationResult);
@@ -128,7 +128,7 @@ internal static class MiddlewareExtensions
         HttpContext context,
         IOperationResult operationResult)
     {
-        var minimalResult = operationResult.ToMinimalResult();
+        IResult minimalResult = operationResult.ToMinimalResult();
 
         await minimalResult.ExecuteAsync(context).ConfigureAwait(false);
     }
@@ -145,7 +145,7 @@ internal static class MiddlewareExtensions
 
         if (controller is not null)
         {
-            var problemDetails = GetControllerProblemDetails(
+            ObjectResult problemDetails = GetControllerProblemDetails(
                 controller,
                 context,
                 exception);
@@ -156,7 +156,7 @@ internal static class MiddlewareExtensions
         }
         else
         {
-            var problemDetails = context.GetProblemDetails(exception);
+            IResult problemDetails = context.GetProblemDetails(exception);
             await problemDetails
                 .ExecuteAsync(context)
                 .ConfigureAwait(false);
@@ -168,9 +168,9 @@ internal static class MiddlewareExtensions
         HttpContext context,
         IOperationResult operationResult)
     {
-        var statusCode = operationResult.StatusCode;
+        HttpStatusCode statusCode = operationResult.StatusCode;
 
-        var validationProblemDetails = controller.ValidationProblem(
+        ActionResult validationProblemDetails = controller.ValidationProblem(
             operationResult.GetProblemDetail(),
             context.Request.Path,
             (int)statusCode,
@@ -185,12 +185,12 @@ internal static class MiddlewareExtensions
         HttpContext context,
         Exception exception)
     {
-        var statusCode = exception is UnauthorizedAccessException
+        HttpStatusCode statusCode = exception is UnauthorizedAccessException
             ? HttpStatusCode.Unauthorized
 
             : HttpStatusCode.InternalServerError;
 
-        var problemDetails = controller.Problem(
+        ObjectResult problemDetails = controller.Problem(
             (Environment.GetEnvironmentVariable(
                 "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
                 ? $"{exception}"
@@ -204,7 +204,7 @@ internal static class MiddlewareExtensions
 
     internal static OperationResultController GetExceptionController(HttpContext context)
     {
-        var controller = context.RequestServices
+        OperationResultController controller = context.RequestServices
             .GetRequiredService<OperationResultController>();
 
         controller.ControllerContext = new ControllerContext(
@@ -230,11 +230,11 @@ internal static class MiddlewareExtensions
             return operationResultException.OperationResult.ToMinimalResult();
         }
 
-        var statusCode = exception is UnauthorizedAccessException
+        HttpStatusCode statusCode = exception is UnauthorizedAccessException
             ? HttpStatusCode.Unauthorized
             : HttpStatusCode.InternalServerError;
 
-        var problemDetails = Results.Problem(
+        IResult problemDetails = Results.Problem(
             (Environment.GetEnvironmentVariable(
                 "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
                 ? $"{exception}"
@@ -250,9 +250,9 @@ internal static class MiddlewareExtensions
         this IOperationResult operationResult,
         HttpContext context)
     {
-        var statusCode = operationResult.StatusCode;
+        HttpStatusCode statusCode = operationResult.StatusCode;
 
-        var validationProblemDetails = Results.ValidationProblem(
+        IResult validationProblemDetails = Results.ValidationProblem(
             operationResult.Errors.ToMinimalErrors(),
             operationResult.GetProblemDetail(),
             context.Request.Path,
@@ -263,14 +263,17 @@ internal static class MiddlewareExtensions
     }
 
     internal static string GetProblemDetail(this HttpStatusCode statusCode)
+#pragma warning disable IDE0072 // Add missing cases
          => statusCode switch
          {
              HttpStatusCode.InternalServerError or HttpStatusCode.Unauthorized =>
                 I18nXpandables.HttpStatusCodeProblemDetailInternalError,
              _ => I18nXpandables.HttpStatusCodeProblemDetailPropertyError
          };
+#pragma warning restore IDE0072 // Add missing cases
 
     internal static string GetProblemTitle(this HttpStatusCode statusCode)
+#pragma warning disable IDE0072 // Add missing cases
          => statusCode switch
          {
              HttpStatusCode.NotFound => I18nXpandables.HttpStatusCodeNotFound,
@@ -281,24 +284,25 @@ internal static class MiddlewareExtensions
              HttpStatusCode.InternalServerError => I18nXpandables.HttpStatusCodeInternalServerError,
              _ => I18nXpandables.HttpStatusCodeRequestValidation
          };
+#pragma warning restore IDE0072 // Add missing cases
 
     internal static async Task<string?> GetAuthenticateSchemeAsync(this HttpContext context)
     {
         if (context.RequestServices.GetService<IAuthenticationSchemeProvider>() is { } authenticationSchemeProvider)
         {
-            var requestSchemes = await authenticationSchemeProvider
+            IEnumerable<AuthenticationScheme> requestSchemes = await authenticationSchemeProvider
                 .GetRequestHandlerSchemesAsync()
                 .ConfigureAwait(false);
 
-            var defaultSchemes = await authenticationSchemeProvider
+            AuthenticationScheme? defaultSchemes = await authenticationSchemeProvider
                 .GetDefaultAuthenticateSchemeAsync()
                 .ConfigureAwait(false);
 
-            var allSchemes = await authenticationSchemeProvider
+            IEnumerable<AuthenticationScheme> allSchemes = await authenticationSchemeProvider
                 .GetAllSchemesAsync()
                 .ConfigureAwait(false);
 
-            var scheme = requestSchemes.FirstOrDefault() ?? defaultSchemes ?? allSchemes.FirstOrDefault();
+            AuthenticationScheme? scheme = requestSchemes.FirstOrDefault() ?? defaultSchemes ?? allSchemes.FirstOrDefault();
             if (scheme is not null)
                 return scheme.Name;
         }
@@ -317,7 +321,7 @@ internal static class MiddlewareExtensions
     {
         if (operation.Headers.Any())
         {
-            foreach (var header in operation.Headers)
+            foreach (ElementEntry header in operation.Headers)
                 context.Response.Headers.Append(
                     header.Key,
                     new Microsoft.Extensions.Primitives.StringValues(header.Values.ToArray()));
@@ -343,7 +347,7 @@ internal static class MiddlewareExtensions
 
     internal static async Task WriteFileBodyAsync(this HttpContext context, BinaryEntry file)
     {
-        var result = Results.File(file.Content, file.ContentType, file.Title);
+        IResult result = Results.File(file.Content, file.ContentType, file.Title);
 
         await result.ExecuteAsync(context).ConfigureAwait(false);
     }
@@ -354,7 +358,7 @@ internal static class MiddlewareExtensions
             throw new InvalidOperationException(I18nXpandables.CanNotBeNull
                 .StringFormat("IOperationResult.LocationUrl"));
 
-        var result = operation.Result.IsNotEmpty switch
+        IResult result = operation.Result.IsNotEmpty switch
         {
             true => Results.Created(new Uri(operation.LocationUrl.Value), operation.Result.Value),
             _ => Results.Created(new Uri(operation.LocationUrl.Value), default)

@@ -37,7 +37,7 @@ public static class OperationResultMinimalValidatorFilterFactory
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        var arguments = context.MethodInfo.GetParameters().ToList();
+        List<System.Reflection.ParameterInfo> arguments = [.. context.MethodInfo.GetParameters()];
 
         IEnumerable<MinimalValidationDescriptor> validationDescriptors
             = OperationResultMinimalValidatorExtensions.GetMinimalValidationDescriptors(

@@ -89,10 +89,10 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
             object? model = default;
 
             // try parameter constructor
-            var propertyTypes = modelProperties.Select(p => p.PropertyType).ToArray();
-            var propertyValues = new Dictionary<string, object?>(propertyTypes.Length);
+            Type[] propertyTypes = modelProperties.Select(p => p.PropertyType).ToArray();
+            Dictionary<string, object?> propertyValues = new(propertyTypes.Length);
 
-            foreach (var property in modelProperties)
+            foreach (PropertyInfo property in modelProperties)
             {
                 CreateProperties(bindingContext, propertyValues, property);
             }
@@ -107,7 +107,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         }
         catch (Exception exception)
         {
-            bindingContext.ModelState.TryAddModelException(bindingContext.FieldName, exception);
+            _ = bindingContext.ModelState.TryAddModelException(bindingContext.FieldName, exception);
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }
@@ -121,7 +121,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         object? model = Activator.CreateInstance(modelType);
         if (model is not null) // parameterless constructor
         {
-            foreach (var property in modelProperties)
+            foreach (PropertyInfo property in modelProperties)
             {
 #pragma warning disable CA1031 // Do not catch general exception types
                 try
@@ -130,7 +130,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
                 }
                 catch (Exception exception)
                 {
-                    bindingContext.ModelState.TryAddModelException(property.Name, exception);
+                    _ = bindingContext.ModelState.TryAddModelException(property.Name, exception);
                 }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
@@ -161,7 +161,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         }
         catch (Exception exception)
         {
-            bindingContext.ModelState.TryAddModelException(property.Name, exception);
+            _ = bindingContext.ModelState.TryAddModelException(property.Name, exception);
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }
@@ -197,12 +197,12 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                var model = JsonSerializer.Deserialize(value, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
+                object? model = JsonSerializer.Deserialize(value, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
                 bindingContext.Result = ModelBindingResult.Success(model);
             }
             catch (Exception exception)
             {
-                bindingContext.ModelState.TryAddModelException(bindingContext.FieldName, exception);
+                _ = bindingContext.ModelState.TryAddModelException(bindingContext.FieldName, exception);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }

@@ -28,7 +28,7 @@ public sealed class OperationResultCollectionJsonConverter : JsonConverter<Eleme
     ///<inheritdoc/>
     public override ElementCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var result = JsonSerializer.Deserialize<ElementEntry[]>(ref reader, options);
+        ElementEntry[]? result = JsonSerializer.Deserialize<ElementEntry[]>(ref reader, options);
 
         return result is null
             ? []

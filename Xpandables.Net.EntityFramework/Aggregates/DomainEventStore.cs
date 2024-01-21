@@ -52,7 +52,7 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
         Array.Resize(ref _disposables, _disposables.Length + 1);
         _disposables[^1] = disposable;
 
-        await dataContext.Events.AddAsync(disposable, cancellationToken).ConfigureAwait(false);
+        _ = await dataContext.Events.AddAsync(disposable, cancellationToken).ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
@@ -105,7 +105,7 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
         IDomainEventFilter filter,
         IQueryable<DomainEventRecord> eventRecords)
     {
-        var expression = QueryExpressionFactory.Create<DomainEventRecord>();
+        QueryExpression<DomainEventRecord, bool> expression = QueryExpressionFactory.Create<DomainEventRecord>();
 
         if (filter.AggregateId is not null)
             expression = expression.And(x =>
@@ -142,7 +142,7 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
                     EventFilterEntityVisitor.EventEntityParameter,
                     nameof(DomainEventRecord.Data)));
 
-            var dataCriteria = Expression.Lambda<Func<DomainEventRecord, bool>>(
+            Expression<Func<DomainEventRecord, bool>> dataCriteria = Expression.Lambda<Func<DomainEventRecord, bool>>(
                 EventFilterEntityVisitor.EventEntityVisitor.Visit(filter.DataCriteria.Body),
                 EventFilterEntityVisitor.EventEntityVisitor.Parameter);
 

@@ -67,7 +67,7 @@ internal sealed record class Invocation : IInvocation
 
     public void Proceed()
     {
-        var watch = Stopwatch.StartNew();
+        Stopwatch watch = Stopwatch.StartNew();
         watch.Start();
 
         try
@@ -80,12 +80,12 @@ internal sealed record class Invocation : IInvocation
                 Exception = taskException.Exception.GetBaseException();
         }
         catch (Exception exception) when (exception is TargetException
-                                      || exception is ArgumentNullException
-                                      || exception is TargetInvocationException
-                                      || exception is TargetParameterCountException
-                                      || exception is MethodAccessException
-                                      || exception is InvalidOperationException
-                                      || exception is NotSupportedException)
+                                      or ArgumentNullException
+                                      or TargetInvocationException
+                                      or TargetParameterCountException
+                                      or MethodAccessException
+                                      or InvalidOperationException
+                                      or NotSupportedException)
         {
             Exception = exception;
         }

@@ -65,11 +65,11 @@ internal sealed class IntegrationEventTransientScheduler(
 
                 if (++_attempts > _options.MaxAttempts)
                 {
-                    using var cancellationSource = CancellationTokenSource
+                    using CancellationTokenSource cancellationSource = CancellationTokenSource
                         .CreateLinkedTokenSource(stoppingToken, new CancellationToken(true));
 
                     stoppingToken = cancellationSource.Token;
-                    await StopServiceAsync(stoppingToken)
+                    _ = await StopServiceAsync(stoppingToken)
                         .ConfigureAwait(false);
 
                     return;
@@ -82,7 +82,7 @@ internal sealed class IntegrationEventTransientScheduler(
 
     private async Task DoExecuteAsync(CancellationToken cancellationToken)
     {
-        using var service = _scopeFactory.CreateAsyncScope();
+        using AsyncServiceScope service = _scopeFactory.CreateAsyncScope();
 
         IIntegrationEventPublisher publisher = service.ServiceProvider
             .GetRequiredService<IIntegrationEventPublisher>();

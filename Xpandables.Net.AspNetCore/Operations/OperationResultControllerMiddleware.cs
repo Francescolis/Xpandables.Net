@@ -48,10 +48,10 @@ public sealed class OperationResultControllerMiddleware : IMiddleware
             if (exception is TargetInvocationException targetInvocation)
                 exception = targetInvocation.InnerException ?? targetInvocation;
 
-            var logger = context.RequestServices.GetRequiredService<ILogger<OperationResultControllerMiddleware>>();
+            ILogger<OperationResultControllerMiddleware> logger = context.RequestServices.GetRequiredService<ILogger<OperationResultControllerMiddleware>>();
             logger.ErrorExecutingProcess(nameof(OperationResultControllerMiddleware), exception);
 
-            var controller = GetExceptionController(context);
+            OperationResultController controller = GetExceptionController(context);
 
             Task task = exception switch
             {

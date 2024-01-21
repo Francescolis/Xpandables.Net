@@ -37,7 +37,7 @@ public sealed class OperationResultException : Exception
     /// <exception cref="ArgumentNullException">The <paramref name="operation"/> is null.</exception>
     public OperationResultException(OperationResult operation)
     {
-        operation.StatusCode.EnsureFailureStatusCode();
+        _ = operation.StatusCode.EnsureFailureStatusCode();
         OperationResult = operation;
     }
 

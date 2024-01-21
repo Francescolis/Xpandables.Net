@@ -47,7 +47,7 @@ public sealed class JsonNullableDateOnlyConverter : JsonTypeOnlyConverter<DateOn
 {
     ///<inheritdoc/>
     protected override DateOnly? DoRead(ref Utf8JsonReader reader)
-        => reader.TryGetDateTime(out var dateTime) ? DateOnly.FromDateTime(dateTime) : default;
+        => reader.TryGetDateTime(out DateTime dateTime) ? DateOnly.FromDateTime(dateTime) : default;
 
     ///<inheritdoc/>
     public override void Write(

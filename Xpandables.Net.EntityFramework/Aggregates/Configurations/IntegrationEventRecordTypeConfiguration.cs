@@ -33,14 +33,14 @@ public sealed class IntegrationEventRecordTypeConfiguration : IEntityTypeConfigu
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Property(p => p.Id).IsRequired();
-        builder.HasKey(p => p.Id);
-        builder.HasIndex(p => p.Id).IsUnique();
+        _ = builder.Property(p => p.Id).IsRequired();
+        _ = builder.HasKey(p => p.Id);
+        _ = builder.HasIndex(p => p.Id).IsUnique();
 
-        builder.Property(p => p.Data);
-        builder.Property(p => p.TypeFullName);
-        builder.Property(p => p.ErrorMessage);
+        _ = builder.Property(p => p.Data);
+        _ = builder.Property(p => p.TypeFullName);
+        _ = builder.Property(p => p.ErrorMessage);
 
-        builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
+        _ = builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }
 }

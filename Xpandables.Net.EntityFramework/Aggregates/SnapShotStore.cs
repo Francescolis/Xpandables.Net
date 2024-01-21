@@ -41,7 +41,7 @@ public sealed class SnapShotStore(
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         SnapShotRecord entity = SnapShotRecord.FromSnapShotDescriptor(descriptor, serializerOptions);
-        await dataContext.SnapShots.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+        _ = await dataContext.SnapShots.AddAsync(entity, cancellationToken).ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
@@ -57,7 +57,7 @@ public sealed class SnapShotStore(
             .StringFormat(typeof(T).GetNameWithoutGenericArity()));
 
         string objectTypeName = instance.GetTypeName();
-        using var entity = await dataContext.SnapShots
+        using SnapShotRecord? entity = await dataContext.SnapShots
             .AsNoTracking()
             .Where(x => x.ObjectId == objectId && x.ObjectTypeName == objectTypeName)
             .OrderByDescending(o => o.Version)

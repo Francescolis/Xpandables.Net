@@ -173,8 +173,8 @@ public static class StringExtensions
             return true;
         }
         catch (Exception exception) when (exception is InvalidCastException
-                                        || exception is FormatException
-                                        || exception is OverflowException)
+                                        or FormatException
+                                        or OverflowException)
         {
             valueTypeException = exception;
             result = default;
@@ -373,9 +373,9 @@ public static class StringExtensions
         if (queryString is null)
             return path;
 
-        var anchorIndex = path.IndexOf('#', StringComparison.InvariantCulture);
-        var uriToBeAppended = path;
-        var anchorText = "";
+        int anchorIndex = path.IndexOf('#', StringComparison.InvariantCulture);
+        string uriToBeAppended = path;
+        string anchorText = "";
 
         // If there is an anchor, then the query string must be inserted before its first occurrence.
         if (anchorIndex != -1)
@@ -385,22 +385,22 @@ public static class StringExtensions
         }
 
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-        var queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCulture);
+        int queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCulture);
 #pragma warning restore CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-        var hasQuery = queryIndex != -1;
+        bool hasQuery = queryIndex != -1;
 
-        var sb = new StringBuilder();
-        sb.Append(uriToBeAppended);
-        foreach (var parameter in queryString)
+        StringBuilder sb = new();
+        _ = sb.Append(uriToBeAppended);
+        foreach (KeyValuePair<string, string?> parameter in queryString)
         {
-            sb.Append(hasQuery ? '&' : '?');
-            sb.Append(UrlEncoder.Default.Encode(parameter.Key));
-            sb.Append('=');
-            sb.Append(parameter.Value is null ? null : UrlEncoder.Default.Encode(parameter.Value));
+            _ = sb.Append(hasQuery ? '&' : '?');
+            _ = sb.Append(UrlEncoder.Default.Encode(parameter.Key));
+            _ = sb.Append('=');
+            _ = sb.Append(parameter.Value is null ? null : UrlEncoder.Default.Encode(parameter.Value));
             hasQuery = true;
         }
 
-        sb.Append(anchorText);
+        _ = sb.Append(anchorText);
         return sb.ToString();
     }
 
@@ -456,8 +456,8 @@ public static class StringExtensions
     {
         ArgumentNullException.ThrowIfNull(returnType);
 
-        var bufferWriter = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(bufferWriter);
+        ArrayBufferWriter<byte> bufferWriter = new();
+        using Utf8JsonWriter writer = new(bufferWriter);
         element.WriteTo(writer);
         writer.Flush();
 
@@ -544,8 +544,8 @@ public static class StringExtensions
     {
         _ = document ?? throw new ArgumentNullException(nameof(document));
 #pragma warning disable IDE0063 // Use simple 'using' statement
-        using (var stream = new MemoryStream())
-        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+        using (MemoryStream stream = new())
+        using (Utf8JsonWriter writer = new(stream, new JsonWriterOptions { Indented = true }))
         {
             document.WriteTo(writer);
             writer.Flush();

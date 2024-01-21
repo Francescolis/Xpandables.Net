@@ -121,7 +121,7 @@ public sealed class ValidatorUnitTest
 
     public sealed class ValidatorThrowsValidationException : IValidator<Login>
     {
-        public IOperationResult Validate(Login argument)
+        public OperationResult Validate(Login argument)
         {
             var areEqual = argument.UserLogin.Equals(UserName)
                 && argument.UserPassword.Equals(Password);

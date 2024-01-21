@@ -36,12 +36,12 @@ internal sealed class OperationResultAsyncQueryDecorator<TQuery, TResult>(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-        await using var asyncEnumerator = _decoratee
+        await using IAsyncEnumerator<TResult> asyncEnumerator = _decoratee
             .HandleAsync(query, cancellationToken)
             .GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
-        for (var resultExist = true; resultExist;)
+        for (bool resultExist = true; resultExist;)
         {
             try
             {

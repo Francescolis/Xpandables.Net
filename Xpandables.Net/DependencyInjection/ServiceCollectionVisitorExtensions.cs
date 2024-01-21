@@ -49,7 +49,7 @@ public static class ServiceCollectionVisitorExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeServiceLifeTime<IVisitor<TElement>, TVisitor>(
+        _ = services.DoRegisterTypeServiceLifeTime<IVisitor<TElement>, TVisitor>(
             implementationFactory,
             ServiceLifetime.Transient);
 

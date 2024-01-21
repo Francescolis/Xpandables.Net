@@ -166,9 +166,9 @@ public static class TypeExtensions
             return true;
         }
         catch (Exception exception) when (exception is ArgumentException
-                                        || exception is FileNotFoundException
-                                        || exception is FileLoadException
-                                        || exception is BadImageFormatException)
+                                        or FileNotFoundException
+                                        or FileLoadException
+                                        or BadImageFormatException)
         {
             loadedAssembly = default;
             assemblyException = exception;
@@ -198,11 +198,11 @@ public static class TypeExtensions
             return true;
         }
         catch (Exception exception) when (exception is ArgumentException
-                                        || exception is FileNotFoundException
-                                        || exception is FileLoadException
-                                        || exception is BadImageFormatException
-                                        || exception is PathTooLongException
-                                        || exception is System.Security.SecurityException)
+                                        or FileNotFoundException
+                                        or FileLoadException
+                                        or BadImageFormatException
+                                        or PathTooLongException
+                                        or System.Security.SecurityException)
         {
             loadedAssembly = default;
             assemblyException = exception;
@@ -259,13 +259,13 @@ public static class TypeExtensions
             return true;
         }
         catch (Exception exception) when (exception is ArgumentNullException
-                                        || exception is ArgumentException
-                                        || exception is MethodAccessException
-                                        || exception is MissingFieldException
-                                        || exception is MissingMethodException
-                                        || exception is TargetException
-                                        || exception is AmbiguousMatchException
-                                        || exception is InvalidOperationException)
+                                        or ArgumentException
+                                        or MethodAccessException
+                                        or MissingFieldException
+                                        or MissingMethodException
+                                        or TargetException
+                                        or AmbiguousMatchException
+                                        or InvalidOperationException)
         {
             result = default;
             invokeException = exception;
@@ -300,8 +300,8 @@ public static class TypeExtensions
             return true;
         }
         catch (Exception exception) when (exception is InvalidOperationException
-                                            || exception is ArgumentException
-                                            || exception is NotSupportedException)
+                                            or ArgumentException
+                                            or NotSupportedException)
         {
             typeException = exception;
             genericType = default;
@@ -334,7 +334,7 @@ public static class TypeExtensions
         {
             try
             {
-                var body = Expression.New(type);
+                NewExpression body = Expression.New(type);
                 constructorDelegate = Expression.Lambda<TDelegate>(body).Compile();
                 constructorException = default;
                 return true;
@@ -347,15 +347,15 @@ public static class TypeExtensions
             }
         }
 
-        if (!type.TryGetConstructorInfo(out var constructor, out constructorException, parameterTypes))
+        if (!type.TryGetConstructorInfo(out ConstructorInfo? constructor, out constructorException, parameterTypes))
         {
             constructorDelegate = default;
             return false;
         }
 
-        var parameterExpressions = GetParameterExpression(parameterTypes);
+        ParameterExpression[] parameterExpressions = GetParameterExpression(parameterTypes);
 
-        if (!constructor.TryGetConstructorExpression(out var constructorExpression, out constructorException, parameterExpressions))
+        if (!constructor.TryGetConstructorExpression(out Expression? constructorExpression, out constructorException, parameterExpressions))
         {
             constructorDelegate = default!;
             return false;
@@ -369,7 +369,7 @@ public static class TypeExtensions
             constructorException = default!;
             return true;
         }
-        catch (Exception exception) when (exception is ArgumentException || exception is ArgumentNullException)
+        catch (Exception exception) when (exception is ArgumentException or ArgumentNullException)
         {
             constructorDelegate = default!;
             constructorException = exception;
@@ -625,9 +625,9 @@ public static class TypeExtensions
             propertyInfo.SetValue(source, value);
         }
         catch (Exception exception) when (exception is ArgumentException
-                                          || exception is TargetException
-                                          || exception is MethodAccessException
-                                          || exception is TargetInvocationException)
+                                          or TargetException
+                                          or MethodAccessException
+                                          or TargetInvocationException)
         {
             throw new InvalidOperationException(
                 $"Unable to set '{typeof(TSource).Name}.{propertyName}' with the specified value : {value}.", exception);
@@ -676,9 +676,9 @@ public static class TypeExtensions
             propertyInfo.SetValue(source, value);
         }
         catch (Exception exception) when (exception is ArgumentException
-                                          || exception is TargetException
-                                          || exception is MethodAccessException
-                                          || exception is TargetInvocationException)
+                                          or TargetException
+                                          or MethodAccessException
+                                          or TargetInvocationException)
         {
             throw new InvalidOperationException(
                 $"Unable to set '{typeof(TSource).Name}.{propertyName}' with the specified value : {value}.", exception);
@@ -734,11 +734,11 @@ public static class TypeExtensions
             return true;
         }
         catch (Exception exception) when (exception is TargetInvocationException
-                                    || exception is TypeLoadException
-                                    || exception is ArgumentException
-                                    || exception is FileNotFoundException
-                                    || exception is FileLoadException
-                                    || exception is BadImageFormatException)
+                                    or TypeLoadException
+                                    or ArgumentException
+                                    or FileNotFoundException
+                                    or FileLoadException
+                                    or BadImageFormatException)
         {
             typeException = exception;
             type = default;
@@ -774,11 +774,11 @@ public static class TypeExtensions
             return true;
         }
         catch (Exception exception) when (exception is TargetInvocationException
-                                        || exception is TypeLoadException
-                                        || exception is ArgumentException
-                                        || exception is FileNotFoundException
-                                        || exception is FileLoadException
-                                        || exception is BadImageFormatException)
+                                        or TypeLoadException
+                                        or ArgumentException
+                                        or FileNotFoundException
+                                        or FileLoadException
+                                        or BadImageFormatException)
         {
             typeException = exception;
             foundType = default;
@@ -808,7 +808,7 @@ public static class TypeExtensions
         if (typeName.TryGetType(out foundType, out typeException))
             return true;
 
-        if (!assemblyName.TryLoadAssembly(out var assembly, out typeException))
+        if (!assemblyName.TryLoadAssembly(out Assembly? assembly, out typeException))
         {
             foundType = default;
             return false;
@@ -829,7 +829,7 @@ public static class TypeExtensions
 
             return true;
         }
-        catch (Exception exception) when (exception is NotSupportedException || exception is FileNotFoundException)
+        catch (Exception exception) when (exception is NotSupportedException or FileNotFoundException)
         {
             typeException = exception;
             return false;

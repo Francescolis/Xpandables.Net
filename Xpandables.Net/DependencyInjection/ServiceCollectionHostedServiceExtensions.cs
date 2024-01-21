@@ -39,7 +39,7 @@ public static class ServiceCollectionHostedServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddHostedService<TBackgroundService>();
+        _ = services.AddHostedService<TBackgroundService>();
         return services;
     }
 
@@ -59,8 +59,8 @@ public static class ServiceCollectionHostedServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton<TBackgroundServiceInterface, TBackgroundServiceImpl>();
-        services.AddHostedService(provider => (TBackgroundServiceImpl)provider.GetRequiredService<TBackgroundServiceInterface>());
+        _ = services.AddSingleton<TBackgroundServiceInterface, TBackgroundServiceImpl>();
+        _ = services.AddHostedService(provider => (TBackgroundServiceImpl)provider.GetRequiredService<TBackgroundServiceInterface>());
         return services;
     }
 
@@ -78,7 +78,7 @@ public static class ServiceCollectionHostedServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddXBackgroundService<IIntegrationEventTransientScheduler, TTransientScheduler>();
+        _ = services.AddXBackgroundService<IIntegrationEventTransientScheduler, TTransientScheduler>();
 
         return services;
     }

@@ -96,13 +96,13 @@ public sealed class RecursiveDirectoryCatalog
 
     private void Initialize(string path, string searchPattern)
     {
-        var directoryCatalogs = GetFoldersRecursive(path)
+        IEnumerable<DirectoryCatalog> directoryCatalogs = GetFoldersRecursive(path)
             .Select(dir => new DirectoryCatalog(dir, searchPattern));
 
         _aggregateCatalog.Changed += (sender, e) => Changed?.Invoke(sender, e);
         _aggregateCatalog.Changing += (sender, e) => Changing?.Invoke(sender, e);
 
-        foreach (var catalog in directoryCatalogs)
+        foreach (DirectoryCatalog? catalog in directoryCatalogs)
             _aggregateCatalog.Catalogs.Add(catalog);
     }
 
@@ -110,8 +110,8 @@ public sealed class RecursiveDirectoryCatalog
 
     private static List<string> GetFoldersRecursive(string path)
     {
-        var result = new List<string> { path };
-        foreach (var child in Directory.GetDirectories(path))
+        List<string> result = [path];
+        foreach (string child in Directory.GetDirectories(path))
             result.AddRange(GetFoldersRecursive(child));
 
         return result;

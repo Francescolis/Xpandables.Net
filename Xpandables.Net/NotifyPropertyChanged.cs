@@ -230,7 +230,7 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPro
 
     internal void PropagatePropertyChangedOnDependents(string property)
     {
-        var onPropertyChangedAction = new Action<string>(OnPropertyChanged);
+        Action<string> onPropertyChangedAction = new(OnPropertyChanged);
 
         (from keyValues in Dependencies
          from dependent in keyValues.Value
@@ -503,18 +503,18 @@ public static class NotifyPropertyExtensions
     /// <param name="target">The type that derived from <see cref="NotifyPropertyChanged"/>.</param>
     internal static IDictionary<string, List<string>> DependencyPropertiesProvider(this Type target)
     {
-        var dependencies = new Dictionary<string, List<string>>();
+        Dictionary<string, List<string>> dependencies = [];
 
-        var properties = (from p in target.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                          where p.GetCustomAttributes<NotifyPropertyChangedForAttribute>(true).Any()
-                          select p)
+        PropertyInfo[] properties = (from p in target.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                                     where p.GetCustomAttributes<NotifyPropertyChangedForAttribute>(true).Any()
+                                     select p)
                         .ToArray();
 
-        foreach (var property in properties)
+        foreach (PropertyInfo? property in properties)
         {
-            var attributes = (from a in property.GetCustomAttributes<NotifyPropertyChangedForAttribute>(false) select a.Name).ToArray();
+            string[] attributes = (from a in property.GetCustomAttributes<NotifyPropertyChangedForAttribute>(false) select a.Name).ToArray();
 
-            foreach (var dependency in attributes)
+            foreach (string? dependency in attributes)
             {
                 if (property.Name == dependency)
                 {
@@ -522,9 +522,9 @@ public static class NotifyPropertyExtensions
                         new ArgumentException($"Property {dependency} of {target.Name} can not depends on itself."));
                 }
 
-                if (dependencies.TryGetValue(dependency, out var notifiers))
+                if (dependencies.TryGetValue(dependency, out List<string>? notifiers))
                 {
-                    var predicateProperty = new Predicate<string>(PredicateFindProperty);
+                    Predicate<string> predicateProperty = new(PredicateFindProperty);
                     if (notifiers.Find(predicateProperty) is { })
                     {
                         throw new InvalidOperationException("Duplicate dependency found.",
@@ -535,8 +535,8 @@ public static class NotifyPropertyExtensions
                 }
                 else
                 {
-                    var predicateFind = new Predicate<string>(PredicateFindDependency);
-                    if (dependencies.TryGetValue(property.Name, out var propertyNotifiers) && propertyNotifiers.Find(predicateFind) != null)
+                    Predicate<string> predicateFind = new(PredicateFindDependency);
+                    if (dependencies.TryGetValue(property.Name, out List<string>? propertyNotifiers) && propertyNotifiers.Find(predicateFind) != null)
                     {
                         throw new InvalidOperationException("Circular dependency found.",
                             new ArgumentException($"The {property.Name} owns a dependency on {dependency} which one depends on {property.Name}."));
@@ -575,7 +575,7 @@ public static class NotifyPropertyExtensions
 
         void PropagatePropertyChangedOnDependents(string property)
         {
-            var onPropertyChangedAction = new Action<string>(onPropertyChanged);
+            Action<string> onPropertyChangedAction = new(onPropertyChanged);
 
             (from keyValues in dependencies
              from dependent in keyValues.Value

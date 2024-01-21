@@ -40,10 +40,10 @@ public sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFilte
     {
         await Task.CompletedTask.ConfigureAwait(false);
 
-        var controller = BuildExceptionController(context);
+        ControllerBase controller = BuildExceptionController(context);
 
-        var statusCode = operation.StatusCode;
-        var modelStateDictionary = operation.Errors.ToModelStateDictionary();
+        HttpStatusCode statusCode = operation.StatusCode;
+        Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary = operation.Errors.ToModelStateDictionary();
 
         context.Result = controller.ValidationProblem(
             statusCode.GetProblemDetail(),
@@ -91,13 +91,13 @@ public sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFilte
             }
         }
 
-        await next().ConfigureAwait(false);
+        _ = await next().ConfigureAwait(false);
     }
 
 
     private static ControllerBase BuildExceptionController(ResultExecutingContext context)
     {
-        var controller = (ControllerBase)context.Controller;
+        ControllerBase? controller = (ControllerBase)context.Controller;
         if (controller is null)
         {
             controller = context.HttpContext.RequestServices.GetRequiredService<OperationResultController>();

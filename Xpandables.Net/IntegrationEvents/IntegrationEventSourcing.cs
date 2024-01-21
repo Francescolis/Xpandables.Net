@@ -27,7 +27,7 @@ internal sealed class IntegrationEventSourcing : IIntegrationEventSourcing
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        if (_events.Exists(e => e.Id == @event.Id) == true)
+        if (_events.Exists(e => e.Id == @event.Id))
             throw new InvalidOperationException(
                 I18nXpandables.EventSourcingNotificationAlreadyExists
                 .StringFormat(@event.Id));

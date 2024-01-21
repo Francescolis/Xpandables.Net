@@ -59,7 +59,7 @@ public static class HttpClientDispatcherExtensions
                     seed: new NameValueCollection(),
                     func: (nvc, pair) =>
                     {
-                        var (name, value) = pair;
+                        (string name, string value) = pair;
                         nvc.Add(name, value); return nvc;
                     },
                     resultSelector: nvc => nvc
@@ -84,7 +84,7 @@ public static class HttpClientDispatcherExtensions
                 seed: new NameValueCollection(),
                 func: (nvc, pair) =>
                 {
-                    var (name, value) = pair;
+                    (string name, string value) = pair;
                     nvc.Add(name, value); return nvc;
                 },
                 resultSelector: nvc => nvc
@@ -270,11 +270,11 @@ public static class HttpClientDispatcherExtensions
                 .Build();
         }
 
-        if (response.IsAnException(out var exception))
+        if (response.IsAnException(out HttpClientException? exception))
         {
-            if (exception.IsHttpRestClientValidation(out var clientValidation, out _, serializerOptions))
+            if (exception.IsHttpRestClientValidation(out HttpClientValidation? clientValidation, out _, serializerOptions))
             {
-                var operationErrors = clientValidation.SelectMany(
+                ElementEntry[] operationErrors = clientValidation.SelectMany(
                     kvp => kvp.Value,
                     (kvp, value) => new ElementEntry(kvp.Key, kvp.Value.ToArray()))
                     .ToArray();
@@ -331,11 +331,11 @@ public static class HttpClientDispatcherExtensions
                 .Build();
         }
 
-        if (response.IsAnException(out var exception))
+        if (response.IsAnException(out HttpClientException? exception))
         {
-            if (exception.IsHttpRestClientValidation(out var clientValidation, out _, serializerOptions))
+            if (exception.IsHttpRestClientValidation(out HttpClientValidation? clientValidation, out _, serializerOptions))
             {
-                var operationErrors = clientValidation.SelectMany(
+                ElementEntry[] operationErrors = clientValidation.SelectMany(
                     kvp => kvp.Value,
                     (kvp, value) => new ElementEntry(kvp.Key, kvp.Value.ToArray()))
                     .ToArray();
@@ -365,7 +365,7 @@ public static class HttpClientDispatcherExtensions
     internal static IDictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection)
     {
         Dictionary<string, string> result = [];
-        foreach (var key in nameValueCollection.AllKeys)
+        foreach (string? key in nameValueCollection.AllKeys)
         {
             if (key is not null && nameValueCollection[key] is { } value)
                 result.Add(key, value);
@@ -382,9 +382,9 @@ public static class HttpClientDispatcherExtensions
         if (queryString is null)
             return path;
 
-        var anchorIndex = path.IndexOf('#', StringComparison.InvariantCulture);
-        var uriToBeAppended = path;
-        var anchorText = "";
+        int anchorIndex = path.IndexOf('#', StringComparison.InvariantCulture);
+        string uriToBeAppended = path;
+        string anchorText = "";
 
         // If there is an anchor, then the query string must be inserted before its first occurrence.
         if (anchorIndex != -1)
@@ -394,22 +394,22 @@ public static class HttpClientDispatcherExtensions
         }
 
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-        var queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCulture);
+        int queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCulture);
 #pragma warning restore CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-        var hasQuery = queryIndex != -1;
+        bool hasQuery = queryIndex != -1;
 
-        var sb = new StringBuilder();
-        sb.Append(uriToBeAppended);
-        foreach (var parameter in queryString)
+        StringBuilder sb = new();
+        _ = sb.Append(uriToBeAppended);
+        foreach (KeyValuePair<string, string?> parameter in queryString)
         {
-            sb.Append(hasQuery ? '&' : '?');
-            sb.Append(UrlEncoder.Default.Encode(parameter.Key));
-            sb.Append('=');
-            sb.Append(parameter.Value is null ? null : UrlEncoder.Default.Encode(parameter.Value));
+            _ = sb.Append(hasQuery ? '&' : '?');
+            _ = sb.Append(UrlEncoder.Default.Encode(parameter.Key));
+            _ = sb.Append('=');
+            _ = sb.Append(parameter.Value is null ? null : UrlEncoder.Default.Encode(parameter.Value));
             hasQuery = true;
         }
 
-        sb.Append(anchorText);
+        _ = sb.Append(anchorText);
         return sb.ToString();
     }
 

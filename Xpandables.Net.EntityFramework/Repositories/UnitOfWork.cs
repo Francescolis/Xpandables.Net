@@ -79,7 +79,7 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
 
     ///<inheritdoc/>
     public virtual IRepository<TEntity> GetRepository<TEntity>()
-        where TEntity : class, IEntity 
+        where TEntity : class, IEntity
         => new Repository<TEntity>(Context);
 }
 

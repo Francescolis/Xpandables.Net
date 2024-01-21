@@ -29,7 +29,7 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
     ///<inheritdoc/>
     public override Optional<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonTokenType.Null || reader.TokenType == JsonTokenType.None)
+        if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None)
             return Optional.Empty<T>();
 
         return JsonSerializer.Deserialize<T?>(ref reader, options);

@@ -41,11 +41,11 @@ public class OperationResultControllerConfigureMvcOptions : IConfigureOptions<Mv
         options.EnableEndpointRouting = false;
         options.RespectBrowserAcceptHeader = true;
         options.ReturnHttpNotAcceptable = true;
-        options.Filters.Add<OperationResultControllerValidationFilterAttribute>();
-        options.Filters.Add<OperationResultControllerFilter>(int.MinValue);
+        _ = options.Filters.Add<OperationResultControllerValidationFilterAttribute>();
+        _ = options.Filters.Add<OperationResultControllerFilter>(int.MinValue);
         options.ModelBinderProviders.Insert(0, new FromModelBinderProvider());
 
-        TypeDescriptor.AddAttributes(typeof(DateOnly), new TypeConverterAttribute(typeof(DateOnlyConverter)));
-        TypeDescriptor.AddAttributes(typeof(TimeOnly), new TypeConverterAttribute(typeof(TimeOnlyConverter)));
+        _ = TypeDescriptor.AddAttributes(typeof(DateOnly), new TypeConverterAttribute(typeof(DateOnlyConverter)));
+        _ = TypeDescriptor.AddAttributes(typeof(TimeOnly), new TypeConverterAttribute(typeof(TimeOnlyConverter)));
     }
 }

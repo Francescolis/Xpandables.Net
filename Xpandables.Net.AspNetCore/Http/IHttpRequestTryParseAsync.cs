@@ -47,9 +47,10 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <returns>The value to assign to the parameter.</returns>
         public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
         {
+            _ = parameter;
             ArgumentNullException.ThrowIfNull(context);
 
-            var dict = context.Request.RouteValues.ToDictionary(d => d.Key, d => d.Value);
+            Dictionary<string, object?> dict = context.Request.RouteValues.ToDictionary(d => d.Key, d => d.Value);
 
             return DoBindAsync(dict);
         }
@@ -71,9 +72,10 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <returns>The value to assign to the parameter.</returns>
         public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
         {
+            _ = parameter;
             ArgumentNullException.ThrowIfNull(context);
 
-            var dict = context.Request.Headers.ToDictionary(d => d.Key, d => (string?)d.Value);
+            Dictionary<string, string?> dict = context.Request.Headers.ToDictionary(d => d.Key, d => (string?)d.Value);
 
             return DoBindAsync(dict);
         }
@@ -95,9 +97,10 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <returns>The value to assign to the parameter.</returns>
         public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
         {
+            _ = parameter;
             ArgumentNullException.ThrowIfNull(context);
 
-            var dict = context.Request.Query.ToDictionary(d => d.Key, d => (string?)d.Value);
+            Dictionary<string, string?> dict = context.Request.Query.ToDictionary(d => d.Key, d => (string?)d.Value);
 
             return DoBindAsync(dict);
         }
@@ -114,9 +117,9 @@ public interface IHttpRequestTryParseAsync<TRequest>
 
     internal static ValueTask<TRequest?> DoBindAsync(IDictionary dictionary)
     {
-        var jsonString = JsonSerializer.Serialize(dictionary, JsonSerializerDefaultOptions.OptionDefaultWeb);
+        string jsonString = JsonSerializer.Serialize(dictionary, JsonSerializerDefaultOptions.OptionDefaultWeb);
 
-        var request = JsonSerializer.Deserialize<TRequest>(jsonString, JsonSerializerDefaultOptions.OptionDefaultWeb);
+        TRequest? request = JsonSerializer.Deserialize<TRequest>(jsonString, JsonSerializerDefaultOptions.OptionDefaultWeb);
 
         return ValueTask.FromResult(request);
     }

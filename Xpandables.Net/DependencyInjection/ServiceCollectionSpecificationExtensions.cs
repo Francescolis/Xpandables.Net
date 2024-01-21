@@ -46,7 +46,7 @@ public static class ServiceCollectionSpecificationExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.DoRegisterTypeServiceLifeTime<ISpecification<TArgument>, TSpecification>(
+        _ = services.DoRegisterTypeServiceLifeTime<ISpecification<TArgument>, TSpecification>(
             implementationFactory,
             ServiceLifetime.Transient);
 

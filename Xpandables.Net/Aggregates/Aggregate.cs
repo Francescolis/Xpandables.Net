@@ -76,7 +76,7 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
         Version = @event.Version;
     }
 
-    void Apply(IDomainEvent<TAggregateId> @event)
+    private void Apply(IDomainEvent<TAggregateId> @event)
     {
         if (_events.Any(e => Equals(e.Id, @event.Id)))
             return;
@@ -89,13 +89,13 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
         _events.Enqueue(@event);
     }
 
-    void Mutate(IDomainEvent<TAggregateId> @event)
+    private void Mutate(IDomainEvent<TAggregateId> @event)
     {
         if (!_eventHandlers.TryGetValue(@event.GetType(), out Delegate? messageHandler))
             return;
 
         AggregateId = @event.AggregateId;
-        messageHandler.DynamicInvoke(@event);
+        _ = messageHandler.DynamicInvoke(@event);
     }
 
     /// <summary>

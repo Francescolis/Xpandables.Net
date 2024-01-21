@@ -100,7 +100,7 @@ public static class CollectionExtensions
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(action);
 
-        using var enumerator = source.GetEnumerator();
+        using IEnumerator<T> enumerator = source.GetEnumerator();
         while (enumerator.MoveNext())
             action(enumerator.Current);
     }
@@ -149,7 +149,7 @@ public static class CollectionExtensions
         ArgumentNullException.ThrowIfNull(action);
 
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-        await using var enumeratorAsync = source.GetAsyncEnumerator(cancellationToken);
+        await using IAsyncEnumerator<T> enumeratorAsync = source.GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
         while (await enumeratorAsync.MoveNextAsync().ConfigureAwait(false))
@@ -177,7 +177,7 @@ public static class CollectionExtensions
         ArgumentNullException.ThrowIfNull(action);
 
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-        await using var enumeratorAsync = source.GetAsyncEnumerator(cancellationToken);
+        await using IAsyncEnumerator<T> enumeratorAsync = source.GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
         while (await enumeratorAsync.MoveNextAsync().ConfigureAwait(false))

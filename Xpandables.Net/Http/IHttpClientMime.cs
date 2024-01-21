@@ -427,11 +427,11 @@ public sealed class HttpClientMime : IHttpClientMime
     ///<inheritdoc/>
     public string? GetMimeType(string filePath)
     {
-        var extension = GetExtension(filePath);
+        string? extension = GetExtension(filePath);
         return extension switch
         {
             null => null,
-            _ => _mimeTypes.TryGetValue(extension, out var mimeType) ? mimeType : null
+            _ => _mimeTypes.TryGetValue(extension, out string? mimeType) ? mimeType : null
         };
     }
 

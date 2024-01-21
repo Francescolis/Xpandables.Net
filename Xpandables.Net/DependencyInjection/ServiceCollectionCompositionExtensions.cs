@@ -18,14 +18,11 @@
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Compositions;
-
-[assembly: InternalsVisibleTo("Xpandables.Net.Composition.AspNetCore, PublicKey=0024000004800000940000000602000000240000525341310004000001000100410b9f6b317bb83c59c2727a39ad3e0c3aff55cbfc6f1328e2a925ab2e85d44b1815b23cea3f22924ea4226a6b3318eb90d1f28234e0116be8b70c29a41849a93e1baa680deae7f56e8d75d352d6f3b8457746223adf8cc2085a2d1d8c3f7be439bc53f1a032cc696f75afa378e0e054f3eb325fb9a7898a31c612c21e9c3cb8")]
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -51,7 +48,7 @@ public static class ServiceCollectionCompositionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddXServiceExport(configuration, _ => { });
+        _ = services.AddXServiceExport(configuration, _ => { });
         return services;
     }
 
@@ -76,12 +73,12 @@ public static class ServiceCollectionCompositionExtensions
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        var definedOptions = new ExportServiceOptions();
+        ExportServiceOptions definedOptions = new();
         configureOptions.Invoke(definedOptions);
         ServiceExportExtensions.ApplyServiceExports<IAddServiceExport>(
             definedOptions, exportServices =>
         {
-            foreach (var export in exportServices)
+            foreach (IAddServiceExport export in exportServices)
                 export.AddServices(services, configuration);
         });
 
@@ -98,17 +95,17 @@ internal static class ServiceExportExtensions
     {
         try
         {
-            using var directoryCatalog = options.SearchSubDirectories
+            using ComposablePartCatalog directoryCatalog = options.SearchSubDirectories
                 ? new RecursiveDirectoryCatalog(options.Path, options.SearchPattern)
-                : (ComposablePartCatalog)new DirectoryCatalog(options.Path, options.SearchPattern);
+                : new DirectoryCatalog(options.Path, options.SearchPattern);
 
-            var importDefinition = ApplyImportDefinition<TServiceExport>();
+            ImportDefinition importDefinition = ApplyImportDefinition<TServiceExport>();
 
-            using var aggregateCatalog = new AggregateCatalog();
+            using AggregateCatalog aggregateCatalog = new();
             aggregateCatalog.Catalogs.Add(directoryCatalog);
 
-            using var compositionContainer = new CompositionContainer(aggregateCatalog);
-            var exportServices = compositionContainer
+            using CompositionContainer compositionContainer = new(aggregateCatalog);
+            IEnumerable<TServiceExport> exportServices = compositionContainer
                 .GetExports(importDefinition)
                 .Select(def => def.Value)
                 .OfType<TServiceExport>();
@@ -116,11 +113,11 @@ internal static class ServiceExportExtensions
             onServiceExport(exportServices);
         }
         catch (Exception exception) when (exception is NotSupportedException
-                                        || exception is DirectoryNotFoundException
-                                        || exception is UnauthorizedAccessException
-                                        || exception is ArgumentException
-                                        || exception is PathTooLongException
-                                        || exception is ReflectionTypeLoadException)
+                                        or DirectoryNotFoundException
+                                        or UnauthorizedAccessException
+                                        or ArgumentException
+                                        or PathTooLongException
+                                        or ReflectionTypeLoadException)
         {
             throw new InvalidOperationException("Adding or using exports failed. See inner exception.", exception);
         }

@@ -43,9 +43,9 @@ public static class RepositoryExtensions
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(composeResult);
 
-        var param = Expression.Parameter(typeof(TSource), null);
-        var invoke = Expression.Invoke(source, param);
-        var result = Expression.Invoke(composeResult, invoke);
+        ParameterExpression param = Expression.Parameter(typeof(TSource), null);
+        InvocationExpression invoke = Expression.Invoke(source, param);
+        InvocationExpression result = Expression.Invoke(composeResult, invoke);
 
         return Expression.Lambda<Func<TSource, TResult>>(result, param);
     }

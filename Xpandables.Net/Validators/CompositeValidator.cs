@@ -42,7 +42,7 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     /// <returns>Returns a result state that contains validation information.</returns>
     public OperationResult Validate(TArgument argument)
     {
-        foreach (var validator in _validationInstances.OrderBy(o => o.Order))
+        foreach (IValidator<TArgument>? validator in _validationInstances.OrderBy(o => o.Order))
         {
             OperationResult operation = validator.Validate(argument);
             if (operation.IsFailure)
@@ -61,7 +61,7 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     /// <returns>Returns a result state that contains validation information.</returns>
     public async ValueTask<OperationResult> ValidateAsync(TArgument argument)
     {
-        foreach (var validator in _validationInstances.OrderBy(o => o.Order))
+        foreach (IValidator<TArgument>? validator in _validationInstances.OrderBy(o => o.Order))
         {
             OperationResult operation = await validator
                 .ValidateAsync(argument)

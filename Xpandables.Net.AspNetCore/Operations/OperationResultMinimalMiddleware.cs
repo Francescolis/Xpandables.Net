@@ -48,7 +48,7 @@ public sealed class OperationResultMinimalMiddleware : IMiddleware
             if (exception is TargetInvocationException targetInvocation)
                 exception = targetInvocation.InnerException ?? targetInvocation;
 
-            var logger = context.RequestServices.GetRequiredService<ILogger<OperationResultMinimalMiddleware>>();
+            ILogger<OperationResultMinimalMiddleware> logger = context.RequestServices.GetRequiredService<ILogger<OperationResultMinimalMiddleware>>();
             logger.ErrorExecutingProcess(nameof(OperationResultMinimalMiddleware), exception);
 
             Task task = exception switch

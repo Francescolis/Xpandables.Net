@@ -61,7 +61,7 @@ public sealed class IntegrationEventRecord : Entity<Guid>, IDisposable
     {
         ArgumentNullException.ThrowIfNull(record);
 
-        if (!(Type.GetType(record.TypeFullName) is { } eventType))
+        if (Type.GetType(record.TypeFullName) is not { } eventType)
             return null;
 
         object? eventObject = record.Data.Deserialize(eventType, options);

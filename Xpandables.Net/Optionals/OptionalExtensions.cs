@@ -107,7 +107,7 @@ public static class OptionalExtensions
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(empty);
 
-        await (await optional.ConfigureAwait(false))
+        _ = await (await optional.ConfigureAwait(false))
             .ReduceAsync(empty).ConfigureAwait(false);
     }
 

@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using System.Diagnostics;
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -28,17 +29,17 @@ internal static class ServiceCollectionInternalExtensions
          MethodInfo method,
          Assembly[] assemblies)
     {
-        var genericTypes = DoGetGenericTypeMatchingServiceType(interType, assemblies);
+        IEnumerable<GenericTypes> genericTypes = DoGetGenericTypeMatchingServiceType(interType, assemblies);
 
-        foreach (var generic in genericTypes)
+        foreach (GenericTypes generic in genericTypes)
         {
-            foreach (var interf in generic.Interfaces)
+            foreach (Type interf in generic.Interfaces)
             {
                 Type[] paramTypes = [.. interf.GetGenericArguments()];
                 Type methodType = generic.Type;
                 MethodInfo methodGeneric = method.MakeGenericMethod([.. paramTypes, methodType]);
 
-                methodGeneric.Invoke(null, [services, null]);
+                _ = methodGeneric.Invoke(null, [services, null]);
             }
         }
 
@@ -98,16 +99,18 @@ internal static class ServiceCollectionInternalExtensions
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                var closedServiceType = serviceType.MakeGenericType(argument);
-                var closedDecoratorType = decoratorType.MakeGenericType(argument);
+                Type closedServiceType = serviceType.MakeGenericType(argument);
+                Type closedDecoratorType = decoratorType.MakeGenericType(argument);
 
-                services.DecorateDescriptors(
+                _ = services.DecorateDescriptors(
                     closedServiceType,
                     descriptor => descriptor.DecorateDescriptor(closedDecoratorType));
             }
-            catch
+            catch (Exception exception)
             {
                 // violated generic constraints
+                Trace.WriteLine(exception);
+
                 continue;
             }
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -160,9 +163,9 @@ internal static class ServiceCollectionInternalExtensions
         Type serviceType,
         Func<ServiceDescriptor, ServiceDescriptor> decorator)
     {
-        foreach (var descriptor in services.GetServiceDescriptors(serviceType))
+        foreach (ServiceDescriptor descriptor in services.GetServiceDescriptors(serviceType))
         {
-            var index = services.IndexOf(descriptor);
+            int index = services.IndexOf(descriptor);
             services[index] = decorator(descriptor);
         }
 

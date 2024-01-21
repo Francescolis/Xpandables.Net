@@ -49,10 +49,10 @@ public static partial class OperationResultExtensions
     /// <exception cref="ArgumentNullException">The <paramref name="errors"/> is null.</exception>
     public static ModelStateDictionary ToModelStateDictionary(this ElementCollection errors)
     {
-        var modelStateDictionary = new ModelStateDictionary();
-        foreach (var error in errors)
+        ModelStateDictionary modelStateDictionary = new();
+        foreach (Primitives.ElementEntry error in errors)
         {
-            foreach (var errorMessage in error.Values)
+            foreach (string errorMessage in error.Values)
                 modelStateDictionary.AddModelError(error.Key, errorMessage);
         }
 
@@ -68,12 +68,10 @@ public static partial class OperationResultExtensions
     /// <exception cref="ArgumentNullException">The <paramref name="errors"/> is null.</exception>
     public static IDictionary<string, string[]> ToMinimalErrors(this ElementCollection errors)
     {
-        var modelDictionary = new Dictionary<string, string[]>();
-        foreach (var error in errors)
+        Dictionary<string, string[]> modelDictionary = [];
+        foreach (Primitives.ElementEntry error in errors)
         {
-            var messages = new List<string>();
-            foreach (var errorMessage in error.Values)
-                messages.Add(errorMessage);
+            List<string> messages = [.. error.Values];
 
             modelDictionary.Add(error.Key, [.. messages]);
         }

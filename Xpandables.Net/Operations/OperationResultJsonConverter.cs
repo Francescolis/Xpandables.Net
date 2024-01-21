@@ -35,7 +35,7 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
     /// <returns>The converted value.</returns>
     public override IOperationResult Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var result = JsonSerializer.Deserialize(ref reader, typeToConvert, options);
+        object? result = JsonSerializer.Deserialize(ref reader, typeToConvert, options);
         return result is IOperationResult { } operation ? operation : new OperationResult();
     }
     /// <summary>
@@ -78,7 +78,7 @@ public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperat
         Type typeToConvert,
         JsonSerializerOptions options)
     {
-        var result = JsonSerializer.Deserialize(ref reader, typeToConvert, options);
+        object? result = JsonSerializer.Deserialize(ref reader, typeToConvert, options);
         return result is OperationResult<TValue> { } operation ? operation : new OperationResult<TValue>();
     }
 

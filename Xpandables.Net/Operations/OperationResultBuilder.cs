@@ -22,7 +22,7 @@ using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
 
-internal abstract class Builder<TBuilder> :
+internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     IOperationResult.IHeaderBuilder<TBuilder>,
     IOperationResult.IUrlBuilder<TBuilder>,
     IOperationResult.IErrorBuilder<TBuilder>,
@@ -34,20 +34,18 @@ internal abstract class Builder<TBuilder> :
 {
     private protected readonly ElementCollection _headers = [];
     private protected readonly ElementCollection _errors = [];
-    private protected HttpStatusCode _statusCode;
+    private protected HttpStatusCode _statusCode = statusCode;
     private protected Optional<string> _uri = Optional.Empty<string>();
     private protected Optional<object> _result = Optional.Empty<object>();
     private protected Optional<string> _title = Optional.Empty<string>();
     private protected Optional<string> _detail = Optional.Empty<string>();
 
-    protected Builder(HttpStatusCode statusCode) => _statusCode = statusCode;
-
     TBuilder IOperationResult.IStatusBuilder<TBuilder>.WithStatusCode(HttpStatusCode statusCode)
     {
         if (_statusCode.IsSuccessStatusCode())
-            statusCode.EnsureSuccessStatusCode();
+            _ = statusCode.EnsureSuccessStatusCode();
         else
-            statusCode.EnsureFailureStatusCode();
+            _ = statusCode.EnsureFailureStatusCode();
 
         _statusCode = statusCode;
         return (this as TBuilder)!;
@@ -163,14 +161,12 @@ internal abstract class Builder<TBuilder> :
     }
 }
 
-internal abstract class Builder<TBuilder, TResult> :
-    Builder<TBuilder>,
+internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
+    Builder<TBuilder>(statusCode),
     IOperationResult.IResultBuilder<TBuilder, TResult>,
     IOperationResult.IBuilder<TResult>
     where TBuilder : class, IOperationResult.IBuilder<TResult>
 {
-    protected Builder(HttpStatusCode statusCode) : base(statusCode) { }
-
     OperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
         => new(
             _statusCode,
@@ -193,7 +189,7 @@ internal sealed class SuccessBuilder : Builder<IOperationResult.ISuccessBuilder>
 {
     internal SuccessBuilder(HttpStatusCode statusCode) : base(statusCode)
     {
-        statusCode.EnsureSuccessStatusCode();
+        _ = statusCode.EnsureSuccessStatusCode();
     }
 }
 
@@ -202,7 +198,7 @@ internal sealed class SuccessBuilder<TResult> :
 {
     internal SuccessBuilder(HttpStatusCode statusCode) : base(statusCode)
     {
-        statusCode.EnsureSuccessStatusCode();
+        _ = statusCode.EnsureSuccessStatusCode();
     }
 }
 
@@ -210,7 +206,7 @@ internal sealed class FailureBuilder : Builder<IOperationResult.IFailureBuilder>
 {
     internal FailureBuilder(HttpStatusCode statusCode) : base(statusCode)
     {
-        statusCode.EnsureFailureStatusCode();
+        _ = statusCode.EnsureFailureStatusCode();
     }
 }
 
@@ -219,6 +215,6 @@ internal sealed class FailureBuilder<TResult> :
 {
     internal FailureBuilder(HttpStatusCode statusCode) : base(statusCode)
     {
-        statusCode.EnsureFailureStatusCode();
+        _ = statusCode.EnsureFailureStatusCode();
     }
 }

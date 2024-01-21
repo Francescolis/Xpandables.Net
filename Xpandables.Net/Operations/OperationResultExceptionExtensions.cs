@@ -55,7 +55,7 @@ public static partial class OperationResultExtensions
             throw new InvalidOperationException("ErrorMessage or MemberNames is null !");
 
         ElementCollection errors = [];
-        foreach (var memberName in @this.MemberNames)
+        foreach (string memberName in @this.MemberNames)
             if (!string.IsNullOrEmpty(memberName))
                 errors.Add(memberName, [@this.ErrorMessage]);
 

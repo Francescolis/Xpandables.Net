@@ -120,18 +120,18 @@ public static class ServiceCollectionRepositoryExtensions
 
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
-        var entityTypes = assemblies.SelectMany(ass => ass.GetExportedTypes())
+        IEnumerable<Type> entityTypes = assemblies.SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                            && !type.IsInterface
                            && !type.IsGenericType
                            && type.GetInterfaces().Exists(inter => !inter.IsGenericType && inter == typeof(IEntity)))
             .Select(type => type);
 
-        foreach (var entityType in entityTypes)
+        foreach (Type entityType in entityTypes)
         {
             MethodInfo repositoryRegister = AddRepositoryForMethod.MakeGenericMethod(entityType);
 
-            repositoryRegister.Invoke(null, [services]);
+            _ = repositoryRegister.Invoke(null, [services]);
         }
 
         return services;

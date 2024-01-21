@@ -63,7 +63,7 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        var queryableResult = typeof(IEntity)
+        IQueryable<TResult> queryableResult = typeof(IEntity)
             .IsAssignableFrom(typeof(TResult))
                 ? filter.GetQueryableFiltered(Context.Set<TEntity>())
                 : filter.GetQueryableFiltered(Context.Set<TEntity>().AsNoTracking());
@@ -80,7 +80,7 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        var queryableResult = typeof(IEntity)
+        IQueryable<TResult> queryableResult = typeof(IEntity)
             .IsAssignableFrom(typeof(TResult))
                 ? filter.GetQueryableFiltered(Context.Set<TEntity>())
                 : filter.GetQueryableFiltered(Context.Set<TEntity>().AsNoTracking());
@@ -106,7 +106,7 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
         TEntity entity,
         CancellationToken cancellationToken = default)
     {
-        await Context.Set<TEntity>()
+        _ = await Context.Set<TEntity>()
             .AddAsync(entity, cancellationToken)
             .ConfigureAwait(false);
     }
@@ -116,7 +116,7 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
         TEntity entity,
         CancellationToken cancellationToken = default)
     {
-        Context.Set<TEntity>().Update(entity);
+        _ = Context.Set<TEntity>().Update(entity);
         await ValueTask.CompletedTask
             .ConfigureAwait(false);
     }
@@ -128,7 +128,7 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        var deleteTableResult = filter
+        IEnumerable<TEntity> deleteTableResult = filter
             .GetQueryableFiltered(Context.Set<TEntity>())
             .AsEnumerable();
 
@@ -173,11 +173,11 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
         ArgumentNullException.ThrowIfNull(filter);
         ArgumentNullException.ThrowIfNull(updater);
 
-        var compiledUpdated = updater.Compile();
+        Func<TEntity, object> compiledUpdated = updater.Compile();
 
-        await foreach (var entity in FetchAsync(filter, cancellationToken).ConfigureAwait(false))
+        await foreach (TEntity? entity in FetchAsync(filter, cancellationToken).ConfigureAwait(false))
         {
-            var updated = compiledUpdated(entity);
+            object updated = compiledUpdated(entity);
             Context.Entry(entity).CurrentValues.SetValues(updated);
         }
     }

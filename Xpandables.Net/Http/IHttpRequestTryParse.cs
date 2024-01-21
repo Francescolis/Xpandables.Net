@@ -38,13 +38,14 @@ public interface IHttpRequestTryParse<TRequest>
     public static bool TryParse(string? value, IFormatProvider provider, out TRequest? result)
     {
         result = default;
+        _ = provider;
 
         if (value is null)
             return false;
 
-        var dict = value.Split(',').Chunk(2).ToDictionary(d => d[0], d => d[1]);
+        Dictionary<string, string> dict = value.Split(',').Chunk(2).ToDictionary(d => d[0], d => d[1]);
 
-        var jsonString = JsonSerializer.Serialize(dict, JsonSerializerDefaultOptions.OptionPropertyNameCaseInsensitiveTrue);
+        string jsonString = JsonSerializer.Serialize(dict, JsonSerializerDefaultOptions.OptionPropertyNameCaseInsensitiveTrue);
 
         result = JsonSerializer.Deserialize<TRequest>(jsonString, JsonSerializerDefaultOptions.OptionPropertyNameCaseInsensitiveTrue);
 
