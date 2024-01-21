@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>C:\Users\fewan\source\repos\Francescolis\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>D:\fewan\source\repos\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 		<Platforms>x64</Platforms>
