@@ -19,11 +19,12 @@ namespace Xpandables.Net.Operations;
 
 internal class OperationResultMatch : IOperationResultMatch
 {
-    private readonly OperationResult _operationResult;
+    private readonly IOperationResult _operationResult;
 
-    internal OperationResultMatch(OperationResult operationResult) => _operationResult = operationResult;
+    internal OperationResultMatch(IOperationResult operationResult)
+        => _operationResult = operationResult;
 
-    public OperationResult Failure(Func<OperationResult, OperationResult> onFailure)
+    public IOperationResult Failure(Func<IOperationResult, IOperationResult> onFailure)
     {
         if (_operationResult.IsSuccess)
             return _operationResult;
@@ -31,7 +32,8 @@ internal class OperationResultMatch : IOperationResultMatch
         return onFailure(_operationResult);
     }
 
-    public async ValueTask<OperationResult> FailureAsync(Func<OperationResult, ValueTask<OperationResult>> onFailure)
+    public async ValueTask<IOperationResult> FailureAsync(
+        Func<IOperationResult, ValueTask<IOperationResult>> onFailure)
     {
         if (_operationResult.IsSuccess)
             return _operationResult;
@@ -39,7 +41,7 @@ internal class OperationResultMatch : IOperationResultMatch
         return await onFailure(_operationResult).ConfigureAwait(false);
     }
 
-    public OperationResult Success(Func<OperationResult, OperationResult> onSuccess)
+    public IOperationResult Success(Func<IOperationResult, IOperationResult> onSuccess)
     {
         if (_operationResult.IsFailure)
             return _operationResult;
@@ -47,23 +49,26 @@ internal class OperationResultMatch : IOperationResultMatch
         return onSuccess(_operationResult);
     }
 
-    public async ValueTask<OperationResult> SuccessAsync(Func<OperationResult, ValueTask<OperationResult>> onSuccess)
+    public async ValueTask<IOperationResult> SuccessAsync(
+        Func<IOperationResult, ValueTask<IOperationResult>> onSuccess)
     {
         if (_operationResult.IsFailure)
             return _operationResult;
 
-        return await onSuccess(_operationResult).ConfigureAwait(false);
+        return await onSuccess(_operationResult)
+            .ConfigureAwait(false);
     }
 }
 
 internal sealed class OperationResultMatch<TResult> : OperationResultMatch, IOperationResultMatch<TResult>
 {
-    private readonly OperationResult<TResult> _operationResult;
+    private readonly IOperationResult<TResult> _operationResult;
 
-    internal OperationResultMatch(OperationResult<TResult> operationResult)
+    internal OperationResultMatch(IOperationResult<TResult> operationResult)
         : base(operationResult) => _operationResult = operationResult;
 
-    public OperationResult<TResult> Failure(Func<OperationResult<TResult>, OperationResult<TResult>> onFailure)
+    public IOperationResult<TResult> Failure(
+        Func<IOperationResult<TResult>, IOperationResult<TResult>> onFailure)
     {
         if (_operationResult.IsSuccess)
             return _operationResult;
@@ -71,15 +76,18 @@ internal sealed class OperationResultMatch<TResult> : OperationResultMatch, IOpe
         return onFailure(_operationResult);
     }
 
-    public async ValueTask<OperationResult<TResult>> FailureAsync(Func<OperationResult<TResult>, ValueTask<OperationResult<TResult>>> onFailure)
+    public async ValueTask<IOperationResult<TResult>> FailureAsync(
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onFailure)
     {
         if (_operationResult.IsSuccess)
             return _operationResult;
 
-        return await onFailure(_operationResult).ConfigureAwait(false);
+        return await onFailure(_operationResult)
+            .ConfigureAwait(false);
     }
 
-    public OperationResult<TResult> Success(Func<OperationResult<TResult>, OperationResult<TResult>> onSuccess)
+    public IOperationResult<TResult> Success(
+        Func<IOperationResult<TResult>, IOperationResult<TResult>> onSuccess)
     {
         if (_operationResult.IsFailure)
             return _operationResult;
@@ -87,11 +95,13 @@ internal sealed class OperationResultMatch<TResult> : OperationResultMatch, IOpe
         return onSuccess(_operationResult);
     }
 
-    public async ValueTask<OperationResult<TResult>> SuccessAsync(Func<OperationResult<TResult>, ValueTask<OperationResult<TResult>>> onSuccess)
+    public async ValueTask<IOperationResult<TResult>> SuccessAsync(
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onSuccess)
     {
         if (_operationResult.IsFailure)
             return _operationResult;
 
-        return await onSuccess(_operationResult).ConfigureAwait(false);
+        return await onSuccess(_operationResult)
+            .ConfigureAwait(false);
     }
 }

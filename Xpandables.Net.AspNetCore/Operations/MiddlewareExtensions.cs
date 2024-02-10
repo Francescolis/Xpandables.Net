@@ -50,7 +50,7 @@ internal static class MiddlewareExtensions
             .Replace("\\", string.Empty, StringComparison.InvariantCulture)
             .Replace("\"", string.Empty, StringComparison.InvariantCulture);
 
-        OperationResult operationResult = OperationResults
+        IOperationResult operationResult = OperationResults
               .BadRequest()
               .WithDetail(exception.Message)
               .WithStatusCode((HttpStatusCode)exception.StatusCode)
@@ -103,7 +103,7 @@ internal static class MiddlewareExtensions
         ValidationException exception,
         OperationResultController? controller = default)
     {
-        OperationResult operationResult = exception.ValidationResult.ToOperationResult();
+        IOperationResult operationResult = exception.ValidationResult.ToOperationResult();
 
         if (controller is not null)
         {

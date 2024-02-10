@@ -251,7 +251,7 @@ public static class HttpClientDispatcherExtensions
     /// <param name="serializerOptions">The optional settings for serializer.</param>
     /// <returns>A bad <see cref="IOperationResult"/></returns>
     /// <exception cref="ArgumentNullException">The <paramref name="response"/> is null.</exception>
-    public static OperationResult ToOperationResult(
+    public static IOperationResult ToOperationResult(
         this HttpClientResponse response,
         JsonSerializerOptions? serializerOptions = default)
     {
@@ -311,7 +311,7 @@ public static class HttpClientDispatcherExtensions
     /// <param name="serializerOptions">The optional settings for serializer.</param>
     /// <returns>An <see cref="IOperationResult{TValue}"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="response"/> is null.</exception>
-    public static OperationResult<TValue> ToOperationResult<TValue>(
+    public static IOperationResult<TValue> ToOperationResult<TValue>(
         this HttpClientResponse<TValue> response,
         JsonSerializerOptions? serializerOptions = default)
     {

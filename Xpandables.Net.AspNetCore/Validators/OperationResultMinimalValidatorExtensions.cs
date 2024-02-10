@@ -94,7 +94,7 @@ internal static class OperationResultMinimalValidatorExtensions
 
             try
             {
-                OperationResult operation = await description.Validator
+                IOperationResult operation = await description.Validator
                     .ValidateAsync(argument)
                     .ConfigureAwait(false);
 
@@ -105,14 +105,14 @@ internal static class OperationResultMinimalValidatorExtensions
             }
             catch (ValidationException exception)
             {
-                OperationResult operationException = exception.ToOperationResult();
+                IOperationResult operationException = exception.ToOperationResult();
                 _ = operationResultBuilder
                     .WithErrors(operationException.Errors)
                     .WithHeaders(operationException.Headers);
             }
         }
 
-        OperationResult result = operationResultBuilder.Build();
+        IOperationResult result = operationResultBuilder.Build();
         if (result.Errors.Any())
             return result.ToMinimalResult();
 

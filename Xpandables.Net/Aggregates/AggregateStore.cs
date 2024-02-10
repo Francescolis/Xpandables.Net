@@ -49,7 +49,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
         ?? throw new ArgumentNullException(nameof(eventOutbox));
 
     ///<inheritdoc/>
-    public async ValueTask<OperationResult> AppendAsync(
+    public async ValueTask<IOperationResult> AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
@@ -90,7 +90,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
     }
 
     ///<inheritdoc/>
-    public async ValueTask<OperationResult<TAggregate>> ReadAsync(
+    public async ValueTask<IOperationResult<TAggregate>> ReadAsync(
         TAggregateId aggregateId,
         CancellationToken cancellationToken = default)
     {

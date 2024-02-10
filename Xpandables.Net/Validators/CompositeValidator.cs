@@ -40,11 +40,11 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
-    public OperationResult Validate(TArgument argument)
+    public IOperationResult Validate(TArgument argument)
     {
         foreach (IValidator<TArgument>? validator in _validationInstances.OrderBy(o => o.Order))
         {
-            OperationResult operation = validator.Validate(argument);
+            IOperationResult operation = validator.Validate(argument);
             if (operation.IsFailure)
                 return operation;
         }
@@ -59,11 +59,11 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
-    public async ValueTask<OperationResult> ValidateAsync(TArgument argument)
+    public async ValueTask<IOperationResult> ValidateAsync(TArgument argument)
     {
         foreach (IValidator<TArgument>? validator in _validationInstances.OrderBy(o => o.Order))
         {
-            OperationResult operation = await validator
+            IOperationResult operation = await validator
                 .ValidateAsync(argument)
                 .ConfigureAwait(false);
 

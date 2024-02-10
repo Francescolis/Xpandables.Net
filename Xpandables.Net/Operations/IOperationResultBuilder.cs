@@ -83,11 +83,12 @@ public partial interface IOperationResult
         /// Returns the instance that matches the builder information.
         /// </summary>
         /// <returns>An implementation of <see cref="IOperationResult"/>.</returns>
-        OperationResult Build();
+        IOperationResult Build();
     }
 
     /// <summary>
-    /// Provides with command to create the target instance that implements <see cref="IOperationResult{TResult}"/>.
+    /// Provides with command to create the target instance that 
+    /// implements <see cref="IOperationResult{TResult}"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     public interface IBuilder<TResult> : IBuilder
@@ -96,10 +97,10 @@ public partial interface IOperationResult
         /// Returns the instance that matches the builder information.
         /// </summary>
         /// <returns>An implementation of <see cref="IOperationResult{TResult}"/>.</returns>
-        new OperationResult<TResult> Build();
+        new IOperationResult<TResult> Build();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        OperationResult IBuilder.Build() => Build();
+        IOperationResult IBuilder.Build() => Build();
     }
 
     /// <summary>
@@ -117,7 +118,8 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to add title and/or detail to the <see cref="IDescriptionBuilder{TBuilder}"/> builder.
+    /// Provides with command to add title and/or detail to the 
+    /// <see cref="IDescriptionBuilder{TBuilder}"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IDescriptionBuilder<out TBuilder>
@@ -127,7 +129,8 @@ public partial interface IOperationResult
         /// </summary>
         /// <param name="title">the operation title from the execution operation.</param>
         /// <returns>The current instance.</returns>
-        /// <exception cref="ArgumentNullException">The <paramref name="title"/> is null or empty.</exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="title"/> 
+        /// is null or empty.</exception>
         TBuilder WithTitle(string title);
 
         /// <summary>
@@ -165,7 +168,8 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to add a result of <typeparamref name="TResult"/> type to the <see cref="IBuilder{TResult}"/> builder.
+    /// Provides with command to add a result of <typeparamref name="TResult"/> 
+    /// type to the <see cref="IBuilder{TResult}"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     /// <typeparam name="TResult">The type of the target result.</typeparam>
@@ -193,7 +197,8 @@ public partial interface IOperationResult
         /// </summary>
         /// <param name="key">The key header to add.</param>
         /// <param name="value">The associated value.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="key"/> or <paramref name="value"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="key"/> 
+        /// or <paramref name="value"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithHeader(string key, string value);
 
@@ -202,7 +207,8 @@ public partial interface IOperationResult
         /// </summary>
         /// <param name="key">The key header to add.</param>
         /// <param name="values">The associated value.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="key"/> or <paramref name="values"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="key"/> 
+        /// or <paramref name="values"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithHeader(string key, params string[] values);
 

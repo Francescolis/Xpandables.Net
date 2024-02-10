@@ -26,71 +26,94 @@ namespace Xpandables.Net.Operations;
 /// <summary>
 /// Defines a contract that represents the result of an execution process.
 /// </summary>
+[JsonConverter(typeof(OperationResultJsonConverterFactory))]
 public partial interface IOperationResult
 {
     /// <summary>
     /// Gets the operation HTTP status code from the execution operation.
     /// </summary>
+    [JsonInclude]
     HttpStatusCode StatusCode { get; }
 
     /// <summary>
     /// Gets the operation summary problem from the execution operation.
-    /// Mostly used when building the Asp.Net response in  case of errors.
+    /// <para>Mostly used when building the Asp.Net response in  case of errors.</para>
     /// </summary>
     /// <remarks>If not defined, the default title will be used.</remarks>
+    [JsonInclude]
     Optional<string> Title { get; }
 
     /// <summary>
     /// Gets the operation explanation specific to the execution operation.
-    /// Mostly used when building the Asp.Net response in  case of errors.
+    /// <para>Mostly used when building the Asp.Net response in  case of errors.</para>
     /// </summary>
     /// <remarks>If not defined, the default detail will be used.</remarks>
+    [JsonInclude]
     Optional<string> Detail { get; }
 
     /// <summary>
     /// Gets a user-defined object that qualifies or contains information about an operation return if available.
     /// </summary>
-    /// <returns>The result value of this <see cref="IOperationResult"/>, which is of the type object.</returns>
+    /// <returns>The result value of this <see cref="IOperationResult"/>, which is of the type <see langword="object"/>.</returns>
+    [JsonInclude]
     Optional<object> Result { get; }
 
     /// <summary>
-    /// Gets the URL for location header. Mostly used with <see cref="HttpStatusCode.Created"/> in Asp.Net.
+    /// Gets the URL for location header. 
+    /// <para>Mostly used with <see cref="HttpStatusCode.Created"/> in Asp.Net.</para>
     /// </summary>
+    [JsonInclude]
     Optional<string> LocationUrl { get; }
 
     /// <summary>
     /// Gets the collection of header values that will be returned with the response.
     /// </summary>
     /// <remarks>The default value contains an empty collection.</remarks>
+    [JsonInclude]
     ElementCollection Headers { get; }
 
     /// <summary>
     /// Gets the collection of errors from the last execution operation.
     /// </summary>
     /// <remarks>The default value contains an empty collection.</remarks>
+    [JsonInclude]
     ElementCollection Errors { get; }
 
     /// <summary>
     /// Determines whether or not the current instance is generic.
-    /// Returns <see langword="true"/> if so, otherwise <see langword="false"/>.
     /// </summary>
+    /// <remarks>Returns <see langword="true"/> if so, otherwise <see langword="false"/>.</remarks>
+    [JsonIgnore]
     public bool IsGeneric => false;
 
     /// <summary>
-    /// Determines whether or not the current instance is successful.
+    /// Determines whether or not the current instance is successful according to the status of the operation.
     /// </summary>
+    [JsonIgnore]
     public bool IsSuccess => StatusCode.IsFailureStatusCode();
 
     /// <summary>
-    /// Determines whether or not the current instance is failed.
+    /// Determines whether or not the current instance is failed according to the status of the operation.
     /// </summary>
     public bool IsFailure => StatusCode.IsFailureStatusCode();
+
+    ///<inheritdoc/>
+    public IOperationResult<TResult> ToOperationResult<TResult>()
+        => new OperationResult<TResult>(
+            StatusCode,
+            Result.Bind(o => ((TResult?)o).AsOptional()),
+            LocationUrl,
+            Errors,
+            Headers,
+            Title,
+            Detail);
 }
 
 /// <summary>
 /// Defines a contract that represents a generic result of an execution process.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
+[JsonConverter(typeof(OperationResultJsonConverterFactory))]
 public partial interface IOperationResult<TResult> : IOperationResult
 {
     /// <summary>
@@ -98,6 +121,7 @@ public partial interface IOperationResult<TResult> : IOperationResult
     /// </summary>
     /// <returns>The result value of this <see cref="IOperationResult{TResult}"/>, which is of the same 
     /// type as the operation result's type parameter.</returns>
+    [JsonIgnore]
     new Optional<TResult> Result { get; }
 
     [JsonIgnore]
@@ -113,4 +137,15 @@ public partial interface IOperationResult<TResult> : IOperationResult
 
     [JsonIgnore]
     bool IOperationResult.IsGeneric => true;
+
+    ///<inheritdoc/>
+    public IOperationResult ToOperationResult()
+        => new OperationResult(
+            StatusCode,
+            Result.IsNotEmpty ? Optional.Some<object>(Result.Value) : Optional.Empty<object>(),
+            LocationUrl,
+            Errors,
+            Headers,
+            Title,
+            Detail);
 }

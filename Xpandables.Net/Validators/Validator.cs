@@ -28,7 +28,7 @@ namespace Xpandables.Net.Validators;
 /// </summary>
 /// <typeparam name="TArgument">Type of the argument.</typeparam>
 /// <remarks>
-/// Constructs anew instance of <see cref="Validator{TArgument}"/> with the service provider.
+/// Constructs a new instance of <see cref="Validator{TArgument}"/> with the service provider.
 /// </remarks>
 /// <param name="serviceProvider">The service provider to be used.</param>
 public class Validator<TArgument>(IServiceProvider serviceProvider) : IValidator<TArgument>
@@ -45,7 +45,7 @@ public class Validator<TArgument>(IServiceProvider serviceProvider) : IValidator
     /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
     /// <exception cref="ValidationException">The exception thrown by the validator</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
-    public virtual OperationResult Validate(TArgument argument)
+    public virtual IOperationResult Validate(TArgument argument)
     {
         List<ValidationResult> validationResults = [];
         ValidationContext validationContext = new(argument, _serviceProvider, null);
@@ -74,9 +74,9 @@ public class Validator<TArgument>(IServiceProvider serviceProvider) : IValidator
     }
 
     ///<inheritdoc/>
-    public virtual ValueTask<OperationResult> ValidateAsync(TArgument argument)
+    public virtual ValueTask<IOperationResult> ValidateAsync(TArgument argument)
     {
-        OperationResult result = Validate(argument);
+        IOperationResult result = Validate(argument);
         return ValueTask.FromResult(result);
     }
 }

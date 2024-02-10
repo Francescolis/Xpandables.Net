@@ -26,9 +26,9 @@ namespace Xpandables.Net.CQRS.Decorators;
 /// Represents a method signature to be used to apply persistence behavior to a command task.
 /// </summary>
 /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-/// <returns>A task that represents an <see cref="OperationResult"/>.</returns>
+/// <returns>A task that represents an <see cref="IOperationResult"/>.</returns>
 /// <exception cref="InvalidOperationException">The persistence operation failed to execute.</exception>
-public delegate ValueTask<OperationResult> PersistenceCommandHandler(CancellationToken cancellationToken);
+public delegate ValueTask<IOperationResult> PersistenceCommandHandler(CancellationToken cancellationToken);
 
 /// <summary>
 /// This class allows the application author to add persistence support to command control flow.
@@ -64,13 +64,13 @@ public sealed class PersistenceCommandDecorator<TCommand>(
     /// <exception cref="ArgumentNullException">The <paramref name="command"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     /// <returns>A task that represents an object of <see cref="IOperationResult"/>.</returns>
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            OperationResult commandResult = await _decoratee
+            IOperationResult commandResult = await _decoratee
                 .HandleAsync(command, cancellationToken)
                 .ConfigureAwait(false);
 

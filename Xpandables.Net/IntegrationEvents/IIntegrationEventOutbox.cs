@@ -31,8 +31,8 @@ public interface IIntegrationEventOutbox : IDisposable
     /// </summary>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <returns>A value that represents an <see cref="OperationResult"/>.</returns>
-    ValueTask<OperationResult> AppendAsync(CancellationToken cancellationToken = default);
+    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult> AppendAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously appends the specified <see cref="IIntegrationEvent"/>.
@@ -40,9 +40,9 @@ public interface IIntegrationEventOutbox : IDisposable
     /// <param name="event">The integration event to be used.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <returns>A value that represents an <see cref="OperationResult"/>.</returns>
+    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
-    ValueTask<OperationResult> AppendAsync(
+    ValueTask<IOperationResult> AppendAsync(
         IIntegrationEvent @event,
         CancellationToken cancellationToken = default);
 }

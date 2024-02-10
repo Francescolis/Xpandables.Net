@@ -32,7 +32,7 @@ public abstract class BackgroundServiceBase<TBackgroundService>
     public bool IsRunning { get; protected set; }
 
     ///<inheritdoc/>
-    public virtual async Task<OperationResult> StartServiceAsync(
+    public virtual async Task<IOperationResult> StartServiceAsync(
         CancellationToken cancellationToken = default)
     {
         if (IsRunning)
@@ -47,7 +47,7 @@ public abstract class BackgroundServiceBase<TBackgroundService>
     }
 
     ///<inheritdoc/>
-    public virtual async Task<OperationResult> StopServiceAsync(
+    public virtual async Task<IOperationResult> StopServiceAsync(
         CancellationToken cancellationToken = default)
     {
         if (!IsRunning)
@@ -62,7 +62,7 @@ public abstract class BackgroundServiceBase<TBackgroundService>
     }
 
     ///<inheritdoc/>
-    public virtual async Task<OperationResult<string>> StatusServiceAsync(
+    public virtual async Task<IOperationResult<string>> StatusServiceAsync(
         CancellationToken cancellationToken = default)
     {
         string response = $"{typeof(TBackgroundService).Name} {(IsRunning ? "Is Up" : "Is Down")}";

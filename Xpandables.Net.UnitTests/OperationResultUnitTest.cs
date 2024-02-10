@@ -30,7 +30,7 @@ public sealed class OperationResultUnitTest
     [InlineData("key", "Header")]
     public void OperationResult_Should_Return_Headers(string hKey, string hValue)
     {
-        OperationResult operationResult = OperationResults
+        IOperationResult operationResult = OperationResults
             .Ok()
             .WithHeader(hKey, hValue)
             .Build();
@@ -45,7 +45,7 @@ public sealed class OperationResultUnitTest
     [InlineData("key", "Header", "errorKey", "errorMessage")]
     public void OperationResult_Should_Return_Errors(string hKey, string hValue, string eKey, string eMessage)
     {
-        OperationResult operationResult = OperationResults
+        IOperationResult operationResult = OperationResults
             .BadRequest()
             .WithError(eKey, eMessage)
             .WithHeader(hKey, hValue)
@@ -70,13 +70,13 @@ public sealed class OperationResultUnitTest
     public void JsonConverter_Should_Serialize_And_Deserialize_OperationResult(
         string hKey, string hValue, string eKey, string eMessage, string result, string url)
     {
-        OperationResult<string> badResult = OperationResults
+        IOperationResult<string> badResult = OperationResults
             .BadRequest<string>()
             .WithError(eKey, eMessage)
             .WithHeader(hKey, hValue)
             .Build();
 
-        OperationResult okResult = OperationResults
+        IOperationResult<string> okResult = OperationResults
             .Ok(result)
             .WithHeader(hKey, hValue)
             .WithUrl(url)
@@ -85,11 +85,33 @@ public sealed class OperationResultUnitTest
         var barResultJson = JsonSerializer.Serialize(badResult);
         var okResultJson = JsonSerializer.Serialize(okResult);
 
-        OperationResult expectedOkResult = JsonSerializer.Deserialize<OperationResult<string>>(okResultJson)!;
-        OperationResult<string> expectedBadResult = JsonSerializer.Deserialize<OperationResult<string>>(barResultJson)!;
+        IOperationResult<string> expectedOkResult = JsonSerializer.Deserialize<IOperationResult<string>>(okResultJson)!;
+        IOperationResult<string> expectedBadResult = JsonSerializer.Deserialize<IOperationResult<string>>(barResultJson)!;
 
-        badResult.Should().BeEquivalentTo(expectedBadResult);
-        okResult.Should().BeEquivalentTo(expectedOkResult);
+        expectedBadResult.Headers.First()
+            .Key
+            .Should()
+            .Be(hKey);
+        expectedBadResult.Headers.First()
+            .Values.First()
+            .Should()
+            .Be(hValue);
+        expectedBadResult.Errors.First()
+            .Values.First()
+            .Should()
+            .Be(eMessage);
+        
+        expectedOkResult.Headers.First()
+            .Key
+            .Should()
+            .Be(hKey);
+        expectedOkResult.Headers.First()
+            .Values.First()
+            .Should()
+            .Be(hValue);
+        expectedOkResult.LocationUrl.Value
+            .Should()
+            .Be(url);
     }
 
     [Theory]

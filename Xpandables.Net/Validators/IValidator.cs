@@ -52,7 +52,7 @@ public interface IValidator
     /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
     /// <exception cref="ValidationException">The exception throws by the validator</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
-    public OperationResult Validate(object argument) => OperationResults.Ok(argument).Build();
+    public IOperationResult Validate(object argument) => OperationResults.Ok(argument).Build();
 
     /// <summary>
     /// Validates the argument and returns validation state with errors if necessary.
@@ -61,9 +61,9 @@ public interface IValidator
     /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
     /// <exception cref="ValidationException">The exception thrown by the validator</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
-    public ValueTask<OperationResult> ValidateAsync(object argument)
+    public ValueTask<IOperationResult> ValidateAsync(object argument)
     {
-        OperationResult result = Validate(argument);
+        IOperationResult result = Validate(argument);
         return ValueTask.FromResult(result);
     }
 }
@@ -83,9 +83,9 @@ public interface IValidator<in TArgument> : IValidator
     /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
     /// <exception cref="ValidationException">The exception thrown by the validator</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
-    public OperationResult Validate(TArgument argument) => OperationResults.Ok().Build();
+    public IOperationResult Validate(TArgument argument) => OperationResults.Ok().Build();
 
-    OperationResult IValidator.Validate(object argument) => Validate((TArgument)argument);
+    IOperationResult IValidator.Validate(object argument) => Validate((TArgument)argument);
 
     /// <summary>
     /// Validates the argument and returns validation state with errors if necessary.
@@ -94,12 +94,12 @@ public interface IValidator<in TArgument> : IValidator
     /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
     /// <exception cref="ValidationException">The exception thrown by the validator</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
-    public ValueTask<OperationResult> ValidateAsync(TArgument argument)
+    public ValueTask<IOperationResult> ValidateAsync(TArgument argument)
     {
-        OperationResult result = Validate(argument);
+        IOperationResult result = Validate(argument);
         return ValueTask.FromResult(result);
     }
 
-    ValueTask<OperationResult> IValidator.ValidateAsync(object argument)
+    ValueTask<IOperationResult> IValidator.ValidateAsync(object argument)
         => ValidateAsync((TArgument)argument);
 }

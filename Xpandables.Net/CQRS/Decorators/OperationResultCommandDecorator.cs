@@ -29,11 +29,11 @@ internal sealed class OperationResultCommandDecorator<TCommand>(
     private readonly IOperationResultFinalizer _operationResultContext = operationResultContext
         ?? throw new ArgumentNullException(nameof(operationResultContext));
 
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {
-        OperationResult result = await _decoratee
+        IOperationResult result = await _decoratee
             .HandleAsync(command, cancellationToken)
             .ConfigureAwait(false);
 

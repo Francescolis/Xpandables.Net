@@ -40,7 +40,7 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
     private readonly SnapShotOptions _snapShotOptions = snapShotOptions.Value
         ?? throw new ArgumentNullException(nameof(snapShotOptions));
 
-    public async ValueTask<OperationResult> AppendAsync(
+    public async ValueTask<IOperationResult> AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
@@ -70,7 +70,7 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
         return await _decoratee.AppendAsync(aggregate, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask<OperationResult<TAggregate>> ReadAsync(
+    public async ValueTask<IOperationResult<TAggregate>> ReadAsync(
          TAggregateId aggregateId,
          CancellationToken cancellationToken = default)
     {

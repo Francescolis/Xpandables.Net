@@ -29,7 +29,7 @@ public static partial class OperationResultExtensions
     /// </summary>
     /// <param name="operationResult">The <see cref="IOperationResult"/> instance to act on.</param>
     /// <returns>An instance of <see cref="IOperationResultMatch"/>.</returns>
-    public static IOperationResultMatch Match(this OperationResult operationResult)
+    public static IOperationResultMatch Match(this IOperationResult operationResult)
         => new OperationResultMatch(operationResult);
 
     /// <summary>
@@ -39,7 +39,7 @@ public static partial class OperationResultExtensions
     /// <typeparam name="TResult">The type of thr result.</typeparam>
     /// <param name="operationResult">The <see cref="IOperationResult{TResult}"/> instance to act on.</param>
     /// <returns>An instance of <see cref="IOperationResultMatch{TResult}"/>.</returns>
-    public static IOperationResultMatch<TResult> Match<TResult>(this OperationResult<TResult> operationResult)
+    public static IOperationResultMatch<TResult> Match<TResult>(this IOperationResult<TResult> operationResult)
         => new OperationResultMatch<TResult>(operationResult);
 
     /// <summary>
@@ -51,9 +51,9 @@ public static partial class OperationResultExtensions
     /// <returns>The current operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operationResult"/> 
     /// or <paramref name="onFailure"/> is null.</exception>
-    public static async ValueTask<OperationResult<TResult>> FailureAsync<TResult>(
-        this ValueTask<OperationResult<TResult>> operationResult,
-        Func<OperationResult<TResult>, ValueTask<OperationResult<TResult>>> onFailure)
+    public static async ValueTask<IOperationResult<TResult>> FailureAsync<TResult>(
+        this ValueTask<IOperationResult<TResult>> operationResult,
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onFailure)
     {
         ArgumentNullException.ThrowIfNull(operationResult);
         ArgumentNullException.ThrowIfNull(onFailure);
@@ -72,9 +72,9 @@ public static partial class OperationResultExtensions
     /// <returns>The current operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operation"/> 
     /// or <paramref name="onFailure"/> is null.</exception>
-    public static async ValueTask<OperationResult> FailureAsync(
-        this ValueTask<OperationResult> operation,
-        Func<OperationResult, ValueTask<OperationResult>> onFailure)
+    public static async ValueTask<IOperationResult> FailureAsync(
+        this ValueTask<IOperationResult> operation,
+        Func<IOperationResult, ValueTask<IOperationResult>> onFailure)
     {
         ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(onFailure);
@@ -93,9 +93,9 @@ public static partial class OperationResultExtensions
     /// <returns>The current operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operation"/> 
     /// or <paramref name="onSuccess"/> is null.</exception>
-    public static async ValueTask<OperationResult> SuccessAsync(
-        this ValueTask<OperationResult> operation,
-        Func<OperationResult, ValueTask<OperationResult>> onSuccess)
+    public static async ValueTask<IOperationResult> SuccessAsync(
+        this ValueTask<IOperationResult> operation,
+        Func<IOperationResult, ValueTask<IOperationResult>> onSuccess)
     {
         ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(onSuccess);
@@ -115,9 +115,9 @@ public static partial class OperationResultExtensions
     /// <returns>The current operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operation"/> 
     /// or <paramref name="onSuccess"/> is null.</exception>
-    public static async ValueTask<OperationResult<TResult>> SuccessAsync<TResult>(
-        this ValueTask<OperationResult<TResult>> operation,
-        Func<OperationResult<TResult>, ValueTask<OperationResult<TResult>>> onSuccess)
+    public static async ValueTask<IOperationResult<TResult>> SuccessAsync<TResult>(
+        this ValueTask<IOperationResult<TResult>> operation,
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onSuccess)
     {
         ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(onSuccess);

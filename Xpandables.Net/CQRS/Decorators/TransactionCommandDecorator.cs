@@ -28,9 +28,9 @@ namespace Xpandables.Net.CQRS.Decorators;
 /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
 /// <param name="transactionalCommandTask">The command task definition to be executed under transaction.</param>
 /// <returns>A task that represents an object of <see cref="IOperationResult"/>.</returns>
-public delegate ValueTask<OperationResult> TransactionCommandHandler(
+public delegate ValueTask<IOperationResult> TransactionCommandHandler(
     CancellationToken cancellationToken,
-    Func<ValueTask<OperationResult>> transactionalCommandTask);
+    Func<ValueTask<IOperationResult>> transactionalCommandTask);
 
 /// <summary>
 /// This class allows the application author to add transaction 
@@ -68,7 +68,7 @@ public sealed class TransactionCommandDecorator<TCommand>(
     /// <exception cref="ArgumentNullException">The <paramref name="command" /> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     /// <returns>A task that represents an object of <see cref="IOperationResult"/>.</returns>
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {

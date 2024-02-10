@@ -35,8 +35,8 @@ public interface IAggregateStore<TAggregate, TAggregateId>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="aggregate"/> is null.</exception>
-    /// <returns>A value that represents an <see cref="OperationResult"/>.</returns>
-    ValueTask<OperationResult> AppendAsync(
+    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult> AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default);
 
@@ -49,8 +49,8 @@ public interface IAggregateStore<TAggregate, TAggregateId>
     /// while waiting for the task to complete.</param>
     /// <returns>A task that represents an instance of <typeparamref name="TAggregate"/> type.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="aggregateId"/> is null.</exception>
-    /// <returns>A value that represents an <see cref="OperationResult"/>.</returns>
-    ValueTask<OperationResult<TAggregate>> ReadAsync(
+    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult<TAggregate>> ReadAsync(
         TAggregateId aggregateId,
         CancellationToken cancellationToken = default);
 }

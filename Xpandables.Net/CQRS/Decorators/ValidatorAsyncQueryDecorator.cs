@@ -63,7 +63,7 @@ public sealed class ValidatorAsyncQueryDecorator<TQuery, TResult>(
     public async IAsyncEnumerable<TResult> HandleAsync(
         TQuery query, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OperationResult operation = await _validator
+        IOperationResult operation = await _validator
             .ValidateAsync(query)
             .ConfigureAwait(false);
 

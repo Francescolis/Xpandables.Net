@@ -48,8 +48,8 @@ public interface IDispatcher : IServiceProvider
     /// <param name="command">The command to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="command"/> is null.</exception>
-    /// <returns>A task that represents an <see cref="OperationResult"/>.</returns>
-    ValueTask<OperationResult> SendAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default)
+    /// <returns>A task that represents an <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult> SendAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default)
         where TCommand : notnull, ICommand;
 
     /// <summary>
@@ -61,8 +61,8 @@ public interface IDispatcher : IServiceProvider
     /// <param name="query">The query to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="query"/> is null.</exception>
-    /// <returns>A task that represents an <see cref="OperationResult{TValue}"/>.</returns>
-    ValueTask<OperationResult<TResult>> GetAsync<TQuery, TResult>(
+    /// <returns>A task that represents an <see cref="IOperationResult{TValue}"/>.</returns>
+    ValueTask<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
         TQuery query, CancellationToken cancellationToken = default)
         where TQuery : notnull, IQuery<TResult>;
 

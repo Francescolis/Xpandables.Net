@@ -29,7 +29,7 @@ internal sealed class IntegrationEventPublisher(
     private readonly IServiceProvider _serviceProvider = serviceProvider
         ?? throw new ArgumentNullException(nameof(serviceProvider));
 
-    public async ValueTask<OperationResult> PublishAsync<TIntegrationEvent>(
+    public async ValueTask<IOperationResult> PublishAsync<TIntegrationEvent>(
         TIntegrationEvent @event,
         CancellationToken cancellationToken = default)
         where TIntegrationEvent : notnull, IIntegrationEvent

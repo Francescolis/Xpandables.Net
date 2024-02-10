@@ -34,7 +34,7 @@ public interface IDomainEventPublisher<TAggregateId>
     /// while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
     /// <returns>A value that represents an implementation of <see cref="IOperationResult"/>.</returns>
-    ValueTask<OperationResult> PublishAsync<TDomainEvent>(
+    ValueTask<IOperationResult> PublishAsync<TDomainEvent>(
         TDomainEvent @event,
         CancellationToken cancellationToken = default)
         where TDomainEvent : notnull, IDomainEvent<TAggregateId>;

@@ -30,7 +30,7 @@ internal sealed class IntegrationEventOutbox(
     private readonly IIntegrationEventStore _eventStore = eventStore
         ?? throw new ArgumentNullException(nameof(eventStore));
 
-    public async ValueTask<OperationResult> AppendAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<IOperationResult> AppendAsync(CancellationToken cancellationToken = default)
     {
         await foreach (IIntegrationEvent @event in _eventSourcing
             .GetIntegrationEvents()
@@ -48,13 +48,13 @@ internal sealed class IntegrationEventOutbox(
                .Build();
     }
 
-    public async ValueTask<OperationResult> AppendAsync(
+    public async ValueTask<IOperationResult> AppendAsync(
         IIntegrationEvent @event,
         CancellationToken cancellationToken = default)
         => await DoAppendAsync(@event, cancellationToken)
             .ConfigureAwait(false);
 
-    private async ValueTask<OperationResult> DoAppendAsync(
+    private async ValueTask<IOperationResult> DoAppendAsync(
         IIntegrationEvent @event,
         CancellationToken cancellationToken)
     {

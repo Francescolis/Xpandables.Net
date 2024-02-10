@@ -76,8 +76,8 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         return (this as TBuilder)!;
     }
 
-    OperationResult IOperationResult.IBuilder.Build()
-        => new(
+    IOperationResult IOperationResult.IBuilder.Build()
+        => new OperationResult(
             _statusCode,
             _result,
             _uri,
@@ -167,8 +167,8 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     IOperationResult.IBuilder<TResult>
     where TBuilder : class, IOperationResult.IBuilder<TResult>
 {
-    OperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
-        => new(
+    IOperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
+        => new OperationResult<TResult>(
             _statusCode,
             _result.Bind<TResult>(o => o is TResult value ? value : default),
             _uri,

@@ -33,13 +33,13 @@ public sealed class TransientPublisherSubscriber : Disposable, ITransientPublish
     public TransientPublisherSubscriber() => _subscribers.Value = [];
 
     /// <inheritdoc/>
-    public async ValueTask<OperationResult> PublishAsync<T>(
+    public async ValueTask<IOperationResult> PublishAsync<T>(
         T @event, CancellationToken cancellationToken = default)
         where T : notnull
     {
         try
         {
-            OperationResult result = OperationResults.Ok().Build();
+            IOperationResult result = OperationResults.Ok().Build();
 
             foreach (object subscriber in GetHandlersOf<T>())
             {

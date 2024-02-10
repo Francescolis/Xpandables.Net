@@ -36,9 +36,9 @@ public interface IQuery<out TResult> : ICQRS { }
 /// <typeparam name="TResult">Type of the result of the query.</typeparam>
 /// <param name="query">The query to act on.</param>
 /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-/// <returns>A value that represents an <see cref="OperationResult{TValue}"/>.</returns>
+/// <returns>A value that represents an <see cref="IOperationResult{TValue}"/>.</returns>
 /// <exception cref="ArgumentNullException">The <paramref name="query"/> is null.</exception>
-public delegate ValueTask<OperationResult<TResult>> QueryHandler<in TQuery, TResult>(
+public delegate ValueTask<IOperationResult<TResult>> QueryHandler<in TQuery, TResult>(
     TQuery query, CancellationToken cancellationToken = default)
     where TQuery : notnull, IQuery<TResult>;
 
@@ -58,8 +58,8 @@ public interface IQueryHandler<in TQuery, TResult>
     /// <param name="query">The query to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="query"/> is null.</exception>
-    /// <returns>A task that represents an <see cref="OperationResult{TValue}"/>.</returns>
-    ValueTask<OperationResult<TResult>> HandleAsync(TQuery query, CancellationToken cancellationToken = default);
+    /// <returns>A task that represents an <see cref="IOperationResult{TValue}"/>.</returns>
+    ValueTask<IOperationResult<TResult>> HandleAsync(TQuery query, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -76,6 +76,6 @@ public interface IQueryHandlerWrapper<TResult>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="query"/> is null.</exception>
     /// <returns>A task that represents an object of <see cref="IOperationResult{TValue}"/>.</returns>
-    ValueTask<OperationResult<TResult>> HandleAsync(
+    ValueTask<IOperationResult<TResult>> HandleAsync(
         IQuery<TResult> query, CancellationToken cancellationToken = default);
 }

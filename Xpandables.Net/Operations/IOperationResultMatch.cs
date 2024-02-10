@@ -30,7 +30,7 @@ public interface IOperationResultMatch
     /// <param name="onSuccess">The delegate to be used on success.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onSuccess"/> is null.</exception>
-    OperationResult Success(Func<OperationResult, OperationResult> onSuccess);
+    IOperationResult Success(Func<IOperationResult, IOperationResult> onSuccess);
 
     /// <summary>
     /// Applies the specified action if the result is a failure one.
@@ -38,7 +38,7 @@ public interface IOperationResultMatch
     /// <param name="onFailure">The delegate to be used on failure.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
-    OperationResult Failure(Func<OperationResult, OperationResult> onFailure);
+    IOperationResult Failure(Func<IOperationResult, IOperationResult> onFailure);
 
     /// <summary>
     /// Asynchronously applies the specified action if the result is a success one.
@@ -46,7 +46,7 @@ public interface IOperationResultMatch
     /// <param name="onSuccess">The delegate to be used on success.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onSuccess"/> is null.</exception>
-    ValueTask<OperationResult> SuccessAsync(Func<OperationResult, ValueTask<OperationResult>> onSuccess);
+    ValueTask<IOperationResult> SuccessAsync(Func<IOperationResult, ValueTask<IOperationResult>> onSuccess);
 
     /// <summary>
     /// Asynchronously applies the specified action if the result is a failure one.
@@ -54,7 +54,7 @@ public interface IOperationResultMatch
     /// <param name="onFailure">The delegate to be used on failure.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
-    ValueTask<OperationResult> FailureAsync(Func<OperationResult, ValueTask<OperationResult>> onFailure);
+    ValueTask<IOperationResult> FailureAsync(Func<IOperationResult, ValueTask<IOperationResult>> onFailure);
 }
 
 /// <summary>
@@ -69,7 +69,7 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <param name="onSuccess">The delegate to be used on success.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onSuccess"/> is null.</exception>
-    OperationResult<TResult> Success(Func<OperationResult<TResult>, OperationResult<TResult>> onSuccess);
+    IOperationResult<TResult> Success(Func<IOperationResult<TResult>, IOperationResult<TResult>> onSuccess);
 
     /// <summary>
     /// Applies the specified action if the result is a failure one.
@@ -77,7 +77,7 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <param name="onFailure">The delegate to be used on failure.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
-    OperationResult<TResult> Failure(Func<OperationResult<TResult>, OperationResult<TResult>> onFailure);
+    IOperationResult<TResult> Failure(Func<IOperationResult<TResult>, IOperationResult<TResult>> onFailure);
 
     /// <summary>
     /// Asynchronously applies the specified action if the result is a success one.
@@ -85,7 +85,8 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <param name="onSuccess">The delegate to be used on success.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onSuccess"/> is null.</exception>
-    ValueTask<OperationResult<TResult>> SuccessAsync(Func<OperationResult<TResult>, ValueTask<OperationResult<TResult>>> onSuccess);
+    ValueTask<IOperationResult<TResult>> SuccessAsync(
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onSuccess);
 
     /// <summary>
     /// Asynchronously applies the specified action if the result is a failure one.
@@ -93,7 +94,8 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <param name="onFailure">The delegate to be used on failure.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
-    ValueTask<OperationResult<TResult>> FailureAsync(Func<OperationResult<TResult>, ValueTask<OperationResult<TResult>>> onFailure);
+    ValueTask<IOperationResult<TResult>> FailureAsync(
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onFailure);
 
     /// <summary>
     /// Applies the specified action if the result is a success one.
@@ -102,7 +104,7 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onSuccess"/> is null.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    new OperationResult Success(Func<OperationResult, OperationResult> onSuccess);
+    new IOperationResult Success(Func<IOperationResult, IOperationResult> onSuccess);
 
     /// <summary>
     /// Applies the specified action if the result is a failure one.
@@ -111,7 +113,7 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    new OperationResult Failure(Func<OperationResult, OperationResult> onFailure);
+    new IOperationResult Failure(Func<IOperationResult, IOperationResult> onFailure);
 
     /// <summary>
     /// Asynchronously applies the specified action if the result is a success one.
@@ -120,7 +122,8 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onSuccess"/> is null.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    new ValueTask<OperationResult> SuccessAsync(Func<OperationResult, ValueTask<OperationResult>> onSuccess);
+    new ValueTask<IOperationResult> SuccessAsync(
+        Func<IOperationResult, ValueTask<IOperationResult>> onSuccess);
 
     /// <summary>
     /// Asynchronously applies the specified action if the result is a failure one.
@@ -129,6 +132,7 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    new ValueTask<OperationResult> FailureAsync(Func<OperationResult, ValueTask<OperationResult>> onFailure);
+    new ValueTask<IOperationResult> FailureAsync(
+        Func<IOperationResult, ValueTask<IOperationResult>> onFailure);
 
 }

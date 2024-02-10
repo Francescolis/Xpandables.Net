@@ -55,7 +55,7 @@ public sealed class VisitorQueryDecorator<TQuery, TResult>(
     /// <exception cref="ArgumentNullException">The <paramref name="query"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     /// <returns>A task that represents an object of <see cref="IOperationResult{TValue}"/>.</returns>
-    public async ValueTask<OperationResult<TResult>> HandleAsync(
+    public async ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);

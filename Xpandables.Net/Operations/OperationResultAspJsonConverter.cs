@@ -21,12 +21,13 @@ using System.Text.Json.Serialization;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Converts an <see cref="IOperationResult"/> to JSON.
+/// Converts an <see cref="IOperationResult"/> to JSON when used in Asp.net response.
 /// </summary>
-public sealed class OperationResultJsonConverter : JsonConverter<IOperationResult>
+public sealed class OperationResultAspJsonConverter : JsonConverter<IOperationResult>
 {
     /// <summary>
     /// Reads and converts the JSON to type <see cref="IOperationResult.Result"/>.
+    /// Not concerned, use with caution.
     /// </summary>
     /// <param name="reader">The reader.</param>
     /// <param name="typeToConvert">The type to convert.</param>
@@ -34,7 +35,7 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
     /// <returns>The converted value.</returns>
     public override IOperationResult Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        object? result = JsonSerializer.Deserialize(ref reader, typeof(OperationResult), options);
+        object? result = JsonSerializer.Deserialize(ref reader, typeToConvert, options);
         return result is IOperationResult { } operation
             ? operation
             : throw new InvalidCastException($"Invalid Json reader to be deserialized to {nameof(IOperationResult)}.");
@@ -49,16 +50,17 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        JsonSerializer.Serialize(writer, value, value.GetType(), options);
+        if (value.Result.IsNotEmpty)
+            JsonSerializer.Serialize(writer, value.Result.Value, value.Result.Value.GetType(), options);
     }
 }
 
 /// <summary>
 /// Converts an <see cref="IOperationResult{TValue}"/> to JSON using only 
-/// the <see cref="IOperationResult{TValue}.Result"/>.
+/// the <see cref="IOperationResult{TValue}.Result"/> when used in Asp.net response.
 /// </summary>
 /// <typeparam name="TValue">The type of the value.</typeparam>
-public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperationResult<TValue>>
+public sealed class OperationResultAspJsonConverter<TValue> : JsonConverter<IOperationResult<TValue>>
 {
     /// <summary>
     /// determines whether to handle null value.
@@ -67,6 +69,7 @@ public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperat
 
     /// <summary>
     /// Reads and converts the JSON to type <see cref="IOperationResult{TResult}"/>.
+    /// Not concerned, use with caution.
     /// </summary>
     /// <param name="reader">The reader.</param>
     /// <param name="typeToConvert">The type to convert.</param>
@@ -77,14 +80,14 @@ public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperat
         Type typeToConvert,
         JsonSerializerOptions options)
     {
-        object? result = JsonSerializer.Deserialize(ref reader, typeof(OperationResult<TValue>), options);
+        object? result = JsonSerializer.Deserialize(ref reader, typeToConvert, options);
         return result is IOperationResult<TValue> { } operation
             ? operation
             : throw new InvalidCastException($"Invalid Json reader to be deserialized to {nameof(IOperationResult<TValue>)}."); ;
     }
 
     /// <summary>
-    /// Writes a <see cref="IOperationResult{TValue}"/> instance as JSON.
+    /// Writes a <see cref="IOperationResult{TValue}.Result"/> value as JSON.
     /// </summary>
     /// <param name="writer">The writer to write to.</param>
     /// <param name="value">The value to convert to JSON.</param>
@@ -93,14 +96,16 @@ public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperat
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        JsonSerializer.Serialize(writer, value, value.GetType(), options);
+        if (value.Result.IsNotEmpty)
+            JsonSerializer.Serialize(writer, value.Result.Value, typeof(TValue), options);
     }
 }
 
 /// <summary>
-/// Supports converting <see cref="IOperationResult"/> or <see cref="IOperationResult{TResult}"/> using the appropriate converter.
+/// Supports converting <see cref="IOperationResult"/> or <see cref="IOperationResult{TResult}"/> using the appropriate converter
+/// when used in Asp.Net response.
 /// </summary>
-public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
+public sealed class OperationResultAspJsonConverterFactory : JsonConverterFactory
 {
     /// <summary>
     /// Determines whether the converter instance can convert the specified object type.
@@ -123,11 +128,11 @@ public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
         if (typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(IOperationResult<>))
         {
             Type elementType = typeToConvert.GetGenericArguments()[0];
-            return Activator.CreateInstance(typeof(OperationResultJsonConverter<>).MakeGenericType(elementType)) as JsonConverter;
+            return Activator.CreateInstance(typeof(OperationResultAspJsonConverter<>).MakeGenericType(elementType)) as JsonConverter;
         }
         else if (!typeToConvert.IsGenericType && typeToConvert == typeof(IOperationResult))
         {
-            return Activator.CreateInstance(typeof(OperationResultJsonConverter)) as JsonConverter;
+            return Activator.CreateInstance(typeof(OperationResultAspJsonConverter)) as JsonConverter;
         }
         else
         {

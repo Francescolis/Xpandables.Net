@@ -26,7 +26,7 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
     private readonly IServiceProvider _serviceProvider =
         serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
-    public async ValueTask<OperationResult<TResult>> GetAsync<TQuery, TResult>(
+    public async ValueTask<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
         TQuery query, CancellationToken cancellationToken = default)
         where TQuery : notnull, IQuery<TResult>
     {
@@ -38,7 +38,7 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
         return await handler.HandleAsync(query, cancellationToken).ConfigureAwait(false);
     }
 
-    public async ValueTask<OperationResult> SendAsync<TCommand>(
+    public async ValueTask<IOperationResult> SendAsync<TCommand>(
         TCommand command, CancellationToken cancellationToken = default)
         where TCommand : notnull, ICommand
     {

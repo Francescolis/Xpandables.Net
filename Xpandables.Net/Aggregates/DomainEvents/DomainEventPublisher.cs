@@ -31,7 +31,7 @@ internal sealed class DomainEventPublisher<TAggregateId>(
     private readonly IServiceProvider _serviceProvider = serviceProvider
         ?? throw new ArgumentNullException(nameof(serviceProvider));
 
-    public async ValueTask<OperationResult> PublishAsync<TDomainEvent>(
+    public async ValueTask<IOperationResult> PublishAsync<TDomainEvent>(
         TDomainEvent @event,
         CancellationToken cancellationToken = default)
         where TDomainEvent : notnull, IDomainEvent<TAggregateId>

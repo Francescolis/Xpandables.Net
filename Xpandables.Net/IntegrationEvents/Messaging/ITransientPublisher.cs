@@ -29,9 +29,9 @@ public interface ITransientPublisher
     /// <typeparam name="T">Type of event.</typeparam>
     /// <param name="event">The event to be published.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <returns>A value that represents an <see cref="OperationResult"/>.</returns>
+    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
-    ValueTask<OperationResult> PublishAsync<T>(T @event, CancellationToken cancellationToken = default)
+    ValueTask<IOperationResult> PublishAsync<T>(T @event, CancellationToken cancellationToken = default)
         where T : notnull;
 }

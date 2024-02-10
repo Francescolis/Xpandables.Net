@@ -29,7 +29,7 @@ namespace Xpandables.Net.Aggregates.DomainEvents;
 /// while waiting for the task to complete.</param>
 /// <returns>A value that represents an implementation of <see cref="IOperationResult"/>.</returns>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public delegate ValueTask<OperationResult> DomainEventHandler<in TDomainEvent, TAggregateId>(
+public delegate ValueTask<IOperationResult> DomainEventHandler<in TDomainEvent, TAggregateId>(
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     TDomainEvent @event, CancellationToken cancellationToken = default)
     where TDomainEvent : IDomainEvent<TAggregateId>
@@ -57,7 +57,7 @@ public interface IDomainEventHandler<in TDomainEvent, in TAggregateId>
     /// <param name="cancellationToken">A CancellationToken to observe while 
     /// waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
-    /// <returns>A value that represents an <see cref="OperationResult"/>.</returns>
-    ValueTask<OperationResult> HandleAsync(
+    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult> HandleAsync(
         TDomainEvent @event, CancellationToken cancellationToken = default);
 }

@@ -43,7 +43,7 @@ internal sealed class QueryHandlerWrapper<TQuery, TResult>(
     private readonly IQueryHandler<TQuery, TResult> _decoratee =
         decoratee ?? throw new ArgumentNullException($"{decoratee} : {nameof(TQuery)}.{nameof(TResult)}");
 
-    public async ValueTask<OperationResult<TResult>> HandleAsync(
+    public async ValueTask<IOperationResult<TResult>> HandleAsync(
         IQuery<TResult> query, CancellationToken cancellationToken = default)
         => await _decoratee.HandleAsync((TQuery)query, cancellationToken).ConfigureAwait(false);
 }

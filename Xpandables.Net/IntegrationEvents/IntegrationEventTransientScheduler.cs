@@ -96,7 +96,7 @@ internal sealed class IntegrationEventTransientScheduler(
         {
             try
             {
-                OperationResult operationResult = await publisher
+                IOperationResult operationResult = await publisher
                     .PublishAsync((dynamic)@event, cancellationToken)
                     .ConfigureAwait(false);
 

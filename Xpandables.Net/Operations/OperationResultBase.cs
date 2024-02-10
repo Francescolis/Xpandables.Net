@@ -19,23 +19,59 @@ using System.Net;
 using System.Text.Json.Serialization;
 
 using Xpandables.Net.Optionals;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Represents an implementation of 
+/// Represents an abstract implementation of 
 /// <see cref="IOperationResult"/> that contains the status of an operation.
 /// </summary>
-public sealed record OperationResult : OperationResultBase
+public abstract record OperationResultBase : IOperationResult
 {
     /// <summary>
-    /// Used by the deserialization process.
+    /// Constructs a new instance of <see cref="OperationResultBase"/> with the default values.
     /// </summary>
-    [JsonConstructor]
-    internal OperationResult() { }
+    protected internal OperationResultBase() { }
+
+    ///<inheritdoc/>
+    [JsonInclude]
+    public Optional<object> Result { get; internal init; }
+
+    /// <inheritdoc/>
+    [JsonInclude]
+    public Optional<string> LocationUrl { get; internal init; }
+
+    /// <inheritdoc/>
+    [JsonInclude]
+    public ElementCollection Headers { get; internal init; } = [];
+
+    /// <inheritdoc/>
+    [JsonInclude]
+    public ElementCollection Errors { get; internal init; } = [];
+
+    /// <inheritdoc/>
+    [JsonInclude]
+    public HttpStatusCode StatusCode { get; internal init; }
+
+    /// <inheritdoc/>
+    [JsonInclude]
+    public Optional<string> Title { get; internal init; }
+
+    /// <inheritdoc/>
+    [JsonInclude]
+    public Optional<string> Detail { get; internal init; }
+
+    ///<inheritdoc/>
+    [JsonIgnore]
+    public bool IsSuccess => StatusCode.IsSuccessStatusCode();
+
+    ///<inheritdoc/>
+    [JsonIgnore]
+    public bool IsFailure => StatusCode.IsFailureStatusCode();
 
     /// <summary>
-    /// Creates a new instance of <see cref="OperationResult"/> class with the specified values.
+    /// Creates a new instance of <see cref="OperationResultBase"/> class with the specified values.
     /// </summary>
     /// <param name="statusCode">The HTTP operation status code.</param>
     /// <param name="result">The result of the operation if available.</param>
@@ -44,7 +80,7 @@ public sealed record OperationResult : OperationResultBase
     /// <param name="headers">The collection of header values.</param>
     /// <param name="title">The title of the execution operation.</param>
     /// <param name="detail">The explanation of the execution operation problem.</param>
-    internal OperationResult(
+    protected OperationResultBase(
         HttpStatusCode statusCode,
         Optional<object>? result = default,
         Optional<string>? locationUrl = default,
@@ -52,21 +88,32 @@ public sealed record OperationResult : OperationResultBase
         ElementCollection? headers = default,
         Optional<string>? title = default,
         Optional<string>? detail = default)
-        : base(statusCode, result, locationUrl, errors, headers, title, detail) { }
+    {
+        StatusCode = statusCode;
+        Result = result ?? Optional.Empty<object>();
+        Errors = errors ?? [];
+        LocationUrl = locationUrl ?? Optional.Empty<string>();
+        Headers = headers ?? [];
+        Title = title ?? Optional.Empty<string>();
+        Detail = detail ?? Optional.Empty<string>();
+    }
 }
 
 /// <summary>
-/// Represents an implementation of 
+/// Represents an abstract implementation of 
 /// <see cref="IOperationResult{TResult}"/> that contains the status of an operation with generic type result.
 /// </summary>
 /// <typeparam name="TResult">the type of the result.</typeparam>
-public sealed record OperationResult<TResult> : OperationResultBase<TResult>
+public abstract record OperationResultBase<TResult> : OperationResultBase, IOperationResult<TResult>
 {
     /// <summary>
-    /// Used by the deserialization process.
+    /// Constructs a new instance of <see cref="OperationResultBase{TValue}"/> with the default values.
     /// </summary>
-    [JsonConstructor]
-    internal OperationResult() { }
+    protected internal OperationResultBase() { }
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public new Optional<TResult> Result { get; internal init; }
 
     /// <summary>
     /// Creates a new instance of <see cref="OperationResult{TValue}"/> with the specified values.
@@ -78,7 +125,7 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
     /// <param name="headers">The collection of header values.</param>
     /// <param name="title">The title of the execution operation.</param>
     /// <param name="detail">The explanation of the execution operation problem.</param>
-    internal OperationResult(
+    protected OperationResultBase(
         HttpStatusCode statusCode,
         Optional<TResult>? result = default,
         Optional<string>? locationUrl = default,
@@ -88,19 +135,11 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
         Optional<string>? detail = default)
         : base(
             statusCode,
-            result,
+            result?.IsNotEmpty == true ? Optional.Some<object>(result.Value) : Optional.Empty<object>(),
             locationUrl,
             errors,
             headers,
             title,
             detail)
-    { }
-
-    ///<inheritdoc/>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator OperationResult(OperationResult<TResult> operation)
-    {
-        ArgumentNullException.ThrowIfNull(operation);
-        return (OperationResult)((IOperationResult<TResult>)operation).ToOperationResult();
-    }
+    => Result = result ?? Optional.Empty<TResult>();
 }

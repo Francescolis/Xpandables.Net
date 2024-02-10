@@ -36,22 +36,22 @@ public interface IBackgroundService : IHostedService, IDisposable
     /// </summary>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <returns>A task that represents an object of <see cref="OperationResult"/>.</returns>
-    Task<OperationResult> StopServiceAsync(CancellationToken cancellationToken = default);
+    /// <returns>A task that represents an object of <see cref="IOperationResult"/>.</returns>
+    Task<IOperationResult> StopServiceAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Tries to start the service.
     /// </summary>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <returns>A task that represents an object of <see cref="OperationResult"/>.</returns>
-    Task<OperationResult> StartServiceAsync(CancellationToken cancellationToken = default);
+    /// <returns>A task that represents an object of <see cref="IOperationResult"/>.</returns>
+    Task<IOperationResult> StartServiceAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns the status of the service.
     /// </summary>
     /// <param name="cancellationToken">A cancellationToken to observer 
     /// while waiting for the tack to complete.</param>
-    /// <returns>A task that represents an object of <see cref="OperationResult{TValue}"/>.</returns>
-    Task<OperationResult<string>> StatusServiceAsync(CancellationToken cancellationToken = default);
+    /// <returns>A task that represents an object of <see cref="IOperationResult{TValue}"/>.</returns>
+    Task<IOperationResult<string>> StatusServiceAsync(CancellationToken cancellationToken = default);
 }

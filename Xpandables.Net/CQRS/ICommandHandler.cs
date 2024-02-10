@@ -33,9 +33,9 @@ public interface ICommand : ICQRS { }
 /// <typeparam name="TCommand">Type of the command to act on.</typeparam>
 /// <param name="command">The command instance to act on.</param>
 /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-/// <returns>A value that represents an <see cref="OperationResult"/>.</returns>
+/// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
 /// <exception cref="ArgumentNullException">The <paramref name="command"/> is null.</exception>
-public delegate ValueTask<OperationResult> CommandHandler<in TCommand>(
+public delegate ValueTask<IOperationResult> CommandHandler<in TCommand>(
     TCommand command, CancellationToken cancellationToken = default)
     where TCommand : notnull, ICommand;
 
@@ -53,6 +53,6 @@ public interface ICommandHandler<in TCommand>
     /// <param name="command">The command instance to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="command"/> is null.</exception>
-    /// <returns>A value that represents an <see cref="OperationResult"/>.</returns>
-    ValueTask<OperationResult> HandleAsync(TCommand command, CancellationToken cancellationToken = default);
+    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult> HandleAsync(TCommand command, CancellationToken cancellationToken = default);
 }

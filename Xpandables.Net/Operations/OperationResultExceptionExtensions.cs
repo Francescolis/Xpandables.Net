@@ -32,7 +32,7 @@ public static partial class OperationResultExtensions
     /// </summary>
     /// <param name="operationResult">The operation result to be converted.</param>
     /// <returns>An instance of <see cref="OperationResultException"/> with the result.</returns>
-    public static OperationResultException ToOperationResultException(this OperationResult operationResult)
+    public static OperationResultException ToOperationResultException(this IOperationResult operationResult)
     {
         ArgumentNullException.ThrowIfNull(operationResult);
 
@@ -40,14 +40,15 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="ValidationResult"/> to a <see cref="OperationResult"/>.
+    /// Converts the current <see cref="ValidationResult"/> to a <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="this">The validation result to act on.</param>
-    /// <returns>An instance of <see cref="IOperationResult"/> with 
+    /// <returns>An implementation of <see cref="IOperationResult"/> with 
     /// <see cref="IOperationResult.StatusCode"/> = <see cref="HttpStatusCode.BadRequest"/>
     /// if <see cref="ValidationResult.ErrorMessage"/> and 
-    /// <see cref="ValidationResult.MemberNames"/> are not null, otherwise throws an <see cref="InvalidOperationException"/>.</returns>
-    public static OperationResult ToOperationResult(this ValidationResult @this)
+    /// <see cref="ValidationResult.MemberNames"/> are not null, 
+    /// otherwise throws an <see cref="InvalidOperationException"/>.</returns>
+    public static IOperationResult ToOperationResult(this ValidationResult @this)
     {
         ArgumentNullException.ThrowIfNull(@this);
 
@@ -66,14 +67,15 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="ValidationException"/> to a <see cref="OperationResult"/>.
+    /// Converts the current <see cref="ValidationException"/> to a <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="this">The validation exception to act on.</param>
-    /// <returns>An instance of <see cref="IOperationResult"/> 
+    /// <returns>An implementation of <see cref="IOperationResult"/> 
     /// with <see cref="IOperationResult.StatusCode"/> = <see cref="HttpStatusCode.BadRequest"/>
     /// if <see cref="ValidationResult.ErrorMessage"/> and 
-    /// <see cref="ValidationResult.MemberNames"/> are not null, otherwise throws an <see cref="InvalidOperationException"/>.</returns>
-    public static OperationResult ToOperationResult(this ValidationException @this)
+    /// <see cref="ValidationResult.MemberNames"/> are not null, 
+    /// otherwise throws an <see cref="InvalidOperationException"/>.</returns>
+    public static IOperationResult ToOperationResult(this ValidationException @this)
     {
         ArgumentNullException.ThrowIfNull(@this);
 
@@ -84,10 +86,10 @@ public static partial class OperationResultExtensions
     /// Converts the current <see cref="Exception"/> to a <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="exception">The validation exception to act on.</param>
-    /// <returns>An instance of <see cref="OperationResult"/> with 
+    /// <returns>An implementation of <see cref="IOperationResult"/> with 
     /// <see cref="IOperationResult.StatusCode"/> = <see cref="HttpStatusCode.InternalServerError"/> 
     /// or <see cref="HttpStatusCode.BadRequest"/>.</returns>
-    public static OperationResult ToOperationResult(this Exception exception)
+    public static IOperationResult ToOperationResult(this Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
 

@@ -33,7 +33,7 @@ public interface IIntegrationEventPublisher
     /// <returns>A task that represents an asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
     /// <returns>A value that represents an implementation of <see cref="IOperationResult"/>.</returns>
-    ValueTask<OperationResult> PublishAsync<TIntegrationEvent>(
+    ValueTask<IOperationResult> PublishAsync<TIntegrationEvent>(
         TIntegrationEvent @event,
         CancellationToken cancellationToken = default)
         where TIntegrationEvent : notnull, IIntegrationEvent;

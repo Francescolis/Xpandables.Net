@@ -59,11 +59,11 @@ public sealed class ValidatorCommandDecorator<TCommand>(
     /// <exception cref="ArgumentNullException">The <paramref name="command" /> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     /// <returns>A task that represents an <see cref="OperationResult"/>.</returns>
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {
-        OperationResult operation = await _validator
+        IOperationResult operation = await _validator
             .ValidateAsync(command)
             .ConfigureAwait(false);
 

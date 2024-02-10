@@ -36,7 +36,7 @@ public static class ServiceCollectionOperationsExtensions
     /// Adds the default <see cref="OperationResultSerializationConfigureOptions"/> to the services 
     /// that configures the <see cref="Microsoft.AspNetCore.Http.Json.JsonOptions"/>
     /// converters with <see cref="JsonStringEnumConverter"/>, 
-    /// <see cref="OperationResultJsonConverterFactory"/>,<see cref="JsonDateOnlyConverter"/>,
+    /// <see cref="OperationResultAspJsonConverterFactory"/>,<see cref="JsonDateOnlyConverter"/>,
     /// <see cref="JsonNullableDateOnlyConverter"/>, <see cref="JsonTimeOnlyConverter"/> 
     /// and <see cref="JsonNullableTimeOnlyConverter"/>.    
     /// </summary>
@@ -75,7 +75,7 @@ public static class ServiceCollectionOperationsExtensions
     /// <summary>
     /// Adds the default <see cref="OperationResultControllerConfigureFormatterOptions"/> to 
     /// the services that configures the <see cref="JsonOptions"/>
-    /// converters with <see cref="JsonStringEnumConverter"/>, <see cref="OperationResultJsonConverterFactory"/> 
+    /// converters with <see cref="JsonStringEnumConverter"/>, <see cref="OperationResultAspJsonConverterFactory"/> 
     /// and <see cref="JsonDateOnlyConverter"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>

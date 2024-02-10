@@ -28,7 +28,7 @@ namespace Xpandables.Net.UnitTests;
 public sealed record QueryDecorated(Guid Id) : IQuery<string>, IValidateDecorator;
 public sealed class QueryDecoratedHandlerA : IQueryHandler<QueryDecorated, string>
 {
-    public async ValueTask<OperationResult<string>> HandleAsync(
+    public async ValueTask<IOperationResult<string>> HandleAsync(
         QueryDecorated query,
         CancellationToken cancellationToken = default)
     {
@@ -41,7 +41,7 @@ public sealed class QueryDecoratedHandlerA : IQueryHandler<QueryDecorated, strin
 
 public sealed class QueryDecoratedHandlerB : IQueryHandler<QueryDecorated, string>
 {
-    public async ValueTask<OperationResult<string>> HandleAsync(
+    public async ValueTask<IOperationResult<string>> HandleAsync(
         QueryDecorated query,
         CancellationToken cancellationToken = default)
     {
@@ -54,7 +54,7 @@ public sealed class QueryDecoratedHandlerB : IQueryHandler<QueryDecorated, strin
 
 public sealed class QueryDecoratedHandlerC : IQueryHandler<QueryDecorated, string>
 {
-    public async ValueTask<OperationResult<string>> HandleAsync(
+    public async ValueTask<IOperationResult<string>> HandleAsync(
         QueryDecorated query,
         CancellationToken cancellationToken = default)
     {
@@ -72,7 +72,7 @@ public sealed class CustomValidationQueryDecorator<TQuery, TResult>(
     private readonly IQueryHandler<TQuery, TResult> _handler = handler
         ?? throw new ArgumentNullException(nameof(handler));
 
-    public ValueTask<OperationResult<TResult>> HandleAsync(
+    public ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query,
         CancellationToken cancellationToken = default)
     {

@@ -117,9 +117,9 @@ public sealed class InterceptorTests
     public readonly record struct Args(int Value) : IQuery<int>, IInterceptorDecorator;
     public class HandleArgs : IQueryHandler<Args, int>
     {
-        public ValueTask<OperationResult<int>> HandleAsync(Args query, CancellationToken cancellationToken = default)
+        public ValueTask<IOperationResult<int>> HandleAsync(Args query, CancellationToken cancellationToken = default)
         {
-            return new ValueTask<OperationResult<int>>(OperationResults.Ok(query.Value).Build());
+            return new ValueTask<IOperationResult<int>>(OperationResults.Ok(query.Value).Build());
         }
     }
 }

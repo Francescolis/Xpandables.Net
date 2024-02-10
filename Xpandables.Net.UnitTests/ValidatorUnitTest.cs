@@ -53,7 +53,7 @@ public sealed class ValidatorUnitTest
         ICommandHandler<Login> commandHandler = new HandleLogin();
         var validatorDecorator = new ValidatorCommandDecorator<Login>(commandHandler, validators);
         var login = new Login(userName, password);
-        Func<Task<OperationResult>> result = async () => await validatorDecorator.HandleAsync(login);
+        Func<Task<IOperationResult>> result = async () => await validatorDecorator.HandleAsync(login);
 
         result.Should().ThrowExactlyAsync<ValidationException>();
     }
@@ -87,11 +87,11 @@ public sealed class ValidatorUnitTest
 
     public sealed class HandleLogin : ICommandHandler<Login>
     {
-        public ValueTask<OperationResult> HandleAsync(
+        public ValueTask<IOperationResult> HandleAsync(
             Login command,
             CancellationToken cancellationToken = default)
         {
-            return new ValueTask<OperationResult>(
+            return new ValueTask<IOperationResult>(
                 OperationResults
                 .Ok()
                 .WithHeader(nameof(Login.UserLogin), command.UserLogin)
@@ -101,9 +101,7 @@ public sealed class ValidatorUnitTest
 
     public sealed class ValidatorReturnsOperationResult : IValidator<Login>
     {
-#pragma warning disable CA1822 // Mark members as static
         public IOperationResult Validate(Login argument)
-#pragma warning restore CA1822 // Mark members as static
         {
             var areEqual = argument.UserLogin.Equals(UserName)
                 && argument.UserPassword.Equals(Password);
@@ -121,7 +119,7 @@ public sealed class ValidatorUnitTest
 
     public sealed class ValidatorThrowsValidationException : IValidator<Login>
     {
-        public OperationResult Validate(Login argument)
+        public IOperationResult Validate(Login argument)
         {
             var areEqual = argument.UserLogin.Equals(UserName)
                 && argument.UserPassword.Equals(Password);

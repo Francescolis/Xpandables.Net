@@ -61,7 +61,7 @@ public sealed class AggregateUnitTest
 
         // create person
         var createCommand = new CreatePersonRequestCommand(personId, firstName, lastName);
-        OperationResult createResult = await dispatcher.SendAsync(createCommand);
+        IOperationResult createResult = await dispatcher.SendAsync(createCommand);
 
         createResult.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         createResult.IsSuccess.Should().BeTrue();
@@ -194,7 +194,7 @@ public sealed class CreatePersonRequestCommandHandler(
     private readonly IOperationResultFinalizer _resultContext = resultContext
         ?? throw new ArgumentNullException(nameof(resultContext));
 
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         CreatePersonRequestCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -226,7 +226,7 @@ public readonly record struct SendContactRequestCommand(Guid SenderId, Guid Rece
 public sealed class SendContactRequestCommandHandler
     (IAggregateStore<Person, PersonId> aggregateStore) : ICommandHandler<SendContactRequestCommand>
 {
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         SendContactRequestCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -239,7 +239,7 @@ public sealed class SendContactRequestCommandHandler
                  .Build();
 
         ContactId receivedId = new(command.ReceiverId);
-        OperationResult operationContact = person.BeContact(receivedId);
+        IOperationResult operationContact = person.BeContact(receivedId);
         if (operationContact.IsFailure)
             return operationContact;
 
@@ -251,7 +251,7 @@ public sealed class SendContactRequestCommandHandler
 public sealed class ContactCreatedDomainEventHandler
     (IIntegrationEventSourcing eventSourcing) : IDomainEventHandler<PersonCreatedDomainEvent, PersonId>
 {
-    public ValueTask<OperationResult> HandleAsync(
+    public ValueTask<IOperationResult> HandleAsync(
         PersonCreatedDomainEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -264,7 +264,7 @@ public sealed class ContactCreatedDomainEventHandler
 public sealed class ContactRequestSentDomainEventHandler
     (IIntegrationEventSourcing eventSourcing) : IDomainEventHandler<ContactRequestSentDomainEvent, PersonId>
 {
-    public ValueTask<OperationResult> HandleAsync(
+    public ValueTask<IOperationResult> HandleAsync(
         ContactRequestSentDomainEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -340,7 +340,7 @@ public sealed class Person : Aggregate<PersonId>
         return person;
     }
 
-    public OperationResult BeContact(ContactId contactId)
+    public IOperationResult BeContact(ContactId contactId)
     {
         if (_contactIds.Contains(contactId))
             return OperationResults

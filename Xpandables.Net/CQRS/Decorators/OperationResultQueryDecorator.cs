@@ -29,11 +29,11 @@ internal sealed class OperationResultQueryDecorator<TQuery, TResult>(
     private readonly IOperationResultFinalizer _operationResultContext
         = operationResultContext ?? throw new ArgumentNullException(nameof(operationResultContext));
 
-    public async ValueTask<OperationResult<TResult>> HandleAsync(
+    public async ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query,
         CancellationToken cancellationToken = default)
     {
-        OperationResult<TResult> result = await _decoratee
+        IOperationResult<TResult> result = await _decoratee
             .HandleAsync(query, cancellationToken)
             .ConfigureAwait(false);
 

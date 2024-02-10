@@ -24,7 +24,7 @@ namespace Xpandables.Net.Operations;
 /// </summary>
 /// <param name="operationResult">The operation result to act on.</param>
 /// <returns>An instance of <see cref="OperationResult"/>.</returns>
-public delegate OperationResult OperationResultFinalizer(OperationResult operationResult);
+public delegate IOperationResult OperationResultFinalizer(IOperationResult operationResult);
 
 /// <summary>
 /// Defines the action tat get applied and the end of a process before the result is returned to the caller.

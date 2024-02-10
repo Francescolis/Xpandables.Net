@@ -55,10 +55,10 @@ public sealed class ValidatorQueryDecorator<TQuery, TResult>(
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="query"/> is null.</exception>
     /// <returns>A task that represents an object of <see cref="IOperationResult{TValue}"/>.</returns>
-    public async ValueTask<OperationResult<TResult>> HandleAsync(
+    public async ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query, CancellationToken cancellationToken = default)
     {
-        OperationResult operation = await _validator
+        IOperationResult operation = await _validator
             .ValidateAsync(query)
             .ConfigureAwait(false);
 

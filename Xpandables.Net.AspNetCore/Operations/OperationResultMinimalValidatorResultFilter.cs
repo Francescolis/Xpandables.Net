@@ -39,7 +39,7 @@ public sealed class OperationResultMinimalValidatorResultFilter<TBindingRequest>
 
         if (context.HttpContext.RequestServices.GetService<IValidator<TBindingRequest>>() is { } validator)
         {
-            OperationResult operation = await validator.ValidateAsync(request).ConfigureAwait(false);
+            IOperationResult operation = await validator.ValidateAsync(request).ConfigureAwait(false);
             if (operation.IsFailure)
             {
                 OperationResultException operationResultException = operation.ToOperationResultException();

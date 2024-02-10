@@ -42,7 +42,7 @@ public sealed record class ProductAddedEvent(Guid ProductId, int Qty) : DomainEv
 public sealed record class ProductAddedIntegrationEvent : IntegrationEvent;
 public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand>
 {
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         AddProductCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -55,7 +55,7 @@ public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand
 
 public sealed class GetProductQueryHandler : IQueryHandler<GetProductQuery, string>
 {
-    public async ValueTask<OperationResult<string>> HandleAsync(
+    public async ValueTask<IOperationResult<string>> HandleAsync(
         GetProductQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -76,7 +76,7 @@ public sealed class GetProductAsyncQueryHandler : IAsyncQueryHandler<GetProductA
 
 public sealed class ProductAddedEventHandler : IDomainEventHandler<ProductAddedEvent, ProductId>
 {
-    public ValueTask<OperationResult> HandleAsync(
+    public ValueTask<IOperationResult> HandleAsync(
         ProductAddedEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -87,7 +87,7 @@ public sealed class ProductAddedEventHandler : IDomainEventHandler<ProductAddedE
 public sealed class ProductAddedIntegrationEventHandler
     : IIntegrationEventHandler<ProductAddedIntegrationEvent>
 {
-    public ValueTask<OperationResult> HandleAsync(
+    public ValueTask<IOperationResult> HandleAsync(
         ProductAddedIntegrationEvent @event,
         CancellationToken cancellationToken = default)
     {

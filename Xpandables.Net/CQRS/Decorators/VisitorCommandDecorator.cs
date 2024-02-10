@@ -54,7 +54,7 @@ public sealed class VisitorCommandDecorator<TCommand>(
     /// <exception cref="ArgumentNullException">The <paramref name="command"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     /// <returns>A task that represents an object of <see cref="IOperationResult"/>.</returns>
-    public async ValueTask<OperationResult> HandleAsync(TCommand command, CancellationToken cancellationToken = default)
+    public async ValueTask<IOperationResult> HandleAsync(TCommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 

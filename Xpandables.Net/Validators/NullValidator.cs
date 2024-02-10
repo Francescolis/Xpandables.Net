@@ -29,5 +29,5 @@ public sealed class NullValidator<TArgument> : IValidator<TArgument>
     /// <summary>
     /// Does nothing.
     /// </summary>
-    public OperationResult Validate(TArgument argument) => OperationResults.Ok().Build();
+    public IOperationResult Validate(TArgument argument) => OperationResults.Ok().Build();
 }

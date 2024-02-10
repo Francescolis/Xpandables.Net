@@ -35,8 +35,9 @@ public sealed class OperationResultException : Exception
     /// </summary>
     /// <param name="operation">The result for the exception.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="operation"/> is null.</exception>
-    public OperationResultException(OperationResult operation)
+    public OperationResultException(IOperationResult operation)
     {
+        ArgumentNullException.ThrowIfNull(operation);
         _ = operation.StatusCode.EnsureFailureStatusCode();
         OperationResult = operation;
     }
@@ -44,7 +45,7 @@ public sealed class OperationResultException : Exception
     /// <summary>
     /// Gets the operation result for the exception.
     /// </summary>
-    public OperationResult OperationResult { get; }
+    public IOperationResult OperationResult { get; }
 
     [Obsolete]
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -52,7 +53,7 @@ public sealed class OperationResultException : Exception
         : base(serializationInfo, streamingContext)
     {
         ArgumentNullException.ThrowIfNull(serializationInfo);
-        OperationResult = (OperationResult)serializationInfo.GetValue(nameof(OperationResult), typeof(OperationResult))!;
+        OperationResult = (IOperationResult)serializationInfo.GetValue(nameof(OperationResult), typeof(IOperationResult))!;
     }
 
     ///<inheritdoc/>
@@ -60,6 +61,7 @@ public sealed class OperationResultException : Exception
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException()
     {
+        throw new NotSupportedException();
     }
 
     ///<inheritdoc/>
@@ -67,6 +69,7 @@ public sealed class OperationResultException : Exception
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException(string message) : base(message)
     {
+        throw new NotSupportedException();
     }
 
     ///<inheritdoc/>
@@ -74,5 +77,6 @@ public sealed class OperationResultException : Exception
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException(string message, Exception innerException) : base(message, innerException)
     {
+        throw new NotSupportedException();
     }
 }
