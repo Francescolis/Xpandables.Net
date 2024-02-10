@@ -26,7 +26,12 @@ namespace Xpandables.Net.Operations;
 /// <summary>
 /// Defines a contract that represents the result of an execution process.
 /// </summary>
+/// <remarks>You can use <see cref="OperationResultAspJsonConverterFactory"/> for Asp.Net 
+/// to convert only <see cref="IOperationResult.Result"/> to Json
+/// <para>or use <see cref="OperationResultJsonConverterFactory"/> to convert the instance to Json.</para></remarks>
+#if DEBUG
 [JsonConverter(typeof(OperationResultJsonConverterFactory))]
+#endif
 public partial interface IOperationResult
 {
     /// <summary>
@@ -113,7 +118,12 @@ public partial interface IOperationResult
 /// Defines a contract that represents a generic result of an execution process.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
+/// <remarks>You can use <see cref="OperationResultAspJsonConverterFactory"/> for Asp.Net 
+/// to convert only <see cref="IOperationResult{TResult}.Result"/> to Json
+/// <para>or use <see cref="OperationResultJsonConverterFactory"/> to convert the instance to Json.</para></remarks>
+#if DEBUG
 [JsonConverter(typeof(OperationResultJsonConverterFactory))]
+#endif
 public partial interface IOperationResult<TResult> : IOperationResult
 {
     /// <summary>
