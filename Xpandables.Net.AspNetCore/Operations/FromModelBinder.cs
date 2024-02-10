@@ -15,20 +15,20 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Globalization;
-using System.Reflection;
-using System.Text.Json;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+using System.Globalization;
+using System.Reflection;
+using System.Text.Json;
 
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Abstract class that holds the <see cref="FromModelBinder"/> dictionary.
+/// Abstract class that holds the <see cref="FromModelBinder"/> dictionary attributes.
 /// </summary>
 public abstract class FromModelBinder
 {
@@ -70,120 +70,57 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         if (modelName is not null)
             BindingWithModelName(bindingContext, modelName, modelType);
         else
-        {
-            BindingWithModel(bindingContext, modelType);
-        }
+            BindingWithModelType(bindingContext, modelType);
 
         return Task.CompletedTask;
     }
 
-    private static void BindingWithModel(ModelBindingContext bindingContext, Type modelType)
+    private static void BindingWithModelType(ModelBindingContext bindingContext, Type modelType)
     {
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
+        List<PropertyInfo> modelProperties = modelType.GetProperties()
+            .Where(p => p.GetSetMethod()?.IsPublic == true)
+            .ToList();
+
+        object? model = default;
+
+        // try default constructor
+        if (modelProperties.Count == 0)
         {
-            List<PropertyInfo> modelProperties = modelType.GetProperties()
-                .Where(p => p.GetSetMethod()?.IsPublic == true)
-                .ToList();
-
-            object? model = default;
-
-            // try parameter constructor
-            Type[] propertyTypes = modelProperties.Select(p => p.PropertyType).ToArray();
-            Dictionary<string, object?> propertyValues = new(propertyTypes.Length);
-
-            foreach (PropertyInfo property in modelProperties)
-            {
-                CreateProperties(bindingContext, propertyValues, property);
-            }
-
-            Exception? constructorException = BindingWithConstructor(bindingContext, modelType, ref model, propertyValues);
-
-            if (constructorException is not null)
-                model = CreateInstance(bindingContext, modelType, modelProperties, propertyValues);
-
-            if (bindingContext.ModelState.IsValid)
+            model = CreateDefaultInstance(bindingContext, modelType);
+            if (model is not null)
                 bindingContext.Result = ModelBindingResult.Success(model);
-        }
-        catch (Exception exception)
-        {
-            _ = bindingContext.ModelState.TryAddModelException(bindingContext.FieldName, exception);
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
-    }
 
-    private static object? CreateInstance(
-        ModelBindingContext bindingContext,
-        Type modelType,
-        List<PropertyInfo> modelProperties,
-        Dictionary<string, object?> propertyValues)
-    {
-        object? model = Activator.CreateInstance(modelType);
-        if (model is not null) // parameterless constructor
-        {
-            foreach (PropertyInfo property in modelProperties)
-            {
-#pragma warning disable CA1031 // Do not catch general exception types
-                try
-                {
-                    property.SetValue(model, propertyValues[property.Name]);
-                }
-                catch (Exception exception)
-                {
-                    _ = bindingContext.ModelState.TryAddModelException(property.Name, exception);
-                }
-#pragma warning restore CA1031 // Do not catch general exception types
-            }
-        }
-        else // deserialization
-        {
-            string dictString = JsonSerializer.Serialize(propertyValues, JsonSerializerDefaultOptions.OptionDefaultWeb);
-            model = JsonSerializer.Deserialize(dictString, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
+            // no property to bind
+            return;
         }
 
-        return model;
-    }
+        // create properties
+        Dictionary<string, object?> propertyValues = CreateProperties(bindingContext, modelProperties);
+        if (bindingContext.ModelState.IsValid is false)
+            return;
 
-    private static void CreateProperties(
-        ModelBindingContext bindingContext,
-        Dictionary<string, object?> propertyValues,
-        PropertyInfo property)
-    {
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
+        // try parameter constructor
+        model = CreateConstructorInstance(bindingContext, modelType, propertyValues);
+        if (model is not null)
         {
-            object? value = RequestAttributeModelReader[new TAttribute()](bindingContext.HttpContext, property.Name);
-            object? converted = default;
-            if (value is not null)
-                converted = value.ChangeTypeNullable(property.PropertyType, CultureInfo.CurrentCulture);
-
-            propertyValues.Add(property.Name, converted);
-        }
-        catch (Exception exception)
-        {
-            _ = bindingContext.ModelState.TryAddModelException(property.Name, exception);
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
-    }
-
-    private static Exception? BindingWithConstructor(ModelBindingContext bindingContext, Type modelType, ref object? model, Dictionary<string, object?> propertyValues)
-    {
-        Exception? constructorException = default;
-        if (bindingContext.ModelState.IsValid)
-        {
-#pragma warning disable CA1031 // Do not catch general exception types
-            try
-            {
-                model = Activator.CreateInstance(modelType, [.. propertyValues.Values]);
-            }
-            catch (Exception exception)
-            {
-                constructorException = exception;
-            }
-#pragma warning restore CA1031 // Do not catch general exception types
+            bindingContext.Result = ModelBindingResult.Success(model);
+            return;
         }
 
-        return constructorException;
+        // try parameterless constructor
+        model = CreateParameterlessInstance(bindingContext, modelType, modelProperties, propertyValues);
+        if (model is not null)
+        {
+            bindingContext.Result = ModelBindingResult.Success(model);
+            return;
+        }
+
+        // try deserialization
+        model = CreateDeserializedInstance(bindingContext, modelType, propertyValues);
+        if (model is not null)
+        {
+            bindingContext.Result = ModelBindingResult.Success(model);
+        }
     }
 
     private static void BindingWithModelName(
@@ -192,19 +129,211 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         Type modelType)
     {
         object? attributeValue = RequestAttributeModelReader[new TAttribute()](bindingContext.HttpContext, modelName);
+
         if (attributeValue is string value)
         {
-#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                object? model = JsonSerializer.Deserialize(value, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
+                object? model = JsonSerializer
+                    .Deserialize(value, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
+
                 bindingContext.Result = ModelBindingResult.Success(model);
             }
             catch (Exception exception)
+                when (exception is ArgumentNullException
+                        or JsonException
+                        or NotSupportedException)
             {
-                _ = bindingContext.ModelState.TryAddModelException(bindingContext.FieldName, exception);
+                _ = bindingContext.ModelState
+                    .TryAddModelException(bindingContext.ModelName, exception);
             }
-#pragma warning restore CA1031 // Do not catch general exception types
+        }
+        else
+        {
+            _ = bindingContext.ModelState
+                .TryAddModelError(bindingContext.ModelName, "Invalid value");
         }
     }
+
+    private static object? CreateDefaultInstance(
+        ModelBindingContext bindingContext,
+        Type modelType)
+    {
+        object? model = default;
+        if (modelType.GetConstructor(Type.EmptyTypes) is not null)
+            try
+            {
+                model = Activator.CreateInstance(modelType);
+            }
+            catch (Exception exception)
+                when (exception is ArgumentNullException
+                        or ArgumentException
+                        or NotSupportedException
+                        or TargetInvocationException
+                        or MethodAccessException
+                        or MemberAccessException
+                        or System.Runtime.InteropServices.InvalidComObjectException
+                        or MissingMethodException
+                        or System.Runtime.InteropServices.COMException
+                        or TypeLoadException)
+            {
+                _ = bindingContext.ModelState
+                    .TryAddModelException(bindingContext.ModelName, exception);
+            }
+
+        return model;
+    }
+
+    private static object? CreateDeserializedInstance(
+        ModelBindingContext bindingContext,
+        Type modelType,
+        Dictionary<string, object?> propertyValues)
+    {
+        try
+        {
+            string dictString = JsonSerializer.Serialize(propertyValues, JsonSerializerDefaultOptions.OptionDefaultWeb);
+            return JsonSerializer.Deserialize(dictString, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
+        }
+        catch (Exception exception)
+            when (exception is ArgumentNullException
+                    or JsonException
+                    or NotSupportedException)
+        {
+            _ = bindingContext.ModelState
+                .TryAddModelException(bindingContext.ModelName, exception);
+
+            return default;
+        }
+    }
+
+    private static object? CreateConstructorInstance(
+        ModelBindingContext bindingContext,
+        Type modelType,
+        Dictionary<string, object?> propertyValues)
+    {
+        if (bindingContext.ModelState.IsValid)
+        {
+            try
+            {
+                return Activator.CreateInstance(modelType, [.. propertyValues.Values]);
+            }
+            catch (Exception exception)
+                when (exception is ArgumentNullException
+                        or ArgumentException
+                        or NotSupportedException
+                        or TargetInvocationException
+                        or MethodAccessException
+                        or MemberAccessException
+                        or System.Runtime.InteropServices.InvalidComObjectException
+                        or MissingMethodException
+                        or System.Runtime.InteropServices.COMException
+                        or TypeLoadException)
+            {
+                _ = bindingContext.ModelState
+                    .TryAddModelException(bindingContext.ModelName, exception);
+            }
+        }
+
+        return default;
+    }
+
+    private static object? CreateParameterlessInstance(
+        ModelBindingContext bindingContext,
+        Type modelType,
+        List<PropertyInfo> propertyInfos,
+        Dictionary<string, object?> propertyValues)
+    {
+        try
+        {
+            object? model = Activator.CreateInstance(modelType);
+            if (model is not null) // parameterless constructor
+            {
+                foreach (PropertyInfo property in propertyInfos)
+                {
+                    try
+                    {
+                        property.SetValue(model, propertyValues[property.Name]);
+                    }
+                    catch (Exception exception)
+                        when (exception is ArgumentNullException
+                                or ArgumentException
+                                or NotSupportedException
+                                or TargetInvocationException
+                                or MethodAccessException
+                                or MemberAccessException
+                                or System.Runtime.InteropServices.InvalidComObjectException
+                                or MissingMethodException
+                                or System.Runtime.InteropServices.COMException
+                                or TypeLoadException)
+                    {
+                        _ = bindingContext.ModelState
+                            .TryAddModelException(property.Name, exception);
+                    }
+                }
+            }
+            else
+            {
+                _ = bindingContext.ModelState
+                    .TryAddModelError(bindingContext.ModelName, "Invalid value : creating instance null");
+            }
+
+            return model;
+        }
+        catch (Exception exception)
+            when (exception is ArgumentNullException
+                    or ArgumentException
+                    or NotSupportedException
+                    or TargetInvocationException
+                    or MethodAccessException
+                    or MemberAccessException
+                    or System.Runtime.InteropServices.InvalidComObjectException
+                    or MissingMethodException
+                    or System.Runtime.InteropServices.COMException
+                    or TypeLoadException)
+        {
+            _ = bindingContext.ModelState
+                .TryAddModelException(bindingContext.ModelName, exception);
+
+            return default;
+        }
+    }
+
+    private static Dictionary<string, object?> CreateProperties(
+        ModelBindingContext bindingContext,
+        List<PropertyInfo> propertyInfos)
+    {
+        Dictionary<string, object?> propertyValues = new(propertyInfos.Count);
+        PropertyInfo? currentPropertyInfo = default;
+        try
+        {
+            foreach (PropertyInfo property in propertyInfos)
+            {
+                currentPropertyInfo = property;
+                object? value = RequestAttributeModelReader[new TAttribute()](bindingContext.HttpContext, property.Name);
+                object? converted = default;
+
+                if (value is not null)
+                    converted = value.ChangeTypeNullable(property.PropertyType, CultureInfo.CurrentCulture);
+
+                propertyValues.Add(property.Name, converted);
+            }
+        }
+        catch (Exception exception)
+            when (exception is ArgumentNullException
+                    or ArgumentException
+                    or NotSupportedException
+                    or InvalidCastException
+                    or FormatException
+                    or OverflowException
+                    or InvalidCastException)
+        {
+            if (currentPropertyInfo is not null)
+                _ = bindingContext.ModelState.TryAddModelException(currentPropertyInfo.Name, exception);
+            else
+                _ = bindingContext.ModelState.TryAddModelException(bindingContext.ModelName, exception);
+        }
+
+        return propertyValues;
+    }
+
 }
