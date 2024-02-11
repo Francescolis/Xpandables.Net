@@ -16,8 +16,7 @@
  *
 ************************************************************************************************************/
 using Microsoft.AspNetCore.Http;
-
-using Xpandables.Net.Primitives;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.Operations;
 
@@ -39,36 +38,12 @@ public sealed class OperationResultMinimal(IOperationResult operationResult) : I
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
-        httpContext.Response.StatusCode = (int)_operationResult.StatusCode;
+        IOperationResultResponseBuilder responseBuilder = httpContext
+            .RequestServices
+            .GetRequiredService<IOperationResultResponseBuilder>();
 
-        httpContext.AddLocationUrlIfAvailable(_operationResult);
-        httpContext.AddHeadersIfAvailable(_operationResult);
-        await httpContext.AddHeaderIfUnauthorized(_operationResult).ConfigureAwait(false);
-
-        if (_operationResult.StatusCode == System.Net.HttpStatusCode.Created)
-        {
-            await httpContext.ResultCreatedAsync(_operationResult).ConfigureAwait(false);
-            return;
-        }
-
-        if (_operationResult.Result.IsNotEmpty && _operationResult.Result.Value
-            is BinaryEntry { Content: not null } file)
-        {
-            await httpContext.WriteFileBodyAsync(file).ConfigureAwait(false);
-            return;
-        }
-
-        if (_operationResult.StatusCode.IsSuccessStatusCode())
-        {
-            await httpContext.WriteBodyIfAvailableAsync(_operationResult).ConfigureAwait(false);
-            return;
-        }
-
-        if (_operationResult.StatusCode.IsFailureStatusCode())
-        {
-            IResult result = _operationResult.GetValidationProblemDetails(httpContext);
-
-            await result.ExecuteAsync(httpContext).ConfigureAwait(false);
-        }
+        await responseBuilder
+            .ExecuteAsync(httpContext, _operationResult)
+            .ConfigureAwait(false);
     }
 }

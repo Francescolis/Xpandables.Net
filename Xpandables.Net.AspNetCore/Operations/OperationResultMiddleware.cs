@@ -15,23 +15,22 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using static Xpandables.Net.Operations.MiddlewareExtensions;
+using System.Reflection;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Defines the operation result middleware on minimal application.
+/// Transforms the operation result to a minimal response.
 /// </summary>
-public sealed class OperationResultMinimalMiddleware : IMiddleware
+public sealed class OperationResultMiddleware(IOperationResultResponseBuilder resultResponseBuilder) : IMiddleware
 {
     private readonly bool _bypassResponseHasStarted = true;
+    private readonly IOperationResultResponseBuilder _resultResponseBuilder = resultResponseBuilder
+        ?? throw new ArgumentNullException(nameof(resultResponseBuilder));
 
     ///<inheritdoc/>
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -48,18 +47,11 @@ public sealed class OperationResultMinimalMiddleware : IMiddleware
             if (exception is TargetInvocationException targetInvocation)
                 exception = targetInvocation.InnerException ?? targetInvocation;
 
-            ILogger<OperationResultMinimalMiddleware> logger = context.RequestServices.GetRequiredService<ILogger<OperationResultMinimalMiddleware>>();
-            logger.ErrorExecutingProcess(nameof(OperationResultMinimalMiddleware), exception);
+            ILogger<OperationResultMiddleware> logger = context.RequestServices.GetRequiredService<ILogger<OperationResultMiddleware>>();
+            logger.ErrorExecutingProcess(nameof(OperationResultMiddleware), exception);
 
-            Task task = exception switch
-            {
-                BadHttpRequestException badHttpRequestException => OnBadHttpExceptionAsync(context, badHttpRequestException),
-                OperationResultException operationResultException => OnOperationResultExceptionAsync(context, operationResultException),
-                ValidationException validationException => OnValidationExceptionAsync(context, validationException),
-                _ => OnExceptionAsync(context, exception)
-            };
-
-            await task.ConfigureAwait(false);
+            await _resultResponseBuilder.OnExceptionAsync(context, exception)
+                .ConfigureAwait(false);
         }
     }
 }

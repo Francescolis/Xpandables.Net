@@ -16,16 +16,25 @@
  *
 ************************************************************************************************************/
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// A controller used to return error handled before the target controller get called.
+/// Provides a contract for building the response of an operation result for Asp.Net.
 /// </summary>
-[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
-[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ValidationProblemDetails))]
-public sealed class OperationResultController : Controller
+public interface IOperationResultResponseBuilder
 {
+    /// <summary>
+    /// Writes the operation result to the response.
+    /// </summary>
+    /// <param name="httpContext">The HTTP context to act on.</param>
+    /// <param name="operationResult">The operation result to act on.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ExecuteAsync(HttpContext httpContext, IOperationResult operationResult);
+
+    /// <summary>
+    /// Builds the response for the specified exception.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task OnExceptionAsync(HttpContext context, Exception exception);
 }

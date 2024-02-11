@@ -16,14 +16,15 @@
  *
 ************************************************************************************************************/
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.Operations;
 
 /// <summary>
 /// Applies the validator filter factory to the target route(s).
 /// </summary>
 /// <remarks>Inspired from https://benfoster.io/blog/minimal-api-validation-endpoint-filters/</remarks>
-public static class OperationResultMinimalValidatorFilterFactory
+public static class OperationResultValidatorFilterFactory
 {
     /// <summary>
     /// The delegate to be used to apply validation.
@@ -37,22 +38,11 @@ public static class OperationResultMinimalValidatorFilterFactory
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        List<System.Reflection.ParameterInfo> arguments = [.. context.MethodInfo.GetParameters()];
+        IOperationResultRequestValidator requestValidator =
+            context.ApplicationServices
+            .GetRequiredService<IOperationResultRequestValidator>();
 
-        IEnumerable<MinimalValidationDescriptor> validationDescriptors
-            = OperationResultMinimalValidatorExtensions.GetMinimalValidationDescriptors(
-                arguments,
-                context.ApplicationServices);
-
-        if (validationDescriptors.Any())
-        {
-            return invocationContext => OperationResultMinimalValidatorExtensions.ValidateDescriptorsAsync(
-                validationDescriptors,
-                invocationContext,
-                next);
-        }
-
-        // pass-thru
-        return invocationContext => next(invocationContext);
+        return invocationContext => requestValidator
+            .ValidateAsync(invocationContext, next);
     }
 }

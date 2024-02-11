@@ -30,7 +30,7 @@ namespace Xpandables.Net.Operations;
 /// </summary>
 /// <remarks>
 /// Adds the <see cref="JsonStringEnumConverter"/>, <see cref="OperationResultAspJsonConverterFactory"/>,
-/// <see cref="JsonDateOnlyConverter"/>, <see cref="JsonNullableDateOnlyConverter"/> 
+/// <see cref="JsonDateOnlyConverter"/>, <see cref="JsonNullableDateOnlyConverter"/>, <see cref="JsonNullableTimeOnlyConverter"/> 
 /// and <see cref="JsonTimeOnlyConverter"/>.
 /// </remarks>
 public class OperationResultSerializationConfigureOptions : IConfigureOptions<JsonOptions>

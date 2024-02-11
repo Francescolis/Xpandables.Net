@@ -15,13 +15,8 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Net;
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Primitives;
 
@@ -34,40 +29,11 @@ namespace Xpandables.Net.Operations;
 /// TValue is <see cref="BinaryEntry"/> to <see cref="FileContentResult"/>.
 /// It also add location header.
 /// </summary>
-public sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFilter
+public sealed class OperationResultControllerFilter(
+    IOperationResultResponseBuilder resultResponseBuilder) : IAsyncAlwaysRunResultFilter
 {
-    private static async Task OnFailureExecutionAsync(ResultExecutingContext context, IOperationResult operation)
-    {
-        await Task.CompletedTask.ConfigureAwait(false);
-
-        ControllerBase controller = BuildExceptionController(context);
-
-        HttpStatusCode statusCode = operation.StatusCode;
-        Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary = operation.Errors.ToModelStateDictionary();
-
-        context.Result = controller.ValidationProblem(
-            statusCode.GetProblemDetail(),
-            context.HttpContext.Request.Path,
-            (int)statusCode,
-            statusCode.GetProblemTitle(),
-            modelStateDictionary: operation.Errors.Any() ? modelStateDictionary : null);
-    }
-
-    private static async Task OnSuccessExecutionAsync(ResultExecutingContext context, IOperationResult operation)
-    {
-        await context.HttpContext.WriteBodyIfAvailableAsync(operation).ConfigureAwait(false);
-
-        if (operation is IOperationResult<BinaryEntry> fileResult)
-        {
-            await context.HttpContext.WriteFileBodyAsync(fileResult.Result).ConfigureAwait(false);
-            return;
-        }
-
-        if (operation.StatusCode == HttpStatusCode.Created && operation.LocationUrl.IsNotEmpty)
-        {
-            await context.HttpContext.ResultCreatedAsync(operation).ConfigureAwait(false);
-        }
-    }
+    private readonly IOperationResultResponseBuilder _resultResponseBuilder = resultResponseBuilder
+        ?? throw new ArgumentNullException(nameof(resultResponseBuilder));
 
     ///<inheritdoc/>
     public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
@@ -77,37 +43,13 @@ public sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFilte
 
         if (context.Result is ObjectResult objectResult && objectResult.Value is IOperationResult operationResult)
         {
-            context.HttpContext.AddLocationUrlIfAvailable(operationResult);
-            context.HttpContext.AddHeadersIfAvailable(operationResult);
-            await context.HttpContext.AddHeaderIfUnauthorized(operationResult).ConfigureAwait(false);
-
-            if (operationResult.IsFailure)
-            {
-                await OnFailureExecutionAsync(context, operationResult).ConfigureAwait(false);
-            }
-            else
-            {
-                await OnSuccessExecutionAsync(context, operationResult).ConfigureAwait(false);
-            }
+            await _resultResponseBuilder
+                .ExecuteAsync(context.HttpContext, operationResult)
+                .ConfigureAwait(false);
         }
-
-        _ = await next().ConfigureAwait(false);
-    }
-
-
-    private static ControllerBase BuildExceptionController(ResultExecutingContext context)
-    {
-        ControllerBase? controller = (ControllerBase)context.Controller;
-        if (controller is null)
+        else
         {
-            controller = context.HttpContext.RequestServices.GetRequiredService<OperationResultController>();
-            controller.ControllerContext = new ControllerContext(
-                new ActionContext(
-                    context.HttpContext,
-                    context.HttpContext.GetRouteData(),
-                    new ControllerActionDescriptor()));
+            _ = await next().ConfigureAwait(false);
         }
-
-        return controller;
     }
 }

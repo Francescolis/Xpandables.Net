@@ -18,6 +18,7 @@
 using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -131,81 +132,48 @@ public static class ServiceCollectionOperationsExtensions
     }
 
     /// <summary>
-    /// Adds the <see cref="OperationResultController"/> to the services.
-    /// This controller is used to handle exceptions before target controller get called.
+    /// Registers the <see cref="OperationResultMiddleware"/> to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultController(this IServiceCollection services)
+    public static IServiceCollection AddXOperationResultMiddleware(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.AddScoped<OperationResultController>();
+        _ = services.AddScoped<OperationResultMiddleware>();
         return services;
     }
 
     /// <summary>
-    /// Registers the <see cref="OperationResultControllerMiddleware"/> and 
-    /// <see cref="OperationResultController"/>to the services.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultControllerMiddleware(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        _ = services.AddScoped<OperationResultControllerMiddleware>();
-        _ = services.AddScoped<OperationResultControllerMiddleware>();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the <see cref="OperationResultMinimalMiddleware"/> to the services.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultMinimalMiddleware(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        _ = services.AddScoped<OperationResultMinimalMiddleware>();
-        return services;
-    }
-
-    /// <summary>
-    /// Adds the <see cref="OperationResultControllerMiddleware"/>  type to the application's request pipeline.
+    /// Adds the <see cref="OperationResultMiddleware"/>  type to the minimal application's request pipeline.
     /// <para></para>
-    /// <para>Make sure to register the <see cref="OperationResultControllerMiddleware"/> 
-    /// using the <see cref="AddXOperationResultControllerMiddleware(IServiceCollection)"/> method.</para>
+    /// <para>Make sure to register the <see cref="OperationResultMiddleware"/> 
+    /// using the <see cref="AddXOperationResultMiddleware(IServiceCollection)"/> method.</para>
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/> instance.</param>
     /// <returns>The <see cref="WebApplication"/> instance.</returns>
-    public static WebApplication UseXOperationResultControllerMiddleware(this WebApplication builder)
+    public static WebApplication UseXOperationResultMiddleware(this WebApplication builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        _ = builder.UseMiddleware<OperationResultControllerMiddleware>();
+        _ = builder.UseMiddleware<OperationResultMiddleware>();
 
         return builder;
     }
 
     /// <summary>
-    /// Adds the <see cref="OperationResultMinimalMiddleware"/>  type to the minimal application's request pipeline.
-    /// <para></para>
-    /// <para>Make sure to register the <see cref="OperationResultMinimalMiddleware"/> 
-    /// using the <see cref="AddXOperationResultMinimalMiddleware(IServiceCollection)"/> method.</para>
+    /// Applies the operation result filter to the response of the target route(s).
     /// </summary>
-    /// <param name="builder">The <see cref="IApplicationBuilder"/> instance.</param>
-    /// <returns>The <see cref="WebApplication"/> instance.</returns>
-    public static WebApplication UseXOperationResultMinimalMiddleware(this WebApplication builder)
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
+    /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
+    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix (<see cref="string.Empty"/>).</remarks>
+    public static TBuilder WithXOperationResultFilter<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
-
-        _ = builder.UseMiddleware<OperationResultMinimalMiddleware>();
-
+        _ = builder.AddEndpointFilter<TBuilder, OperationResultEndpointFilter>();
         return builder;
     }
+
 }

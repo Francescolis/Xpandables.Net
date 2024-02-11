@@ -1,6 +1,6 @@
 ﻿
 /************************************************************************************************************
- * Copyright (C) 2023 Francis-Black EWANE
+ * Copyright (C) 2022 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,39 @@ using Xpandables.Net.Validators;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
+/// Provides with validation for minimal route and controllers using <see cref="IEndpointFilter"/>.
+/// </summary>
+public sealed class OperationResultValidatorFilter : IEndpointFilter
+{
+    /// <summary>
+    /// Specifies the predicate that a request type must match in order to be validated.
+    /// </summary>
+    internal static Predicate<Type> ValidatorPredicate { get; set; }
+        = type => type.IsAssignableTo(typeof(IValidateDecorator));
+
+    ///<inheritdoc/>
+    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
+
+        IOperationResultRequestValidator requestValidator = context
+            .HttpContext
+            .RequestServices
+            .GetRequiredService<IOperationResultRequestValidator>();
+
+        return await requestValidator
+            .ValidateAsync(context, next)
+            .ConfigureAwait(false);
+    }
+}
+
+
+/// <summary>
 /// A Helper class used with minimal Api to validate request on endpoint using <see cref="IValidator{TArgument}"/>.
 /// </summary>
 /// <typeparam name="TBindingRequest">The type of the request parameter.</typeparam>
-public sealed class OperationResultMinimalValidatorResultFilter<TBindingRequest> : IEndpointFilter
+public sealed class OperationResultValidatorFilter<TBindingRequest> : IEndpointFilter
     where TBindingRequest : notnull
 {
     ///<inheritdoc/>
@@ -37,16 +66,19 @@ public sealed class OperationResultMinimalValidatorResultFilter<TBindingRequest>
 
         TBindingRequest? request = context.GetArgument<TBindingRequest>(0);
 
-        if (context.HttpContext.RequestServices.GetService<IValidator<TBindingRequest>>() is { } validator)
+        if (context.HttpContext.RequestServices
+            .GetService<IValidator<TBindingRequest>>() is { } validator)
         {
-            IOperationResult operation = await validator.ValidateAsync(request).ConfigureAwait(false);
+            IOperationResult operation = await validator
+                .ValidateAsync(request)
+                .ConfigureAwait(false);
+
             if (operation.IsFailure)
-            {
-                OperationResultException operationResultException = operation.ToOperationResultException();
-                throw operationResultException;
-            }
+                return operation.ToMinimalResult();
         }
 
-        return await next.Invoke(context).ConfigureAwait(false);
+        return await next
+            .Invoke(context)
+            .ConfigureAwait(false);
     }
 }
