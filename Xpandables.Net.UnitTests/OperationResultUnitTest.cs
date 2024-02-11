@@ -131,4 +131,19 @@ public sealed class OperationResultUnitTest
 
         action.Should().Throw<InvalidOperationException>();
     }
+
+    [Fact]
+    public void OperationResult_Should_Return_Empty_Optional()
+    {
+        IOperationResult<StructType> optional = OperationResults
+            .NotFound<StructType>()
+            .WithError("Structype", "erromessage")
+            .Build();
+
+        optional.Result.Should().BeEmpty();
+        optional.IsFailure.Should().BeTrue();
+        optional.Result.IsEmpty.Should().BeTrue();
+    }
+
+    readonly record struct StructType(string Value);
 }

@@ -170,7 +170,11 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     IOperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
         => new OperationResult<TResult>(
             _statusCode,
-            _result.Bind<TResult>(o => o is TResult value ? value : default),
+             _result.IsNotEmpty
+                ? Optional.Empty<TResult>()
+                : _result.Value is TResult value
+                    ? Optional.Some<TResult>(value)
+                    : Optional.Empty<TResult>(),
             _uri,
             _errors,
             _headers,
