@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Xpandables.Net.Api/Xpandables.Net.Api.csproj
+/Xpandables.Net.Api
