@@ -24,10 +24,10 @@
 		<PackageReleaseNotes>Add interfaces IOperationResultResponseBuilder/RequestValidator</PackageReleaseNotes>
 		<PackageOutputPath>D:\fewan\source\nugets\</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>8.0.1</Version>
-		<AssemblyVersion>8.0.1</AssemblyVersion>
-		<FileVersion>8.0.1</FileVersion>
-		<PackageVersion>8.0.1</PackageVersion>
+		<Version>8.0.2</Version>
+		<AssemblyVersion>8.0.2</AssemblyVersion>
+		<FileVersion>8.0.2</FileVersion>
+		<PackageVersion>8.0.2</PackageVersion>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
