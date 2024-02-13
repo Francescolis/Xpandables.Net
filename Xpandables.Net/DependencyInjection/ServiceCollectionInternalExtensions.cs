@@ -15,10 +15,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Diagnostics;
-using System.Reflection;
-
 using Microsoft.Extensions.DependencyInjection;
+
+using System.Reflection;
 
 namespace Xpandables.Net.DependencyInjection;
 internal static class ServiceCollectionInternalExtensions
@@ -88,32 +87,25 @@ internal static class ServiceCollectionInternalExtensions
         return services;
     }
 
-    // TODO : find a way to remove try catch
+    // TODO : find a way to remove TryMakeGenericType
     internal static IServiceCollection DecorateOpenGenerics(
            this IServiceCollection services,
            Type serviceType,
            Type decoratorType)
     {
-        foreach (Type[] argument in services.GetArgumentTypes(serviceType))
-        {
-#pragma warning disable CA1031 // Do not catch general exception types
-            try
-            {
-                Type closedServiceType = serviceType.MakeGenericType(argument);
-                Type closedDecoratorType = decoratorType.MakeGenericType(argument);
+        IEnumerable<Type[]> arguments = services.GetArgumentTypes(serviceType);
 
+        foreach (Type[] argument in arguments)
+        {
+            if (serviceType
+                .TryMakeGenericType(out Type? closedServiceType, out _, argument)
+                && decoratorType
+                    .TryMakeGenericType(out Type? closedDecoratorType, out _, argument))
+            {
                 _ = services.DecorateDescriptors(
                     closedServiceType,
                     descriptor => descriptor.DecorateDescriptor(closedDecoratorType));
             }
-            catch (Exception exception)
-            {
-                // violated generic constraints
-                Trace.WriteLine(exception);
-
-                continue;
-            }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         return services;
