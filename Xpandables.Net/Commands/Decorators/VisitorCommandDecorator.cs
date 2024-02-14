@@ -18,7 +18,7 @@
 using Xpandables.Net.Operations;
 using Xpandables.Net.Visitors;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 
 /// <summary>
 /// This class allows the application author to add visitor support to command control flow.

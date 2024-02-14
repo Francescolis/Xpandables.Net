@@ -17,7 +17,7 @@
 ************************************************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.CQRS;
+namespace Xpandables.Net.Commands;
 
 /// <summary>
 /// This interface is used as a marker for commands when using the asynchronous command pattern.
@@ -25,7 +25,24 @@ namespace Xpandables.Net.CQRS;
 /// "TCommand" is a class that implements <see cref="ICommand"/>.
 /// This can also be enhanced with some useful decorators.
 /// </summary>
-public interface ICommand : ICQRS { }
+public interface ICommand
+{
+    /// <summary>
+    /// Gets the event identifier.
+    /// </summary>
+    public Guid Id => Guid.NewGuid();
+
+    /// <summary>
+    /// Gets When the event occurred.
+    /// </summary>
+    public DateTimeOffset OccurredOn => DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Gets the name of the user running associated with the current event.
+    /// The default value is associated with the current thread.
+    /// </summary>
+    public string CreatedBy => Environment.UserName;
+}
 
 /// <summary>
 /// Represents a method signature to be used to apply <see cref="ICommandHandler{TCommand}"/> implementation.

@@ -15,7 +15,7 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.CQRS.Decorators;
+using Xpandables.Net.Commands.Decorators;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Validators;

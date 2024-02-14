@@ -20,8 +20,8 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-using Xpandables.Net.CQRS;
-using Xpandables.Net.CQRS.Decorators;
+using Xpandables.Net.Commands;
+using Xpandables.Net.Commands.Decorators;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -31,7 +31,7 @@ using Xpandables.Net.Visitors;
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
-/// Provides with a set of static methods to register cqrs services.
+/// Provides with a set of static methods to register command services.
 /// </summary>
 public static class ServiceCollectionCQRSExtensions
 {

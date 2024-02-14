@@ -21,8 +21,8 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.CQRS;
-using Xpandables.Net.CQRS.Decorators;
+using Xpandables.Net.Commands;
+using Xpandables.Net.Commands.Decorators;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Validators;

@@ -37,7 +37,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.CQRS;
+namespace Xpandables.Net.Commands;
 
 /// <summary>
 /// Provides with extension method for the dispatcher.

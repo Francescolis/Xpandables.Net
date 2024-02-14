@@ -17,7 +17,7 @@
 ************************************************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 internal sealed class OperationResultFinalizerInternal : IOperationResultFinalizer
 {
     public OperationResultFinalizer? Finalizer { get; set; }

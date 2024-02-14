@@ -20,7 +20,7 @@ using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 
 /// <summary>
 /// Represents a method signature to be used to apply transactional behavior to a command task.

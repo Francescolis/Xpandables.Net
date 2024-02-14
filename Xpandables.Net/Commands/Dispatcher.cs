@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.CQRS;
+namespace Xpandables.Net.Commands;
 
 internal sealed class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
 {

@@ -19,7 +19,7 @@ using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Visitors;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 
 /// <summary>
 /// This class allows the application author to add visitor support to query control flow.

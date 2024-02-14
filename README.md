@@ -1,5 +1,5 @@
 # Introduction 
-Provides with useful interfaces contracts in **.Net 8.0** and some implementations mostly following the spirit of SOLID principles, CQRS...
+Provides with useful interfaces contracts in **.Net 8.0** and some implementations mostly following the spirit of SOLID principles, Commands...
 The library is strongly-typed, which means it should be hard to make invalid requests and it also makes it easy to discover available methods and properties though IntelliSense.
 
 Feel free to fork this project, make your own changes and create a pull request.
@@ -309,9 +309,9 @@ services
     .XTryDecorate(typeof(ICommandHandler<>), typeof(CommandLoggingDecorator<>));
 ```
 
-## CQRS Pattern
+## Commands Pattern
 
->CQRS stands for Command and Query Responsibility Segregation, a pattern that separates read and update operations for a data store.
+>Commands stands for Command and Query Responsibility Segregation, a pattern that separates read and update operations for a data store.
 
 The following interfaces are used to apply command and query operations :
 ```c#

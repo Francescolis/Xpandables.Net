@@ -18,7 +18,7 @@
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 internal sealed class OperationResultQueryDecorator<TQuery, TResult>(
     IQueryHandler<TQuery, TResult> decoratee, IOperationResultFinalizer operationResultContext)
     : IQueryHandler<TQuery, TResult>

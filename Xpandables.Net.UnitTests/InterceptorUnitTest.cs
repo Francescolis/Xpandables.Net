@@ -18,7 +18,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.CQRS;
+using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;

@@ -23,7 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.CQRS;
+using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.Operations;

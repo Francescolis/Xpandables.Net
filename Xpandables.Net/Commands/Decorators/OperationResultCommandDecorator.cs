@@ -18,7 +18,7 @@
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 internal sealed class OperationResultCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee, IOperationResultFinalizer operationResultContext)
     : ICommandHandler<TCommand>

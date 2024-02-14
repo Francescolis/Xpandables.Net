@@ -34,7 +34,7 @@
 ************************************************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.CQRS;
+namespace Xpandables.Net.Commands;
 
 /// <summary>
 /// Defines a set of methods to automatically dispatches commands and queries.

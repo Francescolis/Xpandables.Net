@@ -20,7 +20,7 @@ using System.Runtime.CompilerServices;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Validators;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 
 /// <summary>
 /// This class allows the application author to add validation support to query control flow.

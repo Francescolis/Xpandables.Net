@@ -17,7 +17,7 @@
 ************************************************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.CQRS;
+namespace Xpandables.Net.Commands;
 
 /// <summary>
 /// This interface is used as a marker for queries when using the synchronous 
@@ -27,7 +27,24 @@ namespace Xpandables.Net.CQRS;
 /// This can also be enhanced with some useful decorators.
 /// </summary>
 /// <typeparam name="TResult">Type of the result of the query.</typeparam>
-public interface IQuery<out TResult> : ICQRS { }
+public interface IQuery<out TResult>
+{
+    /// <summary>
+    /// Gets the event identifier.
+    /// </summary>
+    public Guid Id => Guid.NewGuid();
+
+    /// <summary>
+    /// Gets When the event occurred.
+    /// </summary>
+    public DateTimeOffset OccurredOn => DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Gets the name of the user running associated with the current event.
+    /// The default value is associated with the current thread.
+    /// </summary>
+    public string CreatedBy => Environment.UserName;
+}
 
 /// <summary>
 /// Represents a method signature to be used to apply <see cref="IQueryHandler{TQuery, TResult}"/> implementation.

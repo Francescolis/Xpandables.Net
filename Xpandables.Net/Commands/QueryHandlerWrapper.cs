@@ -34,7 +34,7 @@
 ************************************************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.CQRS;
+namespace Xpandables.Net.Commands;
 
 internal sealed class QueryHandlerWrapper<TQuery, TResult>(
     IQueryHandler<TQuery, TResult> decoratee) : IQueryHandlerWrapper<TResult>

@@ -20,7 +20,7 @@ using System.Runtime.CompilerServices;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 internal sealed class OperationResultAsyncQueryDecorator<TQuery, TResult>(
     IAsyncQueryHandler<TQuery, TResult> decoratee, IOperationResultFinalizer operationResultContext)
     : IAsyncQueryHandler<TQuery, TResult>

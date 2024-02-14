@@ -16,52 +16,57 @@
  *
 ************************************************************************************************************/
 using Xpandables.Net.Operations;
-using Xpandables.Net.Visitors;
+using Xpandables.Net.Validators;
 
-namespace Xpandables.Net.CQRS.Decorators;
+namespace Xpandables.Net.Commands.Decorators;
 
 /// <summary>
-/// This class allows the application author to add visitor support to query control flow.
-/// The target query should implement the <see cref="IVisitable{TVisitable}"/> interface in order to activate the behavior.
-/// The class decorates the target query handler with an implementation of <see cref="ICompositeVisitor{TElement}"/>
-/// and applies all visitors found to the target query before the query get handled. You should provide with implementation
-/// of <see cref="IVisitor{TElement}"/>.
+/// This class allows the application author to add validation support to query control flow.
+/// The target query should implement the <see cref="IValidateDecorator"/> interface in order to activate the behavior.
+/// The class decorates the target query handler with an implementation of <see cref="ICompositeValidator{TArgument}"/>
+/// and applies all validators found to the target query before the command get handled.
+/// You should provide with implementation
+/// of <see cref="IValidator{TArgument}"/>for validation.
 /// </summary>
 /// <typeparam name="TQuery">Type of query.</typeparam>
 /// <typeparam name="TResult">Type of result.</typeparam>
 /// <remarks>
-/// Initializes a new instance of the <see cref="VisitorQueryDecorator{TQuery, TResult}"/> class with
-/// the handler to be decorated and the composite visitor.
+/// Initializes a new instance of the <see cref="ValidatorQueryDecorator{TQuery, TResult}"/> class with
+/// the handler to be decorated and the composite validator.
 /// </remarks>
-/// <param name="decoratee">The query to be decorated.</param>
-/// <param name="visitor">The composite visitor to apply</param>
+/// <param name="decoratee">The query handler to decorate.</param>
+/// <param name="validator">The validator instance.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="decoratee"/> is null.</exception>
-/// <exception cref="ArgumentNullException">The <paramref name="visitor"/> is null.</exception>
-public sealed class VisitorQueryDecorator<TQuery, TResult>(
+/// <exception cref="ArgumentNullException">The <paramref name="validator"/> is null.</exception>
+public sealed class ValidatorQueryDecorator<TQuery, TResult>(
     IQueryHandler<TQuery, TResult> decoratee,
-    ICompositeVisitor<TQuery> visitor) : IQueryHandler<TQuery, TResult>
-    where TQuery : notnull, IQuery<TResult>, IVisitable
+    ICompositeValidator<TQuery> validator) : IQueryHandler<TQuery, TResult>
+    where TQuery : notnull, IQuery<TResult>, IValidateDecorator
 {
     private readonly IQueryHandler<TQuery, TResult> _decoratee = decoratee
         ?? throw new ArgumentNullException(nameof(decoratee));
-    private readonly ICompositeVisitor<TQuery> _visitor = visitor
-        ?? throw new ArgumentNullException(nameof(visitor));
+    private readonly ICompositeValidator<TQuery> _validator = validator
+        ?? throw new ArgumentNullException(nameof(validator));
 
     /// <summary>
-    /// Asynchronously applies visitor before handling the specified query and returns the task result.
+    /// Asynchronously validates the query before handling and returns the task result.
     /// </summary>
     /// <param name="query">The query to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="query"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     /// <returns>A task that represents an object of <see cref="IOperationResult{TValue}"/>.</returns>
     public async ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(query);
+        IOperationResult operation = await _validator
+            .ValidateAsync(query)
+            .ConfigureAwait(false);
 
-        await query.AcceptAsync(_visitor).ConfigureAwait(false);
+        if (operation.IsFailure)
+            return operation.ToOperationResult<TResult>();
 
-        return await _decoratee.HandleAsync(query, cancellationToken).ConfigureAwait(false);
+        return await _decoratee
+            .HandleAsync(query, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

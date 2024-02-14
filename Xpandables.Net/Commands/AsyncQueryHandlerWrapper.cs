@@ -15,7 +15,7 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-namespace Xpandables.Net.CQRS;
+namespace Xpandables.Net.Commands;
 
 internal sealed class AsyncQueryHandlerWrapper<TQuery, TResult>(
     IAsyncQueryHandler<TQuery, TResult> decoratee) : IAsyncQueryHandlerWrapper<TResult>
