@@ -34,6 +34,32 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionOperationsExtensions
 {
     /// <summary>
+    /// Registers the operation result response builder of specific type.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+    /// <typeparam name="TOperationResultResponseBuilder">The type of the operation result response builder.</typeparam>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXOperationResultResponseBuilder<TOperationResultResponseBuilder>(
+        this IServiceCollection services)
+        where TOperationResultResponseBuilder : class, IOperationResultResponseBuilder
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddScoped<IOperationResultResponseBuilder, TOperationResultResponseBuilder>();
+    }
+
+    /// <summary>
+    /// Registers the default operation result response builder.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXOperationResultResponseBuilder(
+        this IServiceCollection services)
+        => services
+            .AddXOperationResultResponseBuilder<OperationResultResponseBuilder>();
+
+    /// <summary>
     /// Adds the default <see cref="OperationResultSerializationConfigureOptions"/> to the services 
     /// that configures the <see cref="Microsoft.AspNetCore.Http.Json.JsonOptions"/>
     /// converters with <see cref="JsonStringEnumConverter"/>, 
@@ -82,9 +108,9 @@ public static class ServiceCollectionOperationsExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultControllerConfigureFormatterOptions(
+    public static IServiceCollection AddXOperationResultConfigureFormatterOptions(
         this IServiceCollection services)
-        => services.AddXOperationResultControllerConfigureFormatterOptions<OperationResultControllerConfigureFormatterOptions>();
+        => services.AddXOperationResultConfigureFormatterOptions<OperationResultControllerConfigureFormatterOptions>();
 
     /// <summary>
     /// Adds the specified <typeparamref name="TOperationResultConfigureJsonOptions"/> to the services.
@@ -93,7 +119,7 @@ public static class ServiceCollectionOperationsExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultControllerConfigureFormatterOptions
+    public static IServiceCollection AddXOperationResultConfigureFormatterOptions
         <TOperationResultConfigureJsonOptions>(this IServiceCollection services)
         where TOperationResultConfigureJsonOptions : OperationResultControllerConfigureFormatterOptions
     {
@@ -111,8 +137,8 @@ public static class ServiceCollectionOperationsExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultControllerConfigureMvcOptions(this IServiceCollection services)
-        => services.AddXOperationResultControllerConfigureMvcOptions<OperationResultControllerConfigureMvcOptions>();
+    public static IServiceCollection AddXOperationResultConfigureMvcOptions(this IServiceCollection services)
+        => services.AddXOperationResultConfigureMvcOptions<OperationResultControllerConfigureMvcOptions>();
 
     /// <summary>
     /// Adds the specified <typeparamref name="TOperationResultControllerConfigureMvcOptions"/> to the services.
@@ -121,7 +147,7 @@ public static class ServiceCollectionOperationsExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultControllerConfigureMvcOptions
+    public static IServiceCollection AddXOperationResultConfigureMvcOptions
         <TOperationResultControllerConfigureMvcOptions>(this IServiceCollection services)
         where TOperationResultControllerConfigureMvcOptions : OperationResultControllerConfigureMvcOptions
     {

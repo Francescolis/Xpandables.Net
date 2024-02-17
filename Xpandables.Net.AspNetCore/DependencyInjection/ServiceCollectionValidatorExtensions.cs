@@ -55,32 +55,6 @@ public static class ServiceCollectionValidatorExtensions
             .AddXOperationResultRequestValidator<OperationResultRequestValidator>();
 
     /// <summary>
-    /// Registers the operation result response builder of specific type.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-    /// <typeparam name="TOperationResultResponseBuilder">The type of the operation result response builder.</typeparam>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXOperationResultResponseBuilder<TOperationResultResponseBuilder>(
-        this IServiceCollection services)
-        where TOperationResultResponseBuilder : class, IOperationResultResponseBuilder
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services
-            .AddScoped<IOperationResultResponseBuilder, TOperationResultResponseBuilder>();
-    }
-
-    /// <summary>
-    /// Registers the default operation result response builder.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXOperationResultResponseBuilder(
-        this IServiceCollection services)
-        => services
-            .AddXOperationResultResponseBuilder<OperationResultResponseBuilder>();
-
-    /// <summary>
     /// Applies the validation filter factory to the request of the target route(s).
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>

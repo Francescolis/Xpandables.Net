@@ -44,7 +44,7 @@ var result = optional.Bind(value => value.Length);
 
 ```
 
-Change the return value of a function : Reduce
+Change the return value of a function : Empty
 
 ```csharp
 
@@ -52,10 +52,10 @@ public string GetName()
 {
     Optional<Name> optional = function call;
     return optional
-        .Reduce("No Name");
+        .Empty("No Name");
 
     // If the optional has a value, the function value will be returned.
-    // If the optional is empty, the Reduce value will be returned.
+    // If the optional is empty, the Empty value will be returned.
 }
 
 ```
@@ -92,11 +92,11 @@ var deserialized = result.DeserializeAnonymousType(Optional.Some(new { Name = st
 
 ```
 
-## OperationResult
+## IOperationResult
 
 Allows to create methods that return the status of an execution.
 
->This type contains all properties according to the result of the method execution.
+>This interface contains all properties according to the result of the method execution.
 Some of those properties let you determine for example if the result instance is generic, a collection of errors, 
 the status code or the value of the execution.
 The status code here is the one from the ***System.Net.HttpStatusCode***.
@@ -118,11 +118,11 @@ The non generic type has the following properties :
 
 The generic type overrides the *object* **Result** to *TResult* type.
 
-Create a method that returns an **OperationResult** :
+Create a method that returns an **IOperationResult** :
 
 ```csharp
 
-public OperationResult CheckThatValueMatchCriteria(string? value)
+public IOperationResult CheckThatValueMatchCriteria(string? value)
 {
     if(string.IsNullOrEmpty(value))
     {
@@ -139,7 +139,7 @@ public OperationResult CheckThatValueMatchCriteria(string? value)
 
 ```
 
-The method returns an OperationResult* struct.
+The method returns an IOperationResult* implementation type.
 To do so, you can use the specific extension method according to your needs :
 
 - **OperationResults** which is a factory to create specifics results from *Ok* to *InternalServerError*.
@@ -157,9 +157,11 @@ It also provides with a middleware that will automatically convert a failure *Op
 // Minimal Api
 // You need to the following code in the Program.cs file
 
-builder.Services.AddXOperationResultMinimalMiddleware();
+builder.Services
+    .AddXOperationResultMiddleware()
+    .AddXOperationResultResponseBuilder();
 ...
-app.UseXOperationResultMinimalMiddleware();
+app.UseXOperationResultMiddleware();
 
 app.MapGet("/api/users", (string name) =>
 {
@@ -167,42 +169,53 @@ app.MapGet("/api/users", (string name) =>
         return failure.ToMinimalResult();
 
     // ...get the user
-	OperationResult<User> resultUser = DoGetUser(...);
+	IOperationResult<User> resultUser = DoGetUser(...);
 	
-    return result.ToMinimalResult();
+    // return the result
+    return result;
 })
+.WithXOperationResultFilter()
 .WithXValidatorFilter();
 
 // WithXValidatorFilter is an extension method that allows to use the validator filter
 // to automatically validate the request according to the specified type.
 // and allows you to use custom validation implementation using **IValidator** interface.
+// WithXOperationResultFilter is an extension method that allows to use the operation result filter
+// to automatically convert the result to a specific response according to the status code.
+
+```
+
+```csharp
 
 // Controller
 // You need to the following code in the Program.cs file
 
-builder.Services.AddXOperationResultControllerMiddleware();
+builder.Services
+    .AddXOperationResultMiddleware()
+    .AddXOperationResultResponseBuilder()
+    .AddXOperationResultConfigureMvcOptions();
 ...
-app.UseXOperationResultControllerMiddleware();
+app.UseXOperationResultMiddleware();
 
 [HttpGet]
-public IResult GetUserByName(string name)
+public object GetUserByName(string name)
 {
     if(CheckThatValueIsNotNull(name) is { isFailure : true} failure)
         return failure.ToMinimalResult();
 
     // ...get the user
-	OperationResult<User> resultUser = DoGetUser(...);
+	IOperationResult<User> resultUser = DoGetUser(...);
 	
     return result;
 }
 
 ```
 
-In the Minimal Api case, if the *name* is null, the operation result from the method will be converted to an implementation of *IResult* using the extension method **ToMinimalResult**, that will produce a perfect response with all needed information.
+In the Minimal Api case, if the *name* is null, the operation result from the method will be converted to an implementation of *IResult*, that will produce a perfect response with all needed information.
 
->You can also use the **OperationResultException** to throw a specific exception that contains a failure *OperationResult* when you are not able to return an *OperationResult* instance.
+>You can also use the **OperationResultException** to throw a specific exception that contains a failure *IOperationResult* when you are not able to return an *IOperationResult* instance.
 All the operation result instances are serializable with a specific case for **Asp.Net Core** application, the produced response Content will contains the serialized *Result* property value if available in the operation result.
-You will find the same behavior for all the interfaces that use the *OperationResult* in their method as return value such as : *ICommandHandler< TCommand >*, *IQueryHandler< TQuery, TResult >*, ...*
+You will find the same behavior for all the interfaces that use the *IOperationResult* in their method as return value such as : *ICommandHandler< TCommand >*, *IQueryHandler< TQuery, TResult >*, ...*
 
 ## Decorator pattern
 You can use the extension methods to apply the decorator pattern to your types.
@@ -220,7 +233,7 @@ public sealed record AddPersonCommand : ICommand;
 
 public sealed class AddPersonCommandHandler : ICommandHandler<AddPersonCommand>
 {
-    public ValueTask<OperationResult> HandleAsync(
+    public ValueTask<IOperationResult> HandleAsync(
         AddPersonCommand command, 
         CancellationToken cancellationToken = default)
     {
@@ -245,7 +258,7 @@ public sealed class AddPersonCommandHandlerLoggingDecorator :
         ICommandHandler<AddPersonCommand> decoratee)
         => (_logger, _decoratee) = (logger, decoratee);
 
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         AddPersonCommand command, 
         CancellationToken cancellationToken = default)
     {
@@ -285,7 +298,7 @@ public sealed class CommandLoggingDecorator<TCommand> : ICommandHandler<TCommand
         ICommandHandler<TCommand> decoratee)
         => (_logger, _ decoratee) = (logger, decoratee);
 
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
          TCommand command, 
          CancellationToken cancellationToken = default)
     {
@@ -322,7 +335,7 @@ public interface ICommand {}
 public interface IQueryHandler<TQuery, TResult>
     where TQuery : notnull, IQuery<TResult> 
 {
-    ValueTask<OperationResult<TResult>> HandleAsync(
+    ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query, 
         CancellationToken cancellationToken = default);
 }
@@ -337,7 +350,7 @@ public interface IAsyncQueryHandler<TQuery, TResult>
 public interface ICommandHandler<TCommand>
     where TCommand : notnull, ICommand
 {
-    ValueTask<OperationResult> HandleAsync(
+    ValueTask<IOperationResult> HandleAsync(
         TCommand command, 
         CancellationToken cancellationToken = default);
 }
@@ -361,7 +374,7 @@ public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand
     private readonly ProductContext _uow;
     public AddProductCommandHandler(ProductContext uow) => _uow = uow;
 
-    public async ValueTask<OperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         AddProductCommand command, 
         CancellationToken cancellationToken)
     {
@@ -395,7 +408,7 @@ public sealed class AddProductCommandValidator<AddProductCommand> :
     public AddProductCommandValidator(ProductContext uow, IServiceProvider sp)
         :base(sp) => _uow = uow;
 
-     public async ValueTask<OperationResult> ValidateAsync(AddProductCommand argument)
+     public async ValueTask<IOperationResult> ValidateAsync(AddProductCommand argument)
     {
         // validate the command using attributes
        if(Validate(command) is { isFailure : true } failure)
@@ -448,7 +461,7 @@ public sealed class GetProductQueryHandler :
 
     public GetProductQueryHandler(ProductContext uow) => _uow = uow;
 
-    public async ValueTask<OperationResult<ProductDTO?>> HandleAsync(
+    public async ValueTask<IOperationResult<ProductDTO?>> HandleAsync(
         GetProductQuery query, 
         CancellationToken cancellationToken = default)
     {
