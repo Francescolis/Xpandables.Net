@@ -43,6 +43,88 @@ public static partial class OperationResultExtensions
         => new OperationResultMatch<TResult>(operationResult);
 
     /// <summary>
+    /// Applies the specified function if the result is a success one.
+    /// </summary>
+    /// <param name="operation">The operation to act on.</param>
+    /// <param name="onSuccess">The delegate to be used on success.</param>
+    /// <returns>The current operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operation"/> 
+    /// or <paramref name="onSuccess"/> is null.</exception>
+    public static IOperationResult Success(
+        this IOperationResult operation,
+        Func<IOperationResult, IOperationResult> onSuccess)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(onSuccess);
+
+        return operation
+            .Match()
+            .Success(onSuccess);
+    }
+
+    /// <summary>
+    /// Applies the specified action if the result is a success one.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="operation">The operation to act on.</param>
+    /// <param name="onSuccess">The delegate to be used on success.</param>
+    /// <returns>The current operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operation"/> 
+    /// or <paramref name="onSuccess"/> is null.</exception>
+    public static IOperationResult<TResult> Success<TResult>(
+        this IOperationResult<TResult> operation,
+        Func<IOperationResult<TResult>, IOperationResult<TResult>> onSuccess)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(onSuccess);
+
+        return operation
+            .Match()
+            .Success(onSuccess);
+    }
+
+    /// <summary>
+    /// Applies the specified function if the result is a failure one.
+    /// </summary>
+    /// <param name="operation">The operation to act on.</param>
+    /// <param name="onFailure">The delegate to be used on failure.</param>
+    /// <returns>The current operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operation"/> 
+    /// or <paramref name="onFailure"/> is null.</exception>
+    public static IOperationResult Failure(
+        this IOperationResult operation,
+        Func<IOperationResult, IOperationResult> onFailure)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(onFailure);
+
+        return operation
+            .Match()
+            .Failure(onFailure);
+    }
+
+    /// <summary>
+    /// Applies the specified function if the result is a failure one.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="operationResult">The operation to act on.</param>
+    /// <param name="onFailure">The delegate to be used on failure.</param>
+    /// <returns>The current operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operationResult"/> 
+    /// or <paramref name="onFailure"/> is null.</exception>
+    public static IOperationResult<TResult> Failure<TResult>(
+        this IOperationResult<TResult> operationResult,
+        Func<IOperationResult<TResult>, IOperationResult<TResult>> onFailure)
+    {
+        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(onFailure);
+
+        return operationResult
+            .Match()
+            .Failure(onFailure);
+    }
+
+    /// <summary>
     /// Asynchronously applies the specified function if the result is a failure one.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
