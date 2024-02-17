@@ -60,7 +60,33 @@ public sealed class OptionalUnitTest
     {
         var optional = Optional.Empty<StructType>();
 
-        optional.Should().BeEmpty();
+        optional.IsEmpty.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(4, 6, 10)]
+    [InlineData(4, 0, 4)]
+    [InlineData(0, 6, 6)]
+    [InlineData(0, 0, 0)]
+    public void Optional_Should_Return_Some_Optional_When_On_Link_Syntax(int fromA, int fromB, int result)
+    {
+        Optional<int> optional = from a in Optional.Some(fromA)
+                                 from b in Optional.Some(fromB)
+                                 select a + b;
+
+        optional.Value.Should().Be(result);
+    }
+
+    [Theory]
+    [InlineData(42, true)]
+    [InlineData(43, false)]
+    public void Optional_Should_Return_Boolean_Optional_When_Bind_To_Boolean(int x, bool result)
+    {
+        Optional<bool> optional = Optional
+            .Some(x)
+            .Bind(value => value % 2 == 0);
+
+        optional.Value.Should().Be(result);
     }
 
     [Theory]
@@ -69,8 +95,8 @@ public sealed class OptionalUnitTest
     {
         var optional = Optional.Empty<StructType>();
 
-        optional.Map(_ => new StructType(value)).Should().BeEmpty();
-        optional.Reduce(() => new StructType(value)).Should().NotBeEmpty();
+        optional.Map(_ => new StructType(value)).IsEmpty.Should().BeTrue();
+        optional.Empty(() => new StructType(value)).IsNotEmpty.Should().BeTrue();
     }
 
     [Theory]
@@ -86,12 +112,12 @@ public sealed class OptionalUnitTest
         var noFavoriteMessage = cache
             .Get("d")
             .Map(vehicle => string.Format(favorite, vehicle))
-            .Reduce(() => noFavorite);
+            .Empty(() => noFavorite);
 
         var favoriteTruckMessage = cache
             .Get("b")
             .Map(vehicle => string.Format(favorite, vehicle))
-            .Reduce(() => noFavorite);
+            .Empty(() => noFavorite);
 
         noFavoriteMessage.Should().BeEquivalentTo(noFavorite);
         favoriteTruckMessage.Should().BeEquivalentTo(string.Format(favorite, truck));

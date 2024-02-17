@@ -78,7 +78,7 @@ public partial record struct Optional<T>
     /// <returns>The replacement value.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="empty"/> is null.</exception>
     /// <returns>The current instance where the <paramref name="empty"/> has been applied if the instance is empty.</returns>
-    public async ValueTask<Optional<T>> ReduceAsync(Func<ValueTask<T>> empty)
+    public async ValueTask<Optional<T>> EmptyAsync(Func<ValueTask<T>> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
 
@@ -95,7 +95,7 @@ public partial record struct Optional<T>
     /// <param name="empty">The method that get called when the instance is empty.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="empty"/> is null.</exception>
     /// <returns>The current instance where the <paramref name="empty"/> has been applied if the instance is empty.</returns>
-    public async readonly ValueTask<Optional<T>> ReduceAsync(Func<ValueTask> empty)
+    public async readonly ValueTask<Optional<T>> EmptyAsync(Func<ValueTask> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
 

@@ -114,11 +114,29 @@ public partial record struct Optional<T> : IEnumerable<T>
     /// <param name="binder">The binding method.</param>
     /// <returns>A new optional that could contain a value or not.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="binder"/> is null.</exception>
-    public readonly Optional<TU> Bind<TU>(Func<T?, Optional<TU>> binder)
+    public readonly Optional<TU> Bind<TU>(Func<T, Optional<TU>> binder)
     {
         ArgumentNullException.ThrowIfNull(binder);
 
-        return binder((T?)_value);
+        return HasValue
+            ? binder(Value)
+            : Optional.Empty<TU>();
+    }
+
+    /// <summary>
+    /// Turns the current instance to a new type <typeparamref name="TU"/> using the specified binder.
+    /// </summary>
+    /// <typeparam name="TU">The type of the result.</typeparam>
+    /// <param name="binder">The binding method.</param>
+    /// <returns>A new optional that could contain a value or not.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="binder"/> is null.</exception>
+    public readonly Optional<TU> Bind<TU>(Func<T, TU> binder)
+    {
+        ArgumentNullException.ThrowIfNull(binder);
+
+        return HasValue
+            ? binder(Value)
+            : Optional.Empty<TU>();
     }
 
     /// <summary>
@@ -129,7 +147,7 @@ public partial record struct Optional<T> : IEnumerable<T>
     /// <returns>The current instance where the <paramref name="empty"/>
     /// has been applied if the instance is empty.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="empty"/> is null.</exception>
-    public Optional<T> Reduce(Func<T> empty)
+    public Optional<T> Empty(Func<T> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
 
@@ -147,7 +165,7 @@ public partial record struct Optional<T> : IEnumerable<T>
     /// <exception cref="ArgumentNullException">The <paramref name="empty"/> is null.</exception>
     /// <returns>The current instance where the <paramref name="empty"/> 
     /// has been applied if the instance is empty.</returns>
-    public readonly Optional<T> Reduce(Action empty)
+    public readonly Optional<T> Empty(Action empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
 

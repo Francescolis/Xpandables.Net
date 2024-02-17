@@ -15,30 +15,47 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Xpandables.Net.Optionals;
 
-public partial record struct Optional<T> : IEquatable<Optional<T>>, IComparable<Optional<T>>, IEquatable<T>, IComparable<T>, IFormattable
+public partial record struct Optional<T> :
+    IEquatable<Optional<T>>, IEquatable<T>,
+    IComparable<Optional<T>>, IComparable<T>,
+    IStructuralEquatable, IStructuralComparable,
+    IFormattable
 {
     ///<inheritdoc/>
     public static bool operator <(Optional<T> left, Optional<T> right) => left.CompareTo(right) < 0;
 
     ///<inheritdoc/>
+    public static bool operator <(Optional<T> left, T right) => left.CompareTo(right) < 0;
+
+    ///<inheritdoc/>
     public static bool operator <=(Optional<T> left, Optional<T> right) => left.CompareTo(right) <= 0;
+
+    ///<inheritdoc/>
+    public static bool operator <=(Optional<T> left, T right) => left.CompareTo(right) <= 0;
 
     ///<inheritdoc/>
     public static bool operator >(Optional<T> left, Optional<T> right) => left.CompareTo(right) > 0;
 
     ///<inheritdoc/>
+    public static bool operator >(Optional<T> left, T right) => left.CompareTo(right) > 0;
+
+    ///<inheritdoc/>
     public static bool operator >=(Optional<T> left, Optional<T> right) => left.CompareTo(right) >= 0;
+
+    ///<inheritdoc/>
+    public static bool operator >=(Optional<T> left, T right) => left.CompareTo(right) >= 0;
 
     ///<inheritdoc/>
     public static implicit operator Optional<T>([AllowNull] T value) => ToOptional(value);
 
-    ///<inheritdoc/>
-    public static implicit operator Optional<T>(Optional<Optional<T>> optional)
-        => optional.HasValue ? optional.Value : Optional.Empty<T>();
+    /////<inheritdoc/>
+    //public static implicit operator Optional<T>(Optional<Optional<T>> optional)
+    //    => optional.HasValue ? optional.Value : Optional.Empty<T>();
 
     ///<inheritdoc/>
     public static implicit operator T(Optional<T> optional) => optional.Value;
@@ -77,6 +94,20 @@ public partial record struct Optional<T> : IEquatable<Optional<T>>, IComparable<
     }
 
     ///<inheritdoc/>
+    public readonly int CompareTo(object? other, IComparer comparer)
+    {
+        ArgumentNullException.ThrowIfNull(comparer);
+
+        if (other is Optional<T> optional)
+            return comparer.Compare(this, optional);
+
+        if (other is T value && HasValue)
+            return comparer.Compare(Value, value);
+
+        return -1;
+    }
+
+    ///<inheritdoc/>
     public readonly bool Equals(Optional<T> other)
         => HasValue && other.HasValue
             ? Value.Equals(other.Value)
@@ -91,6 +122,27 @@ public partial record struct Optional<T> : IEquatable<Optional<T>>, IComparable<
         const int hash = 17;
         if (HasValue)
             return Value.GetHashCode() ^ 31;
+
+        return hash ^ 29;
+    }
+
+    ///<inheritdoc/>
+    public readonly bool Equals(object? other, IEqualityComparer comparer)
+    {
+        ArgumentNullException.ThrowIfNull(comparer);
+
+        return other is Optional<T> optional
+            && comparer.Equals(Value, optional.Value);
+    }
+
+    ///<inheritdoc/>
+    public readonly int GetHashCode(IEqualityComparer comparer)
+    {
+        ArgumentNullException.ThrowIfNull(comparer);
+
+        const int hash = 17;
+        if (HasValue)
+            return GetHashCode() ^ comparer.GetHashCode(Value);
 
         return hash ^ 29;
     }
