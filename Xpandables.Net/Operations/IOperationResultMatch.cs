@@ -72,12 +72,30 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     IOperationResult<TResult> Success(Func<IOperationResult<TResult>, IOperationResult<TResult>> onSuccess);
 
     /// <summary>
+    /// Applies the specified action if the result is a success one.
+    /// </summary>
+    /// <typeparam name="TReturn">The type of the return.</typeparam>
+    /// <param name="onSuccess">The delegate to be used on success.</param>
+    /// <returns>The current instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onSuccess"/> is null.</exception>
+    IOperationResult<TReturn> Success<TReturn>(Func<IOperationResult<TResult>, IOperationResult<TReturn>> onSuccess);
+
+    /// <summary>
     /// Applies the specified action if the result is a failure one.
     /// </summary>
     /// <param name="onFailure">The delegate to be used on failure.</param>
     /// <returns>The current instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
     IOperationResult<TResult> Failure(Func<IOperationResult<TResult>, IOperationResult<TResult>> onFailure);
+
+    /// <summary>
+    /// Applies the specified action if the result is a failure one.
+    /// </summary>
+    /// <typeparam name="TReturn">The type of the return.</typeparam>
+    /// <param name="onFailure">The delegate to be used on failure.</param>
+    /// <returns>The current instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
+    IOperationResult<TReturn> Failure<TReturn>(Func<IOperationResult<TResult>, IOperationResult<TReturn>> onFailure);
 
     /// <summary>
     /// Asynchronously applies the specified action if the result is a success one.
@@ -89,6 +107,16 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
         Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onSuccess);
 
     /// <summary>
+    /// Asynchronously applies the specified action if the result is a success one.
+    /// </summary>
+    /// <typeparam name="TReturn">The type of the return.</typeparam>
+    /// <param name="onSuccess">The delegate to be used on success.</param>
+    /// <returns>The current instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onSuccess"/> is null.</exception>
+    ValueTask<IOperationResult<TReturn>> SuccessAsync<TReturn>(
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TReturn>>> onSuccess);
+
+    /// <summary>
     /// Asynchronously applies the specified action if the result is a failure one.
     /// </summary>
     /// <param name="onFailure">The delegate to be used on failure.</param>
@@ -96,6 +124,16 @@ public interface IOperationResultMatch<TResult> : IOperationResultMatch
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
     ValueTask<IOperationResult<TResult>> FailureAsync(
         Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onFailure);
+
+    /// <summary>
+    /// Asynchronously applies the specified action if the result is a failure one.
+    /// </summary>
+    /// <typeparam name="TReturn">The type of the return.</typeparam>
+    /// <param name="onFailure">The delegate to be used on failure.</param>
+    /// <returns>The current instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="onFailure"/> is null.</exception>
+    ValueTask<IOperationResult<TReturn>> FailureAsync<TReturn>(
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TReturn>>> onFailure);
 
     /// <summary>
     /// Applies the specified action if the result is a success one.

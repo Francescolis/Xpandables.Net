@@ -84,6 +84,28 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
+    /// Applies the specified action if the result is a success one.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <typeparam name="TReturn">The type of the return value.</typeparam>
+    /// <param name="operation">The operation to act on.</param>
+    /// <param name="onSuccess">The delegate to be used on success.</param>
+    /// <returns>The current operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operation"/> 
+    /// or <paramref name="onSuccess"/> is null.</exception>
+    public static IOperationResult<TReturn> Success<TResult, TReturn>(
+        this IOperationResult<TResult> operation,
+        Func<IOperationResult<TResult>, IOperationResult<TReturn>> onSuccess)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(onSuccess);
+
+        return operation
+            .Match()
+            .Success(onSuccess);
+    }
+
+    /// <summary>
     /// Applies the specified function if the result is a failure one.
     /// </summary>
     /// <param name="operation">The operation to act on.</param>
@@ -125,6 +147,28 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
+    /// Applies the specified function if the result is a failure one.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <typeparam name="TReturn">The type of the return value.</typeparam>
+    /// <param name="operationResult">The operation to act on.</param>
+    /// <param name="onFailure">The delegate to be used on failure.</param>
+    /// <returns>The current operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operationResult"/> 
+    /// or <paramref name="onFailure"/> is null.</exception>
+    public static IOperationResult<TReturn> Failure<TResult, TReturn>(
+        this IOperationResult<TResult> operationResult,
+        Func<IOperationResult<TResult>, IOperationResult<TReturn>> onFailure)
+    {
+        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(onFailure);
+
+        return operationResult
+            .Match()
+            .Failure(onFailure);
+    }
+
+    /// <summary>
     /// Asynchronously applies the specified function if the result is a failure one.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -136,6 +180,29 @@ public static partial class OperationResultExtensions
     public static async ValueTask<IOperationResult<TResult>> FailureAsync<TResult>(
         this ValueTask<IOperationResult<TResult>> operationResult,
         Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onFailure)
+    {
+        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(onFailure);
+
+        return await (await operationResult.ConfigureAwait(false))
+            .Match()
+            .FailureAsync(onFailure)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Asynchronously applies the specified function if the result is a failure one.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <typeparam name="TReturn">The type of the return value.</typeparam>
+    /// <param name="operationResult">The operation to act on.</param>
+    /// <param name="onFailure">The delegate to be used on failure.</param>
+    /// <returns>The current operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operationResult"/> 
+    /// or <paramref name="onFailure"/> is null.</exception>
+    public static async ValueTask<IOperationResult<TReturn>> FailureAsync<TResult, TReturn>(
+        this ValueTask<IOperationResult<TResult>> operationResult,
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TReturn>>> onFailure)
     {
         ArgumentNullException.ThrowIfNull(operationResult);
         ArgumentNullException.ThrowIfNull(onFailure);
@@ -200,6 +267,29 @@ public static partial class OperationResultExtensions
     public static async ValueTask<IOperationResult<TResult>> SuccessAsync<TResult>(
         this ValueTask<IOperationResult<TResult>> operation,
         Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onSuccess)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(onSuccess);
+
+        return await (await operation.ConfigureAwait(false))
+            .Match()
+            .SuccessAsync(onSuccess)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Asynchronously applies the specified action if the result is a success one.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <typeparam name="TReturn">The type of the return value.</typeparam>
+    /// <param name="operation">The operation to act on.</param>
+    /// <param name="onSuccess">The delegate to be used on success.</param>
+    /// <returns>The current operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="operation"/> 
+    /// or <paramref name="onSuccess"/> is null.</exception>
+    public static async ValueTask<IOperationResult<TReturn>> SuccessAsync<TResult, TReturn>(
+        this ValueTask<IOperationResult<TResult>> operation,
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TReturn>>> onSuccess)
     {
         ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(onSuccess);

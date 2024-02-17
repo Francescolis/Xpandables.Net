@@ -76,11 +76,31 @@ internal sealed class OperationResultMatch<TResult> : OperationResultMatch, IOpe
         return onFailure(_operationResult);
     }
 
+    public IOperationResult<TReturn> Failure<TReturn>(
+        Func<IOperationResult<TResult>, IOperationResult<TReturn>> onFailure)
+    {
+        if (_operationResult.IsSuccess)
+            return _operationResult.ToOperationResult<TReturn>();
+
+        return onFailure(_operationResult);
+    }
+
+
     public async ValueTask<IOperationResult<TResult>> FailureAsync(
         Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onFailure)
     {
         if (_operationResult.IsSuccess)
             return _operationResult;
+
+        return await onFailure(_operationResult)
+            .ConfigureAwait(false);
+    }
+
+    public async ValueTask<IOperationResult<TReturn>> FailureAsync<TReturn>(
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TReturn>>> onFailure)
+    {
+        if (_operationResult.IsSuccess)
+            return _operationResult.ToOperationResult<TReturn>();
 
         return await onFailure(_operationResult)
             .ConfigureAwait(false);
@@ -95,11 +115,30 @@ internal sealed class OperationResultMatch<TResult> : OperationResultMatch, IOpe
         return onSuccess(_operationResult);
     }
 
+    public IOperationResult<TReturn> Success<TReturn>(
+        Func<IOperationResult<TResult>, IOperationResult<TReturn>> onSuccess)
+    {
+        if (_operationResult.IsFailure)
+            return _operationResult.ToOperationResult<TReturn>();
+
+        return onSuccess(_operationResult);
+    }
+
     public async ValueTask<IOperationResult<TResult>> SuccessAsync(
         Func<IOperationResult<TResult>, ValueTask<IOperationResult<TResult>>> onSuccess)
     {
         if (_operationResult.IsFailure)
             return _operationResult;
+
+        return await onSuccess(_operationResult)
+            .ConfigureAwait(false);
+    }
+
+    public async ValueTask<IOperationResult<TReturn>> SuccessAsync<TReturn>(
+        Func<IOperationResult<TResult>, ValueTask<IOperationResult<TReturn>>> onSuccess)
+    {
+        if (_operationResult.IsFailure)
+            return _operationResult.ToOperationResult<TReturn>();
 
         return await onSuccess(_operationResult)
             .ConfigureAwait(false);

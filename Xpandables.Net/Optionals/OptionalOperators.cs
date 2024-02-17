@@ -53,9 +53,9 @@ public partial record struct Optional<T> :
     ///<inheritdoc/>
     public static implicit operator Optional<T>([AllowNull] T value) => ToOptional(value);
 
-    /////<inheritdoc/>
-    //public static implicit operator Optional<T>(Optional<Optional<T>> optional)
-    //    => optional.HasValue ? optional.Value : Optional.Empty<T>();
+    ///<inheritdoc/>
+    public static implicit operator Optional<T>(Optional<Optional<T>> optional)
+        => optional.HasValue ? optional.Value : Optional.Empty<T>();
 
     ///<inheritdoc/>
     public static implicit operator T(Optional<T> optional) => optional.Value;

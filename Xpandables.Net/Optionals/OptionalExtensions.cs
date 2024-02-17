@@ -72,13 +72,15 @@ public static class OptionalExtensions
     /// <exception cref="ArgumentNullException">The <paramref name="optional"/> or <paramref name="binder"/> is null.</exception>
     public static async ValueTask<Optional<TU>> BindAsync<T, TU>(
         this ValueTask<Optional<T>> optional,
-        Func<T?, ValueTask<Optional<TU>>> binder)
+        Func<T, ValueTask<Optional<TU>>> binder)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(binder);
 
-        return await (await optional.ConfigureAwait(false))
-            .BindAsync(binder).ConfigureAwait(false);
+        Optional<T> value = await optional.ConfigureAwait(false);
+        return value.IsNotEmpty
+            ? await binder(value.Value).ConfigureAwait(false)
+            : Optional.Empty<TU>();
     }
 
     /// <summary>
@@ -422,7 +424,7 @@ public static class OptionalExtensions
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(selector);
 
-        return optional.Select(x => selector(x));
+        return optional.Bind(selector);
     }
 
     /// <summary>
@@ -495,7 +497,7 @@ public static class OptionalExtensions
         ArgumentNullException.ThrowIfNull(selector);
 
         return await optional
-                .SelectAsync(async x => await selector(x).ConfigureAwait(false))
+                .BindAsync(async x => await selector(x).ConfigureAwait(false))
                 .ConfigureAwait(false);
     }
 

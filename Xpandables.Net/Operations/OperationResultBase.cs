@@ -90,12 +90,12 @@ public abstract record OperationResultBase : IOperationResult
         Optional<string>? detail = default)
     {
         StatusCode = statusCode;
-        Result = result ?? Optional.Empty<object>();
-        Errors = errors ?? [];
-        LocationUrl = locationUrl ?? Optional.Empty<string>();
-        Headers = headers ?? [];
-        Title = title ?? Optional.Empty<string>();
-        Detail = detail ?? Optional.Empty<string>();
+        Result = result.HasValue ? result.Value : Optional.Empty<object>();
+        Errors = errors.HasValue ? errors.Value : [];
+        LocationUrl = locationUrl.HasValue ? locationUrl.Value : Optional.Empty<string>();
+        Headers = headers.HasValue ? headers.Value : [];
+        Title = title.HasValue ? title.Value : Optional.Empty<string>();
+        Detail = detail.HasValue ? detail.Value : Optional.Empty<string>();
     }
 }
 
@@ -135,11 +135,15 @@ public abstract record OperationResultBase<TResult> : OperationResultBase, IOper
         Optional<string>? detail = default)
         : base(
             statusCode,
-            result?.IsNotEmpty == true ? Optional.Some<object>(result.Value) : Optional.Empty<object>(),
+            result.HasValue && result.Value.IsNotEmpty
+                ? Optional.Some<object>(result.Value.Value)
+                : Optional.Empty<object>(),
             locationUrl,
             errors,
             headers,
             title,
             detail)
-    => Result = result ?? Optional.Empty<TResult>();
+    => Result = result.HasValue && result.Value.IsNotEmpty
+            ? Optional.Some(result.Value.Value)
+            : Optional.Empty<TResult>();
 }

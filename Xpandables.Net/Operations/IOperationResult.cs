@@ -106,7 +106,11 @@ public partial interface IOperationResult
     public IOperationResult<TResult> ToOperationResult<TResult>()
         => new OperationResult<TResult>(
             StatusCode,
-            Result.Bind(o => ((TResult?)o).AsOptional()),
+            Result.IsEmpty
+                ? Optional.Empty<TResult>()
+                : Result.Value is TResult value
+                    ? Optional.Some<TResult>(value)
+                    : Optional.Empty<TResult>(),
             LocationUrl,
             Errors,
             Headers,
