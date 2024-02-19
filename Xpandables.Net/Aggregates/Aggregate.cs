@@ -104,7 +104,7 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="event">The domain event instance to act on.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
-    protected void PushEvent<TEvent>(TEvent @event)
+    public void PushEvent<TEvent>(TEvent @event)
         where TEvent : notnull, IDomainEvent<TAggregateId>
     {
         _ = @event ?? throw new ArgumentNullException(nameof(@event));

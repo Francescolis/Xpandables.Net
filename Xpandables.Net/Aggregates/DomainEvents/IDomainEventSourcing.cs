@@ -51,4 +51,13 @@ public interface IDomainEventSourcing<TAggregateId>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     void LoadFromHistory(IDomainEvent<TAggregateId> @event);
+
+    /// <summary>
+    /// Pushes the specified domain event to the aggregate instance.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="event">The domain event instance to act on.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
+    void PushEvent<TEvent>(TEvent @event)
+        where TEvent : notnull, IDomainEvent<TAggregateId>;
 }
