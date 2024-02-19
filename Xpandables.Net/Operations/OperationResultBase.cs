@@ -52,6 +52,10 @@ public abstract record OperationResultBase : IOperationResult
 
     /// <inheritdoc/>
     [JsonInclude]
+    public ElementCollection Extensions { get; internal init; } = [];
+
+    /// <inheritdoc/>
+    [JsonInclude]
     public HttpStatusCode StatusCode { get; internal init; }
 
     /// <inheritdoc/>
@@ -78,6 +82,7 @@ public abstract record OperationResultBase : IOperationResult
     /// <param name="errors">The errors collection if available.</param>
     /// <param name="locationUrl">The URL location header if available</param>
     /// <param name="headers">The collection of header values.</param>
+    /// <param name="extensions">The collection of extensions.</param>
     /// <param name="title">The title of the execution operation.</param>
     /// <param name="detail">The explanation of the execution operation problem.</param>
     protected OperationResultBase(
@@ -86,16 +91,18 @@ public abstract record OperationResultBase : IOperationResult
         Optional<string>? locationUrl = default,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
+        ElementCollection? extensions = default,
         Optional<string>? title = default,
         Optional<string>? detail = default)
     {
         StatusCode = statusCode;
-        Result = result.HasValue ? result.Value : Optional.Empty<object>();
-        Errors = errors.HasValue ? errors.Value : [];
-        LocationUrl = locationUrl.HasValue ? locationUrl.Value : Optional.Empty<string>();
-        Headers = headers.HasValue ? headers.Value : [];
-        Title = title.HasValue ? title.Value : Optional.Empty<string>();
-        Detail = detail.HasValue ? detail.Value : Optional.Empty<string>();
+        Result = result ?? Optional.Empty<object>();
+        Errors = errors ?? ([]);
+        Extensions = extensions ?? ([]);
+        LocationUrl = locationUrl ?? Optional.Empty<string>();
+        Headers = headers ?? ([]);
+        Title = title ?? Optional.Empty<string>();
+        Detail = detail ?? Optional.Empty<string>();
     }
 }
 
@@ -123,6 +130,7 @@ public abstract record OperationResultBase<TResult> : OperationResultBase, IOper
     /// <param name="errors">The errors collection.</param>
     /// <param name="locationUrl">The URL location header</param>
     /// <param name="headers">The collection of header values.</param>
+    /// <param name="extensions">The collection of extensions.</param>
     /// <param name="title">The title of the execution operation.</param>
     /// <param name="detail">The explanation of the execution operation problem.</param>
     protected OperationResultBase(
@@ -131,6 +139,7 @@ public abstract record OperationResultBase<TResult> : OperationResultBase, IOper
         Optional<string>? locationUrl = default,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
+        ElementCollection? extensions = default,
         Optional<string>? title = default,
         Optional<string>? detail = default)
         : base(
@@ -141,6 +150,7 @@ public abstract record OperationResultBase<TResult> : OperationResultBase, IOper
             locationUrl,
             errors,
             headers,
+            extensions,
             title,
             detail)
     => Result = result.HasValue && result.Value.IsNotEmpty

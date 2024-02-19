@@ -26,6 +26,7 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     IOperationResult.IHeaderBuilder<TBuilder>,
     IOperationResult.IUrlBuilder<TBuilder>,
     IOperationResult.IErrorBuilder<TBuilder>,
+    IOperationResult.IExtensionBuilder<TBuilder>,
     IOperationResult.IStatusBuilder<TBuilder>,
     IOperationResult.IDescriptionBuilder<TBuilder>,
     IOperationResult.IClearBuilder<TBuilder>,
@@ -34,6 +35,7 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
 {
     private protected readonly ElementCollection _headers = [];
     private protected readonly ElementCollection _errors = [];
+    private protected readonly ElementCollection _extensions = [];
     private protected HttpStatusCode _statusCode = statusCode;
     private protected Optional<string> _uri = Optional.Empty<string>();
     private protected Optional<object> _result = Optional.Empty<object>();
@@ -67,6 +69,7 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     {
         _headers.Clear();
         _errors.Clear();
+        _extensions.Clear();
         _statusCode = _statusCode.IsSuccessStatusCode() ? HttpStatusCode.OK : HttpStatusCode.BadRequest;
         _uri = Optional.Empty<string>();
         _result = Optional.Empty<object>();
@@ -83,6 +86,7 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
             _uri,
             _errors,
             _headers,
+            _extensions,
             _title,
             _detail);
 
@@ -147,6 +151,36 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         return (this as TBuilder)!;
     }
 
+    //
+    TBuilder IOperationResult.IExtensionBuilder<TBuilder>.WithExtension(string key, string value)
+    {
+        _extensions.Add(key, value);
+        return (this as TBuilder)!;
+    }
+
+    TBuilder IOperationResult.IExtensionBuilder<TBuilder>.WithExtension(string key, params string[] values)
+    {
+        _extensions.Add(key, values);
+        return (this as TBuilder)!;
+    }
+
+    TBuilder IOperationResult.IExtensionBuilder<TBuilder>.WithExtensions(IDictionary<string, string> extensions)
+    {
+        ArgumentNullException.ThrowIfNull(extensions);
+
+        _extensions.Merge(ElementCollection.With(extensions.Select(x => new ElementEntry(x.Key, x.Value)).ToList()));
+
+        return (this as TBuilder)!;
+    }
+
+    TBuilder IOperationResult.IExtensionBuilder<TBuilder>.WithExtensions(ElementCollection extensions)
+    {
+        ArgumentNullException.ThrowIfNull(extensions);
+
+        _extensions.Merge(extensions);
+        return (this as TBuilder)!;
+    }
+
     TBuilder IOperationResult.IUrlBuilder<TBuilder>.WithUrl(string url)
     {
         _uri = url;
@@ -178,6 +212,7 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
             _uri,
             _errors,
             _headers,
+            _extensions,
             _title,
             _detail);
 

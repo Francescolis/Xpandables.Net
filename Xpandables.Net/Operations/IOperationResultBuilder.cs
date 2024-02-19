@@ -54,6 +54,7 @@ public partial interface IOperationResult
     public interface IFailureBuilder :
         IHeaderBuilder<IFailureBuilder>,
         IErrorBuilder<IFailureBuilder>,
+        IExtensionBuilder<IFailureBuilder>,
         IStatusBuilder<IFailureBuilder>,
         IDescriptionBuilder<IFailureBuilder>,
         IClearBuilder<IFailureBuilder>,
@@ -67,6 +68,7 @@ public partial interface IOperationResult
     public interface IFailureBuilder<TResult> :
         IHeaderBuilder<IFailureBuilder<TResult>>,
         IErrorBuilder<IFailureBuilder<TResult>>,
+        IExtensionBuilder<IFailureBuilder<TResult>>,
         IStatusBuilder<IFailureBuilder<TResult>>,
         IDescriptionBuilder<IFailureBuilder<TResult>>,
         IClearBuilder<IFailureBuilder<TResult>>,
@@ -279,6 +281,50 @@ public partial interface IOperationResult
         /// <exception cref="ArgumentNullException">The <paramref name="errors"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithErrors(IReadOnlyCollection<ElementEntry> errors);
+    }
+
+    /// <summary>
+    /// Provides with commands to add extensions to the <see cref="IBuilder{TResult}"/> builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
+    public interface IExtensionBuilder<out TBuilder>
+        where TBuilder : class, IBuilder
+    {
+        /// <summary>
+        /// Adds the specified <paramref name="key"/> and <paramref name="value"/> to the extensions collection.
+        /// </summary>
+        /// <param name="key">The key extension to add.</param>
+        /// <param name="value">The associated value.</param>
+        /// <exception cref="ArgumentNullException">The <paramref name="key"/> 
+        /// or <paramref name="value"/> is null.</exception>
+        /// <returns>The current instance.</returns>
+        TBuilder WithExtension(string key, string value);
+
+        /// <summary>
+        /// Adds the specified <paramref name="key"/> and <paramref name="values"/> to the extensions collection.
+        /// </summary>
+        /// <param name="key">The key extension to add.</param>
+        /// <param name="values">The associated value.</param>
+        /// <exception cref="ArgumentNullException">The <paramref name="key"/> 
+        /// or <paramref name="values"/> is null.</exception>
+        /// <returns>The current instance.</returns>
+        TBuilder WithExtension(string key, params string[] values);
+
+        /// <summary>
+        /// Adds the specified dictionary of extensions to the extensions collection.
+        /// </summary>
+        /// <param name="extensions">The dictionary to be added.</param>
+        /// <exception cref="ArgumentNullException">The <paramref name="extensions"/> is null.</exception>
+        /// <returns>The current instance.</returns>
+        TBuilder WithExtensions(IDictionary<string, string> extensions);
+
+        /// <summary>
+        /// Adds the specified extensions collection to the existing one.
+        /// </summary>
+        /// <param name="extensions">the other collection of extensions to merge to.</param>
+        /// <exception cref="ArgumentNullException">The <paramref name="extensions"/> is null.</exception>
+        /// <returns>The current instance.</returns>
+        TBuilder WithExtensions(ElementCollection extensions);
     }
 
     /// <summary>

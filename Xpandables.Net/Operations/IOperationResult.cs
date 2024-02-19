@@ -85,6 +85,13 @@ public partial interface IOperationResult
     ElementCollection Errors { get; }
 
     /// <summary>
+    /// Gets the collection of extensions that will be returned with an error response.
+    /// </summary>
+    /// <remarks>The default value contains an empty collection.</remarks>
+    [JsonInclude]
+    ElementCollection Extensions { get; }
+
+    /// <summary>
     /// Determines whether or not the current instance is generic.
     /// </summary>
     /// <remarks>Returns <see langword="true"/> if so, otherwise <see langword="false"/>.</remarks>
@@ -114,6 +121,7 @@ public partial interface IOperationResult
             LocationUrl,
             Errors,
             Headers,
+            Extensions,
             Title,
             Detail);
 }
@@ -160,6 +168,7 @@ public partial interface IOperationResult<TResult> : IOperationResult
             LocationUrl,
             Errors,
             Headers,
+            Extensions,
             Title,
             Detail);
 }

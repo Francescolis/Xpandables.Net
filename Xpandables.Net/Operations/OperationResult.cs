@@ -42,6 +42,7 @@ public sealed record OperationResult : OperationResultBase
     /// <param name="errors">The errors collection if available.</param>
     /// <param name="locationUrl">The URL location header if available</param>
     /// <param name="headers">The collection of header values.</param>
+    /// <param name="extensions">The collection of extension values.</param>
     /// <param name="title">The title of the execution operation.</param>
     /// <param name="detail">The explanation of the execution operation problem.</param>
     internal OperationResult(
@@ -50,9 +51,10 @@ public sealed record OperationResult : OperationResultBase
         Optional<string>? locationUrl = default,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
+        ElementCollection? extensions = default,
         Optional<string>? title = default,
         Optional<string>? detail = default)
-        : base(statusCode, result, locationUrl, errors, headers, title, detail) { }
+        : base(statusCode, result, locationUrl, errors, headers, extensions, title, detail) { }
 }
 
 /// <summary>
@@ -76,6 +78,7 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
     /// <param name="errors">The errors collection.</param>
     /// <param name="locationUrl">The URL location header</param>
     /// <param name="headers">The collection of header values.</param>
+    /// <param name="extensions">The collection of extensions.</param>
     /// <param name="title">The title of the execution operation.</param>
     /// <param name="detail">The explanation of the execution operation problem.</param>
     internal OperationResult(
@@ -84,6 +87,7 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
         Optional<string>? locationUrl = default,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
+        ElementCollection? extensions = default,
         Optional<string>? title = default,
         Optional<string>? detail = default)
         : base(
@@ -92,6 +96,7 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
             locationUrl,
             errors,
             headers,
+            extensions,
             title,
             detail)
     { }

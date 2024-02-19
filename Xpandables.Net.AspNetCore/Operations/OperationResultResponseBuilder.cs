@@ -22,62 +22,56 @@ namespace Xpandables.Net.Operations;
 internal sealed class OperationResultResponseBuilder : IOperationResultResponseBuilder
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
-    public async Task ExecuteAsync(HttpContext httpContext, IOperationResult operationResult)
+    public async Task ExecuteAsync(HttpContext context, IOperationResult operation)
     {
-        ArgumentNullException.ThrowIfNull(httpContext);
-        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(operation);
 
-        httpContext.Response.StatusCode = (int)operationResult.StatusCode;
+        context.Response.StatusCode = (int)operation.StatusCode;
 
-        httpContext.AddLocationUrlIfAvailable(operationResult);
-        httpContext.AddHeadersIfAvailable(operationResult);
-
-        await httpContext.AddAuthenticationSchemeIfUnauthorizedAsync(operationResult)
+        await context
+            .BuildMetaDataContextAsync(operation)
             .ConfigureAwait(false);
 
-        if (operationResult.GetCreatedResultIfAvailable() is { } createdResult)
+        if (operation.StatusCode == System.Net.HttpStatusCode.Created)
         {
-            await createdResult.ExecuteAsync(httpContext).ConfigureAwait(false);
+            await context
+                .BuildCreatedResponseAsync(operation)
+                .ConfigureAwait(false);
+
             return;
         }
 
-        if (operationResult.GetFileResult() is { } fileResult)
+        if (operation.IsOperationResultFile())
         {
-            await fileResult.ExecuteAsync(httpContext).ConfigureAwait(false);
+            await context
+                .BuildFileResponseAsync(operation)
+                .ConfigureAwait(false);
+
             return;
         }
 
-        if (operationResult.IsSuccess && operationResult.Result.IsNotEmpty)
+        if (operation.IsSuccess && operation.Result.IsNotEmpty)
         {
-            await httpContext.Response.WriteAsJsonAsync(
-                   operationResult.Result.Value,
-                   operationResult.Result.Value.GetType())
+            await context.Response.WriteAsJsonAsync(
+                   operation.Result.Value,
+                   operation.Result.Value.GetType())
                    .ConfigureAwait(false);
             return;
         }
 
-        if (httpContext.GetValidationProblemDetails(operationResult) is { } validationProblem)
+        if (operation.IsFailure)
         {
-            await validationProblem.ExecuteAsync(httpContext).ConfigureAwait(false);
-            return;
+            await context
+                .GetProblemDetailsAsync(operation)
+                .ConfigureAwait(false);
         }
     }
 
     public async Task OnExceptionAsync(HttpContext context, Exception exception)
     {
-        if (exception is BadHttpRequestException badHttpRequestException)
-        {
-            IResult resultBad = context.GetResultFromBadHttpException(badHttpRequestException);
-            await resultBad.ExecuteAsync(context).ConfigureAwait(false);
-            return;
-        }
-
-        IResult resultProblem = await context
+        await context
            .GetProblemDetailsAsync(exception)
            .ConfigureAwait(false);
-
-        await resultProblem
-            .ExecuteAsync(context)
-            .ConfigureAwait(false);
     }
 }

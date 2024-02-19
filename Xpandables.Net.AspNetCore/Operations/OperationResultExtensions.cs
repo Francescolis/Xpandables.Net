@@ -65,6 +65,46 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
+    /// Determines whether the specified <see cref="IOperationResult"/> is an operation result file.
+    /// </summary>
+    /// <param name="operation">The operation to act on.</param>
+    /// <returns><see langword="true"/> if the specified <see cref="IOperationResult"/> 
+    /// is an operation result file; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="operation"/> is null.</exception>"
+    public static bool IsOperationResultFile(this IOperationResult operation)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+
+        return operation.Result.IsNotEmpty
+            && operation.Result.Value is BinaryEntry { Content: not null };
+    }
+
+    /// <summary>
+    /// Gets the problem extensions for the specified <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <param name="operation">The operation to act on.</param>
+    /// <returns>The problem extensions for the specified <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="operation"/> is null.</exception>
+    public static IDictionary<string, object?>? GetProblemExtensions(
+        this IOperationResult operation)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+
+        if (!operation.Extensions.Any())
+            return default;
+
+        Dictionary<string, object?> modelDictionary = [];
+        foreach (ElementEntry extension in operation.Extensions)
+        {
+            string extensions = extension.Values.StringJoin(" ");
+
+            modelDictionary.Add(extension.Key, extensions);
+        }
+
+        return modelDictionary;
+    }
+
+    /// <summary>
     /// Gets the problem detail for the specified <see cref="HttpStatusCode"/>.
     /// </summary>
     /// <param name="operation">The operation to act on.</param>
@@ -118,111 +158,75 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Gets the validation problem details for the specified <see cref="HttpContext"/> and <see cref="IOperationResult"/>.
+    /// Builds the problem details for the specified <see cref="HttpContext"/> and <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
     /// <param name="operation">The operation to act on.</param>
-    /// <returns>The validation problem details for the specified <see cref="HttpContext"/> and <see cref="IOperationResult"/>.</returns>
-    public static IResult? GetValidationProblemDetails(
-          this HttpContext context,
-         IOperationResult operation)
+    /// <returns>The problem details for the specified <see cref="HttpContext"/> 
+    /// and <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
+    /// or <paramref name="operation"/> is null.</exception>
+    public static ProblemDetails BuildProblemDetails(
+        HttpContext context,
+        IOperationResult operation)
     {
-        ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(context);
-
-        if (operation.IsSuccess)
-            return default;
+        ArgumentNullException.ThrowIfNull(operation);
 
         HttpStatusCode statusCode = operation.StatusCode;
 
-        IResult validationProblemDetails = Results.ValidationProblem(
-            operation.Errors.ToMinimalErrors(),
-            operation.GetProblemDetail(),
-            context.Request.Path,
-            (int)statusCode,
-           operation.GetProblemTitle());
-
-        return validationProblemDetails;
+        return new ValidationProblemDetails(operation.Errors.ToMinimalErrors())
+        {
+            Title = operation.GetProblemTitle(),
+            Detail = operation.GetProblemDetail(),
+            Status = (int)statusCode,
+            Instance = $"{context.Request.Method} {context.Request.Path}",
+            Type = operation.GetProblemDetail(),
+            Extensions = operation.GetProblemExtensions() ?? new Dictionary<string, object?>()
+        };
     }
 
     /// <summary>
-    /// Gets the problem details for the specified <see cref="HttpContext"/> and <see cref="Exception"/>.
+    /// Produces the file result for the specified <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
-    /// <param name="exception">The exception to act on.</param>
-    public static async Task<IResult> GetProblemDetailsAsync(
-        this HttpContext context,
-        Exception exception)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(exception);
-
-        if (exception is ValidationException validation)
-        {
-            IOperationResult operation = validation.ValidationResult
-                .ToOperationResult();
-
-            return context.GetValidationProblemDetails(operation)!;
-        }
-
-        if (exception is OperationResultException operationResultException)
-        {
-            return context.GetValidationProblemDetails(operationResultException.OperationResult)!;
-        }
-
-        HttpStatusCode statusCode = exception is UnauthorizedAccessException
-            ? HttpStatusCode.Unauthorized
-            : HttpStatusCode.InternalServerError;
-
-        IOperationResult error = OperationResults
-            .Failure(statusCode)
-            .Build();
-
-        await context
-                  .AddAuthenticationSchemeIfUnauthorizedAsync(error)
-                  .ConfigureAwait(false);
-
-        IResult problemDetails = Results.Problem(
-            (Environment.GetEnvironmentVariable(
-                "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
-                ? $"{exception}"
-                : error.GetProblemDetail(),
-            context.Request.Path,
-            (int)statusCode,
-            error.GetProblemTitle());
-
-        return problemDetails;
-    }
-
-    /// <summary>
-    /// Gets the file result for the specified <see cref="IOperationResult"/>.
-    /// </summary>
     /// <param name="operation">The operation to act on.</param>
     /// <returns>The file result for the specified <see cref="IOperationResult"/>.</returns>
-    public static IResult? GetFileResult(this IOperationResult operation)
+    /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
+    /// or <paramref name="operation"/> is null.</exception>
+    public static async ValueTask BuildFileResponseAsync(
+        this HttpContext context,
+        IOperationResult operation)
     {
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(operation);
 
         if (operation.Result.IsNotEmpty
             && operation.Result.Value is BinaryEntry { Content: not null } file)
         {
-            return TypedResults.File(file.Content, file.ContentType, file.Title);
-        }
+            Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult result
+                = TypedResults.File(file.Content, file.ContentType, file.Title);
 
-        return default;
+            await result
+                .ExecuteAsync(context)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <summary>
-    /// Gets the created result for the specified <see cref="IOperationResult"/>.
+    /// Applies the created result for the specified <see cref="IOperationResult"/>.
     /// </summary>
+    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
     /// <param name="operation">The operation to act on.</param>
     /// <returns>The created result for the specified <see cref="IOperationResult"/>.</returns>
-    public static IResult? GetCreatedResultIfAvailable(this IOperationResult operation)
+    /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
+    /// or <paramref name="operation"/> is null.</exception>
+    public static async ValueTask BuildCreatedResponseAsync(
+        this HttpContext context,
+        IOperationResult operation)
     {
+        ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(operation);
-
-        if (operation.StatusCode is not HttpStatusCode.Created)
-            return default;
 
         if (operation.LocationUrl.IsEmpty)
             throw new InvalidOperationException(I18nXpandables.CanNotBeNull
@@ -234,64 +238,198 @@ public static partial class OperationResultExtensions
             _ => TypedResults.Created(new Uri(operation.LocationUrl.Value))
         };
 
-        return result;
+        await result
+            .ExecuteAsync(context)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Adds the location URL to the response header if available.
+    /// Builds the meta data context for the specified <see cref="HttpContext"/> and <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
     /// <param name="operation">The operation to act on.</param>
-    public static void AddLocationUrlIfAvailable(
-         this HttpContext context,
-         IOperationResult operation)
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
+    /// or <paramref name="operation"/> is null.</exception>
+    public static async ValueTask BuildMetaDataContextAsync(
+        this HttpContext context,
+        IOperationResult operation)
     {
-        ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(operation);
 
         if (operation.LocationUrl.IsNotEmpty)
             context.Response.Headers.Location =
                 new Microsoft.Extensions.Primitives
                     .StringValues(operation.LocationUrl.Value);
-    }
-
-    /// <summary>
-    /// Adds the headers to the response if available.
-    /// </summary>
-    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
-    /// <param name="operation">The operation to act on.</param>
-    public static void AddHeadersIfAvailable(
-        this HttpContext context,
-        IOperationResult operation)
-    {
-        ArgumentNullException.ThrowIfNull(operation);
-        ArgumentNullException.ThrowIfNull(context);
 
         if (operation.Headers.Any())
         {
             foreach (ElementEntry header in operation.Headers)
                 context.Response.Headers.Append(
                     header.Key,
-                    new Microsoft.Extensions.Primitives.StringValues(header.Values.ToArray()));
+                    new Microsoft.Extensions.Primitives.StringValues([.. header.Values]));
         }
+
+        if (operation.StatusCode == HttpStatusCode.Unauthorized
+                 && await context.GetAuthenticationSchemeAsync()
+                     .ConfigureAwait(false) is { } scheme)
+            context.Response.Headers.Append(HeaderNames.WWWAuthenticate, scheme);
     }
 
     /// <summary>
-    /// Adds the authentication scheme to the response header if the operation is unauthorized.
+    /// Builds the problem details for the specified <see cref="HttpContext"/> and <see cref="Exception"/>.
     /// </summary>
     /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
-    /// <param name="operation">The operation to act on.</param>
-    public static async Task AddAuthenticationSchemeIfUnauthorizedAsync(
-        this HttpContext context,
-        IOperationResult operation)
+    /// <param name="exception">The exception to act on.</param>
+    /// <returns>The problem details for the specified <see cref="HttpContext"/> 
+    /// and <see cref="Exception"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
+    /// or <paramref name="exception"/> is null.</exception>
+    public static ProblemDetails BuildProblemDetails(
+        HttpContext context,
+        Exception exception)
     {
-        ArgumentNullException.ThrowIfNull(operation);
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(exception);
+
+        if (exception is ValidationException or OperationResultException or BadHttpRequestException)
+        {
+            IOperationResult operation;
+            if (exception is ValidationException validation)
+                operation = validation.ValidationResult.ToOperationResult();
+            else if (exception is OperationResultException operationResultException)
+                operation = operationResultException.OperationResult;
+            else
+            {
+                BadHttpRequestException badHttpRequestException = (BadHttpRequestException)exception;
+
+                int startParameterNameIndex = badHttpRequestException.Message
+                    .IndexOf('"', StringComparison.InvariantCulture) + 1;
+
+                int endParameterNameIndex = badHttpRequestException.Message
+                    .IndexOf('"', startParameterNameIndex);
+
+                string parameterName = badHttpRequestException
+                    .Message[startParameterNameIndex..endParameterNameIndex];
+
+                parameterName = parameterName.Split(" ")[1].Trim();
+
+                string errorMessage = badHttpRequestException.Message
+                    .Replace("\\", string.Empty, StringComparison.InvariantCulture)
+                    .Replace("\"", string.Empty, StringComparison.InvariantCulture);
+
+                operation = OperationResults
+                      .BadRequest()
+                      .WithDetail(badHttpRequestException.Message)
+                      .WithStatusCode((HttpStatusCode)badHttpRequestException.StatusCode)
+                      .WithError(parameterName, errorMessage)
+                      .WithExtension("trace-id", context.TraceIdentifier)
+                      .Build();
+
+            }
+
+            return BuildProblemDetails(context, operation);
+        }
+
+        HttpStatusCode statusCode = exception is UnauthorizedAccessException
+            ? HttpStatusCode.Unauthorized
+            : HttpStatusCode.InternalServerError;
+
+        IOperationResult error = OperationResults
+            .Failure(statusCode)
+            .Build();
+
+        return new ProblemDetails
+        {
+            Title = (Environment.GetEnvironmentVariable(
+                        "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
+                        ? exception.Message
+                        : error.GetProblemTitle(),
+            Detail = (Environment.GetEnvironmentVariable(
+                        "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
+                        ? $"{exception}"
+                        : error.GetProblemDetail(),
+            Instance = $"{context.Request.Method} {context.Request.Path}",
+            Status = (int)statusCode,
+            Type = exception.GetTypeName()
+        };
+    }
+
+    /// <summary>
+    /// Gets the problem details for the specified <see cref="HttpContext"/> and <see cref="Exception"/>.
+    /// </summary>
+    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
+    /// <param name="exception">The exception to act on.</param>
+    public static async ValueTask GetProblemDetailsAsync(
+        this HttpContext context,
+        Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(exception);
+
+        ProblemDetails problemDetails = BuildProblemDetails(context, exception);
+
+        HttpStatusCode statusCode = exception is UnauthorizedAccessException
+            ? HttpStatusCode.Unauthorized
+            : HttpStatusCode.InternalServerError;
+
+        IOperationResult operation = OperationResults
+            .Failure(statusCode)
+            .Build();
 
         if (operation.StatusCode == HttpStatusCode.Unauthorized
             && await context.GetAuthenticationSchemeAsync()
                 .ConfigureAwait(false) is { } scheme)
             context.Response.Headers.Append(HeaderNames.WWWAuthenticate, scheme);
+
+        if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+        {
+            await problemDetailsService
+                .WriteAsync(new ProblemDetailsContext
+                {
+                    HttpContext = context,
+                    ProblemDetails = problemDetails,
+                    Exception = exception
+                }).ConfigureAwait(false);
+
+            return;
+        }
+
+        IResult result = Results.Problem(problemDetails);
+        await result.ExecuteAsync(context).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the problem details for the specified <see cref="HttpContext"/> and <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
+    /// <param name="operation">The operation to act on.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
+    /// or <paramref name="operation"/> is null.</exception>
+    public static async ValueTask GetProblemDetailsAsync(
+        this HttpContext context,
+        IOperationResult operation)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(operation);
+
+        ProblemDetails problemDetails = BuildProblemDetails(context, operation);
+
+        if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+        {
+            await problemDetailsService
+                .WriteAsync(new ProblemDetailsContext
+                {
+                    HttpContext = context,
+                    ProblemDetails = problemDetails,
+                }).ConfigureAwait(false);
+
+            return;
+        }
+
+        IResult result = Results.Problem(problemDetails);
+        await result.ExecuteAsync(context).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -322,7 +460,7 @@ public static partial class OperationResultExtensions
     public static IDictionary<string, string[]> ToMinimalErrors(this ElementCollection errors)
     {
         Dictionary<string, string[]> modelDictionary = [];
-        foreach (Primitives.ElementEntry error in errors)
+        foreach (ElementEntry error in errors)
         {
             List<string> messages = [.. error.Values];
 
@@ -361,39 +499,6 @@ public static partial class OperationResultExtensions
                     .ToList()))
             .Build();
     }
-
-    /// <summary>
-    /// Gets the result from the specified <see cref="BadHttpRequestException"/>.
-    /// </summary>
-    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
-    /// <param name="exception">The exception to act on.</param>
-    public static IResult GetResultFromBadHttpException(
-         this HttpContext context,
-         BadHttpRequestException exception)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(exception);
-
-        int startParameterNameIndex = exception.Message.IndexOf('"', StringComparison.InvariantCulture) + 1;
-        int endParameterNameIndex = exception.Message.IndexOf('"', startParameterNameIndex);
-
-        string parameterName = exception.Message[startParameterNameIndex..endParameterNameIndex];
-        parameterName = parameterName.Split(" ")[1].Trim();
-
-        string errorMessage = exception.Message
-            .Replace("\\", string.Empty, StringComparison.InvariantCulture)
-            .Replace("\"", string.Empty, StringComparison.InvariantCulture);
-
-        IOperationResult operationResult = OperationResults
-              .BadRequest()
-              .WithDetail(exception.Message)
-              .WithStatusCode((HttpStatusCode)exception.StatusCode)
-              .WithError(parameterName, errorMessage)
-              .Build();
-
-        return context.GetValidationProblemDetails(operationResult)!;
-    }
-
 
     /// <summary>
     /// Returns an instance of <see cref="ObjectResult"/> that contains the current

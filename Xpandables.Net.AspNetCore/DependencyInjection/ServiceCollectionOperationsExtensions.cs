@@ -39,6 +39,7 @@ public static class ServiceCollectionOperationsExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <typeparam name="TOperationResultResponseBuilder">The type of the operation result response builder.</typeparam>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <remarks>You can register the <see cref="IProblemDetailsService"/> in order to customize the response.</remarks>
     public static IServiceCollection AddXOperationResultResponseBuilder<TOperationResultResponseBuilder>(
         this IServiceCollection services)
         where TOperationResultResponseBuilder : class, IOperationResultResponseBuilder
@@ -54,6 +55,7 @@ public static class ServiceCollectionOperationsExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <remarks>You can register the <see cref="IProblemDetailsService"/> in order to customize the response.</remarks>
     public static IServiceCollection AddXOperationResultResponseBuilder(
         this IServiceCollection services)
         => services
@@ -163,6 +165,7 @@ public static class ServiceCollectionOperationsExtensions
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <remarks>You need to register the <see cref="IOperationResultResponseBuilder"/>.</remarks>
     public static IServiceCollection AddXOperationResultMiddleware(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -193,7 +196,9 @@ public static class ServiceCollectionOperationsExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
-    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix (<see cref="string.Empty"/>).</remarks>
+    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix (<see cref="string.Empty"/>).
+    /// <para>You need to register the <see cref="IOperationResultResponseBuilder"/> and you can also 
+    /// register the <see cref="IProblemDetailsService"/> in order to customize the response.</para></remarks>
     public static TBuilder WithXOperationResultFilter<TBuilder>(this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder
     {

@@ -27,10 +27,10 @@ public interface IOperationResultResponseBuilder
     /// <summary>
     /// Writes the operation result to the response.
     /// </summary>
-    /// <param name="httpContext">The HTTP context to act on.</param>
-    /// <param name="operationResult">The operation result to act on.</param>
+    /// <param name="context">The HTTP context to act on.</param>
+    /// <param name="operation">The operation result to act on.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    Task ExecuteAsync(HttpContext httpContext, IOperationResult operationResult);
+    Task ExecuteAsync(HttpContext context, IOperationResult operation);
 
     /// <summary>
     /// Builds the response for the specified exception.
