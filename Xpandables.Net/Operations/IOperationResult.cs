@@ -109,7 +109,11 @@ public partial interface IOperationResult
     /// </summary>
     public bool IsFailure => StatusCode.IsFailureStatusCode();
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Converts the current instance to a generic instance.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <returns>A new instance of <see cref="IOperationResult{TResult}"/>.</returns>
     public IOperationResult<TResult> ToOperationResult<TResult>()
         => new OperationResult<TResult>(
             StatusCode,
@@ -160,7 +164,10 @@ public partial interface IOperationResult<TResult> : IOperationResult
     [JsonIgnore]
     bool IOperationResult.IsGeneric => true;
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Converts the current instance to a non-generic instance.
+    /// </summary>
+    /// <returns>A new instance of <see cref="IOperationResult"/>.</returns>
     public IOperationResult ToOperationResult()
         => new OperationResult(
             StatusCode,
