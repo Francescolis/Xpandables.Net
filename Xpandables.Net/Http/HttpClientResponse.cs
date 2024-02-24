@@ -87,6 +87,13 @@ public class HttpClientResponse(
     [MemberNotNullWhen(false, nameof(Exception))]
     public bool IsValid => StatusCode.IsSuccessStatusCode();
 
+    /// <summary>
+    /// Determines whether or not the response status is not valid.
+    /// Returns <see langword="true"/> if so, otherwise <see langword="false"/>.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(Exception))]
+    public bool IsNotValid => StatusCode.IsFailureStatusCode();
+
     internal virtual bool IsGeneric => false;
 }
 
