@@ -35,7 +35,7 @@ public delegate IOperationResult OperationResultFinalizer(IOperationResult opera
 public interface IOperationResultFinalizer
 {
     /// <summary>
-    /// Applies finalizer to the operation result.
+    /// Defines the delegate that allows to finalize the operation result.
     /// </summary>
     OperationResultFinalizer? Finalizer { get; set; }
 }
