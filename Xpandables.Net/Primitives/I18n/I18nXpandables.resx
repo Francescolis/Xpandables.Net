@@ -158,6 +158,9 @@
     <value>Impossible de convertir un model valide en opération d'erreur</value>
   </data>
   <data name="EventSourcingNoIntegrationEventHandler" xml:space="preserve">
-    <value>Pas d'Integration Event Handler trouve</value>
+    <value>Pas d'Integration Event Handler trouvé pour '{0}'</value>
+  </data>
+  <data name="EventSourcingNoDomainEventHandler" xml:space="preserve">
+    <value>Pas de Domain Event Handler trouvé pour '{0}'</value>
   </data>
 </root>

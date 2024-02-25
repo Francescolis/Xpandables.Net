@@ -158,6 +158,9 @@
     <value>Unable to retrieve a failed operation from a valid model state</value>
   </data>
   <data name="EventSourcingNoIntegrationEventHandler" xml:space="preserve">
-    <value>Integration Event Handler not found</value>
+    <value>Integration Event Handler not found for '{0}'</value>
+  </data>
+  <data name="EventSourcingNoDomainEventHandler" xml:space="preserve">
+    <value>Domain Event Handler not found for '{0}'</value>
   </data>
 </root>

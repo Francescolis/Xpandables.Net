@@ -115,7 +115,16 @@ namespace Xpandables.Net.Primitives.I18n {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pas d&apos;Integration Event Handler trouve.
+        ///   Looks up a localized string similar to Pas de Domain Event Handler trouvé pour &apos;{0}&apos;.
+        /// </summary>
+        public static string EventSourcingNoDomainEventHandler {
+            get {
+                return ResourceManager.GetString("EventSourcingNoDomainEventHandler", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pas d&apos;Integration Event Handler trouvé pour &apos;{0}&apos;.
         /// </summary>
         public static string EventSourcingNoIntegrationEventHandler {
             get {

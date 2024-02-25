@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
+using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.IntegrationEvents;
 
@@ -42,10 +43,10 @@ internal sealed class IntegrationEventPublisher(
 
         if (handlers.Count == 0)
             return OperationResults
-                .BadRequest()
+                .InternalError()
                 .WithError(
                     ElementEntry.UndefinedKey,
-                    I18nXpandables.EventSourcingNoIntegrationEventHandler)
+                    I18nXpandables.EventSourcingNoIntegrationEventHandler.StringFormat(@event.GetTypeName()))
                 .Build();
 
 

@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
+using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Aggregates.DomainEvents;
 
@@ -44,10 +45,10 @@ internal sealed class DomainEventPublisher<TAggregateId>(
 
         if (handlers.Count <= 0)
             return OperationResults
-                .BadRequest()
+                .InternalError()
                 .WithError(
                     ElementEntry.UndefinedKey,
-                    I18nXpandables.EventSourcingNoIntegrationEventHandler)
+                    I18nXpandables.EventSourcingNoDomainEventHandler.StringFormat(@event.GetTypeName()))
                 .Build();
 
         foreach (IDomainEventHandler<TDomainEvent, TAggregateId>? handler in handlers)
