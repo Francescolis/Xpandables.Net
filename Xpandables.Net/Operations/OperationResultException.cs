@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 
 using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Operations;
 
@@ -79,4 +80,7 @@ public sealed class OperationResultException : Exception
     {
         throw new NotSupportedException();
     }
+
+    ///<inheritdoc/>
+    public override string ToString() => OperationResult.ToJsonString();
 }

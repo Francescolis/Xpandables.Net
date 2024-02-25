@@ -18,12 +18,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Xpandables.Net.Primitives.Collections;
+
 namespace Xpandables.Net.Operations;
 
 /// <summary>
 /// Converts an <see cref="IOperationResult"/> to JSON.
 /// </summary>
-public sealed class OperationResultJsonConverter : JsonConverter<IOperationResult>
+/// <typeparam name="TOperationResult">Type of the operation result.</typeparam>
+public sealed class OperationResultJsonConverter<TOperationResult> : JsonConverter<TOperationResult>
+    where TOperationResult : class, IOperationResult
 {
     /// <summary>
     /// Reads and converts the JSON to type <see cref="IOperationResult.Result"/>.
@@ -32,12 +36,12 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
     /// <param name="typeToConvert">The type to convert.</param>
     /// <param name="options"> An object that specifies serialization options to use.</param>
     /// <returns>The converted value.</returns>
-    public override IOperationResult Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override TOperationResult Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         object? result = JsonSerializer.Deserialize(ref reader, typeof(OperationResult), options);
-        return result is IOperationResult { } operation
+        return result is TOperationResult { } operation
             ? operation
-            : throw new InvalidCastException($"Invalid Json reader to be deserialized to {nameof(IOperationResult)}.");
+            : throw new InvalidCastException($"Invalid Json reader to be deserialized to {typeof(TOperationResult).Name}.");
     }
     /// <summary>
     /// Writes a <see cref="IOperationResult"/> value as JSON.
@@ -45,7 +49,7 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
     /// <param name="writer">The writer to write to.</param>
     /// <param name="value">The value to convert to JSON.</param>
     /// <param name="options">An object that specifies serialization options to use.</param>
-    public override void Write(Utf8JsonWriter writer, IOperationResult value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, TOperationResult value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -57,8 +61,10 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
 /// Converts an <see cref="IOperationResult{TValue}"/> to JSON using only 
 /// the <see cref="IOperationResult{TValue}.Result"/>.
 /// </summary>
+/// <typeparam name="TOperationResult">The type of operation result.</typeparam>
 /// <typeparam name="TValue">The type of the value.</typeparam>
-public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperationResult<TValue>>
+public sealed class OperationResultJsonConverter<TOperationResult, TValue> : JsonConverter<TOperationResult>
+    where TOperationResult : class, IOperationResult<TValue>
 {
     /// <summary>
     /// determines whether to handle null value.
@@ -72,15 +78,15 @@ public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperat
     /// <param name="typeToConvert">The type to convert.</param>
     /// <param name="options"> An object that specifies serialization options to use.</param>
     /// <returns>The converted value.</returns>
-    public override IOperationResult<TValue> Read(
+    public override TOperationResult Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options)
     {
         object? result = JsonSerializer.Deserialize(ref reader, typeof(OperationResult<TValue>), options);
-        return result is IOperationResult<TValue> { } operation
+        return result is TOperationResult { } operation
             ? operation
-            : throw new InvalidCastException($"Invalid Json reader to be deserialized to {nameof(IOperationResult<TValue>)}."); ;
+            : throw new InvalidCastException($"Invalid Json reader to be deserialized to {typeof(TOperationResult).Name}."); ;
     }
 
     /// <summary>
@@ -89,7 +95,7 @@ public sealed class OperationResultJsonConverter<TValue> : JsonConverter<IOperat
     /// <param name="writer">The writer to write to.</param>
     /// <param name="value">The value to convert to JSON.</param>
     /// <param name="options">An object that specifies serialization options to use.</param>
-    public override void Write(Utf8JsonWriter writer, IOperationResult<TValue> value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, TOperationResult value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -120,18 +126,26 @@ public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
 
-        if (typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(IOperationResult<>))
+        if (typeToConvert.IsGenericType
+            && typeToConvert.GetInterfaces()
+                .Exists(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IOperationResult<>)))
         {
             Type elementType = typeToConvert.GetGenericArguments()[0];
-            return Activator.CreateInstance(typeof(OperationResultJsonConverter<>).MakeGenericType(elementType)) as JsonConverter;
+            return Activator
+                .CreateInstance(typeof(OperationResultJsonConverter<,>)
+                    .MakeGenericType([typeToConvert, elementType])) as JsonConverter;
         }
-        else if (!typeToConvert.IsGenericType && typeToConvert == typeof(IOperationResult))
+        else if (!typeToConvert.IsGenericType
+            && typeToConvert.GetInterfaces()
+                .Exists(i => !i.IsGenericType && i == typeof(IOperationResult)))
         {
-            return Activator.CreateInstance(typeof(OperationResultJsonConverter)) as JsonConverter;
+            return Activator
+                .CreateInstance(typeof(OperationResultJsonConverter<>)
+                    .MakeGenericType(typeToConvert)) as JsonConverter;
         }
         else
         {
-            throw new NotSupportedException($"Expected type : {nameof(IOperationResult)}.");
+            throw new NotSupportedException($"The expected type must implement : {nameof(IOperationResult)}.");
         }
     }
 }
