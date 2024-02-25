@@ -181,7 +181,10 @@ public static partial class OperationResultExtensions
             Detail = operation.GetProblemDetail(),
             Status = (int)statusCode,
             Instance = $"{context.Request.Method} {context.Request.Path}",
-            Type = operation.GetProblemDetail(),
+            Type = (Environment.GetEnvironmentVariable(
+                        "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
+                        ? operation.GetTypeName()
+                        : default,
             Extensions = operation.GetProblemExtensions() ?? new Dictionary<string, object?>()
         };
     }
@@ -352,7 +355,10 @@ public static partial class OperationResultExtensions
                         : error.GetProblemDetail(),
             Instance = $"{context.Request.Method} {context.Request.Path}",
             Status = (int)statusCode,
-            Type = exception.GetTypeName()
+            Type = (Environment.GetEnvironmentVariable(
+                        "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
+                        ? exception.GetTypeName()
+                        : default
         };
     }
 
