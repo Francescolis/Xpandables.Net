@@ -422,7 +422,7 @@ public sealed class AddProductCommandValidator<AddProductCommand> :
         // we just need to know if a record with
         // the specified id already exist
         var isFound = await _uow.Products
-            .CountAsync(x=>x.Id == command.Id, cancellationToken)
+            .CountAsync(x => x.Id == command.Id, cancellationToken)
             .ConfigureAwait(false) > 0;
 
         if( isFound ) // duplicate

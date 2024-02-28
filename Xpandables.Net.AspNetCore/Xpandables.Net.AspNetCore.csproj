@@ -21,13 +21,13 @@
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-		<PackageReleaseNotes>Add interfaces IOperationResultResponseBuilder/RequestValidator</PackageReleaseNotes>
+		<PackageReleaseNotes>Add Notifications</PackageReleaseNotes>
 		<PackageOutputPath>D:\fewan\source\nugets\</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>8.0.2</Version>
-		<AssemblyVersion>8.0.2</AssemblyVersion>
-		<FileVersion>8.0.2</FileVersion>
-		<PackageVersion>8.0.2</PackageVersion>
+		<Version>8.0.3</Version>
+		<AssemblyVersion>8.0.3</AssemblyVersion>
+		<FileVersion>8.0.3</FileVersion>
+		<PackageVersion>8.0.3</PackageVersion>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
