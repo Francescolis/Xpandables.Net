@@ -20,71 +20,73 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Text.Json;
 
-using Xpandables.Net.Aggregates.DomainEvents;
+using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Expressions;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// <see cref="IDomainEventStore"/> implementation.
+/// <see cref="INotificationStore"/> implementation.
 /// </summary>
 /// <remarks>
-/// Initializes the event store.
+/// Initializes the notification store.
 /// </remarks>
 /// <param name="dataContext"></param>
 /// <param name="serializerOptions"></param>
 /// <exception cref="ArgumentNullException"></exception>
-public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializerOptions serializerOptions)
-    : Disposable, IDomainEventStore
+public sealed class NotificationStore(
+    DomainDataContext dataContext,
+    JsonSerializerOptions serializerOptions) : Disposable, INotificationStore
 {
     private IDisposable[] _disposables = [];
 
     ///<inheritdoc/>
-    public async ValueTask AppendAsync<TAggregateId>(
-        IDomainEvent<TAggregateId> @event,
+    public async ValueTask AppendAsync(
+        INotification @event,
         CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        EntityDomainEvent disposable = EntityDomainEvent.TEntityDomainEvent(@event, serializerOptions);
+        EntityNotification disposable = EntityNotification
+            .ToEntityNotification(@event, serializerOptions);
+
         Array.Resize(ref _disposables, _disposables.Length + 1);
         _disposables[^1] = disposable;
 
-        _ = await dataContext.Events.AddAsync(disposable, cancellationToken).ConfigureAwait(false);
+        _ = await dataContext.Notifications
+            .AddAsync(disposable, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
-    public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
-        TAggregateId aggregateId,
-         CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
+    public async ValueTask AppendCloseAsync(
+        Guid eventId,
+        Exception? exception = default,
+        CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(aggregateId);
+        ArgumentNullException.ThrowIfNull(eventId);
 
-        string aggregateIdName = typeof(TAggregateId).GetNameWithoutGenericArity();
-
-        return dataContext.Events
-            .AsNoTracking()
-            .Where(e => e.AggregateId == aggregateId.Value && e.AggregateIdTypeName == aggregateIdName)
-            .OrderBy(e => e.Version)
-            .Select(s => EntityDomainEvent.ToDomainEvent<TAggregateId>(s, serializerOptions))
-            .OfType<IDomainEvent<TAggregateId>>()
-            .AsAsyncEnumerable();
+        _ = await dataContext.Notifications
+            .Where(e => e.Id == eventId)
+            .ExecuteUpdateAsync(e => e
+                .SetProperty(p => p.ErrorMessage, p => exception != null ? $"{exception}" : default)
+                .SetProperty(p => p.UpdatedOn, p => DateTime.UtcNow)
+                .SetProperty(p => p.Status, p => exception != null ? EntityStatus.INACTIVE : EntityStatus.DELETED),
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
-    public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
-       IDomainEventFilter filter,
-       CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
+    public IAsyncEnumerable<INotification> ReadAsync(
+        INotificationFilter filter,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        return BuildQueryExpression(filter, dataContext.Events.AsNoTracking())
-             .Select(s => EntityDomainEvent.ToDomainEvent<TAggregateId>(s, serializerOptions))
-             .OfType<IDomainEvent<TAggregateId>>()
+        return BuildQueryExpression(filter, dataContext.Notifications.AsNoTracking())
+             .Select(s => EntityNotification.ToNotification(s, serializerOptions))
+             .OfType<INotification>()
              .AsAsyncEnumerable();
     }
 
@@ -101,30 +103,18 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
             .ConfigureAwait(false);
     }
 
-    private static IQueryable<EntityDomainEvent> BuildQueryExpression(
-        IDomainEventFilter filter,
-        IQueryable<EntityDomainEvent> eventRecords)
+    private static IQueryable<EntityNotification> BuildQueryExpression(
+          INotificationFilter filter,
+          IQueryable<EntityNotification> eventRecords)
     {
-        QueryExpression<EntityDomainEvent, bool> expression = QueryExpressionFactory.Create<EntityDomainEvent>();
-
-        if (filter.AggregateId is not null)
-            expression = expression.And(x =>
-            x.AggregateId == filter.AggregateId.Value);
-
-        if (filter.AggregateIdTypeName is not null)
-            expression = expression.And(x =>
-            EF.Functions.Like(x.AggregateIdTypeName, $"%{filter.AggregateIdTypeName}%"));
+        QueryExpression<EntityNotification, bool> expression = QueryExpressionFactory.Create<EntityNotification>();
 
         if (filter.Id is not null)
             expression = expression.And(x => x.Id == filter.Id);
 
         if (filter.EventTypeName is not null)
             expression = expression.And(x =>
-            EF.Functions.Like(x.EventTypeName, $"%{filter.EventTypeName}%"));
-
-        if (filter.Version is not null)
-            expression = expression.And(x =>
-            x.Version > filter.Version.Value);
+            EF.Functions.Like(x.TypeFullName, $"%{filter.EventTypeName}%"));
 
         if (filter.FromCreatedOn is not null)
             expression = expression.And(x =>
@@ -140,9 +130,9 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
                 filter.DataCriteria,
                 Expression.PropertyOrField(
                     EventFilterEntityVisitor.EventEntityParameter,
-                    nameof(EntityDomainEvent.Data)));
+                    nameof(EntityNotification.Data)));
 
-            Expression<Func<EntityDomainEvent, bool>> dataCriteria = Expression.Lambda<Func<EntityDomainEvent, bool>>(
+            Expression<Func<EntityNotification, bool>> dataCriteria = Expression.Lambda<Func<EntityNotification, bool>>(
                 EventFilterEntityVisitor.EventEntityVisitor.Visit(filter.DataCriteria.Body),
                 EventFilterEntityVisitor.EventEntityVisitor.Parameter);
 
@@ -151,7 +141,7 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
 
         eventRecords = eventRecords
             .Where(expression)
-            .OrderBy(o => o.Version);
+            .OrderBy(o => o.CreatedOn);
 
         if (filter.Pagination is not null)
             eventRecords = eventRecords

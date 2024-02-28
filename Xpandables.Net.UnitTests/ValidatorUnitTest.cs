@@ -51,8 +51,8 @@ public sealed class ValidatorUnitTest
             new[] { new ValidatorThrowsValidationException() });
 
         ICommandHandler<Login> commandHandler = new HandleLogin();
-        var validatorDecorator = new ValidatorCommandDecorator<Login>(commandHandler, validators);
-        var login = new Login(userName, password);
+        ValidatorCommandDecorator<Login> validatorDecorator = new(commandHandler, validators);
+        Login login = new(userName, password);
         Func<Task<IOperationResult>> result = async () => await validatorDecorator.HandleAsync(login);
 
         result.Should().ThrowExactlyAsync<ValidationException>();
@@ -66,8 +66,8 @@ public sealed class ValidatorUnitTest
             new[] { new ValidatorReturnsOperationResult() });
 
         ICommandHandler<Login> commandHandler = new HandleLogin();
-        var validatorDecorator = new ValidatorCommandDecorator<Login>(commandHandler, validators);
-        var login = new Login(userName, password);
+        ValidatorCommandDecorator<Login> validatorDecorator = new(commandHandler, validators);
+        Login login = new(userName, password);
         IOperationResult result = await validatorDecorator.HandleAsync(login);
 
         result.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -76,7 +76,7 @@ public sealed class ValidatorUnitTest
     [Fact]
     public void ValidatorRegistration_Should_Return_Validator()
     {
-        var validators = _serviceProvider
+        ICompositeValidator<Login>? validators = _serviceProvider
             .GetService<ICompositeValidator<Login>>();
 
         validators.Should().NotBeNull();
@@ -103,7 +103,7 @@ public sealed class ValidatorUnitTest
     {
         public IOperationResult Validate(Login argument)
         {
-            var areEqual = argument.UserLogin.Equals(UserName)
+            bool areEqual = argument.UserLogin.Equals(UserName)
                 && argument.UserPassword.Equals(Password);
 
             return areEqual switch
@@ -121,7 +121,7 @@ public sealed class ValidatorUnitTest
     {
         public IOperationResult Validate(Login argument)
         {
-            var areEqual = argument.UserLogin.Equals(UserName)
+            bool areEqual = argument.UserLogin.Equals(UserName)
                 && argument.UserPassword.Equals(Password);
 
             return areEqual switch

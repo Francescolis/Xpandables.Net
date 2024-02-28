@@ -15,37 +15,34 @@
  *
 ************************************************************************************************************/
 
-using Xpandables.Net.IntegrationEvents;
+using Xpandables.Net.Aggregates.Notifications;
 
 namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
 /// Defines a marker interface to be used to mark an object to act as 
-/// an integration event for a specific domain event.
-/// An integration event is "something that has happened in the past".
-/// An integration event is an event that can cause side effects 
-/// to other micro-services, Bounded-Contexts or external systems.
+/// a notification for a specific domain event.
 /// </summary>
 /// <typeparam name="TDomainEvent">The type the target domain event.</typeparam>
 /// <typeparam name="TAggregateId">the aggregate Id type.</typeparam>
-public interface IIntegrationEvent<out TDomainEvent, out TAggregateId> : IIntegrationEvent
+public interface INotification<out TDomainEvent, out TAggregateId> : INotification
     where TDomainEvent : notnull, IDomainEvent<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
-    /// Gets the domain event associated with the integration event.
+    /// Gets the domain event associated with the notification.
     /// </summary>
     TDomainEvent DomainEvent { get; }
 }
 
 /// <summary>
 /// Represents an Event Router helper class used to wrap a domain 
-/// event into an integration event.
+/// event into a notification.
 /// </summary>
 /// <typeparam name="TDomainEvent">The type of domain event.</typeparam>
 /// <typeparam name="TAggregateId">the aggregate Id type.</typeparam>
-public sealed record IntegrationEventWrapper<TDomainEvent, TAggregateId> :
-    IntegrationEvent, IIntegrationEvent<TDomainEvent, TAggregateId>
+public sealed record NotificationWrapper<TDomainEvent, TAggregateId> :
+    Notification, INotification<TDomainEvent, TAggregateId>
     where TDomainEvent : notnull, IDomainEvent<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
@@ -53,11 +50,11 @@ public sealed record IntegrationEventWrapper<TDomainEvent, TAggregateId> :
     public TDomainEvent DomainEvent { get; }
 
     /// <summary>
-    /// Defines a new instance of <see cref="IntegrationEventWrapper{TDomainEvent, TAggregateId}"/> 
+    /// Defines a new instance of <see cref="NotificationWrapper{TDomainEvent, TAggregateId}"/> 
     /// using the specified domain event.
     /// </summary>
     /// <param name="domainEvent">The domain event to be wrapped.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="domainEvent"/> is null.</exception>
-    public IntegrationEventWrapper(TDomainEvent domainEvent)
+    public NotificationWrapper(TDomainEvent domainEvent)
         => DomainEvent = domainEvent ?? throw new ArgumentNullException(nameof(domainEvent));
 }

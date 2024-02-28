@@ -24,12 +24,12 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the base <see cref="DomainEventRecord"/> configuration.
+/// Defines the base <see cref="EntityDomainEvent"/> configuration.
 /// </summary>
-public sealed class DomainEventRecordTypeConfiguration : IEntityTypeConfiguration<DomainEventRecord>
+public sealed class EntityDomainEventTypeConfiguration : IEntityTypeConfiguration<EntityDomainEvent>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<DomainEventRecord> builder)
+    public void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

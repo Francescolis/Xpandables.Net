@@ -18,7 +18,7 @@
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.IntegrationEvents.Messaging;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Implements <see cref="ITransientPublisher"/> and <see cref="ITransientSubscriber"/> interfaces.

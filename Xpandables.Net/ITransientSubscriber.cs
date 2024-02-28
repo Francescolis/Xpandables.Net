@@ -14,24 +14,30 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.Operations;
-
-namespace Xpandables.Net.IntegrationEvents.Messaging;
+namespace Xpandables.Net;
 
 /// <summary>
-/// Defines a method to automatically publish events to subscribers.
+/// Defines a method to automatically subscribe to events.
 /// </summary>
-public interface ITransientPublisher
+public interface ITransientSubscriber : IDisposable
 {
     /// <summary>
-    /// Publishes the specified event to all registered subscribers.
+    /// Allows application author to subscribe to an event with the specific handler.
     /// </summary>
     /// <typeparam name="T">Type of event.</typeparam>
-    /// <param name="event">The event to be published.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
+    /// <param name="subscriber">The action to be used to handle the event.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="subscriber"/> is null</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
-    ValueTask<IOperationResult> PublishAsync<T>(T @event, CancellationToken cancellationToken = default)
+    void Subscribe<T>(Action<T> subscriber)
+        where T : notnull;
+
+    /// <summary>
+    /// Allows application author to subscribe to an event with the specific handler.
+    /// </summary>
+    /// <typeparam name="T">Type of event.</typeparam>
+    /// <param name="subscriber">The action to be used to handle the event.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="subscriber"/> is null</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    void Subscribe<T>(Func<T, ValueTask> subscriber)
         where T : notnull;
 }

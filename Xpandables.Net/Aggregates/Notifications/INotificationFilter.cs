@@ -20,23 +20,13 @@ using System.Text.Json;
 
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.Aggregates.DomainEvents;
+namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
-/// Provides with base criteria for domain event filtering.
+/// Provides with base criteria for entity notification filtering.
 /// </summary>
-public interface IDomainEventFilter
+public interface INotificationFilter
 {
-    /// <summary>
-    /// Gets or sets the aggregate unique identity.
-    /// </summary>
-    Guid? AggregateId { get; init; }
-
-    /// <summary>
-    /// Gets or sets the aggregate identifier type name to search for.
-    /// </summary>
-    string? AggregateIdTypeName { get; init; }
-
     /// <summary>
     /// Gets or sets the predicate to be applied on the Event Data content.
     /// </summary>
@@ -66,6 +56,12 @@ public interface IDomainEventFilter
     DateTime? FromCreatedOn { get; init; }
 
     /// <summary>
+    /// Gets or sets the date to end search. It can be used alone 
+    /// or combined with <see cref="FromCreatedOn"/>.
+    /// </summary>
+    DateTime? ToCreatedOn { get; init; }
+
+    /// <summary>
     /// Gets or sets the event unique identity.
     /// </summary>
     Guid? Id { get; init; }
@@ -76,13 +72,8 @@ public interface IDomainEventFilter
     Pagination? Pagination { get; init; }
 
     /// <summary>
-    /// Gets or sets the date to end search. It can be used alone 
-    /// or combined with <see cref="FromCreatedOn"/>.
-    /// </summary>
-    DateTime? ToCreatedOn { get; init; }
-
-    /// <summary>
     /// Gets or sets the minimal version. 
     /// </summary>
+    /// <remarks>Not used</remarks>
     ulong? Version { get; init; }
 }

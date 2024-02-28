@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/************************************************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,23 +20,17 @@ using System.Text.Json;
 
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.Aggregates.DomainEvents;
+namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
-/// Specifies criteria with projection for domain event records to a specific result.
+/// Specifies criteria with projection for notification entities to a specific result.
 /// </summary>
-public record DomainEventFilter : IDomainEventFilter
+public record NotificationFilter : INotificationFilter
 {
     /// <summary>
-    /// Creates a new instance of <see cref="DomainEventFilter"/> to filter domain event records.
+    /// Creates a new instance of <see cref="NotificationFilter"/> to filter domain event records.
     /// </summary>
-    public DomainEventFilter() { }
-
-    /// <inheritdoc/>
-    public Guid? AggregateId { get; init; }
-
-    /// <inheritdoc/>
-    public string? AggregateIdTypeName { get; init; }
+    public NotificationFilter() { }
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? DataCriteria { get; init; }

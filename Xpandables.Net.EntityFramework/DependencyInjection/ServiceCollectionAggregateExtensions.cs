@@ -20,7 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.IntegrationEvents;
+using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.SnapShots;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -68,16 +68,16 @@ public static class ServiceCollectionAggregateExtensions
     }
 
     /// <summary>
-    /// Registers the default implementation as <see cref="IIntegrationEventStore"/> to the services with scope life time.
+    /// Registers the default implementation as <see cref="INotificationStore"/> to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventStore(this IServiceCollection services)
+    public static IServiceCollection AddXNotificationStore(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddXIntegrationEventStore<IntegrationEventStore>();
+        return services.AddXNotificationStore<NotificationStore>();
     }
 
     /// <summary>

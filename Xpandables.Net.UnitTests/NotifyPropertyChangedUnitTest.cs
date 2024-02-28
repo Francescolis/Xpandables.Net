@@ -27,7 +27,7 @@ public sealed class NotifyPropertyChangedUnitTest
     {
         List<string> receivedEvents = [];
 
-        var notifier = new NotifierViewModel();
+        NotifierViewModel notifier = new();
         notifier.PropertyChanged += (s, e) => receivedEvents.Add(e.PropertyName!);
 
         notifier.Name = name;

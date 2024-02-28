@@ -33,7 +33,7 @@ sealed record class Cache<T>
 {
     private readonly Dictionary<string, T> data = [];
     public void Store(string key, T value) => data[key] = value;
-    public Optional<T> Get(string key) => data.TryGetValue(key, out var value) ? value : default;
+    public Optional<T> Get(string key) => data.TryGetValue(key, out T? value) ? value : default;
 }
 
 public sealed class OptionalUnitTest
@@ -43,12 +43,12 @@ public sealed class OptionalUnitTest
     [InlineData(Value)]
     public void OptionalJsonConverter_Should_Serialize_And_Deserialize_Optional(string value)
     {
-        var optional = Optional.Some(new StructType(value));
-        var json = JsonSerializer.Serialize(optional);
-        var deserialized = JsonSerializer.Deserialize<Optional<StructType>>(json);
+        Optional<StructType> optional = Optional.Some(new StructType(value));
+        string json = JsonSerializer.Serialize(optional);
+        Optional<StructType> deserialized = JsonSerializer.Deserialize<Optional<StructType>>(json);
 
         var op = Optional.Some(new { Name = value });
-        var json1 = JsonSerializer.Serialize(op);
+        string json1 = JsonSerializer.Serialize(op);
         var deserialized1 = json1.DeserializeAnonymousType(op);
 
         optional.Should().BeEquivalentTo(deserialized);
@@ -58,7 +58,7 @@ public sealed class OptionalUnitTest
     [Fact]
     public void Optional_Should_Return_Empty_Optional_When_StructValue_Is_Null()
     {
-        var optional = Optional.Empty<StructType>();
+        Optional<StructType> optional = Optional.Empty<StructType>();
 
         optional.IsEmpty.Should().BeTrue();
     }
@@ -93,7 +93,7 @@ public sealed class OptionalUnitTest
     [InlineData(Value)]
     public void Optional_Should_Return_Some_Optional_When_StructValue_Is_NotNull(string value)
     {
-        var optional = Optional.Empty<StructType>();
+        Optional<StructType> optional = Optional.Empty<StructType>();
 
         optional.Map(_ => new StructType(value)).IsEmpty.Should().BeTrue();
         optional.Empty(() => new StructType(value)).IsNotEmpty.Should().BeTrue();
@@ -109,12 +109,12 @@ public sealed class OptionalUnitTest
         cache.Store("b", truck);
         cache.Store("c", bus);
 
-        var noFavoriteMessage = cache
+        Optional<string> noFavoriteMessage = cache
             .Get("d")
             .Map(vehicle => string.Format(favorite, vehicle))
             .Empty(() => noFavorite);
 
-        var favoriteTruckMessage = cache
+        Optional<string> favoriteTruckMessage = cache
             .Get("b")
             .Map(vehicle => string.Format(favorite, vehicle))
             .Empty(() => noFavorite);

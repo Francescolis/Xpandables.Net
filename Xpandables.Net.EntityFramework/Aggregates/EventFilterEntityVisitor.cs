@@ -23,8 +23,8 @@ namespace Xpandables.Net.Aggregates;
 
 internal sealed class EventFilterEntityVisitor : ExpressionVisitor
 {
-    internal static readonly ParameterExpression EventEntityParameter = Expression.Parameter(typeof(DomainEventRecord));
-    internal static readonly EventFilterEntityVisitor EventEntityVisitor = new(typeof(DomainEventRecord), nameof(DomainEventRecord.Data));
+    internal static readonly ParameterExpression EventEntityParameter = Expression.Parameter(typeof(EntityDomainEvent));
+    internal static readonly EventFilterEntityVisitor EventEntityVisitor = new(typeof(EntityDomainEvent), nameof(EntityDomainEvent.Data));
 
     internal readonly ParameterExpression Parameter;
     private readonly Expression _expression;

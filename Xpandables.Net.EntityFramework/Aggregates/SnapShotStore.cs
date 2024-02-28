@@ -40,7 +40,7 @@ public sealed class SnapShotStore(
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
-        SnapShotRecord entity = SnapShotRecord.FromSnapShotDescriptor(descriptor, serializerOptions);
+        EntitySnapShot entity = EntitySnapShot.FromSnapShotDescriptor(descriptor, serializerOptions);
         _ = await dataContext.SnapShots.AddAsync(entity, cancellationToken).ConfigureAwait(false);
     }
 
@@ -57,7 +57,7 @@ public sealed class SnapShotStore(
             .StringFormat(typeof(T).GetNameWithoutGenericArity()));
 
         string objectTypeName = instance.GetTypeName();
-        using SnapShotRecord? entity = await dataContext.SnapShots
+        using EntitySnapShot? entity = await dataContext.SnapShots
             .AsNoTracking()
             .Where(x => x.ObjectId == objectId && x.ObjectTypeName == objectTypeName)
             .OrderByDescending(o => o.Version)
@@ -67,7 +67,7 @@ public sealed class SnapShotStore(
         if (entity is null)
             return Optional.Empty<T>();
 
-        if (SnapShotRecord.ToMemento(entity, serializerOptions) is not IMemento memento)
+        if (EntitySnapShot.ToMemento(entity, serializerOptions) is not IMemento memento)
             return Optional.Empty<T>();
 
         instance.SetMemento(memento);

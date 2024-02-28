@@ -17,24 +17,24 @@
 ************************************************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.IntegrationEvents;
+namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
-/// Defines a method to automatically publish integration events.
+/// Defines a method to automatically publish notifications.
 /// </summary>
-public interface IIntegrationEventPublisher
+public interface INotificationPublisher
 {
     /// <summary>
-    /// Publishes the specified event to all registered subscribers.
+    /// Publishes the specified notification to all registered subscribers.
     /// </summary>
-    /// <typeparam name="TIntegrationEvent">Type of event.</typeparam>
-    /// <param name="event">The event to be published.</param>
+    /// <typeparam name="TNotification">Type of notification.</typeparam>
+    /// <param name="event">The notification to be published.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
     /// <returns>A value that represents an implementation of <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> PublishAsync<TIntegrationEvent>(
-        TIntegrationEvent @event,
+    ValueTask<IOperationResult> PublishAsync<TNotification>(
+        TNotification @event,
         CancellationToken cancellationToken = default)
-        where TIntegrationEvent : notnull, IIntegrationEvent;
+        where TNotification : notnull, INotification;
 }

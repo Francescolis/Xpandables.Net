@@ -21,24 +21,24 @@ using System.Text.Json;
 using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.IntegrationEvents;
+namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
-/// Represents a integration event to be written.
+/// Represents a notification to be written (outbox pattern).
 /// Make use of <see langword="using"/> key work when call or call dispose method.
 /// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-public sealed class IntegrationEventRecord : Entity<Guid>, IDisposable
+public sealed class EntityNotification : Entity<Guid>, IDisposable
 {
     /// <summary>
-    /// Constructs an integration event record from the specified integration event.
+    /// Constructs a notification entity from the specified notification.
     /// </summary>
-    /// <param name="event">The integration event to act with.</param>
+    /// <param name="event">The notification to act with.</param>
     /// <param name="options">The serializer options.</param>
-    /// <returns>An instance of <see cref="IntegrationEventRecord"/> integration 
-    /// event record built from the integration event.</returns>
-    public static IntegrationEventRecord FromIntegrationEvent(
-        IIntegrationEvent @event,
+    /// <returns>An instance of <see cref="EntityNotification"/> 
+    /// built from the notification.</returns>
+    public static EntityNotification ToEntityNotification(
+        INotification @event,
         JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -50,26 +50,25 @@ public sealed class IntegrationEventRecord : Entity<Guid>, IDisposable
     }
 
     /// <summary>
-    /// Constructs a integration event from the specified record.
+    /// Constructs a notification from the specified entity.
     /// </summary>
-    /// <param name="record">The record to act with.</param>
+    /// <param name="entity">The entity to act with.</param>
     /// <param name="options">The serializer options.</param>
-    /// <returns>An instance of integration event built from the entity.</returns>
-    public static IIntegrationEvent? ToIntegrationEvent(
-        IntegrationEventRecord record,
+    /// <returns>An instance of notification built from the entity.</returns>
+    public static INotification? ToNotification(
+        EntityNotification entity,
         JsonSerializerOptions? options)
     {
-        ArgumentNullException.ThrowIfNull(record);
+        ArgumentNullException.ThrowIfNull(entity);
 
-        if (Type.GetType(record.TypeFullName) is not { } eventType)
+        if (Type.GetType(entity.TypeFullName) is not { } eventType)
             return null;
 
-        object? eventObject = record.Data.Deserialize(eventType, options);
-        return eventObject as IIntegrationEvent;
+        object? eventObject = entity.Data.Deserialize(eventType, options);
+        return eventObject as INotification;
     }
 
-    ///<inheritdoc/>
-    private IntegrationEventRecord(
+    private EntityNotification(
         Guid id,
         string typeFullName,
         JsonDocument data,
@@ -81,13 +80,19 @@ public sealed class IntegrationEventRecord : Entity<Guid>, IDisposable
         ErrorMessage = errorMessage;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the type full name of the notification.
+    /// </summary>
     public string TypeFullName { get; }
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Gets the data of the notification.
+    /// </summary>
     public JsonDocument Data { get; }
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Gets or sets the error message of the notification.
+    /// </summary>
     public string? ErrorMessage { get; set; }
 
     /// <summary>

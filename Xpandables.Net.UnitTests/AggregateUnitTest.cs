@@ -15,17 +15,17 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Text.Json.Serialization;
-
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using System.Text.Json.Serialization;
+
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
+using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Collections;
@@ -46,21 +46,19 @@ public sealed class AggregateUnitTest
             .AddXAggregateStore()
             .AddXOperationResultFinalizer()
             .AddXDomainEventPublisher()
-            .AddXIntegrationEventPublisher()
-            .AddXIntegrationEventSourcing()
-            .AddXIntegrationEventOutbox()
+            .AddXNotificationPublisher()
             .AddXDomainEventStore<EventStoreTest>()
-            .AddXIntegrationEventStore<NotificationStoreText>()
+            .AddXNotificationStore<NotificationStoreText>()
             .BuildServiceProvider();
 
         // person id
         Guid personId = Guid.NewGuid();
 
         // get the dispatcher
-        var dispatcher = serviceProvider.GetRequiredService<IDispatcher>();
+        IDispatcher dispatcher = serviceProvider.GetRequiredService<IDispatcher>();
 
         // create person
-        var createCommand = new CreatePersonRequestCommand(personId, firstName, lastName);
+        CreatePersonRequestCommand createCommand = new(personId, firstName, lastName);
         IOperationResult createResult = await dispatcher.SendAsync(createCommand);
 
         createResult.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -76,7 +74,7 @@ public sealed class AggregateUnitTest
         createResult.IsSuccess.Should().BeFalse();
 
         // request contact
-        var contactCommand = new SendContactRequestCommand(guid, Guid.NewGuid());
+        SendContactRequestCommand contactCommand = new(guid, Guid.NewGuid());
         IOperationResult contactResult = await dispatcher.SendAsync(contactCommand);
 
         contactResult.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -89,20 +87,20 @@ public sealed class AggregateUnitTest
         contactResult.IsSuccess.Should().BeFalse();
 
         // read person
-        var store = serviceProvider.GetRequiredService<IAggregateStore<Person, PersonId>>();
+        IAggregateStore<Person, PersonId> store = serviceProvider.GetRequiredService<IAggregateStore<Person, PersonId>>();
         Person person = (await store.ReadAsync(PersonId.CreateInstance(guid))).Result;
         person.Should().NotBeNull();
         person!.ContactIds.Should().HaveCount(1);
     }
 }
 
-public sealed class NotificationStoreText : Disposable, IIntegrationEventStore
+public sealed class NotificationStoreText : Disposable, INotificationStore
 {
-    readonly record struct IntegrationEventRecord(IIntegrationEvent Event, string? Exception, string Status);
-    private static readonly Dictionary<Guid, IntegrationEventRecord> _store = [];
+    readonly record struct NotificationRecord(INotification Event, string? Exception, string Status);
+    private static readonly Dictionary<Guid, NotificationRecord> _store = [];
 
     public ValueTask AppendAsync(
-        IIntegrationEvent @event,
+        INotification @event,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -112,8 +110,8 @@ public sealed class NotificationStoreText : Disposable, IIntegrationEventStore
         return ValueTask.CompletedTask;
     }
 
-    public IAsyncEnumerable<IIntegrationEvent> ReadAsync(
-        Pagination pagination,
+    public IAsyncEnumerable<INotification> ReadAsync(
+        INotificationFilter filter,
         CancellationToken _ = default)
     {
         return _store.Values
@@ -122,23 +120,15 @@ public sealed class NotificationStoreText : Disposable, IIntegrationEventStore
             .ToAsyncEnumerable();
     }
 
-    public async ValueTask SetErrorAsync(
-        Guid eventId,
-        Exception exception,
-        CancellationToken cancellationToken = default)
+    public async ValueTask AppendCloseAsync(
+     Guid eventId,
+     Exception? exception = default,
+     CancellationToken cancellationToken = default)
     {
-        await Task.Yield();
-        _store[eventId] = _store[eventId] with { Exception = exception.ToString() };
-    }
+        if (!_store.TryGetValue(eventId, out NotificationRecord _))
+            throw new InvalidOperationException($"Unable to find notification with id : {eventId}");
 
-    public async ValueTask MarkAsProcessedAsync(
-        Guid eventId,
-        CancellationToken _ = default)
-    {
-        if (!_store.TryGetValue(eventId, out IntegrationEventRecord _))
-            throw new InvalidOperationException($"Unable to find integration event with id : {eventId}");
-
-        _store[eventId] = _store[eventId] with { Exception = null, Status = EntityStatus.DELETED };
+        _store[eventId] = _store[eventId] with { Exception = exception?.ToString(), Status = EntityStatus.DELETED };
 
         await ValueTask.CompletedTask.ConfigureAwait(false);
     }
@@ -249,28 +239,32 @@ public sealed class SendContactRequestCommandHandler
 }
 
 public sealed class ContactCreatedDomainEventHandler
-    (IIntegrationEventSourcing eventSourcing) : IDomainEventHandler<PersonCreatedDomainEvent, PersonId>
+    (INotificationStore notificationStore)
+    : IDomainEventHandler<PersonCreatedDomainEvent, PersonId>
 {
-    public ValueTask<IOperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         PersonCreatedDomainEvent @event,
         CancellationToken cancellationToken = default)
     {
         PersonCreatedNotification integrationEvent = new(@event.AggregateId, @event.FirstName, @event.LastName);
-        eventSourcing.Append(integrationEvent);
-        return ValueTask.FromResult(OperationResults.Ok().Build());
+        await notificationStore.AppendAsync(integrationEvent, cancellationToken)
+            .ConfigureAwait(false);
+        return OperationResults.Ok().Build();
     }
 }
 
 public sealed class ContactRequestSentDomainEventHandler
-    (IIntegrationEventSourcing eventSourcing) : IDomainEventHandler<ContactRequestSentDomainEvent, PersonId>
+    (INotificationStore notificationStore)
+    : IDomainEventHandler<ContactRequestSentDomainEvent, PersonId>
 {
-    public ValueTask<IOperationResult> HandleAsync(
+    public async ValueTask<IOperationResult> HandleAsync(
         ContactRequestSentDomainEvent @event,
         CancellationToken cancellationToken = default)
     {
         ContactRequestSentNotification integration = new(@event.AggregateId, @event.FullName, @event.ContactId.Value);
-        eventSourcing.Append(integration);
-        return ValueTask.FromResult(OperationResults.Ok().Build());
+        await notificationStore.AppendAsync(integration, cancellationToken)
+            .ConfigureAwait(false);
+        return OperationResults.Ok().Build();
     }
 }
 
@@ -319,12 +313,12 @@ public sealed record ContactRequestSentDomainEvent : DomainEvent<Person, PersonI
 public sealed record PersonCreatedNotification(
     Guid PersonId,
     string FirstName,
-    string LastName) : IntegrationEvent;
+    string LastName) : Notification;
 
 public sealed record ContactRequestSentNotification(
     Guid SenderId,
     string SenderName,
-    Guid ReceiverId) : IntegrationEvent;
+    Guid ReceiverId) : Notification;
 
 public sealed class Person : Aggregate<PersonId>
 {

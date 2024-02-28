@@ -17,8 +17,8 @@
 ************************************************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.HostedServices;
-using Xpandables.Net.IntegrationEvents;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -65,31 +65,33 @@ public static class ServiceCollectionHostedServiceExtensions
     }
 
     /// <summary>
-    /// Adds the specified background service implementation event scheduler of <see cref="IIntegrationEventTransientScheduler"/>
+    /// Adds the specified background service implementation 
+    /// event scheduler of <see cref="INotificationScheduler"/>
     /// to manage integration event publishing.
     /// </summary>
-    /// <typeparam name="TTransientScheduler">The type that implements <see cref="IIntegrationEventTransientScheduler"/>.</typeparam>
+    /// <typeparam name="TNotificationScheduler">The type that implements <see cref="INotificationScheduler"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventTransientScheduler
-        <TTransientScheduler>(this IServiceCollection services)
-        where TTransientScheduler : BackgroundServiceBase<TTransientScheduler>, IIntegrationEventTransientScheduler
+    public static IServiceCollection AddXNotificationScheduler
+        <TNotificationScheduler>(this IServiceCollection services)
+        where TNotificationScheduler : BackgroundServiceBase<TNotificationScheduler>, INotificationScheduler
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.AddXBackgroundService<IIntegrationEventTransientScheduler, TTransientScheduler>();
+        _ = services.AddXBackgroundService<INotificationScheduler, TNotificationScheduler>();
 
         return services;
     }
 
     /// <summary>
-    /// Adds the default background service implementation integration event scheduler of <see cref="IIntegrationEventTransientScheduler"/>
+    /// Adds the default background service implementation integration e
+    /// vent scheduler of <see cref="INotificationScheduler"/>
     /// type to manage integration event publishing.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventTransientScheduler(this IServiceCollection services)
-        => services.AddXIntegrationEventTransientScheduler<IntegrationEventTransientScheduler>();
+    public static IServiceCollection AddXNotificationScheduler(this IServiceCollection services)
+        => services.AddXNotificationScheduler<NotificationScheduler>();
 }

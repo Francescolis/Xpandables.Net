@@ -15,29 +15,35 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-namespace Xpandables.Net.IntegrationEvents;
+using Xpandables.Net.HostedServices;
+
+namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
-/// Out-box pattern interface (integration event) that allows integration event to be outside published.
+/// Defines the <see cref="INotificationScheduler"/> options.
 /// </summary>
-public interface IIntegrationEventSourcing
+public sealed record class NotificationOptions
 {
     /// <summary>
-    /// Appends the <see cref="IIntegrationEvent"/>.
+    /// The delay between two executions.
     /// </summary>
-    /// <param name="event">The integration event to be used.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">Unbale to append the specified integration event.</exception>
-    void Append(IIntegrationEvent @event);
+    /// <remarks>The default value is 15000.</remarks>
+    public int DelayMilliSeconds { get; init; } = 15000;
 
     /// <summary>
-    /// Returns a collection of registered integration events for the control flow.
+    /// The total number of notifications to load for each thread.
     /// </summary>
-    /// <returns>An ordered list of integration events.</returns>
-    IEnumerable<IIntegrationEvent> GetIntegrationEvents();
+    /// <remarks>The default value is 100.</remarks>
+    public int TotalPerThread { get; init; } = 100;
 
     /// <summary>
-    /// Marks all integration events as committed.
+    /// The total number of attempts in case of exception.
     /// </summary>
-    void MarkIntegrationEventsAsCommitted();
+    /// <remarks>The default value is 5.</remarks>
+    public int MaxAttempts { get; init; } = 5;
 }
+
+/// <summary>
+/// Provides with a method to schedule notifications when requested.
+/// </summary>
+public interface INotificationScheduler : IBackgroundService { }

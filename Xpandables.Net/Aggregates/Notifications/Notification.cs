@@ -15,12 +15,12 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-namespace Xpandables.Net.IntegrationEvents;
+namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
-/// Represents an integration event.
+/// Represents a notification.
 /// </summary>
-public abstract record IntegrationEvent : IIntegrationEvent
+public abstract record Notification : INotification
 {
     /// <inheritdoc/>
     public Guid Id { get; init; } = Guid.NewGuid();

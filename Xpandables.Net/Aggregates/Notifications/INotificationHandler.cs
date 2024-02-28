@@ -17,41 +17,40 @@
 ************************************************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.IntegrationEvents;
+namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
 /// Represents a method signature to be used to apply 
-/// <see cref="IIntegrationEventHandler{TMessage}"/> implementation.
+/// <see cref="INotificationHandler{TNotification}"/> implementation.
 /// </summary>
-/// <typeparam name="TIntegrationEvent">The integration event type.</typeparam>
-/// <param name="event">The integration event instance to act on.</param>
+/// <typeparam name="TNotification">The notification type.</typeparam>
+/// <param name="event">The notification instance to act on.</param>
 /// <param name="cancellationToken">A CancellationToken to observe while 
 /// waiting for the task to complete.</param>
 /// <returns>A value that represents an implementation of <see cref="IOperationResult"/>.</returns>
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public delegate ValueTask<IOperationResult> IntegrationEventHandler<in TIntegrationEvent>(
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    TIntegrationEvent @event, CancellationToken cancellationToken = default)
-    where TIntegrationEvent : notnull, IIntegrationEvent;
+public delegate ValueTask<IOperationResult> NotificationHandler<in TNotification>(
+    TNotification @event,
+    CancellationToken cancellationToken = default)
+    where TNotification : notnull, INotification;
 
 /// <summary>
-/// Allows an application author to define a handler for specific type integration event.
-/// The integration event must implement <see cref="IIntegrationEvent"/> interface.
+/// Allows an application author to define a handler for specific type notification.
+/// The notification must implement <see cref="INotification"/> interface.
 /// The implementation must be thread-safe when working in a multi-threaded environment.
 /// </summary>
-/// <typeparam name="TIntegrationEvent">The integration event type to be handled.</typeparam>
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public interface IIntegrationEventHandler<in TIntegrationEvent>
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TIntegrationEvent : notnull, IIntegrationEvent
+/// <typeparam name="TNotification">The integration event type to be handled.</typeparam>
+public interface INotificationHandler<in TNotification>
+    where TNotification : notnull, INotification
 {
     /// <summary>
-    /// Asynchronously handles the integration event of specific type.
+    /// Asynchronously handles the notification of specific type.
     /// </summary>
-    /// <param name="event">The integration event instance to act on.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <param name="event">The notification instance to act on.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe 
+    /// while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
     /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
     ValueTask<IOperationResult> HandleAsync(
-        TIntegrationEvent @event, CancellationToken cancellationToken = default);
+        TNotification @event,
+        CancellationToken cancellationToken = default);
 }

@@ -22,23 +22,23 @@ using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 
-namespace Xpandables.Net.IntegrationEvents;
+namespace Xpandables.Net.Aggregates.Notifications;
 
-internal sealed class IntegrationEventPublisher(
-    IServiceProvider serviceProvider) : IIntegrationEventPublisher
+internal sealed class NotificationPublisher(
+    IServiceProvider serviceProvider) : INotificationPublisher
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider
         ?? throw new ArgumentNullException(nameof(serviceProvider));
 
-    public async ValueTask<IOperationResult> PublishAsync<TIntegrationEvent>(
-        TIntegrationEvent @event,
+    public async ValueTask<IOperationResult> PublishAsync<TNotification>(
+        TNotification @event,
         CancellationToken cancellationToken = default)
-        where TIntegrationEvent : notnull, IIntegrationEvent
+        where TNotification : notnull, INotification
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        List<IIntegrationEventHandler<TIntegrationEvent>> handlers = _serviceProvider
-            .GetServices<IIntegrationEventHandler<TIntegrationEvent>>()
+        List<INotificationHandler<TNotification>> handlers = _serviceProvider
+            .GetServices<INotificationHandler<TNotification>>()
             .ToList();
 
         if (handlers.Count == 0)
@@ -46,13 +46,16 @@ internal sealed class IntegrationEventPublisher(
                 .InternalError()
                 .WithError(
                     ElementEntry.UndefinedKey,
-                    I18nXpandables.EventSourcingNoIntegrationEventHandler.StringFormat(@event.GetTypeName()))
+                    I18nXpandables.EventSourcingNoIntegrationEventHandler
+                        .StringFormat(@event.GetTypeName()))
                 .Build();
 
 
-        foreach (IIntegrationEventHandler<TIntegrationEvent>? handler in handlers)
+        foreach (INotificationHandler<TNotification>? handler in handlers)
         {
-            if (await handler.HandleAsync(@event, cancellationToken).ConfigureAwait(false)
+            if (await handler
+                .HandleAsync(@event, cancellationToken)
+                .ConfigureAwait(false)
                 is { IsFailure: true } failedOperation)
                 return failedOperation;
         }

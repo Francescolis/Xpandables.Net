@@ -19,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Aggregates.Configurations;
 using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.IntegrationEvents;
+using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.SnapShots;
 
@@ -41,25 +41,25 @@ public sealed class DomainDataContext(DbContextOptions<DomainDataContext> contex
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
-        _ = modelBuilder.ApplyConfiguration(new DomainEventRecordTypeConfiguration());
-        _ = modelBuilder.ApplyConfiguration(new IntegrationEventRecordTypeConfiguration());
-        _ = modelBuilder.ApplyConfiguration(new SnapShotRecordTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityDomainEventTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityNotificationTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntitySnapShotTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }
 
     /// <summary>
-    /// A collection of <see cref="DomainEventRecord"/> entities.
+    /// A collection of <see cref="EntityDomainEvent"/> entities.
     /// </summary>
-    public DbSet<DomainEventRecord> Events { get; set; }
+    public DbSet<EntityDomainEvent> Events { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="IntegrationEventRecord"/> entities.
+    /// A collection of <see cref="EntityNotification"/> entities.
     /// </summary>
-    public DbSet<IntegrationEventRecord> Integrations { get; set; }
+    public DbSet<EntityNotification> Notifications { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="SnapShotRecord"/> entities.
+    /// A collection of <see cref="EntitySnapShot"/> entities.
     /// </summary>
-    public DbSet<SnapShotRecord> SnapShots { get; set; }
+    public DbSet<EntitySnapShot> SnapShots { get; set; }
 }

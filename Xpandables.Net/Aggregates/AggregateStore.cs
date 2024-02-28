@@ -16,7 +16,6 @@
  *
 ************************************************************************************************************/
 using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.I18n;
 
@@ -32,22 +31,13 @@ namespace Xpandables.Net.Aggregates;
 /// </remarks>
 /// <param name="eventStore"></param>
 /// <param name="eventPublisher"></param>
-/// <param name="eventOutbox"></param>
 /// <exception cref="ArgumentNullException"></exception>
 public sealed class AggregateStore<TAggregate, TAggregateId>(
     IDomainEventStore eventStore,
-    IDomainEventPublisher<TAggregateId> eventPublisher,
-    IIntegrationEventOutbox eventOutbox) : IAggregateStore<TAggregate, TAggregateId>
+    IDomainEventPublisher<TAggregateId> eventPublisher) : IAggregateStore<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
-    private readonly IDomainEventStore _eventStore = eventStore
-        ?? throw new ArgumentNullException(nameof(eventStore));
-    private readonly IDomainEventPublisher<TAggregateId> _eventPublisher = eventPublisher
-        ?? throw new ArgumentNullException(nameof(eventPublisher));
-    private readonly IIntegrationEventOutbox _eventOutbox = eventOutbox
-        ?? throw new ArgumentNullException(nameof(eventOutbox));
-
     ///<inheritdoc/>
     public async ValueTask<IOperationResult> AppendAsync(
         TAggregate aggregate,
@@ -59,9 +49,11 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
         {
             foreach (IDomainEvent<TAggregateId> @event in aggregate.GetUncommittedEvents())
             {
-                await _eventStore.AppendAsync(@event, cancellationToken).ConfigureAwait(false);
+                await eventStore
+                    .AppendAsync(@event, cancellationToken)
+                    .ConfigureAwait(false);
 
-                OperationResult operationResult = await _eventPublisher
+                OperationResult operationResult = await eventPublisher
                     .PublishAsync((dynamic)@event, cancellationToken)
                     .ConfigureAwait(false);
 
@@ -69,17 +61,14 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
                     return operationResult;
             }
 
-            if (await _eventOutbox.AppendAsync(cancellationToken)
-                .ConfigureAwait(false) is { IsFailure: true } failedOperation)
-                return failedOperation;
-
             aggregate.MarkEventsAsCommitted();
 
             return OperationResults
                 .Ok()
                 .Build();
         }
-        catch (Exception exception) when (exception is not ArgumentNullException)
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
         {
             return OperationResults
                 .InternalError()
@@ -101,7 +90,8 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
             TAggregate aggregate = AggregateExtensions
                 .CreateEmptyAggregateInstance<TAggregate, TAggregateId>();
 
-            await foreach (IDomainEvent<TAggregateId> @event in _eventStore.ReadAsync(aggregateId, cancellationToken))
+            await foreach (IDomainEvent<TAggregateId> @event in eventStore
+                .ReadAsync(aggregateId, cancellationToken))
             {
                 aggregate.LoadFromHistory(@event);
             }
@@ -110,7 +100,8 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
                 ? OperationResults.NotFound<TAggregate>().Build()
                 : OperationResults.Ok(aggregate).Build();
         }
-        catch (Exception exception) when (exception is not ArgumentNullException)
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
         {
             return OperationResults
                 .InternalError<TAggregate>()

@@ -15,13 +15,12 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Reflection;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-using Xpandables.Net.IntegrationEvents;
-using Xpandables.Net.IntegrationEvents.Messaging;
+using System.Reflection;
+
+using Xpandables.Net.Aggregates.Notifications;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -30,41 +29,41 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionIntegrationEventExtensions
 {
-    internal readonly static MethodInfo AddIntegrationEventHandlerMethod
-        = typeof(ServiceCollectionIntegrationEventExtensions).GetMethod(nameof(AddXIntegrationEventHandler))!;
+    internal readonly static MethodInfo AddNotificationHandlerMethod
+        = typeof(ServiceCollectionIntegrationEventExtensions).GetMethod(nameof(AddXNotificationHandler))!;
 
     /// <summary>
-    /// Adds the <typeparamref name="TIntegrationEventHandler"/> to the services 
+    /// Adds the <typeparamref name="TNotificationHandler"/> to the services 
     /// with scope life time using the factory if specified.
     /// </summary>
-    /// <typeparam name="TIntegrationEvent">The type of the integration event.</typeparam>
-    /// <typeparam name="TIntegrationEventHandler">The type of the integration event handler.</typeparam>
+    /// <typeparam name="TNotification">The type of the integration event.</typeparam>
+    /// <typeparam name="TNotificationHandler">The type of the integration event handler.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <param name="implementationHandlerFactory">The factory that creates the integration event handler.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventHandler<TIntegrationEvent, TIntegrationEventHandler>(
+    public static IServiceCollection AddXNotificationHandler<TNotification, TNotificationHandler>(
         this IServiceCollection services,
-        Func<IServiceProvider, TIntegrationEventHandler>? implementationHandlerFactory = default)
-        where TIntegrationEventHandler : class, IIntegrationEventHandler<TIntegrationEvent>
-        where TIntegrationEvent : notnull, IIntegrationEvent
+        Func<IServiceProvider, TNotificationHandler>? implementationHandlerFactory = default)
+        where TNotificationHandler : class, INotificationHandler<TNotification>
+        where TNotification : notnull, INotification
     {
         ArgumentNullException.ThrowIfNull(services);
 
         _ = services.DoRegisterTypeServiceLifeTime
-            <IIntegrationEventHandler<TIntegrationEvent>, TIntegrationEventHandler>(
+            <INotificationHandler<TNotification>, TNotificationHandler>(
             implementationHandlerFactory);
 
-        _ = services.AddScoped<IntegrationEventHandler<TIntegrationEvent>>(
+        _ = services.AddScoped<NotificationHandler<TNotification>>(
             provider => provider
-                .GetRequiredService<IIntegrationEventHandler<TIntegrationEvent>>()
+                .GetRequiredService<INotificationHandler<TNotification>>()
                 .HandleAsync);
 
         return services;
     }
 
     /// <summary>
-    /// Adds the <see cref="IIntegrationEventHandler{TIntegrationEvent}"/> 
+    /// Adds the <see cref="INotificationHandler{TNotification}"/> 
     /// implementations to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -73,7 +72,7 @@ public static class ServiceCollectionIntegrationEventExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventHandlers(
+    public static IServiceCollection AddXNotificationHandlers(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -83,103 +82,61 @@ public static class ServiceCollectionIntegrationEventExtensions
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
-            typeof(IIntegrationEventHandler<>),
-            AddIntegrationEventHandlerMethod,
+            typeof(INotificationHandler<>),
+            AddNotificationHandlerMethod,
             assemblies);
     }
 
     /// <summary>
-    /// Adds the specified type as <see cref="IIntegrationEventSourcing"/> event sourcing with scoped life time.
+    /// Registers the implementation as <see cref="INotificationStore"/> to the services with scope life time.
     /// </summary>
+    /// <typeparam name="TNotificationStore">The type of that implements <see cref="INotificationStore"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventSourcing
-        <TIntegrationEventSourcing>(this IServiceCollection services)
-        where TIntegrationEventSourcing : class, IIntegrationEventSourcing
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAddScoped<IIntegrationEventSourcing, TIntegrationEventSourcing>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds the default type as <see cref="IIntegrationEventSourcing"/> event sourcing with scoped life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventSourcing(this IServiceCollection services)
-        => services.AddXIntegrationEventSourcing<IntegrationEventSourcing>();
-
-    /// <summary>
-    /// Adds <see cref="IIntegrationEventOutbox"/> transient integration 
-    /// event Outbox behavior to command handlers with transient life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventOutbox(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAddScoped<IIntegrationEventOutbox, IntegrationEventOutbox>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the implementation as <see cref="IIntegrationEventStore"/> to the services with scope life time.
-    /// </summary>
-    /// <typeparam name="TIntegrationEventStore">The type of that implements <see cref="IIntegrationEventStore"/>.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventStore
-        <TIntegrationEventStore>(this IServiceCollection services)
-        where TIntegrationEventStore : class, IIntegrationEventStore
+    public static IServiceCollection AddXNotificationStore
+        <TNotificationStore>(this IServiceCollection services)
+        where TNotificationStore : class, INotificationStore
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IIntegrationEventStore),
-                typeof(TIntegrationEventStore),
+                typeof(INotificationStore),
+                typeof(TNotificationStore),
                 ServiceLifetime.Scoped));
 
         return services;
     }
 
     /// <summary>
-    /// Registers the default <see cref="IIntegrationEventPublisher"/> implementation to the services with scope life time.
+    /// Registers the default <see cref="INotificationPublisher"/> implementation to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventPublisher(this IServiceCollection services)
-        => services.AddXIntegrationEventPublisher<IntegrationEventPublisher>();
+    public static IServiceCollection AddXNotificationPublisher(this IServiceCollection services)
+        => services.AddXNotificationPublisher<NotificationPublisher>();
 
     /// <summary>
-    /// Registers the <typeparamref name="TIntegrationEventPublisher"/> 
-    /// as <see cref="IIntegrationEventPublisher"/> type implementation 
+    /// Registers the <typeparamref name="TNotificationPublisher"/> 
+    /// as <see cref="INotificationPublisher"/> type implementation 
     /// to the services with scope life time.
     /// </summary>
-    /// <typeparam name="TIntegrationEventPublisher">The integration event publisher type implementation.</typeparam>
+    /// <typeparam name="TNotificationPublisher">The notification publisher type implementation.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXIntegrationEventPublisher<TIntegrationEventPublisher>(
+    public static IServiceCollection AddXNotificationPublisher<TNotificationPublisher>(
         this IServiceCollection services)
-        where TIntegrationEventPublisher : class, IIntegrationEventPublisher
+        where TNotificationPublisher : class, INotificationPublisher
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IIntegrationEventPublisher),
-                typeof(TIntegrationEventPublisher),
+                typeof(INotificationPublisher),
+                typeof(TNotificationPublisher),
                 ServiceLifetime.Scoped));
 
         return services;

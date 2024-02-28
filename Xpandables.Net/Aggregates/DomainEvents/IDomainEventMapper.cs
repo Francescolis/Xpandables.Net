@@ -14,12 +14,12 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Xpandables.Net.IntegrationEvents;
+using Xpandables.Net.Aggregates.Notifications;
 
 namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
-/// Allows application author to map domain event to integration event in a Centralized Event Mapper.
+/// Allows application author to map domain event to notification in a Centralized Event Mapper.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
 /// <remarks>The implementation should be a singleton class or a class with singleton lifetime.</remarks>
@@ -27,18 +27,18 @@ public interface IDomainEventMapper<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
-    /// Maps the specified domain event to an integration event.
+    /// Maps the specified domain event to a notification.
     /// </summary>
     /// <param name="event">The domain event to be mapped.</param>
-    /// <returns>An integration event from the domain event mapped.</returns>
-    IIntegrationEvent Map(IDomainEvent<TAggregateId> @event);
+    /// <returns>A  notification from the domain event mapped.</returns>
+    INotification Map(IDomainEvent<TAggregateId> @event);
 
     /// <summary>
-    /// Maps the specified domain events to integration events.
+    /// Maps the specified domain events to notifications.
     /// </summary>
     /// <param name="events">The collection of domain events to be  mapped.</param>
-    /// <returns>A collection of integration events from the domain events mapped.</returns>
-    public IEnumerable<IIntegrationEvent> MapAll(
+    /// <returns>A collection of notifications from the domain events mapped.</returns>
+    public IEnumerable<INotification> MapAll(
         IEnumerable<IDomainEvent<TAggregateId>> events)
         => events.Select(Map);
 }

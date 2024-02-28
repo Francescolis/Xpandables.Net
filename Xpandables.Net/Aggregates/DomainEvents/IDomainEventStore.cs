@@ -62,7 +62,7 @@ public interface IDomainEventStore : IDisposable
     /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
     /// <param name="filter">The filter to search domain events for.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <returns>An enumerator of <typeparamref name="TAggregateId"/> type that can be asynchronously enumerated.</returns>
+    /// <returns>An enumerator of <see cref="IDomainEvent{TAggregateId}"/> type that can be asynchronously enumerated.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="filter"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
     IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(

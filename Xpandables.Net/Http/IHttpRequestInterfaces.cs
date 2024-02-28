@@ -152,7 +152,7 @@ public interface IHttpRequestHeader
     /// If a key is already present, its value will be replaced with the new one.
     /// </summary>
     IDictionary<string, IEnumerable<string?>> GetHeadersSource()
-        => GetHeaderSource().ToDictionary(d => d.Key, d => (IEnumerable<string?>)new[] { d.Value });
+        => GetHeaderSource().ToDictionary(d => d.Key, d => (IEnumerable<string?>)[d.Value]);
 
     /// <summary>
     /// Returns the model name of the header attribute.

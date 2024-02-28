@@ -96,7 +96,7 @@ public sealed class DecoratorUnitTest
     [Fact]
     public void DecoratorRegistration_Should_Return_DecoratorHandler()
     {
-        var handler = _serviceProvider
+        IQueryHandler<QueryDecorated, string>? handler = _serviceProvider
             .GetService<IQueryHandler<QueryDecorated, string>>();
 
         handler.Should().NotBeNull();
@@ -106,7 +106,7 @@ public sealed class DecoratorUnitTest
     [Fact]
     public void Decorator_Should_Match_Number_Registered()
     {
-        var handlers = _serviceProvider
+        IEnumerable<IQueryHandler<QueryDecorated, string>> handlers = _serviceProvider
             .GetServices<IQueryHandler<QueryDecorated, string>>();
 
         handlers.Should().Contain(

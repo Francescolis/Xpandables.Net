@@ -18,18 +18,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.SnapShots;
 
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the <see cref="IntegrationEventRecord"/> configuration.
+/// Defines the <see cref="EntitySnapShot"/> configuration.
 /// </summary>
-public sealed class IntegrationEventRecordTypeConfiguration : IEntityTypeConfiguration<IntegrationEventRecord>
+public sealed class EntitySnapShotTypeConfiguration : IEntityTypeConfiguration<EntitySnapShot>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<IntegrationEventRecord> builder)
+    public void Configure(EntityTypeBuilder<EntitySnapShot> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -37,9 +37,11 @@ public sealed class IntegrationEventRecordTypeConfiguration : IEntityTypeConfigu
         _ = builder.HasKey(p => p.Id);
         _ = builder.HasIndex(p => p.Id).IsUnique();
 
+        _ = builder.Property(p => p.ObjectId);
+        _ = builder.Property(p => p.ObjectTypeName);
+        _ = builder.Property(p => p.MementoTypeName);
         _ = builder.Property(p => p.Data);
-        _ = builder.Property(p => p.TypeFullName);
-        _ = builder.Property(p => p.ErrorMessage);
+        _ = builder.Property(p => p.Version);
 
         _ = builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }

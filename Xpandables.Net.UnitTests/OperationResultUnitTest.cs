@@ -82,8 +82,8 @@ public sealed class OperationResultUnitTest
             .WithUrl(url)
             .Build();
 
-        var barResultJson = JsonSerializer.Serialize(badResult);
-        var okResultJson = JsonSerializer.Serialize(okResult);
+        string barResultJson = JsonSerializer.Serialize(badResult);
+        string okResultJson = JsonSerializer.Serialize(okResult);
 
         IOperationResult<string> expectedOkResult = JsonSerializer.Deserialize<IOperationResult<string>>(okResultJson)!;
         IOperationResult<string> expectedBadResult = JsonSerializer.Deserialize<IOperationResult<string>>(barResultJson)!;
@@ -118,7 +118,7 @@ public sealed class OperationResultUnitTest
     [InlineData(HttpStatusCode.Accepted)]
     public void OperationResult_Should_Be_Success(HttpStatusCode statusCode)
     {
-        var action = () => statusCode.EnsureSuccessStatusCode();
+        Func<HttpStatusCode> action = () => statusCode.EnsureSuccessStatusCode();
 
         action().Should().Be(statusCode);
     }
@@ -127,7 +127,7 @@ public sealed class OperationResultUnitTest
     [InlineData(HttpStatusCode.BadRequest)]
     public void OperationResult_Should_Be_Failure(HttpStatusCode statusCode)
     {
-        var action = () => statusCode.EnsureSuccessStatusCode();
+        Func<HttpStatusCode> action = () => statusCode.EnsureSuccessStatusCode();
 
         action.Should().Throw<InvalidOperationException>();
     }

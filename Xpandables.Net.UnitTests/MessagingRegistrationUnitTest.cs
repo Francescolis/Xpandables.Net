@@ -20,9 +20,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
+using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.IntegrationEvents;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.Collections;
 
@@ -39,7 +39,7 @@ public readonly record struct AddProductCommand(Guid ProductId, int Quantity) : 
 public readonly record struct GetProductQuery(Guid ProductId) : IQuery<string>;
 public readonly record struct GetProductAsyncQuery(Guid ProductId) : IAsyncQuery<string>;
 public sealed record class ProductAddedEvent(Guid ProductId, int Qty) : DomainEvent<ProductId>;
-public sealed record class ProductAddedIntegrationEvent : IntegrationEvent;
+public sealed record class ProductAddedIntegrationEvent : Notification;
 public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand>
 {
     public async ValueTask<IOperationResult> HandleAsync(
@@ -85,7 +85,7 @@ public sealed class ProductAddedEventHandler : IDomainEventHandler<ProductAddedE
 }
 
 public sealed class ProductAddedIntegrationEventHandler
-    : IIntegrationEventHandler<ProductAddedIntegrationEvent>
+    : INotificationHandler<ProductAddedIntegrationEvent>
 {
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedIntegrationEvent @event,
@@ -104,14 +104,14 @@ public sealed class MessagingRegistrationUnitTest
             .AddXQueryHandlers()
             .AddXAsyncQueryHandlers()
             .AddXDomainEventHandlers()
-            .AddXIntegrationEventHandlers()
+            .AddXNotificationHandlers()
             .BuildServiceProvider();
     }
 
     [Fact]
     public void MessagingRegistration_Should_Return_CommandHandler()
     {
-        var handler = _serviceProvider
+        ICommandHandler<AddProductCommand>? handler = _serviceProvider
             .GetService<ICommandHandler<AddProductCommand>>();
 
         handler.Should().NotBeNull();
@@ -121,7 +121,7 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_QueryHandler()
     {
-        var handler = _serviceProvider
+        IQueryHandler<GetProductQuery, string>? handler = _serviceProvider
             .GetService<IQueryHandler<GetProductQuery, string>>();
 
         handler.Should().NotBeNull();
@@ -131,7 +131,7 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_AsyncQueryHandler()
     {
-        var handler = _serviceProvider
+        IAsyncQueryHandler<GetProductAsyncQuery, string>? handler = _serviceProvider
             .GetService<IAsyncQueryHandler<GetProductAsyncQuery, string>>();
 
         handler.Should().NotBeNull();
@@ -141,7 +141,7 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_DomainEventHandler()
     {
-        var handler = _serviceProvider
+        IDomainEventHandler<ProductAddedEvent, ProductId>? handler = _serviceProvider
             .GetService<IDomainEventHandler<ProductAddedEvent, ProductId>>();
 
         handler.Should().NotBeNull();
@@ -151,8 +151,8 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_IntegrationEventHandler()
     {
-        var handler = _serviceProvider
-            .GetService<IIntegrationEventHandler<ProductAddedIntegrationEvent>>();
+        INotificationHandler<ProductAddedIntegrationEvent>? handler = _serviceProvider
+            .GetService<INotificationHandler<ProductAddedIntegrationEvent>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<ProductAddedIntegrationEventHandler>();

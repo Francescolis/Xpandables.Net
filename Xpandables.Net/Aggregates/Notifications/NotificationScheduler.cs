@@ -18,32 +18,28 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
 using Xpandables.Net.HostedServices;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.IntegrationEvents;
+namespace Xpandables.Net.Aggregates.Notifications;
 
-internal sealed class IntegrationEventTransientScheduler(
+internal sealed class NotificationScheduler(
     IServiceScopeFactory scopeFactory,
-    IOptions<IntegrationEventSchedulerOptions> options,
-    ILogger<IntegrationEventTransientScheduler> logger)
-    : BackgroundServiceBase<IntegrationEventTransientScheduler>, IIntegrationEventTransientScheduler
+    IOptions<NotificationOptions> options,
+    ILogger<NotificationScheduler> logger)
+    : BackgroundServiceBase<NotificationScheduler>, INotificationScheduler
 {
     private int _attempts;
-    private readonly IServiceScopeFactory _scopeFactory = scopeFactory
-        ?? throw new ArgumentNullException(nameof(scopeFactory));
-    private readonly IntegrationEventSchedulerOptions _options = options.Value
-        ?? throw new ArgumentNullException(nameof(options));
-    private readonly ILogger<IntegrationEventTransientScheduler> _logger = logger
-        ?? throw new ArgumentNullException(nameof(logger));
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         IsRunning = true;
         _attempts = 0;
 
-        using PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(_options.DelayMilliSeconds));
+        using PeriodicTimer periodicTimer = new(
+            TimeSpan.FromMilliseconds(options.Value.DelayMilliSeconds));
 
         while (!stoppingToken.IsCancellationRequested
             && await periodicTimer.WaitForNextTickAsync(stoppingToken)
@@ -56,14 +52,14 @@ internal sealed class IntegrationEventTransientScheduler(
             }
             catch (OperationCanceledException cancelException)
             {
-                _logger.CancelExecutingProcess(nameof(IntegrationEventTransientScheduler), cancelException);
+                logger.CancelExecutingProcess(nameof(NotificationScheduler), cancelException);
                 IsRunning = false;
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                _logger.ErrorExecutingProcess(nameof(IntegrationEventTransientScheduler), exception);
+                logger.ErrorExecutingProcess(nameof(NotificationScheduler), exception);
 
-                if (++_attempts > _options.MaxAttempts)
+                if (++_attempts > options.Value.MaxAttempts)
                 {
                     using CancellationTokenSource cancellationSource = CancellationTokenSource
                         .CreateLinkedTokenSource(stoppingToken, new CancellationToken(true));
@@ -75,24 +71,30 @@ internal sealed class IntegrationEventTransientScheduler(
                     return;
                 }
 
-                _logger.RetryExecutingProcess(nameof(IntegrationEventTransientScheduler), _attempts, _options.DelayMilliSeconds);
+                logger.RetryExecutingProcess(
+                    nameof(NotificationScheduler),
+                    _attempts,
+                    options.Value.DelayMilliSeconds);
             }
         }
     }
 
     private async Task DoExecuteAsync(CancellationToken cancellationToken)
     {
-        using AsyncServiceScope service = _scopeFactory.CreateAsyncScope();
+        using AsyncServiceScope service = scopeFactory.CreateAsyncScope();
 
-        IIntegrationEventPublisher publisher = service.ServiceProvider
-            .GetRequiredService<IIntegrationEventPublisher>();
+        INotificationPublisher publisher = service.ServiceProvider
+            .GetRequiredService<INotificationPublisher>();
 
-        IIntegrationEventStore eventStore = service.ServiceProvider
-            .GetRequiredService<IIntegrationEventStore>();
+        INotificationStore eventStore = service.ServiceProvider
+            .GetRequiredService<INotificationStore>();
 
-        Pagination pagination = Pagination.With(0, _options.TotalPerThread);
+        INotificationFilter filter = new NotificationFilter
+        {
+            Pagination = Pagination.With(0, options.Value.TotalPerThread)
+        };
 
-        await foreach (IIntegrationEvent @event in eventStore.ReadAsync(pagination, cancellationToken))
+        await foreach (INotification @event in eventStore.ReadAsync(filter, cancellationToken))
         {
             try
             {
@@ -100,19 +102,18 @@ internal sealed class IntegrationEventTransientScheduler(
                     .PublishAsync((dynamic)@event, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (operationResult.IsFailure)
-                    await eventStore
-                        .SetErrorAsync(@event.Id, new OperationResultException(operationResult), cancellationToken)
-                        .ConfigureAwait(false);
-                else
-                    await eventStore
-                        .MarkAsProcessedAsync(@event.Id, cancellationToken)
-                        .ConfigureAwait(false);
+                OperationResultException? exception = operationResult.IsFailure
+                    ? new OperationResultException(operationResult)
+                    : default;
+
+                await eventStore
+                    .AppendCloseAsync(@event.Id, exception, cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception exception) when (exception is not ArgumentNullException)
             {
                 await eventStore
-                    .SetErrorAsync(@event.Id, exception, cancellationToken)
+                    .AppendCloseAsync(@event.Id, exception, cancellationToken)
                     .ConfigureAwait(false);
             }
         }

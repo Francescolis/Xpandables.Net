@@ -27,7 +27,7 @@ namespace Xpandables.Net.SnapShots;
 /// Represents a snapshot to be written.
 /// Make use of <see langword="using"/> key work when call or call dispose method.
 /// </summary>
-public sealed class SnapShotRecord : Entity<Guid>, IDisposable
+public sealed class EntitySnapShot : Entity<Guid>, IDisposable
 {
     /// <summary>
     /// Constructs a snapshot record from the specified snapshot.
@@ -35,7 +35,7 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
     /// <param name="descriptor">The descriptor originator to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of snapshot entity built from the snapshot.</returns>
-    public static SnapShotRecord FromSnapShotDescriptor(
+    public static EntitySnapShot FromSnapShotDescriptor(
         SnapShotDescriptor descriptor,
         JsonSerializerOptions options)
     {
@@ -57,7 +57,7 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of event built from the entity.</returns>
     public static IMemento? ToMemento(
-        SnapShotRecord record,
+        EntitySnapShot record,
         JsonSerializerOptions? options)
     {
         ArgumentNullException.ThrowIfNull(record);
@@ -70,7 +70,7 @@ public sealed class SnapShotRecord : Entity<Guid>, IDisposable
     }
 
     ///<inheritdoc/>
-    private SnapShotRecord(
+    private EntitySnapShot(
         Guid objectId,
         ulong version,
         string objectTypeName,

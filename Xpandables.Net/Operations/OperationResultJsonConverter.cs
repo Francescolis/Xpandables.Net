@@ -126,17 +126,21 @@ public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
 
-        if (typeToConvert.IsGenericType
+        if ((typeToConvert.IsGenericType
+            && typeToConvert.IsInterface
+            && typeToConvert.GetGenericTypeDefinition() == typeof(IOperationResult<>))
+        || (typeToConvert.IsGenericType
             && typeToConvert.GetInterfaces()
-                .Exists(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IOperationResult<>)))
+                .Exists(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IOperationResult<>))))
         {
             Type elementType = typeToConvert.GetGenericArguments()[0];
             return Activator
                 .CreateInstance(typeof(OperationResultJsonConverter<,>)
                     .MakeGenericType([typeToConvert, elementType])) as JsonConverter;
         }
-        else if (!typeToConvert.IsGenericType
-            && typeToConvert.GetInterfaces()
+        else if ((typeToConvert.IsInterface
+            && typeToConvert == typeof(IOperationResult))
+            || typeToConvert.GetInterfaces()
                 .Exists(i => !i.IsGenericType && i == typeof(IOperationResult)))
         {
             return Activator

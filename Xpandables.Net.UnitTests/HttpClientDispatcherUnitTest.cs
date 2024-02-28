@@ -15,11 +15,11 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Text.Json;
-
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using System.Text.Json;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
@@ -31,7 +31,7 @@ public sealed class HttpClientDispatcherUnitTest
     private readonly IHttpClientRequestBuilder _httpClientRequestBuilder;
     public HttpClientDispatcherUnitTest()
     {
-        var services = new ServiceCollection();
+        ServiceCollection services = new();
         services
             .AddSingleton(new JsonSerializerOptions(JsonSerializerDefaults.Web))
             .AddXHttpClientRequestBuilder()
@@ -47,7 +47,7 @@ public sealed class HttpClientDispatcherUnitTest
                     .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(HttpClientParameters.ContentType.Json));
             });
 
-        var provider = services.BuildServiceProvider();
+        ServiceProvider provider = services.BuildServiceProvider();
 
         _dispatcher = provider.GetRequiredService<IHttpMonkeyDispatcher>();
         _httpClientRequestBuilder = provider.GetRequiredService<IHttpClientRequestBuilder>();
@@ -56,9 +56,9 @@ public sealed class HttpClientDispatcherUnitTest
     [Fact]
     public async Task BuildCustomHttpClientDispatcherAndReturnsAsyncEnumerable()
     {
-        var monkeys = new List<Monkey>();
+        List<Monkey> monkeys = [];
 
-        await foreach (var monkey in _dispatcher.GetMonkeyAsync())
+        await foreach (Monkey monkey in _dispatcher.GetMonkeyAsync())
             monkeys.Add(monkey);
 
         monkeys.Should().NotBeEmpty();
@@ -67,7 +67,7 @@ public sealed class HttpClientDispatcherUnitTest
     [Fact]
     public async Task AssertPatchWorks()
     {
-        var request = new Request("MyName", DateTime.UtcNow, 32)
+        Request request = new("MyName", DateTime.UtcNow, 32)
         {
             PatchOperationsBuilder = req => new List<IPatchOperation>
             {
@@ -78,7 +78,7 @@ public sealed class HttpClientDispatcherUnitTest
         };
 
 
-        var expectedResult = JsonSerializer.Serialize(request.PatchOperations);
+        string expectedResult = JsonSerializer.Serialize(request.PatchOperations);
 
         HttpRequestMessage message = await _httpClientRequestBuilder
             .BuildHttpRequestAsync(request, _dispatcher.HttpClient, new(JsonSerializerDefaults.Web));
@@ -120,10 +120,10 @@ sealed class HttpMonkeyDispatcher(
 {
     public async IAsyncEnumerable<Monkey> GetMonkeyAsync()
     {
-        var query = new Query();
-        using var response = await SendAsync(query).ConfigureAwait(false);
+        Query query = new();
+        using HttpClientResponse<IAsyncEnumerable<Monkey>> response = await SendAsync(query).ConfigureAwait(false);
 
-        await foreach (var monkey in response.Result)
+        await foreach (Monkey monkey in response.Result)
             yield return monkey;
     }
 }

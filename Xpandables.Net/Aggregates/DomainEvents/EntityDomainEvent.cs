@@ -29,17 +29,17 @@ namespace Xpandables.Net.Aggregates.DomainEvents;
 /// Make use of <see langword="using"/> key work when call or call dispose method.
 /// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-public sealed class DomainEventRecord : Entity<Guid>, IDisposable
+public sealed class EntityDomainEvent : Entity<Guid>, IDisposable
 {
     /// <summary>
-    /// Constructs a domain event record from the specified event.
+    /// Constructs a domain event entity from the specified event.
     /// </summary>
     /// <typeparam name="TAggregateId">Type of aggregate Id.</typeparam>
     /// <param name="event">The domain event to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of domain event record built 
     /// from the domain event.</returns>
-    public static DomainEventRecord FromDomainEvent<TAggregateId>(
+    public static EntityDomainEvent TEntityDomainEvent<TAggregateId>(
         IDomainEvent<TAggregateId> @event,
         JsonSerializerOptions options)
         where TAggregateId : struct, IAggregateId<TAggregateId>
@@ -60,20 +60,20 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
     /// Constructs a domain event from the specified record.
     /// </summary>
     /// <typeparam name="TAggregateId">Type of aggregate Id.</typeparam>
-    /// <param name="record">The record to act with.</param>
+    /// <param name="entity">The record to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of domain event built from the entity.</returns>
-    public static IDomainEvent<TAggregateId>? ToDomainEventRecord<TAggregateId>(
-        DomainEventRecord record,
+    public static IDomainEvent<TAggregateId>? ToDomainEvent<TAggregateId>(
+        EntityDomainEvent entity,
         JsonSerializerOptions? options)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
-        ArgumentNullException.ThrowIfNull(record);
+        ArgumentNullException.ThrowIfNull(entity);
 
-        if (Type.GetType(record.EventTypeFullName) is not { } eventType)
+        if (Type.GetType(entity.EventTypeFullName) is not { } eventType)
             return default;
 
-        object? eventObject = record.Data.Deserialize(eventType, options);
+        object? eventObject = entity.Data.Deserialize(eventType, options);
         return eventObject as IDomainEvent<TAggregateId>;
     }
 
@@ -118,7 +118,7 @@ public sealed class DomainEventRecord : Entity<Guid>, IDisposable
     }
 
     ///inheritdoc/>
-    private DomainEventRecord(
+    private EntityDomainEvent(
         Guid aggregateId,
         string aggregateIdTypeName,
         ulong version,

@@ -18,18 +18,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.SnapShots;
 
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the <see cref="SnapShotRecord"/> configuration.
+/// Defines the <see cref="EntityNotification"/> configuration.
 /// </summary>
-public sealed class SnapShotRecordTypeConfiguration : IEntityTypeConfiguration<SnapShotRecord>
+public sealed class EntityNotificationTypeConfiguration : IEntityTypeConfiguration<EntityNotification>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<SnapShotRecord> builder)
+    public void Configure(EntityTypeBuilder<EntityNotification> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -37,11 +37,9 @@ public sealed class SnapShotRecordTypeConfiguration : IEntityTypeConfiguration<S
         _ = builder.HasKey(p => p.Id);
         _ = builder.HasIndex(p => p.Id).IsUnique();
 
-        _ = builder.Property(p => p.ObjectId);
-        _ = builder.Property(p => p.ObjectTypeName);
-        _ = builder.Property(p => p.MementoTypeName);
         _ = builder.Property(p => p.Data);
-        _ = builder.Property(p => p.Version);
+        _ = builder.Property(p => p.TypeFullName);
+        _ = builder.Property(p => p.ErrorMessage);
 
         _ = builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }
