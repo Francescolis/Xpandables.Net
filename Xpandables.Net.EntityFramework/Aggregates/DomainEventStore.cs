@@ -134,6 +134,10 @@ public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializ
             expression = expression.And(x =>
             x.CreatedOn <= filter.ToCreatedOn.Value);
 
+        if (filter.Status is not null)
+            expression = expression.And(x =>
+            EF.Functions.Like(x.Status, $"%{filter.Status}%"));
+
         if (filter.DataCriteria is not null)
         {
             _ = Expression.Invoke(

@@ -50,6 +50,12 @@ public interface INotificationFilter
     string? EventTypeName { get; init; }
 
     /// <summary>
+    /// Gets or sets the event status to search for.
+    /// If null, all status will be checked.
+    /// </summary>
+    string? Status { get; init; }
+
+    /// <summary>
     /// Gets or sets the date to start search. 
     /// It can be used alone or combined with <see cref="ToCreatedOn"/>.
     /// </summary>
@@ -70,6 +76,12 @@ public interface INotificationFilter
     /// Gets or sets the pagination.
     /// </summary>
     Pagination? Pagination { get; init; }
+
+    /// <summary>
+    /// If defined, the filter will return only the records that have an error 
+    /// (<see langword="true"/>) or not (<see langword="false"/>).
+    /// </summary>
+    bool? OnError { get; init; }
 
     /// <summary>
     /// Gets or sets the minimal version. 

@@ -60,6 +60,12 @@ public interface IDomainEventFilter
     string? EventTypeName { get; init; }
 
     /// <summary>
+    /// Gets or sets the event status to search for.
+    /// If null, all status will be checked.
+    /// </summary>
+    string? Status { get; init; }
+
+    /// <summary>
     /// Gets or sets the date to start search. 
     /// It can be used alone or combined with <see cref="ToCreatedOn"/>.
     /// </summary>

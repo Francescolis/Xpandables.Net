@@ -44,6 +44,9 @@ public record DomainEventFilter : IDomainEventFilter
     public string? EventTypeName { get; init; }
 
     /// <inheritdoc/>
+    public string? Status { get; init; }
+
+    /// <inheritdoc/>
     public DateTime? FromCreatedOn { get; init; }
 
     /// <inheritdoc/>

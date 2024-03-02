@@ -39,6 +39,9 @@ public record NotificationFilter : INotificationFilter
     public string? EventTypeName { get; init; }
 
     /// <inheritdoc/>
+    public string? Status { get; init; }
+
+    /// <inheritdoc/>
     public DateTime? FromCreatedOn { get; init; }
 
     /// <inheritdoc/>
@@ -49,6 +52,9 @@ public record NotificationFilter : INotificationFilter
 
     /// <inheritdoc/>
     public DateTime? ToCreatedOn { get; init; }
+
+    /// <inheritdoc/>
+    public bool? OnError { get; init; }
 
     /// <inheritdoc/>
     public ulong? Version { get; init; }

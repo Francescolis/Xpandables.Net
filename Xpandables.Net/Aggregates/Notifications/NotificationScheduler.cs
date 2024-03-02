@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Xpandables.Net.HostedServices;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Notifications;
 
@@ -91,7 +92,8 @@ internal sealed class NotificationScheduler(
 
         INotificationFilter filter = new NotificationFilter
         {
-            Pagination = Pagination.With(0, options.Value.TotalPerThread)
+            Pagination = Pagination.With(0, options.Value.TotalPerThread),
+            Status = EntityStatus.ACTIVE
         };
 
         await foreach (INotification @event in eventStore.ReadAsync(filter, cancellationToken))
