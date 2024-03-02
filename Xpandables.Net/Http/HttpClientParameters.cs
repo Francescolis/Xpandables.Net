@@ -216,6 +216,11 @@ public sealed class HttpClientParameters
         public const string JsonPatch = "application/json-patch+json";
 
         /// <summary>
+        /// Returns the application json problem content type
+        /// </summary>
+        public const string JsonProblem = "application/problem+json";
+
+        /// <summary>
         /// Returns the application XML content type.
         /// </summary>
         public const string Xml = "application/xml";

@@ -102,4 +102,114 @@ public static partial class OperationResultExtensions
             .WithError(ElementEntry.UndefinedKey, exception.ToString())
             .Build();
     }
+
+    /// <summary>
+    /// Converts the current <see cref="ValueTask"/> to a <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <param name="valueTask">The task to act on.</param>
+    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="valueTask"/> is null.</exception>
+    public static async ValueTask<IOperationResult> ToOperationResultAsync(
+        this ValueTask valueTask)
+    {
+        ArgumentNullException.ThrowIfNull(valueTask);
+
+        try
+        {
+            await valueTask.ConfigureAwait(false);
+            return OperationResults.Ok().Build();
+        }
+        catch (OperationResultException operationResultException)
+        {
+            return operationResultException.OperationResult;
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            return exception.ToOperationResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts the current <see cref="Task"/> to a <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <param name="task">The task to act on.</param>
+    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="task"/> is null.</exception>
+    public static async ValueTask<IOperationResult> ToOperationResultAsync(
+        this Task task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        try
+        {
+            await task.ConfigureAwait(false);
+            return OperationResults.Ok().Build();
+        }
+        catch (OperationResultException operationResultException)
+        {
+            return operationResultException.OperationResult;
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            return exception.ToOperationResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts the current <see cref="ValueTask{TResult}"/> to a <see cref="IOperationResult{TResult}"/>.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="valueTask">The task to act on.</param>
+    /// <returns>An instance of <see cref="IOperationResult{TResult}"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="valueTask"/> is null.</exception>
+    public static async ValueTask<IOperationResult<TResult>> ToOperationResultAsync<TResult>(
+        this ValueTask<TResult> valueTask)
+    {
+        ArgumentNullException.ThrowIfNull(valueTask);
+
+        try
+        {
+            TResult result = await valueTask.ConfigureAwait(false);
+            return OperationResults.Ok(result).Build();
+        }
+        catch (OperationResultException operationResultException)
+        {
+            return operationResultException.OperationResult.ToOperationResult<TResult>();
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            return exception.ToOperationResult().ToOperationResult<TResult>();
+        }
+    }
+
+    /// <summary>
+    /// Converts the current <see cref="Task{TResult}"/> to a <see cref="IOperationResult{TResult}"/>.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="task">The task to act on.</param>
+    /// <returns>An instance of <see cref="IOperationResult{TResult}"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="task"/> is null.</exception>
+    public static async ValueTask<IOperationResult<TResult>> ToOperationResultAsync<TResult>(
+        this Task<TResult> task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        try
+        {
+            TResult result = await task.ConfigureAwait(false);
+            return OperationResults.Ok(result).Build();
+        }
+        catch (OperationResultException operationResultException)
+        {
+            return operationResultException.OperationResult.ToOperationResult<TResult>();
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            return exception.ToOperationResult().ToOperationResult<TResult>();
+        }
+    }
 }
