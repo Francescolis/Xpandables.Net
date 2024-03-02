@@ -316,7 +316,7 @@ public static partial class OperationResultExtensions
                 string parameterName = badHttpRequestException
                     .Message[startParameterNameIndex..endParameterNameIndex];
 
-                parameterName = parameterName.Split(" ")[1].Trim();
+                parameterName = parameterName.Trim();
 
                 string errorMessage = badHttpRequestException.Message
                     .Replace("\\", string.Empty, StringComparison.InvariantCulture)
