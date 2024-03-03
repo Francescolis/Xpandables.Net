@@ -16,6 +16,7 @@
  *
 ************************************************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -25,11 +26,9 @@ using Xpandables.Net.Primitives.Text;
 namespace Xpandables.Net.Aggregates.Notifications;
 
 internal sealed class NotificationPublisher(
-    IServiceProvider serviceProvider) : INotificationPublisher
+    IServiceProvider serviceProvider,
+    IOptions<EventHandlerOptions> options) : INotificationPublisher
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider
-        ?? throw new ArgumentNullException(nameof(serviceProvider));
-
     public async ValueTask<IOperationResult> PublishAsync<TNotification>(
         TNotification @event,
         CancellationToken cancellationToken = default)
@@ -37,18 +36,20 @@ internal sealed class NotificationPublisher(
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        List<INotificationHandler<TNotification>> handlers = _serviceProvider
+        List<INotificationHandler<TNotification>> handlers = serviceProvider
             .GetServices<INotificationHandler<TNotification>>()
             .ToList();
 
         if (handlers.Count == 0)
-            return OperationResults
-                .InternalError()
-                .WithError(
-                    ElementEntry.UndefinedKey,
-                    I18nXpandables.EventSourcingNoIntegrationEventHandler
-                        .StringFormat(@event.GetTypeName()))
-                .Build();
+            return options.Value.ConsiderNoNotificationHandlerAsError
+                ? OperationResults
+                    .InternalError()
+                    .WithError(
+                        ElementEntry.UndefinedKey,
+                        I18nXpandables.EventSourcingNoIntegrationEventHandler
+                            .StringFormat(@event.GetTypeName()))
+                    .Build()
+                : OperationResults.Ok().Build();
 
 
         foreach (INotificationHandler<TNotification>? handler in handlers)

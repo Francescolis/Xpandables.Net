@@ -27,10 +27,10 @@ namespace Xpandables.Net.DependencyInjection;
 /// <summary>
 /// Provides with a set of static methods to register integration event services in the dependency injection container.
 /// </summary>
-public static class ServiceCollectionIntegrationEventExtensions
+public static class ServiceCollectionNotificationExtensions
 {
     internal readonly static MethodInfo AddNotificationHandlerMethod
-        = typeof(ServiceCollectionIntegrationEventExtensions).GetMethod(nameof(AddXNotificationHandler))!;
+        = typeof(ServiceCollectionNotificationExtensions).GetMethod(nameof(AddXNotificationHandler))!;
 
     /// <summary>
     /// Adds the <typeparamref name="TNotificationHandler"/> to the services 
