@@ -181,6 +181,19 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
             Context.Entry(entity).CurrentValues.SetValues(updated);
         }
     }
+
+    ///<inheritdoc/>
+    public virtual async ValueTask DeleteAsync(
+        TEntity entity,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        _ = Context.Remove(entity);
+
+        await ValueTask.CompletedTask
+            .ConfigureAwait(false);
+    }
 }
 
 /// <summary>

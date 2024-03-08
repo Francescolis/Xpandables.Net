@@ -150,4 +150,14 @@ public interface IRepository<TEntity>
     /// <exception cref="ArgumentNullException">The <paramref name="filter"/> is null.</exception>
     /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
     ValueTask DeleteAsync(IEntityFilter<TEntity> filter, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Marks the entity as deleted and will be removed according to the database provider/ORM.
+    /// </summary>
+    /// <param name="entity">Defines the entity to be marked as deleted.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents an  asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="entity"/> is null.</exception>
+    /// <exception cref="OperationCanceledException">If the <see cref="CancellationToken" /> is canceled.</exception>
+    ValueTask DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 }
