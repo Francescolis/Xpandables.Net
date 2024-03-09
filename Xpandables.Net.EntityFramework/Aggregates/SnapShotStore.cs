@@ -31,7 +31,7 @@ namespace Xpandables.Net.Aggregates;
 /// </summary>
 ///<inheritdoc/>
 public sealed class SnapShotStore(
-    DomainDataContext dataContext,
+    DataContextDomain dataContext,
     JsonSerializerOptions serializerOptions) : ISnapShotStore
 {
     ///<inheritdoc/>

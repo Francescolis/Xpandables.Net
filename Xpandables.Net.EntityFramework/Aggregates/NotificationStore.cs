@@ -36,7 +36,7 @@ namespace Xpandables.Net.Aggregates;
 /// <param name="serializerOptions"></param>
 /// <exception cref="ArgumentNullException"></exception>
 public sealed class NotificationStore(
-    DomainDataContext dataContext,
+    DataContextDomain dataContext,
     JsonSerializerOptions serializerOptions) : Disposable, INotificationStore
 {
     private IDisposable[] _disposables = [];

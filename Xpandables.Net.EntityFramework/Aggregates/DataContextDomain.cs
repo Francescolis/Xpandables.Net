@@ -29,11 +29,11 @@ namespace Xpandables.Net.Aggregates;
 /// Provides the base domain db context.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="DomainDataContext"/> with the specified configuration.
+/// Initializes a new instance of <see cref="DataContextDomain"/> with the specified configuration.
 /// </remarks>
 /// <param name="contextOptions">The configuration to be applied.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="contextOptions"/> is null.</exception>
-public sealed class DomainDataContext(DbContextOptions<DomainDataContext> contextOptions)
+public sealed class DataContextDomain(DbContextOptions<DataContextDomain> contextOptions)
     : DataContext(contextOptions)
 {
     ///<inheritdoc/>

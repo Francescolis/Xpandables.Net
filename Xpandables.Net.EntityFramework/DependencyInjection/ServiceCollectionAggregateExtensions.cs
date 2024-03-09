@@ -31,7 +31,7 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionAggregateExtensions
 {
     /// <summary>
-    /// Registers the <see cref="DomainDataContext"/> type class to the services with scoped life time.
+    /// Registers the <see cref="DataContextDomain"/> type class to the services with scoped life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="optionsAction">An optional action to configure the 
@@ -50,7 +50,7 @@ public static class ServiceCollectionAggregateExtensions
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        _ = services.AddDbContext<DomainDataContext>(optionsAction, contextLifetime, optionsLifetime);
+        _ = services.AddDbContext<DataContextDomain>(optionsAction, contextLifetime, optionsLifetime);
         return services;
     }
 

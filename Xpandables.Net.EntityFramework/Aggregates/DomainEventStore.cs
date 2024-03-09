@@ -35,7 +35,7 @@ namespace Xpandables.Net.Aggregates;
 /// <param name="dataContext"></param>
 /// <param name="serializerOptions"></param>
 /// <exception cref="ArgumentNullException"></exception>
-public sealed class DomainEventStore(DomainDataContext dataContext, JsonSerializerOptions serializerOptions)
+public sealed class DomainEventStore(DataContextDomain dataContext, JsonSerializerOptions serializerOptions)
     : Disposable, IDomainEventStore
 {
     private IDisposable[] _disposables = [];
