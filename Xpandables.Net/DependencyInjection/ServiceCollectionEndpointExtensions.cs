@@ -15,75 +15,77 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 using System.Reflection;
 
-using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
 using Xpandables.Net.Primitives.Collections;
+using Xpandables.Net.Primitives.I18n;
 
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
 /// Provides with methods to register Xpandables services.
 /// </summary>
-public static partial class ServiceCollectionExtensions
+public static class ServiceCollectionEndpointExtensions
 {
+    internal const string IEndpointRouteName = "IEndpointRoute";
+    internal const string XpandablesNetAspNetCore = "Xpandables.Net.AspNetCore";
+    internal static bool ResolveEndpointFromServiceCollection;
+
     /// <summary>
-    /// Registers all the routes via the implementations 
-    /// of <see cref="IEndpointRoute.AddRoutes(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)"/> 
-    /// found in the specified assemblies.
-    /// <para>The implementation classes must declare a parameterless constructor.</para>
-    /// <para>However, if you used the 
-    /// <see cref="ServiceCollectionEndpointExtensions.AddXEndpointRoutes(Microsoft.Extensions.DependencyInjection.IServiceCollection, Assembly[])"/>,
-    /// all the implementations will be resolved from the service collection.</para>
+    /// Registers all the classes that implement the <see langword="IEndpointRoute"/> that will be resolved by 
+    /// the <see langword="MapXEndpointRoutes"/> to add endpoint to the application.
     /// </summary>
-    /// <param name="builder">The application configuration.</param>
+    /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
-    /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="builder"/> is null.</exception>
-    public static WebApplication MapXEndpointRoutes(
-        this WebApplication builder,
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXEndpointRoutes(
+        this IServiceCollection services,
         params Assembly[] assemblies)
     {
-        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
-
-        if (ServiceCollectionEndpointExtensions.ResolveEndpointFromServiceCollection)
-        {
-            IEnumerable<IEndpointRoute> endpointRoutes = builder.Services.GetServices<IEndpointRoute>();
-            foreach (IEndpointRoute endpointRoute in endpointRoutes)
-            {
-                endpointRoute.AddRoutes(builder);
-            }
-
-            return builder;
-        }
 
         if (assemblies.Length == 0)
         {
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
+        if (AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(ass => ass.GetName().Name == XpandablesNetAspNetCore)
+            ?.GetExportedTypes()
+            .FirstOrDefault(t => t.Name == IEndpointRouteName) is not { } type)
+            throw new InvalidOperationException(
+                I18nXpandables.PathAssemblyUnavailable, new ArgumentException(XpandablesNetAspNetCore));
+
+        Type endpointRouteInterfaceType = type;
+
         List<Type> endpointRouteTypes = assemblies.SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                 && !type.IsInterface
                 && !type.IsGenericType
+                && type.IsClass
+                && type.IsSealed
                 && type.GetInterfaces()
-                    .Exists(inter => !inter.IsGenericType && inter == typeof(IEndpointRoute)))
+                    .Exists(inter => !inter.IsGenericType && inter == endpointRouteInterfaceType))
             .Select(type => type)
             .ToList();
 
         foreach (Type endpointRouteType in endpointRouteTypes)
         {
-            _ = (Activator.CreateInstance(endpointRouteType) as IEndpointRoute)
-                .AsOptional()
-                .Map(route => route.AddRoutes(builder));
+            services.Add(
+                new ServiceDescriptor(
+                    endpointRouteInterfaceType,
+                    endpointRouteType,
+                    ServiceLifetime.Transient));
         }
 
-        return builder;
+        ResolveEndpointFromServiceCollection = true;
+
+        return services;
     }
 }
