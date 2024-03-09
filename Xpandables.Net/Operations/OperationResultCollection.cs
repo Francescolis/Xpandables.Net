@@ -57,7 +57,11 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    ///  Gets the element at the specified index.
+    ///  </summary>
+    ///  <param name="key">The index name of the element to get.</param>
+    ///  <returns>The element at the specified index.</returns>
     public ElementEntry? this[string key] => TryGet(key, out ElementEntry? element) ? element : null;
 
     /// <summary>
