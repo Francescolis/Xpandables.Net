@@ -15,10 +15,10 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using System.Reflection;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+
+using System.Reflection;
 
 using Xpandables.Net.Commands;
 using Xpandables.Net.Commands.Decorators;
@@ -403,6 +403,26 @@ public static class ServiceCollectionCQRSExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(TransactionCommandDecorator<>));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the default persistence command handler delegate that does nothing, to be used to 
+    /// apply persistence to commands decorated with <see cref="IPersistenceDecorator"/>.
+    /// The delegate is use by the <see cref="PersistenceCommandDecorator{TCommand}"/>.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>.</exception>
+    /// <remarks>To be used when persistence is managed differently.</remarks>
+    public static IServiceCollection AddXPersistenceCommandHandler(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddScoped<PersistenceCommandHandler>(
+            _ => ct => ValueTask.FromResult(OperationResults.Ok().Build()));
 
         return services;
     }

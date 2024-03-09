@@ -42,7 +42,7 @@ public sealed class AggregateUnitTest
             .AddLogging()
             .AddXCQRSHandlers(options => options.UsePersistence().UseOperationResult())
             .AddXDispatcher()
-            .AddXPersistenceCommandHandler(_ => ct => ValueTask.FromResult(OperationResults.Ok().Build()))
+            .AddXPersistenceCommandHandler()
             .AddXAggregateStore()
             .AddXOperationResultFinalizer()
             .AddXDomainEventPublisher()
@@ -247,9 +247,9 @@ public sealed class ContactCreatedDomainEventHandler
         CancellationToken cancellationToken = default)
     {
         PersonCreatedNotification integrationEvent = new(@event.AggregateId, @event.FirstName, @event.LastName);
-        await notificationStore.AppendAsync(integrationEvent, cancellationToken)
-            .ConfigureAwait(false);
-        return OperationResults.Ok().Build();
+        return await notificationStore
+            .AppendAsync(integrationEvent, cancellationToken)
+            .ToOperationResultAsync();
     }
 }
 
@@ -262,9 +262,9 @@ public sealed class ContactRequestSentDomainEventHandler
         CancellationToken cancellationToken = default)
     {
         ContactRequestSentNotification integration = new(@event.AggregateId, @event.FullName, @event.ContactId.Value);
-        await notificationStore.AppendAsync(integration, cancellationToken)
-            .ConfigureAwait(false);
-        return OperationResults.Ok().Build();
+        return await notificationStore
+            .AppendAsync(integration, cancellationToken)
+            .ToOperationResultAsync();
     }
 }
 
