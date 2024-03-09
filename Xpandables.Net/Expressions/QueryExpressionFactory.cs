@@ -29,7 +29,7 @@ public static class QueryExpressionFactory
     /// </summary>
     /// <typeparam name="TSource">The data type source.</typeparam>
     /// <returns>a new instance of <see cref="QueryExpression{TSource, TResult}"/> with boolean result.</returns>
-    public static QueryExpression<TSource, bool> Create<TSource>() => new QueryExpressionBuilder<TSource, bool>(_ => true);
+    public static QueryExpression<TSource> Create<TSource>() => new QueryExpressionBuilder<TSource>(_ => true);
 
     /// <summary>
     /// Creates a new instance of <see cref="QueryExpression{TSource, TResult}"/> from the specified expression.
@@ -37,8 +37,8 @@ public static class QueryExpressionFactory
     /// <typeparam name="TSource">The data type source.</typeparam>
     /// <param name="expression">The expression to be wrapped.</param>
     /// <returns>a new instance of <see cref="QueryExpression{TSource, TResult}"/> with boolean result.</returns>
-    public static QueryExpression<TSource, bool> Create<TSource>(Expression<Func<TSource, bool>> expression)
-        => new QueryExpressionBuilder<TSource, bool>(expression);
+    public static QueryExpression<TSource> Create<TSource>(Expression<Func<TSource, bool>> expression)
+        => new QueryExpressionBuilder<TSource>(expression);
 
     /// <summary>
     /// Returns the member name from the expression if found, otherwise returns null.
