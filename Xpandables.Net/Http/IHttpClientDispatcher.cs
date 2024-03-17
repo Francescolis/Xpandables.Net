@@ -38,6 +38,11 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     HttpClient HttpClient { get; }
 
     /// <summary>
+    /// Contains the <see cref="IHttpClientBuildProvider"/> instance.
+    /// </summary>
+    IHttpClientBuildProvider HttpClientBuildProvider { get; }
+
+    /// <summary>
     /// Gets the current <see cref="JsonSerializerOptions"/> to be used for serialization.
     /// </summary>
     /// <remarks>The instance can be provided by registering the <see cref="JsonSerializerOptions"/> that will be automatically resolved by the system.</remarks>

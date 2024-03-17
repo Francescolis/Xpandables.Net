@@ -45,6 +45,9 @@ public abstract class HttpClientDispatcher(
     private readonly JsonSerializerOptions? _jsonSerializerOptions = jsonSerializerOptions;
 
     ///<inheritdoc/>
+    public IHttpClientBuildProvider HttpClientBuildProvider => httpClientBuildProvider;
+
+    ///<inheritdoc/>
     public HttpClient HttpClient => _httpClient;
 
     ///<inheritdoc/>
@@ -82,12 +85,15 @@ public abstract class HttpClientDispatcher(
                 .BuildHttpResponseAsync<TResult>(response, _jsonSerializerOptions, cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is ArgumentNullException
+        catch (Exception exception)
+        when (exception is ArgumentNullException
                                            or ArgumentException
                                            or InvalidOperationException
                                            or OperationCanceledException
                                            or HttpRequestException
+                                           or AggregateException
                                            or TaskCanceledException
+                                           or JsonException
                                            or TimeoutException
                                            or WebException)
         {
@@ -127,6 +133,8 @@ public abstract class HttpClientDispatcher(
                                         or OperationCanceledException
                                         or HttpRequestException
                                         or TaskCanceledException
+                                        or AggregateException
+                                        or JsonException
                                         or TimeoutException
                                         or WebException)
         {
@@ -164,6 +172,8 @@ public abstract class HttpClientDispatcher(
                                         or InvalidOperationException
                                         or OperationCanceledException
                                         or HttpRequestException
+                                        or JsonException
+                                        or AggregateException
                                         or TaskCanceledException
                                         or TimeoutException
                                         or WebException)

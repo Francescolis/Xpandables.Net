@@ -219,42 +219,31 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
                 .GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
-            await Task.Run(() =>
-                EnumerateStreamElementToBlockingCollection(
-                    stream,
-                    blockingCollection,
-                    serializerOptions,
-                    cancellationToken), cancellationToken)
+            _ = await Task.Run(async () =>
+                {
+                    await foreach (TResult? element in JsonSerializer
+                        .DeserializeAsyncEnumerable<TResult>(stream, serializerOptions, cancellationToken)
+                        .ConfigureAwait(false))
+                    {
+                        if (element is { } result)
+                            blockingCollection.Add(result, cancellationToken);
+                    }
+
+                }, cancellationToken)
+                .ContinueWith(t =>
+                {
+                    blockingCollection.CompleteAdding();
+
+                    if (t.IsFaulted)
+                        t.Exception.ReThrow();
+
+                    return Task.CompletedTask;
+
+                }, TaskScheduler.Current)
                 .ConfigureAwait(false);
 
             while (await blockingCollectionIterator.MoveNextAsync().ConfigureAwait(false))
                 yield return blockingCollectionIterator.Current;
-        }
-
-        static void EnumerateStreamElementToBlockingCollection(
-            Stream stream,
-            BlockingCollection<TResult> resultCollection,
-            JsonSerializerOptions? serializerOptions = default,
-            CancellationToken cancellationToken = default)
-        {
-            using Utf8JsonStreamReader jsonStreamReader = new(stream, 32 * 1024);
-
-            _ = jsonStreamReader.Read();
-            while (jsonStreamReader.Read())
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                if (jsonStreamReader.TokenType != JsonTokenType.StartObject)
-                    continue;
-
-                if (jsonStreamReader.Deserialize<TResult>(serializerOptions) is { } result)
-                {
-                    resultCollection.Add(result, cancellationToken);
-                }
-            }
-
-            resultCollection.CompleteAdding();
         }
     }
 
