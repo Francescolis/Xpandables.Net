@@ -103,14 +103,4 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
 #pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator string(TPrimitive self);
 #pragma warning restore CA2225 // Operator overloads have named alternates
-
-    /// <summary>
-    /// Converts the <typeparamref name="TPrimitive"/> 
-    /// type to <typeparamref name="TValue"/>.
-    /// </summary>
-    /// <param name="value">The value to convert.</param>
-    /// <returns>Returns the converted value.</returns>
-#pragma warning disable CA2225 // Operator overloads have named alternates
-    static abstract implicit operator TPrimitive(TValue? value);
-#pragma warning restore CA2225 // Operator overloads have named alternates
 }
