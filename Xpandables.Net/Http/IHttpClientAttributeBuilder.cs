@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Http;
 
 /// <summary>
 /// An interface, when implemented in a request, will return a class representing
-/// an <see cref="HttpClientAttribute"/> to be dynamically applied on the implementing class.
-/// This interface takes priority over the <see cref="HttpClientAttribute"/> declaration.
+/// an <see cref="HttpClientAttribute"/> to be dynamically applied on the 
+/// implementing class.
+/// This interface takes priority over the <see cref="HttpClientAttribute"/> 
+/// declaration.
 /// </summary>
 public interface IHttpClientAttributeBuilder
 {
     /// <summary>
-    /// Returns the <see cref="HttpClientAttribute"/> to be applied on the implementing instance.
+    /// Returns the <see cref="HttpClientAttribute"/> to be applied on 
+    /// the implementing instance.
     /// </summary>
     /// <param name="serviceProvider">The ambient service provider.</param>
     /// <returns>A new instance of <see cref="HttpClientAttribute"/>.</returns>

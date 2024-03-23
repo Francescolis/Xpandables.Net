@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections;
 using System.Reflection;
 
@@ -26,16 +26,22 @@ namespace Xpandables.Net.Interceptions;
 public sealed record class Parameter
 {
     /// <summary>
-    /// Builds a new instance of <see cref="Parameter"/> with the position, name and value.
+    /// Builds a new instance of <see cref="Parameter"/> with 
+    /// the position, name and value.
     /// </summary>
     /// <param name="position">The parameter position in the method signature</param>
     /// <param name="source">The parameter info to act on.</param>
     /// <param name="value">The value of the parameter.</param>
     /// <returns>An instance of new <see cref="Parameter"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="position"/> must be greater
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The <paramref name="position"/> must be greater
     /// or equal to zero.</exception>
-    public static Parameter Build(int position, ParameterInfo source, object? value)
+    public static Parameter Build(
+        int position,
+        ParameterInfo source,
+        object? value)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -47,10 +53,16 @@ public sealed record class Parameter
             GetPassedStatusFromParameterInfo(source));
     }
 
-    private Parameter(int position, string name, object? value, Type type, PassingState isPassed)
+    private Parameter(
+        int position,
+        string name,
+        object? value,
+        Type type,
+        PassingState isPassed)
     {
         if (position < 0)
-            throw new ArgumentOutOfRangeException($"{position} must be greater or equal to zero.");
+            throw new ArgumentOutOfRangeException(
+                $"{position} must be greater or equal to zero.");
 
         Position = position;
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -68,7 +80,8 @@ public sealed record class Parameter
 
     /// <summary>
     /// Gets the name of the parameter as defined in the method signature.
-    /// The value can not be null, otherwise the interface contract will throw an <see cref="ArgumentNullException"/>.
+    /// The value can not be null, otherwise the interface 
+    /// contract will throw an <see cref="ArgumentNullException"/>.
     /// </summary>
     public string Name { get; }
 
@@ -83,7 +96,8 @@ public sealed record class Parameter
     public Type Type { get; }
 
     /// <summary>
-    /// Determines whether the argument is <see langword="out"/>, <see langword="in"/>
+    /// Determines whether the argument is <see langword="out"/>, 
+    /// <see langword="in"/>
     /// or by <see langword="ref"/> parameter.
     /// </summary>
     public PassingState PassingBy { get; }
@@ -101,7 +115,8 @@ public sealed record class Parameter
     }
 
     /// <summary>
-    /// Determines whether the argument is <see langword="out"/>, <see langword="in"/>
+    /// Determines whether the argument is <see langword="out"/>, 
+    /// <see langword="in"/>
     /// or <see langword="ref"/> parameter.
     /// </summary>
     [Serializable]
@@ -129,7 +144,8 @@ public sealed record class Parameter
     /// <param name="parameterInfo">The parameter to act on.</param>
     /// <returns>A <see cref="PassingState"/> that matches the parameter.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="parameterInfo"/> is null.</exception>
-    private static PassingState GetPassedStatusFromParameterInfo(ParameterInfo parameterInfo)
+    private static PassingState GetPassedStatusFromParameterInfo(
+        ParameterInfo parameterInfo)
     {
         ArgumentNullException.ThrowIfNull(parameterInfo);
 
@@ -146,7 +162,8 @@ public sealed record class Parameter
     /// </summary>
     /// <param name="parameterInfo">The parameter to act on.</param>
     /// <returns>The parameter type.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="parameterInfo"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="parameterInfo"/> is null.</exception>
     private static Type GetTypeFromParameterInfo(ParameterInfo parameterInfo)
     {
         ArgumentNullException.ThrowIfNull(parameterInfo);
@@ -168,8 +185,10 @@ public interface IParameterCollection : IEnumerable<Parameter>
     /// </summary>
     /// <param name="parameterName">The parameter name.</param>
     /// <returns>value of the named parameter.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="parameterName"/> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="parameterName"/> does not exist</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="parameterName"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The 
+    /// <paramref name="parameterName"/> does not exist</exception>
     Parameter this[string parameterName] { get; set; }
 
     /// <summary>
@@ -177,7 +196,8 @@ public interface IParameterCollection : IEnumerable<Parameter>
     /// </summary>
     /// <param name="parameterIndex">The parameter index.</param>
     /// <returns>Value of the indexed parameter.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="parameterIndex"/> does not exist</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The 
+    /// <paramref name="parameterIndex"/> does not exist</exception>
     Parameter this[int parameterIndex] { get; set; }
 
     /// <summary>
@@ -185,12 +205,14 @@ public interface IParameterCollection : IEnumerable<Parameter>
     /// </summary>
     /// <param name="parameterName">Name of parameter to find.</param>
     /// <returns>True if the parameter name is in the collection, false if not.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="parameterName"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="parameterName"/> is null.</exception>
     bool ContainsParameter(string parameterName);
 }
 
 /// <summary>
-/// An implementation of <see cref="IParameterCollection"/> that wraps a provided array
+/// An implementation of <see cref="IParameterCollection"/> 
+/// that wraps a provided array
 /// containing the argument values.
 /// </summary>
 public sealed class ParameterCollection : IParameterCollection
@@ -198,15 +220,21 @@ public sealed class ParameterCollection : IParameterCollection
     private readonly List<Parameter> _parameters;
 
     /// <summary>
-    /// Construct a new <see cref="ParameterCollection"/> class that wraps the given array of arguments.
+    /// Construct a new <see cref="ParameterCollection"/> class 
+    /// that wraps the given array of arguments.
     /// </summary>
     /// <param name="methodInfo">The target method.</param>
     /// <param name="arguments">Arguments for the method, if necessary.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="methodInfo"/> is null.</exception>
-    public ParameterCollection(MethodInfo methodInfo, params object?[]? arguments)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="methodInfo"/> is null.</exception>
+    public ParameterCollection(
+        MethodInfo methodInfo,
+        params object?[]? arguments)
     {
         _ = methodInfo ?? throw new ArgumentNullException(nameof(methodInfo));
-        _parameters = arguments?.Length == 0 ? [] : new List<Parameter>(BuildParameters(methodInfo, arguments));
+        _parameters = arguments?.Length == 0
+            ? []
+            : new List<Parameter>(BuildParameters(methodInfo, arguments));
     }
 
     /// <summary>
@@ -214,8 +242,10 @@ public sealed class ParameterCollection : IParameterCollection
     /// </summary>
     /// <param name="parameterName">The parameter name.</param>
     /// <returns>value of the named parameter.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="parameterName" /> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="parameterName" /> does not exist</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="parameterName" /> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The 
+    /// <paramref name="parameterName" /> does not exist</exception>
     public Parameter this[string parameterName]
     {
         get => _parameters[IndexForParameterName(parameterName)];
@@ -227,7 +257,8 @@ public sealed class ParameterCollection : IParameterCollection
     /// </summary>
     /// <param name="parameterIndex">The parameter index.</param>
     /// <returns>Value of the indexed parameter.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="parameterIndex" /> does not exist</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The 
+    /// <paramref name="parameterIndex" /> does not exist</exception>
     public Parameter this[int parameterIndex]
     {
         get => _parameters[parameterIndex];
@@ -238,37 +269,51 @@ public sealed class ParameterCollection : IParameterCollection
     /// Does this collection contain a parameter value with the given name?
     /// </summary>
     /// <param name="parameterName">Name of parameter to find.</param>
-    /// <returns>True if the parameter name is in the collection, false if not.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="parameterName"/> is null.</exception>
+    /// <returns>True if the parameter name is 
+    /// in the collection, false if not.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="parameterName"/> is null.</exception>
     public bool ContainsParameter(string parameterName)
     {
-        _ = parameterName ?? throw new ArgumentNullException(nameof(parameterName));
-        return _parameters.Exists(parameter => parameter.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase));
+        _ = parameterName
+            ?? throw new ArgumentNullException(nameof(parameterName));
+        return _parameters.Exists(parameter
+            => parameter.Name.Equals(
+                parameterName,
+                StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
     /// Returns an enumerator that iterates through the collection.
     /// </summary>
-    /// <returns> An enumerator that can be used to iterate through the collection.</returns>
-    public IEnumerator<Parameter> GetEnumerator() => _parameters.GetEnumerator();
+    /// <returns> An enumerator that can be used to 
+    /// iterate through the collection.</returns>
+    public IEnumerator<Parameter> GetEnumerator()
+        => _parameters.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     private int IndexForParameterName(string paramName)
-        => _parameters.FindIndex(parameter => parameter.Name.Equals(paramName, StringComparison.OrdinalIgnoreCase)) switch
+        => _parameters
+        .FindIndex(parameter => parameter.Name
+        .Equals(paramName, StringComparison.OrdinalIgnoreCase)) switch
         {
             { } foundIndex when foundIndex >= 0 => foundIndex,
-            _ => throw new ArgumentOutOfRangeException($"Invalid parameter name : {paramName}")
+            _ => throw new ArgumentOutOfRangeException(
+                $"Invalid parameter name : {paramName}")
         };
 
-    private static IEnumerable<Parameter> BuildParameters(MethodInfo method, params object?[]? arguments)
+    private static IEnumerable<Parameter> BuildParameters(
+        MethodInfo method,
+        params object?[]? arguments)
     {
         foreach (var param in method
             .GetParameters()
             .Select((value, index) => new { Index = index, Value = value })
             .OrderBy(o => o.Value.Position).ToArray())
         {
-            yield return Parameter.Build(param.Index, param.Value, arguments?[param.Index]);
+            yield return Parameter
+                .Build(param.Index, param.Value, arguments?[param.Index]);
         }
     }
 }

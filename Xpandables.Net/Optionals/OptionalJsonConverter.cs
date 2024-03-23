@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Json
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -27,7 +30,10 @@ namespace Xpandables.Net.Optionals;
 public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
 {
     ///<inheritdoc/>
-    public override Optional<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override Optional<T> Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
     {
         if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None)
             return Optional.Empty<T>();
@@ -36,7 +42,10 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
     }
 
     ///<inheritdoc/>
-    public override void Write(Utf8JsonWriter writer, Optional<T> value, JsonSerializerOptions options)
+    public override void Write(
+        Utf8JsonWriter writer,
+        Optional<T> value,
+        JsonSerializerOptions options)
     {
         if (value.IsNotEmpty)
             JsonSerializer.Serialize(writer, value.Value, options);

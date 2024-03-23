@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json;
 
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// Provides a set of static (Shared in Visual Basic) methods for <see cref="JsonSerializerOptions"/>.
+/// Provides a set of static (Shared in Visual Basic)
+/// methods for <see cref="JsonSerializerOptions"/>.
 /// </summary>
 public static class JsonSerializerDefaultOptions
 {
     /// <inheritdoc/>
-    public static JsonSerializerOptions OptionPropertyNameCaseInsensitiveTrue => new() { PropertyNameCaseInsensitive = true };
+    public static JsonSerializerOptions OptionPropertyNameCaseInsensitiveTrue
+        => new() { PropertyNameCaseInsensitive = true };
 
     /// <inheritdoc/>
-    public static JsonSerializerOptions OptionDefaultWeb => new(JsonSerializerDefaults.Web);
+    public static JsonSerializerOptions OptionDefaultWeb
+        => new(JsonSerializerDefaults.Web);
 
     /// <inheritdoc/>
     public static JsonSerializerOptions Options => new();

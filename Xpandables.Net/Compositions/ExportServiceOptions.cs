@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Reflection;
 
 using Xpandables.Net.Primitives.I18n;
@@ -27,18 +27,21 @@ namespace Xpandables.Net.Compositions;
 public sealed record class ExportServiceOptions
 {
     /// <summary>
-    /// Initializes a default instance of <see cref="ExportServiceOptions"/> class.
+    /// Initializes a default instance 
+    /// of <see cref="ExportServiceOptions"/> class.
     /// </summary>
     public ExportServiceOptions() { }
 
     /// <summary>
-    /// Gets or sets the path to the directory to scan for assemblies to add to the catalog.
+    /// Gets or sets the path to the directory to scan for assemblies 
+    /// to add to the catalog.
     /// if not defined, the system will look to the application current directory.
     /// </summary>
     public string Path { get; set; } = GetPath();
 
     /// <summary>
-    /// Gets or sets the pattern to search with. The format of the pattern should be the same as specified for GetFiles.
+    /// Gets or sets the pattern to search with. 
+    /// The format of the pattern should be the same as specified for GetFiles.
     /// If not defined, the system will use the <see langword="*.dll"/> pattern.
     /// </summary>
     public string SearchPattern { get; set; } = "*.dll";
@@ -52,9 +55,13 @@ public sealed record class ExportServiceOptions
     private static string GetPath()
     {
         if (Assembly.GetEntryAssembly() is Assembly assembly)
-            if (System.IO.Path.GetDirectoryName(assembly.Location) is string directoryName)
+        {
+            if (System.IO.Path
+                .GetDirectoryName(assembly.Location) is string directoryName)
                 return directoryName;
+        }
 
-        throw new InvalidOperationException(I18nXpandables.PathAssemblyUnavailable);
+        throw new InvalidOperationException(
+            I18nXpandables.PathAssemblyUnavailable);
     }
 }

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
+using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.SnapShots;
+namespace Xpandables.Net.Aggregates.SnapShots;
 
 /// <summary>
 /// Represents a snapshot to be written.
@@ -35,19 +36,33 @@ public sealed class EntitySnapShot : Entity<Guid>, IDisposable
     /// <param name="descriptor">The descriptor originator to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of snapshot entity built from the snapshot.</returns>
-    public static EntitySnapShot FromSnapShotDescriptor(
+    /// <exception cref="InvalidOperationException">
+    /// The action specified failed.</exception>
+    public static EntitySnapShot ToEntitySnapShot(
         SnapShotDescriptor descriptor,
         JsonSerializerOptions options)
     {
-        Guid objectId = descriptor.ObjectId;
-        ulong version = descriptor.Version;
-        string name = descriptor.Instance.GetTypeName();
-        IMemento memento = descriptor.Instance.CreateMemento();
-        string mementoTypeName = memento.GetTypeName();
+        try
+        {
+            Guid objectId = descriptor.ObjectId;
+            ulong version = descriptor.Version;
+            string name = descriptor.Instance.GetTypeName();
+            IMemento memento = descriptor.Instance.CreateMemento();
+            string mementoTypeName = memento.GetTypeName();
 
-        JsonDocument data = memento.ToJsonDocument(options);
+            JsonDocument data = memento.ToJsonDocument(options);
 
-        return new(objectId, version, name, mementoTypeName, data);
+            return new(objectId, version, name, mementoTypeName, data);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                and not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                    I18nXpandables.ActionSpecifiedFailedSeeException
+                        .StringFormat(nameof(ToEntitySnapShot)),
+                    exception);
+        }
     }
 
     /// <summary>
@@ -56,17 +71,34 @@ public sealed class EntitySnapShot : Entity<Guid>, IDisposable
     /// <param name="record">The record to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of event built from the entity.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The action specified failed.</exception>
     public static IMemento? ToMemento(
         EntitySnapShot record,
         JsonSerializerOptions? options)
     {
         ArgumentNullException.ThrowIfNull(record);
 
-        if (Type.GetType(record.MementoTypeName) is { } mementoType)
-            if (record.Data.Deserialize(mementoType, options) is IMemento memento)
+        try
+        {
+            if (Type.GetType(record.MementoTypeName) is { } mementoType
+                && record.Data.Deserialize(mementoType, options)
+                is IMemento memento)
+            {
                 return memento;
+            }
 
-        return default;
+            return default;
+        }
+        catch (Exception exception)
+              when (exception is not ArgumentNullException
+                  and not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                    I18nXpandables.ActionSpecifiedFailedSeeException
+                        .StringFormat(nameof(ToMemento)),
+                    exception);
+        }
     }
 
     ///<inheritdoc/>

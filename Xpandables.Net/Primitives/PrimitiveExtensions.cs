@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Net;
 
 namespace Xpandables.Net.Primitives;
@@ -22,7 +22,7 @@ namespace Xpandables.Net.Primitives;
 /// <summary>
 /// Provides a set of static methods for <see cref="HttpStatusCode"/> instances.
 /// </summary>
-public static class PrimtiveExtensions
+public static class PrimitiveExtensions
 {
     private const int _minSuccessStatusCode = 200;
     private const int _maxSuccessStatusCode = 299;
@@ -31,7 +31,8 @@ public static class PrimtiveExtensions
     /// Determines whether the specified status code is a success one.
     /// </summary>
     /// <param name="statusCode">The status code to act on.</param>
-    /// <returns><see langword="true"/> if the status is success, otherwise returns <see langword="false"/></returns>
+    /// <returns><see langword="true"/> if the status is success, 
+    /// otherwise returns <see langword="false"/></returns>
     public static bool IsSuccessStatusCode(this HttpStatusCode statusCode)
         => (int)statusCode is >= _minSuccessStatusCode and <= _maxSuccessStatusCode;
 
@@ -39,7 +40,8 @@ public static class PrimtiveExtensions
     /// Determines whether the specified status code is a failure one.
     /// </summary>
     /// <param name="statusCode">The status code to act on.</param>
-    /// <returns><see langword="true"/> if the status is failure, otherwise returns <see langword="false"/></returns>
+    /// <returns><see langword="true"/> if the status is failure, 
+    /// otherwise returns <see langword="false"/></returns>
     public static bool IsFailureStatusCode(this HttpStatusCode statusCode)
         => !IsSuccessStatusCode(statusCode);
 
@@ -48,9 +50,12 @@ public static class PrimtiveExtensions
     /// Throws an exception if the status code is not a success.
     /// </summary>
     /// <param name="statusCode">The status code value to be checked.</param>
-    /// <returns>Returns the status code if it's a success code or throws an <see cref="InvalidOperationException"/> exception.</returns>
-    /// <exception cref="InvalidOperationException">The code <paramref name="statusCode"/> is not a success status code.</exception>
-    public static HttpStatusCode EnsureSuccessStatusCode(this HttpStatusCode statusCode)
+    /// <returns>Returns the status code if it's a success code 
+    /// or throws an <see cref="InvalidOperationException"/> exception.</returns>
+    /// <exception cref="InvalidOperationException">The code 
+    /// <paramref name="statusCode"/> is not a success status code.</exception>
+    public static HttpStatusCode EnsureSuccessStatusCode(
+        this HttpStatusCode statusCode)
     {
         if (!IsSuccessStatusCode(statusCode))
             throw new InvalidOperationException(
@@ -58,7 +63,9 @@ public static class PrimtiveExtensions
                 new ArgumentOutOfRangeException(
                     nameof(statusCode),
                     $"{statusCode}",
-                    $"The status code must be greater or equal to {_minSuccessStatusCode} and lower or equal to {_maxSuccessStatusCode}"));
+                    $"The status code must be greater or " +
+                    $"equal to {_minSuccessStatusCode} and " +
+                    $"lower or equal to {_maxSuccessStatusCode}"));
 
         return statusCode;
     }
@@ -68,9 +75,12 @@ public static class PrimtiveExtensions
     /// Throws an exception if the status code is not a failure; 
     /// </summary>
     /// <param name="statusCode">The status code value to be checked.</param>
-    /// <returns>Returns the status code if it's a failure code or throws an <see cref="InvalidOperationException"/> exception.</returns>
-    /// <exception cref="InvalidOperationException">The code <paramref name="statusCode"/> is not a failure status code.</exception>
-    public static HttpStatusCode EnsureFailureStatusCode(this HttpStatusCode statusCode)
+    /// <returns>Returns the status code if it's a failure code 
+    /// or throws an <see cref="InvalidOperationException"/> exception.</returns>
+    /// <exception cref="InvalidOperationException">The code 
+    /// <paramref name="statusCode"/> is not a failure status code.</exception>
+    public static HttpStatusCode EnsureFailureStatusCode(
+        this HttpStatusCode statusCode)
     {
         if (!IsFailureStatusCode(statusCode))
             throw new InvalidOperationException(
@@ -78,7 +88,9 @@ public static class PrimtiveExtensions
                 new ArgumentOutOfRangeException(
                     nameof(statusCode),
                     $"{statusCode}",
-                    $"The status code must be greater than {_maxSuccessStatusCode} or lower than {_minSuccessStatusCode}"));
+                    $"The status code must be greater " +
+                    $"than {_maxSuccessStatusCode} or " +
+                    $"lower than {_minSuccessStatusCode}"));
 
         return statusCode;
     }

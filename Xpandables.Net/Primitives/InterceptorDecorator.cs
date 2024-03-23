@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Primitives;
 /// <summary>
 /// A marker interface that allows the class implementation to be intercepted.
 /// You need to register the expected behavior using the appropriate 
-/// interceptor extension method and provide an implementation for <see langword="IInterceptor"/>.
+/// interceptor extension method and provide 
+/// an implementation for <see langword="IInterceptor"/>.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
 public interface IInterceptorDecorator { }

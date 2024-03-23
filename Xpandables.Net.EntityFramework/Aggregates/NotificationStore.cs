@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-using Microsoft.EntityFrameworkCore;
-
+********************************************************************************/
 using System.Linq.Expressions;
 using System.Text.Json;
+
+using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Expressions;
@@ -70,9 +70,15 @@ public sealed class NotificationStore(
         _ = await dataContext.Notifications
             .Where(e => e.Id == eventId)
             .ExecuteUpdateAsync(e => e
-                .SetProperty(p => p.ErrorMessage, p => exception != null ? $"{exception}" : default)
+                .SetProperty(
+                    p => p.ErrorMessage,
+                    p => exception != null ? $"{exception}" : default)
                 .SetProperty(p => p.UpdatedOn, p => DateTime.UtcNow)
-                .SetProperty(p => p.Status, p => exception != null ? EntityStatus.INACTIVE : EntityStatus.DELETED),
+                .SetProperty(
+                    p => p.Status,
+                    p => exception != null
+                        ? EntityStatus.INACTIVE
+                        : EntityStatus.DELETED),
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -84,8 +90,11 @@ public sealed class NotificationStore(
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        return BuildQueryExpression(filter, dataContext.Notifications.AsNoTracking())
-             .Select(s => EntityNotification.ToNotification(s, serializerOptions))
+        return BuildQueryExpression(
+                filter,
+                dataContext.Notifications.AsNoTracking())
+             .Select(s => EntityNotification
+                .ToNotification(s, serializerOptions))
              .OfType<INotification>()
              .AsAsyncEnumerable();
     }
@@ -107,7 +116,8 @@ public sealed class NotificationStore(
           INotificationFilter filter,
           IQueryable<EntityNotification> eventRecords)
     {
-        QueryExpression<EntityNotification, bool> expression = QueryExpressionFactory.Create<EntityNotification>();
+        QueryExpression<EntityNotification> expression
+            = QueryExpressionFactory.Create<EntityNotification>();
 
         if (filter.Id is not null)
             expression = expression.And(x => x.Id == filter.Id);
@@ -140,8 +150,10 @@ public sealed class NotificationStore(
                     EventFilterEntityVisitor.EventEntityParameter,
                     nameof(EntityNotification.Data)));
 
-            Expression<Func<EntityNotification, bool>> dataCriteria = Expression.Lambda<Func<EntityNotification, bool>>(
-                EventFilterEntityVisitor.EventEntityVisitor.Visit(filter.DataCriteria.Body),
+            Expression<Func<EntityNotification, bool>> dataCriteria
+                = Expression.Lambda<Func<EntityNotification, bool>>(
+                EventFilterEntityVisitor.EventEntityVisitor
+                .Visit(filter.DataCriteria.Body),
                 EventFilterEntityVisitor.EventEntityVisitor.Parameter);
 
             expression = expression.And(dataCriteria);

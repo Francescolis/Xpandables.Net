@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -35,22 +35,28 @@ public interface IHttpClientResponseBuilder
     /// </summary>
     /// <typeparam name="TResult">The response content type.</typeparam>
     /// <param name="httpResponse">The target HTTP response.</param>
-    /// <param name="serializerOptions">Options to control the behavior during parsing.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <param name="serializerOptions">Options to control 
+    /// the behavior during parsing.</param>
+    /// <param name="cancellationToken">A CancellationToken 
+    /// to observe while waiting for the task to complete.</param>
     /// <returns>An instance of <see cref="HttpClientResponse"/>.</returns>
-    ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> BuildHttpResponseAsync<TResult>(
+    ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+        BuildHttpResponseAsync<TResult>(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions? serializerOptions = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// The main method to build an <see cref="HttpClientResponse{TResult}"/> for response 
+    /// The main method to build an <see cref="HttpClientResponse{TResult}"/> 
+    /// for response 
     /// that contains a result of <typeparamref name="TResult"/> type.
     /// </summary>
     /// <typeparam name="TResult">The response content type.</typeparam>
     /// <param name="httpResponse">The target HTTP response.</param>
-    /// <param name="serializerOptions">Options to control the behavior during parsing.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <param name="serializerOptions">Options to control the 
+    /// behavior during parsing.</param>
+    /// <param name="cancellationToken">A CancellationToken to 
+    /// observe while waiting for the task to complete.</param>
     /// <returns>An instance of <see cref="HttpClientResponse"/>.</returns>
     ValueTask<HttpClientResponse<TResult>> BuildHttpResponse<TResult>(
        HttpResponseMessage httpResponse,
@@ -61,8 +67,10 @@ public interface IHttpClientResponseBuilder
     /// The main method to build an <see cref="HttpClientResponse"/> for response.
     /// </summary>
     /// <param name="httpResponse">The target HTTP response.</param>
-    /// <param name="serializerOptions">Options to control the behavior during parsing.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <param name="serializerOptions">Options to control the 
+    /// behavior during parsing.</param>
+    /// <param name="cancellationToken">A CancellationToken 
+    /// to observe while waiting for the task to complete.</param>
     /// <returns>An instance of <see cref="HttpClientResponse"/>.</returns>
     ValueTask<HttpClientResponse> BuildHttpResponse(
        HttpResponseMessage httpResponse,
@@ -70,9 +78,11 @@ public interface IHttpClientResponseBuilder
        CancellationToken cancellationToken = default);
 }
 
-internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBuilder
+internal sealed class HttpClientResponseBuilderInternal
+    : IHttpClientResponseBuilder
 {
-    public async ValueTask<HttpClientResponse<TResult>> BuildHttpResponse<TResult>(
+    public async ValueTask<HttpClientResponse<TResult>>
+        BuildHttpResponse<TResult>(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions? serializerOptions = null,
         CancellationToken cancellationToken = default)
@@ -85,7 +95,8 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
                 default,
                 httpResponse.Version,
                 httpResponse.ReasonPhrase,
-                await BuildExceptionAsync(httpResponse).ConfigureAwait(false));
+                await BuildExceptionAsync(httpResponse)
+                .ConfigureAwait(false));
         }
 
         using Stream stream = await httpResponse.Content
@@ -105,7 +116,9 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
 
         TResult? result;
 
-        if (!httpResponse.Content.Headers.ContentDisposition?.FileName?.StartsWith("attachment", StringComparison.InvariantCulture) ?? true)
+        if (!httpResponse.Content.Headers.ContentDisposition?
+            .FileName?
+            .StartsWith("attachment", StringComparison.InvariantCulture) ?? true)
         {
             result = await JsonSerializer.DeserializeAsync<TResult>(
             stream,
@@ -115,7 +128,11 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
         }
         else
         {
-            BinaryEntry binary = await DoReadContentAsync(httpResponse, stream, cancellationToken).ConfigureAwait(false);
+            BinaryEntry binary = await DoReadContentAsync(
+                httpResponse,
+                stream,
+                cancellationToken)
+                .ConfigureAwait(false);
             result = binary is not TResult r ? default : r;
         }
 
@@ -133,10 +150,13 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
             CancellationToken cancellationToken)
         {
             using MemoryStream memoryStream = new();
-            await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+            await stream.CopyToAsync(memoryStream, cancellationToken)
+                .ConfigureAwait(false);
             byte[] content = memoryStream.ToArray();
-            string fileName = httpResponse.Content.Headers.ContentDisposition!.FileName!;
-            string contentType = httpResponse.Content.Headers.ContentType!.MediaType!;
+            string fileName = httpResponse.Content.Headers
+                .ContentDisposition!.FileName!;
+            string contentType = httpResponse.Content.Headers
+                .ContentType!.MediaType!;
             string extension = Path.GetExtension(fileName).TrimStart('.');
 
             return new BinaryEntry(fileName, content, contentType, extension);
@@ -155,7 +175,8 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
                 httpResponse.ReadHttpResponseHeaders(),
                 httpResponse.Version,
                 httpResponse.ReasonPhrase,
-                await BuildExceptionAsync(httpResponse).ConfigureAwait(false));
+                await BuildExceptionAsync(httpResponse)
+                .ConfigureAwait(false));
         }
 
         return new HttpClientResponse(
@@ -166,7 +187,8 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
             default);
     }
 
-    public async ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> BuildHttpResponseAsync<TResult>(
+    public async ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+        BuildHttpResponseAsync<TResult>(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions? serializerOptions = null,
         CancellationToken cancellationToken = default)
@@ -179,7 +201,8 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
                 default,
                 httpResponse.Version,
                 httpResponse.ReasonPhrase,
-                await BuildExceptionAsync(httpResponse).ConfigureAwait(false));
+                await BuildExceptionAsync(httpResponse)
+                .ConfigureAwait(false));
         }
 
         Stream stream = await httpResponse.Content
@@ -197,7 +220,11 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
                 default);
         }
 
-        IAsyncEnumerable<TResult> results = AsyncEnumerableBuilderAsync(stream, serializerOptions, cancellationToken);
+        IAsyncEnumerable<TResult> results
+            = AsyncEnumerableBuilderAsync(
+                stream,
+                serializerOptions,
+                cancellationToken);
 
         return new HttpClientResponse<IAsyncEnumerable<TResult>>(
             httpResponse.StatusCode,
@@ -214,7 +241,8 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
         {
             using BlockingCollection<TResult> blockingCollection = [];
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-            await using IAsyncEnumerator<TResult> blockingCollectionIterator = new AsyncEnumerable<TResult>(
+            await using IAsyncEnumerator<TResult> blockingCollectionIterator
+                = new AsyncEnumerable<TResult>(
                 blockingCollection.GetConsumingEnumerable(cancellationToken))
                 .GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
@@ -222,7 +250,10 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
             _ = await Task.Run(async () =>
                 {
                     await foreach (TResult? element in JsonSerializer
-                        .DeserializeAsyncEnumerable<TResult>(stream, serializerOptions, cancellationToken)
+                        .DeserializeAsyncEnumerable<TResult>(
+                        stream,
+                        serializerOptions,
+                        cancellationToken)
                         .ConfigureAwait(false))
                     {
                         if (element is { } result)
@@ -242,16 +273,20 @@ internal sealed class HttpClientResponseBuilderInternal : IHttpClientResponseBui
                 }, TaskScheduler.Current)
                 .ConfigureAwait(false);
 
-            while (await blockingCollectionIterator.MoveNextAsync().ConfigureAwait(false))
+            while (await blockingCollectionIterator.MoveNextAsync()
+                .ConfigureAwait(false))
                 yield return blockingCollectionIterator.Current;
         }
     }
 
-    private static async ValueTask<HttpClientException?> BuildExceptionAsync(HttpResponseMessage httpResponse)
+    private static async ValueTask<HttpClientException?>
+        BuildExceptionAsync(HttpResponseMessage httpResponse)
     {
-        return await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false) switch
+        return await httpResponse.Content.ReadAsStringAsync()
+            .ConfigureAwait(false) switch
         {
-            { } content when !string.IsNullOrWhiteSpace(content) => new HttpClientException(content),
+            { } content when !string.IsNullOrWhiteSpace(content)
+                => new HttpClientException(content),
             _ => default
         };
     }

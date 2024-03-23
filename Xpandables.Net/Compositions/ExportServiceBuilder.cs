@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
@@ -41,10 +41,12 @@ public sealed class ExportServiceBuilder
     /// the default export options to compose parts of the target object.
     /// </summary>
     /// <param name="target">The object to act on.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="target"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="target"/> 
+    /// is null.</exception>
     /// <exception cref="InvalidOperationException">Building the object failed. 
     /// See inner exception.</exception>
-    public ExportServiceBuilder(object target) : this(target, new ExportServiceOptions()) { }
+    public ExportServiceBuilder(object target)
+        : this(target, new ExportServiceOptions()) { }
 
     /// <summary>
     /// Initializes a new instance of <see cref="ExportServiceBuilder"/> using 
@@ -52,9 +54,12 @@ public sealed class ExportServiceBuilder
     /// </summary>
     /// <param name="target">The object to act on.</param>
     /// <param name="options">The export options to be used.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="target"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="options"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">Building the object failed. See inner exception.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="target"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="options"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Building the object failed. 
+    /// See inner exception.</exception>
     public ExportServiceBuilder(object target, ExportServiceOptions options)
     {
         ArgumentNullException.ThrowIfNull(target);
@@ -78,7 +83,8 @@ public sealed class ExportServiceBuilder
                                         or ReflectionTypeLoadException)
         {
             throw new InvalidOperationException(
-                I18nXpandables.ActionSpecifiedFailedSeeException.StringFormat(nameof(ExportServiceBuilder)),
+                I18nXpandables.ActionSpecifiedFailedSeeException
+                    .StringFormat(nameof(ExportServiceBuilder)),
                 exception);
         }
     }

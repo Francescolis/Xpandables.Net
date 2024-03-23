@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Multipart
+
 using static Xpandables.Net.Http.HttpClientParameters;
 
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Provides with a method to retrieve the request content for <see cref="BodyFormat.String"/> type.
+/// Provides with a method to retrieve the request content 
+/// for <see cref="BodyFormat.String"/> type.
 /// </summary>
 public interface IHttpRequestString
 {
@@ -39,19 +43,23 @@ public interface IPatchOperation
 }
 
 /// <summary>
-/// Provides with a method to retrieve the request patch content for <see cref="BodyFormat.String"/> type.
+/// Provides with a method to retrieve the request patch content 
+/// for <see cref="BodyFormat.String"/> type.
 /// You may use the <see cref="ContentType.JsonPatch"/> as content type.
-/// <para>Use the <see cref="HttpRequestPatch{TRecord}"/> to implement the interface and
+/// <para>Use the <see cref="HttpRequestPatch{TRecord}"/> t
+/// o implement the interface and
 /// the <see cref="Patch"/> class to build operations.</para>
 /// </summary>
-/// <remarks>Note that there is no support for <see cref="Method.PATCH"/> JsonPatch for minimal Api.</remarks>
+/// <remarks>Note that there is no support for <see cref="Method.PATCH"/>
+/// JsonPatch for minimal Api.</remarks>
 public interface IHttpRequestPatch
 {
     /// <summary>
     /// Returns the patch document.
     /// </summary>
     /// <remarks>The default behavior returns an empty collection.</remarks>
-    public IEnumerable<IPatchOperation> PatchOperations => Enumerable.Empty<IPatchOperation>();
+    public IEnumerable<IPatchOperation> PatchOperations
+        => Enumerable.Empty<IPatchOperation>();
 }
 
 /// <summary>
@@ -64,16 +72,20 @@ public abstract record HttpRequestPatch<TRecord> : IHttpRequestPatch
     /// <summary>
     /// Applies the <see cref="PatchOperationsBuilder"/> to the current instance.
     /// </summary>
-    public IEnumerable<IPatchOperation> PatchOperations => PatchOperationsBuilder((TRecord)this);
+    public IEnumerable<IPatchOperation> PatchOperations
+        => PatchOperationsBuilder((TRecord)this);
 
     /// <summary>
     /// Provides with a method to build operations.
     /// </summary>
-    public required Func<TRecord, IEnumerable<IPatchOperation>> PatchOperationsBuilder { get; init; }
+    public required Func<TRecord, IEnumerable<IPatchOperation>>
+        PatchOperationsBuilder
+    { get; init; }
 }
 
 /// <summary>
-/// Provides with a method to retrieve the request content for <see cref="BodyFormat.ByteArray"/> type.
+/// Provides with a method to retrieve the request content 
+/// for <see cref="BodyFormat.ByteArray"/> type.
 /// </summary>
 public interface IHttpRequestByteArray
 {
@@ -84,9 +96,11 @@ public interface IHttpRequestByteArray
 }
 
 /// <summary>
-/// Provides with a method to retrieve the request content for <see cref="BodyFormat.Multipart"/> type.
+/// Provides with a method to retrieve the request content 
+/// for <see cref="BodyFormat.Multipart"/> type.
 /// </summary>
-public interface IHttpRequestMultipart : IHttpRequestStream, IHttpRequestString
+public interface IHttpRequestMultipart
+    : IHttpRequestStream, IHttpRequestString
 {
     /// <summary>
     /// Returns the file name of the HTTP content to add.
@@ -101,7 +115,8 @@ public interface IHttpRequestMultipart : IHttpRequestStream, IHttpRequestString
 }
 
 /// <summary>
-/// Provides with a method to retrieve the request content for <see cref="BodyFormat.Stream"/> or <see cref="BodyFormat.Multipart"/> type.
+/// Provides with a method to retrieve the request content 
+/// for <see cref="BodyFormat.Stream"/> or <see cref="BodyFormat.Multipart"/> type.
 /// </summary>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public interface IHttpRequestStream
@@ -114,7 +129,8 @@ public interface IHttpRequestStream
 }
 
 /// <summary>
-/// Provides with a method to retrieve the request content for <see cref="BodyFormat.FormUrlEncoded"/> type.
+/// Provides with a method to retrieve the request 
+/// content for <see cref="BodyFormat.FormUrlEncoded"/> type.
 /// </summary>
 public interface IHttpRequestFormUrlEncoded
 {
@@ -125,7 +141,8 @@ public interface IHttpRequestFormUrlEncoded
 }
 
 /// <summary>
-/// Provides with a method to retrieve the request content for <see cref="Location.Cookie"/>.
+/// Provides with a method to retrieve the request 
+/// content for <see cref="Location.Cookie"/>.
 /// </summary>
 public interface IHttpRequestCookie
 {
@@ -137,7 +154,8 @@ public interface IHttpRequestCookie
 }
 
 /// <summary>
-/// Provides with a method to retrieve the request content for <see cref="Location.Header"/>.
+/// Provides with a method to retrieve the 
+/// request content for <see cref="Location.Header"/>.
 /// </summary>
 public interface IHttpRequestHeader
 {
@@ -152,7 +170,8 @@ public interface IHttpRequestHeader
     /// If a key is already present, its value will be replaced with the new one.
     /// </summary>
     IDictionary<string, IEnumerable<string?>> GetHeadersSource()
-        => GetHeaderSource().ToDictionary(d => d.Key, d => (IEnumerable<string?>)[d.Value]);
+        => GetHeaderSource()
+        .ToDictionary(d => d.Key, d => (IEnumerable<string?>)[d.Value]);
 
     /// <summary>
     /// Returns the model name of the header attribute.
@@ -162,7 +181,8 @@ public interface IHttpRequestHeader
 }
 
 /// <summary>
-/// Provides with a method to retrieve the query string content for query string Uri when using <see cref="Location.Query"/>.
+/// Provides with a method to retrieve the query 
+/// string content for query string Uri when using <see cref="Location.Query"/>.
 /// This can be combined with other locations.
 /// </summary>
 public interface IHttpRequestQueryString
@@ -174,7 +194,8 @@ public interface IHttpRequestQueryString
 }
 
 /// <summary>
-/// Provides with a method to retrieve the path string content for query string Uri when using <see cref="Location.Path"/>.
+/// Provides with a method to retrieve the path string content 
+/// for query string Uri when using <see cref="Location.Path"/>.
 /// This can be combined with other locations.
 /// </summary>
 public interface IHttpRequestPathString

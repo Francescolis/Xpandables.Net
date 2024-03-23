@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections.Immutable;
 
 using Xpandables.Net.Aggregates.DomainEvents;
@@ -25,16 +25,18 @@ using Xpandables.Net.Primitives.Text;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents a helper class that allows implementation of <see cref="IAggregate{TAggregateId}"/>.
+/// Represents a helper class that allows implementation of 
+/// <see cref="IAggregate{TAggregateId}"/>.
 /// <para>It contains a collection of <see cref="IDomainEvent{TAggregateId}"/>
-/// and a dictionary of event handlers (each handler is registered using the <see cref="Aggregate{TAggregateId}.On{TEvent}(Action{TEvent})"/>
-/// method).</para>
-/// <para>You may register event handlers using  the <see cref="On{TEvent}(Action{TEvent})"/> or
+/// and a dictionary of event handlers.</para>
+/// <para>You may register event handlers using the 
+/// <see cref="On{TEvent}(Action{TEvent})"/> or
 /// <see cref="RegisterEventHandler{TEvent}(Delegate)"/>. </para>
-/// You may use the <see cref="PushEvent{TEvent}(TEvent)"/> method to push the specified event.
+/// You may use the <see cref="PushEvent{TEvent}(TEvent)"/> method to push 
+/// the specified event to the aggregate.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
-public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
+public abstract class Aggregate<TAggregateId> : IAggregate<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     private readonly Queue<IDomainEvent<TAggregateId>> _events = new();
@@ -44,7 +46,8 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
     public ulong Version { get; protected set; }
 
     ///<inheritdoc/>
-    public TAggregateId AggregateId { get; protected set; } = TAggregateId.DefaultInstance();
+    public TAggregateId AggregateId { get; protected set; }
+        = TAggregateId.DefaultInstance();
 
     /// <summary>
     /// Constructs the default instance of an aggregate root.
@@ -91,7 +94,8 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
 
     private void Mutate(IDomainEvent<TAggregateId> @event)
     {
-        if (!_eventHandlers.TryGetValue(@event.GetType(), out Delegate? messageHandler))
+        if (!_eventHandlers
+            .TryGetValue(@event.GetType(), out Delegate? messageHandler))
             return;
 
         AggregateId = @event.AggregateId;
@@ -103,27 +107,31 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="event">The domain event instance to act on.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="event"/> 
+    /// is null.</exception>
     public void PushEvent<TEvent>(TEvent @event)
         where TEvent : notnull, IDomainEvent<TAggregateId>
     {
-        _ = @event ?? throw new ArgumentNullException(nameof(@event));
+        ArgumentNullException.ThrowIfNull(@event);
 
         Apply(@event);
     }
 
     /// <summary>
-    /// Registers an handler for the <typeparamref name="TEvent"/> domain event type.
+    /// Registers an handler for the <typeparamref name="TEvent"/> 
+    /// domain event type.
     /// </summary>
     /// <typeparam name="TEvent">The type of the domain event.</typeparam>
     /// <param name="eventHandler">the target handler to register.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="eventHandler"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="eventHandler"/> is null.</exception>
     /// <exception cref="ArgumentException">An element with the same 
     /// key already exist in the collection.</exception>
     protected void RegisterEventHandler<TEvent>(Delegate eventHandler)
         where TEvent : notnull, IDomainEvent<TAggregateId>
     {
-        _ = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
+        ArgumentNullException.ThrowIfNull(eventHandler);
+
         RegisterEventHandler(typeof(TEvent), eventHandler);
     }
 
@@ -133,37 +141,47 @@ public abstract partial class Aggregate<TAggregateId> : IAggregate<TAggregateId>
     /// <param name="eventType">The domain event type, must implement 
     /// <see cref="IDomainEvent{TAggregateId}"/>.</param>
     /// <param name="eventHandler">the target handler to register.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="eventHandler"/> 
-    /// is null.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="eventHandler"/> is null.</exception>
     /// <exception cref="ArgumentException">An element with the same key 
     /// already exist in the collection.</exception>
     /// <exception cref="ArgumentException">The <paramref name="eventType"/> 
-    /// does not implement <see cref="IDomainEvent{TAggregateId}"/> interface.</exception>
+    /// does not implement <see cref="IDomainEvent{TAggregateId}"/> 
+    /// interface.</exception>
     protected void RegisterEventHandler(Type eventType, Delegate eventHandler)
     {
-        _ = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
-        _ = eventType ?? throw new ArgumentNullException(nameof(eventType));
+        ArgumentNullException.ThrowIfNull(eventHandler);
+        ArgumentNullException.ThrowIfNull(eventType);
 
-        if (!eventType.GetInterfaces().Exists(i => i.IsGenericType && i == typeof(IDomainEvent<TAggregateId>)))
+        if (!eventType
+            .GetInterfaces()
+            .Exists(i => i.IsGenericType
+                && i == typeof(IDomainEvent<TAggregateId>)))
+        {
             throw new ArgumentException(
                 I18nXpandables.TypeMustImplement
                 .StringFormat(
                     eventType.Name,
                     typeof(IDomainEvent<>).Name));
+        }
 
         if (!_eventHandlers.TryAdd(eventType, eventHandler))
+        {
             throw new ArgumentException(
                 I18nXpandables.EventSourcingDomainEventAlreadyExist
                     .StringFormat(eventType.Name));
+        }
     }
 
     /// <summary>
-    /// Registers the handler for the specific <typeparamref name="TEvent"/> domain event type.
+    /// Registers the handler for the specific <typeparamref name="TEvent"/> 
+    /// domain event type.
     /// </summary>
     /// <typeparam name="TEvent">The type of the domain event to act on, 
     /// must implement <see cref="IDomainEvent{TAggregateId}"/>.</typeparam>
     /// <param name="handler">The target domain event handler to register.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="handler"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="handler"/> is null.</exception>
     protected void On<TEvent>(Action<TEvent> handler)
         where TEvent : notnull, IDomainEvent<TAggregateId>
     {

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
@@ -28,11 +28,14 @@ namespace Xpandables.Net.Operations;
 public static partial class OperationResultExtensions
 {
     /// <summary>
-    /// Converts the current <see cref="IOperationResult"/> to <see cref="OperationResultException"/>.
+    /// Converts the current <see cref="IOperationResult"/> 
+    /// to <see cref="OperationResultException"/>.
     /// </summary>
     /// <param name="operationResult">The operation result to be converted.</param>
-    /// <returns>An instance of <see cref="OperationResultException"/> with the result.</returns>
-    public static OperationResultException ToOperationResultException(this IOperationResult operationResult)
+    /// <returns>An instance of <see cref="OperationResultException"/>
+    /// with the result.</returns>
+    public static OperationResultException ToOperationResultException(
+        this IOperationResult operationResult)
     {
         ArgumentNullException.ThrowIfNull(operationResult);
 
@@ -40,15 +43,18 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="ValidationResult"/> to a <see cref="IOperationResult"/>.
+    /// Converts the current <see cref="ValidationResult"/> 
+    /// to a <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="this">The validation result to act on.</param>
     /// <returns>An implementation of <see cref="IOperationResult"/> with 
-    /// <see cref="IOperationResult.StatusCode"/> = <see cref="HttpStatusCode.BadRequest"/>
+    /// <see cref="IOperationResult.StatusCode"/> = 
+    /// <see cref="HttpStatusCode.BadRequest"/>
     /// if <see cref="ValidationResult.ErrorMessage"/> and 
     /// <see cref="ValidationResult.MemberNames"/> are not null, 
     /// otherwise throws an <see cref="InvalidOperationException"/>.</returns>
-    public static IOperationResult ToOperationResult(this ValidationResult @this)
+    public static IOperationResult ToOperationResult(
+        this ValidationResult @this)
     {
         ArgumentNullException.ThrowIfNull(@this);
 
@@ -58,7 +64,7 @@ public static partial class OperationResultExtensions
         ElementCollection errors = [];
         foreach (string memberName in @this.MemberNames)
             if (!string.IsNullOrEmpty(memberName))
-                errors.Add(memberName, [@this.ErrorMessage]);
+                errors.Add(memberName, @this.ErrorMessage);
 
         return OperationResults
             .BadRequest()
@@ -67,15 +73,18 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="ValidationException"/> to a <see cref="IOperationResult"/>.
+    /// Converts the current <see cref="ValidationException"/> 
+    /// to a <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="this">The validation exception to act on.</param>
     /// <returns>An implementation of <see cref="IOperationResult"/> 
-    /// with <see cref="IOperationResult.StatusCode"/> = <see cref="HttpStatusCode.BadRequest"/>
+    /// with <see cref="IOperationResult.StatusCode"/> = 
+    /// <see cref="HttpStatusCode.BadRequest"/>
     /// if <see cref="ValidationResult.ErrorMessage"/> and 
     /// <see cref="ValidationResult.MemberNames"/> are not null, 
     /// otherwise throws an <see cref="InvalidOperationException"/>.</returns>
-    public static IOperationResult ToOperationResult(this ValidationException @this)
+    public static IOperationResult ToOperationResult(
+        this ValidationException @this)
     {
         ArgumentNullException.ThrowIfNull(@this);
 
@@ -83,17 +92,21 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="Exception"/> to a <see cref="IOperationResult"/>.
+    /// Converts the current <see cref="Exception"/> 
+    /// to a <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="exception">The validation exception to act on.</param>
     /// <returns>An implementation of <see cref="IOperationResult"/> with 
-    /// <see cref="IOperationResult.StatusCode"/> = <see cref="HttpStatusCode.InternalServerError"/> 
+    /// <see cref="IOperationResult.StatusCode"/> = 
+    /// <see cref="HttpStatusCode.InternalServerError"/> 
     /// or <see cref="HttpStatusCode.BadRequest"/>.</returns>
-    public static IOperationResult ToOperationResult(this Exception exception)
+    public static IOperationResult ToOperationResult(
+        this Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
-        IOperationResult.IFailureBuilder builder = exception is InvalidOperationException
+        IOperationResult.IFailureBuilder builder
+            = exception is InvalidOperationException
             ? OperationResults.InternalError()
             : OperationResults.BadRequest();
 
@@ -104,11 +117,13 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="ValueTask"/> to a <see cref="IOperationResult"/>.
+    /// Converts the current <see cref="ValueTask"/> 
+    /// to a <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="valueTask">The task to act on.</param>
     /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="valueTask"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="valueTask"/> is null.</exception>
     public static async ValueTask<IOperationResult> ToOperationResultAsync(
         this ValueTask valueTask)
     {
@@ -131,11 +146,13 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="Task"/> to a <see cref="IOperationResult"/>.
+    /// Converts the current <see cref="Task"/> 
+    /// to a <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="task">The task to act on.</param>
     /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="task"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="task"/> is null.</exception>
     public static async ValueTask<IOperationResult> ToOperationResultAsync(
         this Task task)
     {
@@ -158,13 +175,16 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="ValueTask{TResult}"/> to a <see cref="IOperationResult{TResult}"/>.
+    /// Converts the current <see cref="ValueTask{TResult}"/> 
+    /// to a <see cref="IOperationResult{TResult}"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="valueTask">The task to act on.</param>
     /// <returns>An instance of <see cref="IOperationResult{TResult}"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="valueTask"/> is null.</exception>
-    public static async ValueTask<IOperationResult<TResult>> ToOperationResultAsync<TResult>(
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="valueTask"/> is null.</exception>
+    public static async ValueTask<IOperationResult<TResult>>
+        ToOperationResultAsync<TResult>(
         this ValueTask<TResult> valueTask)
     {
         ArgumentNullException.ThrowIfNull(valueTask);
@@ -176,7 +196,8 @@ public static partial class OperationResultExtensions
         }
         catch (OperationResultException operationResultException)
         {
-            return operationResultException.OperationResult.ToOperationResult<TResult>();
+            return operationResultException.OperationResult
+                .ToOperationResult<TResult>();
         }
         catch (Exception exception)
             when (exception is not OperationResultException)
@@ -186,13 +207,15 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="Task{TResult}"/> to a <see cref="IOperationResult{TResult}"/>.
+    /// Converts the current <see cref="Task{TResult}"/> 
+    /// to a <see cref="IOperationResult{TResult}"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="task">The task to act on.</param>
     /// <returns>An instance of <see cref="IOperationResult{TResult}"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="task"/> is null.</exception>
-    public static async ValueTask<IOperationResult<TResult>> ToOperationResultAsync<TResult>(
+    public static async ValueTask<IOperationResult<TResult>>
+        ToOperationResultAsync<TResult>(
         this Task<TResult> task)
     {
         ArgumentNullException.ThrowIfNull(task);
@@ -204,7 +227,8 @@ public static partial class OperationResultExtensions
         }
         catch (OperationResultException operationResultException)
         {
-            return operationResultException.OperationResult.ToOperationResult<TResult>();
+            return operationResultException.OperationResult
+                .ToOperationResult<TResult>();
         }
         catch (Exception exception)
             when (exception is not OperationResultException)

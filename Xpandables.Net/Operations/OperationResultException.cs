@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel;
 using System.Runtime.Serialization;
 
@@ -31,11 +31,13 @@ namespace Xpandables.Net.Operations;
 public sealed class OperationResultException : Exception
 {
     /// <summary>
-    /// Constructs a new instance of the <see cref="OperationResultException"/> class that
+    /// Constructs a new instance of the 
+    /// <see cref="OperationResultException"/> class that
     /// contains the specified operation result.
     /// </summary>
     /// <param name="operation">The result for the exception.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="operation"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="operation"/> is null.</exception>
     public OperationResultException(IOperationResult operation)
     {
         ArgumentNullException.ThrowIfNull(operation);
@@ -48,17 +50,23 @@ public sealed class OperationResultException : Exception
     /// </summary>
     public IOperationResult OperationResult { get; }
 
-    [Obsolete]
+#pragma warning disable S1133 // Deprecated code should be removed
+    [Obsolete("Use contrcutor with IOperationResult")]
+#pragma warning restore S1133 // Deprecated code should be removed
     [EditorBrowsable(EditorBrowsableState.Never)]
-    private OperationResultException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+    private OperationResultException(
+        SerializationInfo serializationInfo,
+        StreamingContext streamingContext)
         : base(serializationInfo, streamingContext)
     {
         ArgumentNullException.ThrowIfNull(serializationInfo);
-        OperationResult = (IOperationResult)serializationInfo.GetValue(nameof(OperationResult), typeof(IOperationResult))!;
+        OperationResult = (IOperationResult)serializationInfo
+            .GetValue(nameof(OperationResult), typeof(IOperationResult))!;
     }
 
     ///<inheritdoc/>
-    ///<remarks>Use the constructor with <see cref="OperationResult"/> parameter</remarks>
+    ///<remarks>Use the constructor with 
+    ///<see cref="OperationResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException()
     {
@@ -66,7 +74,8 @@ public sealed class OperationResultException : Exception
     }
 
     ///<inheritdoc/>
-    ///<remarks>Use the constructor with <see cref="OperationResult"/> parameter</remarks>
+    ///<remarks>Use the constructor with 
+    ///<see cref="OperationResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException(string message) : base(message)
     {
@@ -74,9 +83,11 @@ public sealed class OperationResultException : Exception
     }
 
     ///<inheritdoc/>
-    ///<remarks>Use the constructor with <see cref="OperationResult"/> parameter</remarks>
+    ///<remarks>Use the constructor with 
+    ///<see cref="OperationResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public OperationResultException(string message, Exception innerException) : base(message, innerException)
+    public OperationResultException(string message, Exception innerException)
+        : base(message, innerException)
     {
         throw new NotSupportedException();
     }

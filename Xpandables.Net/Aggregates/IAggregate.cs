@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Aggregates.DomainEvents;
 
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Defines base properties for an aggregate that is identified by a <see cref="Guid"/> type.
-/// Aggregate is a pattern in Domain-Driven Design. A DDD aggregate is a cluster
-/// of objects that can be treated as a single unit.
+/// Defines base properties for an aggregate that is identified by 
+/// <see cref="IAggregateId{TAggregateId}"/> type.
+/// <para>Aggregate is a pattern in Domain-Driven Design.
+/// A DDD aggregate is a cluster of objects that can be treated 
+/// as a single unit.</para>
 /// </summary>
 /// <typeparam name="TAggregateId">The type of aggregate Id</typeparam>
 public interface IAggregate<TAggregateId> : IDomainEventSourcing<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
-    /// Gets the aggregate identifier.
+    /// Gets the unique aggregate identifier.
     /// </summary>
     TAggregateId AggregateId { get; }
 
@@ -44,6 +46,7 @@ public interface IAggregate<TAggregateId> : IDomainEventSourcing<TAggregateId>
     /// <remarks>This property is used when creating aggregate from history 
     /// to determine if the id has been set or not.
     /// You can override it to customize its behavior.</remarks>
-    /// <returns>Returns <see langword="true"/> if so, otherwise <see langword="false"/></returns>
+    /// <returns>Returns <see langword="true"/> if it is not empty, 
+    /// otherwise <see langword="false"/>.</returns>
     public virtual bool IsEmpty => AggregateId.IsNew();
 }

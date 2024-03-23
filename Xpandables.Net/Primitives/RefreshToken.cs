@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
 /// Contains properties for a refresh token.
-/// <para>Returns a new instance of <see cref="RefreshToken"/> with its properties.</para>
+/// <para>Returns a new instance of <see cref="RefreshToken"/> 
+/// with its properties.</para>
 /// </summary>
 /// <param name="Value">The value of the refresh token.</param>
 /// <param name="Expiry">The token expiry date.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="Value"/> is null.</exception>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="Value"/> is null.</exception>
 public readonly record struct RefreshToken(
     [property: Required, DataType(DataType.Text)] string Value,
     [property: Required, DataType(DataType.DateTime)] DateTime Expiry);

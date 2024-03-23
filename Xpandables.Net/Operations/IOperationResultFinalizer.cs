@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Finalizer
+
+using System.Diagnostics.CodeAnalysis;
+
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
@@ -24,16 +29,31 @@ namespace Xpandables.Net.Operations;
 /// </summary>
 /// <param name="operationResult">The operation result to act on.</param>
 /// <returns>An instance of <see cref="OperationResult"/>.</returns>
-public delegate IOperationResult OperationResultFinalizer(IOperationResult operationResult);
+public delegate IOperationResult OperationResultFinalizer(
+    IOperationResult operationResult);
 
 /// <summary>
-/// Defines the action tat get applied and the end of a process before the result is returned to the caller.
+/// Defines the action that get applied and the end of a process 
+/// before the result is returned to the caller.
 /// In order to be activated, the target event should implement 
-/// the <see cref="IOperationResultDecorator"/> interface, 
-/// the target handling class should reference the current interface to set the delegate.
+/// the <see cref="IOperationResultFinalizerDecorator"/> interface, 
+/// the target handling class should reference the current interface 
+/// to set the delegate.
 /// </summary>
+/// <remarks>Be aware of the fact that the finalizer did not get called
+/// in case of exception. If you want so, set the property 
+/// <see cref="CallFinalizerOnException"/> to <see langword="true"/>.</remarks>
 public interface IOperationResultFinalizer
 {
+    /// <summary>
+    /// Defines whether the finalizer should be called in case of exception.
+    /// </summary>
+    /// <remarks>If set to <see langword="true"/>, the finalizer is responsible
+    /// to return the wright result in the expected type and
+    /// must be defined.</remarks>
+    [MemberNotNullWhen(true, nameof(Finalizer))]
+    bool CallFinalizerOnException { get; set; }
+
     /// <summary>
     /// Defines the delegate that allows to finalize the operation result.
     /// </summary>

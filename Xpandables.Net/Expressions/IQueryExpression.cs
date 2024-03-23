@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 
 namespace Xpandables.Net.Expressions;
 
 /// <summary>
-/// Defines a methods that returns an <see cref="Expression{TDelegate}"/> that can be used to query
-/// This can significantly improve the use of the command/query pattern, allowing class conversion
+/// Defines a methods that returns an <see cref="Expression{TDelegate}"/> 
+/// that can be used to query
+/// This can significantly improve the use of the command/query pattern, 
+/// allowing class conversion
 /// to an expression tree.
 /// </summary>
 /// <typeparam name="TSource">The data type to apply expression to.</typeparam>
@@ -35,10 +37,11 @@ public interface IQueryExpression<TSource, TResult>
 }
 
 /// <summary>
-/// Defines a methods that returns an <see cref="Expression{TDelegate}"/> that can be used to query
+/// Defines a methods that returns an 
+/// <see cref="Expression{TDelegate}"/> that can be used to query
 /// the <typeparamref name="TSource"/> instance with <see cref="bool"/> result.
-/// This can significantly improve the use of the command/query pattern, allowing class conversion
-/// to an expression tree.
+/// This can significantly improve the use of the command/query pattern, 
+/// allowing class conversion to an expression tree.
 /// </summary>
 /// <typeparam name="TSource">The data type to apply expression to.</typeparam>
 public interface IQueryExpression<TSource> : IQueryExpression<TSource, bool> { }

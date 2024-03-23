@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Aggregates.DomainEvents;
@@ -22,8 +23,10 @@ namespace Xpandables.Net.Aggregates.DomainEvents;
 /// Helper class used to create a domain event with aggregate.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of aggregate.</typeparam>
-/// <remarks>Initializes a new instance of <see cref="DomainEvent{TAggregateId}"/>.</remarks>
-public abstract record class DomainEvent<TAggregateId> : IDomainEvent<TAggregateId>
+/// <remarks>Initializes a new instance of 
+/// <see cref="DomainEvent{TAggregateId}"/>.</remarks>
+public abstract record class DomainEvent<TAggregateId>
+    : IDomainEvent<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     ///<inheritdoc/>
@@ -50,22 +53,26 @@ public abstract record class DomainEvent<TAggregateId> : IDomainEvent<TAggregate
 /// <typeparam name="TAggregateId">The type of aggregate.</typeparam>
 /// <remarks>Add a private parameterless constructor and decorate it 
 /// with the <see cref="JsonConstructorAttribute"/> attribute.</remarks>
-public abstract record DomainEvent<TAggregate, TAggregateId> : DomainEvent<TAggregateId>
+public abstract record DomainEvent<TAggregate, TAggregateId>
+    : DomainEvent<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="DomainEvent{TAggregate, TAggregateId}"/>.
+    /// Initializes a new instance of 
+    /// <see cref="DomainEvent{TAggregate, TAggregateId}"/>.
     /// </summary>
     /// <remarks>Used for deserialization.</remarks>
     [JsonConstructor]
     protected DomainEvent() { }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="DomainEvent{TAggregate, TAggregateId}"/>.
+    /// Initializes a new instance of 
+    /// <see cref="DomainEvent{TAggregate, TAggregateId}"/>.
     /// </summary>
     /// <param name="aggregate">The target aggregate instance.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="aggregate"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="aggregate"/> is null.</exception>
     protected DomainEvent(TAggregate aggregate)
     {
         ArgumentNullException.ThrowIfNull(aggregate);

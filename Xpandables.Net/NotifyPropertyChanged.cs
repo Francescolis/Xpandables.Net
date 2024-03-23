@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
@@ -26,30 +26,37 @@ using Xpandables.Net.Expressions;
 namespace Xpandables.Net;
 
 /// <summary>
-/// When used with <see cref="NotifyPropertyChanged"/> or <see cref="NotifyPropertyChanged{T}"/>, 
+/// When used with <see cref="NotifyPropertyChanged"/> 
+/// or <see cref="NotifyPropertyChanged{T}"/>, 
 /// makes sure that the decorated property will be notified
 /// when the target specified property by <see cref="Name"/> has changed.
 /// </summary>
 /// <remarks>
-/// Specifies that the decorated property will be notified when the target specified by name has changed.
+/// Specifies that the decorated property will be notified 
+/// when the target specified by name has changed.
 /// We advise the use of <see langword="nameof(propertyName)"/> as value.
 /// </remarks>
-/// <param name="name">The name of the target property which changes are notified to the decorated property.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="name"/> is null.</exception>
+/// <param name="name">The name of the target property w
+/// hich changes are notified to the decorated property.</param>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="name"/> is null.</exception>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
 public sealed class NotifyPropertyChangedForAttribute(string name) : Attribute
 {
     /// <summary>
-    /// Gets the name of the target property which changes are notified to the decorated property.
+    /// Gets the name of the target property which 
+    /// changes are notified to the decorated property.
     /// </summary>
     public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
 }
 
 /// <summary>
 /// Implementation for <see cref="INotifyPropertyChanged"/>.
-/// You can combine the use with <see cref="NotifyPropertyChangedForAttribute"/> to propagate message.
+/// You can combine the use with 
+/// <see cref="NotifyPropertyChangedForAttribute"/> to propagate message.
 /// </summary>
-public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPropertyChanging
+public abstract class NotifyPropertyChanged
+    : INotifyPropertyChanged, INotifyPropertyChanging
 {
     /// <summary>
     /// Contains a collection of dependencies on property changed messages.
@@ -66,7 +73,8 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPro
     /// Notifies listeners that a property value has changed.
     /// </summary>
     /// <param name="e">The event that contains the property name.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="e"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="e"/> is <see langword="null"/></exception>
     protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         ArgumentNullException.ThrowIfNull(e);
@@ -79,7 +87,8 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPro
     /// </summary>
     /// <param name="propertyName">
     /// Name of the property used to notify listeners.  
-    /// This value is optional and can be provided automatically when invoked from compilers
+    /// This value is optional and can be provided 
+    /// automatically when invoked from compilers
     /// that support <see cref="CallerMemberNameAttribute" />.
     /// </param>
     protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
@@ -89,7 +98,8 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPro
     /// Notifies listeners that a property value is changing.
     /// </summary>
     /// <param name="e">The event that contains the property name.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="e"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="e"/> is <see langword="null"/></exception>
     protected virtual void OnPropertyChanging(PropertyChangingEventArgs e)
     {
         ArgumentNullException.ThrowIfNull(e);
@@ -102,29 +112,36 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPro
     /// </summary>
     /// <param name="propertyName">
     /// Name of the property used to notify listeners.  
-    /// This value is optional and can be provided automatically when invoked from compilers
+    /// This value is optional and can be provided automatically
+    /// when invoked from compilers
     /// that support <see cref="CallerMemberNameAttribute" />.
     /// </param>
     protected void OnPropertyChanging([CallerMemberName] string propertyName = "")
         => OnPropertyChanging(new PropertyChangingEventArgs(propertyName));
 
     /// <summary>
-    /// Initializes a new instance of <see cref="NotifyPropertyChanged"/> class and its <see cref="Dependencies"/>.
+    /// Initializes a new instance of 
+    /// <see cref="NotifyPropertyChanged"/> class and its <see cref="Dependencies"/>.
     /// </summary>
-    protected NotifyPropertyChanged() => Dependencies = GetType().DependencyPropertiesProvider();
+    protected NotifyPropertyChanged()
+        => Dependencies = GetType().DependencyPropertiesProvider();
 
     /// <summary>
     /// Checks if the property does not match the old one.
     /// If so, sets the property and notifies listeners.
     /// </summary>
     /// <typeparam name="TValue">Type of the value.</typeparam>
-    /// <param name="field">The field of the property (the back-end field).</param>
+    /// <param name="field">The field of 
+    /// the property (the back-end field).</param>
     /// <param name="value">The new value of the property (the value).</param>
-    /// <param name="onChanged">The delegate to be executed if the value changed.</param>
-    /// <param name="propertyName">The name of the property. Optional (Already known at compile time).</param>
+    /// <param name="onChanged">The delegate to be executed 
+    /// if the value changed.</param>
+    /// <param name="propertyName">The name of the property. 
+    /// Optional (Already known at compile time).</param>
     /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="propertyName"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="propertyName"/> is null or empty.</exception>
     protected bool SetProperty<TValue>(
         [NotNullIfNotNull(nameof(value))] ref TValue field,
         TValue value,
@@ -154,14 +171,20 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPro
     /// If so, sets the property and notifies listeners.
     /// </summary>
     /// <typeparam name="TValue">Type of the value.</typeparam>
-    /// <param name="field">The field of the property (the back-end field).</param>
+    /// <param name="field">The field of the property 
+    /// (the back-end field).</param>
     /// <param name="value">The new value of the property (the value).</param>
-    /// <param name="comparer">The instance comparer used for values comparison.</param>
-    /// <param name="onChanged">The delegate to be executed if the value changed.</param>
-    /// <param name="propertyName">The name of the property. Optional (Already known at compile time).</param>
-    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// <param name="comparer">The instance comparer used 
+    /// for values comparison.</param>
+    /// <param name="onChanged">The delegate to be executed 
+    /// if the value changed.</param>
+    /// <param name="propertyName">The name of the property. 
+    /// Optional (Already known at compile time).</param>
+    /// <returns><see langword="true"/>if the value
+    /// was changed, <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="propertyName"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="propertyName"/> is null or empty.</exception>
     protected bool SetProperty<TValue>(
         [NotNullIfNotNull(nameof(value))] ref TValue field,
         TValue value,
@@ -193,14 +216,20 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPro
     /// If so, sets the property and notifies listeners.
     /// </summary>
     /// <typeparam name="TValue">Type of the value.</typeparam>
-    /// <param name="field">The field of the property (the back-end field).</param>
+    /// <param name="field">The field of the property 
+    /// (the back-end field).</param>
     /// <param name="value">The new value of the property (the value).</param>
-    /// <param name="comparer">The instance comparer used for values comparison.</param>
-    /// <param name="onChanged">The delegate to be executed if the value changed.</param>
-    /// <param name="propertyName">The name of the property. Optional (Already known at compile time).</param>
-    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// <param name="comparer">The instance comparer used 
+    /// for values comparison.</param>
+    /// <param name="onChanged">The delegate to be executed 
+    /// if the value changed.</param>
+    /// <param name="propertyName">The name of the property. 
+    /// Optional (Already known at compile time).</param>
+    /// <returns><see langword="true"/>if the value was 
+    /// changed, <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="propertyName"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="propertyName"/> is null or empty.</exception>
     protected bool SetProperty<TValue>(
         [NotNullIfNotNull(nameof(value))] ref TValue field,
         TValue value,
@@ -242,15 +271,18 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged, INotifyPro
 }
 
 /// <summary>
-/// Implementation for <see cref="INotifyPropertyChanged"/> and <see cref="INotifyPropertyChanging"/>.
-/// You can combine the use with <see cref="NotifyPropertyChangedForAttribute"/> to propagate notification.
+/// Implementation for <see cref="INotifyPropertyChanged"/> 
+/// and <see cref="INotifyPropertyChanging"/>.
+/// You can combine the use with 
+/// <see cref="NotifyPropertyChangedForAttribute"/> to propagate notification.
 /// </summary>
 /// <typeparam name="TModel">The type of the target model.</typeparam>
 public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
     where TModel : class
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="NotifyPropertyChanged{T}"/> class and its dependencies.
+    /// Initializes a new instance of 
+    /// <see cref="NotifyPropertyChanged{T}"/> class and its dependencies.
     /// </summary>
     protected NotifyPropertyChanged() : base() { }
 
@@ -262,10 +294,13 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
     /// <typeparam name="TProperty">Type of the property selector.</typeparam>
     /// <param name="field">The field of the property (the back-end field).</param>
     /// <param name="value">The new value of the property (the value).</param>
-    /// <param name="selector">The expression delegate to retrieve the property name.</param>
-    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// <param name="selector">The expression delegate 
+    /// to retrieve the property name.</param>
+    /// <returns><see langword="true"/>if the value 
+    /// was changed, <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="selector"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="selector"/> is null.</exception>
     protected bool SetProperty<TValue, TProperty>(
         [NotNullIfNotNull(nameof(value))] ref TValue field,
         TValue value,
@@ -295,13 +330,18 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
     /// </summary>
     /// <typeparam name="TValue">Type of the value.</typeparam>
     /// <typeparam name="TProperty">Type of the property selector.</typeparam>
-    /// <param name="field">The field of the property (the back-end field).</param>
+    /// <param name="field">The field of the property 
+    /// (the back-end field).</param>
     /// <param name="value">The new value of the property (the value).</param>
-    /// <param name="comparer">The instance comparer used for values comparison.</param>
-    /// <param name="selector">The expression delegate to retrieve the property name.</param>
-    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// <param name="comparer">The instance comparer used 
+    /// for values comparison.</param>
+    /// <param name="selector">The expression delegate 
+    /// to retrieve the property name.</param>
+    /// <returns><see langword="true"/>if the value 
+    /// was changed, <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="selector"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="selector"/> is null.</exception>
     protected bool SetProperty<TValue, TProperty>(
         [NotNullIfNotNull(nameof(value))] ref TValue field,
         TValue value,
@@ -336,10 +376,13 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
     /// <param name="value">The new value of the property (the value).</param>
     /// <param name="model">The model instance.</param>
     /// <param name="updater">The action that will update the property.</param>
-    /// <param name="propertyName">The name of the property. Optional (Already known at compile time).</param>
-    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// <param name="propertyName">The name of the property. 
+    /// Optional (Already known at compile time).</param>
+    /// <returns><see langword="true"/>if the value was changed, 
+    /// <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="propertyName"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="propertyName"/> is null or empty.</exception>
     protected bool SetProperty<TValue>(
         TValue old,
         TValue value,
@@ -375,10 +418,13 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
     /// <param name="value">The new value of the property (the value).</param>
     /// <param name="model">The model instance.</param>
     /// <param name="updater">The action that will update the property.</param>
-    /// <param name="selector">The expression delegate to retrieve the property name.</param>
-    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// <param name="selector">The expression delegate 
+    /// to retrieve the property name.</param>
+    /// <returns><see langword="true"/>if the value was changed, 
+    /// <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="selector"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="selector"/> is null.</exception>
     protected bool SetProperty<TValue, TProperty>(
         TValue old,
         TValue value,
@@ -415,11 +461,15 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
     /// <param name="value">The new value of the property (the value).</param>
     /// <param name="model">The model instance.</param>
     /// <param name="updater">The action that will update the property.</param>
-    /// <param name="comparer">The instance comparer used for values comparison.</param>
-    /// <param name="propertyName">The name of the property. Optional (Already known at compile time).</param>
-    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// <param name="comparer">The instance comparer used 
+    /// for values comparison.</param>
+    /// <param name="propertyName">The name of the property. 
+    /// Optional (Already known at compile time).</param>
+    /// <returns><see langword="true"/>if the value was changed, 
+    /// <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="propertyName"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="propertyName"/> is null or empty.</exception>
     protected bool SetProperty<TValue>(
         TValue old,
         TValue value,
@@ -457,11 +507,15 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
     /// <param name="value">The new value of the property (the value).</param>
     /// <param name="model">The model instance.</param>
     /// <param name="updater">The action that will update the property.</param>
-    /// <param name="comparer">The instance comparer used for values comparison.</param>
-    /// <param name="selector">The expression delegate to retrieve the property name.</param>
-    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// <param name="comparer">The instance comparer used 
+    /// for values comparison.</param>
+    /// <param name="selector">The expression delegate to 
+    /// retrieve the property name.</param>
+    /// <returns><see langword="true"/>if the value was changed, 
+    /// <see langword="false"/>
     /// if the existing value matches the desired value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="selector"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="selector"/> is null.</exception>
     protected bool SetProperty<TValue, TProperty>(
         TValue old,
         TValue value,
@@ -498,56 +552,83 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
 public static class NotifyPropertyExtensions
 {
     /// <summary>
-    /// Provides with the collection of dependencies found in the specified type, to be used with <see cref="NotifyPropertyChanged"/> messages.
+    /// Provides with the collection of dependencies found i
+    /// n the specified type, to be used with <see cref="NotifyPropertyChanged"/> messages.
     /// </summary>
-    /// <param name="target">The type that derived from <see cref="NotifyPropertyChanged"/>.</param>
-    internal static IDictionary<string, List<string>> DependencyPropertiesProvider(this Type target)
+    /// <param name="target">The type that derived 
+    /// from <see cref="NotifyPropertyChanged"/>.</param>
+    internal static IDictionary<string, List<string>>
+        DependencyPropertiesProvider(this Type target)
     {
         Dictionary<string, List<string>> dependencies = [];
 
-        PropertyInfo[] properties = (from p in target.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                     where p.GetCustomAttributes<NotifyPropertyChangedForAttribute>(true).Any()
-                                     select p)
-                        .ToArray();
+        PropertyInfo[] properties
+            = (from p in target
+               .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+               where p
+                .GetCustomAttributes<NotifyPropertyChangedForAttribute>(true)
+                .Any()
+               select p)
+                .ToArray();
 
         foreach (PropertyInfo? property in properties)
         {
-            string[] attributes = (from a in property.GetCustomAttributes<NotifyPropertyChangedForAttribute>(false) select a.Name).ToArray();
+            string[] attributes
+                = (from a in property
+                        .GetCustomAttributes<NotifyPropertyChangedForAttribute>(false)
+                   select a.Name).ToArray();
 
             foreach (string? dependency in attributes)
             {
                 if (property.Name == dependency)
                 {
-                    throw new InvalidOperationException("Circular dependency found.",
-                        new ArgumentException($"Property {dependency} of {target.Name} can not depends on itself."));
+                    throw new InvalidOperationException(
+                        "Circular dependency found.",
+                        new ArgumentException(
+                            $"Property {dependency} of {target.Name} can " +
+                            $"not depends on itself."));
                 }
 
-                if (dependencies.TryGetValue(dependency, out List<string>? notifiers))
+                if (dependencies.TryGetValue(
+                    dependency,
+                    out List<string>? notifiers))
                 {
-                    Predicate<string> predicateProperty = new(PredicateFindProperty);
+                    Predicate<string> predicateProperty
+                        = new(PredicateFindProperty);
                     if (notifiers.Find(predicateProperty) is { })
                     {
-                        throw new InvalidOperationException("Duplicate dependency found.",
-                            new ArgumentException($"The property {property.Name} has already a dependency on {dependency}"));
+                        throw new InvalidOperationException(
+                            "Duplicate dependency found.",
+                            new ArgumentException($"The property {property.Name} " +
+                            $"has already a dependency on {dependency}"));
                     }
 
                     notifiers.Add(property.Name);
                 }
                 else
                 {
-                    Predicate<string> predicateFind = new(PredicateFindDependency);
-                    if (dependencies.TryGetValue(property.Name, out List<string>? propertyNotifiers) && propertyNotifiers.Find(predicateFind) != null)
+                    Predicate<string> predicateFind
+                        = new(PredicateFindDependency);
+                    if (dependencies.TryGetValue(
+                        property.Name,
+                        out List<string>? propertyNotifiers)
+                        && propertyNotifiers.Find(predicateFind) != null)
                     {
-                        throw new InvalidOperationException("Circular dependency found.",
-                            new ArgumentException($"The {property.Name} owns a dependency on {dependency} which one depends on {property.Name}."));
+                        throw new InvalidOperationException(
+                            "Circular dependency found.",
+                            new ArgumentException($"The {property.Name} owns " +
+                            $"a dependency on {dependency} which one " +
+                            $"depends on {property.Name}."));
                     }
 
                     dependencies.Add(dependency, [property.Name]);
                 }
 
-                bool PredicateFindDependency(string value) => value == dependency;
+                bool PredicateFindDependency(string value)
+                    => value == dependency;
 
-                bool PredicateFindProperty(string value) => value == property.Name;
+                bool PredicateFindProperty(string value)
+                    => value == property.Name;
             }
         }
         return dependencies;
@@ -560,7 +641,8 @@ public static class NotifyPropertyExtensions
         Action<string> onPropertyChanged,
         IDictionary<string, List<string>> dependencies)
     {
-        if (string.IsNullOrWhiteSpace(propertyName)) throw new ArgumentNullException(nameof(propertyName));
+        if (string.IsNullOrWhiteSpace(propertyName))
+            throw new ArgumentNullException(nameof(propertyName));
 
         if (EqualityComparer<TValue>.Default.Equals(storage, value))
             return false;
@@ -579,7 +661,8 @@ public static class NotifyPropertyExtensions
 
             (from keyValues in dependencies
              from dependent in keyValues.Value
-             where keyValues.Key.Equals(property, StringComparison.OrdinalIgnoreCase)
+             where keyValues.Key.Equals(
+                 property, StringComparison.OrdinalIgnoreCase)
              select dependent)
              .ToList()
              .ForEach(onPropertyChangedAction);

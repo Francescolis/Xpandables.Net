@@ -513,7 +513,7 @@ public static class ServiceCollectionCQRSExtensions
 
     /// <summary>
     /// Adds operation result correlation behavior to commands and queries 
-    /// that are decorated with the <see cref="IOperationResultDecorator"/> to the services.
+    /// that are decorated with the <see cref="IOperationResultFinalizerDecorator"/> to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
@@ -522,9 +522,9 @@ public static class ServiceCollectionCQRSExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(OperationResultCommandDecorator<>));
-        _ = services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(OperationResultAsyncQueryDecorator<,>));
-        _ = services.XTryDecorate(typeof(IQueryHandler<,>), typeof(OperationResultQueryDecorator<,>));
+        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(OperationResultFinalizerCommandDecorator<>));
+        _ = services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(OperationResultFinalizerAsyncQueryDecorator<,>));
+        _ = services.XTryDecorate(typeof(IQueryHandler<,>), typeof(OperationResultFinalizerQueryDecorator<,>));
 
         return services;
     }

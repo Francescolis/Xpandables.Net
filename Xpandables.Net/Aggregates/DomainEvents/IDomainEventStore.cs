@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
@@ -29,7 +30,8 @@ public interface IDomainEventStore : IDisposable
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>   
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="event"/> is null.</exception>   
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
     ValueTask AppendAsync<TAggregateId>(
@@ -38,7 +40,8 @@ public interface IDomainEventStore : IDisposable
         where TAggregateId : struct, IAggregateId<TAggregateId>;
 
     /// <summary>
-    /// Asynchronously returns a collection of domain events matching the aggregate identifier.
+    /// Asynchronously returns a collection of domain events matching 
+    /// the aggregate identifier.
     /// if not found, returns an empty collection.
     /// </summary>
     /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
@@ -47,24 +50,31 @@ public interface IDomainEventStore : IDisposable
     /// while waiting for the task to complete.</param>
     /// <returns>An enumerator of <see cref="IDomainEvent{TAggregateId}"/> 
     /// that can be asynchronously enumerated.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="aggregateId"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="aggregateId"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed.
     /// See inner exception.</exception>
+    /// <remarks>For performance, use the method with filters.</remarks>
     IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
         TAggregateId aggregateId,
         CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>;
 
     /// <summary>
-    /// Asynchronously returns a collection of results from domain events matching the filter.
+    /// Asynchronously returns a collection of results from 
+    /// domain events matching the filter.
     /// if not found, returns an empty collection.
     /// </summary>
     /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
     /// <param name="filter">The filter to search domain events for.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <returns>An enumerator of <see cref="IDomainEvent{TAggregateId}"/> type that can be asynchronously enumerated.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="filter"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <param name="cancellationToken">A CancellationToken to observe 
+    /// while waiting for the task to complete.</param>
+    /// <returns>An enumerator of <see cref="IDomainEvent{TAggregateId}"/> 
+    /// type that can be asynchronously enumerated.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="filter"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
         IDomainEventFilter filter,
         CancellationToken cancellationToken = default)

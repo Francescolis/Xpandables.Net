@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Optionals;
 
 /// <summary>
-/// Provides a set of <see langword="static"/> methods for <see cref="Optional{T}"/>.
+/// Provides a set of <see langword="static"/> methods 
+/// for <see cref="Optional{T}"/>.
 /// </summary>
 public static class OptionalExtensions
 {
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value.
+    /// Applies the <paramref name="some"/> method if the 
+    /// instance contains a value.
     /// Otherwise, returns the current instance.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The optional to act on.</param>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
-    /// <returns>The current instance where the <paramref name="some"/> has been applied if the instance contains a value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> or <paramref name="some"/> is null.</exception>
+    /// <param name="some">The method that get called when the i
+    /// nstance contains a value.</param>
+    /// <returns>The current instance where the <paramref name="some"/> 
+    /// has been applied if the instance contains a value.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="optional"/>
+    /// or <paramref name="some"/> is null.</exception>
     public static async ValueTask<Optional<T>> MapAsync<T>(
         this ValueTask<Optional<T>> optional,
         Func<T, ValueTask<T>> some)
@@ -42,14 +48,18 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value.
+    /// Applies the <paramref name="some"/> method if the instance
+    /// contains a value.
     /// Otherwise, returns the current instance.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The optional to act on.</param>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
-    /// <returns>The current instance where the <paramref name="some"/> has been applied if the instance contains a value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> or <paramref name="some"/> is null.</exception>
+    /// <param name="some">The method that get called when the 
+    /// instance contains a value.</param>
+    /// <returns>The current instance where the <paramref name="some"/> 
+    /// has been applied if the instance contains a value.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
+    /// or <paramref name="some"/> is null.</exception>
     public static async ValueTask<Optional<T>> MapAsync<T>(
         this ValueTask<Optional<T>> optional,
         Func<T, ValueTask> some)
@@ -62,14 +72,16 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Turns the current instance to a new <see cref="Optional{T}"/> using the specified binder.
+    /// Turns the current instance to a new <see cref="Optional{T}"/> 
+    /// using the specified binder.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="optional">The current instance.</param>
     /// <param name="binder">The binding method.</param>
     /// <returns>A new optional that contains a value or not.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> or <paramref name="binder"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
+    /// or <paramref name="binder"/> is null.</exception>
     public static async ValueTask<Optional<TU>> BindAsync<T, TU>(
         this ValueTask<Optional<T>> optional,
         Func<T, ValueTask<Optional<TU>>> binder)
@@ -84,14 +96,16 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Turns the current instance to a new type <typeparamref name="TU"/> using the specified binder.
+    /// Turns the current instance to a new type <typeparamref name="TU"/> 
+    /// using the specified binder.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="optional">The current instance.</param>
     /// <param name="binder">The binding method.</param>
     /// <returns>A new optional that could contain a value or not.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="binder"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="binder"/> is null.</exception>
     public static async ValueTask<Optional<TU>> BindAsync<T, TU>(
         this ValueTask<Optional<T>> optional,
         Func<T, ValueTask<TU>> binder)
@@ -105,13 +119,17 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Returns a new <see cref="Optional{T}"/> using <paramref name="empty"/> method if the instance is empty.
+    /// Returns a new <see cref="Optional{T}"/> using <paramref name="empty"/> 
+    /// method if the instance is empty.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The current instance.</param>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
-    /// <returns>The current instance where the <paramref name="empty"/> has been applied if the instance is empty.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> or <paramref name="empty"/> is null.</exception>
+    /// <param name="empty">The method that get called when the 
+    /// instance is empty.</param>
+    /// <returns>The current instance where the <paramref name="empty"/> 
+    /// has been applied if the instance is empty.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
+    /// or <paramref name="empty"/> is null.</exception>
     public static async ValueTask<Optional<T>> EmptyAsync<T>(
         this ValueTask<Optional<T>> optional,
         Func<ValueTask<T>> empty)
@@ -129,10 +147,15 @@ public static class OptionalExtensions
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The current instance.</param>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
-    /// <returns>The current instance where the <paramref name="empty"/> has been applied if the instance is empty.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> or <paramref name="empty"/> is null.</exception>
-    public static async ValueTask EmptyAsync<T>(this ValueTask<Optional<T>> optional, Func<ValueTask> empty)
+    /// <param name="empty">The method that get called 
+    /// when the instance is empty.</param>
+    /// <returns>The current instance where the <paramref name="empty"/> 
+    /// has been applied if the instance is empty.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
+    /// or <paramref name="empty"/> is null.</exception>
+    public static async ValueTask EmptyAsync<T>(
+        this ValueTask<Optional<T>> optional,
+        Func<ValueTask> empty)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(empty);
@@ -142,14 +165,20 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Returns the value of the current instance if not empty, otherwise returns the <paramref name="defaultValue"/>.
+    /// Returns the value of the current instance if not empty, 
+    /// otherwise returns the <paramref name="defaultValue"/>.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The current instance.</param>
-    /// <param name="defaultValue">The delegate that returns the value if the instance is empty.</param>
-    /// <returns>The value from the instance if exists or the <paramref name="defaultValue"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> or <paramref name="defaultValue"/> is null.</exception>
-    public static async ValueTask<T> ValueOrDefaultAsync<T>(this ValueTask<Optional<T>> optional, ValueTask<T> defaultValue)
+    /// <param name="defaultValue">The delegate that returns 
+    /// the value if the instance is empty.</param>
+    /// <returns>The value from the instance if exists 
+    /// or the <paramref name="defaultValue"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
+    /// or <paramref name="defaultValue"/> is null.</exception>
+    public static async ValueTask<T> ValueOrDefaultAsync<T>(
+        this ValueTask<Optional<T>> optional,
+        ValueTask<T> defaultValue)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(defaultValue);
@@ -161,13 +190,17 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Returns the value of the current instance if not empty, otherwise returns the <paramref name="defaultValue"/>.
+    /// Returns the value of the current instance if not empty, 
+    /// otherwise returns the <paramref name="defaultValue"/>.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The current instance.</param>
-    /// <param name="defaultValue">The delegate that returns the value if the instance is empty.</param>
-    /// <returns>The value from the instance if exists or the <paramref name="defaultValue"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> or <paramref name="defaultValue"/> is null.</exception>
+    /// <param name="defaultValue">The delegate that returns 
+    /// the value if the instance is empty.</param>
+    /// <returns>The value from the instance if exists 
+    /// or the <paramref name="defaultValue"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
+    /// or <paramref name="defaultValue"/> is null.</exception>
     public static async ValueTask<T> ValueOrDefaultAsync<T>(
         this ValueTask<Optional<T>> optional,
         Func<ValueTask<T>> defaultValue)
@@ -182,17 +215,25 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value,
+    /// Applies the <paramref name="some"/> method if the
+    /// instance contains a value,
     /// otherwise, returns the <paramref name="empty"/> method.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="optional">The current instance.</param>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
-    /// <returns>The result of the <paramref name="some"/> or <paramref name="empty"/> method.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="some"/> or <paramref name="empty"/> is null.</exception>
-    public static TU Match<T, TU>(this Optional<T> optional, Func<T, TU> some, Func<TU> empty)
+    /// <param name="some">The method that get called when the 
+    /// instance contains a value.</param>
+    /// <param name="empty">The method that get called 
+    /// when the instance is empty.</param>
+    /// <returns>The result of the <paramref name="some"/> 
+    /// or <paramref name="empty"/> method.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="some"/> 
+    /// or <paramref name="empty"/> is null.</exception>
+    public static TU Match<T, TU>(
+        this Optional<T> optional,
+        Func<T, TU> some,
+        Func<TU> empty)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(some);
@@ -204,15 +245,22 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value,
+    /// Applies the <paramref name="some"/> method if the instance 
+    /// contains a value,
     /// otherwise, apply the <paramref name="empty"/> method.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The current instance.</param>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="some"/> or <paramref name="empty"/> is null.</exception>
-    public static void Match<T>(this Optional<T> optional, Action<T> some, Action empty)
+    /// <param name="some">The method that get called when the instance 
+    /// contains a value.</param>
+    /// <param name="empty">The method that get called 
+    /// when the instance is empty.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="some"/> 
+    /// or <paramref name="empty"/> is null.</exception>
+    public static void Match<T>(
+        this Optional<T> optional,
+        Action<T> some,
+        Action empty)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(some);
@@ -225,15 +273,19 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value,
+    /// Applies the <paramref name="some"/> method if the instance 
+    /// contains a value,
     /// otherwise, applies the <paramref name="empty"/> method.
     /// </summary>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The current instance.</param>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
-    /// <returns>The result of the <paramref name="some"/> method if the instance contains a value,
+    /// <param name="some">The method that get called 
+    /// when the instance contains a value.</param>
+    /// <param name="empty">The method that get called 
+    /// when the instance is empty.</param>
+    /// <returns>The result of the <paramref name="some"/> method 
+    /// if the instance contains a value,
     /// otherwise, the result of the <paramref name="empty"/> method.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="some"/> 
     /// or <paramref name="empty"/> is null.</exception>
@@ -253,13 +305,16 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value,
+    /// Applies the <paramref name="some"/> method if the 
+    /// instance contains a value,
     /// otherwise, applies the <paramref name="empty"/> method.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="optional">The current instance.</param>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
+    /// <param name="some">The method that get called 
+    /// when the instance contains a value.</param>
+    /// <param name="empty">The method that get called 
+    /// when the instance is empty.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="some"/> 
     /// or <paramref name="empty"/> is null.</exception>
     public static async ValueTask MatchAsync<T>(
@@ -285,8 +340,11 @@ public static class OptionalExtensions
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="source">The sequence to act on.</param>
     /// <returns>The value from the sequence if exists or the empty optional.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="source"/> is null.</exception>
+#pragma warning disable S4136 // Method overloads should be grouped together
     public static Optional<T> FirstOrEmpty<T>(this IEnumerable<T> source)
+#pragma warning restore S4136 // Method overloads should be grouped together
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -297,16 +355,24 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Returns the value of the first element in the asynchronous sequence if not empty,
+    /// Returns the value of the first element 
+    /// in the asynchronous sequence if not empty,
     /// otherwise returns the empty optional.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="source">The sequence to act on.</param>
-    /// <returns>The value from the sequence if exists or the empty optional.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
+    /// <returns>The value from the sequence if exists 
+    /// or the empty optional.</returns>
+    /// <exception cref="ArgumentNullException">The
+    /// <paramref name="source"/> is null.</exception>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
-    public static async ValueTask<Optional<T>> FirstOrEmptyAsync<T>(this IAsyncEnumerable<T> source)
+        "Reliability",
+        "CA2007:Consider calling ConfigureAwait on the awaited task",
+        Justification = "<Pending>")]
+#pragma warning disable S4136 // Method overloads should be grouped together
+    public static async ValueTask<Optional<T>> FirstOrEmptyAsync<T>(
+#pragma warning restore S4136 // Method overloads should be grouped together
+        this IAsyncEnumerable<T> source)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -317,13 +383,16 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Returns the value of the first element in the sequence that satisfies a condition if not empty,
+    /// Returns the value of the first element in the 
+    /// sequence that satisfies a condition if not empty,
     /// otherwise returns the empty optional.
     /// </summary>
     /// <typeparam name="T">The type of the optional value.</typeparam>
     /// <param name="source">The sequence to act on.</param>
-    /// <param name="predicate">A function to test each element for a condition.</param>
-    /// <returns>The value from the sequence if exists or the empty optional.</returns>
+    /// <param name="predicate">A function to test each element 
+    /// for a condition.</param>
+    /// <returns>The value from the sequence if exists 
+    /// or the empty optional.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
     /// or <paramref name="predicate"/> is null.</exception>"
     public static Optional<T> FirstOrEmpty<T>(
@@ -338,16 +407,22 @@ public static class OptionalExtensions
 
     /// <summary>
     /// Projects each element of a sequence into a new form and returns the value 
-    /// of the first element in the sequence that satisfies a condition if not empty, 
+    /// of the first element in the sequence that satisfies a condition 
+    /// if not empty, 
     /// otherwise returns the empty optional.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="source">The sequence to act on.</param>
-    /// <param name="predicate">A function to test each element for a condition.</param>
-    /// <returns>The value from the sequence if exists or the empty optional.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> or <paramref name="predicate"/> is null.</exception>
+    /// <param name="predicate">A function to test each element 
+    /// for a condition.</param>
+    /// <returns>The value from the sequence if exists 
+    /// or the empty optional.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="source"/> or <paramref name="predicate"/> is null.</exception>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
+        "Reliability",
+        "CA2007:Consider calling ConfigureAwait on the awaited task",
+        Justification = "<Pending>")]
     public static async ValueTask<Optional<T>> FirstOrEmptyAsync<T>(
         this IAsyncEnumerable<T> source,
         Func<T, ValueTask<bool>> predicate)
@@ -371,8 +446,10 @@ public static class OptionalExtensions
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="optional">The current instance.</param>
     /// <param name="predicate">The predicate method.</param>
-    /// <returns>The current instance where the <paramref name="predicate"/> has been applied.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="predicate"/> is null.</exception>
+    /// <returns>The current instance where the 
+    /// <paramref name="predicate"/> has been applied.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="predicate"/> is null.</exception>
     public static Optional<T> Where<T>(
         this Optional<T> optional,
         Func<T, bool> predicate)
@@ -392,8 +469,10 @@ public static class OptionalExtensions
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="optional">The current instance.</param>
     /// <param name="selector">The projection method.</param>
-    /// <returns>The current instance where the <paramref name="selector"/> has been applied.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="selector"/> is null.</exception>
+    /// <returns>The current instance where the 
+    /// <paramref name="selector"/> has been applied.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="selector"/> is null.</exception>
     public static Optional<TU> Select<T, TU>(
         this Optional<T> optional,
         Func<T, TU> selector)
@@ -408,15 +487,18 @@ public static class OptionalExtensions
 
     /// <summary>
     /// Projects each element of a sequence to an <see cref="IEnumerable{T}"/>,
-    /// flattens the resulting sequences into one sequence, and invokes a result selector
+    /// flattens the resulting sequences into one sequence, 
+    /// and invokes a result selector
     /// function on each element therein.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="optional">The current instance.</param>
     /// <param name="selector">The projection method.</param>
-    /// <returns>The current instance where the <paramref name="selector"/> has been applied.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="selector"/></exception>"
+    /// <returns>The current instance where the 
+    /// <paramref name="selector"/> has been applied.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="selector"/></exception>"
     public static Optional<TU> SelectMany<T, TU>(
         this Optional<T> optional,
         Func<T, Optional<TU>> selector)
@@ -429,7 +511,8 @@ public static class OptionalExtensions
 
     /// <summary>
     /// Projects each element of a sequence to an <see cref="IEnumerable{T}"/>,
-    /// flattens the resulting sequences into one sequence, and invokes a result selector
+    /// flattens the resulting sequences into one sequence, 
+    /// and invokes a result selector
     /// function on each element therein.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
@@ -463,8 +546,10 @@ public static class OptionalExtensions
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="optional">The current instance.</param>
     /// <param name="selector">The projection method.</param>
-    /// <returns>The current instance where the <paramref name="selector"/> has been applied.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="selector"/> is null.</exception>
+    /// <returns>The current instance where the 
+    /// <paramref name="selector"/> has been applied.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="selector"/> is null.</exception>
     public static async ValueTask<Optional<TU>> SelectAsync<T, TU>(
         this ValueTask<Optional<T>> optional,
         Func<T, ValueTask<TU>> selector)
@@ -480,15 +565,18 @@ public static class OptionalExtensions
 
     /// <summary>
     /// Projects each element of a sequence to an <see cref="IEnumerable{T}"/>,
-    /// flattens the resulting sequences into one sequence, and invokes a result selector
+    /// flattens the resulting sequences into one sequence, 
+    /// and invokes a result selector
     /// function on each element therein.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="optional">The current instance.</param>
     /// <param name="selector">The projection method.</param>
-    /// <returns>The current instance where the <paramref name="selector"/> has been applied.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="selector"/></exception>"
+    /// <returns>The current instance where the 
+    /// <paramref name="selector"/> has been applied.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="selector"/></exception>"
     public static async ValueTask<Optional<TU>> SelectManyAsync<T, TU>(
         this ValueTask<Optional<T>> optional,
         Func<T, ValueTask<Optional<TU>>> selector)
@@ -503,7 +591,8 @@ public static class OptionalExtensions
 
     /// <summary>
     /// Projects each element of a sequence to an <see cref="IEnumerable{T}"/>,
-    /// flattens the resulting sequences into one sequence, and invokes a result selector
+    /// flattens the resulting sequences into one sequence, 
+    /// and invokes a result selector
     /// function on each element therein.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
@@ -533,12 +622,14 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Filters the current instance and returns the value of the optionals that are not empty.
+    /// Filters the current instance and returns the value 
+    /// of the optionals that are not empty.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="source">The sequence to act on.</param>
     /// <returns>The values of the optionals that are not empty.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="source"/> is null.</exception>
     public static IEnumerable<T> WhereSome<T>(this IEnumerable<Optional<T>> source)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -547,12 +638,14 @@ public static class OptionalExtensions
     }
 
     /// <summary>
-    /// Filters the current instance and returns the value of the optionals that are not empty.
+    /// Filters the current instance and returns 
+    /// the value of the optionals that are not empty.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="source">The sequence to act on.</param>
     /// <returns>The values of the optionals that are not empty.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="source"/> is null.</exception>
     public static async IAsyncEnumerable<T> WhereSomeAsync<T>(
         this IAsyncEnumerable<Optional<T>> source)
     {

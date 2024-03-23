@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Nullable Json
+
 using System.Globalization;
 using System.Text.Json;
 
@@ -26,7 +29,8 @@ namespace Xpandables.Net.Primitives;
 public sealed class JsonDateOnlyConverter : JsonTypeOnlyConverter<DateOnly>
 {
     ///<inheritdoc/>
-    protected override DateOnly DoRead(ref Utf8JsonReader reader) => DateOnly.FromDateTime(reader.GetDateTime());
+    protected override DateOnly DoRead(ref Utf8JsonReader reader)
+        => DateOnly.FromDateTime(reader.GetDateTime());
 
     ///<inheritdoc/>
     public override void Write(
@@ -36,18 +40,22 @@ public sealed class JsonDateOnlyConverter : JsonTypeOnlyConverter<DateOnly>
     {
         ArgumentNullException.ThrowIfNull(writer);
 
-        writer.WriteStringValue(value.ToString("O", CultureInfo.CurrentCulture));
+        writer
+            .WriteStringValue(value.ToString("O", CultureInfo.CurrentCulture));
     }
 }
 
 /// <summary>
 /// Converts a null-able <see cref="DateOnly"/> to JSON and vis-versa.
 /// </summary>
-public sealed class JsonNullableDateOnlyConverter : JsonTypeOnlyConverter<DateOnly?>
+public sealed class JsonNullableDateOnlyConverter
+    : JsonTypeOnlyConverter<DateOnly?>
 {
     ///<inheritdoc/>
     protected override DateOnly? DoRead(ref Utf8JsonReader reader)
-        => reader.TryGetDateTime(out DateTime dateTime) ? DateOnly.FromDateTime(dateTime) : default;
+        => reader.TryGetDateTime(out DateTime dateTime)
+        ? DateOnly.FromDateTime(dateTime)
+        : default;
 
     ///<inheritdoc/>
     public override void Write(
@@ -60,6 +68,8 @@ public sealed class JsonNullableDateOnlyConverter : JsonTypeOnlyConverter<DateOn
         if (value is null)
             writer.WriteNullValue();
         else
-            writer.WriteStringValue(value.Value.ToString("O", CultureInfo.CurrentCulture));
+            writer
+                .WriteStringValue(value.Value
+                    .ToString("O", CultureInfo.CurrentCulture));
     }
 }

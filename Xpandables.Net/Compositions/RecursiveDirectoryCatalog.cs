@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,40 +14,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 
 namespace Xpandables.Net.Compositions;
 
 /// <summary>
-/// Extends <see cref="DirectoryCatalog"/> to support discovery of parts in sub-directories.
+/// Extends <see cref="DirectoryCatalog"/> to support discovery 
+/// of parts in sub-directories.
 /// </summary>
 public sealed class RecursiveDirectoryCatalog
-    : ComposablePartCatalog, INotifyComposablePartCatalogChanged, ICompositionElement
+    : ComposablePartCatalog, INotifyComposablePartCatalogChanged,
+    ICompositionElement
 {
     private readonly AggregateCatalog _aggregateCatalog = new();
     private readonly string _path;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecursiveDirectoryCatalog"/> class 
+    /// Initializes a new instance of the 
+    /// <see cref="RecursiveDirectoryCatalog"/> class 
     /// with <see cref="ComposablePartDefinition"/> objects based
     /// on all the DLL files in the specified directory path and its sub-directories.
     /// </summary>
-    /// <param name="path">Path to the directory to scan for assemblies to add to the catalog.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="path"/> is null.</exception>
+    /// <param name="path">Path to the directory to scan for assemblies 
+    /// to add to the catalog.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="path"/> is null.</exception>
     public RecursiveDirectoryCatalog(string path) : this(path, "*.dll") { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecursiveDirectoryCatalog"/> class 
+    /// Initializes a new instance of the 
+    /// <see cref="RecursiveDirectoryCatalog"/> class 
     /// with <see cref="ComposablePartDefinition"/> objects based on
-    /// the specified search pattern in the specified directory path and its sub-directories.
+    /// the specified search pattern in the specified directory 
+    /// path and its sub-directories.
     /// </summary>
-    /// <param name="path">Path to the directory to scan for assemblies to add to the catalog.</param>
+    /// <param name="path">Path to the directory to scan for 
+    /// assemblies to add to the catalog.</param>
     /// <param name="searchPattern">The pattern to search with. The format of 
     /// the pattern should be the same as specified for GetFiles.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="path"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="searchPattern"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="path"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="searchPattern"/> is null.</exception>
     public RecursiveDirectoryCatalog(string path, string searchPattern)
     {
         _path = path ?? throw new ArgumentNullException(nameof(path));
@@ -59,7 +70,8 @@ public sealed class RecursiveDirectoryCatalog
     /// </summary>
     /// <returns>The <see cref="ComposablePartDefinition" /> contained in 
     /// the <see cref="ComposablePartCatalog" />.</returns>
-    /// <exception cref="ObjectDisposedException">The <see cref="ComposablePartCatalog" /> 
+    /// <exception cref="ObjectDisposedException">The 
+    /// <see cref="ComposablePartCatalog" /> 
     /// object has been disposed of.</exception>
     public override IQueryable<ComposablePartDefinition> Parts
         => _aggregateCatalog.AsQueryable();
@@ -67,14 +79,18 @@ public sealed class RecursiveDirectoryCatalog
     /// <summary>
     /// Gets the display name of the composition element.
     /// </summary>
-    /// <returns>The human-readable display name of the <see cref="ICompositionElement" />.</returns>
+    /// <returns>The human-readable display name of 
+    /// the <see cref="ICompositionElement" />.</returns>
     public string DisplayName => GetDisplayName();
 
     /// <summary>
-    /// Gets the composition element from which the current composition element originated.
+    /// Gets the composition element from which the current 
+    /// composition element originated.
     /// </summary>
-    /// <returns>The composition element from which the current <see cref="ICompositionElement" />
-    /// originated, or <see langword="null" /> if the <see cref="ICompositionElement" /> 
+    /// <returns>The composition element from which the 
+    /// current <see cref="ICompositionElement" />
+    /// originated, or <see langword="null" /> if 
+    /// the <see cref="ICompositionElement" /> 
     /// is the root composition element.</returns>
     public ICompositionElement? Origin => null;
 
@@ -96,7 +112,8 @@ public sealed class RecursiveDirectoryCatalog
 
     private void Initialize(string path, string searchPattern)
     {
-        IEnumerable<DirectoryCatalog> directoryCatalogs = GetFoldersRecursive(path)
+        IEnumerable<DirectoryCatalog> directoryCatalogs =
+            GetFoldersRecursive(path)
             .Select(dir => new DirectoryCatalog(dir, searchPattern));
 
         _aggregateCatalog.Changed += (sender, e) => Changed?.Invoke(sender, e);

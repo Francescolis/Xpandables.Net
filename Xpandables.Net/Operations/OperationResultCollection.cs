@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -32,18 +32,22 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     private readonly List<ElementEntry> _items = [];
 
     ///<inheritdoc/>
-    public static ElementCollection With(string key, string value) => new(key, [value]);
+    public static ElementCollection With(string key, string value)
+        => new(key, [value]);
     ///<inheritdoc/>
-    public static ElementCollection With(string key, params string[] values) => new(key, values);
+    public static ElementCollection With(string key, params string[] values)
+        => new(key, values);
     ///<inheritdoc/>
     public static ElementCollection With(ElementEntry entry) => new(entry);
     ///<inheritdoc/>
-    public static ElementCollection With(IList<ElementEntry> entries) => new(entries.ToList());
+    public static ElementCollection With(IList<ElementEntry> entries)
+        => new(entries.ToList());
 
     ///<inheritdoc/>
     public ElementCollection() => _items = [];
     internal ElementCollection(ElementEntry element) => Add(element);
-    internal ElementCollection(string key, string[] values) : this(new ElementEntry(key, values)) { }
+    internal ElementCollection(string key, string[] values)
+        : this(new ElementEntry(key, values)) { }
     [JsonConstructor]
     internal ElementCollection(IList<ElementEntry> items)
     {
@@ -62,18 +66,25 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     ///  </summary>
     ///  <param name="key">The index name of the element to get.</param>
     ///  <returns>The element at the specified index.</returns>
-    public ElementEntry? this[string key] => TryGet(key, out ElementEntry? element) ? element : null;
+    public ElementEntry? this[string key]
+        => TryGet(key, out ElementEntry? element) ? element : null;
 
     /// <summary>
-    /// Determines whether or not the errors collection contains an undefined key. Mostly used for exception.
+    /// Determines whether or not the errors collection contains 
+    /// an undefined key. Mostly used for exception.
     /// if so, returns the error.
     /// </summary>
     /// <param name="elementEntry">the output error if found.</param>
     /// <returns><see langword="true"/> if collection contains key named 
-    /// <see cref="ElementEntry.UndefinedKey"/>, otherwise <see langword="false"/>.</returns>
-    public bool TryGetUndefinedErrorEntry([NotNullWhen(true)] out ElementEntry elementEntry)
+    /// <see cref="ElementEntry.UndefinedKey"/>, 
+    /// otherwise <see langword="false"/>.</returns>
+    public bool TryGetUndefinedErrorEntry(
+        [NotNullWhen(true)] out ElementEntry elementEntry)
     {
-        elementEntry = _items.Find(i => i.Key.Equals(ElementEntry.UndefinedKey, StringComparison.OrdinalIgnoreCase));
+        elementEntry = _items.Find(i => i.Key.Equals(
+            ElementEntry.UndefinedKey,
+            StringComparison.OrdinalIgnoreCase));
+
         return elementEntry is { Key: { } };
     }
 
@@ -85,10 +96,15 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     {
         ArgumentNullException.ThrowIfNull(element);
 
-        if (_items.Find(i => i.Key.Equals(element.Key, StringComparison.OrdinalIgnoreCase)) is { Key: { } } existsItem)
+        if (_items.Find(i => i.Key.Equals(
+            element.Key,
+            StringComparison.OrdinalIgnoreCase)) is { Key: { } } existsItem)
         {
             _ = _items.Remove(existsItem);
-            element = existsItem = existsItem with { Values = existsItem.Values.Union(element.Values).ToArray() };
+            element = existsItem = existsItem with
+            {
+                Values = existsItem.Values.Union(element.Values).ToArray()
+            };
         }
 
         _items.Add(element);
@@ -99,7 +115,8 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// </summary>
     /// <param name="key">the element key.</param>
     /// <param name="values">the element value.</param>
-    public void Add(string key, params string[] values) => Add(new ElementEntry(key, values));
+    public void Add(string key, params string[] values)
+        => Add(new ElementEntry(key, values));
 
     /// <summary>
     /// Merges the specified elements into the current collection.
@@ -125,7 +142,10 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     {
         ArgumentNullException.ThrowIfNull(key);
 
-        result = _items.Find(i => i.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+        result = _items.Find(i => i.Key.Equals(
+            key,
+            StringComparison.OrdinalIgnoreCase));
+
         return result.HasValue;
     }
 

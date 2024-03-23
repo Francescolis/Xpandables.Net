@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Net;
 
 using Xpandables.Net.Optionals;
@@ -42,7 +42,8 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     private protected Optional<string> _title = Optional.Empty<string>();
     private protected Optional<string> _detail = Optional.Empty<string>();
 
-    TBuilder IOperationResult.IStatusBuilder<TBuilder>.WithStatusCode(HttpStatusCode statusCode)
+    TBuilder IOperationResult.IStatusBuilder<TBuilder>
+        .WithStatusCode(HttpStatusCode statusCode)
     {
         if (_statusCode.IsSuccessStatusCode())
             _ = statusCode.EnsureSuccessStatusCode();
@@ -53,13 +54,15 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IDescriptionBuilder<TBuilder>.WithTitle(string title)
+    TBuilder IOperationResult.IDescriptionBuilder<TBuilder>
+        .WithTitle(string title)
     {
         _title = title;
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IDescriptionBuilder<TBuilder>.WithDetail(string detail)
+    TBuilder IOperationResult.IDescriptionBuilder<TBuilder>
+        .WithDetail(string detail)
     {
         _detail = detail;
         return (this as TBuilder)!;
@@ -70,7 +73,9 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         _headers.Clear();
         _errors.Clear();
         _extensions.Clear();
-        _statusCode = _statusCode.IsSuccessStatusCode() ? HttpStatusCode.OK : HttpStatusCode.BadRequest;
+        _statusCode = _statusCode.IsSuccessStatusCode()
+            ? HttpStatusCode.OK
+            : HttpStatusCode.BadRequest;
         _uri = Optional.Empty<string>();
         _result = Optional.Empty<object>();
         _detail = Optional.Empty<string>();
@@ -90,31 +95,36 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
             _title,
             _detail);
 
-    TBuilder IOperationResult.IErrorBuilder<TBuilder>.WithError(string key, params string[] errorMessages)
+    TBuilder IOperationResult.IErrorBuilder<TBuilder>
+        .WithError(string key, params string[] errorMessages)
     {
-        _errors.Add(key, [.. errorMessages]);
+        _errors.Add(key, errorMessages);
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IErrorBuilder<TBuilder>.WithError(string key, Exception exception)
+    TBuilder IOperationResult.IErrorBuilder<TBuilder>
+        .WithError(string key, Exception exception)
     {
         _errors.Add(key, exception.ToString());
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IErrorBuilder<TBuilder>.WithError(ElementEntry error)
+    TBuilder IOperationResult.IErrorBuilder<TBuilder>
+        .WithError(ElementEntry error)
     {
         _errors.Add(error);
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IErrorBuilder<TBuilder>.WithErrors(ElementCollection errors)
+    TBuilder IOperationResult.IErrorBuilder<TBuilder>
+        .WithErrors(ElementCollection errors)
     {
         _errors.Merge(errors);
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IErrorBuilder<TBuilder>.WithErrors(IReadOnlyCollection<ElementEntry> errors)
+    TBuilder IOperationResult.IErrorBuilder<TBuilder>
+        .WithErrors(IReadOnlyCollection<ElementEntry> errors)
     {
         ArgumentNullException.ThrowIfNull(errors);
         _errors.Merge(ElementCollection.With(errors.ToList()));
@@ -122,28 +132,35 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IHeaderBuilder<TBuilder>.WithHeader(string key, string value)
+    TBuilder IOperationResult.IHeaderBuilder<TBuilder>
+        .WithHeader(string key, string value)
     {
         _headers.Add(key, value);
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IHeaderBuilder<TBuilder>.WithHeader(string key, params string[] values)
+    TBuilder IOperationResult.IHeaderBuilder<TBuilder>
+        .WithHeader(string key, params string[] values)
     {
         _headers.Add(key, values);
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IHeaderBuilder<TBuilder>.WithHeaders(IDictionary<string, string> headers)
+    TBuilder IOperationResult.IHeaderBuilder<TBuilder>
+        .WithHeaders(IDictionary<string, string> headers)
     {
         ArgumentNullException.ThrowIfNull(headers);
 
-        _headers.Merge(ElementCollection.With(headers.Select(x => new ElementEntry(x.Key, x.Value)).ToList()));
+        _headers.Merge(ElementCollection
+            .With(headers
+                .Select(x => new ElementEntry(x.Key, x.Value))
+                .ToList()));
 
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IHeaderBuilder<TBuilder>.WithHeaders(ElementCollection headers)
+    TBuilder IOperationResult.IHeaderBuilder<TBuilder>
+        .WithHeaders(ElementCollection headers)
     {
         ArgumentNullException.ThrowIfNull(headers);
 
@@ -152,28 +169,35 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     }
 
     //
-    TBuilder IOperationResult.IExtensionBuilder<TBuilder>.WithExtension(string key, string value)
+    TBuilder IOperationResult.IExtensionBuilder<TBuilder>
+        .WithExtension(string key, string value)
     {
         _extensions.Add(key, value);
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IExtensionBuilder<TBuilder>.WithExtension(string key, params string[] values)
+    TBuilder IOperationResult.IExtensionBuilder<TBuilder>
+        .WithExtension(string key, params string[] values)
     {
         _extensions.Add(key, values);
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IExtensionBuilder<TBuilder>.WithExtensions(IDictionary<string, string> extensions)
+    TBuilder IOperationResult.IExtensionBuilder<TBuilder>
+        .WithExtensions(IDictionary<string, string> extensions)
     {
         ArgumentNullException.ThrowIfNull(extensions);
 
-        _extensions.Merge(ElementCollection.With(extensions.Select(x => new ElementEntry(x.Key, x.Value)).ToList()));
+        _extensions.Merge(ElementCollection
+            .With(extensions
+                .Select(x => new ElementEntry(x.Key, x.Value))
+                .ToList()));
 
         return (this as TBuilder)!;
     }
 
-    TBuilder IOperationResult.IExtensionBuilder<TBuilder>.WithExtensions(ElementCollection extensions)
+    TBuilder IOperationResult.IExtensionBuilder<TBuilder>
+        .WithExtensions(ElementCollection extensions)
     {
         ArgumentNullException.ThrowIfNull(extensions);
 
@@ -202,6 +226,7 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     where TBuilder : class, IOperationResult.IBuilder<TResult>
 {
     IOperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
+#pragma warning disable S3358 // Ternary operators should not be nested
         => new OperationResult<TResult>(
             _statusCode,
              _result.IsEmpty
@@ -215,8 +240,10 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
             _extensions,
             _title,
             _detail);
+#pragma warning restore S3358 // Ternary operators should not be nested
 
-    TBuilder IOperationResult.IResultBuilder<TBuilder, TResult>.WithResult(TResult result)
+    TBuilder IOperationResult.IResultBuilder<TBuilder, TResult>
+        .WithResult(TResult result)
     {
         _ = result ?? throw new ArgumentNullException(nameof(result));
         _result = Optional.Some<object>(result);
@@ -224,7 +251,9 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     }
 }
 
-internal sealed class SuccessBuilder : Builder<IOperationResult.ISuccessBuilder>, IOperationResult.ISuccessBuilder
+internal sealed class SuccessBuilder
+    : Builder<IOperationResult.ISuccessBuilder>,
+    IOperationResult.ISuccessBuilder
 {
     internal SuccessBuilder(HttpStatusCode statusCode) : base(statusCode)
     {
@@ -233,7 +262,8 @@ internal sealed class SuccessBuilder : Builder<IOperationResult.ISuccessBuilder>
 }
 
 internal sealed class SuccessBuilder<TResult> :
-    Builder<IOperationResult.ISuccessBuilder<TResult>, TResult>, IOperationResult.ISuccessBuilder<TResult>
+    Builder<IOperationResult.ISuccessBuilder<TResult>, TResult>,
+    IOperationResult.ISuccessBuilder<TResult>
 {
     internal SuccessBuilder(HttpStatusCode statusCode) : base(statusCode)
     {
@@ -241,7 +271,9 @@ internal sealed class SuccessBuilder<TResult> :
     }
 }
 
-internal sealed class FailureBuilder : Builder<IOperationResult.IFailureBuilder>, IOperationResult.IFailureBuilder
+internal sealed class FailureBuilder
+    : Builder<IOperationResult.IFailureBuilder>,
+    IOperationResult.IFailureBuilder
 {
     internal FailureBuilder(HttpStatusCode statusCode) : base(statusCode)
     {
@@ -250,7 +282,8 @@ internal sealed class FailureBuilder : Builder<IOperationResult.IFailureBuilder>
 }
 
 internal sealed class FailureBuilder<TResult> :
-    Builder<IOperationResult.IFailureBuilder<TResult>, TResult>, IOperationResult.IFailureBuilder<TResult>
+    Builder<IOperationResult.IFailureBuilder<TResult>, TResult>,
+    IOperationResult.IFailureBuilder<TResult>
 {
     internal FailureBuilder(HttpStatusCode statusCode) : base(statusCode)
     {

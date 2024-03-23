@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel;
 
 namespace Xpandables.Net.States;
@@ -34,12 +34,14 @@ public interface IStateContext
     /// Allows changing the State object at runtime.
     /// </summary>
     /// <param name="state">The target state.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="state"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="state"/> is null.</exception>
     internal void TransitionToState(IState state);
 }
 
 /// <summary>
-/// Defines the generic context interface for state pattern that allows an object to alter 
+/// Defines the generic context interface for state 
+/// pattern that allows an object to alter 
 /// its behaviors when its internal state changes.
 /// </summary>
 /// <remarks>Inherits from <see cref="INotifyPropertyChanged"/>.</remarks>
@@ -57,7 +59,8 @@ public interface IStateContext<TState> : IStateContext
     /// Allows changing the State object at runtime.
     /// </summary>
     /// <param name="state">The target state.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="state"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="state"/> is null.</exception>
     void TransitionToState(TState state);
 
     void IStateContext.TransitionToState(IState state)

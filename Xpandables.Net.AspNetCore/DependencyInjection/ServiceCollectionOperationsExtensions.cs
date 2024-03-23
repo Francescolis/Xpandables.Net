@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Mvc Middleware
+
 using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Builder;
@@ -36,8 +39,10 @@ public static class ServiceCollectionOperationsExtensions
     /// <summary>
     /// Registers the operation result response builder of specific type.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-    /// <typeparam name="TOperationResultResponseBuilder">The type of the operation result response builder.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> 
+    /// to add the service to.</param>
+    /// <typeparam name="TOperationResultResponseBuilder">The type of 
+    /// the operation result response builder.</typeparam>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <remarks>You can register the <see cref="IProblemDetailsService"/> in order to customize the response.</remarks>
     public static IServiceCollection AddXOperationResultResponseBuilder<TOperationResultResponseBuilder>(
@@ -132,8 +137,10 @@ public static class ServiceCollectionOperationsExtensions
     }
 
     /// <summary>
-    /// Adds the default <see cref="OperationResultControllerConfigureMvcOptions"/> to the services that configures the <see cref="MvcOptions"/>
-    /// with filters <see cref="OperationResultControllerValidationFilterAttribute"/>, <see cref="OperationResultControllerFilter"/> and
+    /// Adds the default <see cref="OperationResultControllerConfigureMvcOptions"/> to the services 
+    /// that configures the <see cref="MvcOptions"/>
+    /// with filters <see cref="OperationResultControllerValidationFilterAttribute"/>, 
+    /// <see cref="OperationResultControllerFilter"/> and
     /// the binder <see cref="FromModelBinderProvider"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -145,7 +152,8 @@ public static class ServiceCollectionOperationsExtensions
     /// <summary>
     /// Adds the specified <typeparamref name="TOperationResultControllerConfigureMvcOptions"/> to the services.
     /// </summary>
-    /// <typeparam name="TOperationResultControllerConfigureMvcOptions">the type of operation result MVC configure.</typeparam>
+    /// <typeparam name="TOperationResultControllerConfigureMvcOptions">the type of operation 
+    /// result MVC configure.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
@@ -196,7 +204,8 @@ public static class ServiceCollectionOperationsExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
-    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix (<see cref="string.Empty"/>).
+    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with 
+    /// empty prefix (<see cref="string.Empty"/>).
     /// <para>You need to register the <see cref="IOperationResultResponseBuilder"/> and you can also 
     /// register the <see cref="IProblemDetailsService"/> in order to customize the response.</para></remarks>
     public static TBuilder WithXOperationResultFilter<TBuilder>(this TBuilder builder)

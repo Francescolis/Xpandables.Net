@@ -15,11 +15,11 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+using System.Text.Json.Serialization;
+
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using System.Text.Json.Serialization;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
@@ -174,7 +174,7 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore
     }
 }
 public readonly record struct CreatePersonRequestCommand(Guid Id, string FirstName, string LastName)
-    : ICommand, IPersistenceDecorator, IOperationResultDecorator;
+    : ICommand, IPersistenceDecorator, IOperationResultFinalizerDecorator;
 public sealed class CreatePersonRequestCommandHandler(
     IAggregateStore<Person, PersonId> aggregateStore,
     IOperationResultFinalizer resultContext) : ICommandHandler<CreatePersonRequestCommand>
@@ -277,6 +277,7 @@ public readonly record struct PersonId(Guid Value) : IAggregateId<PersonId>
     public static implicit operator Guid(PersonId self) => self.Value;
 
     public static implicit operator string(PersonId self) => self.Value.ToString();
+    public static implicit operator PersonId(Guid value) => new(value);
 }
 
 [PrimitiveJsonConverter]

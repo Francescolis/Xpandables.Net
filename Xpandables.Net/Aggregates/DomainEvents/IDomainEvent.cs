@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
-/// Defines a marker interface to be used to mark an object to act as a domain event for a specific aggregate.
+/// Defines a marker interface to be used to mark an object to 
+/// act as a domain event for a specific aggregate.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of the aggregate id.</typeparam>
 public interface IDomainEvent<TAggregateId>

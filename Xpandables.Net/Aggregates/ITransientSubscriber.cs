@@ -1,4 +1,4 @@
-﻿/************************************************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-namespace Xpandables.Net;
+********************************************************************************/
+namespace Xpandables.Net.Aggregates;
 
 /// <summary>
 /// Defines a method to automatically subscribe to events.
@@ -22,22 +22,30 @@ namespace Xpandables.Net;
 public interface ITransientSubscriber : IDisposable
 {
     /// <summary>
-    /// Allows application author to subscribe to an event with the specific handler.
+    /// Allows application author to subscribe to an event 
+    /// with the specific handler.
     /// </summary>
     /// <typeparam name="T">Type of event.</typeparam>
-    /// <param name="subscriber">The action to be used to handle the event.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="subscriber"/> is null</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <param name="subscriber">The action to be used to 
+    /// handle the event.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="subscriber"/> is null</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     void Subscribe<T>(Action<T> subscriber)
         where T : notnull;
 
     /// <summary>
-    /// Allows application author to subscribe to an event with the specific handler.
+    /// Allows application author to subscribe 
+    /// to an event with the specific handler.
     /// </summary>
     /// <typeparam name="T">Type of event.</typeparam>
-    /// <param name="subscriber">The action to be used to handle the event.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="subscriber"/> is null</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <param name="subscriber">The action to be used 
+    /// to handle the event.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="subscriber"/> is null</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     void Subscribe<T>(Func<T, ValueTask> subscriber)
         where T : notnull;
 }

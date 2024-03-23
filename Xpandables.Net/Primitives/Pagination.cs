@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Runtime.InteropServices;
 
 namespace Xpandables.Net.Primitives;
@@ -32,7 +32,8 @@ public readonly record struct Pagination(int Index, int Size)
     /// </summary>
     /// <param name="index">The page index.</param>
     /// <param name="size">The page size.</param>
-    /// <returns>An instance of <see cref="Pagination"/> with expected values.</returns>
+    /// <returns>An instance of <see cref="Pagination"/> 
+    /// with expected values.</returns>
     public static Pagination With(int index, int size) => new(index, size);
 
     /// <summary>

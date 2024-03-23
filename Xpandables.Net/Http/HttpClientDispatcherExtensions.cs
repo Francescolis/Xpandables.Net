@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
@@ -37,7 +37,8 @@ public static class HttpClientDispatcherExtensions
     /// </summary>
     /// <param name="httpResponse">The response to act on.</param>
     /// <returns>An instance of <see cref="NameValueCollection"/>.</returns>
-    public static NameValueCollection ReadHttpResponseHeaders(this HttpResponseMessage httpResponse)
+    public static NameValueCollection ReadHttpResponseHeaders(
+        this HttpResponseMessage httpResponse)
     {
         ArgumentNullException.ThrowIfNull(httpResponse);
 
@@ -96,18 +97,25 @@ public static class HttpClientDispatcherExtensions
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="httpRestClientHandler">the current handler instance.</param>
-    /// <param name="request">The request to act with. The request must be decorated with 
-    /// the <see cref="HttpClientAttribute"/> or implements the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
+    /// <param name="request">The request to act with. T
+    /// he request must be decorated with 
+    /// the <see cref="HttpClientAttribute"/> or implements 
+    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <param name="cancellationToken">A CancellationToken 
+    /// to observe while waiting for the task to complete.</param>
+    /// <returns>Returns a task 
+    /// <see cref="HttpClientResponse{TResult}"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
+    public static ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+        SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientAsyncRequest<TResult> request,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(httpRestClientHandler);
-        return httpRestClientHandler.SendAsync(request, cancellationToken: cancellationToken);
+        return httpRestClientHandler
+            .SendAsync(request, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -117,17 +125,47 @@ public static class HttpClientDispatcherExtensions
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="httpRestClientHandler">the current handler instance.</param>
     /// <param name="request">The request to act with. The request must be decorated with 
-    /// the <see cref="HttpClientAttribute"/> or implements the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
-    /// <param name="serializerOptions">Options to control the behavior during parsing.</param>
+    /// the <see cref="HttpClientAttribute"/> or implements the 
+    /// <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <param name="serializerOptions">Options to control 
+    /// the behavior during parsing.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
+    public static ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+        SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientAsyncRequest<TResult> request,
         JsonSerializerOptions serializerOptions)
     {
         ArgumentNullException.ThrowIfNull(httpRestClientHandler);
-        return httpRestClientHandler.SendAsync(request, serializerOptions: serializerOptions);
+        return httpRestClientHandler
+            .SendAsync(request, serializerOptions: serializerOptions);
+    }
+
+    /// <summary>
+    /// Sends the request that does not return a response.
+    /// Make use of <see langword="using"/> key work when call.
+    /// </summary>
+    /// <param name="httpRestClientHandler">the current 
+    /// handler instance.</param>
+    /// <param name="request">The request to act with. 
+    /// The request must be decorated with 
+    /// the <see cref="HttpClientAttribute"/> or implements 
+    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <param name="cancellationToken">A CancellationToken 
+    /// to observe while waiting for the task to complete.</param>
+    /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
+    public static ValueTask<HttpClientResponse> SendAsync(
+        this IHttpClientDispatcher httpRestClientHandler,
+        IHttpClientRequest request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(httpRestClientHandler);
+        return httpRestClientHandler
+            .SendAsync(request, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -135,57 +173,49 @@ public static class HttpClientDispatcherExtensions
     /// Make use of <see langword="using"/> key work when call.
     /// </summary>
     /// <param name="httpRestClientHandler">the current handler instance.</param>
-    /// <param name="request">The request to act with. The request must be decorated with 
-    /// the <see cref="HttpClientAttribute"/> or implements the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <param name="request">The request to act with. 
+    /// The request must be decorated with 
+    /// the <see cref="HttpClientAttribute"/> or implements 
+    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <param name="serializerOptions">Options to control 
+    /// the behavior during parsing.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse> SendAsync(
-        this IHttpClientDispatcher httpRestClientHandler,
-        IHttpClientRequest request,
-        CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(httpRestClientHandler);
-        return httpRestClientHandler.SendAsync(request, cancellationToken: cancellationToken);
-    }
-
-    /// <summary>
-    /// Sends the request that does not return a response.
-    /// Make use of <see langword="using"/> key work when call.
-    /// </summary>
-    /// <param name="httpRestClientHandler">the current handler instance.</param>
-    /// <param name="request">The request to act with. The request must be decorated with 
-    /// the <see cref="HttpClientAttribute"/> or implements the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
-    /// <param name="serializerOptions">Options to control the behavior during parsing.</param>
-    /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="request"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
     public static ValueTask<HttpClientResponse> SendAsync(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientRequest request,
         JsonSerializerOptions serializerOptions)
     {
         ArgumentNullException.ThrowIfNull(httpRestClientHandler);
-        return httpRestClientHandler.SendAsync(request, serializerOptions: serializerOptions);
+        return httpRestClientHandler
+            .SendAsync(request, serializerOptions: serializerOptions);
     }
 
     /// <summary>
-    /// Sends the request that returns a response of <typeparamref name="TResult"/> type.
+    /// Sends the request that returns a response 
+    /// of <typeparamref name="TResult"/> type.
     /// Make use of <see langword="using"/> key work when call.
     /// </summary>
     /// <param name="httpRestClientHandler">the current handler instance.</param>
     /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="request">The request to act with. The request must be decorated with
-    /// the <see cref="HttpClientAttribute"/> or implements the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <param name="request">The request to act with. 
+    /// The request must be decorated with
+    /// the <see cref="HttpClientAttribute"/> or implements 
+    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <param name="cancellationToken">A CancellationToken to 
+    /// observe while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="request"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
     public static ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientRequest<TResult> request,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(httpRestClientHandler);
-        return httpRestClientHandler.SendAsync(request, cancellationToken: cancellationToken);
+        return httpRestClientHandler
+            .SendAsync(request, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -194,29 +224,36 @@ public static class HttpClientDispatcherExtensions
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="httpRestClientHandler">the current handler instance.</param>
-    /// <param name="request">The request to act with. The request must be decorated with
-    /// the <see cref="HttpClientAttribute"/> or implements the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <param name="request">The request to act with. 
+    /// The request must be decorated with
+    /// the <see cref="HttpClientAttribute"/> or implements the 
+    /// <see cref="IHttpClientAttributeBuilder"/> interface.</param>
     /// <param name="serializerOptions">Options to control the behavior during parsing.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="request"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
     public static ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientRequest<TResult> request,
         JsonSerializerOptions serializerOptions)
     {
         ArgumentNullException.ThrowIfNull(httpRestClientHandler);
-        return httpRestClientHandler.SendAsync(request, serializerOptions: serializerOptions);
+        return httpRestClientHandler
+            .SendAsync(request, serializerOptions: serializerOptions);
     }
 
     /// <summary>
-    /// Determines whether the current exception message is <see cref="HttpClientValidation"/>.
-    /// The method will try to parse the property named 'errors' from the exception message to <see cref="HttpClientValidation"/>.
+    /// Determines whether the current exception message is 
+    /// <see cref="HttpClientValidation"/>.
+    /// The method will try to parse the property named 
+    /// 'errors' from the exception message to <see cref="HttpClientValidation"/>.
     /// </summary>
     /// <param name="httpRestClientException">The target exception.</param>
     /// <param name="clientValidation">The <see cref="HttpClientValidation"/> instance if true.</param>
     /// <param name="exception">The handled exception during process.</param>
     /// <param name="serializerOptions">The optional settings for serializer.</param>
-    /// <returns><see langword="true"/> if exception message is <see cref="HttpClientValidation"/>, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if exception message is 
+    /// <see cref="HttpClientValidation"/>, otherwise <see langword="false"/>.</returns>
     public static bool IsHttpRestClientValidation(
         this HttpClientException httpRestClientException,
         [MaybeNullWhen(false)] out HttpClientValidation clientValidation,
@@ -231,12 +268,17 @@ public static class HttpClientDispatcherExtensions
         {
             exception = default;
             var anonymousType = new { Errors = default(HttpClientValidation) };
-            var result = httpRestClientException.Message.DeserializeAnonymousType(anonymousType, serializerOptions);
+            var result = httpRestClientException
+                .Message
+                .DeserializeAnonymousType(anonymousType, serializerOptions);
 
             clientValidation = result?.Errors;
             return clientValidation is not null;
         }
-        catch (Exception ex) when (ex is JsonException or NotSupportedException or ArgumentNullException)
+        catch (Exception ex)
+            when (ex is JsonException
+                    or NotSupportedException
+                    or ArgumentNullException)
         {
             exception = ex;
             clientValidation = default;
@@ -245,12 +287,15 @@ public static class HttpClientDispatcherExtensions
     }
 
     /// <summary>
-    /// Returns an <see cref="IOperationResult"/> from the <see cref="HttpClientResponse"/>.
+    /// Returns an <see cref="IOperationResult"/> 
+    /// from the <see cref="HttpClientResponse"/>.
     /// </summary>
     /// <param name="response">The response to act on.</param>
-    /// <param name="serializerOptions">The optional settings for serializer.</param>
+    /// <param name="serializerOptions">The optional 
+    /// settings for serializer.</param>
     /// <returns>A bad <see cref="IOperationResult"/></returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="response"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="response"/> is null.</exception>
     public static IOperationResult ToOperationResult(
         this HttpClientResponse response,
         JsonSerializerOptions? serializerOptions = default)
@@ -259,7 +304,11 @@ public static class HttpClientDispatcherExtensions
 
         serializerOptions ??= new() { PropertyNameCaseInsensitive = true };
         ElementCollection headers = response.Headers.Count > 0
-            ? ElementCollection.With(response.Headers.ToDictionary().Select(s => new ElementEntry(s.Key, s.Value)).ToList())
+            ? ElementCollection
+                .With(response.Headers
+                    .ToDictionary()
+                    .Select(s => new ElementEntry(s.Key, s.Value))
+                    .ToList())
             : [];
 
         if (response.IsValid)
@@ -272,7 +321,10 @@ public static class HttpClientDispatcherExtensions
 
         if (response.IsAnException(out HttpClientException? exception))
         {
-            if (exception.IsHttpRestClientValidation(out HttpClientValidation? clientValidation, out _, serializerOptions))
+            if (exception.IsHttpRestClientValidation(
+                out HttpClientValidation? clientValidation,
+                out _,
+                serializerOptions))
             {
                 ElementEntry[] operationErrors = clientValidation.SelectMany(
                     kvp => kvp.Value,
@@ -303,14 +355,17 @@ public static class HttpClientDispatcherExtensions
 
 
     /// <summary>
-    /// Returns an <see cref="IOperationResult{TValue}"/> from the <see cref="HttpClientResponse{TResult}"/>.
-    /// If <paramref name="response"/> contains a result and this result is <typeparamref name="TValue"/>, the operation will be set with, otherwise null.
+    /// Returns an <see cref="IOperationResult{TValue}"/> 
+    /// from the <see cref="HttpClientResponse{TResult}"/>.
+    /// If <paramref name="response"/> contains a result and this result 
+    /// is <typeparamref name="TValue"/>, the operation will be set with, otherwise null.
     /// </summary>
     /// <typeparam name="TValue">The type of the operation content.</typeparam>
     /// <param name="response">The response to act on.</param>
     /// <param name="serializerOptions">The optional settings for serializer.</param>
     /// <returns>An <see cref="IOperationResult{TValue}"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="response"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="response"/> is null.</exception>
     public static IOperationResult<TValue> ToOperationResult<TValue>(
         this HttpClientResponse<TValue> response,
         JsonSerializerOptions? serializerOptions = default)
@@ -319,7 +374,11 @@ public static class HttpClientDispatcherExtensions
 
         TValue value = response.Result is TValue result ? result : default!;
         ElementCollection headers = response.Headers.Count > 0
-            ? ElementCollection.With(response.Headers.ToDictionary().Select(s => new ElementEntry(s.Key, s.Value)).ToList())
+            ? ElementCollection
+                .With(response.Headers
+                    .ToDictionary()
+                    .Select(s => new ElementEntry(s.Key, s.Value))
+                    .ToList())
             : [];
 
         if (response.IsValid)
@@ -333,7 +392,10 @@ public static class HttpClientDispatcherExtensions
 
         if (response.IsAnException(out HttpClientException? exception))
         {
-            if (exception.IsHttpRestClientValidation(out HttpClientValidation? clientValidation, out _, serializerOptions))
+            if (exception.IsHttpRestClientValidation(
+                out HttpClientValidation? clientValidation,
+                out _,
+                serializerOptions))
             {
                 ElementEntry[] operationErrors = clientValidation.SelectMany(
                     kvp => kvp.Value,
@@ -362,7 +424,8 @@ public static class HttpClientDispatcherExtensions
             .Build();
     }
 
-    internal static IDictionary<string, string> ToDictionary(this NameValueCollection nameValueCollection)
+    internal static IDictionary<string, string> ToDictionary(
+        this NameValueCollection nameValueCollection)
     {
         Dictionary<string, string> result = [];
         foreach (string? key in nameValueCollection.AllKeys)
@@ -374,7 +437,9 @@ public static class HttpClientDispatcherExtensions
         return result;
     }
 
-    internal static string AddQueryString(this string path, IDictionary<string, string?>? queryString)
+    internal static string AddQueryString(
+        this string path,
+        IDictionary<string, string?>? queryString)
     {
         // From MS internal code
         ArgumentNullException.ThrowIfNull(path);
@@ -386,7 +451,8 @@ public static class HttpClientDispatcherExtensions
         string uriToBeAppended = path;
         string anchorText = "";
 
-        // If there is an anchor, then the query string must be inserted before its first occurrence.
+        // If there is an anchor, then the query string must
+        // be inserted before its first occurrence.
         if (anchorIndex != -1)
         {
             anchorText = path[anchorIndex..];
@@ -394,7 +460,8 @@ public static class HttpClientDispatcherExtensions
         }
 
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-        int queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCulture);
+        int queryIndex = uriToBeAppended
+            .IndexOf('?', StringComparison.InvariantCulture);
 #pragma warning restore CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
         bool hasQuery = queryIndex != -1;
 
@@ -405,7 +472,9 @@ public static class HttpClientDispatcherExtensions
             _ = sb.Append(hasQuery ? '&' : '?');
             _ = sb.Append(UrlEncoder.Default.Encode(parameter.Key));
             _ = sb.Append('=');
-            _ = sb.Append(parameter.Value is null ? null : UrlEncoder.Default.Encode(parameter.Value));
+            _ = sb.Append(parameter.Value is null
+                ? null
+                : UrlEncoder.Default.Encode(parameter.Value));
             hasQuery = true;
         }
 
@@ -413,6 +482,9 @@ public static class HttpClientDispatcherExtensions
         return sb.ToString();
     }
 
-    internal static T? DeserializeAnonymousType<T>(this string json, T _, JsonSerializerOptions? options = default)
+    internal static T? DeserializeAnonymousType<T>(
+        this string json,
+        T _,
+        JsonSerializerOptions? options = default)
          => JsonSerializer.Deserialize<T>(json, options);
 }

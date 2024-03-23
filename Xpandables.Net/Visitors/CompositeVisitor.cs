@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Visitors;
 
 /// <summary>
@@ -26,24 +26,30 @@ namespace Xpandables.Net.Visitors;
 /// class with a collection of visitors.
 /// </remarks>
 /// <param name="visitors">The collection of visitors for a specific type.</param>
-public sealed class CompositeVisitor<TElement>(IEnumerable<IVisitor<TElement>> visitors)
+public sealed class CompositeVisitor<TElement>(
+    IEnumerable<IVisitor<TElement>> visitors)
     : ICompositeVisitor<TElement>
     where TElement : notnull, IVisitable
 {
-    private readonly IEnumerable<IVisitor<TElement>> _visitorInstances = visitors;
+    private readonly IEnumerable<IVisitor<TElement>> _visitorInstances
+        = visitors;
 
     /// <summary>
-    /// Asynchronously applies all found visitors to the element according to the visitor order.
+    /// Asynchronously applies all found visitors to the element 
+    /// according to the visitor order.
     /// </summary>
     /// <param name="element">The element to be visited.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="element"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="element"/> is null.</exception>
     public async ValueTask VisitAsync(TElement element)
     {
         ArgumentNullException.ThrowIfNull(element);
 
-        foreach (IVisitor<TElement> visitor in _visitorInstances.OrderBy(o => o.Order))
+        foreach (IVisitor<TElement> visitor
+            in _visitorInstances.OrderBy(o => o.Order))
         {
-            await visitor.VisitAsync(element).ConfigureAwait(false);
+            await visitor.VisitAsync(element)
+                .ConfigureAwait(false);
         }
     }
 }

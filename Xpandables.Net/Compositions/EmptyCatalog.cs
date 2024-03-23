@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.Composition.Primitives;
 
 namespace Xpandables.Net.Compositions;
@@ -29,7 +30,8 @@ public sealed class EmptyCatalog : ComposablePartCatalog
     /// </summary>
     /// <returns>The <see cref="ComposablePartDefinition" /> contained in 
     /// the <see cref="ComposablePartCatalog" />.</returns>
-    /// <exception cref="ObjectDisposedException">The <see cref="ComposablePartCatalog" /> 
+    /// <exception cref="ObjectDisposedException">The 
+    /// <see cref="ComposablePartCatalog" /> 
     /// object has been disposed of.</exception>
     public override IQueryable<ComposablePartDefinition> Parts
         => Enumerable.Empty<ComposablePartDefinition>().AsQueryable();

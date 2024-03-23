@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Net;
 using System.Text.Json.Serialization;
 
@@ -30,9 +30,12 @@ namespace Xpandables.Net.Operations;
 public abstract record OperationResultBase : IOperationResult
 {
     /// <summary>
-    /// Constructs a new instance of <see cref="OperationResultBase"/> with the default values.
+    /// Constructs a new instance of 
+    /// <see cref="OperationResultBase"/> with the default values.
     /// </summary>
+#pragma warning disable S3442 // "abstract" classes should not have "public" constructors
     protected internal OperationResultBase() { }
+#pragma warning restore S3442 // "abstract" classes should not have "public" constructors
 
     ///<inheritdoc/>
     [JsonInclude]
@@ -75,7 +78,8 @@ public abstract record OperationResultBase : IOperationResult
     public bool IsFailure => StatusCode.IsFailureStatusCode();
 
     /// <summary>
-    /// Creates a new instance of <see cref="OperationResultBase"/> class with the specified values.
+    /// Creates a new instance of <see cref="OperationResultBase"/> 
+    /// class with the specified values.
     /// </summary>
     /// <param name="statusCode">The HTTP operation status code.</param>
     /// <param name="result">The result of the operation if available.</param>
@@ -84,7 +88,8 @@ public abstract record OperationResultBase : IOperationResult
     /// <param name="headers">The collection of header values.</param>
     /// <param name="extensions">The collection of extensions.</param>
     /// <param name="title">The title of the execution operation.</param>
-    /// <param name="detail">The explanation of the execution operation problem.</param>
+    /// <param name="detail">The explanation of the execution 
+    /// operation problem.</param>
     protected OperationResultBase(
         HttpStatusCode statusCode,
         Optional<object>? result = default,
@@ -108,22 +113,28 @@ public abstract record OperationResultBase : IOperationResult
 
 /// <summary>
 /// Represents an abstract implementation of 
-/// <see cref="IOperationResult{TResult}"/> that contains the status of an operation with generic type result.
+/// <see cref="IOperationResult{TResult}"/> that contains the status 
+/// of an operation with generic type result.
 /// </summary>
 /// <typeparam name="TResult">the type of the result.</typeparam>
-public abstract record OperationResultBase<TResult> : OperationResultBase, IOperationResult<TResult>
+public abstract record OperationResultBase<TResult>
+    : OperationResultBase, IOperationResult<TResult>
 {
     /// <summary>
-    /// Constructs a new instance of <see cref="OperationResultBase{TValue}"/> with the default values.
+    /// Constructs a new instance of 
+    /// <see cref="OperationResultBase{TValue}"/> with the default values.
     /// </summary>
+#pragma warning disable S3442 // "abstract" classes should not have "public" constructors
     protected internal OperationResultBase() { }
+#pragma warning restore S3442 // "abstract" classes should not have "public" constructors
 
     /// <inheritdoc/>
     [JsonIgnore]
     public new Optional<TResult> Result { get; internal init; }
 
     /// <summary>
-    /// Creates a new instance of <see cref="OperationResult{TValue}"/> with the specified values.
+    /// Creates a new instance of <see cref="OperationResult{TValue}"/> 
+    /// with the specified values.
     /// </summary>
     /// <param name="statusCode">The HTTP operation status code.</param>
     /// <param name="result">The value of the specific type.</param>
@@ -132,7 +143,8 @@ public abstract record OperationResultBase<TResult> : OperationResultBase, IOper
     /// <param name="headers">The collection of header values.</param>
     /// <param name="extensions">The collection of extensions.</param>
     /// <param name="title">The title of the execution operation.</param>
-    /// <param name="detail">The explanation of the execution operation problem.</param>
+    /// <param name="detail">The explanation of the 
+    /// execution operation problem.</param>
     protected OperationResultBase(
         HttpStatusCode statusCode,
         Optional<TResult>? result = default,

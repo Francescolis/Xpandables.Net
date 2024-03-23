@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.States;
 
 /// <summary>
@@ -40,7 +40,8 @@ public abstract class State<TStateContext> : IState<TStateContext>
     }
 
     /// <summary>
-    /// When overridden in derived class, allows author to modify the state context at runtime before it get applied.
+    /// When overridden in derived class, allows author to modify
+    /// the state context at runtime before it get applied.
     /// </summary>
     /// <param name="context">The target state context to act with.</param>
     protected virtual void OnEnteringStateContext(TStateContext context) { }

@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aggregates.DomainEvents;
@@ -27,18 +28,23 @@ namespace Xpandables.Net.Aggregates.DomainEvents;
 /// <param name="event">The event instance to act on.</param>
 /// <param name="cancellationToken">A CancellationToken to observe 
 /// while waiting for the task to complete.</param>
-/// <returns>A value that represents an implementation of <see cref="IOperationResult"/>.</returns>
+/// <returns>A value that represents an 
+/// implementation of <see cref="IOperationResult"/>.</returns>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public delegate ValueTask<IOperationResult> DomainEventHandler<in TDomainEvent, TAggregateId>(
+public delegate ValueTask<IOperationResult> DomainEventHandler
+    <in TDomainEvent, TAggregateId>(
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     TDomainEvent @event, CancellationToken cancellationToken = default)
     where TDomainEvent : IDomainEvent<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>;
 
 /// <summary>
-/// Allows an application author to define a generic handler for domain events in a Distributed Event Mapper.
-/// The domain event must implement <see cref="IDomainEvent{TAggregateId}"/> interface.
-/// The implementation must be thread-safe when working in a multi-threaded environment.
+/// Allows an application author to define a generic handler 
+/// for domain events in a Distributed Event Mapper.
+/// The domain event must implement 
+/// <see cref="IDomainEvent{TAggregateId}"/> interface.
+/// The implementation must be thread-safe when
+/// working in a multi-threaded environment.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of  aggregate Id</typeparam>
 /// <typeparam name="TDomainEvent">The domain event type.</typeparam>
@@ -51,12 +57,14 @@ public interface IDomainEventHandler<in TDomainEvent, in TAggregateId>
     /// <summary>
     ///  Asynchronously handles the domain event of specific type.
     /// </summary>
-    /// <remarks>The result of the handler will be used by the control flow to determine
+    /// <remarks>The result of the handler will be used 
+    /// by the control flow to determine
     /// whether or not to continue the execution process.</remarks>
     /// <param name="event">The domain event instance to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while 
     /// waiting for the task to complete.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="event"/> is null.</exception>
     /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
     ValueTask<IOperationResult> HandleAsync(
         TDomainEvent @event, CancellationToken cancellationToken = default);

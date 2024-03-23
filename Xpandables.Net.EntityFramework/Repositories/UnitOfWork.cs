@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.EntityFrameworkCore;
+
+using Xpandables.Net.EntityFramework.Repositories;
 
 namespace Xpandables.Net.Repositories;
 
@@ -26,7 +28,8 @@ namespace Xpandables.Net.Repositories;
 /// Constructs a new instance of <see cref="UnitOfWork"/>.
 /// </remarks>
 /// <param name="context">The db context to act with.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="context"/> is null.</exception>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="context"/> is null.</exception>
 public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
 {
     /// <summary>
@@ -35,15 +38,21 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
     protected DataContext Context { get; } = context;
 
     ///<inheritdoc/>
-    public async ValueTask<int> PersistAsync(CancellationToken cancellationToken = default)
+    public async ValueTask<int> PersistAsync(
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            return await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return await Context
+                .SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is DbUpdateException or DbUpdateConcurrencyException)
+        catch (Exception exception)
+            when (exception is DbUpdateException or DbUpdateConcurrencyException)
         {
-            throw new InvalidOperationException($"Save changes failed. See inner exception.", exception);
+            throw new InvalidOperationException(
+                $"Save changes failed. See inner exception.",
+                exception);
         }
     }
 
@@ -78,20 +87,35 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
     }
 
     ///<inheritdoc/>
+    public virtual IRepositoryRead<TEntity> GetRepositoryRead<TEntity>()
+        where TEntity : class, IEntity
+        => new RepositoryRead<TEntity>(Context);
+
+    ///<inheritdoc/>
+    public virtual IRepositoryWrite<TEntity> GetRepositoryWrite<TEntity>()
+        where TEntity : class, IEntity
+        => new RepositoryWrite<TEntity>(Context);
+
+    ///<inheritdoc/>
     public virtual IRepository<TEntity> GetRepository<TEntity>()
         where TEntity : class, IEntity
-        => new Repository<TEntity>(Context);
+        => new Repository<TEntity>(
+            GetRepositoryRead<TEntity>(),
+            GetRepositoryWrite<TEntity>());
 }
 
 /// <summary>
-/// Represents the base EFCore implementation of <see cref="IUnitOfWork{TDataContext}"/>.
+/// Represents the base EFCore implementation 
+/// of <see cref="IUnitOfWork{TDataContext}"/>.
 /// </summary>
-/// <typeparam name="TDataContext">The type of the context that implements <see cref="DataContext"/>.</typeparam>
+/// <typeparam name="TDataContext">The type of the context 
+/// that implements <see cref="DataContext"/>.</typeparam>
 /// <remarks>
 /// Constructs a new instance of <see cref="UnitOfWork{TContext}"/>.
 /// </remarks>
 /// <param name="context">The db context to act with.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="context"/> is null.</exception>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="context"/> is null.</exception>
 public class UnitOfWork<TDataContext>(TDataContext context)
     : UnitOfWork(context), IUnitOfWork<TDataContext>
     where TDataContext : DataContext
@@ -102,6 +126,16 @@ public class UnitOfWork<TDataContext>(TDataContext context)
     protected new TDataContext Context { get; } = context;
 
     ///<inheritdoc/>
+    public override IRepositoryRead<TEntity, TDataContext> GetRepositoryRead<TEntity>()
+        => new RepositoryRead<TEntity, TDataContext>(Context);
+
+    ///<inheritdoc/>
+    public override IRepositoryWrite<TEntity, TDataContext> GetRepositoryWrite<TEntity>()
+        => new RepositoryWrite<TEntity, TDataContext>(Context);
+
+    ///<inheritdoc/>
     public override IRepository<TEntity> GetRepository<TEntity>()
-        => new Repository<TEntity, TDataContext>(Context);
+        => new Repository<TEntity, TDataContext>(
+            GetRepositoryRead<TEntity>(),
+            GetRepositoryWrite<TEntity>());
 }

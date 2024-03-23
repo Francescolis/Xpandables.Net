@@ -34,6 +34,7 @@ public readonly record struct ProductId(Guid Value) : IAggregateId<ProductId>
     public static ProductId DefaultInstance() => throw new NotImplementedException();
     public static implicit operator Guid(ProductId self) => throw new NotImplementedException();
     public static implicit operator string(ProductId self) => throw new NotImplementedException();
+    public static implicit operator ProductId(Guid value) => new(value);
 }
 public readonly record struct AddProductCommand(Guid ProductId, int Quantity) : ICommand;
 public readonly record struct GetProductQuery(Guid ProductId) : IQuery<string>;

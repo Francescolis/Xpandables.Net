@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// The object entity base implementation that provides an identifier for derived class.
+/// The object entity base implementation that provides 
+/// an identifier for derived class.
 /// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
 public abstract class Entity : IEntity
@@ -53,7 +54,9 @@ public abstract class Entity : IEntity
         _ = status ?? throw new ArgumentNullException(nameof(status));
 
         // if the status is updated, we just update the updated on date
-        if (status.Equals(EntityStatus.UPDATED, StringComparison.OrdinalIgnoreCase))
+        if (status.Equals(
+            EntityStatus.UPDATED,
+            StringComparison.OrdinalIgnoreCase))
         {
             UpdatedOn = DateTime.UtcNow;
             return;
@@ -61,7 +64,9 @@ public abstract class Entity : IEntity
 
         Status = status;
 
-        if (status.Equals(EntityStatus.ACTIVE, StringComparison.OrdinalIgnoreCase))
+        if (status.Equals(
+            EntityStatus.ACTIVE,
+            StringComparison.OrdinalIgnoreCase))
         {
             if (UpdatedOn is not null)
                 UpdatedOn = DateTime.UtcNow;
@@ -71,7 +76,9 @@ public abstract class Entity : IEntity
             UpdatedOn = DateTime.UtcNow;
         }
 
-        if (!status.Equals(EntityStatus.DELETED, StringComparison.OrdinalIgnoreCase))
+        if (!status.Equals(
+            EntityStatus.DELETED,
+            StringComparison.OrdinalIgnoreCase))
         {
             if (DeletedOn is not null)
                 DeletedOn = null;
@@ -84,7 +91,8 @@ public abstract class Entity : IEntity
 }
 
 /// <summary>
-/// The generic entity object base implementation that provides a specific key for derived class.
+/// The generic entity object base implementation 
+/// that provides a specific key for derived class.
 /// </summary>
 /// <typeparam name="TId">The type of the key for the entity.</typeparam>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]

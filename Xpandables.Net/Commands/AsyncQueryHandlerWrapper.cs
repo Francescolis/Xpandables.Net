@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Commands;
 
 internal sealed class AsyncQueryHandlerWrapper<TQuery, TResult>(
-    IAsyncQueryHandler<TQuery, TResult> decoratee) : IAsyncQueryHandlerWrapper<TResult>
+    IAsyncQueryHandler<TQuery, TResult> decoratee)
+    : IAsyncQueryHandlerWrapper<TResult>
     where TQuery : notnull, IAsyncQuery<TResult>
 {
-    private readonly IAsyncQueryHandler<TQuery, TResult> _decoratee =
-        decoratee ?? throw new ArgumentNullException($"{decoratee} : {nameof(TQuery)}.{nameof(TResult)}");
-
     public IAsyncEnumerable<TResult> HandleAsync(
-        IAsyncQuery<TResult> query, CancellationToken cancellationToken = default)
-        => _decoratee.HandleAsync((TQuery)query, cancellationToken);
+        IAsyncQuery<TResult> query,
+        CancellationToken cancellationToken = default)
+        => decoratee.HandleAsync(
+            (TQuery)query,
+            cancellationToken);
 }

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,39 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Aggregates.DomainEvents;
+using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Operations;
-using Xpandables.Net.SnapShots;
+using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Aggregates.Decorators;
 
-internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
+internal sealed class AggregatetStoreSnapShotDecorator<TAggregate, TAggregateId>(
     IAggregateStore<TAggregate, TAggregateId> decoratee,
     IDomainEventStore eventStore,
     ISnapShotStore snapShotStore,
-    IOptions<SnapShotOptions> snapShotOptions) : IAggregateStore<TAggregate, TAggregateId>
+    IOptions<SnapShotOptions> snapShotOptions)
+    : IAggregateStore<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>, IOriginator
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
-    private readonly IAggregateStore<TAggregate, TAggregateId> _decoratee = decoratee
-        ?? throw new ArgumentNullException(nameof(decoratee));
-    private readonly IDomainEventStore _eventStore = eventStore
-        ?? throw new ArgumentNullException(nameof(eventStore));
-    private readonly ISnapShotStore _snapShotStore = snapShotStore
-        ?? throw new ArgumentNullException(nameof(snapShotStore));
-    private readonly SnapShotOptions _snapShotOptions = snapShotOptions.Value
-        ?? throw new ArgumentNullException(nameof(snapShotOptions));
-
     public async ValueTask<IOperationResult> AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
-        if (_snapShotOptions.IsOn
-            && aggregate.Version % _snapShotOptions.Frequency == 0
-            && aggregate.Version >= _snapShotOptions.Frequency)
+        if (snapShotOptions.Value.IsOn
+            && aggregate.Version % snapShotOptions.Value.Frequency == 0
+            && aggregate.Version >= snapShotOptions.Value.Frequency)
         {
             try
             {
@@ -55,19 +48,22 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
                     aggregate.AggregateId,
                     aggregate.Version);
 
-                await _snapShotStore.PersistAsSnapShotAsync(descriptor, cancellationToken)
+                await snapShotStore.AppendAsync(descriptor, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception exception) when (exception is not ArgumentNullException)
+            catch (Exception exception)
+                when (exception is not ArgumentNullException)
             {
                 return OperationResults
-                    .BadRequest()
-                    .WithError(nameof(SnapshotStoreDecorator<TAggregate, TAggregateId>), exception)
+                    .InternalError()
+                    .WithError(nameof(ISnapShotStore), exception)
                     .Build();
             }
         }
 
-        return await _decoratee.AppendAsync(aggregate, cancellationToken).ConfigureAwait(false);
+        return await decoratee
+            .AppendAsync(aggregate, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async ValueTask<IOperationResult<TAggregate>> ReadAsync(
@@ -76,33 +72,40 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
     {
         ArgumentNullException.ThrowIfNull(aggregateId);
 
-        if (_snapShotOptions.IsOff)
-            return await _decoratee.ReadAsync(aggregateId, cancellationToken)
+        if (snapShotOptions.Value.IsOff)
+        {
+            return await decoratee
+                .ReadAsync(aggregateId, cancellationToken)
                 .ConfigureAwait(false);
+        }
 
         TAggregate? aggregate = default;
+
         try
         {
-            Optionals.Optional<TAggregate> optionalResult = await _snapShotStore
-                .ReadFromSnapShotAsync<TAggregate>(aggregateId.Value, cancellationToken)
+            Optional<TAggregate> optionalResult = await snapShotStore
+                .ReadAsync<TAggregate>(aggregateId.Value, cancellationToken)
                 .ConfigureAwait(false);
 
             _ = optionalResult.Map(result => aggregate = result);
         }
-        catch (Exception exception) when (exception is not ArgumentNullException)
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
         {
             return OperationResults
                 .BadRequest<TAggregate>()
-                .WithError(nameof(SnapshotStoreDecorator<TAggregate, TAggregateId>), exception)
+                .WithError(nameof(ISnapShotStore), exception)
                 .Build();
         }
 
         if (aggregate is null)
-            return await _decoratee
+        {
+            return await decoratee
                 .ReadAsync(aggregateId, cancellationToken)
                 .ConfigureAwait(false);
+        }
 
-        // because the snapshot is not aligned with the last events,
+        // because the snapshot is not always aligned with the last events,
         // we need to add those events if available
         DomainEventFilter filter = new()
         {
@@ -113,18 +116,19 @@ internal sealed class SnapshotStoreDecorator<TAggregate, TAggregateId>(
 
         try
         {
-            await foreach (IDomainEvent<TAggregateId>? @event in _eventStore
+            await foreach (IDomainEvent<TAggregateId>? @event in eventStore
                 .ReadAsync<TAggregateId>(filter, cancellationToken)
                 .ConfigureAwait(false))
             {
                 aggregate.LoadFromHistory(@event);
             }
         }
-        catch (Exception exception) when (exception is not ArgumentNullException)
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
         {
             return OperationResults
                 .BadRequest<TAggregate>()
-                .WithError(nameof(SnapshotStoreDecorator<TAggregate, TAggregateId>), exception)
+                .WithError(nameof(ISnapShotStore), exception)
                 .Build();
         }
 

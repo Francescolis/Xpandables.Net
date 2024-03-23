@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel;
 using System.Net;
 
@@ -25,7 +25,8 @@ namespace Xpandables.Net.Operations;
 public partial interface IOperationResult
 {
     /// <summary>
-    /// Provides with commands to build a success <see cref="IOperationResult"/> in a fluent design.
+    /// Provides with commands to build a success 
+    /// <see cref="IOperationResult"/> in a fluent design.
     /// </summary>
     public interface ISuccessBuilder :
         IHeaderBuilder<ISuccessBuilder>,
@@ -36,7 +37,8 @@ public partial interface IOperationResult
     { }
 
     /// <summary>
-    /// Provides with commands to build a success <see cref="IOperationResult{TResult}"/> in a fluent design.
+    /// Provides with commands to build a success 
+    /// <see cref="IOperationResult{TResult}"/> in a fluent design.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     public interface ISuccessBuilder<TResult> :
@@ -49,7 +51,8 @@ public partial interface IOperationResult
     { }
 
     /// <summary>
-    /// Provides with commands to build a failure <see cref="IOperationResult"/> in a fluent design.
+    /// Provides with commands to build a failure 
+    /// <see cref="IOperationResult"/> in a fluent design.
     /// </summary>
     public interface IFailureBuilder :
         IHeaderBuilder<IFailureBuilder>,
@@ -62,7 +65,8 @@ public partial interface IOperationResult
     { }
 
     /// <summary>
-    /// Provides with commands to build a success <see cref="IOperationResult{TResult}"/> in a fluent design.
+    /// Provides with commands to build a success 
+    /// <see cref="IOperationResult{TResult}"/> in a fluent design.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     public interface IFailureBuilder<TResult> :
@@ -98,7 +102,8 @@ public partial interface IOperationResult
         /// <summary>
         /// Returns the instance that matches the builder information.
         /// </summary>
-        /// <returns>An implementation of <see cref="IOperationResult{TResult}"/>.</returns>
+        /// <returns>An implementation of 
+        /// <see cref="IOperationResult{TResult}"/>.</returns>
         new IOperationResult<TResult> Build();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -106,7 +111,8 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to add status code to the <see cref="IStatusBuilder{TBuilder}"/> builder.
+    /// Provides with command to add status code to 
+    /// the <see cref="IStatusBuilder{TBuilder}"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IStatusBuilder<out TBuilder>
@@ -114,7 +120,8 @@ public partial interface IOperationResult
         /// <summary>
         /// Adds the specified status code to the builder.
         /// </summary>
-        /// <param name="statusCode">The status code result to be used by the builder.</param>
+        /// <param name="statusCode">The status code 
+        /// result to be used by the builder.</param>
         /// <returns>The current instance.</returns>
         TBuilder WithStatusCode(HttpStatusCode statusCode);
     }
@@ -129,7 +136,8 @@ public partial interface IOperationResult
         /// <summary>
         /// Adds the specified title to the builder.
         /// </summary>
-        /// <param name="title">the operation title from the execution operation.</param>
+        /// <param name="title">the operation title 
+        /// from the execution operation.</param>
         /// <returns>The current instance.</returns>
         /// <exception cref="ArgumentNullException">The <paramref name="title"/> 
         /// is null or empty.</exception>
@@ -138,33 +146,42 @@ public partial interface IOperationResult
         /// <summary>
         /// Adds the specified detail to the builder.
         /// </summary>
-        /// <param name="detail">the operation detail from the execution operation.</param>
+        /// 
+        /// <param name="detail">the operation detail from 
+        /// the execution operation.</param>
         /// <returns>The current instance.</returns>
-        /// <exception cref="ArgumentNullException">The <paramref name="detail"/> is null or empty.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="detail"/> is null or empty.</exception>
         TBuilder WithDetail(string detail);
     }
 
     /// <summary>
-    /// Provides with command to add URL to the <see cref="IBuilder{TResult}"/> builder.
+    /// Provides with command to add URL to the 
+    /// <see cref="IBuilder{TResult}"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IUrlBuilder<out TBuilder>
         where TBuilder : class, IBuilder
     {
         /// <summary>
-        /// Adds the URL for location header.Mostly used with <see cref="HttpStatusCode.Created"/> to the builder.
+        /// Adds the URL for location header.Mostly used 
+        /// with <see cref="HttpStatusCode.Created"/> to the builder.
         /// </summary>
         /// <param name="url">The URL to added.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="url"/> is null.</exception>
-        /// <exception cref="UriFormatException">The <paramref name="url"/> is a bad format.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="url"/> is null.</exception>
+        /// <exception cref="UriFormatException">The 
+        /// <paramref name="url"/> is a bad format.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithUrl(string url);
 
         /// <summary>
-        /// Adds the URL for location header.Mostly used with <see cref="HttpStatusCode.Created"/> to the builder.
+        /// Adds the URL for location header.Mostly used 
+        /// with <see cref="HttpStatusCode.Created"/> to the builder.
         /// </summary>
         /// <param name="uri">The URL to added.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="uri"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="uri"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithUrl(Uri uri);
     }
@@ -182,20 +199,23 @@ public partial interface IOperationResult
         /// Adds the specified result to the builder.
         /// </summary>
         /// <param name="result">The result to be used by the builder.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="result"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">
+        /// The <paramref name="result"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithResult(TResult result);
     }
 
     /// <summary>
-    /// Provides with command to add header to the <see cref="IBuilder{TResult}"/> builder.
+    /// Provides with command to add header to the 
+    /// <see cref="IBuilder{TResult}"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IHeaderBuilder<out TBuilder>
         where TBuilder : class, IBuilder
     {
         /// <summary>
-        /// Adds the specified <paramref name="key"/> and <paramref name="value"/> to the header collection.
+        /// Adds the specified <paramref name="key"/> 
+        /// and <paramref name="value"/> to the header collection.
         /// </summary>
         /// <param name="key">The key header to add.</param>
         /// <param name="value">The associated value.</param>
@@ -205,7 +225,8 @@ public partial interface IOperationResult
         TBuilder WithHeader(string key, string value);
 
         /// <summary>
-        /// Adds the specified <paramref name="key"/> and <paramref name="values"/> to the header collection.
+        /// Adds the specified <paramref name="key"/> 
+        /// and <paramref name="values"/> to the header collection.
         /// </summary>
         /// <param name="key">The key header to add.</param>
         /// <param name="values">The associated value.</param>
@@ -218,80 +239,100 @@ public partial interface IOperationResult
         /// Adds the specified dictionary of headers to the header collection.
         /// </summary>
         /// <param name="headers">The dictionary to be added.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="headers"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="headers"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithHeaders(IDictionary<string, string> headers);
 
         /// <summary>
         /// Adds the specified header collection to the existing one.
         /// </summary>
-        /// <param name="headers">the other collection of headers to merge to.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="headers"/> is null.</exception>
+        /// <param name="headers">the other collection of 
+        /// headers to merge to.</param>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="headers"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithHeaders(ElementCollection headers);
     }
 
     /// <summary>
-    /// Provides with commands to add errors to the <see cref="IBuilder{TResult}"/> builder.
+    /// Provides with commands to add errors to the 
+    /// <see cref="IBuilder{TResult}"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IErrorBuilder<out TBuilder>
         where TBuilder : class, IBuilder
     {
         /// <summary>
-        /// Adds the <paramref name="key"/> and the <paramref name="errorMessages"/> to the errors collection.
+        /// Adds the <paramref name="key"/> and the 
+        /// <paramref name="errorMessages"/> to the errors collection.
         /// </summary>
-        /// <param name="key">The key of <see cref="ElementEntry"/> to add errors to.</param>
+        /// <param name="key">The key of 
+        /// <see cref="ElementEntry"/> to add errors to.</param>
         /// <param name="errorMessages">The associated error messages.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="key"/> is null.</exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="errorMessages"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="key"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="errorMessages"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithError(string key, params string[] errorMessages);
 
         /// <summary>
-        /// Adds the <paramref name="key"/> and the <paramref name="exception"/> to the errors collection.
+        /// Adds the <paramref name="key"/> and the 
+        /// <paramref name="exception"/> to the errors collection.
         /// </summary>
-        /// <param name="key">The key of <see cref="ElementEntry"/> to add errors to.</param>
+        /// <param name="key">The key of 
+        /// <see cref="ElementEntry"/> to add errors to.</param>
         /// <param name="exception">The associated exception.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="key"/> is null.</exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="exception"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="key"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="exception"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithError(string key, Exception exception);
 
         /// <summary>
         /// Adds the <paramref name="error"/> to the errors collection.
         /// </summary>
-        /// <param name="error">The error that is wrapped by the new collection.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="error"/> is null.</exception>
+        /// <param name="error">The error that is 
+        /// wrapped by the new collection.</param>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="error"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithError(ElementEntry error);
 
         /// <summary>
         /// Adds the <paramref name="errors"/> to the errors collection.
         /// </summary>
-        /// <param name="errors">the other collection of errors to merge to.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="errors"/> is null.</exception>
+        /// <param name="errors">the other collection of 
+        /// errors to merge to.</param>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="errors"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithErrors(ElementCollection errors);
 
         /// <summary>
         /// Adds the <paramref name="errors"/> to the errors collection.
         /// </summary>
-        /// <param name="errors">the other collection of errors to merge to.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="errors"/> is null.</exception>
+        /// <param name="errors">the other collection of 
+        /// errors to merge to.</param>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="errors"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithErrors(IReadOnlyCollection<ElementEntry> errors);
     }
 
     /// <summary>
-    /// Provides with commands to add extensions to the <see cref="IBuilder{TResult}"/> builder.
+    /// Provides with commands to add extensions to the 
+    /// <see cref="IBuilder{TResult}"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IExtensionBuilder<out TBuilder>
         where TBuilder : class, IBuilder
     {
         /// <summary>
-        /// Adds the specified <paramref name="key"/> and <paramref name="value"/> to the extensions collection.
+        /// Adds the specified <paramref name="key"/> and 
+        /// <paramref name="value"/> to the extensions collection.
         /// </summary>
         /// <param name="key">The key extension to add.</param>
         /// <param name="value">The associated value.</param>
@@ -301,7 +342,8 @@ public partial interface IOperationResult
         TBuilder WithExtension(string key, string value);
 
         /// <summary>
-        /// Adds the specified <paramref name="key"/> and <paramref name="values"/> to the extensions collection.
+        /// Adds the specified <paramref name="key"/> and 
+        /// <paramref name="values"/> to the extensions collection.
         /// </summary>
         /// <param name="key">The key extension to add.</param>
         /// <param name="values">The associated value.</param>
@@ -311,18 +353,22 @@ public partial interface IOperationResult
         TBuilder WithExtension(string key, params string[] values);
 
         /// <summary>
-        /// Adds the specified dictionary of extensions to the extensions collection.
+        /// Adds the specified dictionary of extensions to 
+        /// the extensions collection.
         /// </summary>
         /// <param name="extensions">The dictionary to be added.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="extensions"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="extensions"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithExtensions(IDictionary<string, string> extensions);
 
         /// <summary>
         /// Adds the specified extensions collection to the existing one.
         /// </summary>
-        /// <param name="extensions">the other collection of extensions to merge to.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="extensions"/> is null.</exception>
+        /// <param name="extensions">the other collection 
+        /// of extensions to merge to.</param>
+        /// <exception cref="ArgumentNullException">The 
+        /// <paramref name="extensions"/> is null.</exception>
         /// <returns>The current instance.</returns>
         TBuilder WithExtensions(ElementCollection extensions);
     }
@@ -334,7 +380,8 @@ public partial interface IOperationResult
     public interface IClearBuilder<out TBuilder>
     {
         /// <summary>
-        /// Reset the builder to allow using it to build new <see cref="IOperationResult"/>.
+        /// Reset the builder to allow using it to 
+        /// build new <see cref="IOperationResult"/>.
         /// </summary>
         /// <returns>The current instance.</returns>
         TBuilder Clear();

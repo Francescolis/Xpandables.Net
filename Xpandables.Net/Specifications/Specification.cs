@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
@@ -23,10 +23,12 @@ using Xpandables.Net.Expressions;
 namespace Xpandables.Net.Specifications;
 
 /// <summary>
-///  This class is a helper that provides a default implementation for <see cref="ISpecification{TSource}"/>.
+///  This class is a helper that provides a default 
+///  implementation for <see cref="ISpecification{TSource}"/>.
 /// </summary>
 /// <typeparam name="TSource">The type of the object to check for.</typeparam>
-public abstract record class Specification<TSource> : QueryExpression<TSource>, ISpecification<TSource>
+public abstract record class Specification<TSource>
+    : QueryExpression<TSource>, ISpecification<TSource>
 {
     /// <summary>
     /// Initializes a new instance of <see cref="Specification{TSource}"/> class.
@@ -40,33 +42,40 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
     /// <param name="source">The target source to check specification on.</param>
     /// <returns><see langword="true"/>if the specification is satisfied, 
     /// otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="source"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
     public virtual bool IsSatisfiedBy(TSource source)
         => GetExpression().Compile().Invoke(source);
 
     /// <summary>
-    /// Returns a composite specification from the two specifications using the And operator.
+    /// Returns a composite specification from the 
+    /// two specifications using the And operator.
     /// </summary>
     /// <param name="left">The left specification.</param>
     /// <param name="right">The right specification</param>
     /// <returns>A new specification.</returns>
     [return: NotNull]
 #pragma warning disable CA2225 // Operator overloads have named alternates
-    public static Specification<TSource> operator &(Specification<TSource> left, Specification<TSource> right)
+    public static Specification<TSource> operator &(
+        Specification<TSource> left,
+        Specification<TSource> right)
 #pragma warning restore CA2225 // Operator overloads have named alternates
       => new SpecificationAnd<TSource>(left, right: right);
 
     /// <summary>
-    /// Returns a composite specification from the two specifications using the Or operator.
+    /// Returns a composite specification from the two 
+    /// specifications using the Or operator.
     /// </summary>
     /// <param name="left">The left specification.</param>
     /// <param name="right">The right specification</param>
     /// <returns>A new specification.</returns>
     [return: NotNull]
 #pragma warning disable CA2225 // Operator overloads have named alternates
-    public static Specification<TSource> operator |(Specification<TSource> left, Specification<TSource> right)
+    public static Specification<TSource> operator |(
+        Specification<TSource> left,
+        Specification<TSource> right)
 #pragma warning restore CA2225 // Operator overloads have named alternates
         => new SpecificationOr<TSource>(left, right: right);
 
@@ -77,7 +86,8 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
     /// <returns>An opposite specification.</returns>
     [return: NotNull]
 #pragma warning disable CA2225 // Operator overloads have named alternates
-    public static SpecificationNot<TSource> operator !(Specification<TSource> other)
+    public static SpecificationNot<TSource> operator !(
+        Specification<TSource> other)
 #pragma warning restore CA2225 // Operator overloads have named alternates
         => new(other);
 
@@ -87,10 +97,11 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
     /// <param name="other">the target specification.</param>
     [return: NotNull]
 #pragma warning disable CA2225 // Operator overloads have named alternates
-    public static implicit operator Func<TSource, bool>(Specification<TSource> other)
+    public static implicit operator Func<TSource, bool>(
+        Specification<TSource> other)
 #pragma warning restore CA2225 // Operator overloads have named alternates
     {
-        ArgumentNullException.ThrowIfNull(other, nameof(other));
+        ArgumentNullException.ThrowIfNull(other);
         return other.GetExpression().Compile();
     }
 
@@ -99,10 +110,11 @@ public abstract record class Specification<TSource> : QueryExpression<TSource>, 
     /// </summary>
     /// <param name="other">The target specification</param>
 #pragma warning disable CA2225 // Operator overloads have named alternates
-    public static implicit operator Expression<Func<TSource, bool>>(Specification<TSource> other)
+    public static implicit operator Expression<Func<TSource, bool>>(
+        Specification<TSource> other)
 #pragma warning restore CA2225 // Operator overloads have named alternates
     {
-        ArgumentNullException.ThrowIfNull(other, nameof(other));
+        ArgumentNullException.ThrowIfNull(other);
         return other.GetExpression();
     }
 

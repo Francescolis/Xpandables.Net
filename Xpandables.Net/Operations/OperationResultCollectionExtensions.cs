@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
@@ -31,7 +31,8 @@ public static partial class OperationResultExtensions
     /// <param name="this">The source collection.</param>
     /// <returns>A <see cref="ElementCollection"/> that contains values 
     /// of <see cref="ElementEntry"/> selected from the collection.</returns>
-    public static ElementCollection ToOperationCollection(this IEnumerable<ElementEntry> @this)
+    public static ElementCollection ToOperationCollection(
+        this IEnumerable<ElementEntry> @this)
     {
         ArgumentNullException.ThrowIfNull(@this);
         return ElementCollection.With(@this.ToArray());

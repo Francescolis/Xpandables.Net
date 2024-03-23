@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Visitors;
 
 /// <summary>
@@ -33,16 +33,20 @@ public interface IVisitor
     /// This method will do the actual job of visiting the specified element.
     /// </summary>
     /// <param name="element">Element to be visited. It must implement 
-    /// the <see cref="IVisitable"/> or <see cref="IVisitable{TVisitable}"/> interface.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="element"/> is null.</exception>
+    /// the <see cref="IVisitable"/> or 
+    /// <see cref="IVisitable{TVisitable}"/> interface.</param>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="element"/> is null.</exception>
     /// <exception cref="ArgumentException">The <paramref name="element"/> 
     /// must implement <see cref="IVisitable"/>.</exception>
     ValueTask VisitAsync(object element);
 }
 
 /// <summary>
-/// Allows an application author to apply the visitor pattern : The generic Visitor definition.
-/// The implementation must be thread-safe when working in a multi-threaded environment.
+/// Allows an application author to apply 
+/// the visitor pattern : The generic Visitor definition.
+/// The implementation must be thread-safe when 
+/// working in a multi-threaded environment.
 /// </summary>
 /// <typeparam name="TElement">Type of element to be visited.</typeparam>
 public interface IVisitor<in TElement> : IVisitor
@@ -53,7 +57,8 @@ public interface IVisitor<in TElement> : IVisitor
     /// This method will do the actual job of visiting the specified element.
     /// </summary>
     /// <param name="element">Element to be visited.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="element"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="element"/> is null.</exception>
     ValueTask VisitAsync(TElement element);
 
     ValueTask IVisitor.VisitAsync(object element)

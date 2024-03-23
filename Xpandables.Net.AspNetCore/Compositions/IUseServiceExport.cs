@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Xpandables.Net.Compositions;
 
 /// <summary>
-/// Provides with an interface that allows external libraries to configure application.
+/// Provides with an interface that allows external libraries 
+/// to configure application.
 /// This interface is used with MEF : Managed Extensibility Framework.
 /// The implementation class must be decorated with the attribute 
 /// <see cref="System.ComponentModel.Composition.ExportAttribute"/> attribute,
@@ -33,6 +33,5 @@ public interface IUseServiceExport
     /// When implemented, this method should configure application.
     /// </summary>
     /// <param name="application">The application builder to act on.</param>
-    /// <param name="environment">The web hosting environment instance.</param>
-    void UseServices(IApplicationBuilder application, IWebHostEnvironment environment);
+    void UseServices(IApplicationBuilder application);
 }

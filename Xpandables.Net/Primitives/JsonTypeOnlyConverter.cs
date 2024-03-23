@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -27,11 +27,15 @@ namespace Xpandables.Net.Primitives;
 public abstract class JsonTypeOnlyConverter<T> : JsonConverter<T>
 {
     ///<inheritdoc/>
-    public sealed override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public sealed override T Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
         => DoRead(ref reader);
 
     /// <summary>
-    /// When implemented in derived classes, will return the an instance of <typeparamref name="T"/>
+    /// When implemented in derived classes, will return 
+    /// the an instance of <typeparamref name="T"/>
     /// from <paramref name="reader"/> value.
     /// </summary>
     /// <param name="reader">The reader element of the current JSON.</param>

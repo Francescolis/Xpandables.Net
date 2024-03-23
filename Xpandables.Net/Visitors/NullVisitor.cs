@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Visitors;
 
 /// <summary>
@@ -27,5 +27,6 @@ public sealed class NullVisitor<TElement> : IVisitor<TElement>
     /// <summary>
     /// Does nothing.
     /// </summary>
-    public async ValueTask VisitAsync(TElement element) => await ValueTask.CompletedTask.ConfigureAwait(false);
+    public async ValueTask VisitAsync(TElement element)
+        => await ValueTask.CompletedTask.ConfigureAwait(false);
 }

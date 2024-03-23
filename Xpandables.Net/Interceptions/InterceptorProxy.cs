@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -29,22 +29,29 @@ public abstract class InterceptorProxy : DispatchProxy
     /// <summary>
     /// Contains the GetType method.
     /// </summary>
-    protected static readonly MethodBase MethodBaseType = typeof(object).GetMethod("GetType")!;
+    protected static readonly MethodBase MethodBaseType
+        = typeof(object).GetMethod("GetType")!;
 
     /// <summary>
-    /// Returns a new instance of <typeparamref name="TInterface"/> wrapped by a proxy.
+    /// Returns a new instance of <typeparamref name="TInterface"/> 
+    /// wrapped by a proxy.
     /// </summary>
     /// <param name="instance">the instance to be wrapped.</param>
     /// <param name="interceptor">The instance of the interceptor.</param>
     /// <returns>An instance that has been wrapped by a proxy.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="instance"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="interceptor"/> is null.</exception>
-    public static TInterface CreateProxy<TInterface>(TInterface instance, IInterceptor interceptor)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="instance"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="interceptor"/> is null.</exception>
+    public static TInterface CreateProxy<TInterface>(
+        TInterface instance,
+        IInterceptor interceptor)
         where TInterface : class
     {
         object proxy = Create<TInterface, InterceptorProxy<TInterface>>();
 
-        ((InterceptorProxy<TInterface>)proxy).SetParameters(instance, interceptor);
+        ((InterceptorProxy<TInterface>)proxy)
+            .SetParameters(instance, interceptor);
 
         return (TInterface)proxy;
     }
@@ -63,7 +70,8 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
     private IInterceptor _interceptor;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="InterceptorProxy{TInstance}"/> with default values.
+    /// Initializes a new instance of 
+    /// <see cref="InterceptorProxy{TInstance}"/> with default values.
     /// </summary>
     public InterceptorProxy()
     {
@@ -72,16 +80,21 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
     }
 
     /// <summary>
-    /// Initializes the decorated instance and the interceptor with the provided arguments.
+    /// Initializes the decorated instance and the interceptor 
+    /// with the provided arguments.
     /// </summary>
     /// <param name="instance">The instance to be intercepted.</param>
     /// <param name="interceptor">The instance of interceptor.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="instance"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="interceptor"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="instance"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The
+    /// <paramref name="interceptor"/> is null.</exception>
     internal void SetParameters(TInterface instance, IInterceptor interceptor)
     {
-        _realInstance = instance ?? throw new ArgumentNullException(nameof(instance));
-        _interceptor = interceptor ?? throw new ArgumentNullException(nameof(interceptor));
+        _realInstance = instance
+            ?? throw new ArgumentNullException(nameof(instance));
+        _interceptor = interceptor
+            ?? throw new ArgumentNullException(nameof(interceptor));
     }
 
     /// <summary>
@@ -91,10 +104,16 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
     /// <param name="targetMethod">The target method.</param>
     /// <param name="args">The expected arguments.</param>
     /// <returns></returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="targetMethod" /> is null.</exception>
-    protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="targetMethod" /> is null.</exception>
+    protected override object? Invoke(
+        MethodInfo? targetMethod,
+        object?[]? args)
     {
-        _ = targetMethod ?? throw new ArgumentNullException(nameof(targetMethod), "The parameter is missing.");
+        _ = targetMethod
+            ?? throw new ArgumentNullException(
+                nameof(targetMethod),
+                "The parameter is missing.");
 
         return ReferenceEquals(targetMethod, MethodBaseType)
             ? Bypass(targetMethod, args)
@@ -133,11 +152,15 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
     }
 
     /// <summary>
-    /// Bypass the interceptor application because the method is a system method (GetType).
+    /// Bypass the interceptor application because 
+    /// the method is a system method (GetType).
     /// </summary>
-    /// <param name="targetMethod">Contains all information about the method being executed</param>
+    /// <param name="targetMethod">Contains all information 
+    /// about the method being executed</param>
     /// <param name="args">Arguments to be used.</param>
     /// <returns><see cref="object"/> instance</returns>
     [DebuggerStepThrough]
-    private object? Bypass(MethodInfo targetMethod, object?[]? args) => targetMethod.Invoke(_realInstance, args);
+    private object? Bypass(
+        MethodInfo targetMethod,
+        object?[]? args) => targetMethod.Invoke(_realInstance, args);
 }

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Reflection;
 
 namespace Xpandables.Net.Interceptions;
@@ -32,9 +32,13 @@ public static class InterceptorFactory
     /// <param name="interceptor">An interceptor instance to apply.</param>
     /// <param name="instance">The real instance of the interface type.</param>
     /// <returns><typeparamref name="TInterface"/> proxy instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="instance"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="interceptor"/> is null.</exception>
-    public static TInterface CreateProxy<TInterface>(IInterceptor interceptor, TInterface instance)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="instance"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="interceptor"/> is null.</exception>
+    public static TInterface CreateProxy<TInterface>(
+        IInterceptor interceptor,
+        TInterface instance)
         where TInterface : class
         => InterceptorProxy.CreateProxy(instance, interceptor);
 
@@ -45,17 +49,25 @@ public static class InterceptorFactory
     /// <param name="interceptor">An interceptor instance to apply</param>
     /// <param name="instance">The real instance of the type</param>
     /// <returns><see cref="object"/> proxy instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="instance"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="interceptor"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="interfaceType"/> is null</exception>
-    public static object CreateProxy(Type interfaceType, IInterceptor interceptor, object instance)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="instance"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="interceptor"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="interfaceType"/> is null</exception>
+    public static object CreateProxy(
+        Type interfaceType,
+        IInterceptor interceptor,
+        object instance)
     {
         ArgumentNullException.ThrowIfNull(interfaceType);
         ArgumentNullException.ThrowIfNull(interceptor);
         ArgumentNullException.ThrowIfNull(instance);
 
         MethodInfo proxyType = typeof(InterceptorProxy<>)
-            .GetMethod("CreateProxy", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)!
+            .GetMethod("CreateProxy",
+            BindingFlags.Public | BindingFlags.Static
+            | BindingFlags.FlattenHierarchy)!
             .MakeGenericMethod(interfaceType);
 
         return proxyType.Invoke(null, [instance, interceptor])!;

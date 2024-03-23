@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
@@ -31,7 +31,8 @@ public sealed class HttpClientParameters
     public enum Method
     {
         /// <summary>
-        /// Retrieves the information or entity that is identified by the URI of the request.
+        /// Retrieves the information or entity that is identified 
+        /// by the URI of the request.
         /// </summary>
         GET,
 
@@ -51,18 +52,21 @@ public sealed class HttpClientParameters
         DELETE,
 
         /// <summary>
-        /// Retrieves the message headers for the information or entity that is identified by the URI of the request.
+        /// Retrieves the message headers for the information or 
+        /// entity that is identified by the URI of the request.
         /// </summary>
         HEAD,
 
         /// <summary>
-        /// Requests that a set of changes described in the request entity be applied to the resource identified by the Request- URI.
+        /// Requests that a set of changes described in the request 
+        /// entity be applied to the resource identified by the Request- URI.
         /// </summary>
         /// <remarks>Note that there is no support for minimal Api.</remarks>
         PATCH,
 
         /// <summary>
-        /// Represents a request for information about the communication options available on the
+        /// Represents a request for information about the communication 
+        /// options available on the
         /// request/response chain identified by the Request-URI.
         /// </summary>
         OPTIONS,
@@ -84,31 +88,41 @@ public sealed class HttpClientParameters
     public enum Location
     {
         /// <summary>
-        /// Used in the content of the request. You can use <see cref="IHttpRequestString"/>,
-        /// <see cref="IHttpRequestPatch"/>, <see cref="IHttpRequestStream"/>, <see cref="IHttpRequestByteArray"/>, 
-        /// <see cref="IHttpRequestMultipart"/> or <see cref="IHttpRequestFormUrlEncoded"/>
-        /// to customize the body content, otherwise the whole class will be serialized.
+        /// Used in the content of the request. 
+        /// You can use <see cref="IHttpRequestString"/>,
+        /// <see cref="IHttpRequestPatch"/>, <see cref="IHttpRequestStream"/>, 
+        /// <see cref="IHttpRequestByteArray"/>, 
+        /// <see cref="IHttpRequestMultipart"/> or
+        /// <see cref="IHttpRequestFormUrlEncoded"/>
+        /// to customize the body content, otherwise the 
+        /// whole class will be serialized.
         /// </summary>
         Body = 1,
 
         /// <summary>
-        /// Parameters that are appended to the URL. You must implement <see cref="IHttpRequestQueryString"/> to provide with content.
+        /// Parameters that are appended to the URL. You must implement 
+        /// <see cref="IHttpRequestQueryString"/> to provide with content.
         /// </summary>
         Query = 2,
 
         /// <summary>
-        /// Used together with Path Templating, where the parameter value is actually part of the operation's URL.
-        /// You must implement <see cref="IHttpRequestPathString"/> to provide with content.
+        /// Used together with Path Templating, where the parameter 
+        /// value is actually part of the operation's URL.
+        /// You must implement <see cref="IHttpRequestPathString"/> 
+        /// to provide with content.
         /// </summary>
         Path = 4,
 
         /// <summary>
-        /// Custom headers that are expected as part of the request. You must implement <see cref="IHttpRequestHeader"/> to provide with content.
+        /// Custom headers that are expected as part of the request. 
+        /// You must implement <see cref="IHttpRequestHeader"/> 
+        /// to provide with content.
         /// </summary>
         Header = 8,
 
         /// <summary>
-        /// Used to pass a specific cookie value to the API. You must <see cref="IHttpRequestCookie"/> to provide with content.
+        /// Used to pass a specific cookie value to the API. 
+        /// You must <see cref="IHttpRequestCookie"/> to provide with content.
         /// </summary>
         Cookie = 16
     }
@@ -121,7 +135,8 @@ public sealed class HttpClientParameters
         /// <summary>
         /// Body content matching the <see cref="StringContent"/>.
         /// The target class should implement <see cref="IHttpRequestString"/>,
-        /// <see cref="IHttpRequestPatch"/>, otherwise the whole class will be serialized.
+        /// <see cref="IHttpRequestPatch"/>, otherwise the 
+        /// whole class will be serialized.
         /// </summary>
 #pragma warning disable CA1720 // Identifier contains type name
         String,
@@ -258,7 +273,8 @@ public sealed class HttpClientParameters
         /// <summary>
         /// Collections of content type from data format.
         /// </summary>
-        public static readonly ImmutableDictionary<DataFormat, string> DataFormats = new Dictionary<DataFormat, string>()
+        public static readonly ImmutableDictionary<DataFormat, string>
+            DataFormats = new Dictionary<DataFormat, string>()
         {
             { DataFormat.Xml, Xml },
             { DataFormat.Json, Json },
@@ -304,7 +320,8 @@ public sealed class HttpClientParameters
         /// The <see cref="Add"/> operation performs one of the following functions,
         /// depending upon what the target location references:
         /// <list type="number">
-        ///     <item>If path points to an array element: inserts new element before the one specified by path.</item>
+        ///     <item>If path points to an array element: inserts new element 
+        ///     before the one specified by path.</item>
         ///     <item>If path points to a property: sets the property value.</item>
         ///     <item>If path points to a nonexistent location:
         ///         <list type="bullet">
@@ -414,13 +431,20 @@ public sealed class HttpClientParameters
     {
         internal sealed record PatchOperation(
             [property: JsonPropertyName("op")] string Op,
-            [property: JsonPropertyName("from"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] string? From,
+            [property: JsonPropertyName("from"),
+            JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        string? From,
         [property: JsonPropertyName("path")] string Path,
-            [property: JsonPropertyName("value"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] object? Value) : IPatchOperation
+            [property: JsonPropertyName("value"),
+            JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        object? Value) : IPatchOperation
         {
-            public PatchOperation(string op, string path) : this(op, default, path, default) { }
-            public PatchOperation(string op, string path, object value) : this(op, default, path, value) { }
-            public PatchOperation(string op, string from, string path) : this(op, from, path, default) { }
+            public PatchOperation(string op, string path)
+                : this(op, default, path, default) { }
+            public PatchOperation(string op, string path, object value)
+                : this(op, default, path, value) { }
+            public PatchOperation(string op, string from, string path)
+                : this(op, from, path, default) { }
 
             PatchOperation IPatchOperation.GetOperation() => this;
         }
@@ -446,7 +470,8 @@ public sealed class HttpClientParameters
         /// <param name="value">The content specifies the value to be added.</param>
         /// <returns>The "Add" operation with the specified path and value.</returns>
         /// <exception cref="ArgumentNullException">The <paramref name="path"/> or <paramref name="value"/> is null.</exception>
-        public static IPatchOperation Add(string path, object value) => new PatchOperation(Operation.Add, path, value);
+        public static IPatchOperation Add(string path, object value)
+            => new PatchOperation(Operation.Add, path, value);
 
         /// <summary>
         /// The <see cref="Remove"/> operation removes the value at the target location :
@@ -471,7 +496,8 @@ public sealed class HttpClientParameters
         /// <param name="path">The target location.</param>
         /// <returns>The "Remove" operation with the specified path.</returns>
         /// <exception cref="ArgumentNullException">The <paramref name="path"/> is null.</exception>
-        public static IPatchOperation Remove(string path) => new PatchOperation(Operation.Remove, path);
+        public static IPatchOperation Remove(string path)
+            => new PatchOperation(Operation.Remove, path);
 
         /// <summary>
         /// The <see cref="Replace"/> operation replaces the value at the target location with a new value.
@@ -515,7 +541,8 @@ public sealed class HttpClientParameters
         /// <param name="from">A string containing a JSON pointer value that references the location in the target document to move the value from.</param>
         /// <param name="path">The target location to receive the value from the 'from' location.</param>
         /// <returns>The "Move" operation with the specified from and path values.</returns>
-        public static IPatchOperation Move(string from, string path) => new PatchOperation(Operation.Move, from, path);
+        public static IPatchOperation Move(string from, string path)
+            => new PatchOperation(Operation.Move, from, path);
 
         /// <summary>
         /// The <see cref="Copy"/> operation copies the value at a specified location to the target location. 
@@ -531,7 +558,8 @@ public sealed class HttpClientParameters
         /// <param name="from">A string containing a JSON pointer value that references the location in the target document to copy the value from.</param>
         /// <param name="path">The target location to receive the value from the 'from' location.</param>
         /// <returns>The "Copy" operation with the specified from and path values.</returns>
-        public static IPatchOperation Copy(string from, string path) => new PatchOperation(Operation.Copy, from, path);
+        public static IPatchOperation Copy(string from, string path)
+            => new PatchOperation(Operation.Copy, from, path);
 
         /// <summary>
         ///  The <see cref="Test"/> operation tests that a value at the target location is equal to a specified value.
@@ -547,6 +575,7 @@ public sealed class HttpClientParameters
         /// <param name="path">The target location the value must be equal to the specified one.</param>
         /// <param name="value">The value to be compared to the target location.</param>
         /// <returns>The "test" operation with the specified path and value.</returns>
-        public static IPatchOperation Test(string path, object value) => new PatchOperation(Operation.Copy, path, value);
+        public static IPatchOperation Test(string path, object value)
+            => new PatchOperation(Operation.Copy, path, value);
     }
 }

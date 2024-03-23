@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 using System.Text.Json;
 
@@ -23,12 +23,14 @@ using Xpandables.Net.Primitives;
 namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
-/// Specifies criteria with projection for notification entities to a specific result.
+/// Specifies criteria with projection for notification entities 
+/// to a specific result.
 /// </summary>
 public record NotificationFilter : INotificationFilter
 {
     /// <summary>
-    /// Creates a new instance of <see cref="NotificationFilter"/> to filter domain event records.
+    /// Creates a new instance of <see cref="NotificationFilter"/> 
+    /// to filter domain event records.
     /// </summary>
     public NotificationFilter() { }
 

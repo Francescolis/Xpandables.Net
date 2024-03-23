@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net;
+namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Implements <see cref="ITransientPublisher"/> and <see cref="ITransientSubscriber"/> interfaces.
+/// Implements <see cref="ITransientPublisher"/> 
+/// and <see cref="ITransientSubscriber"/> interfaces.
 /// </summary>
-public sealed class TransientPublisherSubscriber : Disposable, ITransientPublisher, ITransientSubscriber
+public sealed class TransientPublisherSubscriber
+    : Disposable, ITransientPublisher, ITransientSubscriber
 {
-    private readonly AsyncLocal<Dictionary<Type, List<object>>> _subscribers = new();
+    private readonly AsyncLocal<Dictionary<Type, List<object>>> _subscribers
+        = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TransientPublisherSubscriber"/> class.
+    /// Initializes a new instance 
+    /// of the <see cref="TransientPublisherSubscriber"/> class.
     /// </summary>
     public TransientPublisherSubscriber() => _subscribers.Value = [];
 
@@ -57,7 +61,8 @@ public sealed class TransientPublisherSubscriber : Disposable, ITransientPublish
 
             return result;
         }
-        catch (Exception exception) when (exception is not ArgumentNullException)
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
         {
             return OperationResults
                 .InternalError()

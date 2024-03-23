@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// A marker interface that allows the command handler class implementation to be decorated with transaction behavior according to
+/// A marker interface that allows the command handler
+/// class implementation to be decorated with transaction behavior according to
 /// the decorated class type.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces

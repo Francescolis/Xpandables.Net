@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Operations;
 using Xpandables.Net.Validators;
 
@@ -23,7 +23,8 @@ namespace Xpandables.Net.Commands.Decorators;
 /// <summary>
 /// This class allows the application author to add validation 
 /// support to command control flow.
-/// The target command should implement the <see cref="IValidateDecorator"/> interface 
+/// The target command should implement the <see cref="IValidateDecorator"/> 
+/// interface 
 /// in order to activate the behavior.
 /// The class decorates the target command handler with an implementation 
 /// of <see cref="ICompositeValidator{TArgument}"/>
@@ -34,44 +35,45 @@ namespace Xpandables.Net.Commands.Decorators;
 /// </summary>
 /// <typeparam name="TCommand">Type of the command.</typeparam>
 /// <remarks>
-/// Initializes a new instance of the <see cref="ValidatorCommandDecorator{TCommand}"/> class
+/// Initializes a new instance of the 
+/// <see cref="ValidatorCommandDecorator{TCommand}"/> class
 /// with the handler to be decorated and the composite validator.
 /// </remarks>
 /// <param name="decoratee">The command handler to be decorated.</param>
 /// <param name="validator">The validator instance.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="decoratee"/> is null.</exception>
-/// <exception cref="ArgumentNullException">The <paramref name="validator"/> is null.</exception>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="decoratee"/> is null.</exception>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="validator"/> is null.</exception>
 public sealed class ValidatorCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
     ICompositeValidator<TCommand> validator) : ICommandHandler<TCommand>
     where TCommand : notnull, ICommand, IValidateDecorator
 {
-    private readonly ICommandHandler<TCommand> _decoratee = decoratee
-        ?? throw new ArgumentNullException(nameof(decoratee));
-    private readonly ICompositeValidator<TCommand> _validator = validator
-        ?? throw new ArgumentNullException(nameof(validator));
-
     /// <summary>
-    /// Asynchronously validates the command before handling if there is no error.
+    /// Asynchronously validates the command before handling 
+    /// if there is no error.
     /// </summary>
     /// <param name="command">The command instance to act on.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="command" /> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <param name="cancellationToken">A CancellationToken 
+    /// to observe while waiting for the task to complete.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="command" /> is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     /// <returns>A task that represents an <see cref="OperationResult"/>.</returns>
     public async ValueTask<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {
-        IOperationResult operation = await _validator
+        IOperationResult operation = await validator
             .ValidateAsync(command)
             .ConfigureAwait(false);
 
-        if (operation.IsFailure)
-            return operation;
-
-        return await _decoratee
-            .HandleAsync(command, cancellationToken)
-            .ConfigureAwait(false);
+        return operation.IsFailure
+            ? operation
+            : await decoratee
+                .HandleAsync(command, cancellationToken)
+                .ConfigureAwait(false);
     }
 }

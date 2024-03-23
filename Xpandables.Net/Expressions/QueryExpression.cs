@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 
 namespace Xpandables.Net.Expressions;
@@ -24,7 +24,8 @@ namespace Xpandables.Net.Expressions;
 /// </summary>
 /// <typeparam name="TSource">The data type to apply expression to.</typeparam>
 /// <typeparam name="TResult">The type of the result of expression.</typeparam>
-public abstract record class QueryExpression<TSource, TResult> : IQueryExpression<TSource, TResult>
+public abstract record class QueryExpression<TSource, TResult>
+    : IQueryExpression<TSource, TResult>
 {
     /// <summary>
     /// Gets the expression tree for the underlying instance.
@@ -94,10 +95,12 @@ public abstract record class QueryExpression<TSource, TResult> : IQueryExpressio
 }
 
 /// <summary>
-/// This class is a helper that provides a default implementation for <see cref="IQueryExpression{TSource}"/> with <see cref="bool"/> as result.
+/// This class is a helper that provides a default implementation 
+/// for <see cref="IQueryExpression{TSource}"/> with <see cref="bool"/> as result.
 /// </summary>
 /// <typeparam name="TSource">The data source type.</typeparam>
-public abstract record class QueryExpression<TSource> : QueryExpression<TSource, bool>, IQueryExpression<TSource>
+public abstract record class QueryExpression<TSource>
+    : QueryExpression<TSource, bool>, IQueryExpression<TSource>
 {
     ///<inheritdoc/>
 #pragma warning disable CA2225 // Operator overloads have named alternates
@@ -118,4 +121,37 @@ public abstract record class QueryExpression<TSource> : QueryExpression<TSource,
         ArgumentNullException.ThrowIfNull(queryExpression);
         return queryExpression.GetExpression().Compile();
     }
+
+    ///<inheritdoc/>
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    public static implicit operator QueryExpression<TSource>(
+#pragma warning restore CA2225 // Operator overloads have named alternates
+         Expression<Func<TSource, bool>> expression)
+    {
+        ArgumentNullException.ThrowIfNull(expression);
+        return QueryExpressionFactory.Create(expression);
+    }
+
+    ///<inheritdoc/>
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    public static QueryExpression<TSource> operator &(
+#pragma warning restore CA2225 // Operator overloads have named alternates
+         QueryExpression<TSource> left,
+         QueryExpression<TSource> right)
+      => new QueryExpressionAnd<TSource>(left, right: right);
+
+    ///<inheritdoc/>
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    public static QueryExpression<TSource> operator |(
+#pragma warning restore CA2225 // Operator overloads have named alternates
+         QueryExpression<TSource> left,
+         QueryExpression<TSource> right)
+        => new QueryExpressionOr<TSource>(left, right: right);
+
+    ///<inheritdoc/>
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    public static QueryExpression<TSource> operator !(
+#pragma warning restore CA2225 // Operator overloads have named alternates
+         QueryExpression<TSource> left)
+        => new QueryExpressionNot<TSource>(expression: left);
 }

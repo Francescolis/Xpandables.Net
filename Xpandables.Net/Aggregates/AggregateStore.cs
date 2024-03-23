@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.I18n;
@@ -34,7 +34,8 @@ namespace Xpandables.Net.Aggregates;
 /// <exception cref="ArgumentNullException"></exception>
 public sealed class AggregateStore<TAggregate, TAggregateId>(
     IDomainEventStore eventStore,
-    IDomainEventPublisher<TAggregateId> eventPublisher) : IAggregateStore<TAggregate, TAggregateId>
+    IDomainEventPublisher<TAggregateId> eventPublisher)
+    : IAggregateStore<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
@@ -47,17 +48,18 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
 
         try
         {
-            foreach (IDomainEvent<TAggregateId> @event in aggregate.GetUncommittedEvents())
+            foreach (IDomainEvent<TAggregateId> @event
+                in aggregate.GetUncommittedEvents())
             {
                 await eventStore
                     .AppendAsync(@event, cancellationToken)
                     .ConfigureAwait(false);
 
-                OperationResult operationResult = await eventPublisher
+                if (await eventPublisher
                     .PublishAsync((dynamic)@event, cancellationToken)
-                    .ConfigureAwait(false);
+                    .ConfigureAwait(false)
+                    is IOperationResult { IsFailure: true } operationResult)
 
-                if (operationResult.IsFailure)
                     return operationResult;
             }
 
@@ -66,6 +68,10 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
             return OperationResults
                 .Ok()
                 .Build();
+        }
+        catch (OperationResultException resultException)
+        {
+            return resultException.OperationResult;
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)

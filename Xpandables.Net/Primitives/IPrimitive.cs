@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
@@ -31,9 +31,11 @@ public interface IPrimitive
     object Value { get; }
 
     /// <summary>
-    /// Returns the <see cref="string"/> representation of the <see cref="Value"/>.
+    /// Returns the <see cref="string"/> representation 
+    /// of the <see cref="Value"/>.
     /// </summary>
-    /// <returns>A <see cref="string"/> value or <see cref="string.Empty"/>.</returns>
+    /// <returns>A <see cref="string"/> value 
+    /// or <see cref="string.Empty"/>.</returns>
     public string AsString() => Value.ToString() ?? string.Empty;
 
     /// <summary>
@@ -47,7 +49,7 @@ public interface IPrimitive
 ///  Defines the contract to implement a generic primitive types.
 /// </summary>
 /// <typeparam name="TValue">The type of the primitive value.</typeparam>
-public interface IPrimitive<TValue> : IPrimitive
+public interface IPrimitive<out TValue> : IPrimitive
     where TValue : notnull
 {
     /// <summary>
@@ -82,7 +84,8 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// Creates a new instance of <typeparamref name="TPrimitive"/> type.
     /// </summary>
     /// <param name="value">The value.</param>
-    /// <returns>Returns an instance of <typeparamref name="TPrimitive"/> with the new value.</returns>
+    /// <returns>Returns an instance 
+    /// of <typeparamref name="TPrimitive"/> with the new value.</returns>
     static abstract TPrimitive CreateInstance(TValue value);
 
     /// <summary>
@@ -99,5 +102,15 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// <param name="self"></param>
 #pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator string(TPrimitive self);
+#pragma warning restore CA2225 // Operator overloads have named alternates
+
+    /// <summary>
+    /// Converts the <typeparamref name="TPrimitive"/> 
+    /// type to <typeparamref name="TValue"/>.
+    /// </summary>
+    /// <param name="value">The value to convert.</param>
+    /// <returns>Returns the converted value.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    static abstract implicit operator TPrimitive(TValue? value);
 #pragma warning restore CA2225 // Operator overloads have named alternates
 }

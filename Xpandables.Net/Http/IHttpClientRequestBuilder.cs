@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
@@ -25,24 +25,34 @@ using static Xpandables.Net.Http.HttpClientParameters;
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Provides with methods to build <see cref="HttpRequestMessage"/> for use with <see cref="IHttpClientDispatcher"/>.
+/// Provides with methods to build <see cref="HttpRequestMessage"/> 
+/// for use with <see cref="IHttpClientDispatcher"/>.
 /// </summary>
 public interface IHttpClientRequestBuilder
 {
     /// <summary>
-    /// The method used to construct an <see cref="HttpRequestMessage"/> from the source.
-    /// The <paramref name="source"/> may implement some interfaces such as <see cref="IHttpRequestHeader"/>, <see cref="IHttpRequestString"/> and so on.
+    /// The method used to construct an <see cref="HttpRequestMessage"/> 
+    /// from the source.
+    /// The <paramref name="source"/> may implement some interfaces 
+    /// such as <see cref="IHttpRequestHeader"/>, <see cref="IHttpRequestString"/> and so on.
     /// </summary>
     /// <typeparam name="TSource">The type of the object.</typeparam>
     /// <param name="source">The source object to act on.</param>
     /// <param name="httpClient">The target HTTP client.</param>
-    /// <param name="serializerOptions">Options to control the behavior during parsing.</param>
-    /// <returns>A task that represents an <see cref="HttpRequestMessage"/> object.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="httpClient"/> is null.</exception>
-    /// <exception cref="ArgumentException">The <paramref name="source"/> must be decorated with
-    /// <see cref="HttpClientAttribute"/> or implement <see cref="IHttpClientAttributeBuilder"/>.</exception>
-    /// <exception cref="InvalidOperationException">Unable to build the request message.</exception>
+    /// <param name="serializerOptions">Options to control the 
+    /// behavior during parsing.</param>
+    /// <returns>A task that represents an 
+    /// <see cref="HttpRequestMessage"/> object.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="httpClient"/> is null.</exception>
+    /// <exception cref="ArgumentException">
+    /// The <paramref name="source"/> must be decorated with
+    /// <see cref="HttpClientAttribute"/> or 
+    /// implement <see cref="IHttpClientAttributeBuilder"/>.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Unable to build the request message.</exception>
     ValueTask<HttpRequestMessage> BuildHttpRequestAsync<TSource>(
         TSource source,
         HttpClient httpClient,
@@ -50,7 +60,9 @@ public interface IHttpClientRequestBuilder
            where TSource : class;
 }
 
-internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceProvider) : IHttpClientRequestBuilder
+internal sealed class HttpClientRequestBuilderInternal(
+    IServiceProvider serviceProvider)
+    : IHttpClientRequestBuilder
 {
     public ValueTask<HttpRequestMessage> BuildHttpRequestAsync<TSource>(
         TSource source,
@@ -61,7 +73,8 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(httpClient);
 
-        HttpClientAttribute attribute = ReadHttpRestClientAttribute(source, serviceProvider);
+        HttpClientAttribute attribute
+            = ReadHttpRestClientAttribute(source, serviceProvider);
 
         attribute.Path ??= "/";
 
@@ -74,15 +87,21 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
 
         attribute.Uri = new Uri(attribute.Path, UriKind.Relative);
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        HttpRequestMessage httpRequestMessage = new(new HttpMethod(attribute.Method.ToString()), attribute.Uri);
+        HttpRequestMessage httpRequestMessage = new(
+            new HttpMethod(attribute.Method.ToString()),
+            attribute.Uri);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        httpRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
-        httpRequestMessage.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(Thread.CurrentThread.CurrentCulture.Name));
+        httpRequestMessage.Headers.Accept
+            .Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
+        httpRequestMessage.Headers.AcceptLanguage
+            .Add(new StringWithQualityHeaderValue(
+                Thread.CurrentThread.CurrentCulture.Name));
 
         WriteLocationCookie(source, attribute, httpRequestMessage);
         WriteLocationHeader(source, attribute, httpRequestMessage);
 
-        if (!attribute.IsNullable && (attribute.Location & Location.Body) == Location.Body)
+        if (!attribute.IsNullable
+            && (attribute.Location & Location.Body) == Location.Body)
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
             httpRequestMessage.Content = attribute.BodyFormat switch
@@ -92,24 +111,33 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
                 BodyFormat.Multipart => ReadMultipartContent(source, attribute),
                 BodyFormat.Stream => ReadStreamContent(source),
                 BodyFormat.String => ReadStringContent(source, attribute, serializerOptions),
-                _ => throw new NotImplementedException($"Unknown body format : {attribute.BodyFormat}")
+                _ => throw new NotImplementedException(
+                    $"Unknown body format : {attribute.BodyFormat}")
             };
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-            if (httpRequestMessage.Content is not null && httpRequestMessage.Content.Headers.ContentType is null)
-                httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue(attribute.ContentType);
+            if (httpRequestMessage.Content is not null
+                && httpRequestMessage.Content.Headers.ContentType is null)
+                httpRequestMessage.Content.Headers.ContentType
+                    = new MediaTypeHeaderValue(attribute.ContentType);
         }
 
         if (attribute.IsSecured)
         {
             httpRequestMessage.Headers.Authorization =
-                httpClient.DefaultRequestHeaders.Authorization ?? new AuthenticationHeaderValue(attribute.Scheme);
-            httpRequestMessage.Options.Set(new(nameof(HttpClientAttribute.IsSecured)), attribute.IsSecured);
+                httpClient.DefaultRequestHeaders.Authorization
+                ?? new AuthenticationHeaderValue(attribute.Scheme);
+            httpRequestMessage.Options
+                .Set(new(nameof(
+                    HttpClientAttribute.IsSecured)),
+                    attribute.IsSecured);
         }
 
         return ValueTask.FromResult(httpRequestMessage);
 
-        static HttpClientAttribute ReadHttpRestClientAttribute(TSource source, IServiceProvider serviceProvider)
+        static HttpClientAttribute ReadHttpRestClientAttribute(
+            TSource source,
+            IServiceProvider serviceProvider)
         {
             if (source is IHttpClientAttributeBuilder httpRestClientAttributeProvider)
                 return httpRestClientAttributeProvider.Build(serviceProvider);
@@ -121,7 +149,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         }
     }
 
-    internal static string AddPathString(string path, IDictionary<string, string> pathString)
+    internal static string AddPathString(
+        string path,
+        IDictionary<string, string> pathString)
     {
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(pathString);
@@ -138,7 +168,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         return path;
     }
 
-    internal static void WriteLocationPath<TSource>(TSource source, HttpClientAttribute attribute)
+    internal static void WriteLocationPath<TSource>(
+        TSource source,
+        HttpClientAttribute attribute)
         where TSource : class
     {
         ArgumentNullException.ThrowIfNull(attribute);
@@ -150,11 +182,14 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (source is not IHttpRequestPathString pathStringRequest)
             return;
 
-        IDictionary<string, string> pathString = pathStringRequest.GetPathStringSource();
+        IDictionary<string, string> pathString
+            = pathStringRequest.GetPathStringSource();
         attribute.Path = AddPathString(attribute.Path!, pathString);
     }
 
-    internal static void WriteLocationQuery<TSource>(TSource source, HttpClientAttribute attribute)
+    internal static void WriteLocationQuery<TSource>(
+        TSource source,
+        HttpClientAttribute attribute)
         where TSource : class
     {
         ArgumentNullException.ThrowIfNull(attribute);
@@ -166,12 +201,15 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (source is not IHttpRequestQueryString queryStringRequest)
             return;
 
-        IDictionary<string, string?>? queryString = queryStringRequest.GetQueryStringSource();
+        IDictionary<string, string?>? queryString
+            = queryStringRequest.GetQueryStringSource();
         attribute.Path = attribute.Path!.AddQueryString(queryString);
     }
 
     internal static void WriteLocationCookie<TSource>(
-        TSource source, HttpClientAttribute attribute, HttpRequestMessage httpRequestMessage)
+        TSource source,
+        HttpClientAttribute attribute,
+        HttpRequestMessage httpRequestMessage)
         where TSource : class
     {
         ArgumentNullException.ThrowIfNull(attribute);
@@ -184,13 +222,17 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (source is not IHttpRequestCookie cookieLocationRequest)
             return;
 
-        IDictionary<string, object?> cookieSource = cookieLocationRequest.GetCookieSource();
+        IDictionary<string, object?> cookieSource
+            = cookieLocationRequest.GetCookieSource();
         foreach (KeyValuePair<string, object?> parameter in cookieSource)
-            _ = httpRequestMessage.Options.TryAdd(parameter.Key, parameter.Value);
+            _ = httpRequestMessage.Options
+                .TryAdd(parameter.Key, parameter.Value);
     }
 
     internal static void WriteLocationHeader<TSource>(
-        TSource source, HttpClientAttribute attribute, HttpRequestMessage httpRequestMessage)
+        TSource source,
+        HttpClientAttribute attribute,
+        HttpRequestMessage httpRequestMessage)
         where TSource : class
     {
         ArgumentNullException.ThrowIfNull(attribute);
@@ -201,15 +243,19 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         ValidateInterfaceImplementation<IHttpRequestHeader>(source);
         if (source is not IHttpRequestHeader headerLocationRequest) return;
 
-        IDictionary<string, IEnumerable<string?>> headerSource = headerLocationRequest.GetHeadersSource();
+        IDictionary<string, IEnumerable<string?>> headerSource
+            = headerLocationRequest.GetHeadersSource();
         if (headerLocationRequest.GetHeaderModelName() is string modelName)
         {
-            string headerValue = string.Join(",", headerSource.Select(x => $"{x.Key},{string.Join(";", x.Value)}"));
+            string headerValue = string.Join(
+                ",",
+                headerSource.Select(x => $"{x.Key},{string.Join(";", x.Value)}"));
             httpRequestMessage.Headers.Add(modelName, headerValue);
         }
         else
         {
-            foreach (KeyValuePair<string, IEnumerable<string?>> parameter in headerSource)
+            foreach (KeyValuePair<string, IEnumerable<string?>> parameter
+                in headerSource)
             {
                 _ = httpRequestMessage.Headers.Remove(parameter.Key);
                 httpRequestMessage.Headers.Add(parameter.Key, parameter.Value);
@@ -217,7 +263,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         }
     }
 
-    internal static HttpContent? ReadByteArrayContent<TSource>(TSource source) where TSource : class
+    internal static HttpContent? ReadByteArrayContent<TSource>(
+        TSource source)
+        where TSource : class
     {
         ValidateInterfaceImplementation<IHttpRequestByteArray>(source);
         if (source is IHttpRequestByteArray byteArrayRequest
@@ -229,7 +277,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         return default;
     }
 
-    internal static HttpContent? ReadFormUrlEncodedContent<TSource>(TSource source) where TSource : class
+    internal static HttpContent? ReadFormUrlEncodedContent<TSource>(
+        TSource source)
+        where TSource : class
     {
         ValidateInterfaceImplementation<IHttpRequestFormUrlEncoded>(source);
         if (source is IHttpRequestFormUrlEncoded formUrlEncodedRequest
@@ -242,7 +292,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
     }
 
     internal static StringContent? ReadStringContent<TSource>(
-        TSource source, HttpClientAttribute attribute, JsonSerializerOptions? serializerOptions = default)
+        TSource source,
+        HttpClientAttribute attribute,
+        JsonSerializerOptions? serializerOptions = default)
         where TSource : class
     {
         ValidateInterfaceImplementation<IHttpRequestString>(source, true);
@@ -251,7 +303,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
             ArgumentNullException.ThrowIfNull(attribute);
 
             return new StringContent(
-                JsonSerializer.Serialize(stringRequest.GetStringContent(), serializerOptions),
+                JsonSerializer.Serialize(
+                    stringRequest.GetStringContent(),
+                    serializerOptions),
                 Encoding.UTF8,
                 attribute.ContentType);
         }
@@ -260,7 +314,9 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (source is IHttpRequestPatch patchRequest)
         {
             return new StringContent(
-                JsonSerializer.Serialize(patchRequest.PatchOperations, serializerOptions),
+                JsonSerializer.Serialize(
+                    patchRequest.PatchOperations,
+                    serializerOptions),
                 Encoding.UTF8,
                 attribute.ContentType);
         }
@@ -278,14 +334,19 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         if (streamRequest.GetStreamContent() is not { } streamContent)
             return default;
 
-        if (source is IHttpRequestMultipart multipartRequest && streamContent.Headers.ContentType is null)
-            if (new HttpClientMime().GetMimeType(multipartRequest.GetFileName()) is string mediaType)
-                streamContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
+        if (source is IHttpRequestMultipart multipartRequest
+            && streamContent.Headers.ContentType is null)
+            if (new HttpClientMime().GetMimeType
+                (multipartRequest.GetFileName()) is string mediaType)
+                streamContent.Headers.ContentType
+                    = new MediaTypeHeaderValue(mediaType);
 
         return streamContent;
     }
 
-    internal static HttpContent? ReadMultipartContent<TSource>(TSource source, HttpClientAttribute attribute)
+    internal static HttpContent? ReadMultipartContent<TSource>(
+        TSource source,
+        HttpClientAttribute attribute)
         where TSource : class
     {
         ValidateInterfaceImplementation<IHttpRequestMultipart>(source);
@@ -293,7 +354,10 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
 
         MultipartFormDataContent multipartContent = [];
         if (ReadStreamContent(multipartRequest) is { } streamContent)
-            multipartContent.Add(streamContent, multipartRequest.GetName(), multipartRequest.GetFileName());
+            multipartContent.Add(
+                streamContent,
+                multipartRequest.GetName(),
+                multipartRequest.GetFileName());
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         if (ReadStringContent(multipartRequest, attribute) is { } stringContent)
@@ -303,13 +367,17 @@ internal sealed class HttpClientRequestBuilderInternal(IServiceProvider serviceP
         return multipartContent;
     }
 
-    internal static void ValidateInterfaceImplementation<TInterface>(object source, bool implementationIsOptional = false)
+    internal static void ValidateInterfaceImplementation<TInterface>(
+        object source,
+        bool implementationIsOptional = false)
     {
         ArgumentNullException.ThrowIfNull(source);
 
         if (source is not TInterface && !implementationIsOptional)
         {
-            throw new ArgumentException($"{source.GetType().Name} must implement {typeof(TInterface).Name} interface");
+            throw new ArgumentException(
+                $"{source.GetType().Name} must " +
+                $"implement {typeof(TInterface).Name} interface");
         }
     }
 }

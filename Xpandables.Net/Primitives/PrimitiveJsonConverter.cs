@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// When placed on an implementation of <see cref="IPrimitive{TSelf, TValue}"/> type, 
+/// When placed on an implementation of 
+/// <see cref="IPrimitive{TSelf, TValue}"/> type, 
 /// specifies the json converter factory type to be used.
 /// </summary>
 /// <remarks>You can use <see cref="IPrimitiveOnDeserialized{TPrimitive, TValue}"/> 
@@ -31,10 +32,12 @@ namespace Xpandables.Net.Primitives;
 public sealed class PrimitiveJsonConverterAttribute : JsonConverterAttribute
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="PrimitiveJsonConverterAttribute"/> with the
+    /// Initializes a new instance of 
+    /// <see cref="PrimitiveJsonConverterAttribute"/> with the
     /// <see cref="PrimitiveJsonConverterFactory"/> type.
     /// </summary>
-    public PrimitiveJsonConverterAttribute() : base(typeof(PrimitiveJsonConverterFactory)) { }
+    public PrimitiveJsonConverterAttribute()
+        : base(typeof(PrimitiveJsonConverterFactory)) { }
 }
 
 /// <summary>
@@ -42,27 +45,36 @@ public sealed class PrimitiveJsonConverterAttribute : JsonConverterAttribute
 /// </summary>
 /// <typeparam name="TPrimitive">The type of target primitive.</typeparam>
 /// <typeparam name="TValue">The type of the primitive value.</typeparam>
-public sealed class PrimitiveJsonConverter<TPrimitive, TValue> : JsonConverter<TPrimitive>
+public sealed class PrimitiveJsonConverter<TPrimitive, TValue>
+    : JsonConverter<TPrimitive>
     where TValue : notnull
     where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
 {
     ///<inheritdoc/>
-    public override TPrimitive Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override TPrimitive Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
     {
-        TPrimitive primitive = JsonSerializer.Deserialize<TValue?>(ref reader, options) switch
+        TPrimitive primitive = JsonSerializer
+            .Deserialize<TValue?>(ref reader, options) switch
         {
             TValue value => TPrimitive.CreateInstance(value),
             _ => TPrimitive.DefaultInstance()
         };
 
-        if (primitive is IPrimitiveOnDeserialized<TPrimitive, TValue> { } deserialized)
+        if (primitive
+            is IPrimitiveOnDeserialized<TPrimitive, TValue> { } deserialized)
             primitive = deserialized.OnDeserialized(primitive);
 
         return primitive;
     }
 
     ///<inheritdoc/>
-    public override void Write(Utf8JsonWriter writer, TPrimitive value, JsonSerializerOptions options)
+    public override void Write(
+        Utf8JsonWriter writer,
+        TPrimitive value,
+        JsonSerializerOptions options)
     {
         if (value is IPrimitiveOnSerializing<TPrimitive, TValue> { } serializing)
             value = serializing.OnSerializing(value);
@@ -72,7 +84,8 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue> : JsonConverter<T
 }
 
 /// <summary>
-/// Supports converting an implementation of <see cref="IPrimitive{TValue}"/> using a factory pattern.
+/// Supports converting an implementation 
+/// of <see cref="IPrimitive{TValue}"/> using a factory pattern.
 /// </summary>
 public sealed class PrimitiveJsonConverterFactory : JsonConverterFactory
 {
@@ -86,22 +99,27 @@ public sealed class PrimitiveJsonConverterFactory : JsonConverterFactory
             && !typeToConvert.IsGenericType
             && Array.Exists(
                 typeToConvert.GetInterfaces(),
-                t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IPrimitive<,>));
+                t => t.IsGenericType
+                && t.GetGenericTypeDefinition() == typeof(IPrimitive<,>));
     }
 
     ///<inheritdoc/>
-    public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+    public override JsonConverter? CreateConverter(
+        Type typeToConvert,
+        JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
 
         Type[] valueTypes = typeToConvert
             .GetInterfaces()
-            .First(f => f.IsGenericType && f.GetGenericTypeDefinition() == typeof(IPrimitive<,>))
+            .First(f => f.IsGenericType
+            && f.GetGenericTypeDefinition() == typeof(IPrimitive<,>))
             .GetGenericArguments();
 
         Type jsonPrimitiveConverterType = typeof(PrimitiveJsonConverter<,>)
-            .MakeGenericType([.. valueTypes]);
+            .MakeGenericType(valueTypes);
 
-        return Activator.CreateInstance(jsonPrimitiveConverterType) as JsonConverter;
+        return Activator
+            .CreateInstance(jsonPrimitiveConverterType) as JsonConverter;
     }
 }

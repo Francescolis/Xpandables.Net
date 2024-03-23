@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aggregates.Notifications;
@@ -27,7 +27,8 @@ namespace Xpandables.Net.Aggregates.Notifications;
 /// <param name="event">The notification instance to act on.</param>
 /// <param name="cancellationToken">A CancellationToken to observe while 
 /// waiting for the task to complete.</param>
-/// <returns>A value that represents an implementation of <see cref="IOperationResult"/>.</returns>
+/// <returns>A value that represents an implementation 
+/// of <see cref="IOperationResult"/>.</returns>
 public delegate ValueTask<IOperationResult> NotificationHandler<in TNotification>(
     TNotification @event,
     CancellationToken cancellationToken = default)
@@ -36,9 +37,11 @@ public delegate ValueTask<IOperationResult> NotificationHandler<in TNotification
 /// <summary>
 /// Allows an application author to define a handler for specific type notification.
 /// The notification must implement <see cref="INotification"/> interface.
-/// The implementation must be thread-safe when working in a multi-threaded environment.
+/// The implementation must be thread-safe when working 
+/// in a multi-threaded environment.
 /// </summary>
-/// <typeparam name="TNotification">The integration event type to be handled.</typeparam>
+/// <typeparam name="TNotification">The integration event 
+/// type to be handled.</typeparam>
 public interface INotificationHandler<in TNotification>
     where TNotification : notnull, INotification
 {
@@ -48,8 +51,10 @@ public interface INotificationHandler<in TNotification>
     /// <param name="event">The notification instance to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
-    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="event"/> is null.</exception>
+    /// <returns>A value that 
+    /// represents an <see cref="IOperationResult"/>.</returns>
     ValueTask<IOperationResult> HandleAsync(
         TNotification @event,
         CancellationToken cancellationToken = default);

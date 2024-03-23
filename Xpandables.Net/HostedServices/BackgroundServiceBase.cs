@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Operations;
@@ -22,11 +22,14 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.HostedServices;
 
 /// <summary>
-/// Represents a helper class that allows implementation of <see cref="IBackgroundService"/>.
+/// Represents a helper class that allows 
+/// implementation of <see cref="IBackgroundService"/>.
 /// </summary>
-/// <typeparam name="TBackgroundService">The type of target background service.</typeparam>
+/// <typeparam name="TBackgroundService">The type of 
+/// target background service.</typeparam>
 public abstract class BackgroundServiceBase<TBackgroundService>
-    : BackgroundService, IBackgroundService where TBackgroundService : IBackgroundService
+    : BackgroundService, IBackgroundService
+    where TBackgroundService : IBackgroundService
 {
     ///<inheritdoc/>
     public bool IsRunning { get; protected set; }
@@ -38,7 +41,9 @@ public abstract class BackgroundServiceBase<TBackgroundService>
         if (IsRunning)
             return OperationResults
                 .BadRequest()
-                .WithError("status", $"{typeof(TBackgroundService).Name} is already up.")
+                .WithError(
+                    "status",
+                    $"{typeof(TBackgroundService).Name} is already up.")
                 .Build();
 
         IsRunning = true;
@@ -53,7 +58,9 @@ public abstract class BackgroundServiceBase<TBackgroundService>
         if (!IsRunning)
             return OperationResults
                 .BadRequest()
-                .WithError("status", $"{typeof(TBackgroundService).Name} is already down.")
+                .WithError(
+                    "status",
+                    $"{typeof(TBackgroundService).Name} is already down.")
                 .Build();
 
         IsRunning = false;
@@ -65,7 +72,11 @@ public abstract class BackgroundServiceBase<TBackgroundService>
     public virtual async Task<IOperationResult<string>> StatusServiceAsync(
         CancellationToken cancellationToken = default)
     {
-        string response = $"{typeof(TBackgroundService).Name} {(IsRunning ? "Is Up" : "Is Down")}";
-        return await Task.FromResult(OperationResults.Ok(response).Build()).ConfigureAwait(false);
+        string response = $"{typeof(TBackgroundService).Name}" +
+            $" {(IsRunning ? "Is Up" : "Is Down")}";
+        return await Task.FromResult(OperationResults
+            .Ok(response)
+            .Build())
+            .ConfigureAwait(false);
     }
 }

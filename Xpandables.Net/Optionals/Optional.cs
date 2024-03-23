@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -23,12 +23,14 @@ namespace Xpandables.Net.Optionals;
 
 /// <summary>
 /// Describes an object that contains a value or not of a specific type.
-/// <para>You can unconditionally calls to its contents using <see cref="System.Linq"/> 
+/// <para>You can unconditionally calls to its contents 
+/// using <see cref="System.Linq"/> 
 /// without testing whether the content is there or not.
 /// The enumerator will only return the available value.</para>
 /// </summary>
 /// <typeparam name="T">The type of the value.</typeparam>
-/// <remarks>This <see langword="struct"/> is decorated with <see cref="OptionalJsonConverterFactory"/> 
+/// <remarks>This <see langword="struct"/> is decorated 
+/// with <see cref="OptionalJsonConverterFactory"/> 
 /// that automatically applies JSON serialization.</remarks>
 [JsonConverter(typeof(OptionalJsonConverterFactory))]
 public partial record struct Optional<T> : IEnumerable<T>
@@ -67,14 +69,16 @@ public partial record struct Optional<T> : IEnumerable<T>
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value.
+    /// Applies the <paramref name="some"/> method if the instance 
+    /// contains a value.
     /// Otherwise, returns the current instance.
     /// </summary>
     /// <param name="some">The method that get called when the instance 
     /// contains a value.</param>
     /// <returns>The current instance where the <paramref name="some"/> 
     /// has been applied if the instance contains a value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="some"/>  is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="some"/>  is null.</exception>
     public Optional<T> Map(Func<T, T> some)
     {
         ArgumentNullException.ThrowIfNull(some);
@@ -86,13 +90,16 @@ public partial record struct Optional<T> : IEnumerable<T>
     }
 
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value.
+    /// Applies the <paramref name="some"/> method if the 
+    /// instance contains a value.
     /// Otherwise, returns the current instance.
     /// </summary>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
+    /// <param name="some">The method that get called when the instance
+    /// contains a value.</param>
     /// <returns>The current instance where the <paramref name="some"/> 
     /// has been applied if the instance contains a value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="some"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="some"/> is null.</exception>
     public Optional<T> Map(Action<T> some)
     {
         ArgumentNullException.ThrowIfNull(some);
@@ -108,12 +115,14 @@ public partial record struct Optional<T> : IEnumerable<T>
     }
 
     /// <summary>
-    /// Turns the current instance to a new <see cref="Optional{TU}"/> using the specified binder.
+    /// Turns the current instance to a new <see cref="Optional{TU}"/> 
+    /// using the specified binder.
     /// </summary>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="binder">The binding method.</param>
     /// <returns>A new optional that could contain a value or not.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="binder"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="binder"/> is null.</exception>
     public readonly Optional<TU> Bind<TU>(Func<T, Optional<TU>> binder)
     {
         ArgumentNullException.ThrowIfNull(binder);
@@ -124,12 +133,14 @@ public partial record struct Optional<T> : IEnumerable<T>
     }
 
     /// <summary>
-    /// Turns the current instance to a new type <typeparamref name="TU"/> using the specified binder.
+    /// Turns the current instance to a new type 
+    /// <typeparamref name="TU"/> using the specified binder.
     /// </summary>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="binder">The binding method.</param>
     /// <returns>A new optional that could contain a value or not.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="binder"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="binder"/> is null.</exception>
     public readonly Optional<TU> Bind<TU>(Func<T, TU> binder)
     {
         ArgumentNullException.ThrowIfNull(binder);
@@ -143,10 +154,12 @@ public partial record struct Optional<T> : IEnumerable<T>
     /// Applies the <paramref name="empty"/> method if the instance is empty.
     /// Otherwise, returns the current instance.
     /// </summary>
-    /// <param name="empty">The method that get called when the current instance is empty.</param>
+    /// <param name="empty">The method that get called when 
+    /// the current instance is empty.</param>
     /// <returns>The current instance where the <paramref name="empty"/>
     /// has been applied if the instance is empty.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="empty"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="empty"/> is null.</exception>
     public Optional<T> Empty(Func<T> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
@@ -161,8 +174,10 @@ public partial record struct Optional<T> : IEnumerable<T>
     /// Applies the <paramref name="empty"/> method if the instance is empty.
     /// Otherwise, returns the current instance.
     /// </summary>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="empty"/> is null.</exception>
+    /// <param name="empty">The method that get called 
+    /// when the instance is empty.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="empty"/> is null.</exception>
     /// <returns>The current instance where the <paramref name="empty"/> 
     /// has been applied if the instance is empty.</returns>
     public readonly Optional<T> Empty(Action empty)
@@ -176,9 +191,11 @@ public partial record struct Optional<T> : IEnumerable<T>
     }
 
     /// <summary>
-    /// Returns the value of the current instance if not empty, otherwise returns the default value type.
+    /// Returns the value of the current instance if not empty, 
+    /// otherwise returns the default value type.
     /// </summary>
-    /// <returns>The value from the instance if exists or the default one.</returns>
+    /// <returns>The value from the instance 
+    /// if exists or the default one.</returns>
     [return: NotNullIfNotNull(nameof(_value))]
     public readonly T? ValueOrDefault()
     {
@@ -188,10 +205,13 @@ public partial record struct Optional<T> : IEnumerable<T>
     }
 
     /// <summary>
-    /// Returns the value of the current instance if not empty, otherwise returns the <paramref name="defaultValue"/>.
+    /// Returns the value of the current instance if not empty, 
+    /// otherwise returns the <paramref name="defaultValue"/>.
     /// </summary>
-    /// <param name="defaultValue">The value to be returned if the instance is empty.</param>
-    /// <returns>The value from the instance if exists or the <paramref name="defaultValue"/>.</returns>
+    /// <param name="defaultValue">The value to
+    /// be returned if the instance is empty.</param>
+    /// <returns>The value from the instance if exists 
+    /// or the <paramref name="defaultValue"/>.</returns>
     [return: NotNullIfNotNull(nameof(_value))]
     public readonly T ValueOrDefault(T defaultValue)
     {
@@ -201,11 +221,15 @@ public partial record struct Optional<T> : IEnumerable<T>
     }
 
     /// <summary>
-    /// Returns the value of the current instance if not empty, otherwise returns the <paramref name="defaultValue"/>.
+    /// Returns the value of the current instance if not empty, 
+    /// otherwise returns the <paramref name="defaultValue"/>.
     /// </summary>
-    /// <param name="defaultValue">The delegate that returns the value if the instance is empty.</param>
-    /// <returns>The value from the instance if exists or the <paramref name="defaultValue"/>.</returns>
-    /// <exception cref="ArgumentNullException">the <paramref name="defaultValue"/> is null.</exception>
+    /// <param name="defaultValue">The delegate that returns 
+    /// the value if the instance is empty.</param>
+    /// <returns>The value from the instance if exists 
+    /// or the <paramref name="defaultValue"/>.</returns>
+    /// <exception cref="ArgumentNullException">the 
+    /// <paramref name="defaultValue"/> is null.</exception>
     public readonly T ValueOrDefault(Func<T> defaultValue)
     {
         ArgumentNullException.ThrowIfNull(defaultValue);

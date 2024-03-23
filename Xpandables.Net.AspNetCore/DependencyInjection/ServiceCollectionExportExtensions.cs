@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 
 using Xpandables.Net.Compositions;
 
@@ -28,53 +27,56 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionExportExtensions
 {
     /// <summary>
-    /// Adds and configures application services using the<see cref="IUseServiceExport"/> 
+    /// Adds and configures application services using the
+    /// <see cref="IUseServiceExport"/> 
     /// implementations found in the current application path.
     /// This method is used with MEF : Managed Extensibility Framework.
     /// </summary>
     /// <param name="application">The collection of services.</param>
-    /// <param name="environment">The web hosting environment instance.</param>
     /// <returns>The <see cref="WebApplication"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="application"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
-    public static WebApplication UseXServiceExport(
-        this WebApplication application,
-        IWebHostEnvironment environment)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="application"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
+    public static WebApplication UseXServiceExport(this WebApplication application)
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        return application.UseXServiceExport(environment, _ => { });
+        return application.UseXServiceExport(_ => { });
     }
 
     /// <summary>
-    /// Adds and configures application services using the<see cref="IUseServiceExport"/> implementations found in the path.
+    /// Adds and configures application services using the
+    /// <see cref="IUseServiceExport"/> implementations found in the path.
     /// This method is used with MEF : Managed Extensibility Framework.
     /// </summary>
     /// <param name="application">The application builder instance.</param>
-    /// <param name="environment">The </param>
-    /// <param name="configureOptions">A delegate to configure the <see cref="ExportServiceOptions"/>.</param>
+    /// <param name="configureOptions">A delegate to 
+    /// configure the <see cref="ExportServiceOptions"/>.</param>
     /// <returns>The <see cref="WebApplication"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="application"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="environment"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="configureOptions"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="application"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="configureOptions"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     public static WebApplication UseXServiceExport(
         this WebApplication application,
-        IWebHostEnvironment environment,
         Action<ExportServiceOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(application);
-        ArgumentNullException.ThrowIfNull(environment);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         ExportServiceOptions definedOptions = new();
         configureOptions.Invoke(definedOptions);
 
-        ServiceExportExtensions.ApplyServiceExports<IUseServiceExport>(definedOptions, exportServices =>
-        {
-            foreach (IUseServiceExport export in exportServices)
-                export.UseServices(application, environment);
-        });
+        ServiceExportExtensions
+            .ApplyServiceExports<IUseServiceExport>(definedOptions,
+            exportServices =>
+            {
+                foreach (IUseServiceExport export in exportServices)
+                    export.UseServices(application);
+            });
 
         return application;
     }

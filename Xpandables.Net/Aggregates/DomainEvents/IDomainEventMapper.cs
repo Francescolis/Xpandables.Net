@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Aggregates.Notifications;
 
 namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
-/// Allows application author to map domain event to notification in a Centralized Event Mapper.
+/// Allows application author to map domain event to notification 
+/// in a Centralized Event Mapper.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
-/// <remarks>The implementation should be a singleton class or a class with singleton lifetime.</remarks>
+/// <remarks>The implementation should be a singleton class or 
+/// a class with singleton lifetime.</remarks>
 public interface IDomainEventMapper<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {

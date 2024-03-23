@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-
+********************************************************************************/
 using Xpandables.Net.Aggregates.Notifications;
 
 namespace Xpandables.Net.Aggregates.DomainEvents;
@@ -25,7 +25,8 @@ namespace Xpandables.Net.Aggregates.DomainEvents;
 /// </summary>
 /// <typeparam name="TDomainEvent">The type the target domain event.</typeparam>
 /// <typeparam name="TAggregateId">the aggregate Id type.</typeparam>
-public interface INotification<out TDomainEvent, out TAggregateId> : INotification
+public interface INotification<out TDomainEvent, out TAggregateId>
+    : INotification
     where TDomainEvent : notnull, IDomainEvent<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
@@ -50,11 +51,14 @@ public sealed record NotificationWrapper<TDomainEvent, TAggregateId> :
     public TDomainEvent DomainEvent { get; }
 
     /// <summary>
-    /// Defines a new instance of <see cref="NotificationWrapper{TDomainEvent, TAggregateId}"/> 
+    /// Defines a new instance of 
+    /// <see cref="NotificationWrapper{TDomainEvent, TAggregateId}"/> 
     /// using the specified domain event.
     /// </summary>
     /// <param name="domainEvent">The domain event to be wrapped.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="domainEvent"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="domainEvent"/> is null.</exception>
     public NotificationWrapper(TDomainEvent domainEvent)
-        => DomainEvent = domainEvent ?? throw new ArgumentNullException(nameof(domainEvent));
+        => DomainEvent = domainEvent
+            ?? throw new ArgumentNullException(nameof(domainEvent));
 }

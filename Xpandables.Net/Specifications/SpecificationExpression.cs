@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 
 namespace Xpandables.Net.Specifications;
 
-internal sealed record class SpecificationExpression<TSource> : Specification<TSource>
+internal sealed record class SpecificationExpression<TSource>
+    : Specification<TSource>
 {
     private readonly Expression<Func<TSource, bool>> _expression;
 
-    public SpecificationExpression(Expression<Func<TSource, bool>> expression) =>
-        _expression = expression ?? throw new ArgumentNullException(nameof(expression));
+    public SpecificationExpression(Expression<Func<TSource, bool>> expression)
+        => _expression = expression
+        ?? throw new ArgumentNullException(nameof(expression));
 
-    public override Expression<Func<TSource, bool>> GetExpression() => _expression;
+    public override Expression<Func<TSource, bool>> GetExpression()
+        => _expression;
 }

@@ -31,11 +31,14 @@ public static class ServiceCollectionRepositoryExtensions
     /// Registers the <typeparamref name="TDataContext"/> type class reference 
     /// implementation derives from <see cref="DataContext"/> to the services with scoped life time.
     /// </summary>
-    /// <typeparam name="TDataContext">The type of the data context that derives from <see cref="DataContext"/>.</typeparam>
+    /// <typeparam name="TDataContext">The type of the data context that derives 
+    /// from <see cref="DataContext"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
-    /// <param name="optionsAction">An optional action to configure the Microsoft.EntityFrameworkCore.DbContextOptions for the context.</param>
+    /// <param name="optionsAction">An optional action to configure the 
+    /// Microsoft.EntityFrameworkCore.DbContextOptions for the context.</param>
     /// <param name="contextLifetime">The lifetime with which to register the context service in the container.</param>
-    /// <param name="optionsLifetime">The lifetime with which to register the DbContextOptions service in the container.</param>
+    /// <param name="optionsLifetime">The lifetime with which to register the DbContextOptions 
+    /// service in the container.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
     public static IServiceCollection AddXDataContext<TDataContext>(

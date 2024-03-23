@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-namespace Xpandables.Net.SnapShots;
+********************************************************************************/
+
+namespace Xpandables.Net.Aggregates.SnapShots;
 
 /// <summary>
-/// This interface is used for the Memento pattern to store and restore the internal state using a snapshot.
+/// This interface is used for the Memento pattern to store and restore t
+/// he internal state using a snapshot.
 /// </summary>
 public interface IOriginator
 {
@@ -32,6 +34,7 @@ public interface IOriginator
     /// Restores the state of the underlying instance using the specified memento.
     /// </summary>
     /// <param name="memento">the memento instance to act with.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="memento"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="memento"/> is null.</exception>
     void SetMemento(IMemento memento);
 }

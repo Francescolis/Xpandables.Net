@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.States;
 
 /// <summary>
@@ -32,7 +32,8 @@ public abstract class StateContext<TState> : IStateContext<TState>
     /// Constructs a new instance of the state context with its initial state.
     /// </summary>
     /// <param name="state">The initial state to be used.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="state"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="state"/> is null.</exception>
     protected StateContext(TState state) => TransitionToState(state);
 
     ///<inheritdoc/>

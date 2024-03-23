@@ -15,6 +15,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+
+// Ignore Spelling: Impl
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates.Notifications;

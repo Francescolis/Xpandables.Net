@@ -1,4 +1,8 @@
-﻿[*.cs]
+﻿# C# or VB files
+[*.{cs,vb}]
+guidelines = 80, 120
+
+[*.cs]
 
 # CA1716: Identifiers should not match keywords
 dotnet_diagnostic.CA1716.severity = none

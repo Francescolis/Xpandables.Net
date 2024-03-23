@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Diagnostics;
 using System.Text.Json;
 
+using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Repositories;
 
@@ -37,16 +38,31 @@ public sealed class EntityNotification : Entity<Guid>, IDisposable
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of <see cref="EntityNotification"/> 
     /// built from the notification.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The action specified failed.</exception>
     public static EntityNotification ToEntityNotification(
         INotification @event,
         JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        string typeFullName = @event.GetTypeFullName();
-        JsonDocument eventData = @event.ToJsonDocument(options);
+        try
+        {
 
-        return new(@event.Id, typeFullName, eventData);
+            string typeFullName = @event.GetTypeFullName();
+            JsonDocument eventData = @event.ToJsonDocument(options);
+
+            return new(@event.Id, typeFullName, eventData);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                and not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                    I18nXpandables.ActionSpecifiedFailedSeeException
+                        .StringFormat(nameof(ToEntityNotification)),
+                    exception);
+        }
     }
 
     /// <summary>
@@ -55,17 +71,31 @@ public sealed class EntityNotification : Entity<Guid>, IDisposable
     /// <param name="entity">The entity to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of notification built from the entity.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The action specified failed.</exception>
     public static INotification? ToNotification(
         EntityNotification entity,
         JsonSerializerOptions? options)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        if (Type.GetType(entity.TypeFullName) is not { } eventType)
-            return null;
+        try
+        {
+            if (Type.GetType(entity.TypeFullName) is not { } eventType)
+                return null;
 
-        object? eventObject = entity.Data.Deserialize(eventType, options);
-        return eventObject as INotification;
+            object? eventObject = entity.Data.Deserialize(eventType, options);
+            return eventObject as INotification;
+        }
+        catch (Exception exception)
+              when (exception is not ArgumentNullException
+                  and not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                    I18nXpandables.ActionSpecifiedFailedSeeException
+                        .StringFormat(nameof(ToNotification)),
+                    exception);
+        }
     }
 
     private EntityNotification(

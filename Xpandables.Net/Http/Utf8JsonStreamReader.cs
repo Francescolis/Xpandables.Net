@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Deserialize Json
+
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -27,7 +30,8 @@ namespace Xpandables.Net.Http;
 internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
 {
     private readonly Stream _stream = stream;
-    // note: buffers will often be bigger than this - do not ever use this number for calculations.
+    // note: buffers will often be bigger than this -
+    // do not ever use this number for calculations.
     private readonly int _bufferSize = bufferSize;
 
     private SequenceSegment? _firstSegment = null;
@@ -41,7 +45,8 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
 
     public bool Read()
     {
-        // read could be unsuccessful due to insufficient buffer size, retrying in loop with additional buffer segments
+        // read could be unsuccessful due to insufficient
+        // buffer size, retrying in loop with additional buffer segments
         while (!_jsonReader.Read())
         {
             if (_isFinalBlock)
@@ -59,7 +64,8 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
         _firstSegmentStartIndex += (int)_jsonReader.BytesConsumed;
 
         // release previous segments if possible
-        while (_firstSegmentStartIndex > 0 && _firstSegment?.Memory.Length <= _firstSegmentStartIndex)
+        while (_firstSegmentStartIndex > 0
+            && _firstSegment?.Memory.Length <= _firstSegmentStartIndex)
         {
             SequenceSegment currFirstSegment = _firstSegment;
             _firstSegmentStartIndex -= _firstSegment.Memory.Length;
@@ -86,11 +92,14 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
         int bytesRead;
         do
         {
-            bytesRead = _stream.Read(newSegment.Buffer.Memory.Span[_lastSegmentEndIndex..]);
+            bytesRead = _stream.Read(
+                newSegment.Buffer.Memory.Span[_lastSegmentEndIndex..]);
             _lastSegmentEndIndex += bytesRead;
-        } while (bytesRead > 0 && _lastSegmentEndIndex < newSegment.Buffer.Memory.Length);
+        } while (bytesRead > 0
+        && _lastSegmentEndIndex < newSegment.Buffer.Memory.Length);
         _isFinalBlock = _lastSegmentEndIndex < newSegment.Buffer.Memory.Length;
-        ReadOnlySequence<byte> data = new(_firstSegment, _firstSegmentStartIndex, _lastSegment,
+        ReadOnlySequence<byte> data
+            = new(_firstSegment, _firstSegmentStartIndex, _lastSegment,
             _lastSegmentEndIndex);
         _jsonReader =
             new Utf8JsonReader(data, _isFinalBlock, _jsonReader.CurrentState);
@@ -100,7 +109,8 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
     {
         // release memory if possible
         SequenceSegment? firstSegment = _firstSegment;
-        int firstSegmentStartIndex = _firstSegmentStartIndex + (int)_jsonReader.BytesConsumed;
+        int firstSegmentStartIndex = _firstSegmentStartIndex
+            + (int)_jsonReader.BytesConsumed;
 
         while (firstSegment?.Memory.Length < firstSegmentStartIndex)
         {
@@ -113,17 +123,22 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
         {
             _firstSegment = firstSegment;
             _firstSegmentStartIndex = firstSegmentStartIndex;
-            ReadOnlySequence<byte> data = new(_firstSegment!, _firstSegmentStartIndex, _lastSegment!,
+            ReadOnlySequence<byte> data
+                = new(_firstSegment!, _firstSegmentStartIndex, _lastSegment!,
                 _lastSegmentEndIndex);
             _jsonReader =
                 new Utf8JsonReader(data, _isFinalBlock, _jsonReader.CurrentState);
         }
     }
 
-    private long DeserializePre(out SequenceSegment? firstSegment, out int firstSegmentStartIndex)
+    private long DeserializePre(
+        out SequenceSegment? firstSegment,
+        out int firstSegmentStartIndex)
     {
-        // JsonSerializer.Deserialize can read only a single object. We have to extract
-        // object to be deserialized into separate Utf8JsonReader. This incurs one additional
+        // JsonSerializer.Deserialize can read only a single object.
+        // We have to extract
+        // object to be deserialized into separate Utf8JsonReader.
+        // This incurs one additional
         // pass through data (but data is only passed, not parsed).
         long tokenStartIndex = _jsonReader.TokenStartIndex;
         firstSegment = _firstSegment;
@@ -151,11 +166,17 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
     [return: MaybeNull]
     public T Deserialize<T>(JsonSerializerOptions? options = null)
     {
-        long tokenStartIndex = DeserializePre(out SequenceSegment? firstSegment, out int firstSegmentStartIndex);
+        long tokenStartIndex = DeserializePre(
+            out SequenceSegment? firstSegment,
+            out int firstSegmentStartIndex);
 
         Utf8JsonReader newJsonReader =
-            new(new ReadOnlySequence<byte>(firstSegment!, firstSegmentStartIndex, _lastSegment!,
-                _lastSegmentEndIndex).Slice(tokenStartIndex, _jsonReader.Position), true, default);
+            new(new ReadOnlySequence<byte>(
+                firstSegment!,
+                firstSegmentStartIndex,
+                _lastSegment!,
+                _lastSegmentEndIndex)
+            .Slice(tokenStartIndex, _jsonReader.Position), true, default);
 
         // deserialize value
         T? result = JsonSerializer.Deserialize<T>(ref newJsonReader, options);
@@ -166,11 +187,17 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
 
     public JsonDocument GetJsonDocument()
     {
-        long tokenStartIndex = DeserializePre(out SequenceSegment? firstSegment, out int firstSegmentStartIndex);
+        long tokenStartIndex = DeserializePre(
+            out SequenceSegment? firstSegment,
+            out int firstSegmentStartIndex);
 
         Utf8JsonReader newJsonReader =
-            new(new ReadOnlySequence<byte>(firstSegment!, firstSegmentStartIndex, _lastSegment!,
-                _lastSegmentEndIndex).Slice(tokenStartIndex, _jsonReader.Position), true, default);
+            new(new ReadOnlySequence<byte>(
+                firstSegment!,
+                firstSegmentStartIndex,
+                _lastSegment!,
+                _lastSegmentEndIndex)
+            .Slice(tokenStartIndex, _jsonReader.Position), true, default);
 
         // deserialize value
         JsonDocument result = JsonDocument.ParseValue(ref newJsonReader);
@@ -225,7 +252,8 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
     public bool TryGetUInt32(out uint value) => _jsonReader.TryGetUInt32(out value);
     public bool TryGetUInt64(out ulong value) => _jsonReader.TryGetUInt64(out value);
 
-    private sealed class SequenceSegment : ReadOnlySequenceSegment<byte>, IDisposable
+    private sealed class SequenceSegment
+        : ReadOnlySequenceSegment<byte>, IDisposable
     {
         internal IMemoryOwner<byte> Buffer { get; }
         private SequenceSegment? Previous { get; }

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
@@ -23,20 +23,46 @@ namespace Xpandables.Net.Repositories;
 public interface IUnitOfWork : IAsyncDisposable, IDisposable
 {
     /// <summary>
-    /// Persists all pending objects to the data storage according to the database provider/ORM.
+    /// Persists all pending objects to the data storage according 
+    /// to the database provider/ORM.
     /// </summary>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+    /// <param name="cancellationToken">A CancellationToken 
+    /// to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the number of persisted objects.</returns>
-    /// <exception cref="InvalidOperationException">All exceptions related to the operation.</exception>
-    /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+    /// <exception cref="InvalidOperationException">All exceptions 
+    /// related to the operation.</exception>
+    /// <exception cref="OperationCanceledException">The 
+    /// operation has been canceled.</exception>
     ValueTask<int> PersistAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns the repository implementation that matches the specified entity type <typeparamref name="TEntity"/>.
+    /// Returns the repository implementation that matches 
+    /// the specified entity type <typeparamref name="TEntity"/>.
     /// </summary>
     /// <typeparam name="TEntity">The type of the target entity.</typeparam>
-    /// <returns>An instance of an object that implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    /// <returns>An instance of an object that 
+    /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
     IRepository<TEntity> GetRepository<TEntity>()
+        where TEntity : class, IEntity;
+
+    /// <summary>
+    /// Returns the repository read implementation that matches 
+    /// the specified entity type <typeparamref name="TEntity"/>.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the target entity.</typeparam>
+    /// <returns>An instance of an object that 
+    /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    IRepositoryRead<TEntity> GetRepositoryRead<TEntity>()
+        where TEntity : class, IEntity;
+
+    /// <summary>
+    /// Returns the repository write implementation that matches 
+    /// the specified entity type <typeparamref name="TEntity"/>.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the target entity.</typeparam>
+    /// <returns>An instance of an object that 
+    /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    IRepositoryWrite<TEntity> GetRepositoryWrite<TEntity>()
         where TEntity : class, IEntity;
 }
 
@@ -44,6 +70,28 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
 /// Provides with the base unit of work interface for a specific data context.
 /// </summary>
 /// <typeparam name="TDataContext">The type of the context.</typeparam>
+#pragma warning disable S2326 // Unused type parameters should be removed
 public interface IUnitOfWork<TDataContext> : IUnitOfWork
+#pragma warning restore S2326 // Unused type parameters should be removed
     where TDataContext : class
-{ }
+{
+    /// <summary>
+    /// Returns the repository read implementation that matches 
+    /// the specified entity type <typeparamref name="TEntity"/>.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the target entity.</typeparam>
+    /// <returns>An instance of an object that 
+    /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    new IRepositoryRead<TEntity, TDataContext> GetRepositoryRead<TEntity>()
+        where TEntity : class, IEntity;
+
+    /// <summary>
+    /// Returns the repository write implementation that matches 
+    /// the specified entity type <typeparamref name="TEntity"/>.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the target entity.</typeparam>
+    /// <returns>An instance of an object that 
+    /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    new IRepositoryWrite<TEntity, TDataContext> GetRepositoryWrite<TEntity>()
+        where TEntity : class, IEntity;
+}

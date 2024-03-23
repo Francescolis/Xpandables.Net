@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
@@ -35,21 +36,28 @@ public interface IDomainEventSourcing<TAggregateId>
     IReadOnlyCollection<IDomainEvent<TAggregateId>> GetUncommittedEvents();
 
     /// <summary>
-    /// Initializes the underlying object with the specified history collection of domain events.
+    /// Initializes the underlying object with the 
+    /// specified history collection of domain events.
     /// </summary>
-    /// <remarks>The domain events are not added to the collection of domain events.</remarks>
+    /// <remarks>The domain events are not added to the 
+    /// collection of domain events.</remarks>
     /// <param name="events">The collection of domain events to act with.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="events"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="events"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     void LoadFromHistory(IEnumerable<IDomainEvent<TAggregateId>> events);
 
     /// <summary>
     /// Applies the history specified domain event to the underlying object.
     /// </summary>
     /// <param name="event">The domain event to be applied.</param>
-    /// <remarks>The domain event is not added to the collection of domain events.</remarks>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <remarks>The domain event is not added to t
+    /// he collection of domain events.</remarks>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="event"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     void LoadFromHistory(IDomainEvent<TAggregateId> @event);
 
     /// <summary>
@@ -57,7 +65,8 @@ public interface IDomainEventSourcing<TAggregateId>
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="event">The domain event instance to act on.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="event"/> is null.</exception>
     void PushEvent<TEvent>(TEvent @event)
         where TEvent : notnull, IDomainEvent<TAggregateId>;
 }

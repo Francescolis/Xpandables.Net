@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net;
 
 /// <summary>
@@ -23,7 +23,10 @@ namespace Xpandables.Net;
 public static class TaskExtensions
 {
     private static readonly TaskFactory TaskFactory
-        = new(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
+        = new(CancellationToken.None,
+            TaskCreationOptions.None,
+            TaskContinuationOptions.None,
+            TaskScheduler.Default);
 
     /// <summary>
     /// Executes an async Task method which has a void return value synchronously

@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
+
 using System.Diagnostics;
 
 using Xpandables.Net.Primitives.I18n;

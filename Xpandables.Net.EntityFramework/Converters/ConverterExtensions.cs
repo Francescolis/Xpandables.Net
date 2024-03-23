@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -25,12 +26,16 @@ namespace Xpandables.Net.Converters;
 public static class ConverterExtensions
 {
     /// <summary>
-    /// Configures the property so that the property <see cref="DateOnly"/> value is converted to 
-    /// <see cref="DateTime"/> before writing to the database and converted back when reading from the database.
+    /// Configures the property so that the property <see cref="DateOnly"/> 
+    /// value is converted to 
+    /// <see cref="DateTime"/> before writing to the database a
+    /// nd converted back when reading from the database.
     /// </summary>
     /// <param name="builder">The property builder instance </param>
-    /// <returns>The same builder instance so that multiple configuration calls can be chained.</returns>
-    public static PropertyBuilder HasDateOnlyConversion(this PropertyBuilder builder)
+    /// <returns>The same builder instance so that 
+    /// multiple configuration calls can be chained.</returns>
+    public static PropertyBuilder HasDateOnlyConversion(
+        this PropertyBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -38,12 +43,16 @@ public static class ConverterExtensions
     }
 
     /// <summary>
-    /// Configures the property so that the property <see cref="TimeOnly"/> value is converted to 
-    /// <see cref="TimeSpan"/> before writing to the database and converted back when reading from the database.
+    /// Configures the property so that the property 
+    /// <see cref="TimeOnly"/> value is converted to 
+    /// <see cref="TimeSpan"/> before writing to the 
+    /// database and converted back when reading from the database.
     /// </summary>
     /// <param name="builder">The property builder instance </param>
-    /// <returns>The same builder instance so that multiple configuration calls can be chained.</returns>
-    public static PropertyBuilder HasTimeOnlyConversion(this PropertyBuilder builder)
+    /// <returns>The same builder instance so that 
+    /// multiple configuration calls can be chained.</returns>
+    public static PropertyBuilder HasTimeOnlyConversion(
+        this PropertyBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -51,11 +60,14 @@ public static class ConverterExtensions
     }
 
     /// <summary>
-    /// Configures the property so that the property value is converted to/from JSON.
+    /// Configures the property so that the property 
+    /// value is converted to/from JSON.
     /// </summary>
     /// <param name="builder">The property builder instance </param>
-    /// <returns>The same builder instance so that multiple configuration calls can be chained.</returns>
-    public static PropertyBuilder HasJsonConversion<TProperty>(this PropertyBuilder builder)
+    /// <returns>The same builder instance so that 
+    /// multiple configuration calls can be chained.</returns>
+    public static PropertyBuilder HasJsonConversion<TProperty>(
+        this PropertyBuilder builder)
         where TProperty : notnull
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -64,11 +76,14 @@ public static class ConverterExtensions
     }
 
     /// <summary>
-    /// Configures the property so that the type <see cref="JsonDocument"/> value is converted to/from JSON.
+    /// Configures the property so that the type 
+    /// <see cref="JsonDocument"/> value is converted to/from JSON.
     /// </summary>
     /// <param name="builder">The property builder instance </param>
-    /// <returns>The same builder instance so that multiple configuration calls can be chained.</returns>
-    public static PropertyBuilder HasJsonDocumentConversion(this PropertyBuilder builder)
+    /// <returns>The same builder instance so that 
+    /// multiple configuration calls can be chained.</returns>
+    public static PropertyBuilder HasJsonDocumentConversion(
+        this PropertyBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

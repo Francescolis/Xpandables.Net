@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-
+********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
@@ -28,7 +26,8 @@ namespace Xpandables.Net.Aggregates.DomainEvents;
 
 internal sealed class DomainEventPublisher<TAggregateId>(
     IServiceProvider serviceProvider,
-    IOptions<EventHandlerOptions> options) : IDomainEventPublisher<TAggregateId>
+    IOptions<EventHandlerOptions> options)
+    : IDomainEventPublisher<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     public async ValueTask<IOperationResult> PublishAsync<TDomainEvent>(
@@ -38,27 +37,40 @@ internal sealed class DomainEventPublisher<TAggregateId>(
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        List<IDomainEventHandler<TDomainEvent, TAggregateId>> handlers = serviceProvider
+        List<IDomainEventHandler<TDomainEvent, TAggregateId>> handlers =
+            serviceProvider
             .GetServices<IDomainEventHandler<TDomainEvent, TAggregateId>>()
             .ToList();
 
         if (handlers.Count <= 0)
+        {
             return options.Value.ConsiderNoEventHandlerAsError
                 ? OperationResults
                     .InternalError()
                     .WithError(
                         ElementEntry.UndefinedKey,
-                        I18nXpandables.EventSourcingNoDomainEventHandler.StringFormat(@event.GetTypeName()))
+                        I18nXpandables.EventSourcingNoDomainEventHandler
+                            .StringFormat(@event.GetTypeName()))
                     .Build()
-                : OperationResults.Ok().Build();
-
-        foreach (IDomainEventHandler<TDomainEvent, TAggregateId>? handler in handlers)
-        {
-            if (await handler.HandleAsync(@event, cancellationToken).ConfigureAwait(false)
-                is { IsFailure: true } failureOperation)
-                return failureOperation;
+                : OperationResults.
+                    Ok()
+                    .Build();
         }
 
-        return OperationResults.Ok().Build();
+        foreach (IDomainEventHandler<TDomainEvent, TAggregateId>? handler
+            in handlers)
+        {
+            if (await handler
+                .HandleAsync(@event, cancellationToken)
+                .ConfigureAwait(false)
+                is { IsFailure: true } failureOperation)
+            {
+                return failureOperation;
+            }
+        }
+
+        return OperationResults
+            .Ok()
+            .Build();
     }
 }

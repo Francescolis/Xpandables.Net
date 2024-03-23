@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Operations;
@@ -35,7 +35,8 @@ public interface IValidateDecorator
 
 /// <summary>
 /// Defines method contracts used to validate an argument using a decorator.
-/// The implementation must be thread-safe when working in a multi-threaded environment.
+/// The implementation must be thread-safe when working 
+/// in a multi-threaded environment.
 /// </summary>
 public interface IValidator
 {
@@ -49,17 +50,22 @@ public interface IValidator
     /// Validates the argument and returns validation state with errors if necessary.
     /// </summary>
     /// <param name="argument">The target argument to be validated.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
-    /// <exception cref="ValidationException">The exception throws by the validator</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="argument"/> is null.</exception>
+    /// <exception cref="ValidationException">The 
+    /// exception throws by the validator</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
-    public IOperationResult Validate(object argument) => OperationResults.Ok(argument).Build();
+    public IOperationResult Validate(object argument)
+        => OperationResults.Ok(argument).Build();
 
     /// <summary>
     /// Validates the argument and returns validation state with errors if necessary.
     /// </summary>
     /// <param name="argument">The target argument to be validated.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
-    /// <exception cref="ValidationException">The exception thrown by the validator</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="argument"/> is null.</exception>
+    /// <exception cref="ValidationException">The 
+    /// exception thrown by the validator</exception>
     /// <returns>Returns a result state that contains validation information.</returns>
     public ValueTask<IOperationResult> ValidateAsync(object argument)
     {
@@ -69,31 +75,43 @@ public interface IValidator
 }
 
 /// <summary>
-/// Defines method contracts used to validate a type-specific argument using a decorator.
-/// The implementation must be thread-safe when working in a multi-threaded environment.
+/// Defines method contracts used to validate 
+/// a type-specific argument using a decorator.
+/// The implementation must be thread-safe when 
+/// working in a multi-threaded environment.
 /// </summary>
 /// <typeparam name="TArgument">Type of the argument to be validated.</typeparam>
 public interface IValidator<in TArgument> : IValidator
     where TArgument : notnull
 {
     /// <summary>
-    /// Validates the argument and returns validation state with errors if necessary.
+    /// Validates the argument and returns validation 
+    /// state with errors if necessary.
     /// </summary>
     /// <param name="argument">The target argument to be validated.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
-    /// <exception cref="ValidationException">The exception thrown by the validator</exception>
-    /// <returns>Returns a result state that contains validation information.</returns>
-    public IOperationResult Validate(TArgument argument) => OperationResults.Ok().Build();
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="argument"/> is null.</exception>
+    /// <exception cref="ValidationException">The 
+    /// exception thrown by the validator</exception>
+    /// <returns>Returns a result state 
+    /// that contains validation information.</returns>
+    public IOperationResult Validate(TArgument argument)
+        => OperationResults.Ok().Build();
 
-    IOperationResult IValidator.Validate(object argument) => Validate((TArgument)argument);
+    IOperationResult IValidator.Validate(object argument)
+        => Validate((TArgument)argument);
 
     /// <summary>
-    /// Validates the argument and returns validation state with errors if necessary.
+    /// Validates the argument and returns validation 
+    /// state with errors if necessary.
     /// </summary>
     /// <param name="argument">The target argument to be validated.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="argument"/> is null.</exception>
-    /// <exception cref="ValidationException">The exception thrown by the validator</exception>
-    /// <returns>Returns a result state that contains validation information.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="argument"/> is null.</exception>
+    /// <exception cref="ValidationException">The 
+    /// exception thrown by the validator</exception>
+    /// <returns>Returns a result state that contains 
+    /// validation information.</returns>
     public ValueTask<IOperationResult> ValidateAsync(TArgument argument)
     {
         IOperationResult result = Validate(argument);

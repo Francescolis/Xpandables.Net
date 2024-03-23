@@ -56,6 +56,8 @@ public sealed class PrimitiveUnitTest
         {
             throw new NotImplementedException();
         }
+
+        public static implicit operator Email(string? value) => new(value ?? string.Empty);
     }
 
     public class Person

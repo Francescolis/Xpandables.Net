@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Optionals;
 
 /// <summary>
-/// Provides a set of <see langword="static"/> methods for <see cref="Optional{T}"/>.
+/// Provides a set of <see langword="static"/> methods 
+/// for <see cref="Optional{T}"/>.
 /// </summary>
 public static class Optional
 {
@@ -35,7 +36,8 @@ public static class Optional
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="value">The value to be used for optional.</param>
     /// <returns>An optional with a value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="value"/> is null.</exception>
     public static Optional<T> Some<T>(T value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -49,7 +51,8 @@ public static class Optional
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="value">The value to be used for optional.</param>
     /// <returns>An optional that may contains a value or not.</returns>
-    public static Optional<T> ToOptional<T>(T? value) => value is { } ? Some(value) : Empty<T>();
+    public static Optional<T> ToOptional<T>(T? value)
+        => value is { } ? Some(value) : Empty<T>();
 
     /// <summary>
     /// Converts the specified value to an optional instance.
@@ -57,5 +60,6 @@ public static class Optional
     /// <typeparam name="T">The Type of the value.</typeparam>
     /// <param name="value">The value to act on.</param>
     /// <returns>An optional instance.</returns>
-    public static Optional<T> AsOptional<T>(this T? value) => ToOptional(value);
+    public static Optional<T> AsOptional<T>(this T? value)
+        => ToOptional(value);
 }

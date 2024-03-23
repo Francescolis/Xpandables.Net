@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Optionals;
 
-namespace Xpandables.Net.SnapShots;
+namespace Xpandables.Net.Aggregates.SnapShots;
 
 /// <summary>
 /// Determines the <see cref="SnapShotOptions"/> status.
@@ -87,12 +87,13 @@ public interface ISnapShotStore
     /// <returns>A task that represents an asynchronous operation.</returns>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    ValueTask PersistAsSnapShotAsync(
+    ValueTask AppendAsync(
         SnapShotDescriptor descriptor,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously returns an object from the last snapshot matching the specified identifier.
+    /// Asynchronously returns an object from the last snapshot 
+    /// matching the specified identifier.
     /// </summary>
     /// <typeparam name="T">the type of the expected object.</typeparam>
     /// <param name="objectId">The expected object identifier to search
@@ -102,7 +103,7 @@ public interface ISnapShotStore
     /// <returns>A task that represents an <see cref="Optional{T}"/>.</returns>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    ValueTask<Optional<T>> ReadFromSnapShotAsync<T>(
+    ValueTask<Optional<T>> ReadAsync<T>(
         Guid objectId,
         CancellationToken cancellationToken = default)
         where T : class, IOriginator;

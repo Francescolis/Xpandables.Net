@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -24,17 +24,21 @@ using Xpandables.Net.Primitives;
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Represents an HTTP client response. Implements <see cref="IDisposable"/> and <see cref="IAsyncDisposable"/>.
+/// Represents an HTTP client response. Implements <see cref="IDisposable"/> 
+/// and <see cref="IAsyncDisposable"/>.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="HttpClientResponse"/> class with exception and status code.
+/// Initializes a new instance of <see cref="HttpClientResponse"/> class 
+/// with exception and status code.
 /// </remarks>
 /// <param name="statusCode">The status code of the response.</param>
 /// <param name="headers">All the headers of the response.</param>
 /// <param name="version">The response version.</param>
-/// <param name="reasonPhrase">the reason phrase which typically is sent by servers together with the status code.</param>
+/// <param name="reasonPhrase">the reason phrase which typically is s
+/// ent by servers together with the status code.</param>
 /// <param name="exception">The handled exception of the response.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="exception"/> is null.</exception>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="exception"/> is null.</exception>
 public class HttpClientResponse(
     HttpStatusCode statusCode,
     NameValueCollection headers,
@@ -44,7 +48,8 @@ public class HttpClientResponse(
 {
 
     /// <summary>
-    /// Gets the <see cref="HttpClientException"/> that holds the handled exception.
+    /// Gets the <see cref="HttpClientException"/> that holds the 
+    /// handled exception.
     /// </summary>
     [AllowNull]
     public HttpClientException Exception { get; } = exception;
@@ -53,7 +58,8 @@ public class HttpClientResponse(
     /// Determines whether or not the instance contains an exception.
     /// </summary>
     /// <param name="exception">The target exception if true.</param>
-    /// <returns>returns <see langword="true"/>, otherwise <see langword="false"/>.</returns>
+    /// <returns>returns <see langword="true"/>, 
+    /// otherwise <see langword="false"/>.</returns>
     public bool IsAnException([NotNullWhen(true)] out HttpClientException? exception)
     {
         exception = Exception;
@@ -66,7 +72,8 @@ public class HttpClientResponse(
     public Version? Version { get; } = version;
 
     /// <summary>
-    /// Gets the reason phrase which typically is sent by servers together with the status code.
+    /// Gets the reason phrase which typically is sent 
+    /// by servers together with the status code.
     /// </summary>
     public string? ReasonPhrase { get; } = reasonPhrase;
 
@@ -98,19 +105,23 @@ public class HttpClientResponse(
 }
 
 /// <summary>
-///  Represents an HTTP Rest client response of a specific type result. Implements <see cref="IDisposable"/> and <see cref="IAsyncDisposable"/>.
+///  Represents an HTTP Rest client response of a specific type result. 
+///  Implements <see cref="IDisposable"/> and <see cref="IAsyncDisposable"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 /// <remarks>
-/// Initializes a new instance of <see cref="HttpClientResponse{TResult}"/> class with exception and status code.
+/// Initializes a new instance of <see cref="HttpClientResponse{TResult}"/> 
+/// class with exception and status code.
 /// </remarks>
 /// <param name="statusCode">The status code of the response.</param>
 /// <param name="headers">All the headers of the response.</param>
 /// <param name="result">The optional result value.</param>
 /// <param name="version">The response version.</param>
-/// <param name="reasonPhrase">the reason phrase which typically is sent by servers together with the status code.</param>
+/// <param name="reasonPhrase">the reason phrase which typically is sent by 
+/// servers together with the status code.</param>
 /// <param name="exception">The handled exception of the response.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="exception"/> is null.</exception>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="exception"/> is null.</exception>
 public class HttpClientResponse<TResult>(
     HttpStatusCode statusCode,
     NameValueCollection headers,
@@ -174,33 +185,50 @@ public class HttpClientResponse<TResult>(
 public static class HttpClientResponseExtensions
 {
     /// <summary>
-    /// Determines whether the status code of the current <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.OK"/>.
+    /// Determines whether the status code of the current 
+    /// <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.OK"/>.
     /// </summary>
-    /// <param name="this">The current <see cref="HttpClientResponse"/> instance.</param>
-    /// <returns><see langword="true"/> if status code is <see cref="HttpStatusCode.OK"/>, otherwise <see langword="false"/>.</returns>
-    public static bool IsStatusCodeOK(this HttpClientResponse @this) => @this.IsHttpStatusCode(HttpStatusCode.OK);
+    /// <param name="this">The current <see cref="HttpClientResponse"/>
+    /// instance.</param>
+    /// <returns><see langword="true"/> if status code is 
+    /// <see cref="HttpStatusCode.OK"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsStatusCodeOK(this HttpClientResponse @this)
+        => @this.IsHttpStatusCode(HttpStatusCode.OK);
 
     /// <summary>
-    /// Determines whether the status code of the current <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.Created"/>.
+    /// Determines whether the status code of the current 
+    /// <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.Created"/>.
     /// </summary>
-    /// <param name="this">The current <see cref="HttpClientResponse"/> instance.</param>
-    /// <returns><see langword="true"/> if status code is <see cref="HttpStatusCode.Created"/>, otherwise <see langword="false"/>.</returns>
-    public static bool IsStatusCodeCreated(this HttpClientResponse @this) => @this.IsHttpStatusCode(HttpStatusCode.Created);
+    /// <param name="this">The current <see cref="HttpClientResponse"/> 
+    /// instance.</param>
+    /// <returns><see langword="true"/> if status code is 
+    /// <see cref="HttpStatusCode.Created"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsStatusCodeCreated(this HttpClientResponse @this)
+        => @this.IsHttpStatusCode(HttpStatusCode.Created);
 
     /// <summary>
-    /// Determines whether the status code of the current <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.Accepted"/>.
+    /// Determines whether the status code of the current 
+    /// <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.Accepted"/>.
     /// </summary>
-    /// <param name="this">The current <see cref="HttpClientResponse"/> instance.</param>
-    /// <returns><see langword="true"/> if status code is <see cref="HttpStatusCode.Accepted"/>, otherwise <see langword="false"/>.</returns>
-    public static bool IsStatusCodeAccepted(this HttpClientResponse @this) => @this.IsHttpStatusCode(HttpStatusCode.Accepted);
+    /// <param name="this">The current <see cref="HttpClientResponse"/> 
+    /// instance.</param>
+    /// <returns><see langword="true"/> if status code is 
+    /// <see cref="HttpStatusCode.Accepted"/>, otherwise <see langword="false"/>.</returns>
+    public static bool IsStatusCodeAccepted(this HttpClientResponse @this)
+        => @this.IsHttpStatusCode(HttpStatusCode.Accepted);
 
     /// <summary>
-    /// Determines whether the status code of the current <see cref="HttpClientResponse"/> instance matches the specified one.
+    /// Determines whether the status code of the current 
+    /// <see cref="HttpClientResponse"/> instance matches the specified one.
     /// </summary>
-    /// <param name="this">The current <see cref="HttpClientResponse"/> instance.</param>
+    /// <param name="this">The current <see cref="HttpClientResponse"/> 
+    /// instance.</param>
     /// <param name="statusCode">The status code to match.</param>
-    /// <returns><see langword="true"/> if instance status code matches the expected value, otherwise <see langword="false"/>.</returns>
-    public static bool IsHttpStatusCode(this HttpClientResponse @this, HttpStatusCode statusCode)
+    /// <returns><see langword="true"/> if instance status code matches 
+    /// the expected value, otherwise <see langword="false"/>.</returns>
+    public static bool IsHttpStatusCode(
+        this HttpClientResponse @this,
+        HttpStatusCode statusCode)
     {
         ArgumentNullException.ThrowIfNull(@this);
         return @this.StatusCode == statusCode;

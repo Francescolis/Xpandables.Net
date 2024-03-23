@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,53 +14,97 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Commands;
 
-internal sealed class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
+internal sealed class Dispatcher(IServiceProvider serviceProvider)
+    : IDispatcher
 {
-    private readonly IServiceProvider _serviceProvider =
-        serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-
     public async ValueTask<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
-        TQuery query, CancellationToken cancellationToken = default)
+        TQuery query,
+        CancellationToken cancellationToken = default)
         where TQuery : notnull, IQuery<TResult>
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        IQueryHandler<TQuery, TResult> handler =
-            _serviceProvider.GetRequiredService<IQueryHandler<TQuery, TResult>>();
+        try
+        {
+            IQueryHandler<TQuery, TResult> handler =
+              serviceProvider
+              .GetRequiredService<IQueryHandler<TQuery, TResult>>();
 
-        return await handler.HandleAsync(query, cancellationToken).ConfigureAwait(false);
+            return await handler
+                .HandleAsync(query, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                and not OperationResultException)
+        {
+            return OperationResults
+                .InternalError<TResult>()
+                .WithError(ElementEntry.UndefinedKey, exception)
+                .Build();
+        }
     }
 
     public async ValueTask<IOperationResult> SendAsync<TCommand>(
-        TCommand command, CancellationToken cancellationToken = default)
+        TCommand command,
+        CancellationToken cancellationToken = default)
         where TCommand : notnull, ICommand
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        ICommandHandler<TCommand> handler =
-            _serviceProvider.GetRequiredService<ICommandHandler<TCommand>>();
+        try
+        {
+            ICommandHandler<TCommand> handler =
+        serviceProvider
+        .GetRequiredService<ICommandHandler<TCommand>>();
 
-        return await handler.HandleAsync(command, cancellationToken).ConfigureAwait(false);
+            return await handler
+                .HandleAsync(command, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                and not OperationResultException)
+        {
+            return OperationResults
+                .InternalError()
+                .WithError(ElementEntry.UndefinedKey, exception)
+                .Build();
+        }
     }
 
-    object? IServiceProvider.GetService(Type serviceType) => _serviceProvider.GetService(serviceType);
+    object? IServiceProvider.GetService(Type serviceType)
+        => serviceProvider.GetService(serviceType);
 
     public IAsyncEnumerable<TResult> FetchAsync<TQuery, TResult>(
-        TQuery query, CancellationToken cancellationToken = default)
+        TQuery query,
+        CancellationToken cancellationToken = default)
         where TQuery : notnull, IAsyncQuery<TResult>
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        IAsyncQueryHandler<TQuery, TResult> handler =
-            _serviceProvider.GetRequiredService<IAsyncQueryHandler<TQuery, TResult>>();
+        try
+        {
+            IAsyncQueryHandler<TQuery, TResult> handler =
+        serviceProvider
+        .GetRequiredService<IAsyncQueryHandler<TQuery, TResult>>();
 
-        return handler.HandleAsync(query, cancellationToken);
+            return handler.HandleAsync(query, cancellationToken);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                and not OperationResultException)
+        {
+            IOperationResult operationResult = exception.ToOperationResult();
+            throw new OperationResultException(operationResult);
+        }
     }
 }

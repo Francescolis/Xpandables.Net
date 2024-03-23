@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -90,7 +90,8 @@ public static class ServiceCollectionValidatorExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
-    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix (<see cref="string.Empty"/>).</remarks>
+    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with 
+    /// empty prefix (<see cref="string.Empty"/>).</remarks>
     public static TBuilder WithXValidatorFilter<TBuilder>(this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder
     {
@@ -106,7 +107,8 @@ public static class ServiceCollectionValidatorExtensions
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
     /// <param name="predicate">The predicate that a request must match in order to be validated.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
-    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix (<see cref="string.Empty"/>).</remarks>
+    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix 
+    /// (<see cref="string.Empty"/>).</remarks>
     public static TBuilder WithXValidatorFilter<TBuilder>(this TBuilder builder, Predicate<Type> predicate)
         where TBuilder : IEndpointConventionBuilder
     {

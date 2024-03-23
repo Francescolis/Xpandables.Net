@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-using Microsoft.EntityFrameworkCore;
-
+********************************************************************************/
 using System.Linq.Expressions;
 using System.Text.Json;
+
+using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Expressions;
@@ -35,7 +35,9 @@ namespace Xpandables.Net.Aggregates;
 /// <param name="dataContext"></param>
 /// <param name="serializerOptions"></param>
 /// <exception cref="ArgumentNullException"></exception>
-public sealed class DomainEventStore(DataContextDomain dataContext, JsonSerializerOptions serializerOptions)
+public sealed class DomainEventStore(
+    DataContextDomain dataContext,
+    JsonSerializerOptions serializerOptions)
     : Disposable, IDomainEventStore
 {
     private IDisposable[] _disposables = [];
@@ -48,11 +50,14 @@ public sealed class DomainEventStore(DataContextDomain dataContext, JsonSerializ
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        EntityDomainEvent disposable = EntityDomainEvent.TEntityDomainEvent(@event, serializerOptions);
+        EntityDomainEvent disposable = EntityDomainEvent
+            .ToEntityDomainEvent(@event, serializerOptions);
         Array.Resize(ref _disposables, _disposables.Length + 1);
         _disposables[^1] = disposable;
 
-        _ = await dataContext.Events.AddAsync(disposable, cancellationToken).ConfigureAwait(false);
+        _ = await dataContext.Events
+            .AddAsync(disposable, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
@@ -63,13 +68,16 @@ public sealed class DomainEventStore(DataContextDomain dataContext, JsonSerializ
     {
         ArgumentNullException.ThrowIfNull(aggregateId);
 
-        string aggregateIdName = typeof(TAggregateId).GetNameWithoutGenericArity();
+        string aggregateIdName = typeof(TAggregateId)
+            .GetNameWithoutGenericArity();
 
         return dataContext.Events
             .AsNoTracking()
-            .Where(e => e.AggregateId == aggregateId.Value && e.AggregateIdTypeName == aggregateIdName)
+            .Where(e => e.AggregateId == aggregateId.Value
+                && e.AggregateIdTypeName == aggregateIdName)
             .OrderBy(e => e.Version)
-            .Select(s => EntityDomainEvent.ToDomainEvent<TAggregateId>(s, serializerOptions))
+            .Select(s => EntityDomainEvent
+                .ToDomainEvent<TAggregateId>(s, serializerOptions))
             .OfType<IDomainEvent<TAggregateId>>()
             .AsAsyncEnumerable();
     }
@@ -82,8 +90,11 @@ public sealed class DomainEventStore(DataContextDomain dataContext, JsonSerializ
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        return BuildQueryExpression(filter, dataContext.Events.AsNoTracking())
-             .Select(s => EntityDomainEvent.ToDomainEvent<TAggregateId>(s, serializerOptions))
+        return BuildQueryExpression(
+                filter,
+                dataContext.Events.AsNoTracking())
+             .Select(s => EntityDomainEvent
+                .ToDomainEvent<TAggregateId>(s, serializerOptions))
              .OfType<IDomainEvent<TAggregateId>>()
              .AsAsyncEnumerable();
     }
@@ -105,7 +116,8 @@ public sealed class DomainEventStore(DataContextDomain dataContext, JsonSerializ
         IDomainEventFilter filter,
         IQueryable<EntityDomainEvent> eventRecords)
     {
-        QueryExpression<EntityDomainEvent, bool> expression = QueryExpressionFactory.Create<EntityDomainEvent>();
+        QueryExpression<EntityDomainEvent> expression
+            = QueryExpressionFactory.Create<EntityDomainEvent>();
 
         if (filter.AggregateId is not null)
             expression = expression.And(x =>
@@ -113,14 +125,18 @@ public sealed class DomainEventStore(DataContextDomain dataContext, JsonSerializ
 
         if (filter.AggregateIdTypeName is not null)
             expression = expression.And(x =>
-            EF.Functions.Like(x.AggregateIdTypeName, $"%{filter.AggregateIdTypeName}%"));
+            EF.Functions.Like(
+                    x.AggregateIdTypeName,
+                    $"%{filter.AggregateIdTypeName}%"));
 
         if (filter.Id is not null)
             expression = expression.And(x => x.Id == filter.Id);
 
         if (filter.EventTypeName is not null)
             expression = expression.And(x =>
-            EF.Functions.Like(x.EventTypeName, $"%{filter.EventTypeName}%"));
+            EF.Functions.Like(
+                x.EventTypeName,
+                $"%{filter.EventTypeName}%"));
 
         if (filter.Version is not null)
             expression = expression.And(x =>
@@ -146,8 +162,10 @@ public sealed class DomainEventStore(DataContextDomain dataContext, JsonSerializ
                     EventFilterEntityVisitor.EventEntityParameter,
                     nameof(EntityDomainEvent.Data)));
 
-            Expression<Func<EntityDomainEvent, bool>> dataCriteria = Expression.Lambda<Func<EntityDomainEvent, bool>>(
-                EventFilterEntityVisitor.EventEntityVisitor.Visit(filter.DataCriteria.Body),
+            Expression<Func<EntityDomainEvent, bool>> dataCriteria
+                = Expression.Lambda<Func<EntityDomainEvent, bool>>(
+                EventFilterEntityVisitor.EventEntityVisitor
+                    .Visit(filter.DataCriteria.Body),
                 EventFilterEntityVisitor.EventEntityVisitor.Parameter);
 
             expression = expression.And(dataCriteria);

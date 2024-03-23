@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 
 using Xpandables.Net.Aggregates.DomainEvents;
@@ -23,8 +23,10 @@ namespace Xpandables.Net.Aggregates;
 
 internal sealed class EventFilterEntityVisitor : ExpressionVisitor
 {
-    internal static readonly ParameterExpression EventEntityParameter = Expression.Parameter(typeof(EntityDomainEvent));
-    internal static readonly EventFilterEntityVisitor EventEntityVisitor = new(typeof(EntityDomainEvent), nameof(EntityDomainEvent.Data));
+    internal static readonly ParameterExpression EventEntityParameter
+        = Expression.Parameter(typeof(EntityDomainEvent));
+    internal static readonly EventFilterEntityVisitor EventEntityVisitor
+        = new(typeof(EntityDomainEvent), nameof(EntityDomainEvent.Data));
 
     internal readonly ParameterExpression Parameter;
     private readonly Expression _expression;

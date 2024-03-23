@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -26,7 +26,8 @@ namespace Xpandables.Net.Aggregates.Configurations;
 /// <summary>
 /// Defines the base <see cref="EntityDomainEvent"/> configuration.
 /// </summary>
-public sealed class EntityDomainEventTypeConfiguration : IEntityTypeConfiguration<EntityDomainEvent>
+public sealed class EntityDomainEventTypeConfiguration
+    : IEntityTypeConfiguration<EntityDomainEvent>
 {
     ///<inheritdoc/>
     public void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
@@ -35,7 +36,8 @@ public sealed class EntityDomainEventTypeConfiguration : IEntityTypeConfiguratio
 
         _ = builder.Property(p => p.Id).IsRequired();
         _ = builder.HasKey(p => p.Id);
-        _ = builder.HasIndex(p => new { p.Id, p.EventTypeName, p.Version }).IsUnique();
+        _ = builder.HasIndex(p =>
+        new { p.Id, p.EventTypeName, p.Version }).IsUnique();
 
         _ = builder.Property(p => p.Id);
         _ = builder.Property(p => p.AggregateIdTypeName);

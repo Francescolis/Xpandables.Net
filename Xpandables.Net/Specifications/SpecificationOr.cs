@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 
 using Xpandables.Net.Expressions;
@@ -36,17 +36,23 @@ public sealed record class SpecificationOr<TSource> : Specification<TSource>
     /// </summary>
     /// <param name="left">The specification for the left side.</param>
     /// <param name="right">The specification for the right side.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="left"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="right"/> is null.</exception>
-    public SpecificationOr(ISpecification<TSource> left, ISpecification<TSource> right)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="left"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="right"/> is null.</exception>
+    public SpecificationOr(
+        ISpecification<TSource> left,
+        ISpecification<TSource> right)
     {
         _left = left ?? throw new ArgumentNullException(nameof(left));
         _right = right ?? throw new ArgumentNullException(nameof(right));
     }
 
     /// <summary>
-    /// Returns the expression to be used for the clause <see langword="Where"/> in a query.
+    /// Returns the expression to be used for 
+    /// the clause <see langword="Where"/> in a query.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
-        => QueryExpressionFactory<bool>.Or(_left.GetExpression(), _right.GetExpression());
+        => QueryExpressionFactory<bool>
+        .Or(_left.GetExpression(), _right.GetExpression());
 }

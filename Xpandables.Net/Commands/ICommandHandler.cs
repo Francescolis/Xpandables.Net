@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Commands;
 
 /// <summary>
-/// This interface is used as a marker for commands when using the asynchronous command pattern.
-/// Class implementation is used with the <see cref="ICommandHandler{TCommand}"/> where
+/// This interface is used as a marker for commands when using the 
+/// asynchronous command pattern.
+/// Class implementation is used with the 
+/// <see cref="ICommandHandler{TCommand}"/> where
 /// "TCommand" is a class that implements <see cref="ICommand"/>.
 /// This can also be enhanced with some useful decorators.
 /// </summary>
@@ -45,20 +47,24 @@ public interface ICommand
 }
 
 /// <summary>
-/// Represents a method signature to be used to apply <see cref="ICommandHandler{TCommand}"/> implementation.
+/// Represents a method signature to be used to apply 
+/// <see cref="ICommandHandler{TCommand}"/> implementation.
 /// </summary>
 /// <typeparam name="TCommand">Type of the command to act on.</typeparam>
 /// <param name="command">The command instance to act on.</param>
-/// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
+/// <param name="cancellationToken">A CancellationToken to 
+/// observe while waiting for the task to complete.</param>
 /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
-/// <exception cref="ArgumentNullException">The <paramref name="command"/> is null.</exception>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="command"/> is null.</exception>
 public delegate ValueTask<IOperationResult> CommandHandler<in TCommand>(
     TCommand command, CancellationToken cancellationToken = default)
     where TCommand : notnull, ICommand;
 
 /// <summary>
 /// Provides with a method to asynchronously handle a command of specific type.
-/// The implementation must be thread-safe when working in a multi-threaded environment.
+/// The implementation must be thread-safe when working i
+/// n a multi-threaded environment.
 /// </summary>
 /// <typeparam name="TCommand">Type of the command to act on.</typeparam>
 public interface ICommandHandler<in TCommand>
@@ -68,8 +74,13 @@ public interface ICommandHandler<in TCommand>
     /// Asynchronously handles the specified command.
     /// </summary>
     /// <param name="command">The command instance to act on.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while waiting for the task to complete.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="command"/> is null.</exception>
-    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> HandleAsync(TCommand command, CancellationToken cancellationToken = default);
+    /// <param name="cancellationToken">A CancellationToken 
+    /// to observe while waiting for the task to complete.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="command"/> is null.</exception>
+    /// <returns>A value that represents an 
+    /// <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult> HandleAsync(
+        TCommand command,
+        CancellationToken cancellationToken = default);
 }

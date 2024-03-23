@@ -23,7 +23,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.Decorators;
 using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.SnapShots;
+using Xpandables.Net.Aggregates.SnapShots;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -169,7 +169,7 @@ public static class ServiceCollectionAggregateExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.XTryDecorate(typeof(IAggregateStore<,>), typeof(SnapshotStoreDecorator<,>));
+        return services.XTryDecorate(typeof(IAggregateStore<,>), typeof(AggregatetStoreSnapShotDecorator<,>));
     }
 
     /// <summary>

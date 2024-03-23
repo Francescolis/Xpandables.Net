@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-namespace Xpandables.Net.SnapShots;
+********************************************************************************/
 
+// Ignore Spelling: Finalizer
+
+using Xpandables.Net.Operations;
+
+namespace Xpandables.Net.Primitives;
 /// <summary>
-/// The Memento interface used as a marker for objects that need to restore 
-/// their previous state (stores internal state of an <see cref="IOriginator"/> object).
+/// Defines a marker interface that allows the command/query class 
+/// to add correlation decorator context result after a control flow.
+/// In the calls handling the query/command, using the
+/// <see cref="IOperationResultFinalizer"/>
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IMemento { }
+public interface IOperationResultFinalizerDecorator { }
 #pragma warning restore CA1040 // Avoid empty interfaces

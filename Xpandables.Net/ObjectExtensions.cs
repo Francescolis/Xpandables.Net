@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Nullable
+
 using System.Diagnostics.CodeAnalysis;
 
 namespace Xpandables.Net;
@@ -31,7 +34,7 @@ public static class ObjectExtensions
     /// <returns>A string that represents the name of the target object.</returns>
     public static string GetTypeName(this object obj)
     {
-        ArgumentNullException.ThrowIfNull(obj, nameof(obj));
+        ArgumentNullException.ThrowIfNull(obj);
         return obj.GetType().GetNameWithoutGenericArity();
     }
 
@@ -39,11 +42,13 @@ public static class ObjectExtensions
     /// Returns the full name of the current type.
     /// </summary>
     /// <param name="obj">The target object to act on.</param>
-    /// <returns>A string that represents the full name of the target object.</returns>
-    /// <exception cref="ArgumentException">Cannot get the full name of a generic type parameter.</exception>
+    /// <returns>A string that represents the full name of t
+    /// he target object.</returns>
+    /// <exception cref="ArgumentException">Cannot get the 
+    /// full name of a generic type parameter.</exception>
     public static string GetTypeFullName(this object obj)
     {
-        ArgumentNullException.ThrowIfNull(obj, nameof(obj));
+        ArgumentNullException.ThrowIfNull(obj);
         if (obj.GetType().IsGenericTypeParameter)
             throw new ArgumentException(
                 "Cannot get the full name of a generic type parameter.",
@@ -57,7 +62,8 @@ public static class ObjectExtensions
     /// </summary>
     /// <typeparam name="T">The type to be casted to.</typeparam>
     /// <param name="obj">The object to cast.</param>
-    /// <returns>The casted object to <typeparamref name="T"/> type or null.</returns>
+    /// <returns>The casted object to <typeparamref name="T"/> 
+    /// type or null.</returns>
     public static T? As<T>(this object? obj) => obj is T t ? t : default;
 
     /// <summary>
@@ -66,33 +72,46 @@ public static class ObjectExtensions
     /// <typeparam name="T">The type to be casted to.</typeparam>
     /// <param name="obj">The object to cast.</param>
     /// <param name="_">The target object to get its type.</param>
-    /// <returns>The casted object to <typeparamref name="T"/> type or null.</returns>
+    /// <returns>The casted object to <typeparamref name="T"/> 
+    /// type or null.</returns>
     public static T? As<T>(this object? obj, T _) => obj is T t ? t : default;
 
     /// <summary>
-    /// Casts the current object to the specified type or throws exception if not possible.
+    /// Casts the current object to the specified type 
+    /// or throws exception if not possible.
     /// </summary>
     /// <typeparam name="T">The type to be casted to.</typeparam>
     /// <param name="obj">The object to cast.</param>
-    /// <returns>The casted object to <typeparamref name="T"/> type or <see cref="InvalidCastException"/>.</returns>
+    /// <returns>The casted object to <typeparamref name="T"/> 
+    /// type or <see cref="InvalidCastException"/>.</returns>
     public static T AsRequired<T>(this object obj) => (T)obj;
 
     /// <summary>
-    ///  Returns an object of the specified type whose value is equivalent to the specified object. 
+    ///  Returns an object of the specified type whose value 
+    ///  is equivalent to the specified object. 
     ///  A parameter supplies culture-specific formatting information.
     /// </summary>
-    /// <param name="value">An object that implements the System.IConvertible interface.</param>
+    /// <param name="value">An object that implements the 
+    /// System.IConvertible interface.</param>
     /// <param name="conversionType">The type of object to return.</param>
-    /// <param name="formatProvider">An object that supplies culture-specific formatting information.</param>
-    /// <returns>An object whose type is conversionType and whose value is equivalent to value. 
-    /// -or- value, if the System.Type of value and conversionType are equal. -or- A
-    /// null reference (Nothing in Visual Basic), if value is null and conversionType
+    /// <param name="formatProvider">An object that supplies culture-specific 
+    /// formatting information.</param>
+    /// <returns>An object whose type is conversionType and whose value 
+    /// is equivalent to value. 
+    /// -or- value, if the System.Type of value and conversionType 
+    /// are equal. -or- A
+    /// null reference (Nothing in Visual Basic), if value is null 
+    /// and conversionType
     /// is not a value type.</returns>
     /// <exception cref="ArgumentNullException">conversionType is null.</exception>
-    /// <exception cref="InvalidCastException">This conversion is not supported. -or- value is null and conversionType is a 
-    /// value type. -or- value does not implement the System.IConvertible interface.</exception>
-    /// <exception cref="FormatException">value is not in a format for conversionType recognized by provider.</exception>
-    /// <exception cref="OverflowException">value represents a number that is out of the range of conversionType.</exception>
+    /// <exception cref="InvalidCastException">This conversion is not 
+    /// supported. -or- value is null and conversionType is a 
+    /// value type. -or- value does not implement the 
+    /// System.IConvertible interface.</exception>
+    /// <exception cref="FormatException">value is not in a 
+    /// format for conversionType recognized by provider.</exception>
+    /// <exception cref="OverflowException">value represents 
+    /// a number that is out of the range of conversionType.</exception>
     public static object? ChangeTypeNullable(
         this object? value,
         Type conversionType,
@@ -100,8 +119,10 @@ public static class ObjectExtensions
     {
         if (value is null) return null;
 
-        Type targetType = conversionType ?? throw new ArgumentNullException(nameof(conversionType));
-        if (conversionType.IsGenericType && conversionType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        Type targetType = conversionType
+            ?? throw new ArgumentNullException(nameof(conversionType));
+        if (conversionType.IsGenericType
+            && conversionType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
             Type? underlyingType = Nullable.GetUnderlyingType(targetType);
             if (underlyingType is null) return null;
@@ -112,22 +133,33 @@ public static class ObjectExtensions
     }
 
     /// <summary>
-    ///  Returns an object of the specified type whose value is equivalent to the specified object. 
+    ///  Returns an object of the specified type whose value 
+    ///  is equivalent to the specified object. 
     ///  A parameter supplies culture-specific formatting information.
     /// </summary>
     /// <typeparam name="T">The type of object to return.</typeparam>
-    /// <param name="value">An object that implements the System.IConvertible interface.</param>
-    /// <param name="formatProvider">An object that supplies culture-specific formatting information.</param>
-    /// <returns>An object whose type is conversionType and whose value is equivalent to value. 
+    /// <param name="value">An object that implements 
+    /// the System.IConvertible interface.</param>
+    /// <param name="formatProvider">An object that supplies 
+    /// culture-specific formatting information.</param>
+    /// <returns>An object whose type is conversionType 
+    /// and whose value is equivalent to value. 
     /// -or- value, if the System.Type of value and conversionType are equal. -or- A
-    /// null reference (Nothing in Visual Basic), if value is null and conversionType
+    /// null reference (Nothing in Visual Basic), 
+    /// if value is null and conversionType
     /// is not a value type.</returns>
-    /// <exception cref="InvalidCastException">This conversion is not supported. -or- value is null and conversionType is a 
-    /// value type. -or- value does not implement the System.IConvertible interface.</exception>
-    /// <exception cref="FormatException">value is not in a format for conversionType recognized by provider.</exception>
-    /// <exception cref="OverflowException">value represents a number that is out of the range of conversionType.</exception>
+    /// <exception cref="InvalidCastException">This conversion is not supported.
+    /// -or- value is null and conversionType is a 
+    /// value type. -or- value does not implement the 
+    /// System.IConvertible interface.</exception>
+    /// <exception cref="FormatException">value is not in a format 
+    /// for conversionType recognized by provider.</exception>
+    /// <exception cref="OverflowException">value represents a number 
+    /// that is out of the range of conversionType.</exception>
     [return: MaybeNull]
-    public static T ChangeTypeNullable<T>(this object? value, IFormatProvider? formatProvider = default)
+    public static T ChangeTypeNullable<T>(
+        this object? value,
+        IFormatProvider? formatProvider = default)
     {
         if (value is null) return default;
 
@@ -136,13 +168,17 @@ public static class ObjectExtensions
     }
 
     /// <summary>
-    /// Conditionally performs a function on an object if the condition is <see langword="true"/>.
+    /// Conditionally performs a function on an object if the condition 
+    /// is <see langword="true"/>.
     /// </summary>
     /// <param name="obj">The target object.</param>
-    /// <param name="condition">The condition that should be <see langword="true"/> to apply the function.</param>
-    /// <param name="func">The delegate to be executed only if the condition is <see langword="true"/>.</param>
+    /// <param name="condition">The condition that should be 
+    /// <see langword="true"/> to apply the function.</param>
+    /// <param name="func">The delegate to be executed only if 
+    /// the condition is <see langword="true"/>.</param>
     /// <typeparam name="T">The type of the target object.</typeparam>
-    /// <returns>The object modified by the function if condition is <see langword="true"/>, otherwise the original object.</returns>
+    /// <returns>The object modified by the function if condition is 
+    /// <see langword="true"/>, otherwise the original object.</returns>
     public static T When<T>(this T obj, bool condition, Func<T, T> func)
     {
         ArgumentNullException.ThrowIfNull(func);
@@ -151,13 +187,17 @@ public static class ObjectExtensions
     }
 
     /// <summary>
-    /// Conditionally performs an action on an object if the condition is <see langword="true"/>.
+    /// Conditionally performs an action on an object 
+    /// if the condition is <see langword="true"/>.
     /// </summary>
     /// <param name="obj">The target object.</param>
-    /// <param name="condition">The condition that should be <see langword="true"/> to apply the action.</param>
-    /// <param name="action">The delegate to be executed only if the condition is <see langword="true"/>.</param>
+    /// <param name="condition">The condition that should be 
+    /// <see langword="true"/> to apply the action.</param>
+    /// <param name="action">The delegate to be executed only 
+    /// if the condition is <see langword="true"/>.</param>
     /// <typeparam name="T">The type of the target object.</typeparam>
-    /// <returns>The object modified by the function if condition is <see langword="true"/>, otherwise the original object.</returns>
+    /// <returns>The object modified by the function if condition 
+    /// is <see langword="true"/>, otherwise the original object.</returns>
     public static T When<T>(this T obj, bool condition, Action<T> action)
     {
         ArgumentNullException.ThrowIfNull(action);

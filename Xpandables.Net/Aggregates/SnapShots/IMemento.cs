@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-using Xpandables.Net.Operations;
+********************************************************************************/
+namespace Xpandables.Net.Aggregates.SnapShots;
 
-namespace Xpandables.Net.Commands.Decorators;
-internal sealed class OperationResultFinalizerInternal : IOperationResultFinalizer
-{
-    public OperationResultFinalizer? Finalizer { get; set; }
-}
+/// <summary>
+/// The Memento interface used as a marker for objects that need to restore 
+/// their previous state (stores internal state of an <see cref="IOriginator"/> 
+/// object).
+/// </summary>
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IMemento { }
+#pragma warning restore CA1040 // Avoid empty interfaces

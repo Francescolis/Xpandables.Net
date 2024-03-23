@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Aggregates.Notifications;
 
 /// <summary>
-/// Defines a marker interface to be used to mark an object to act as a notification.
+/// Defines a marker interface to be used to mark an object to act
+/// as a notification.
 /// A notification is "something that has happened in the past".
 /// A notification is an event that can cause side effects 
 /// to other micro-services, Bounded-Contexts or external systems.

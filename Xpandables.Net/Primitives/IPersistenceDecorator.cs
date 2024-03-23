@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Primitives;
 /// <summary>
-/// A marker interface that allows a handler class implementation to use persistence data across the control flow.
+/// A marker interface that allows a handler class 
+/// implementation to use persistence data across the control flow.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
 public interface IPersistenceDecorator { }

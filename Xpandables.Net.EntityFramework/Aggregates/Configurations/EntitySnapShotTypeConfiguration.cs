@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.SnapShots;
 
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
 /// Defines the <see cref="EntitySnapShot"/> configuration.
 /// </summary>
-public sealed class EntitySnapShotTypeConfiguration : IEntityTypeConfiguration<EntitySnapShot>
+public sealed class EntitySnapShotTypeConfiguration
+    : IEntityTypeConfiguration<EntitySnapShot>
 {
     ///<inheritdoc/>
     public void Configure(EntityTypeBuilder<EntitySnapShot> builder)

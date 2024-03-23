@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aggregates.DomainEvents;
@@ -32,8 +33,10 @@ public interface IDomainEventPublisher<TAggregateId>
     /// <param name="event">The event to be published.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="event"/> is null.</exception>
-    /// <returns>A value that represents an implementation of <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="event"/> is null.</exception>
+    /// <returns>A value that represents an implementation 
+    /// of <see cref="IOperationResult"/>.</returns>
     ValueTask<IOperationResult> PublishAsync<TDomainEvent>(
         TDomainEvent @event,
         CancellationToken cancellationToken = default)

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Expressions;
 
 namespace Xpandables.Net.Specifications;
@@ -37,7 +37,9 @@ public interface ISpecification<TSource> : IQueryExpression<TSource>
     /// <param name="source">The target source to check specification on.</param>
     /// <returns><see langword="true"/>if the specification is satisfied, 
     /// otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="source"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// The operation failed. See inner exception.</exception>
     bool IsSatisfiedBy(TSource source);
 }

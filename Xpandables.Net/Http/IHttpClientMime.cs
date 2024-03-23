@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections.Frozen;
 
 namespace Xpandables.Net.Http;
@@ -28,7 +28,8 @@ public interface IHttpClientMime
     /// Returns the MIME type of the given file path.
     /// </summary>
     /// <param name="filePath">The file path to act on.</param>
-    /// <returns>A string that represents the MIME type of the specified file path or null if not found.</returns>
+    /// <returns>A string that represents the MIME type of the 
+    /// specified file path or null if not found.</returns>
     string? GetMimeType(string filePath);
 }
 
@@ -431,7 +432,9 @@ public sealed class HttpClientMime : IHttpClientMime
         return extension switch
         {
             null => null,
-            _ => _mimeTypes.TryGetValue(extension, out string? mimeType) ? mimeType : null
+            _ => _mimeTypes.TryGetValue(extension, out string? mimeType)
+            ? mimeType
+            : null
         };
     }
 

@@ -17,8 +17,7 @@
 ************************************************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-
-using Xpandables.Net.SnapShots;
+using Xpandables.Net.Aggregates.SnapShots;
 
 namespace Xpandables.Net.DependencyInjection;
 

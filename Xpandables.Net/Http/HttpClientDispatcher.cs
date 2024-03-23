@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Net;
 using System.Text.Json;
 
@@ -24,65 +24,78 @@ internal sealed class DefaultHttpClientDispatcher(
     IHttpClientBuildProvider httpClientBuildProvider,
     HttpClient httpClient,
     JsonSerializerOptions? jsonSerializerOptions)
-    : HttpClientDispatcher(httpClientBuildProvider, httpClient, jsonSerializerOptions)
+    : HttpClientDispatcher(
+        httpClientBuildProvider,
+        httpClient,
+        jsonSerializerOptions)
 {
 }
 
 /// <summary>
-/// This helper class allows the application author to implement the <see cref="IHttpClientDispatcher"/> interface.
+/// This helper class allows the application 
+/// author to implement the <see cref="IHttpClientDispatcher"/> interface.
 /// </summary>
 ///<inheritdoc/>
 public abstract class HttpClientDispatcher(
     IHttpClientBuildProvider httpClientBuildProvider,
     HttpClient httpClient,
-    JsonSerializerOptions? jsonSerializerOptions) : Disposable, IHttpClientDispatcher
+    JsonSerializerOptions? jsonSerializerOptions)
+    : Disposable, IHttpClientDispatcher
 {
-    private readonly IHttpClientRequestBuilder _httpRestClientRequestBuilder = httpClientBuildProvider?.RequestBuilder
-            ?? throw new ArgumentNullException(nameof(httpClientBuildProvider));
-    private readonly IHttpClientResponseBuilder _httpRestClientResponseBuilder = httpClientBuildProvider?.ResponseBuilder
-            ?? throw new ArgumentNullException(nameof(httpClientBuildProvider));
-    private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-    private readonly JsonSerializerOptions? _jsonSerializerOptions = jsonSerializerOptions;
+    ///<inheritdoc/>
+    public IHttpClientBuildProvider HttpClientBuildProvider
+        => httpClientBuildProvider;
 
     ///<inheritdoc/>
-    public IHttpClientBuildProvider HttpClientBuildProvider => httpClientBuildProvider;
+    public HttpClient HttpClient => httpClient;
 
     ///<inheritdoc/>
-    public HttpClient HttpClient => _httpClient;
-
-    ///<inheritdoc/>
-    public JsonSerializerOptions? SerializerOptions => _jsonSerializerOptions;
+    public JsonSerializerOptions? SerializerOptions
+        => jsonSerializerOptions;
 
     ///<inheritdoc/>
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            _httpClient.Dispose();
+            httpClient.Dispose();
         }
 
         base.Dispose(disposing);
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
+    public virtual async ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+        SendAsync<TResult>(
         IHttpClientAsyncRequest<TResult> request,
         JsonSerializerOptions? serializerOptions = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            using HttpRequestMessage httpRequest = await _httpRestClientRequestBuilder
-                .BuildHttpRequestAsync(request, _httpClient, _jsonSerializerOptions)
+            using HttpRequestMessage httpRequest = await HttpClientBuildProvider
+                .RequestBuilder
+                .BuildHttpRequestAsync(
+                    request,
+                    HttpClient,
+                    serializerOptions ?? SerializerOptions)
                 .ConfigureAwait(false);
 
-            // Due to the fact that the result is an IAsyncEnumerable, the response can not be disposed before.
-            HttpResponseMessage response = await _httpClient
-                .SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            // Due to the fact that the result is an IAsyncEnumerable,
+            // the response can not be disposed before.
+            HttpResponseMessage response = await HttpClient
+                .SendAsync(
+                    httpRequest,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken)
                 .ConfigureAwait(false);
 
-            return await _httpRestClientResponseBuilder
-                .BuildHttpResponseAsync<TResult>(response, _jsonSerializerOptions, cancellationToken)
+            return await HttpClientBuildProvider
+                .ResponseBuilder
+                .BuildHttpResponseAsync<TResult>(
+                    response,
+                    serializerOptions ?? SerializerOptions,
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -99,9 +112,9 @@ public abstract class HttpClientDispatcher(
         {
             return new HttpClientResponse<IAsyncEnumerable<TResult>>(
                 HttpStatusCode.BadRequest,
-                _httpClient.DefaultRequestHeaders.ReadHttpHeaders(),
+                HttpClient.DefaultRequestHeaders.ReadHttpHeaders(),
                 default,
-                _httpClient.DefaultRequestVersion,
+                HttpClient.DefaultRequestVersion,
                 default,
                 new HttpClientException(exception.Message, exception));
         }
@@ -115,16 +128,24 @@ public abstract class HttpClientDispatcher(
     {
         try
         {
-            using HttpRequestMessage httpRequest = await _httpRestClientRequestBuilder
-                 .BuildHttpRequestAsync(request, _httpClient, _jsonSerializerOptions)
+            using HttpRequestMessage httpRequest = await HttpClientBuildProvider
+                .RequestBuilder
+                 .BuildHttpRequestAsync(
+                    request,
+                    HttpClient,
+                    serializerOptions ?? SerializerOptions)
                  .ConfigureAwait(false);
 
-            using HttpResponseMessage response = await _httpClient
+            using HttpResponseMessage response = await HttpClient
                 .SendAsync(httpRequest, cancellationToken)
                 .ConfigureAwait(false);
 
-            return await _httpRestClientResponseBuilder
-                .BuildHttpResponse(response, _jsonSerializerOptions, cancellationToken)
+            return await HttpClientBuildProvider
+                .ResponseBuilder
+                .BuildHttpResponse(
+                    response,
+                    serializerOptions ?? SerializerOptions,
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is ArgumentNullException
@@ -140,8 +161,8 @@ public abstract class HttpClientDispatcher(
         {
             return new HttpClientResponse(
                 HttpStatusCode.BadRequest,
-                _httpClient.DefaultRequestHeaders.ReadHttpHeaders(),
-                _httpClient.DefaultRequestVersion,
+                httpClient.DefaultRequestHeaders.ReadHttpHeaders(),
+                httpClient.DefaultRequestVersion,
                 default,
                 new HttpClientException(exception.Message, exception));
         }
@@ -155,16 +176,27 @@ public abstract class HttpClientDispatcher(
     {
         try
         {
-            using HttpRequestMessage httpRequest = await _httpRestClientRequestBuilder
-                .BuildHttpRequestAsync(request, _httpClient, _jsonSerializerOptions)
+            using HttpRequestMessage httpRequest = await HttpClientBuildProvider
+                .RequestBuilder
+                .BuildHttpRequestAsync(
+                    request,
+                    HttpClient,
+                    serializerOptions ?? SerializerOptions)
                 .ConfigureAwait(false);
 
-            using HttpResponseMessage response = await _httpClient
-                .SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            using HttpResponseMessage response = await HttpClient
+                .SendAsync(
+                    httpRequest,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken)
                 .ConfigureAwait(false);
 
-            return await _httpRestClientResponseBuilder
-                .BuildHttpResponse<TResult>(response, _jsonSerializerOptions, cancellationToken)
+            return await HttpClientBuildProvider
+                .ResponseBuilder
+                .BuildHttpResponse<TResult>(
+                    response,
+                    serializerOptions ?? SerializerOptions,
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is ArgumentNullException
@@ -180,9 +212,9 @@ public abstract class HttpClientDispatcher(
         {
             return new HttpClientResponse<TResult>(
                 HttpStatusCode.BadRequest,
-                _httpClient.DefaultRequestHeaders.ReadHttpHeaders(),
+                HttpClient.DefaultRequestHeaders.ReadHttpHeaders(),
                 default,
-                _httpClient.DefaultRequestVersion,
+                HttpClient.DefaultRequestVersion,
                 default,
                 new HttpClientException(exception.Message, exception));
         }

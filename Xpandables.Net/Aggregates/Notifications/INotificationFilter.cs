@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 using System.Text.Json;
 
@@ -36,10 +36,12 @@ public interface INotificationFilter
     /// var criteria = new EventFilter{TEntity}()
     /// {
     ///     Id = id,
-    ///     DataCriteria = x => x.RootElement.GetProperty("Version").GetUInt64() == version
+    ///     DataCriteria = x => x.RootElement
+    ///     .GetProperty("Version").GetUInt64() == version
     /// }
     /// </code>
-    /// This is because Version is parsed as {"Version": 1 } and its value is of type <see cref="ulong"/>.
+    /// This is because Version is parsed as {"Version": 1 } 
+    /// and its value is of type <see cref="ulong"/>.
     /// </remarks>
     Expression<Func<JsonDocument, bool>>? DataCriteria { get; init; }
 

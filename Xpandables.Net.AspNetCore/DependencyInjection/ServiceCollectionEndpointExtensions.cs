@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+using System.Reflection;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-
-using System.Reflection;
 
 using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
@@ -33,18 +33,22 @@ public static partial class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers all the routes via the implementations 
-    /// of <see cref="IEndpointRoute.AddRoutes(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)"/> 
+    /// of <see cref="IEndpointRoute.AddRoutes(
+    /// Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)"/> 
     /// found in the specified assemblies.
-    /// <para>The implementation classes must declare a parameterless constructor.</para>
+    /// <para>The implementation classes must declare 
+    /// a parameterless constructor.</para>
     /// <para>However, if you used the 
-    /// <see cref="ServiceCollectionEndpointExtensions.AddXEndpointRoutes(Microsoft.Extensions.DependencyInjection.IServiceCollection, Assembly[])"/>,
+    /// <see cref="ServiceCollectionEndpointExtensions.
+    /// AddXEndpointRoutes(IServiceCollection, Assembly[])"/>,
     /// all the implementations will be resolved from the service collection.</para>
     /// </summary>
     /// <param name="builder">The application configuration.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="builder"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="builder"/> is null.</exception>
     public static WebApplication MapXEndpointRoutes(
         this WebApplication builder,
         params Assembly[] assemblies)
@@ -52,9 +56,11 @@ public static partial class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(assemblies);
 
-        if (ServiceCollectionEndpointExtensions.ResolveEndpointFromServiceCollection)
+        if (ServiceCollectionEndpointExtensions
+            .ResolveEndpointFromServiceCollection)
         {
-            IEnumerable<IEndpointRoute> endpointRoutes = builder.Services.GetServices<IEndpointRoute>();
+            IEnumerable<IEndpointRoute> endpointRoutes
+                = builder.Services.GetServices<IEndpointRoute>();
             foreach (IEndpointRoute endpointRoute in endpointRoutes)
             {
                 endpointRoute.AddRoutes(builder);
@@ -68,12 +74,14 @@ public static partial class ServiceCollectionExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        List<Type> endpointRouteTypes = assemblies.SelectMany(ass => ass.GetExportedTypes())
+        List<Type> endpointRouteTypes = assemblies
+            .SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                 && !type.IsInterface
                 && !type.IsGenericType
                 && type.GetInterfaces()
-                    .Exists(inter => !inter.IsGenericType && inter == typeof(IEndpointRoute)))
+                    .Exists(inter => !inter.IsGenericType
+                        && inter == typeof(IEndpointRoute)))
             .Select(type => type)
             .ToList();
 

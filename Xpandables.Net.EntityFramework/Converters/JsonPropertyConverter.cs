@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -24,16 +25,19 @@ namespace Xpandables.Net.Converters;
 /// <summary>
 /// Converts property to/from JSON.
 /// </summary>
-public sealed class JsonPropertyConverter<TProperty> : ValueConverter<TProperty?, string?>
+public sealed class JsonPropertyConverter<TProperty>
+    : ValueConverter<TProperty?, string?>
 {
     ///<inheritdoc/>
     public JsonPropertyConverter()
         : base(
             v => v == null
                 ? null
-                : JsonSerializer.Serialize(v, JsonSerializerDefaultOptions.Options),
+                : JsonSerializer
+                    .Serialize(v, JsonSerializerDefaultOptions.Options),
             v => string.IsNullOrEmpty(v)
                 ? default
-                : JsonSerializer.Deserialize<TProperty>(v, JsonSerializerDefaultOptions.Options))
+                : JsonSerializer
+                    .Deserialize<TProperty>(v, JsonSerializerDefaultOptions.Options))
     { }
 }

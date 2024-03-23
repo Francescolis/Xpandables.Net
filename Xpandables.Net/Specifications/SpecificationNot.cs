@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 
 using Xpandables.Net.Expressions;
@@ -40,7 +40,8 @@ public sealed record class SpecificationNot<TSource> : Specification<TSource>
         => _other = other ?? throw new ArgumentNullException(nameof(other));
 
     /// <summary>
-    /// Returns the expression to be used for the clause <see langword="Where"/> in a query.
+    /// Returns the expression to be used for 
+    /// the clause <see langword="Where"/> in a query.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
         => QueryExpressionFactory<bool>.Not(_other.GetExpression());

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Nullable
+
 using System.Net.Http.Headers;
 
 using static Xpandables.Net.Http.HttpClientParameters;
@@ -24,7 +27,8 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Describes the parameters for a request used with <see cref="IHttpClientDispatcher"/>.
 /// The attribute should decorate implementations of <see cref="IHttpClientRequest"/>,
-/// <see cref="IHttpClientAsyncRequest{TResponse}"/> or <see cref="IHttpClientRequest{TResponse}"/>
+/// <see cref="IHttpClientAsyncRequest{TResponse}"/> 
+/// or <see cref="IHttpClientRequest{TResponse}"/>
 /// in order to be used with <see cref="IHttpClientDispatcher"/>.
 /// Your class can implement the <see cref="IHttpClientAttributeBuilder"/>
 /// to dynamically return a <see cref="HttpClientAttribute"/>.
@@ -70,13 +74,15 @@ public sealed class HttpClientAttribute : Attribute
     /// Gets or sets the content type.
     /// The default value is <see cref="ContentType.Json"/>.
     /// </summary>
-    public string ContentType { get; set; } = HttpClientParameters.ContentType.Json;
+    public string ContentType { get; set; }
+        = HttpClientParameters.ContentType.Json;
 
     /// <summary>
     /// Gets or sets the accept content.
     /// The default value is <see cref="ContentType.Json"/>.
     /// </summary>
-    public string Accept { get; set; } = HttpClientParameters.ContentType.Json;
+    public string Accept { get; set; }
+        = HttpClientParameters.ContentType.Json;
 
     /// <summary>
     /// Gets the value indicating whether or not the request needs authorization.
@@ -84,15 +90,18 @@ public sealed class HttpClientAttribute : Attribute
     /// In this case, an <see cref="AuthenticationHeaderValue"/>
     /// with the <see cref="Scheme"/> value will be initialized and filled
     /// with a value from <see cref="HttpClientAuthenticationHeaderValueProvider"/>.
-    /// You need to configure the <see cref="IHttpClientDispatcher"/> registration with
+    /// You need to configure the <see cref="IHttpClientDispatcher"/> 
+    /// registration with
     /// <see cref="HttpClientAuthorizationHandler"/> registered with
     /// the <see langword="ConfigurePrimaryHttpMessageHandler"/> extension method.
-    /// Or you can use a custom implementation to fill the authentication header value.
+    /// Or you can use a custom implementation to 
+    /// fill the authentication header value.
     /// </summary>
     public bool IsSecured { get; set; } = true;
 
     /// <summary>
-    /// Gets the value indicating whether or not the target class should be added to the request body.
+    /// Gets the value indicating whether or not the target 
+    /// class should be added to the request body.
     /// If <see langword="true"/> the target class will not be added.
     /// The default value is <see langword="false"/>.
     /// Be aware of the fact that, setting this value to <see langword="true"/>

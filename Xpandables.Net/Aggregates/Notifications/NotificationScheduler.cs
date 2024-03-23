@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -53,17 +53,26 @@ internal sealed class NotificationScheduler(
             }
             catch (OperationCanceledException cancelException)
             {
-                logger.CancelExecutingProcess(nameof(NotificationScheduler), cancelException);
+                logger.CancelExecutingProcess(
+                    nameof(NotificationScheduler),
+                    cancelException);
+
                 IsRunning = false;
             }
-            catch (Exception exception) when (exception is not OperationCanceledException)
+            catch (Exception exception)
+                when (exception is not OperationCanceledException)
             {
-                logger.ErrorExecutingProcess(nameof(NotificationScheduler), exception);
+                logger.ErrorExecutingProcess(
+                    nameof(NotificationScheduler),
+                    exception);
 
                 if (++_attempts > options.Value.MaxAttempts)
                 {
-                    using CancellationTokenSource cancellationSource = CancellationTokenSource
-                        .CreateLinkedTokenSource(stoppingToken, new CancellationToken(true));
+                    using CancellationTokenSource cancellationSource
+                        = CancellationTokenSource
+                        .CreateLinkedTokenSource(
+                            stoppingToken,
+                            new CancellationToken(true));
 
                     stoppingToken = cancellationSource.Token;
                     _ = await StopServiceAsync(stoppingToken)
@@ -96,7 +105,8 @@ internal sealed class NotificationScheduler(
             Status = EntityStatus.ACTIVE
         };
 
-        await foreach (INotification @event in eventStore.ReadAsync(filter, cancellationToken))
+        await foreach (INotification @event in eventStore
+            .ReadAsync(filter, cancellationToken))
         {
             try
             {
@@ -112,7 +122,8 @@ internal sealed class NotificationScheduler(
                     .AppendCloseAsync(@event.Id, exception, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception exception) when (exception is not ArgumentNullException)
+            catch (Exception exception)
+                when (exception is not ArgumentNullException)
             {
                 await eventStore
                     .AppendCloseAsync(@event.Id, exception, cancellationToken)

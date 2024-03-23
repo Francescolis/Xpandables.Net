@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// This is the <see langword="abstract"/> db context class that inherits from <see cref="DbContext"/>.
+/// This is the <see langword="abstract"/> db context class 
+/// that inherits from <see cref="DbContext"/>.
 /// </summary>
 public abstract class DataContext : DbContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DataContext"/> class
-    /// using the specified options. The <see cref="DbContext.OnConfiguring(DbContextOptionsBuilder)"/>
+    /// using the specified options. The 
+    /// <see cref="DbContext.OnConfiguring(DbContextOptionsBuilder)"/>
     /// method will still be called to allow further configuration of the options.
     /// </summary>
     /// <param name="contextOptions">The options for this context.</param>
@@ -35,7 +37,8 @@ public abstract class DataContext : DbContext
     {
         ChangeTracker.Tracked += (sender, e) =>
         {
-            if (e.FromQuery || e.Entry.State != EntityState.Added || e.Entry.Entity is not IEntity entity)
+            if (e.FromQuery || e.Entry.State != EntityState.Added
+            || e.Entry.Entity is not IEntity entity)
                 return;
 
             entity.SetStatus(EntityStatus.ACTIVE);
@@ -43,7 +46,8 @@ public abstract class DataContext : DbContext
 
         ChangeTracker.StateChanged += (sender, e) =>
         {
-            if (e.NewState != EntityState.Modified || e.Entry.Entity is not IEntity entity)
+            if (e.NewState != EntityState.Modified
+            || e.Entry.Entity is not IEntity entity)
                 return;
 
             entity.SetStatus(EntityStatus.UPDATED);

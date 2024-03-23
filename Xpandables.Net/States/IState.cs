@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel;
 
 namespace Xpandables.Net.States;
@@ -29,12 +29,14 @@ public interface IState
     /// Allows applying state-specific behavior to the state context at runtime.
     /// </summary>
     /// <param name="stateContext">The target state context to act with.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="stateContext"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="stateContext"/> is null.</exception>
     void EnterState(IStateContext stateContext);
 }
 
 /// <summary>
-/// Defines a generic marker interface for state pattern that allows an object to alter 
+/// Defines a generic marker interface for state pattern that allows 
+/// an object to alter 
 /// its behaviors when its internal state changes for specific type.
 /// </summary>
 /// <typeparam name="TStateContext">The type of the state context.</typeparam>
@@ -46,7 +48,8 @@ public interface IState<in TStateContext> : IState
     /// Allows applying state-specific behavior to the state context at runtime.
     /// </summary>
     /// <param name="context">The target state context to act with.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="context"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="context"/> is null.</exception>
     void EnterState(TStateContext context);
 
     void IState.EnterState(IStateContext stateContext)

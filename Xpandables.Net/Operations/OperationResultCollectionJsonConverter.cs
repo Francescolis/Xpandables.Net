@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+
+// Ignore Spelling: Json
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,12 +26,17 @@ using Xpandables.Net.Primitives;
 namespace Xpandables.Net.Operations;
 
 ///<inheritdoc/>
-public sealed class OperationResultCollectionJsonConverter : JsonConverter<ElementCollection>
+public sealed class OperationResultCollectionJsonConverter
+    : JsonConverter<ElementCollection>
 {
     ///<inheritdoc/>
-    public override ElementCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ElementCollection Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
     {
-        ElementEntry[]? result = JsonSerializer.Deserialize<ElementEntry[]>(ref reader, options);
+        ElementEntry[]? result = JsonSerializer
+            .Deserialize<ElementEntry[]>(ref reader, options);
 
         return result is null
             ? []
@@ -36,7 +44,10 @@ public sealed class OperationResultCollectionJsonConverter : JsonConverter<Eleme
     }
 
     ///<inheritdoc/>
-    public override void Write(Utf8JsonWriter writer, ElementCollection value, JsonSerializerOptions options)
+    public override void Write(
+        Utf8JsonWriter writer,
+        ElementCollection value,
+        JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(value);
 

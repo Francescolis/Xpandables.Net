@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Interceptions;
 
 /// <summary>
-/// Interceptors base attribute that allows developers to apply interceptor to interfaces directly.
+/// Interceptors base attribute that allows developers to
+/// apply interceptor to interfaces directly.
 /// </summary>
 [AttributeUsage(AttributeTargets.Interface, AllowMultiple = true)]
 public abstract class InterceptorAttribute : Attribute
@@ -31,8 +32,10 @@ public abstract class InterceptorAttribute : Attribute
     /// handlers, if necessary.
     /// Returns a new interceptor handler object.
     /// </summary>
-    /// <param name="serviceProvider">The current instance of the collection of services.</param>
-    /// <returns>An implementation of <see cref="IInterceptor"/> interface.</returns>
+    /// <param name="serviceProvider">The current instance of 
+    /// the collection of services.</param>
+    /// <returns>An implementation of <see cref="IInterceptor"/> 
+    /// interface.</returns>
     public abstract IInterceptor Create(IServiceProvider serviceProvider);
 }
 
@@ -91,11 +94,14 @@ public abstract class Interceptor : IInterceptor
 
     /// <summary>
     /// Method used to intercept the parameter method call.
-    /// You have to call the <see cref="IInvocation.Proceed"/> to execute the intercepted method.
-    /// The default implementation just call the <see cref="IInvocation.Proceed"/> method.
+    /// You have to call the <see cref="IInvocation.Proceed"/> 
+    /// to execute the intercepted method.
+    /// The default implementation just call the 
+    /// <see cref="IInvocation.Proceed"/> method.
     /// </summary>
     /// <param name="invocation">The method argument to be called.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="invocation"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="invocation"/> is null.</exception>
     public virtual void Intercept(IInvocation invocation)
     {
         ArgumentNullException.ThrowIfNull(invocation);

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,32 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Represents an HTTP API exception.
 /// </summary>
 [Serializable]
+#pragma warning disable S3925 // "ISerializable" should be implemented correctly
 public sealed class HttpClientException : Exception
+#pragma warning restore S3925 // "ISerializable" should be implemented correctly
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="HttpClientException"/> class.
+    /// Initializes the default instance of 
+    /// <see cref="HttpClientException"/> class.
     /// </summary>
     public HttpClientException() { }
 
     /// <summary>
-    /// Initializes a new instance of the System.Exception class with a specified error message.
+    /// Initializes a new instance of the 
+    /// System.Exception class with a specified error message.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
     public HttpClientException(string message) : base(message) { }
 
     /// <summary>
-    /// Initializes a new instance of the System.Exception class with a specified error
-    /// message and a reference to the inner exception that is the cause of this exception.
+    /// Initializes a new instance of the System.Exception 
+    /// class with a specified error
+    /// message and a reference to the inner exception that 
+    /// is the cause of this exception.
     /// </summary>
-    /// <param name="message">The error message that explains the reason for the exception.</param>
-    /// <param name="innerException"> The exception that is the cause of the current exception, or a null reference
+    /// <param name="message">The error message that explains 
+    /// the reason for the exception.</param>
+    /// <param name="innerException"> The exception that is the 
+    /// cause of the current exception, or a null reference
     /// (Nothing in Visual Basic) if no inner exception is specified.</param>
     public HttpClientException(string message, Exception innerException)
         : base(message, innerException) { }

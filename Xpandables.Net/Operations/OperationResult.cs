@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Net;
 using System.Text.Json.Serialization;
 
@@ -35,7 +35,8 @@ public sealed record OperationResult : OperationResultBase
     internal OperationResult() { }
 
     /// <summary>
-    /// Creates a new instance of <see cref="OperationResult"/> class with the specified values.
+    /// Creates a new instance of <see cref="OperationResult"/> 
+    /// class with the specified values.
     /// </summary>
     /// <param name="statusCode">The HTTP operation status code.</param>
     /// <param name="result">The result of the operation if available.</param>
@@ -44,7 +45,8 @@ public sealed record OperationResult : OperationResultBase
     /// <param name="headers">The collection of header values.</param>
     /// <param name="extensions">The collection of extension values.</param>
     /// <param name="title">The title of the execution operation.</param>
-    /// <param name="detail">The explanation of the execution operation problem.</param>
+    /// <param name="detail">The explanation of the execution 
+    /// operation problem.</param>
     internal OperationResult(
         HttpStatusCode statusCode,
         Optional<object>? result = default,
@@ -54,12 +56,22 @@ public sealed record OperationResult : OperationResultBase
         ElementCollection? extensions = default,
         Optional<string>? title = default,
         Optional<string>? detail = default)
-        : base(statusCode, result, locationUrl, errors, headers, extensions, title, detail) { }
+        : base(
+            statusCode,
+            result,
+            locationUrl,
+            errors,
+            headers,
+            extensions,
+            title,
+            detail)
+    { }
 }
 
 /// <summary>
 /// Represents an implementation of 
-/// <see cref="IOperationResult{TResult}"/> that contains the status of an operation with generic type result.
+/// <see cref="IOperationResult{TResult}"/> that contains the status 
+/// of an operation with generic type result.
 /// </summary>
 /// <typeparam name="TResult">the type of the result.</typeparam>
 public sealed record OperationResult<TResult> : OperationResultBase<TResult>
@@ -71,7 +83,8 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
     internal OperationResult() { }
 
     /// <summary>
-    /// Creates a new instance of <see cref="OperationResult{TValue}"/> with the specified values.
+    /// Creates a new instance of <see cref="OperationResult{TValue}"/> 
+    /// with the specified values.
     /// </summary>
     /// <param name="statusCode">The HTTP operation status code.</param>
     /// <param name="result">The value of the specific type.</param>
@@ -80,7 +93,8 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
     /// <param name="headers">The collection of header values.</param>
     /// <param name="extensions">The collection of extensions.</param>
     /// <param name="title">The title of the execution operation.</param>
-    /// <param name="detail">The explanation of the execution operation problem.</param>
+    /// <param name="detail">The explanation of the execution 
+    /// operation problem.</param>
     internal OperationResult(
         HttpStatusCode statusCode,
         Optional<TResult>? result = default,
@@ -102,10 +116,15 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
     { }
 
     ///<inheritdoc/>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator OperationResult(OperationResult<TResult> operation)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2225:Operator overloads have named alternates",
+        Justification = "<Pending>")]
+    public static implicit operator OperationResult(
+        OperationResult<TResult> operation)
     {
         ArgumentNullException.ThrowIfNull(operation);
-        return (OperationResult)((IOperationResult<TResult>)operation).ToOperationResult();
+        return (OperationResult)((IOperationResult<TResult>)operation)
+            .ToOperationResult();
     }
 }

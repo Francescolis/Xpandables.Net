@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
@@ -41,6 +40,7 @@ internal sealed class NotificationPublisher(
             .ToList();
 
         if (handlers.Count == 0)
+        {
             return options.Value.ConsiderNoNotificationHandlerAsError
                 ? OperationResults
                     .InternalError()
@@ -49,8 +49,10 @@ internal sealed class NotificationPublisher(
                         I18nXpandables.EventSourcingNoIntegrationEventHandler
                             .StringFormat(@event.GetTypeName()))
                     .Build()
-                : OperationResults.Ok().Build();
-
+                : OperationResults
+                    .Ok()
+                    .Build();
+        }
 
         foreach (INotificationHandler<TNotification>? handler in handlers)
         {
@@ -58,9 +60,13 @@ internal sealed class NotificationPublisher(
                 .HandleAsync(@event, cancellationToken)
                 .ConfigureAwait(false)
                 is { IsFailure: true } failedOperation)
+            {
                 return failedOperation;
+            }
         }
 
-        return OperationResults.Ok().Build();
+        return OperationResults
+            .Ok()
+            .Build();
     }
 }

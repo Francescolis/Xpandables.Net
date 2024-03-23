@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// The object base entity interface that provides a state for implementation classes.
+/// The object base entity interface that provides 
+/// a state for implementation classes.
 /// </summary>
 public interface IEntity
 {
@@ -81,10 +82,11 @@ public interface IEntity
 }
 
 /// <summary>
-/// The generic object entity base interface that provides a specific state for implementation classes.
+/// The generic object entity base interface that provides 
+/// a specific state for implementation classes.
 /// </summary>
 /// <typeparam name="TId">The type of the id for the entity.</typeparam>
-public interface IEntity<TId> : IEntity
+public interface IEntity<out TId> : IEntity
     where TId : notnull, IComparable
 {
     /// <summary>

@@ -60,7 +60,7 @@ public sealed record class CQRSOptions
 
     /// <summary>
     /// Enables operation result finalizer behavior to commands/queries 
-    /// that are decorated with the <see cref="IOperationResultDecorator"/> interface.
+    /// that are decorated with the <see cref="IOperationResultFinalizerDecorator"/> interface.
     /// </summary>
     /// <remarks>The target implementation handler(s) must reference 
     /// the <see cref="IOperationResultFinalizer"/> in order to configure the result.</remarks>

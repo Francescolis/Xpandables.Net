@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using System.Reflection;
-
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.Notifications;
 
 namespace Xpandables.Net.DependencyInjection;

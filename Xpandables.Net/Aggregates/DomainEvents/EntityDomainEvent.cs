@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Text.Json;
 
+using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Repositories;
 
@@ -26,7 +27,8 @@ namespace Xpandables.Net.Aggregates.DomainEvents;
 
 /// <summary>
 /// Represents a domain event to be written.
-/// Make use of <see langword="using"/> key work when call or call dispose method.
+/// Make use of <see langword="using"/> key work when call 
+/// or call dispose method.
 /// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
 public sealed class EntityDomainEvent : Entity<Guid>, IDisposable
@@ -39,21 +41,42 @@ public sealed class EntityDomainEvent : Entity<Guid>, IDisposable
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of domain event record built 
     /// from the domain event.</returns>
-    public static EntityDomainEvent TEntityDomainEvent<TAggregateId>(
+    /// <exception cref="InvalidOperationException">
+    /// The action specified failed.</exception>
+    public static EntityDomainEvent ToEntityDomainEvent<TAggregateId>(
         IDomainEvent<TAggregateId> @event,
         JsonSerializerOptions options)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        Guid aggregateId = @event.AggregateId;
-        ulong version = @event.Version;
-        string typeName = @event.GetTypeName();
-        string typeFullName = @event.GetTypeFullName();
-        JsonDocument data = @event.ToJsonDocument(options);
-        string aggregateIdName = typeof(TAggregateId).GetNameWithoutGenericArity();
+        try
+        {
+            Guid aggregateId = @event.AggregateId;
+            ulong version = @event.Version;
+            string typeName = @event.GetTypeName();
+            string typeFullName = @event.GetTypeFullName();
+            JsonDocument data = @event.ToJsonDocument(options);
+            string aggregateIdName = typeof(TAggregateId)
+                .GetNameWithoutGenericArity();
 
-        return new(aggregateId, aggregateIdName, version, typeName, typeFullName, data);
+            return new(
+                aggregateId,
+                aggregateIdName,
+                version,
+                typeName,
+                typeFullName,
+                data);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                and not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                    I18nXpandables.ActionSpecifiedFailedSeeException
+                        .StringFormat(nameof(ToEntityDomainEvent)),
+                    exception);
+        }
     }
 
     /// <summary>
@@ -63,6 +86,8 @@ public sealed class EntityDomainEvent : Entity<Guid>, IDisposable
     /// <param name="entity">The record to act with.</param>
     /// <param name="options">The serializer options.</param>
     /// <returns>An instance of domain event built from the entity.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The action specified failed.</exception>
     public static IDomainEvent<TAggregateId>? ToDomainEvent<TAggregateId>(
         EntityDomainEvent entity,
         JsonSerializerOptions? options)
@@ -70,11 +95,23 @@ public sealed class EntityDomainEvent : Entity<Guid>, IDisposable
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        if (Type.GetType(entity.EventTypeFullName) is not { } eventType)
-            return default;
+        try
+        {
+            if (Type.GetType(entity.EventTypeFullName) is not { } eventType)
+                return default;
 
-        object? eventObject = entity.Data.Deserialize(eventType, options);
-        return eventObject as IDomainEvent<TAggregateId>;
+            object? eventObject = entity.Data.Deserialize(eventType, options);
+            return eventObject as IDomainEvent<TAggregateId>;
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                and not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                    I18nXpandables.ActionSpecifiedFailedSeeException
+                        .StringFormat(nameof(ToDomainEvent)),
+                    exception);
+        }
     }
 
     /// <summary>
@@ -99,7 +136,8 @@ public sealed class EntityDomainEvent : Entity<Guid>, IDisposable
     public string EventTypeName { get; }
 
     /// <summary>
-    /// Contains the string representation of the .Net event full assembly qualified type name.
+    /// Contains the string representation of the .Net event 
+    /// full assembly qualified type name.
     /// </summary>
     public string EventTypeFullName { get; }
 
@@ -117,7 +155,6 @@ public sealed class EntityDomainEvent : Entity<Guid>, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ///inheritdoc/>
     private EntityDomainEvent(
         Guid aggregateId,
         string aggregateIdTypeName,

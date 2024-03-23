@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Linq.Expressions;
 
 namespace Xpandables.Net.Expressions;
@@ -24,30 +24,91 @@ namespace Xpandables.Net.Expressions;
 /// </summary>
 /// <typeparam name="TSource">The data type to apply expression to.</typeparam>
 /// <typeparam name="TResult">The type of the result of expression.</typeparam>
-public sealed record class QueryExpressionNot<TSource, TResult> : QueryExpression<TSource, TResult>
+public record class QueryExpressionNot<TSource, TResult>
+    : QueryExpression<TSource, TResult>
 {
     private readonly IQueryExpression<TSource, TResult> _expression;
     private Expression<Func<TSource, TResult>>? _cache;
 
     /// <summary>
-    /// Returns a new instance of <see cref="QueryExpressionNot{TSource, TResult}"/> class with the query expression.
+    /// Returns a new instance of 
+    /// <see cref="QueryExpressionNot{TSource, TResult}"/> class 
+    /// with the query expression.
     /// </summary>
     /// <param name="expression">The query expression  for the left side.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="expression"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="expression"/> is null.</exception>
     public QueryExpressionNot(IQueryExpression<TSource, TResult> expression)
-        => _expression = expression ?? throw new ArgumentNullException(nameof(expression));
+        => _expression = expression
+        ?? throw new ArgumentNullException(nameof(expression));
 
     /// <summary>
-    /// Returns a new instance of <see cref="QueryExpressionNot{TSource, TResult}"/> class with the expression.
+    /// Returns a new instance of 
+    /// <see cref="QueryExpressionNot{TSource, TResult}"/> class 
+    /// with the expression.
     /// </summary>
-    /// <param name="leftExpression">The query expression  for the left side.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="leftExpression"/> is null.</exception>
+    /// <param name="leftExpression">The query expression 
+    /// for the left side.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="leftExpression"/> is null.</exception>
     public QueryExpressionNot(Expression<Func<TSource, TResult>> leftExpression)
-        => _expression = new QueryExpressionBuilder<TSource, TResult>(leftExpression ?? throw new ArgumentNullException(nameof(leftExpression)));
+        => _expression = new QueryExpressionBuilder<TSource, TResult>(
+            leftExpression
+                ?? throw new ArgumentNullException(nameof(leftExpression)));
 
     /// <summary>
-    /// Returns the expression to be used for the clause <see langword="Where"/> in a query.
+    /// Returns the expression to be used for the 
+    /// clause <see langword="Where"/> in a query.
     /// </summary>
     public override Expression<Func<TSource, TResult>> GetExpression()
-        => _cache ??= QueryExpressionFactory<TResult>.Not(_expression.GetExpression());
+        => _cache ??= QueryExpressionFactory<TResult>
+            .Not(_expression.GetExpression());
+}
+
+/// <summary>
+/// Provides the <see cref="QueryExpression{TSource}"/> "Not" profile
+/// for TResult as <see cref="bool"/>.
+/// </summary>
+/// <typeparam name="TSource">The data type to apply expression to.</typeparam>
+public sealed record class QueryExpressionNot<TSource>
+    : QueryExpression<TSource>, IQueryExpression<TSource>
+{
+
+    private readonly IQueryExpression<TSource> _expression;
+    private Expression<Func<TSource, bool>>? _cache;
+
+    /// <summary>
+    /// Returns a new instance of 
+    /// <see cref="QueryExpressionNot{TSource}"/> class 
+    /// with the query expression.
+    /// </summary>
+    /// <param name="expression">The query expression 
+    /// for the left side.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="expression"/> is null.</exception>
+    public QueryExpressionNot(IQueryExpression<TSource> expression)
+        => _expression = expression
+        ?? throw new ArgumentNullException(nameof(expression));
+
+    /// <summary>
+    /// Returns a new instance of 
+    /// <see cref="QueryExpressionNot{TSource}"/> class 
+    /// with the expression.
+    /// </summary>
+    /// <param name="leftExpression">The query expression 
+    /// for the left side.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="leftExpression"/> is null.</exception>
+    public QueryExpressionNot(Expression<Func<TSource, bool>> leftExpression)
+        => _expression = new QueryExpressionBuilder<TSource>(
+            leftExpression
+                ?? throw new ArgumentNullException(nameof(leftExpression)));
+
+    /// <summary>
+    /// Returns the expression to be used for the 
+    /// clause <see langword="Where"/> in a query.
+    /// </summary>
+    public override Expression<Func<TSource, bool>> GetExpression()
+        => _cache ??= QueryExpressionFactory<bool>
+            .Not(_expression.GetExpression());
 }

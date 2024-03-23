@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
 namespace Xpandables.Net.Primitives;
@@ -50,13 +50,16 @@ public readonly record struct BinaryEntry(
     /// Convert the content to base64 data string.
     /// </summary>
     /// <remarks>Example : "data:image/png;base64,DIKJ1245JDKkhlSKLLKS...."</remarks>
-    /// <returns>The string representation, in base 64 data, of the content.</returns>
-    public string ConvertToBase64Data() => $"data:{ContentType};base64,{ConvertToBase64String()}";
+    /// <returns>The string representation, in base 64 data, 
+    /// of the content.</returns>
+    public string ConvertToBase64Data()
+        => $"data:{ContentType};base64,{ConvertToBase64String()}";
 
     /// <summary>
     /// Returns the UTF8 encoded string of the image.
     /// </summary>
     /// <returns>An UTF8 string.</returns>
-    public override string ToString() => System.Text.Encoding.UTF8.GetString(Content, 0, Content.Length);
+    public override string ToString()
+        => System.Text.Encoding.UTF8.GetString(Content, 0, Content.Length);
     void IDisposable.Dispose() => Array.Clear(Content, 0, Content.Length);
 }

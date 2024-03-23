@@ -21,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.Notifications;
-using Xpandables.Net.SnapShots;
+using Xpandables.Net.Aggregates.SnapShots;
 
 namespace Xpandables.Net.DependencyInjection;
 

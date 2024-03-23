@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.Optionals;
 public partial record struct Optional<T>
 {
@@ -22,9 +22,12 @@ public partial record struct Optional<T>
     /// Applies the <paramref name="some"/> method if the instance contains a value.
     /// Otherwise, returns the current instance.
     /// </summary>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
-    /// <returns>The current instance where the <paramref name="some"/> has been applied if the instance contains a value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="some"/> is null.</exception>
+    /// <param name="some">The method that get called 
+    /// when the instance contains a value.</param>
+    /// <returns>The current instance where the <paramref name="some"/> 
+    /// has been applied if the instance contains a value.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="some"/> is null.</exception>
     public async ValueTask<Optional<T>> MapAsync(Func<T, ValueTask<T>> some)
     {
         ArgumentNullException.ThrowIfNull(some);
@@ -36,12 +39,16 @@ public partial record struct Optional<T>
     }
 
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value.
+    /// Applies the <paramref name="some"/> method if the 
+    /// instance contains a value.
     /// Otherwise, returns the current instance.
     /// </summary>
-    /// <param name="some">The method that get called when the instance contains a value.</param>
-    /// <returns>The current instance where the <paramref name="some"/> has been applied if the instance contains a value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="some"/> is null.</exception>
+    /// <param name="some">The method that get called when the 
+    /// instance contains a value.</param>
+    /// <returns>The current instance where the <paramref name="some"/> h
+    /// as been applied if the instance contains a value.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="some"/> is null.</exception>
     public async ValueTask<Optional<T>> MapAsync(Func<T, ValueTask> some)
     {
         ArgumentNullException.ThrowIfNull(some);
@@ -58,13 +65,16 @@ public partial record struct Optional<T>
     }
 
     /// <summary>
-    /// Turns the current instance to a new <see cref="Optional{T}"/> using the specified binder.
+    /// Turns the current instance to a new <see cref="Optional{T}"/> 
+    /// using the specified binder.
     /// </summary>
     /// <typeparam name="TU">The type of the result.</typeparam>
     /// <param name="binder">The binding method.</param>
     /// <returns>A new optional that could contain a value or not.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="binder"/> is null.</exception>
-    public async readonly ValueTask<Optional<TU>> BindAsync<TU>(Func<T?, ValueTask<Optional<TU>>> binder)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="binder"/> is null.</exception>
+    public async readonly ValueTask<Optional<TU>> BindAsync<TU>(
+        Func<T?, ValueTask<Optional<TU>>> binder)
     {
         ArgumentNullException.ThrowIfNull(binder);
 
@@ -72,12 +82,16 @@ public partial record struct Optional<T>
     }
 
     /// <summary>
-    /// Returns a new <see cref="Optional{T}"/> using <paramref name="empty"/> method if the instance is empty.
+    /// Returns a new <see cref="Optional{T}"/> using 
+    /// <paramref name="empty"/> method if the instance is empty.
     /// </summary>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
+    /// <param name="empty">The method that get called 
+    /// when the instance is empty.</param>
     /// <returns>The replacement value.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="empty"/> is null.</exception>
-    /// <returns>The current instance where the <paramref name="empty"/> has been applied if the instance is empty.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="empty"/> is null.</exception>
+    /// <returns>The current instance where the <paramref name="empty"/> 
+    /// has been applied if the instance is empty.</returns>
     public async ValueTask<Optional<T>> EmptyAsync(Func<ValueTask<T>> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
@@ -92,9 +106,12 @@ public partial record struct Optional<T>
     /// Applies the <paramref name="empty"/> method if the instance is empty.
     /// Otherwise, returns the current instance.
     /// </summary>
-    /// <param name="empty">The method that get called when the instance is empty.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="empty"/> is null.</exception>
-    /// <returns>The current instance where the <paramref name="empty"/> has been applied if the instance is empty.</returns>
+    /// <param name="empty">The method that get called 
+    /// when the instance is empty.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="empty"/> is null.</exception>
+    /// <returns>The current instance where the <paramref name="empty"/> 
+    /// has been applied if the instance is empty.</returns>
     public async readonly ValueTask<Optional<T>> EmptyAsync(Func<ValueTask> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);

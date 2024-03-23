@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.Composition;
 
 using Microsoft.Extensions.Configuration;
@@ -23,9 +23,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Compositions;
 
 /// <summary>
-/// Provides with an interface that allows external libraries to register types to the services collection.
+/// Provides with an interface that allows external libraries to register 
+/// types to the services collection.
 /// This interface is used with MEF : Managed Extensibility Framework.
-/// The implementation class must be decorated with the attribute <see cref="ExportAttribute"/> attribute,
+/// The implementation class must be decorated with the attribute 
+/// <see cref="ExportAttribute"/> attribute,
 /// with <see cref="IAddServiceExport"/> type as contract type.
 /// </summary>
 public interface IAddServiceExport

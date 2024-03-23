@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Collections;
 using System.Reflection;
 using System.Text.Json;
@@ -26,7 +26,8 @@ using Xpandables.Net.Primitives;
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// For route, query and header binding sources in minimal Api for asynchronous processes, 
+/// For route, query and header binding sources in minimal 
+/// Api for asynchronous processes, 
 /// </summary>
 /// <typeparam name="TRequest">The type of the route parameter.</typeparam>
 public interface IHttpRequestTryParseAsync<TRequest>
@@ -39,18 +40,23 @@ public interface IHttpRequestTryParseAsync<TRequest>
 #pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
-        /// The method discovered by <see langword="RequestDelegateFactory"/> on types used as parameters of route
+        /// The method discovered by <see langword="RequestDelegateFactory"/> 
+        /// on types used as parameters of route
         /// handler delegates to support custom binding.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> instance.</param>
-        /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
+        /// <param name="parameter">The <see cref="ParameterInfo"/> 
+        /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(
+            HttpContext context,
+            ParameterInfo parameter)
         {
             _ = parameter;
             ArgumentNullException.ThrowIfNull(context);
 
-            Dictionary<string, object?> dict = context.Request.RouteValues.ToDictionary(d => d.Key, d => d.Value);
+            Dictionary<string, object?> dict = context.Request.RouteValues
+                .ToDictionary(d => d.Key, d => d.Value);
 
             return DoBindAsync(dict);
         }
@@ -64,18 +70,23 @@ public interface IHttpRequestTryParseAsync<TRequest>
 #pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
-        /// The method discovered by <see langword="RequestDelegateFactory"/> on types used as parameters of header
+        /// The method discovered by <see langword="RequestDelegateFactory"/> 
+        /// on types used as parameters of header
         /// handler delegates to support custom binding.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> instance.</param>
-        /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
+        /// <param name="parameter">The <see cref="ParameterInfo"/> 
+        /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(
+            HttpContext context,
+            ParameterInfo parameter)
         {
             _ = parameter;
             ArgumentNullException.ThrowIfNull(context);
 
-            Dictionary<string, string?> dict = context.Request.Headers.ToDictionary(d => d.Key, d => (string?)d.Value);
+            Dictionary<string, string?> dict = context.Request.Headers
+                .ToDictionary(d => d.Key, d => (string?)d.Value);
 
             return DoBindAsync(dict);
         }
@@ -89,37 +100,52 @@ public interface IHttpRequestTryParseAsync<TRequest>
 #pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
-        /// The method discovered by <see langword="RequestDelegateFactory"/> on types used as parameters of query
+        /// The method discovered by <see langword="RequestDelegateFactory"/> 
+        /// on types used as parameters of query
         /// handler delegates to support custom binding.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> instance.</param>
-        /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
+        /// <param name="parameter">The <see cref="ParameterInfo"/> 
+        /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public static ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter)
+        public static ValueTask<TRequest?> BindAsync(
+            HttpContext context,
+            ParameterInfo parameter)
         {
             _ = parameter;
             ArgumentNullException.ThrowIfNull(context);
 
-            Dictionary<string, string?> dict = context.Request.Query.ToDictionary(d => d.Key, d => (string?)d.Value);
+            Dictionary<string, string?> dict = context.Request.Query.
+                ToDictionary(d => d.Key, d => (string?)d.Value);
 
             return DoBindAsync(dict);
         }
     }
 
     /// <summary>
-    /// The method discovered by <see langword="RequestDelegateFactory"/> on types used as parameters of route/query/header
+    /// The method discovered by <see langword="RequestDelegateFactory"/> 
+    /// on types used as parameters of route/query/header
     /// handler delegates to support custom binding.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> instance.</param>
-    /// <param name="parameter">The <see cref="ParameterInfo"/> for the parameter being bound to.</param>
+    /// <param name="parameter">The <see cref="ParameterInfo"/> 
+    /// for the parameter being bound to.</param>
     /// <returns>The value to assign to the parameter.</returns>
-    static abstract ValueTask<TRequest?> BindAsync(HttpContext context, ParameterInfo parameter);
+    static abstract ValueTask<TRequest?> BindAsync(
+        HttpContext context,
+        ParameterInfo parameter);
 
     internal static ValueTask<TRequest?> DoBindAsync(IDictionary dictionary)
     {
-        string jsonString = JsonSerializer.Serialize(dictionary, JsonSerializerDefaultOptions.OptionDefaultWeb);
+        string jsonString = JsonSerializer
+            .Serialize(
+                dictionary,
+                JsonSerializerDefaultOptions.OptionDefaultWeb);
 
-        TRequest? request = JsonSerializer.Deserialize<TRequest>(jsonString, JsonSerializerDefaultOptions.OptionDefaultWeb);
+        TRequest? request = JsonSerializer
+            .Deserialize<TRequest>(
+                jsonString,
+                JsonSerializerDefaultOptions.OptionDefaultWeb);
 
         return ValueTask.FromResult(request);
     }

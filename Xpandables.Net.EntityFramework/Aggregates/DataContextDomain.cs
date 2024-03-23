@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Aggregates.Configurations;
 using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.Notifications;
+using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.SnapShots;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -29,11 +29,14 @@ namespace Xpandables.Net.Aggregates;
 /// Provides the base domain db context.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="DataContextDomain"/> with the specified configuration.
+/// Initializes a new instance of <see cref="DataContextDomain"/> 
+/// with the specified configuration.
 /// </remarks>
 /// <param name="contextOptions">The configuration to be applied.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="contextOptions"/> is null.</exception>
-public sealed class DataContextDomain(DbContextOptions<DataContextDomain> contextOptions)
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="contextOptions"/> is null.</exception>
+public sealed class DataContextDomain(
+    DbContextOptions<DataContextDomain> contextOptions)
     : DataContext(contextOptions)
 {
     ///<inheritdoc/>
@@ -41,9 +44,12 @@ public sealed class DataContextDomain(DbContextOptions<DataContextDomain> contex
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
-        _ = modelBuilder.ApplyConfiguration(new EntityDomainEventTypeConfiguration());
-        _ = modelBuilder.ApplyConfiguration(new EntityNotificationTypeConfiguration());
-        _ = modelBuilder.ApplyConfiguration(new EntitySnapShotTypeConfiguration());
+        _ = modelBuilder
+            .ApplyConfiguration(new EntityDomainEventTypeConfiguration());
+        _ = modelBuilder
+            .ApplyConfiguration(new EntityNotificationTypeConfiguration());
+        _ = modelBuilder
+            .ApplyConfiguration(new EntitySnapShotTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

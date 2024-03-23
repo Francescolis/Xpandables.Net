@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Validators;
@@ -29,5 +29,6 @@ public sealed class NullValidator<TArgument> : IValidator<TArgument>
     /// <summary>
     /// Does nothing.
     /// </summary>
-    public IOperationResult Validate(TArgument argument) => OperationResults.Ok().Build();
+    public IOperationResult Validate(TArgument argument)
+        => OperationResults.Ok().Build();
 }

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Diagnostics;
 using System.Reflection;
 
@@ -33,17 +33,25 @@ internal sealed record class Invocation : IInvocation
     public TimeSpan ElapsedTime { get; private set; }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="Invocation"/> with the arguments needed for invocation.
+    /// Initializes a new instance of <see cref="Invocation"/> with 
+    /// the arguments needed for invocation.
     /// </summary>
     /// <param name="targetMethod">The target method.</param>
     /// <param name="targetInstance">The target instance being called.</param>
     /// <param name="argsValue">Arguments for the method, if necessary.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="targetMethod"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="targetInstance"/> is null.</exception>
-    internal Invocation(MethodInfo targetMethod, object targetInstance, params object?[]? argsValue)
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="targetMethod"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="targetInstance"/> is null.</exception>
+    internal Invocation(
+        MethodInfo targetMethod,
+        object targetInstance,
+        params object?[]? argsValue)
     {
-        InvocationMethod = targetMethod ?? throw new ArgumentNullException(nameof(targetMethod));
-        InvocationInstance = targetInstance ?? throw new ArgumentNullException(nameof(targetInstance));
+        InvocationMethod = targetMethod
+            ?? throw new ArgumentNullException(nameof(targetMethod));
+        InvocationInstance = targetInstance
+            ?? throw new ArgumentNullException(nameof(targetInstance));
         Arguments = new ParameterCollection(targetMethod, argsValue);
     }
 

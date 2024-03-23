@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-using Microsoft.EntityFrameworkCore;
-
+********************************************************************************/
 using System.Linq.Expressions;
 
 using Xpandables.Net.Optionals;
@@ -29,171 +27,89 @@ namespace Xpandables.Net.Repositories;
 /// </summary>
 /// <typeparam name="TEntity">The Domain object type.</typeparam>
 /// <remarks>
-/// Initializes a new instance of <see cref="Repository{TEntity}"/> with the context to act on.
+/// Initializes a new instance of <see cref="Repository{TEntity}"/> 
+/// with the context to act on.
 /// </remarks>
-/// <param name="context">The data context to act on.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="context"/> is null.</exception>
+/// <param name="repositoryRead">The read repository to act on.</param>
+/// <param name="repositoryWrite">The write repository to act on.</param>
+/// <exception cref="ArgumentNullException">The <paramref name="repositoryRead"/> 
+/// or <paramref name="repositoryWrite"/> is null.</exception>
 /// <summary>
 /// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
 /// You must derive from this class to customize its behaviors.
 /// </summary>
-public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
+public class Repository<TEntity>(
+    IRepositoryRead<TEntity> repositoryRead,
+    IRepositoryWrite<TEntity> repositoryWrite) : IRepository<TEntity>
     where TEntity : class, IEntity
 {
-    /// <summary>
-    /// Gets the current context instance.
-    /// </summary>
-    protected DataContext Context { get; init; } = context
-        ?? throw new ArgumentNullException(nameof(context));
-
     ///<inheritdoc/>
-    public virtual async ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
+    public virtual ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable
-        => await Context
-            .Set<TEntity>()
-            .FindAsync([key], cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        => repositoryRead.TryFindByKeyAsync(key, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask<Optional<TResult>> TryFindAsync<TResult>(
+    public virtual ValueTask<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-
-        IQueryable<TResult> queryableResult = typeof(IEntity)
-            .IsAssignableFrom(typeof(TResult))
-                ? filter.GetQueryableFiltered(Context.Set<TEntity>())
-                : filter.GetQueryableFiltered(Context.Set<TEntity>().AsNoTracking());
-
-        return await queryableResult
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-    }
+        => repositoryRead.TryFindAsync(filter, cancellationToken);
 
     ///<inheritdoc/>
     public IAsyncEnumerable<TResult> FetchAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-
-        IQueryable<TResult> queryableResult = typeof(IEntity)
-            .IsAssignableFrom(typeof(TResult))
-                ? filter.GetQueryableFiltered(Context.Set<TEntity>())
-                : filter.GetQueryableFiltered(Context.Set<TEntity>().AsNoTracking());
-
-        return queryableResult.AsAsyncEnumerable();
-    }
+        => repositoryRead.FetchAsync(filter, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask<int> CountAsync(
+    public virtual ValueTask<int> CountAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-
-        return await filter
-            .GetQueryableFiltered(Context.Set<TEntity>().AsNoTracking())
-                .CountAsync(cancellationToken)
-                .ConfigureAwait(false);
-    }
+        => repositoryRead.CountAsync(filter, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask InsertAsync(
+    public virtual ValueTask InsertAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
-    {
-        _ = await Context.Set<TEntity>()
-            .AddAsync(entity, cancellationToken)
-            .ConfigureAwait(false);
-    }
+        => repositoryWrite.InsertAsync(entity, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask UpdateAsync(
+    public virtual ValueTask UpdateAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
-    {
-        _ = Context.Set<TEntity>().Update(entity);
-        await ValueTask.CompletedTask
-            .ConfigureAwait(false);
-    }
+        => repositoryWrite.UpdateAsync(entity, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask DeleteAsync(
+    public virtual ValueTask DeleteAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-
-        IEnumerable<TEntity> deleteTableResult = filter
-            .GetQueryableFiltered(Context.Set<TEntity>())
-            .AsEnumerable();
-
-        if (deleteTableResult.Any())
-            Context.RemoveRange(deleteTableResult);
-
-        await ValueTask.CompletedTask
-            .ConfigureAwait(false);
-    }
+        => repositoryWrite.DeleteAsync(filter, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask InsertManyAsync(
+    public virtual ValueTask InsertManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(entities);
-
-        await Context
-            .AddRangeAsync(entities, cancellationToken)
-            .ConfigureAwait(false);
-    }
+        => repositoryWrite.InsertManyAsync(entities, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask UpdateManyAsync(
+    public virtual ValueTask UpdateManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(entities);
-
-        Context.UpdateRange(entities);
-
-        await ValueTask.CompletedTask
-            .ConfigureAwait(false);
-    }
+        => repositoryWrite.UpdateManyAsync(entities, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask UpdateManyAsync(
+    public virtual ValueTask UpdateManyAsync(
         IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, object>> updater,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-        ArgumentNullException.ThrowIfNull(updater);
-
-        Func<TEntity, object> compiledUpdated = updater.Compile();
-
-        await foreach (TEntity? entity in FetchAsync(filter, cancellationToken).ConfigureAwait(false))
-        {
-            object updated = compiledUpdated(entity);
-            Context.Entry(entity).CurrentValues.SetValues(updated);
-        }
-    }
+        => repositoryWrite.UpdateManyAsync(filter, updater, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual async ValueTask DeleteAsync(
+    public virtual ValueTask DeleteAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-
-        _ = Context.Remove(entity);
-
-        await ValueTask.CompletedTask
-            .ConfigureAwait(false);
-    }
+        => repositoryWrite.DeleteAsync(entity, cancellationToken);
 }
 
 /// <summary>
@@ -203,22 +119,23 @@ public class Repository<TEntity>(DataContext context) : IRepository<TEntity>
 /// <typeparam name="TEntity">The Domain object type.</typeparam>
 /// <typeparam name="TDataContext">The type of the data context.</typeparam>
 /// <remarks>
-/// Initializes a new instance of <see cref="Repository{TEntity, TDataContext}"/> with the context to act on.
+/// Initializes a new instance of 
+/// <see cref="Repository{TEntity, TDataContext}"/> with the context to act on.
 /// </remarks>
-/// <param name="context">The data context to act on.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="context"/> is null.</exception>
+/// <param name="repositoryRead">The read repository to act on.</param>
+/// <param name="repositoryWrite">The write repository to act on.</param>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="repositoryWrite"/> or <paramref name="repositoryRead"/> 
+/// is null.</exception>
 /// <summary>
 /// An implementation of <see cref="IRepository{TEntity}"/> for EFCore.
 /// You must derive from this class to customize its behaviors.
 /// </summary>
-public class Repository<TEntity, TDataContext>(TDataContext context)
-    : Repository<TEntity>(context)
+public class Repository<TEntity, TDataContext>(
+    IRepositoryRead<TEntity, TDataContext> repositoryRead,
+    IRepositoryWrite<TEntity, TDataContext> repositoryWrite)
+    : Repository<TEntity>(repositoryRead, repositoryWrite)
     where TEntity : class, IEntity
     where TDataContext : DataContext
 {
-    /// <summary>
-    /// Gets the current context instance.
-    /// </summary>
-    protected new TDataContext Context { get; init; } = context
-        ?? throw new ArgumentNullException(nameof(context));
 }
