@@ -40,6 +40,9 @@ public class OperationResultSerializationConfigureOptions : IConfigureOptions<Js
     {
         _ = options ?? throw new ArgumentNullException(nameof(options));
 
+        options.SerializerOptions.PropertyNameCaseInsensitive = true;
+        options.SerializerOptions.PropertyNamingPolicy = null;
+
         options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.SerializerOptions.Converters.Add(new OperationResultAspJsonConverterFactory());
         options.SerializerOptions.Converters.Add(new JsonDateOnlyConverter());
