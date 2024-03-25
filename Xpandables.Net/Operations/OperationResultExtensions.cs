@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.I18n;
 
 namespace Xpandables.Net.Operations;
 
@@ -192,7 +193,16 @@ public static partial class OperationResultExtensions
         try
         {
             TResult result = await valueTask.ConfigureAwait(false);
-            return OperationResults.Ok(result).Build();
+            return result is { }
+                ? OperationResults
+                    .Ok(result)
+                    .Build()
+                : OperationResults
+                    .BadRequest<TResult>()
+                    .WithError(
+                        ElementEntry.UndefinedKey,
+                        I18nXpandables.OperationResultValueIsNull)
+                    .Build();
         }
         catch (OperationResultException operationResultException)
         {
@@ -202,7 +212,9 @@ public static partial class OperationResultExtensions
         catch (Exception exception)
             when (exception is not OperationResultException)
         {
-            return exception.ToOperationResult().ToOperationResult<TResult>();
+            return exception
+                .ToOperationResult()
+                .ToOperationResult<TResult>();
         }
     }
 
@@ -223,7 +235,16 @@ public static partial class OperationResultExtensions
         try
         {
             TResult result = await task.ConfigureAwait(false);
-            return OperationResults.Ok(result).Build();
+            return result is { }
+                ? OperationResults
+                    .Ok(result)
+                    .Build()
+                : OperationResults
+                    .BadRequest<TResult>()
+                    .WithError(
+                        ElementEntry.UndefinedKey,
+                        I18nXpandables.OperationResultValueIsNull)
+                    .Build();
         }
         catch (OperationResultException operationResultException)
         {
@@ -233,7 +254,9 @@ public static partial class OperationResultExtensions
         catch (Exception exception)
             when (exception is not OperationResultException)
         {
-            return exception.ToOperationResult().ToOperationResult<TResult>();
+            return exception
+                .ToOperationResult()
+                .ToOperationResult<TResult>();
         }
     }
 }

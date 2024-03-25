@@ -232,6 +232,15 @@ namespace Xpandables.Net.Primitives.I18n {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pas de résultat à l&apos;exécution de la tâche..
+        /// </summary>
+        public static string OperationResultValueIsNull {
+            get {
+                return ResourceManager.GetString("OperationResultValueIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Echec de l&apos;ajout de la notification..
         /// </summary>
         public static string OutboxFailedToAppendNotification {

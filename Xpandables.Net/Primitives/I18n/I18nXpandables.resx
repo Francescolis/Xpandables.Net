@@ -163,4 +163,7 @@
   <data name="EventSourcingNoDomainEventHandler" xml:space="preserve">
     <value>Pas de Domain Event Handler trouvé pour '{0}'</value>
   </data>
+  <data name="OperationResultValueIsNull" xml:space="preserve">
+    <value>Pas de résultat à l'exécution de la tâche.</value>
+  </data>
 </root>
