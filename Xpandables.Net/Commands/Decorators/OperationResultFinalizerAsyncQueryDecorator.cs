@@ -37,7 +37,6 @@ internal sealed class OperationResultFinalizerAsyncQueryDecorator<TQuery, TResul
             .GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
-#pragma warning disable S2589 // Boolean expressions should not be gratuitous
 
         TResult? result = default;
         bool finalResult = false;
@@ -94,6 +93,5 @@ internal sealed class OperationResultFinalizerAsyncQueryDecorator<TQuery, TResul
                 yield break;
             }
         }
-#pragma warning restore S2589 // Boolean expressions should not be gratuitous
     }
 }

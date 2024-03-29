@@ -15,9 +15,9 @@
  * limitations under the License.
  *
 ************************************************************************************************************/
-using Microsoft.Extensions.DependencyInjection;
-
 using System.Reflection;
+
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.DependencyInjection;
 internal static class ServiceCollectionInternalExtensions
@@ -54,6 +54,7 @@ internal static class ServiceCollectionInternalExtensions
             .Where(type => !type.IsAbstract
                            && !type.IsInterface
                            && !type.IsGenericType
+                           && type.IsSealed
                            && Array.Exists(
                                type.GetInterfaces(),
                                 inter => inter.IsGenericType && inter.GetGenericTypeDefinition() == serviceType))
