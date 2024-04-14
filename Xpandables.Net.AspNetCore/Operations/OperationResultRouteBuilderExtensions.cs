@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Http;
 
 using Xpandables.Net.Http;
 
-namespace Xpandables.Net.AspNetCore.Operations;
+namespace Xpandables.Net.Operations;
 
 /// <summary>
 /// Extension methods for adding 
