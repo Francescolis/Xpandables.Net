@@ -19,6 +19,8 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Primitives;
+
 namespace Xpandables.Net.DependencyInjection;
 internal static class ServiceCollectionInternalExtensions
 {
@@ -28,7 +30,8 @@ internal static class ServiceCollectionInternalExtensions
          MethodInfo method,
          Assembly[] assemblies)
     {
-        IEnumerable<GenericTypes> genericTypes = DoGetGenericTypeMatchingServiceType(interType, assemblies);
+        IEnumerable<GenericTypes> genericTypes =
+            DoGetGenericTypeMatchingServiceType(interType, assemblies);
 
         foreach (GenericTypes generic in genericTypes)
         {
@@ -36,7 +39,8 @@ internal static class ServiceCollectionInternalExtensions
             {
                 Type[] paramTypes = [.. interf.GetGenericArguments()];
                 Type methodType = generic.Type;
-                MethodInfo methodGeneric = method.MakeGenericMethod([.. paramTypes, methodType]);
+                MethodInfo methodGeneric = method
+                    .MakeGenericMethod([.. paramTypes, methodType]);
 
                 _ = methodGeneric.Invoke(null, [services, null]);
             }
@@ -45,7 +49,10 @@ internal static class ServiceCollectionInternalExtensions
         return services;
     }
 
-    internal readonly record struct GenericTypes(Type Type, IEnumerable<Type> Interfaces);
+    internal readonly record struct GenericTypes(
+        Type Type,
+        IEnumerable<Type> Interfaces);
+
     internal static IEnumerable<GenericTypes> DoGetGenericTypeMatchingServiceType(
            Type serviceType,
            Assembly[] assemblies)
@@ -53,11 +60,13 @@ internal static class ServiceCollectionInternalExtensions
         return assemblies.SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                            && !type.IsInterface
-                           && !type.IsGenericType
                            && type.IsSealed
+                           && type.IsNotDecorator()
                            && Array.Exists(
                                type.GetInterfaces(),
-                                inter => inter.IsGenericType && inter.GetGenericTypeDefinition() == serviceType))
+                                inter => inter.IsGenericType
+                                && inter.GetGenericTypeDefinition()
+                                    == serviceType))
             .Select(type => new GenericTypes(
                 type,
                 type.GetInterfaces()
@@ -65,7 +74,8 @@ internal static class ServiceCollectionInternalExtensions
                         && inter.GetGenericTypeDefinition() == serviceType)));
     }
 
-    internal static IServiceCollection DoRegisterTypeServiceLifeTime<TInterface, TImplementation>(
+    internal static IServiceCollection DoRegisterTypeServiceLifeTime
+        <TInterface, TImplementation>(
          this IServiceCollection services,
          Func<IServiceProvider, TImplementation>? implFactory = default,
          ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
@@ -94,25 +104,30 @@ internal static class ServiceCollectionInternalExtensions
            Type serviceType,
            Type decoratorType)
     {
-        IEnumerable<Type[]> arguments = services.GetArgumentTypes(serviceType);
+        IEnumerable<Type[]> arguments = services
+            .GetArgumentTypes(serviceType);
 
         foreach (Type[] argument in arguments)
         {
             if (serviceType
-                .TryMakeGenericType(out Type? closedServiceType, out _, argument)
+                .TryMakeGenericType(
+                    out Type? closedServiceType, out _, argument)
                 && decoratorType
-                    .TryMakeGenericType(out Type? closedDecoratorType, out _, argument))
+                    .TryMakeGenericType(
+                    out Type? closedDecoratorType, out _, argument))
             {
                 _ = services.DecorateDescriptors(
                     closedServiceType,
-                    descriptor => descriptor.DecorateDescriptor(closedDecoratorType));
+                    descriptor => descriptor
+                        .DecorateDescriptor(closedDecoratorType));
             }
         }
 
         return services;
     }
 
-    internal static Type[] GetGenericParameterTypeConstraints(this Type serviceType)
+    internal static Type[] GetGenericParameterTypeConstraints(
+        this Type serviceType)
         => serviceType
             .GetGenericArguments()
             .SelectMany(s => s.GetGenericParameterConstraints())
@@ -156,7 +171,8 @@ internal static class ServiceCollectionInternalExtensions
         Type serviceType,
         Func<ServiceDescriptor, ServiceDescriptor> decorator)
     {
-        foreach (ServiceDescriptor descriptor in services.GetServiceDescriptors(serviceType))
+        foreach (ServiceDescriptor descriptor in services
+            .GetServiceDescriptors(serviceType))
         {
             int index = services.IndexOf(descriptor);
             services[index] = decorator(descriptor);

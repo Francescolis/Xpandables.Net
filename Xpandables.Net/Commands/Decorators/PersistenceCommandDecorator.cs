@@ -58,7 +58,7 @@ public delegate ValueTask<IOperationResult> PersistenceCommandHandler(
 public sealed class PersistenceCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
     PersistenceCommandHandler persistenceCommandHandler)
-    : ICommandHandler<TCommand>
+    : ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, IPersistenceDecorator
 {
     /// <summary>

@@ -24,15 +24,15 @@ using Xpandables.Net.Visitors;
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
-/// Defines options to apply decorators to handlers on registration.
+/// Defines options to apply decorators to handlers.
 /// </summary>
-public sealed record class CQRSOptions
+public sealed record class CommandOptions
 {
     /// <summary>
     /// Enables Validator behavior to commands/queries 
     /// that are decorated with the <see cref="IValidateDecorator"/> interface.
     /// </summary>
-    public CQRSOptions UseValidator()
+    public CommandOptions UseValidator()
     {
         IsValidatorEnabled = true;
         return this;
@@ -42,7 +42,7 @@ public sealed record class CQRSOptions
     /// Enables visitor behavior to commands/queries that 
     /// implement the <see cref="IVisitable{TVisitable}"/> interface.
     /// </summary>
-    public CQRSOptions UseVisitor()
+    public CommandOptions UseVisitor()
     {
         IsVisitorEnabled = true;
         return this;
@@ -50,9 +50,10 @@ public sealed record class CQRSOptions
 
     /// <summary>
     /// Enables persistence behavior to commands 
-    /// that are decorated with the <see cref="IPersistenceDecorator"/> interface.
+    /// that are decorated with the <see cref="IPersistenceDecorator"/> 
+    /// interface.
     /// </summary>
-    public CQRSOptions UsePersistence()
+    public CommandOptions UsePersistence()
     {
         IsPersistenceEnabled = true;
         return this;
@@ -60,23 +61,26 @@ public sealed record class CQRSOptions
 
     /// <summary>
     /// Enables operation result finalizer behavior to commands/queries 
-    /// that are decorated with the <see cref="IOperationResultFinalizerDecorator"/> interface.
+    /// that are decorated with the 
+    /// <see cref="IOperationResultFinalizerDecorator"/> interface.
     /// </summary>
     /// <remarks>The target implementation handler(s) must reference 
-    /// the <see cref="IOperationResultFinalizer"/> in order to configure the result.</remarks>
-    public CQRSOptions UseOperationResult()
+    /// the <see cref="IOperationResultFinalizer"/> in order to configure 
+    /// the result.</remarks>
+    public CommandOptions UseOperationResultFinalizer()
     {
-        IsOperationResultEnabled = true;
+        IsOperationResultFinalizerEnabled = true;
         return this;
     }
 
     /// <summary>
     /// Enables transaction behavior to commands that are decorated 
     /// with the <see cref="ITransactionDecorator"/> interface.
-    /// You must register a definition for <see cref="TransactionCommandHandler"/> 
+    /// You must register a definition for
+    /// <see cref="TransactionCommandHandler"/> 
     /// that provides with the transactional behavior.
     /// </summary>
-    public CQRSOptions UseTransaction()
+    public CommandOptions UseTransaction()
     {
         IsTransactionEnabled = true;
         return this;
@@ -86,5 +90,5 @@ public sealed record class CQRSOptions
     internal bool IsVisitorEnabled { get; private set; }
     internal bool IsTransactionEnabled { get; private set; }
     internal bool IsPersistenceEnabled { get; private set; }
-    internal bool IsOperationResultEnabled { get; private set; }
+    internal bool IsOperationResultFinalizerEnabled { get; private set; }
 }

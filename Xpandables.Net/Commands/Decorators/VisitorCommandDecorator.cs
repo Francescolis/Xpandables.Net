@@ -16,6 +16,7 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
 using Xpandables.Net.Visitors;
 
 namespace Xpandables.Net.Commands.Decorators;
@@ -45,7 +46,8 @@ namespace Xpandables.Net.Commands.Decorators;
 /// <paramref name="visitor"/> is null.</exception>
 public sealed class VisitorCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
-    ICompositeVisitor<TCommand> visitor) : ICommandHandler<TCommand>
+    ICompositeVisitor<TCommand> visitor) :
+    ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, IVisitable
 {
     /// <summary>

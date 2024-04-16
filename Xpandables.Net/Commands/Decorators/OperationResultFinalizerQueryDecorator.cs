@@ -22,7 +22,7 @@ namespace Xpandables.Net.Commands.Decorators;
 internal sealed class OperationResultFinalizerQueryDecorator<TQuery, TResult>(
     IQueryHandler<TQuery, TResult> decoratee,
     IOperationResultFinalizer operationResultFinalizer)
-    : IQueryHandler<TQuery, TResult>
+    : IQueryHandler<TQuery, TResult>, IDecorator
     where TQuery : notnull, IQuery<TResult>, IOperationResultFinalizerDecorator
 {
     public async ValueTask<IOperationResult<TResult>> HandleAsync(

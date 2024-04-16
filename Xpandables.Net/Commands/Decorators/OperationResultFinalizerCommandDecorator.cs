@@ -22,7 +22,7 @@ namespace Xpandables.Net.Commands.Decorators;
 internal sealed class OperationResultFinalizerCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
     IOperationResultFinalizer operationResultFinalizer)
-    : ICommandHandler<TCommand>
+    : ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, IOperationResultFinalizerDecorator
 {
     public async ValueTask<IOperationResult> HandleAsync(

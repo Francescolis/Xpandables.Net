@@ -24,7 +24,7 @@ namespace Xpandables.Net.Commands.Decorators;
 internal sealed class OperationResultFinalizerAsyncQueryDecorator<TQuery, TResult>(
     IAsyncQueryHandler<TQuery, TResult> decoratee,
     IOperationResultFinalizer operationResultFinalizer)
-    : IAsyncQueryHandler<TQuery, TResult>
+    : IAsyncQueryHandler<TQuery, TResult>, IDecorator
     where TQuery : notnull, IAsyncQuery<TResult>, IOperationResultFinalizerDecorator
 {
     public async IAsyncEnumerable<TResult> HandleAsync(

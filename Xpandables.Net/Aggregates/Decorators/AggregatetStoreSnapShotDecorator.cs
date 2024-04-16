@@ -21,6 +21,7 @@ using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Aggregates.Decorators;
 
@@ -29,7 +30,7 @@ internal sealed class AggregatetStoreSnapShotDecorator<TAggregate, TAggregateId>
     IDomainEventStore eventStore,
     ISnapShotStore snapShotStore,
     IOptions<SnapShotOptions> snapShotOptions)
-    : IAggregateStore<TAggregate, TAggregateId>
+    : IAggregateStore<TAggregate, TAggregateId>, IDecorator
     where TAggregate : class, IAggregate<TAggregateId>, IOriginator
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {

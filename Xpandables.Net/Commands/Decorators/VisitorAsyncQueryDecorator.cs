@@ -17,6 +17,7 @@
 ********************************************************************************/
 using System.Runtime.CompilerServices;
 
+using Xpandables.Net.Primitives;
 using Xpandables.Net.Visitors;
 
 namespace Xpandables.Net.Commands.Decorators;
@@ -47,7 +48,8 @@ namespace Xpandables.Net.Commands.Decorators;
 /// <paramref name="visitor"/> is null.</exception>
 public sealed class VisitorAsyncQueryDecorator<TQuery, TResult>(
     IAsyncQueryHandler<TQuery, TResult> decoratee,
-    ICompositeVisitor<TQuery> visitor) : IAsyncQueryHandler<TQuery, TResult>
+    ICompositeVisitor<TQuery> visitor) :
+    IAsyncQueryHandler<TQuery, TResult>, IDecorator
     where TQuery : notnull, IAsyncQuery<TResult>, IVisitable
 {
     /// <summary>

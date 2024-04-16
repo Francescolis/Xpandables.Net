@@ -49,7 +49,7 @@ public interface IOperationResultFinalizer
     /// Defines whether the finalizer should be called in case of exception.
     /// </summary>
     /// <remarks>If set to <see langword="true"/>, the finalizer is responsible
-    /// to return the wright result in the expected type and
+    /// to return the right result in the expected type and
     /// must be defined.</remarks>
     [MemberNotNullWhen(true, nameof(Finalizer))]
     bool CallFinalizerOnException { get; set; }

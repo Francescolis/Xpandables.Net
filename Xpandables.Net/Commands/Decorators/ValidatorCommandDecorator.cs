@@ -16,6 +16,7 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.Commands.Decorators;
@@ -47,7 +48,8 @@ namespace Xpandables.Net.Commands.Decorators;
 /// <paramref name="validator"/> is null.</exception>
 public sealed class ValidatorCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
-    ICompositeValidator<TCommand> validator) : ICommandHandler<TCommand>
+    ICompositeValidator<TCommand> validator) :
+    ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, IValidateDecorator
 {
     /// <summary>

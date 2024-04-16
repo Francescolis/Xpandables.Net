@@ -58,7 +58,8 @@ public delegate ValueTask<IOperationResult> TransactionCommandHandler(
 /// <paramref name="transactionDelegate"/> is null.</exception>
 public sealed class TransactionCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
-    TransactionCommandHandler transactionDelegate) : ICommandHandler<TCommand>
+    TransactionCommandHandler transactionDelegate) :
+    ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, ITransactionDecorator
 {
     /// <summary>
