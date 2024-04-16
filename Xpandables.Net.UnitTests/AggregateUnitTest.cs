@@ -40,7 +40,7 @@ public sealed class AggregateUnitTest
     {
         IServiceProvider serviceProvider = new ServiceCollection()
             .AddLogging()
-            .AddXCQRSHandlers(options => options.UsePersistence().UseOperationResultFinalizer())
+            .AddXCommandQueryHandlers(options => options.UsePersistence().UseOperationResultFinalizer())
             .AddXDispatcher()
             .AddXPersistenceCommandHandler()
             .AddXAggregateStore()

@@ -102,13 +102,17 @@ internal static class ServiceCollectionInternalExtensions
     internal static IServiceCollection DecorateOpenGenerics(
            this IServiceCollection services,
            Type serviceType,
-           Type decoratorType)
+           Type decoratorType,
+           Type markerType)
     {
         IEnumerable<Type[]> arguments = services
             .GetArgumentTypes(serviceType);
 
         foreach (Type[] argument in arguments)
         {
+            if (!argument.Any(arg => markerType.IsAssignableFrom(arg)))
+                continue;
+
             if (serviceType
                 .TryMakeGenericType(
                     out Type? closedServiceType, out _, argument)

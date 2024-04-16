@@ -169,7 +169,10 @@ public static class ServiceCollectionAggregateExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.XTryDecorate(typeof(IAggregateStore<,>), typeof(AggregatetStoreSnapShotDecorator<,>));
+        return services.XTryDecorate(
+                typeof(IAggregateStore<,>),
+                typeof(AggregatetStoreSnapShotDecorator<,>),
+                typeof(ISnapShotDecorator));
     }
 
     /// <summary>

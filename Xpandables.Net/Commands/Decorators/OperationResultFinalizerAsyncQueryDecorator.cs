@@ -25,7 +25,8 @@ internal sealed class OperationResultFinalizerAsyncQueryDecorator<TQuery, TResul
     IAsyncQueryHandler<TQuery, TResult> decoratee,
     IOperationResultFinalizer operationResultFinalizer)
     : IAsyncQueryHandler<TQuery, TResult>, IDecorator
-    where TQuery : notnull, IAsyncQuery<TResult>, IOperationResultFinalizerDecorator
+    where TQuery : notnull, IAsyncQuery<TResult>,
+    IOperationResultFinalizerDecorator
 {
     public async IAsyncEnumerable<TResult> HandleAsync(
         TQuery query,

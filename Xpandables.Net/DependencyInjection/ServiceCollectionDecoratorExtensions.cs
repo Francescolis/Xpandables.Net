@@ -45,16 +45,19 @@ public static class ServiceCollectionExtensions
     /// <typeparamref name="TDecorator"/>.</typeparam>
     /// <typeparam name="TDecorator">The decorator type that will be used to wrap the original service type.
     /// </typeparam>
+    /// <typeparam name="TMarker">The marker type interface that must be implemented by the <typeparamref name="TService"/></typeparam>
     /// <param name="services">The collection of services to act on.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">If the <paramref name="services"/> argument is <c>null</c>.</exception>
-    public static IServiceCollection XTryDecorate<TService, TDecorator>(this IServiceCollection services)
+    public static IServiceCollection XTryDecorate<TService, TDecorator, TMarker>(
+        this IServiceCollection services)
         where TService : class
         where TDecorator : class, TService
+        where TMarker : class
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.XTryDecorate(typeof(TService), typeof(TDecorator));
+        return services.XTryDecorate(typeof(TService), typeof(TDecorator), typeof(TMarker));
     }
 
     /// <summary>
@@ -218,6 +221,8 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The collection of services to act on.</param>
     /// <param name="serviceType">The service type that will be wrapped by the given decorator.</param>
     /// <param name="decoratorType">The decorator type that will be used to wrap the original service type.</param>
+    /// <param name="markerType">The marker type interface that must be implemented by the <paramref name="serviceType"/>
+    /// in order to be decorated.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">If the <paramref name="services"/> argument is <c>null</c>.</exception>
     /// <exception cref="ArgumentNullException">If the <paramref name="serviceType"/> argument is <c>null</c>.</exception>
@@ -225,15 +230,20 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection XTryDecorate(
         this IServiceCollection services,
         Type serviceType,
-        Type decoratorType)
+        Type decoratorType,
+        Type markerType)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(serviceType);
         ArgumentNullException.ThrowIfNull(decoratorType);
+        ArgumentNullException.ThrowIfNull(markerType);
+
+        if (!markerType.IsInterface)
+            throw new ArgumentException($"The {nameof(markerType)} must be an interface.");
 
         return serviceType.GetTypeInfo().IsGenericTypeDefinition
             && decoratorType.GetTypeInfo().IsGenericTypeDefinition
-            ? services.DecorateOpenGenerics(serviceType, decoratorType)
+            ? services.DecorateOpenGenerics(serviceType, decoratorType, markerType)
             : services.DecorateDescriptors(
                 serviceType,
                 serviceDescriptor => serviceDescriptor.DecorateDescriptor(decoratorType));

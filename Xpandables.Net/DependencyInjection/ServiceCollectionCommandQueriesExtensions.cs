@@ -319,7 +319,7 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// <param name="assemblies">The assemblies to scan for implemented types. If not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXCQRSHandlers(
+    public static IServiceCollection AddXCommandQueryHandlers(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -347,7 +347,7 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// <param name="configureOptions">A delegate to configure the <see cref="CommandOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXCQRSHandlers(
+    public static IServiceCollection AddXCommandQueryHandlers(
         this IServiceCollection services,
         Action<CommandOptions> configureOptions,
         params Assembly[] assemblies)
@@ -361,7 +361,7 @@ public static class ServiceCollectionCommandQueriesExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        _ = services.AddXCQRSHandlers(assemblies);
+        _ = services.AddXCommandQueryHandlers(assemblies);
 
         return services.AddXCommandOptions(configureOptions);
     }
@@ -425,7 +425,10 @@ public static class ServiceCollectionCommandQueriesExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(PersistenceCommandDecorator<>));
+        _ = services.XTryDecorate(
+                typeof(ICommandHandler<>),
+                typeof(PersistenceCommandDecorator<>),
+                typeof(IPersistenceDecorator));
 
         return services;
     }
@@ -442,7 +445,10 @@ public static class ServiceCollectionCommandQueriesExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(TransactionCommandDecorator<>));
+        _ = services.XTryDecorate(
+                typeof(ICommandHandler<>),
+                typeof(TransactionCommandDecorator<>),
+                typeof(ITransactionDecorator));
 
         return services;
     }
@@ -526,9 +532,18 @@ public static class ServiceCollectionCommandQueriesExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(ValidatorCommandDecorator<>));
-        _ = services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(ValidatorAsyncQueryDecorator<,>));
-        _ = services.XTryDecorate(typeof(IQueryHandler<,>), typeof(ValidatorQueryDecorator<,>));
+        _ = services.XTryDecorate(
+                typeof(ICommandHandler<>),
+                typeof(ValidatorCommandDecorator<>),
+                typeof(IValidateDecorator));
+        _ = services.XTryDecorate(
+                typeof(IAsyncQueryHandler<,>),
+                typeof(ValidatorAsyncQueryDecorator<,>),
+                typeof(IValidateDecorator));
+        _ = services.XTryDecorate(
+                typeof(IQueryHandler<,>),
+                typeof(ValidatorQueryDecorator<,>),
+                typeof(IValidateDecorator));
 
         return services;
     }
@@ -545,9 +560,18 @@ public static class ServiceCollectionCommandQueriesExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(VisitorCommandDecorator<>));
-        _ = services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(VisitorAsyncQueryDecorator<,>));
-        _ = services.XTryDecorate(typeof(IQueryHandler<,>), typeof(VisitorQueryDecorator<,>));
+        _ = services.XTryDecorate(
+                typeof(ICommandHandler<>),
+                typeof(VisitorCommandDecorator<>),
+                typeof(IVisitorDecorator));
+        _ = services.XTryDecorate(
+                typeof(IAsyncQueryHandler<,>),
+                typeof(VisitorAsyncQueryDecorator<,>),
+                typeof(IVisitorDecorator));
+        _ = services.XTryDecorate(
+                typeof(IQueryHandler<,>),
+                typeof(VisitorQueryDecorator<,>),
+                typeof(IVisitorDecorator));
         return services;
     }
 
@@ -562,9 +586,18 @@ public static class ServiceCollectionCommandQueriesExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.XTryDecorate(typeof(ICommandHandler<>), typeof(OperationResultFinalizerCommandDecorator<>));
-        _ = services.XTryDecorate(typeof(IAsyncQueryHandler<,>), typeof(OperationResultFinalizerAsyncQueryDecorator<,>));
-        _ = services.XTryDecorate(typeof(IQueryHandler<,>), typeof(OperationResultFinalizerQueryDecorator<,>));
+        _ = services.XTryDecorate(
+                typeof(ICommandHandler<>),
+                typeof(OperationResultFinalizerCommandDecorator<>),
+                typeof(IOperationResultFinalizerDecorator));
+        _ = services.XTryDecorate(
+                typeof(IAsyncQueryHandler<,>),
+                typeof(OperationResultFinalizerAsyncQueryDecorator<,>),
+                typeof(IOperationResultFinalizerDecorator));
+        _ = services.XTryDecorate(
+                typeof(IQueryHandler<,>),
+                typeof(OperationResultFinalizerQueryDecorator<,>),
+                typeof(IOperationResultFinalizerDecorator));
 
         return services;
     }

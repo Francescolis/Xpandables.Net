@@ -19,6 +19,18 @@ using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Aggregates.SnapShots;
 
+
+/// <summary>
+/// A marker interface that allows the type to be decorated 
+/// with the snapShot behavior according to the class type.
+/// </summary>
+public interface ISnapShotDecorator
+{
+    /// <summary>
+    /// Gets the current instance identifier.
+    /// </summary>
+    public Guid Id => Guid.NewGuid();
+}
 /// <summary>
 /// Determines the <see cref="SnapShotOptions"/> status.
 /// </summary>

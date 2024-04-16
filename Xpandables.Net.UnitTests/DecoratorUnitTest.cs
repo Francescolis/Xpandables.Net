@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.UnitTests;
@@ -52,7 +53,8 @@ public sealed class QueryDecoratedHandlerB : IQueryHandler<QueryDecorated, strin
     }
 }
 
-public sealed class QueryDecoratedHandlerC : IQueryHandler<QueryDecorated, string>
+public sealed class QueryDecoratedHandlerC :
+    IQueryHandler<QueryDecorated, string>, IValidateDecorator
 {
     public async ValueTask<IOperationResult<string>> HandleAsync(
         QueryDecorated query,
@@ -66,7 +68,8 @@ public sealed class QueryDecoratedHandlerC : IQueryHandler<QueryDecorated, strin
 }
 
 public sealed class CustomValidationQueryDecorator<TQuery, TResult>(
-    IQueryHandler<TQuery, TResult> handler) : IQueryHandler<TQuery, TResult>
+    IQueryHandler<TQuery, TResult> handler) :
+    IQueryHandler<TQuery, TResult>, IDecorator
     where TQuery : IQuery<TResult>, IValidateDecorator
 {
     private readonly IQueryHandler<TQuery, TResult> _handler = handler
@@ -89,7 +92,10 @@ public sealed class DecoratorUnitTest
             .AddXQueryHandlers()
             .AddXValidatorGenerics()
             .AddXValidators()
-            .XTryDecorate(typeof(IQueryHandler<,>), typeof(CustomValidationQueryDecorator<,>))
+            .XTryDecorate(
+                typeof(IQueryHandler<,>),
+                typeof(CustomValidationQueryDecorator<,>),
+                typeof(IValidateDecorator))
             .BuildServiceProvider();
     }
 
