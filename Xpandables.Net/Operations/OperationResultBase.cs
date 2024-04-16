@@ -33,9 +33,7 @@ public abstract record OperationResultBase : IOperationResult
     /// Constructs a new instance of 
     /// <see cref="OperationResultBase"/> with the default values.
     /// </summary>
-#pragma warning disable S3442 // "abstract" classes should not have "public" constructors
     protected internal OperationResultBase() { }
-#pragma warning restore S3442 // "abstract" classes should not have "public" constructors
 
     ///<inheritdoc/>
     [JsonInclude]
@@ -124,9 +122,7 @@ public abstract record OperationResultBase<TResult>
     /// Constructs a new instance of 
     /// <see cref="OperationResultBase{TValue}"/> with the default values.
     /// </summary>
-#pragma warning disable S3442 // "abstract" classes should not have "public" constructors
     protected internal OperationResultBase() { }
-#pragma warning restore S3442 // "abstract" classes should not have "public" constructors
 
     /// <inheritdoc/>
     [JsonIgnore]

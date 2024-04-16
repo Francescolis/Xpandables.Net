@@ -122,9 +122,7 @@ public partial interface IOperationResult
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <returns>A new instance of <see cref="IOperationResult{TResult}"/>.</returns>
-    public IOperationResult<TResult> ToOperationResult<TResult>()
-#pragma warning disable S3358 // Ternary operators should not be nested
-        => new OperationResult<TResult>(
+    public IOperationResult<TResult> ToOperationResult<TResult>() => new OperationResult<TResult>(
             StatusCode,
             Result.IsEmpty
                 ? Optional.Empty<TResult>()
@@ -137,7 +135,6 @@ public partial interface IOperationResult
             Extensions,
             Title,
             Detail);
-#pragma warning restore S3358 // Ternary operators should not be nested
 }
 
 /// <summary>

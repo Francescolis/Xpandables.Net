@@ -342,9 +342,7 @@ public static class OptionalExtensions
     /// <returns>The value from the sequence if exists or the empty optional.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="source"/> is null.</exception>
-#pragma warning disable S4136 // Method overloads should be grouped together
     public static Optional<T> FirstOrEmpty<T>(this IEnumerable<T> source)
-#pragma warning restore S4136 // Method overloads should be grouped together
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -369,9 +367,7 @@ public static class OptionalExtensions
         "Reliability",
         "CA2007:Consider calling ConfigureAwait on the awaited task",
         Justification = "<Pending>")]
-#pragma warning disable S4136 // Method overloads should be grouped together
     public static async ValueTask<Optional<T>> FirstOrEmptyAsync<T>(
-#pragma warning restore S4136 // Method overloads should be grouped together
         this IAsyncEnumerable<T> source)
     {
         ArgumentNullException.ThrowIfNull(source);

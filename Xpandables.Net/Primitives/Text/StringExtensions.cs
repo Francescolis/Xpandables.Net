@@ -543,7 +543,6 @@ public static class StringExtensions
     public static string ToJsonString(this JsonDocument document)
     {
         _ = document ?? throw new ArgumentNullException(nameof(document));
-#pragma warning disable IDE0063 // Use simple 'using' statement
         using (MemoryStream stream = new())
         using (Utf8JsonWriter writer = new(stream, new JsonWriterOptions { Indented = true }))
         {
@@ -551,6 +550,5 @@ public static class StringExtensions
             writer.Flush();
             return Encoding.UTF8.GetString(stream.ToArray());
         }
-#pragma warning restore IDE0063 // Use simple 'using' statement
     }
 }

@@ -21,9 +21,7 @@ namespace Xpandables.Net.Http;
 /// Represents an HTTP API exception.
 /// </summary>
 [Serializable]
-#pragma warning disable S3925 // "ISerializable" should be implemented correctly
 public sealed class HttpClientException : Exception
-#pragma warning restore S3925 // "ISerializable" should be implemented correctly
 {
     /// <summary>
     /// Initializes the default instance of 

@@ -225,9 +225,7 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     IOperationResult.IBuilder<TResult>
     where TBuilder : class, IOperationResult.IBuilder<TResult>
 {
-    IOperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
-#pragma warning disable S3358 // Ternary operators should not be nested
-        => new OperationResult<TResult>(
+    IOperationResult<TResult> IOperationResult.IBuilder<TResult>.Build() => new OperationResult<TResult>(
             _statusCode,
              _result.IsEmpty
                 ? Optional.Empty<TResult>()
@@ -240,7 +238,6 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
             _extensions,
             _title,
             _detail);
-#pragma warning restore S3358 // Ternary operators should not be nested
 
     TBuilder IOperationResult.IResultBuilder<TBuilder, TResult>
         .WithResult(TResult result)

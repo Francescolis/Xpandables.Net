@@ -41,9 +41,7 @@ public interface IHttpClientRequest { }
 /// <see cref="IHttpRequestQueryString"/>, <see cref="IHttpRequestStream"/> 
 /// or <see cref="IHttpRequestString"/>.</remarks>
 #pragma warning disable CA1040 // Avoid empty interfaces
-#pragma warning disable S2326 // Unused type parameters should be removed
 public interface IHttpClientRequest<out TResponse> { }
-#pragma warning restore S2326 // Unused type parameters should be removed
 #pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
@@ -58,7 +56,5 @@ public interface IHttpClientRequest<out TResponse> { }
 /// <see cref="IHttpRequestQueryString"/>, <see cref="IHttpRequestStream"/> 
 /// or <see cref="IHttpRequestString"/>.</remarks>
 #pragma warning disable CA1040 // Avoid empty interfaces
-#pragma warning disable S2326 // Unused type parameters should be removed
 public interface IHttpClientAsyncRequest<out TResponse> { }
-#pragma warning restore S2326 // Unused type parameters should be removed
 #pragma warning restore CA1040 // Avoid empty interfaces

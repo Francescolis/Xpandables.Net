@@ -70,10 +70,7 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
 /// Provides with the base unit of work interface for a specific data context.
 /// </summary>
 /// <typeparam name="TDataContext">The type of the context.</typeparam>
-#pragma warning disable S2326 // Unused type parameters should be removed
-public interface IUnitOfWork<TDataContext> : IUnitOfWork
-#pragma warning restore S2326 // Unused type parameters should be removed
-    where TDataContext : class
+public interface IUnitOfWork<TDataContext> : IUnitOfWork where TDataContext : class
 {
     /// <summary>
     /// Returns the repository read implementation that matches 

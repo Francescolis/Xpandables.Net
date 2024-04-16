@@ -50,9 +50,7 @@ public sealed class OperationResultException : Exception
     /// </summary>
     public IOperationResult OperationResult { get; }
 
-#pragma warning disable S1133 // Deprecated code should be removed
     [Obsolete("Use contrcutor with IOperationResult")]
-#pragma warning restore S1133 // Deprecated code should be removed
     [EditorBrowsable(EditorBrowsableState.Never)]
     private OperationResultException(
         SerializationInfo serializationInfo,

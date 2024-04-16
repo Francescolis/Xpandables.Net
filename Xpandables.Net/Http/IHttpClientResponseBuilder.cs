@@ -117,13 +117,13 @@ internal sealed class HttpClientResponseBuilderInternal
         TResult? result;
 
         if (!httpResponse.Content.Headers.ContentDisposition?
-            .FileName?
+            .DispositionType?
             .StartsWith("attachment", StringComparison.InvariantCulture) ?? true)
         {
             result = await JsonSerializer.DeserializeAsync<TResult>(
-            stream,
-            serializerOptions,
-            cancellationToken)
+                stream,
+                serializerOptions,
+                cancellationToken)
             .ConfigureAwait(false);
         }
         else
@@ -153,11 +153,13 @@ internal sealed class HttpClientResponseBuilderInternal
             await stream.CopyToAsync(memoryStream, cancellationToken)
                 .ConfigureAwait(false);
             byte[] content = memoryStream.ToArray();
-            string fileName = httpResponse.Content.Headers
-                .ContentDisposition!.FileName!;
+            string fileName = Path.GetFileNameWithoutExtension(
+                httpResponse.Content.Headers.ContentDisposition!.FileName!);
             string contentType = httpResponse.Content.Headers
                 .ContentType!.MediaType!;
-            string extension = Path.GetExtension(fileName).TrimStart('.');
+            string extension = Path.GetExtension(
+                httpResponse.Content.Headers.ContentDisposition!.FileName!)
+                .TrimStart('.');
 
             return new BinaryEntry(fileName, content, contentType, extension);
         }

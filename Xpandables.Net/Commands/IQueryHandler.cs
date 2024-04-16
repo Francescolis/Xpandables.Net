@@ -29,9 +29,7 @@ namespace Xpandables.Net.Commands;
 /// This can also be enhanced with some useful decorators.
 /// </summary>
 /// <typeparam name="TResult">Type of the result of the query.</typeparam>
-#pragma warning disable S2326 // Unused type parameters should be removed
 public interface IQuery<out TResult>
-#pragma warning restore S2326 // Unused type parameters should be removed
 {
     /// <summary>
     /// Gets the event identifier.

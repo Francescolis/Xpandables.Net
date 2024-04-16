@@ -22,9 +22,7 @@ namespace Xpandables.Net.Http;
 /// name with its list of error messages.
 /// </summary>
 [Serializable]
-#pragma warning disable S3925 // "ISerializable" should be implemented correctly
 public sealed class HttpClientValidation : Dictionary<string, IEnumerable<string>>
-#pragma warning restore S3925 // "ISerializable" should be implemented correctly
 {
     /// <summary>
     /// Adds the specified member name and list of error messages to the dictionary.
