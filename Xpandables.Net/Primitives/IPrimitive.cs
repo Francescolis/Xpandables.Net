@@ -16,6 +16,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Xpandables.Net.Primitives.Converters;
@@ -99,10 +100,11 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     static abstract implicit operator TValue(TPrimitive self);
 
     /// <summary>
-    /// Converts the <typeparamref name="TValue"/> type to 
+    /// Converts the nullable <typeparamref name="TValue"/> type to 
     /// <typeparamref name="TPrimitive"/>
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="value">The nullable value.</param>
+    [return: NotNullIfNotNull(nameof(value))]
     static abstract implicit operator TPrimitive(TValue? value);
 
     /// <summary>
