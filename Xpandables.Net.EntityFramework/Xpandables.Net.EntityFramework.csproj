@@ -24,10 +24,10 @@
 		<PackageReleaseNotes>Add Notifications</PackageReleaseNotes>
 		<PackageOutputPath>D:\fewan\source\nugets\</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>8.0.3</Version>
-		<AssemblyVersion>8.0.3</AssemblyVersion>
-		<FileVersion>8.0.3</FileVersion>
-		<PackageVersion>8.0.3</PackageVersion>
+		<Version>8.0.4</Version>
+		<AssemblyVersion>8.0.4</AssemblyVersion>
+		<FileVersion>8.0.4</FileVersion>
+		<PackageVersion>8.0.4</PackageVersion>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
