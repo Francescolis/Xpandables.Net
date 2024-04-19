@@ -103,7 +103,7 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// <typeparamref name="TPrimitive"/>
     /// </summary>
     /// <param name="value"></param>
-    static abstract implicit operator TPrimitive(TValue value);
+    static abstract implicit operator TPrimitive(TValue? value);
 
     /// <summary>
     /// Converts the <typeparamref name="TPrimitive"/> type to string.
