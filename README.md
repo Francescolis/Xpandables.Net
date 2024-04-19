@@ -106,15 +106,15 @@ by using some extensions that can automatically convert an *OperationResult* to 
 
 The non generic type has the following properties :
 
-- An Optional *object* **Result**, a property that qualifies or contains information about an operation return if available. You should call the method **HasResult()** before accessing the property to avoid a *NullReferenceException*.
-- An Optional *string* **LocationUrl**, a property that contains the URL mostly used with the status code **Created** in the web environment. You should call the method H**asLocationUrl()** before accessing the property to avoid a *NullReferenceException*.
+- An optional *object* **Result**, a property that qualifies or contains information about an operation return if available. 
+- An optiona *string* **LocationUrl**, a property that contains the URL mostly used with the status code **Created** in the web environment. 
 - An *ElementCollection* **Headers** property that contains a collection of headers if available. *ElementCollection* is a predefined record struct that contains a collection of *ElementEntry* with useful methods.
 - An *ElementCollection* **Errors** property that stores errors. Each error is a predefined *ElementEntry* struct which contains the error key and the error message and/or exceptions.
 - A *HttpStatusCode* **StatusCode** property that contains the status code of the execution. The status code from the ***System.Net.HttpStatusCode***.
 - A *boolean* **IsGeneric** to determine whether or not the current instance is generic.
 - A *boolean* **IsSuccess** and **IsFailure** to determine whether or not the operation is a success or a failure according to ***System.Net.HttpStatusCode***.
-- An Optional *string* **Title** that contains the operation summary problem from the execution operation.
-- An Optional *string* **Detail** that contains he operation explanation specific to the execution operation.
+- An optional *string* **Title** that contains the operation summary problem from the execution operation.
+- An optional *string* **Detail** that contains he operation explanation specific to the execution operation.
 
 The generic type overrides the *object* **Result** to *TResult* type.
 
@@ -166,7 +166,7 @@ app.UseXOperationResultMiddleware();
 app.MapGet("/api/users", (string name) =>
 {
     if(CheckThatValueIsNotNull(name) is { IsFailure : true} failure)
-        return failure.ToMinimalResult();
+        return failure;
 
     // ...get the user
 	IOperationResult<User> resultUser = DoGetUser(...);
@@ -201,7 +201,7 @@ app.UseXOperationResultMiddleware();
 public object GetUserByName(string name)
 {
     if(CheckThatValueIsNotNull(name) is { isFailure : true} failure)
-        return failure.ToMinimalResult();
+        return failure;
 
     // ...get the user
 	IOperationResult<User> resultUser = DoGetUser(...);
@@ -223,7 +223,7 @@ You can use the extension methods to apply the decorator pattern to your types.
 >This method and its extensions ensure that the supplied TDecorator" decorator is returned, wrapping the original registered "TService", by injecting that service type into the constructor of the supplied "TDecorator". Multiple decorators may be applied to the same "TService". By default, a new "TDecorator" instance will be returned on each request, independently of the lifestyle of the wrapped service. Multiple decorators can be applied to the same service type. The order in which they are registered is the order they get applied in. This means that the decorator that gets registered first, gets applied first, which means that the next registered decorator, will wrap the first decorator, which wraps the original service type.
 
 ```c#
- services.XTryDecorate<TService, TDecorator>();   
+ services.XTryDecorate<TService, TDecorator, TMarker>();   
 ```
 
 Suppose you have a command and a command handler defined like this :
@@ -244,6 +244,7 @@ public sealed class AddPersonCommandHandler : ICommandHandler<AddPersonCommand>
 }
 ```
 
+```c#
 Suppose you want to add logging for the AddPersonCommandHandler, you just need to define the decorator class that will use the logger and the handler.
 
 ```c#
@@ -285,10 +286,14 @@ services
 
 Sometimes you want to use a generic decorator. You can do so for all commands that implement *ICommand*
 interface or something else.
+ILoggerDecorator is a marker interface that allows to apply the logger decorator to the command.
 
 ```c#
+
+public sealed record AddPersonCommand : ICommand, ILoggerDecorator;
+
 public sealed class CommandLoggingDecorator<TCommand> : ICommandHandler<TCommand>
-    where TCommand : notnull, ICommand // you can add more constraints
+    where TCommand : notnull, ICommand, ILoggerDecorator // you can add more constraints
 {
     private readonly ICommandHandler<TCommand> _ decoratee;
     private readonly ILogger<TCommand> _logger;
@@ -319,7 +324,7 @@ And for registration the **CommandLoggingDecorator** will be applied to all comm
 ```c#
 services
     .AddXHandlers()
-    .XTryDecorate(typeof(ICommandHandler<>), typeof(CommandLoggingDecorator<>));
+    .XTryDecorate(typeof(ICommandHandler<>), typeof(CommandLoggingDecorator<>), typeof(ILoggerDecorator));
 ```
 
 ## Commands Pattern
@@ -505,8 +510,8 @@ Finally, we need to use the dependency injection to put it all together :
 ```c#
 var serviceProvider = new ServiceCollection()
     .AddXDataContext<ProductContext>(define options)
-    .AddXHandlers(
-        options => options.UsePersistenceDecorator().UseValidationDecorator())
+    .AddXCommandQueryHandlers(
+        options => options.UsePersistence().UseValidator())
     .AddXDispatcher()
     .BuildServiceprovider();
 
@@ -522,7 +527,7 @@ var serviceProvider = new ServiceCollection()
 ```
 
 The **AddXDataContext** registers the specified data context using the options provided.  
-The **AddXHandlers** registers all handlers found in the executing application, and apply persistence decorator and validation decorator to all the commands according to the constraints.  
+The **AddXCommandQueryHandlers** registers all handlers found in the executing application, and apply persistence decorator and validation decorator to all the commands according to the constraints.  
 The **AddXDispatcher** registers the internal implementation of *IDispatcher* to resolve handlers.
 
 ## Features
