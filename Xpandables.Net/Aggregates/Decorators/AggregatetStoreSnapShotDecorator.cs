@@ -57,7 +57,7 @@ internal sealed class AggregatetStoreSnapShotDecorator<TAggregate, TAggregateId>
             {
                 return OperationResults
                     .InternalError()
-                    .WithError(nameof(ISnapShotStore), exception)
+                    .WithException(exception)
                     .Build();
             }
         }
@@ -95,7 +95,7 @@ internal sealed class AggregatetStoreSnapShotDecorator<TAggregate, TAggregateId>
         {
             return OperationResults
                 .BadRequest<TAggregate>()
-                .WithError(nameof(ISnapShotStore), exception)
+                .WithException(exception)
                 .Build();
         }
 
@@ -129,7 +129,7 @@ internal sealed class AggregatetStoreSnapShotDecorator<TAggregate, TAggregateId>
         {
             return OperationResults
                 .BadRequest<TAggregate>()
-                .WithError(nameof(ISnapShotStore), exception)
+                .WithException(exception)
                 .Build();
         }
 

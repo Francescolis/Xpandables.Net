@@ -18,14 +18,13 @@
 using System.ComponentModel;
 using System.Runtime.Serialization;
 
-using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Represents an exception that holds a failed <see cref="OperationResult"/>.
-/// Useful when you don't want to return an <see cref="OperationResult"/>.
+/// Represents an exception that holds a failed <see cref="Operation"/>.
+/// Useful when you don't want to return an <see cref="Operation"/>.
 /// </summary>
 [Serializable]
 public sealed class OperationResultException : Exception
@@ -42,13 +41,13 @@ public sealed class OperationResultException : Exception
     {
         ArgumentNullException.ThrowIfNull(operation);
         _ = operation.StatusCode.EnsureFailureStatusCode();
-        OperationResult = operation;
+        Operation = operation;
     }
 
     /// <summary>
     /// Gets the operation result for the exception.
     /// </summary>
-    public IOperationResult OperationResult { get; }
+    public IOperationResult Operation { get; }
 
     [Obsolete("Use contrcutor with IOperationResult")]
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -58,13 +57,13 @@ public sealed class OperationResultException : Exception
         : base(serializationInfo, streamingContext)
     {
         ArgumentNullException.ThrowIfNull(serializationInfo);
-        OperationResult = (IOperationResult)serializationInfo
-            .GetValue(nameof(OperationResult), typeof(IOperationResult))!;
+        Operation = (IOperationResult)serializationInfo
+            .GetValue(nameof(Operation), typeof(IOperationResult))!;
     }
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="OperationResult"/> parameter</remarks>
+    ///<see cref="Operation"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException()
     {
@@ -73,7 +72,7 @@ public sealed class OperationResultException : Exception
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="OperationResult"/> parameter</remarks>
+    ///<see cref="Operation"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException(string message) : base(message)
     {
@@ -82,7 +81,7 @@ public sealed class OperationResultException : Exception
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="OperationResult"/> parameter</remarks>
+    ///<see cref="Operation"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException(string message, Exception innerException)
         : base(message, innerException)
@@ -91,5 +90,5 @@ public sealed class OperationResultException : Exception
     }
 
     ///<inheritdoc/>
-    public override string ToString() => OperationResult.ToJsonString();
+    public override string ToString() => Operation.ToJsonString();
 }

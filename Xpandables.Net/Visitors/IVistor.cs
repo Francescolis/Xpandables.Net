@@ -18,18 +18,6 @@
 namespace Xpandables.Net.Visitors;
 
 /// <summary>
-/// A marker interface that allows the command/query/request class to be decorated 
-/// with the visitor behavior according to the class type.
-/// </summary>
-public interface IVisitorDecorator
-{
-    /// <summary>
-    /// Gets the current instance identifier.
-    /// </summary>
-    public Guid Id => Guid.NewGuid();
-}
-
-/// <summary>
 /// Allows an application author to apply the visitor pattern.
 /// </summary>
 public interface IVisitor

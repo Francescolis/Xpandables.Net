@@ -105,7 +105,8 @@ public interface IRepositoryWrite<TEntity>
     /// to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents an  asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="filter"/> or <paramref name="updater"/> is null.</exception>
+    /// <paramref name="filter"/> or <paramref name="updater"/> is null
+    /// .</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
     ValueTask UpdateManyAsync(

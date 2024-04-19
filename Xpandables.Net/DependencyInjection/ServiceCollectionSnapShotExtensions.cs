@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+
 using Xpandables.Net.Aggregates.SnapShots;
 
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
-/// Provides a set of static methods for <see cref="IServiceCollection"/> to register
+/// Provides a set of static methods for <see cref="IServiceCollection"/> to
+/// register <see cref="ISnapShotStore"/>
 /// </summary>
 public static class ServiceCollectionSnapShotExtensions
 {
@@ -30,11 +32,13 @@ public static class ServiceCollectionSnapShotExtensions
     /// Adds the specified type as <see cref="ISnapShotStore"/> snapshot 
     /// store behavior to command handlers with scoped life time.
     /// </summary>
-    /// <remarks>You need to define the <see cref="SnapShotOptions"/> in configuration file.</remarks>
+    /// <remarks>You need to define the <see cref="SnapShotOptions"/> in 
+    /// configuration file.</remarks>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXSnapshotStore<TSnapshotStore>(this IServiceCollection services)
+    public static IServiceCollection AddXSnapshotStore<TSnapshotStore>(
+        this IServiceCollection services)
         where TSnapshotStore : class, ISnapShotStore
     {
         ArgumentNullException.ThrowIfNull(services);

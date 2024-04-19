@@ -15,18 +15,24 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Http.Headers;
+using System.Text.Json;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Primitives.Converters;
 
 /// <summary>
-/// Represents a method signature used to apply 
-/// <see cref="AuthenticationHeaderValue"/> to the request,
-/// or returns the value to be used for the 
-/// <see cref="AuthenticationHeaderValue"/> if not null.
+/// Provides a set of static (Shared in Visual Basic)
+/// methods for <see cref="JsonSerializerOptions"/>.
 /// </summary>
-/// <param name="request">The target request to act on.</param>
-/// <returns>A string that represents the value for
-/// the <see cref="AuthenticationHeaderValue"/> if not null.</returns>
-public delegate string? HttpClientAuthenticationHeaderValueProvider(
-    HttpRequestMessage request);
+public static class JsonSerializerDefaultOptions
+{
+    /// <inheritdoc/>
+    public static JsonSerializerOptions OptionPropertyNameCaseInsensitiveTrue
+        => new() { PropertyNameCaseInsensitive = true };
+
+    /// <inheritdoc/>
+    public static JsonSerializerOptions OptionDefaultWeb
+        => new(JsonSerializerDefaults.Web);
+
+    /// <inheritdoc/>
+    public static JsonSerializerOptions Options => new();
+}

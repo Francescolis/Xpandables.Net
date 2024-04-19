@@ -15,13 +15,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Primitives;
+using System.Security.Claims;
+
+namespace Xpandables.Net.Primitives.Text;
+
 /// <summary>
-/// A marker interface that allows the class implementation to be intercepted.
-/// You need to register the expected behavior using the appropriate 
-/// interceptor extension method and provide 
-/// an implementation for <see langword="IInterceptor"/>.
+///  Defines a method to decode a collection of claims from a token.
 /// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface IInterceptorDecorator { }
-#pragma warning restore CA1040 // Avoid empty interfaces
+public interface ITokenDecoder
+{
+    /// <summary>
+    /// Decodes the token and returns a collection of claims.
+    /// </summary>
+    /// <param name="token">The token string to act on.</param>
+    /// <returns>An collection of claims.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="token"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Unable to decode the 
+    /// specified token. See inner exception.</exception>
+    IEnumerable<Claim> DecodeToken(string token);
+}

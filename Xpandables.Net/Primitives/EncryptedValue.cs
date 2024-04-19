@@ -18,30 +18,33 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
+using Xpandables.Net.Primitives.Text;
+
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// Contains the properties : <see cref="Value"/>, <see cref="Type"/> and
-/// <see cref="Expiry"/> of an access token.
+/// Contains the properties : <see cref="Key"/>, <see cref="Value"/> and
+/// <see cref="Salt"/> of an encrypted data.
 /// </summary>
-[DebuggerDisplay("Value = {Value}, Type = {Type}, Expiry = {Expiry}")]
-public readonly record struct AccessToken
+/// <remarks>Used with <see cref="TextCryptography"/></remarks>
+[DebuggerDisplay("Key = {Key}, Value = {Value}, Salt = {Salt}")]
+public readonly record struct EncryptedValue
 {
     /// <summary>
-    /// Gets the value of the token.
+    /// Gets the encryption key.
+    /// </summary>
+    [Required, DataType(DataType.Text)]
+    public required string Key { get; init; }
+
+    /// <summary>
+    /// Gets the base64 encrypted value.
     /// </summary>
     [Required, DataType(DataType.Text)]
     public required string Value { get; init; }
 
     /// <summary>
-    /// Gets the type of the token.
+    /// Gets the base64 salt value.
     /// </summary>
     [Required, DataType(DataType.Text)]
-    public required string Type { get; init; }
-
-    /// <summary>
-    /// Gets the token expiry date.
-    /// </summary>
-    [Required, DataType(DataType.DateTime)]
-    public required DateTime Expiry { get; init; }
+    public required string Salt { get; init; }
 }

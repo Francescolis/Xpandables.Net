@@ -115,8 +115,9 @@ public abstract class Disposable : IAsyncDisposable, IDisposable
         if (disposing)
         {
             // Release all managed resources here
-            // Need to unregister/detach yourself from the events. Always make sure
-            // the object is not null first before trying to unregister/detach them!
+            // Need to unregister/detach yourself from the events.
+            // Always make sure the object is not null first before trying to
+            // unregister/detach them!
             // Failure to unregister can be a BIG source of memory leaks
         }
 
@@ -162,8 +163,9 @@ public abstract class Disposable : IAsyncDisposable, IDisposable
         if (disposing)
         {
             // Release all managed resources here
-            // Need to unregister/detach yourself from the events. Always make sure
-            // the object is not null first before trying to unregister/detach them!
+            // Need to unregister/detach yourself from the events.
+            // Always make sure the object is not null first before trying to
+            // unregister/detach them!
             // Failure to unregister can be a BIG source of memory leaks
         }
 

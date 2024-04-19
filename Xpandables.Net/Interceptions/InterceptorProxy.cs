@@ -135,7 +135,8 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
             {
                 _ = invocation.AddException(
                     new InvalidOperationException(
-                        $"The interceptor {_interceptor.GetType().Name} throws an exception.",
+                        $"The interceptor {_interceptor.GetType().Name} " +
+                        $"throws an exception.",
                         exception));
             }
 #pragma warning restore CA1031 // Do not catch general exception types

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -23,22 +23,28 @@ using Xpandables.Net.Specifications;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
-/// Provides with a set of static methods to register <see cref="ISpecification{TSource}"/> implementations to the services.
+/// Provides with a set of static methods to register 
+/// <see cref="ISpecification{TSource}"/> implementations to the services.
 /// </summary>
 public static class ServiceCollectionSpecificationExtensions
 {
-    internal readonly static MethodInfo AddSpecificationMethod = typeof(ServiceCollectionSpecificationExtensions).GetMethod(nameof(AddXSpecification))!;
+    internal readonly static MethodInfo AddSpecificationMethod =
+        typeof(ServiceCollectionSpecificationExtensions)
+        .GetMethod(nameof(AddXSpecification))!;
 
     /// <summary>
     /// Registers the <typeparamref name="TSpecification"/> to the services with 
     /// scope life time using the factory if specified.
     /// </summary>
-    /// <typeparam name="TArgument">The type of the argument to be checked.</typeparam>
+    /// <typeparam name="TArgument">The type of the argument to be checked
+    /// .</typeparam>
     /// <typeparam name="TSpecification">The type of the specification.</typeparam>
     /// <param name="services">The collection of services.</param>
-    /// <param name="implementationFactory">The factory that creates the visitor.</param>
+    /// <param name="implementationFactory">The factory that creates the 
+    /// visitor.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
     public static IServiceCollection AddXSpecification<TArgument, TSpecification>(
         this IServiceCollection services,
         Func<IServiceProvider, TSpecification>? implementationFactory = default)
@@ -46,7 +52,8 @@ public static class ServiceCollectionSpecificationExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.DoRegisterTypeServiceLifeTime<ISpecification<TArgument>, TSpecification>(
+        _ = services.DoRegisterTypeServiceLifeTime
+            <ISpecification<TArgument>, TSpecification>(
             implementationFactory,
             ServiceLifetime.Transient);
 
@@ -54,14 +61,17 @@ public static class ServiceCollectionSpecificationExtensions
     }
 
     /// <summary>
-    /// Registers the <see cref="ISpecification{TSource}"/> to the services with transient life time.
+    /// Registers the <see cref="ISpecification{TSource}"/> to the services 
+    /// with transient life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="assemblies"/> is null.</exception>
     public static IServiceCollection AddXSpecifications(
         this IServiceCollection services,
         params Assembly[] assemblies)

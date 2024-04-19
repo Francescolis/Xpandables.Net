@@ -62,7 +62,8 @@ public interface IQuery<out TResult>
 /// an <see cref="IOperationResult{TValue}"/>.</returns>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="query"/> is null.</exception>
-public delegate ValueTask<IOperationResult<TResult>> QueryHandler<in TQuery, TResult>(
+public delegate ValueTask<IOperationResult<TResult>> QueryHandler
+    <in TQuery, TResult>(
     TQuery query, CancellationToken cancellationToken = default)
     where TQuery : notnull, IQuery<TResult>;
 

@@ -25,12 +25,14 @@ namespace Xpandables.Net;
 public static partial class LogExtensions
 {
     /// <summary>
-    /// Logs a warning message when there is no event handler implementation found.
+    /// Logs a warning message when there is no event handler implementation 
+    /// found.
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="eventName"></param>
     [LoggerMessage(EventId = 0, Level = LogLevel.Warning,
-        Message = "There is no event handler implementation found for : {eventName}")]
+        Message = "There is no event handler " +
+        "implementation found for : {eventName}")]
     public static partial void CouldNotFindEventHandler(
         this ILogger logger,
         string eventName);
@@ -56,7 +58,8 @@ public static partial class LogExtensions
     /// <param name="retryCount"></param>
     /// <param name="delay"></param>
     [LoggerMessage(EventId = 3, Level = LogLevel.Warning,
-               Message = "Retrying to execute {processName} ({retryCount}) in {delay} ms")]
+               Message = "Retrying to execute {processName} ({retryCount}) in " +
+        "{delay} ms")]
     public static partial void RetryExecutingProcess(
         this ILogger logger,
         string processName,
@@ -64,7 +67,8 @@ public static partial class LogExtensions
         int delay);
 
     /// <summary>
-    /// Logs a warning message when a cancellation occurred when executing a process.
+    /// Logs a warning message when a cancellation occurred when executing 
+    /// a process.
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="processName"></param>

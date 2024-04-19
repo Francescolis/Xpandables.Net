@@ -73,8 +73,8 @@ public sealed record class Parameter
 
     /// <summary>
     /// Gets the index position of the parameter in the method signature.
-    /// The value must be greater or equal to zero, otherwise the interface contract
-    /// will throw an <see cref="ArgumentOutOfRangeException"/>.
+    /// The value must be greater or equal to zero, otherwise the interface 
+    /// contract will throw an <see cref="ArgumentOutOfRangeException"/>.
     /// </summary>
     public int Position { get; }
 
@@ -142,8 +142,10 @@ public sealed record class Parameter
     /// Returns the <see cref="PassingState"/> of the parameter.
     /// </summary>
     /// <param name="parameterInfo">The parameter to act on.</param>
-    /// <returns>A <see cref="PassingState"/> that matches the parameter.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="parameterInfo"/> is null.</exception>
+    /// <returns>A <see cref="PassingState"/> that matches the parameter
+    /// .</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="parameterInfo"/> is null.</exception>
     private static PassingState GetPassedStatusFromParameterInfo(
         ParameterInfo parameterInfo)
     {
@@ -204,7 +206,8 @@ public interface IParameterCollection : IEnumerable<Parameter>
     /// Does this collection contain a parameter value with the given name?
     /// </summary>
     /// <param name="parameterName">Name of parameter to find.</param>
-    /// <returns>True if the parameter name is in the collection, false if not.</returns>
+    /// <returns>True if the parameter name is in the collection, 
+    /// false if not.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="parameterName"/> is null.</exception>
     bool ContainsParameter(string parameterName);

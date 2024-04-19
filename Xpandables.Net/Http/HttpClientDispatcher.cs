@@ -19,8 +19,11 @@ using System.Net;
 using System.Text.Json;
 
 namespace Xpandables.Net.Http;
-// Used as default implementation for IHttpClientDispatcher
-internal sealed class DefaultHttpClientDispatcher(
+
+/// <summary>
+/// Default implementation of the <see cref="IHttpClientDispatcher"/> interface.
+/// </summary>
+public sealed class HttpClientDispatcherDefault(
     IHttpClientBuildProvider httpClientBuildProvider,
     HttpClient httpClient,
     JsonSerializerOptions? jsonSerializerOptions)
@@ -99,16 +102,16 @@ public abstract class HttpClientDispatcher(
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
-        when (exception is ArgumentNullException
-                                           or ArgumentException
-                                           or InvalidOperationException
-                                           or OperationCanceledException
-                                           or HttpRequestException
-                                           or AggregateException
-                                           or TaskCanceledException
-                                           or JsonException
-                                           or TimeoutException
-                                           or WebException)
+            when (exception is ArgumentNullException
+                            or ArgumentException
+                            or InvalidOperationException
+                            or OperationCanceledException
+                            or HttpRequestException
+                            or AggregateException
+                            or TaskCanceledException
+                            or JsonException
+                            or TimeoutException
+                            or WebException)
         {
             return new HttpClientResponse<IAsyncEnumerable<TResult>>(
                 HttpStatusCode.BadRequest,
@@ -148,16 +151,17 @@ public abstract class HttpClientDispatcher(
                     cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is ArgumentNullException
-                                        or ArgumentException
-                                        or InvalidOperationException
-                                        or OperationCanceledException
-                                        or HttpRequestException
-                                        or TaskCanceledException
-                                        or AggregateException
-                                        or JsonException
-                                        or TimeoutException
-                                        or WebException)
+        catch (Exception exception)
+            when (exception is ArgumentNullException
+                            or ArgumentException
+                            or InvalidOperationException
+                            or OperationCanceledException
+                            or HttpRequestException
+                            or TaskCanceledException
+                            or AggregateException
+                            or JsonException
+                            or TimeoutException
+                            or WebException)
         {
             return new HttpClientResponse(
                 HttpStatusCode.BadRequest,
@@ -199,16 +203,17 @@ public abstract class HttpClientDispatcher(
                     cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is ArgumentNullException
-                                        or ArgumentException
-                                        or InvalidOperationException
-                                        or OperationCanceledException
-                                        or HttpRequestException
-                                        or JsonException
-                                        or AggregateException
-                                        or TaskCanceledException
-                                        or TimeoutException
-                                        or WebException)
+        catch (Exception exception)
+            when (exception is ArgumentNullException
+                            or ArgumentException
+                            or InvalidOperationException
+                            or OperationCanceledException
+                            or HttpRequestException
+                            or JsonException
+                            or AggregateException
+                            or TaskCanceledException
+                            or TimeoutException
+                            or WebException)
         {
             return new HttpClientResponse<TResult>(
                 HttpStatusCode.BadRequest,

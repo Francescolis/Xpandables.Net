@@ -30,7 +30,7 @@ namespace Xpandables.Net.Http;
 /// <see cref="IHttpClientAsyncRequest{TResponse}"/> 
 /// or <see cref="IHttpClientRequest{TResponse}"/>
 /// in order to be used with <see cref="IHttpClientDispatcher"/>.
-/// Your class can implement the <see cref="IHttpClientAttributeBuilder"/>
+/// Your class can implement the <see cref="IHttpClientAttributeProvider"/>
 /// to dynamically return a <see cref="HttpClientAttribute"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]

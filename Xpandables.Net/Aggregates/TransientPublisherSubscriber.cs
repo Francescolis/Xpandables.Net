@@ -16,7 +16,6 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -67,7 +66,7 @@ public sealed class TransientPublisherSubscriber
             return OperationResults
                 .InternalError()
                 .WithDetail("Publishing event failed !")
-                .WithError(ElementEntry.UndefinedKey, exception)
+                .WithException(exception)
                 .Build();
         }
     }

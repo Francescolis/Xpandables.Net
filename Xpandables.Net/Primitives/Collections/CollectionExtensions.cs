@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-
+********************************************************************************/
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -29,20 +29,24 @@ public static class CollectionExtensions
     /// <summary>
     /// Contains the public <see cref="Array.Empty"/> method.
     /// </summary>
-    public static readonly MethodInfo ArrayEmptyMethod = typeof(Array).GetMethod("Empty")!;
+    public static readonly MethodInfo ArrayEmptyMethod =
+        typeof(Array).GetMethod("Empty")!;
 
     /// <summary>
     /// Contains the public <see cref="AsyncEnumerable.EmptyAsync"/> method.
     /// </summary>
-    public static readonly MethodInfo AsyncArrayEmptyMethod = typeof(AsyncEnumerable).GetMethod("EmptyAsync")!;
+    public static readonly MethodInfo AsyncArrayEmptyMethod =
+        typeof(AsyncEnumerable).GetMethod("EmptyAsync")!;
 
     /// <summary>
     /// Returns an array of <see cref="Type"/> objects that represent the type 
     /// arguments of the specified closed generic type.
     /// </summary>
     /// <param name="type">The type to act on.</param>
-    /// <returns>An array of <see cref="Type"/> objects that represent the type arguments</returns>
-    /// <remarks>If the type is not a generic enumerable, returns an empty collection.</remarks>
+    /// <returns>An array of <see cref="Type"/> objects that represent the 
+    /// type arguments</returns>
+    /// <remarks>If the type is not a generic enumerable, returns an empty 
+    /// collection.</remarks>
     public static ReadOnlySpan<Type> GetEnumerableGenericTypes(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
@@ -59,21 +63,26 @@ public static class CollectionExtensions
     /// <typeparam name="T">The type of elements.</typeparam>
     /// <param name="array">The array to act on.</param>
     /// <param name="match">The predicate each element should match to.</param>
-    /// <returns><see langword="true"/> if <paramref name="array"/> contains one or more elements that match the
-    /// conditions defined by the specified predicate; otherwise, <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if <paramref name="array"/> contains one
+    /// or more elements that match the conditions defined by the specified 
+    /// predicate; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="array"/> 
     /// or <paramref name="match"/> is null.</exception>
-    public static bool Exists<T>(this T[] array, Predicate<T> match) => Array.Exists(array, match);
+    public static bool Exists<T>(this T[] array, Predicate<T> match)
+        => Array.Exists(array, match);
 
     /// <summary>
-    /// Converts the collection to exposes an enumerator that provides asynchronous
-    /// iteration over values of <typeparamref name="T"/> type.
+    /// Converts the collection to exposes an enumerator that provides 
+    /// asynchronous iteration over values of <typeparamref name="T"/> type.
     /// </summary>
-    /// <typeparam name="T">The type of the elements in the collection.</typeparam>
+    /// <typeparam name="T">The type of the elements in the 
+    /// collection.</typeparam>
     /// <param name="source">The collection of elements.</param>
     /// <returns>An async-enumerable sequence.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
-    public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source)
+    /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
+    /// is null.</exception>
+    public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(
+        this IEnumerable<T> source)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -85,10 +94,12 @@ public static class CollectionExtensions
     /// </summary>
     /// <typeparam name="TItem">Type of the element in the sequence.</typeparam>
     /// <param name="item">The item to act on.</param>
-    public delegate void ForEachRefAction<TItem>(ref TItem item) where TItem : struct;
+    public delegate void ForEachRefAction<TItem>(ref TItem item)
+        where TItem : struct;
 
     /// <summary>
-    /// Enumerates the collection source and performs the specified action on each element.
+    /// Enumerates the collection source and performs the specified action 
+    /// on each element.
     /// </summary>
     /// <typeparam name="T">Type of the element in the sequence.</typeparam>
     /// <param name="source">The source of the sequence.</param>
@@ -114,9 +125,12 @@ public static class CollectionExtensions
     /// <param name="action">Action to invoke for each element.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
     /// or <paramref name="action"/> is null.</exception>
-    /// <remarks>Items should not be added or removed from the <see cref="List{T}"/> while
+    /// <remarks>Items should not be added or removed from the 
+    /// <see cref="List{T}"/> while
     /// the <see cref="Span{T}"/> is in use.</remarks>
-    public static void ForEach<T>(this List<T> source, ForEachRefAction<T> action)
+    public static void ForEach<T>(
+        this List<T> source,
+        ForEachRefAction<T> action)
         where T : struct
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -139,7 +153,8 @@ public static class CollectionExtensions
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
     /// or <paramref name="action"/> is null.</exception>
-    /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+    /// <exception cref="OperationCanceledException">The operation has been 
+    /// canceled.</exception>
     public static async Task ForEachAsync<T>(
         this IAsyncEnumerable<T> source,
         Action<T> action,
@@ -149,7 +164,8 @@ public static class CollectionExtensions
         ArgumentNullException.ThrowIfNull(action);
 
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-        await using IAsyncEnumerator<T> enumeratorAsync = source.GetAsyncEnumerator(cancellationToken);
+        await using IAsyncEnumerator<T> enumeratorAsync =
+            source.GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
         while (await enumeratorAsync.MoveNextAsync().ConfigureAwait(false))
@@ -162,7 +178,8 @@ public static class CollectionExtensions
     /// </summary>
     /// <typeparam name="T">Type of the element in the sequence.</typeparam>
     /// <param name="source">The source of the sequence.</param>
-    /// <param name="action">Action to asynchronously invoke on each element.</param>
+    /// <param name="action">Action to asynchronously invoke on each 
+    /// element.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
@@ -177,32 +194,42 @@ public static class CollectionExtensions
         ArgumentNullException.ThrowIfNull(action);
 
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-        await using IAsyncEnumerator<T> enumeratorAsync = source.GetAsyncEnumerator(cancellationToken);
+        await using IAsyncEnumerator<T> enumeratorAsync =
+            source.GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
         while (await enumeratorAsync.MoveNextAsync().ConfigureAwait(false))
-            await action(enumeratorAsync.Current, cancellationToken).ConfigureAwait(false);
+            await action(enumeratorAsync.Current, cancellationToken)
+                .ConfigureAwait(false);
     }
 
     /// <summary>
     /// Converts an <see cref="IEnumerable{T}"/> to a read only collection.
     /// </summary>
     /// <typeparam name="T">The type of the object.</typeparam>
-    /// <param name="source">An instance of the collection to be converted.</param>
-    /// <returns>An implementation of <see cref="IReadOnlyCollection{T}"/></returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is null.</exception>
-    public static IReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> source)
+    /// <param name="source">An instance of the collection to be 
+    /// converted.</param>
+    /// <returns>An implementation of <see cref="IReadOnlyCollection{T}"/>
+    /// </returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
+    /// is null.</exception>
+    public static IReadOnlyCollection<T> ToReadOnlyCollection<T>(
+        this IEnumerable<T> source)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return new ReadOnlyCollectionBuilder<T>(source).ToReadOnlyCollection();
+        return new ReadOnlyCollectionBuilder<T>(source)
+            .ToReadOnlyCollection();
     }
 
     /// <summary>
-    /// Determines whether the current type implements or it's <see cref="IEnumerable{T}"/>.
+    /// Determines whether the current type implements or it's 
+    /// <see cref="IEnumerable{T}"/>.
     /// </summary>
     /// <param name="type">The type to act on.</param>
-    /// <returns><see langword="true"/> if found, otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="type"/> is null.</exception>
+    /// <returns><see langword="true"/> if found, otherwise 
+    /// <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="type"/> is null.</exception>
     public static bool IsEnumerable(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
@@ -210,15 +237,19 @@ public static class CollectionExtensions
         return !type.IsPrimitive
             && type != typeof(string)
             && type.GetInterfaces()
-                .Exists(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                .Exists(i => i.IsGenericType
+                    && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
     }
 
     /// <summary>
-    /// Determines whether the current type implements or it's <see cref="IAsyncEnumerable{T}"/>.
+    /// Determines whether the current type implements or it's 
+    /// <see cref="IAsyncEnumerable{T}"/>.
     /// </summary>
     /// <param name="type">The type to act on.</param>
-    /// <returns><see langword="true"/> if Ok, otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="type"/> is null.</exception>
+    /// <returns><see langword="true"/> if Ok, otherwise 
+    /// <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="type"/> is null.</exception>
     public static bool IsAsyncEnumerable(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
@@ -226,9 +257,11 @@ public static class CollectionExtensions
         return type.IsInterface switch
         {
             true => type.IsGenericType && type.Name
-                .Equals(typeof(IAsyncEnumerable<>).Name, StringComparison.OrdinalIgnoreCase),
+                .Equals(typeof(IAsyncEnumerable<>).Name,
+                    StringComparison.OrdinalIgnoreCase),
             _ => type.GetInterfaces()
-                .Exists(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
+                .Exists(i => i.IsGenericType
+                    && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
         };
     }
 }

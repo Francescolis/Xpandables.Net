@@ -31,7 +31,8 @@ public interface ITransientPublisher
     /// <param name="event">The event to be published.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
-    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+    /// <returns>A value that represents an <see cref="IOperationResult"/>
+    /// .</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The 

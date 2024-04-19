@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -25,22 +25,28 @@ using Xpandables.Net.Visitors;
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
-/// Provides with a set of static methods to register <see cref="IVisitor{TElement}"/> implementations to the services.
+/// Provides with a set of static methods to register 
+/// <see cref="IVisitor{TElement}"/> implementations to the services.
 /// </summary>
 public static class ServiceCollectionVisitorExtensions
 {
-    internal readonly static MethodInfo AddVisitorMethod = typeof(ServiceCollectionVisitorExtensions).GetMethod(nameof(AddXVisitor))!;
+    internal readonly static MethodInfo AddVisitorMethod =
+        typeof(ServiceCollectionVisitorExtensions)
+        .GetMethod(nameof(AddXVisitor))!;
 
     /// <summary>
     /// Registers the <typeparamref name="TVisitor"/> to the services with 
     /// scope life time using the factory if specified.
     /// </summary>
-    /// <typeparam name="TElement">The type of the argument to be visited.</typeparam>
+    /// <typeparam name="TElement">The type of the argument to be visited
+    /// .</typeparam>
     /// <typeparam name="TVisitor">The type of the visitor.</typeparam>
     /// <param name="services">The collection of services.</param>
-    /// <param name="implementationFactory">The factory that creates the visitor.</param>
+    /// <param name="implementationFactory">The factory that creates the 
+    /// visitor.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
     public static IServiceCollection AddXVisitor<TElement, TVisitor>(
         this IServiceCollection services,
         Func<IServiceProvider, TVisitor>? implementationFactory = default)
@@ -57,14 +63,17 @@ public static class ServiceCollectionVisitorExtensions
     }
 
     /// <summary>
-    /// Adds the <see cref="IVisitor{TElement}"/> implementations to the services with scope life time.
+    /// Adds the <see cref="IVisitor{TElement}"/> implementations to the services 
+    /// with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="assemblies"/> is null.</exception>
     public static IServiceCollection AddXVisitors(
         this IServiceCollection services,
         params Assembly[] assemblies)
@@ -87,12 +96,16 @@ public static class ServiceCollectionVisitorExtensions
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXVisitorComposite(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXVisitorComposite(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddTransient(typeof(ICompositeVisitor<>), typeof(CompositeVisitor<>));
+        services.TryAddTransient(
+            typeof(ICompositeVisitor<>),
+            typeof(CompositeVisitor<>));
         return services;
     }
 }

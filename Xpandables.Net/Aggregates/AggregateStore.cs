@@ -71,7 +71,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
         }
         catch (OperationResultException resultException)
         {
-            return resultException.OperationResult;
+            return resultException.Operation;
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)
@@ -79,7 +79,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
             return OperationResults
                 .InternalError()
                 .WithDetail(I18nXpandables.AggregateFailedToAppend)
-                .WithError(nameof(Aggregate<TAggregateId>), exception)
+                .WithException(exception)
                 .Build();
         }
     }
@@ -112,7 +112,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
             return OperationResults
                 .InternalError<TAggregate>()
                 .WithDetail(I18nXpandables.AggregateFailedToRead)
-                .WithError(nameof(Aggregate<TAggregateId>), exception)
+                .WithException(exception)
                 .Build();
         }
     }

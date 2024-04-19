@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +25,6 @@ using Xpandables.Net.Commands.Decorators;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
-using Xpandables.Net.Validators;
 using Xpandables.Net.Visitors;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -250,27 +249,35 @@ public static class ServiceCollectionCommandQueriesExtensions
     }
 
     /// <summary>
-    /// Registers the <typeparamref name="TAsyncQueryHandler"/> to the services with 
-    /// scope life time using the factory if specified.
+    /// Registers the <typeparamref name="TAsyncQueryHandler"/> to the 
+    /// services with  scope life time using the factory if specified.
     /// </summary>
     /// <remarks>You can refer to the command handler 
-    /// using the <see cref="AsyncQueryHandler{TQuery, TResult}"/> delegate.</remarks>
-    /// <typeparam name="TAsyncQuery">Type of the query that will be used as argument.</typeparam>
+    /// using the <see cref="AsyncQueryHandler{TQuery, TResult}"/> delegate
+    /// .</remarks>
+    /// <typeparam name="TAsyncQuery">Type of the query that will be used as 
+    /// argument.</typeparam>
     /// <typeparam name="TResult">Type of the result of the query.</typeparam>
-    /// <typeparam name="TAsyncQueryHandler">The type of the query handler.</typeparam>
+    /// <typeparam name="TAsyncQueryHandler">The type of the query handler
+    /// .</typeparam>
     /// <param name="services">The collection of services.</param>
-    /// <param name="implementationAsyncQueryFactory">The factory that creates the query handler.</param>
+    /// <param name="implementationAsyncQueryFactory">The factory that creates 
+    /// the query handler.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXAsyncQueryHandler<TAsyncQuery, TResult, TAsyncQueryHandler>(
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXAsyncQueryHandler
+        <TAsyncQuery, TResult, TAsyncQueryHandler>(
         this IServiceCollection services,
-        Func<IServiceProvider, TAsyncQueryHandler>? implementationAsyncQueryFactory = default)
+        Func<IServiceProvider, TAsyncQueryHandler>?
+        implementationAsyncQueryFactory = default)
         where TAsyncQuery : notnull, IAsyncQuery<TResult>
         where TAsyncQueryHandler : class, IAsyncQueryHandler<TAsyncQuery, TResult>
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.DoRegisterTypeServiceLifeTime<IAsyncQueryHandler<TAsyncQuery, TResult>, TAsyncQueryHandler>(
+        _ = services.DoRegisterTypeServiceLifeTime<IAsyncQueryHandler
+            <TAsyncQuery, TResult>, TAsyncQueryHandler>(
             implementationAsyncQueryFactory);
 
         _ = services.AddScoped<AsyncQueryHandler<TAsyncQuery, TResult>>(
@@ -286,13 +293,16 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// implementations to the services with scoped life time.
     /// </summary>
     /// <remarks>You can refer to the command handler 
-    /// using the <see cref="AsyncQueryHandler{TQuery, TResult}"/> delegate.</remarks>
+    /// using the <see cref="AsyncQueryHandler{TQuery, TResult}"/> delegate
+    /// .</remarks>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// if not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="assemblies"/> is null.</exception>
     /// <remarks>The query wrapper is also registered.</remarks>
     public static IServiceCollection AddXAsyncQueryHandlers(
         this IServiceCollection services, params Assembly[] assemblies)
@@ -312,13 +322,16 @@ public static class ServiceCollectionCommandQueriesExtensions
 
 
     /// <summary>
-    /// Registers and configures the <see cref="ICommandHandler{TCommand}"/>, <see cref="IQueryHandler{TQuery, TResult}"/>
+    /// Registers and configures the <see cref="ICommandHandler{TCommand}"/>, 
+    /// <see cref="IQueryHandler{TQuery, TResult}"/>
     /// and <see cref="IAsyncQueryHandler{TQuery, TResult}"/> behaviors.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <param name="assemblies">The assemblies to scan for implemented types. If not set, the calling assembly will be used.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types. 
+    /// If not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
     public static IServiceCollection AddXCommandQueryHandlers(
         this IServiceCollection services,
         params Assembly[] assemblies)
@@ -344,9 +357,11 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
-    /// <param name="configureOptions">A delegate to configure the <see cref="CommandOptions"/>.</param>
+    /// <param name="configureOptions">A delegate to configure the 
+    /// <see cref="CommandOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
     public static IServiceCollection AddXCommandQueryHandlers(
         this IServiceCollection services,
         Action<CommandOptions> configureOptions,
@@ -372,9 +387,11 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// and <see cref="IAsyncQueryHandler{TQuery, TResult}"/> options behaviors.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <param name="configureOptions">A delegate to configure the <see cref="CommandOptions"/>.</param>
+    /// <param name="configureOptions">A delegate to configure the 
+    /// <see cref="CommandOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
     public static IServiceCollection AddXCommandOptions(
         this IServiceCollection services,
         Action<CommandOptions> configureOptions)
@@ -405,9 +422,14 @@ public static class ServiceCollectionCommandQueriesExtensions
             _ = services.AddXVisitorDecorators();
         }
 
-        if (definedOptions.IsOperationResultFinalizerEnabled)
+        if (definedOptions.IsOperationFinalizerEnabled)
         {
-            _ = services.AddXOperationResultFinalizerDecorator();
+            _ = services.AddXOperationFinalizerDecorator();
+        }
+
+        if (definedOptions.IsSnapShotEnabled)
+        {
+            _ = services.AddXSnapshotDecorator();
         }
 
         return services;
@@ -420,8 +442,10 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXPersistenceCommandDecorator(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXPersistenceCommandDecorator(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -440,8 +464,10 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXTransactionCommandDecorator(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXTransactionCommandDecorator(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -454,13 +480,16 @@ public static class ServiceCollectionCommandQueriesExtensions
     }
 
     /// <summary>
-    /// Registers the default persistence command handler delegate that does nothing, to be used to 
-    /// apply persistence to commands decorated with <see cref="IPersistenceDecorator"/>.
-    /// The delegate is use by the <see cref="PersistenceCommandDecorator{TCommand}"/>.
+    /// Registers the default persistence command handler delegate that does 
+    /// nothing, to be used to apply persistence to commands decorated with 
+    /// <see cref="IPersistenceDecorator"/>.
+    /// The delegate is use by the 
+    /// <see cref="PersistenceCommandDecorator{TCommand}"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/>.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// .</exception>
     /// <remarks>To be used when persistence is managed differently.</remarks>
     public static IServiceCollection AddXPersistenceCommandHandler(
         this IServiceCollection services)
@@ -475,11 +504,14 @@ public static class ServiceCollectionCommandQueriesExtensions
 
     /// <summary>
     /// Registers the persistence command handler delegate to be used to 
-    /// apply persistence to commands decorated with <see cref="IPersistenceDecorator"/>.
-    /// The delegate is use by the <see cref="PersistenceCommandDecorator{TCommand}"/>.
+    /// apply persistence to commands decorated with 
+    /// <see cref="IPersistenceDecorator"/>.
+    /// The delegate is use by the 
+    /// <see cref="PersistenceCommandDecorator{TCommand}"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <param name="persistenceHandlerBuilder">The persistence command handler factory.</param>
+    /// <param name="persistenceHandlerBuilder">The persistence command handler 
+    /// factory.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// or <paramref name="persistenceHandlerBuilder"/> is null.</exception>
@@ -497,11 +529,14 @@ public static class ServiceCollectionCommandQueriesExtensions
 
     /// <summary>
     /// Registers the transaction command handler delegate to be used to apply 
-    /// transaction to commands decorated with <see cref="ITransactionDecorator"/>.
-    /// The delegate is use by the <see cref="TransactionCommandDecorator{TCommand}"/>.
+    /// transaction to commands decorated with 
+    /// <see cref="ITransactionDecorator"/>.
+    /// The delegate is use by the
+    /// <see cref="TransactionCommandDecorator{TCommand}"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <param name="transactionHandlerBuilder">The transaction command handler factory.</param>
+    /// <param name="transactionHandlerBuilder">The transaction command handler
+    /// factory.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// or <paramref name="transactionHandlerBuilder"/> is null.</exception>
@@ -519,16 +554,18 @@ public static class ServiceCollectionCommandQueriesExtensions
 
     /// <summary>
     /// Registers validation behavior to commands and queries 
-    /// that are decorated with the <see cref="IValidateDecorator"/> to the services
-    /// with transient life time.
+    /// that are decorated with the <see cref="IValidateDecorator"/> to 
+    /// the services with transient life time.
     /// <see cref="ValidatorAsyncQueryDecorator{TQuery, TResult}"/>,
     /// <see cref="ValidatorCommandDecorator{TCommand}"/>,
     /// <see cref="ValidatorQueryDecorator{TQuery, TResult}"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXValidatorDecorators(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXValidatorDecorators(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -555,8 +592,10 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXVisitorDecorators(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXVisitorDecorators(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -577,58 +616,66 @@ public static class ServiceCollectionCommandQueriesExtensions
 
     /// <summary>
     /// Adds operation result correlation behavior to commands and queries 
-    /// that are decorated with the <see cref="IOperationResultFinalizerDecorator"/> to the services.
+    /// that are decorated with the <see cref="IOperationFinalizerDecorator"/> 
+    /// to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultFinalizerDecorator(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXOperationFinalizerDecorator(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         _ = services.XTryDecorate(
                 typeof(ICommandHandler<>),
-                typeof(OperationResultFinalizerCommandDecorator<>),
-                typeof(IOperationResultFinalizerDecorator));
+                typeof(OperationFinalizerCommandDecorator<>),
+                typeof(IOperationFinalizerDecorator));
         _ = services.XTryDecorate(
                 typeof(IAsyncQueryHandler<,>),
-                typeof(OperationResultFinalizerAsyncQueryDecorator<,>),
-                typeof(IOperationResultFinalizerDecorator));
+                typeof(OperationFinalizerAsyncQueryDecorator<,>),
+                typeof(IOperationFinalizerDecorator));
         _ = services.XTryDecorate(
                 typeof(IQueryHandler<,>),
-                typeof(OperationResultFinalizerQueryDecorator<,>),
-                typeof(IOperationResultFinalizerDecorator));
+                typeof(OperationFinalizerQueryDecorator<,>),
+                typeof(IOperationFinalizerDecorator));
 
         return services;
     }
 
     /// <summary>
-    /// Adds the implementation of <see cref="IOperationResultFinalizer"/> to 
+    /// Adds the implementation of <see cref="IOperationFinalizer"/> to 
     /// the services with scoped life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXOperationResultFinalizer(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXOperationResultFinalizer(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddScoped<IOperationResultFinalizer, OperationResultFinalizerInternal>();
+        services.TryAddScoped<IOperationFinalizer, OperationFinalizerInternal>();
         return services;
     }
 
     /// <summary>
-    /// Ensures that the supplied interceptor is returned, wrapping all original registered handlers
-    /// type for which the command/query implementing <see cref="IInterceptorDecorator"/> 
-    /// found in the specified collection of assemblies.
+    /// Ensures that the supplied interceptor is returned, wrapping all original 
+    /// registered handlers type for which the command/query implementing 
+    /// <see cref="IInterceptorDecorator"/> found in the specified collection 
+    /// of assemblies.
     /// </summary>
     /// <typeparam name="TInterceptor">The type of interceptor.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="assemblies"/> is null.</exception>
     public static IServiceCollection AddXInterceptorHandlers<TInterceptor>(
         this IServiceCollection services,
         params Assembly[] assemblies)
@@ -636,9 +683,10 @@ public static class ServiceCollectionCommandQueriesExtensions
         => services.AddXInterceptorHandlers(typeof(TInterceptor), assemblies);
 
     /// <summary>
-    /// Ensures that the supplied interceptor is returned, wrapping all original registered handlers
-    /// type for which the command/query implementing <see cref="IInterceptorDecorator"/> 
-    /// found in the specified collection of assemblies.
+    /// Ensures that the supplied interceptor is returned, wrapping all original 
+    /// registered handlers type for which the command/query implementing 
+    /// <see cref="IInterceptorDecorator"/> found in the specified collection 
+    /// of assemblies.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="interceptorType">The interceptor type that will be used 
@@ -647,9 +695,12 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="assemblies"/> is null.</exception>
-    /// <exception cref="ArgumentException">The <paramref name="interceptorType"/> 
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="assemblies"/> is null.</exception>
+    /// <exception cref="ArgumentException">The 
+    /// <paramref name="interceptorType"/> 
     /// must implement <see cref="IInterceptor"/>.</exception>
     public static IServiceCollection AddXInterceptorHandlers(
         this IServiceCollection services,
@@ -661,7 +712,8 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(assemblies);
 
         if (!typeof(IInterceptor).IsAssignableFrom(interceptorType))
-            throw new ArgumentException($"{nameof(interceptorType)} must implement {nameof(IInterceptor)}.");
+            throw new ArgumentException($"{nameof(interceptorType)} must " +
+                $"implement {nameof(IInterceptor)}.");
 
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
@@ -678,14 +730,19 @@ public static class ServiceCollectionCommandQueriesExtensions
                 && !type.IsGenericType
                 && Array.Exists(
                     type.GetInterfaces(),
-                    i => i.IsGenericType && genericHandlerInterfaceTypes.Contains(i.GetGenericTypeDefinition())
-                    && Array.Exists(i.GetGenericArguments(), a => typeof(IInterceptorDecorator).IsAssignableFrom(a))))
+                    i => i.IsGenericType
+                    && genericHandlerInterfaceTypes
+                        .Contains(i.GetGenericTypeDefinition())
+                    && Array.Exists(i.GetGenericArguments(),
+                        a => typeof(IInterceptorDecorator)
+                            .IsAssignableFrom(a))))
             .Select(type => new
             {
                 Type = type,
                 Interfaces = type.GetInterfaces()
                     .Where(i => i.IsGenericType
-                        && genericHandlerInterfaceTypes.Contains(i.GetGenericTypeDefinition()))
+                        && genericHandlerInterfaceTypes
+                            .Contains(i.GetGenericTypeDefinition()))
             });
 
         _ = services.AddTransient(interceptorType);
@@ -694,8 +751,10 @@ public static class ServiceCollectionCommandQueriesExtensions
             {
                 _ = services.XTryDecorate(typeInterface, (instance, provider) =>
                 {
-                    IInterceptor interceptor = (IInterceptor)provider.GetRequiredService(interceptorType);
-                    return InterceptorFactory.CreateProxy(typeInterface, interceptor, instance);
+                    IInterceptor interceptor = (IInterceptor)provider
+                        .GetRequiredService(interceptorType);
+                    return InterceptorFactory
+                        .CreateProxy(typeInterface, interceptor, instance);
                 });
             }
 

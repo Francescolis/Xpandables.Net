@@ -18,15 +18,12 @@
 
 // Ignore Spelling: Finalizer
 
-using Xpandables.Net.Operations;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Primitives;
-/// <summary>
-/// Defines a marker interface that allows the command/query class 
-/// to add correlation decorator context result after a control flow.
-/// In the calls handling the query/command, using the
-/// <see cref="IOperationResultFinalizer"/>
-/// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface IOperationResultFinalizerDecorator { }
-#pragma warning restore CA1040 // Avoid empty interfaces
+namespace Xpandables.Net.Operations;
+internal sealed class OperationFinalizerInternal : IOperationFinalizer
+{
+    public Func<IOperationResult, IOperationResult>? Finalizer { get; set; }
+    [MemberNotNullWhen(true, nameof(Finalizer))]
+    public bool CallFinalizerOnException { get; set; }
+}

@@ -21,10 +21,9 @@ namespace Xpandables.Net.Commands;
 
 /// <summary>
 /// This interface is used as a marker for commands when using the 
-/// asynchronous command pattern.
-/// Class implementation is used with the 
-/// <see cref="ICommandHandler{TCommand}"/> where
-/// "TCommand" is a class that implements <see cref="ICommand"/>.
+/// asynchronous command pattern. Class implementation is used with the 
+/// <see cref="ICommandHandler{TCommand}"/> where "TCommand" is a class that 
+/// implements <see cref="ICommand"/>.
 /// This can also be enhanced with some useful decorators.
 /// </summary>
 public interface ICommand

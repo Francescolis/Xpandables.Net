@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -30,9 +30,11 @@ namespace Xpandables.Net.Operations;
 public sealed class FromModelBinderProvider : IModelBinderProvider
 {
     /// <summary>
-    /// Creates a <see cref="IModelBinder" /> based on <see cref="ModelBinderProviderContext" />.
+    /// Creates a <see cref="IModelBinder" /> based on 
+    /// <see cref="ModelBinderProviderContext" />.
     /// </summary>
-    /// <param name="context">The <see cref="ModelBinderProviderContext" />.</param>
+    /// <param name="context">The <see cref="ModelBinderProviderContext" />
+    /// .</param>
     /// <returns>An <see cref="IModelBinder" />.</returns>
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
@@ -42,14 +44,20 @@ public sealed class FromModelBinderProvider : IModelBinderProvider
         {
             DefaultModelMetadata metaData = (DefaultModelMetadata)context.Metadata;
 
-            if (metaData.Attributes.Attributes.OfType<FromHeaderAttribute>().FirstOrDefault() is not null)
-                return new BinderTypeModelBinder(typeof(FromModelBinder<FromHeaderAttribute>));
+            if (metaData.Attributes.Attributes
+                .OfType<FromHeaderAttribute>().FirstOrDefault() is not null)
+                return new BinderTypeModelBinder(
+                    typeof(FromModelBinder<FromHeaderAttribute>));
 
-            if (metaData.Attributes.Attributes.OfType<FromQueryAttribute>().FirstOrDefault() is not null)
-                return new BinderTypeModelBinder(typeof(FromModelBinder<FromQueryAttribute>));
+            if (metaData.Attributes.Attributes
+                .OfType<FromQueryAttribute>().FirstOrDefault() is not null)
+                return new BinderTypeModelBinder(
+                    typeof(FromModelBinder<FromQueryAttribute>));
 
-            if (metaData.Attributes.Attributes.OfType<FromRouteAttribute>().FirstOrDefault() is not null)
-                return new BinderTypeModelBinder(typeof(FromModelBinder<FromRouteAttribute>));
+            if (metaData.Attributes.Attributes
+                .OfType<FromRouteAttribute>().FirstOrDefault() is not null)
+                return new BinderTypeModelBinder(
+                    typeof(FromModelBinder<FromRouteAttribute>));
         }
 
         return default;

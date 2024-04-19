@@ -53,7 +53,8 @@ public interface IAsyncQuery<out TResult>
 /// Represents a method signature to be used to apply 
 /// <see cref="IAsyncQueryHandler{TQuery, TResult}"/> implementation.
 /// </summary>
-/// <typeparam name="TQuery">Type of the query that will be used as argument.</typeparam>
+/// <typeparam name="TQuery">Type of the query that will be used as argument
+/// .</typeparam>
 /// <typeparam name="TResult">Type of the result of the query.</typeparam>
 /// <param name="query">The query to act on.</param>
 /// <param name="cancellationToken">A CancellationToken 
@@ -70,7 +71,8 @@ public delegate IAsyncEnumerable<TResult> AsyncQueryHandler<TQuery, out TResult>
 
 /// <summary>
 /// Defines a generic method that a class implements to asynchronously handle a 
-/// type-specific query and returns an asynchronous enumerable type-specific result.
+/// type-specific query and returns an asynchronous enumerable type-specific 
+/// result.
 /// The implementation must be thread-safe when working 
 /// in a multi-threaded environment.
 /// </summary>

@@ -87,13 +87,14 @@ internal sealed record class Invocation : IInvocation
             if (ReturnValue is Task { Exception: { } } taskException)
                 Exception = taskException.Exception.GetBaseException();
         }
-        catch (Exception exception) when (exception is TargetException
-                                      or ArgumentNullException
-                                      or TargetInvocationException
-                                      or TargetParameterCountException
-                                      or MethodAccessException
-                                      or InvalidOperationException
-                                      or NotSupportedException)
+        catch (Exception exception)
+            when (exception is TargetException
+                            or ArgumentNullException
+                            or TargetInvocationException
+                            or TargetParameterCountException
+                            or MethodAccessException
+                            or InvalidOperationException
+                            or NotSupportedException)
         {
             Exception = exception;
         }

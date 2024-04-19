@@ -19,7 +19,6 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Collections;
 
 namespace Xpandables.Net.Http;
@@ -114,27 +113,12 @@ internal sealed class HttpClientResponseBuilderInternal
                 default);
         }
 
-        TResult? result;
-
-        if (!httpResponse.Content.Headers.ContentDisposition?
-            .DispositionType?
-            .StartsWith("attachment", StringComparison.InvariantCulture) ?? true)
-        {
-            result = await JsonSerializer.DeserializeAsync<TResult>(
+        TResult? result = await JsonSerializer
+            .DeserializeAsync<TResult>(
                 stream,
                 serializerOptions,
                 cancellationToken)
             .ConfigureAwait(false);
-        }
-        else
-        {
-            BinaryEntry binary = await DoReadContentAsync(
-                httpResponse,
-                stream,
-                cancellationToken)
-                .ConfigureAwait(false);
-            result = binary is not TResult r ? default : r;
-        }
 
         return new HttpClientResponse<TResult>(
             httpResponse.StatusCode,
@@ -143,26 +127,6 @@ internal sealed class HttpClientResponseBuilderInternal
             httpResponse.Version,
             httpResponse.ReasonPhrase,
             default);
-
-        static async ValueTask<BinaryEntry> DoReadContentAsync(
-            HttpResponseMessage httpResponse,
-            Stream stream,
-            CancellationToken cancellationToken)
-        {
-            using MemoryStream memoryStream = new();
-            await stream.CopyToAsync(memoryStream, cancellationToken)
-                .ConfigureAwait(false);
-            byte[] content = memoryStream.ToArray();
-            string fileName = Path.GetFileNameWithoutExtension(
-                httpResponse.Content.Headers.ContentDisposition!.FileName!);
-            string contentType = httpResponse.Content.Headers
-                .ContentType!.MediaType!;
-            string extension = Path.GetExtension(
-                httpResponse.Content.Headers.ContentDisposition!.FileName!)
-                .TrimStart('.');
-
-            return new BinaryEntry(fileName, content, contentType, extension);
-        }
     }
 
     public async ValueTask<HttpClientResponse> BuildHttpResponse(
@@ -180,6 +144,37 @@ internal sealed class HttpClientResponseBuilderInternal
                 await BuildExceptionAsync(httpResponse)
                 .ConfigureAwait(false));
         }
+
+        if (httpResponse.Content.Headers.ContentDisposition is not null)
+            if (httpResponse
+                .Content
+                .Headers
+                .ContentDisposition
+                .DispositionType
+                .StartsWith("attachment", StringComparison.InvariantCulture))
+            {
+                string fileName = httpResponse
+                    .Content
+                    .Headers
+                    .ContentDisposition
+                    .FileName!
+                    .Trim('"');
+
+                Uri requestUri = httpResponse.RequestMessage!.RequestUri!;
+                string baseUrl = requestUri.GetLeftPart(UriPartial.Authority);
+
+                string fileUrl = $"{baseUrl}/{Uri.EscapeDataString(fileName)}";
+
+                System.Collections.Specialized.NameValueCollection headers
+                    = httpResponse.ReadHttpResponseHeaders();
+                headers.Add("Location", fileUrl);
+
+                return new HttpClientResponse(
+                    httpResponse.StatusCode,
+                    headers,
+                    httpResponse.Version,
+                    httpResponse.ReasonPhrase);
+            }
 
         return new HttpClientResponse(
             httpResponse.StatusCode,

@@ -27,7 +27,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.Converters;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -70,8 +70,8 @@ public static class ServiceCollectionOperationsExtensions
     /// Adds the default <see cref="OperationResultSerializationConfigureOptions"/> to the services 
     /// that configures the <see cref="Microsoft.AspNetCore.Http.Json.JsonOptions"/>
     /// converters with <see cref="JsonStringEnumConverter"/>, 
-    /// <see cref="OperationResultAspJsonConverterFactory"/>,<see cref="JsonDateOnlyConverter"/>,
-    /// <see cref="JsonNullableDateOnlyConverter"/>, <see cref="JsonTimeOnlyConverter"/> 
+    /// <see cref="OperationResultAspJsonConverterFactory"/>,<see cref="DateOnlyJsonConverter"/>,
+    /// <see cref="JsonNullableDateOnlyConverter"/>, <see cref="TimeOnlyJsonConverter"/> 
     /// and <see cref="JsonNullableTimeOnlyConverter"/>.    
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -110,7 +110,7 @@ public static class ServiceCollectionOperationsExtensions
     /// Adds the default <see cref="OperationResultControllerConfigureFormatterOptions"/> to 
     /// the services that configures the <see cref="JsonOptions"/>
     /// converters with <see cref="JsonStringEnumConverter"/>, <see cref="OperationResultAspJsonConverterFactory"/> 
-    /// and <see cref="JsonDateOnlyConverter"/>.
+    /// and <see cref="DateOnlyJsonConverter"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>

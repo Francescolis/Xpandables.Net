@@ -15,10 +15,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Optionals;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
@@ -37,11 +37,13 @@ public abstract record OperationResultBase : IOperationResult
 
     ///<inheritdoc/>
     [JsonInclude]
-    public Optional<object> Result { get; internal init; }
+    [AllowNull, MaybeNull]
+    public object Result { get; internal init; }
 
     /// <inheritdoc/>
     [JsonInclude]
-    public Optional<string> LocationUrl { get; internal init; }
+    [AllowNull, MaybeNull]
+    public Uri LocationUrl { get; internal init; }
 
     /// <inheritdoc/>
     [JsonInclude]
@@ -61,11 +63,13 @@ public abstract record OperationResultBase : IOperationResult
 
     /// <inheritdoc/>
     [JsonInclude]
-    public Optional<string> Title { get; internal init; }
+    [AllowNull, MaybeNull]
+    public string Title { get; internal init; }
 
     /// <inheritdoc/>
     [JsonInclude]
-    public Optional<string> Detail { get; internal init; }
+    [AllowNull, MaybeNull]
+    public string Detail { get; internal init; }
 
     ///<inheritdoc/>
     [JsonIgnore]
@@ -90,22 +94,22 @@ public abstract record OperationResultBase : IOperationResult
     /// operation problem.</param>
     protected OperationResultBase(
         HttpStatusCode statusCode,
-        Optional<object>? result = default,
-        Optional<string>? locationUrl = default,
+        object? result = default,
+        Uri? locationUrl = default,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
         ElementCollection? extensions = default,
-        Optional<string>? title = default,
-        Optional<string>? detail = default)
+        string? title = default,
+        string? detail = default)
     {
         StatusCode = statusCode;
-        Result = result ?? Optional.Empty<object>();
-        Errors = errors ?? ([]);
-        Extensions = extensions ?? ([]);
-        LocationUrl = locationUrl ?? Optional.Empty<string>();
-        Headers = headers ?? ([]);
-        Title = title ?? Optional.Empty<string>();
-        Detail = detail ?? Optional.Empty<string>();
+        Result = result;
+        Errors = errors ?? [];
+        Extensions = extensions ?? [];
+        LocationUrl = locationUrl;
+        Headers = headers ?? [];
+        Title = title;
+        Detail = detail;
     }
 }
 
@@ -126,7 +130,8 @@ public abstract record OperationResultBase<TResult>
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public new Optional<TResult> Result { get; internal init; }
+    [AllowNull, MaybeNull]
+    public new TResult Result { get; internal init; }
 
     /// <summary>
     /// Creates a new instance of <see cref="OperationResult{TValue}"/> 
@@ -143,25 +148,20 @@ public abstract record OperationResultBase<TResult>
     /// execution operation problem.</param>
     protected OperationResultBase(
         HttpStatusCode statusCode,
-        Optional<TResult>? result = default,
-        Optional<string>? locationUrl = default,
+        TResult? result = default,
+        Uri? locationUrl = default,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
         ElementCollection? extensions = default,
-        Optional<string>? title = default,
-        Optional<string>? detail = default)
+        string? title = default,
+        string? detail = default)
         : base(
             statusCode,
-            result.HasValue && result.Value.IsNotEmpty
-                ? Optional.Some<object>(result.Value.Value)
-                : Optional.Empty<object>(),
+            result,
             locationUrl,
             errors,
             headers,
             extensions,
             title,
-            detail)
-    => Result = result.HasValue && result.Value.IsNotEmpty
-            ? Optional.Some(result.Value.Value)
-            : Optional.Empty<TResult>();
+            detail) => Result = result;
 }

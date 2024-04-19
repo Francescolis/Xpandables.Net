@@ -15,10 +15,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Optionals;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
@@ -30,9 +30,6 @@ namespace Xpandables.Net.Operations;
 /// for Asp.Net to convert only <see cref="IOperationResult.Result"/> to Json
 /// <para>or use <see cref="OperationResultJsonConverterFactory"/> 
 /// to convert the instance to Json.</para></remarks>
-#if DEBUG
-[JsonConverter(typeof(OperationResultJsonConverterFactory))]
-#endif
 public partial interface IOperationResult
 {
     /// <summary>
@@ -43,19 +40,23 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Gets the operation summary problem from the execution operation.
-    /// <para>Mostly used when building the Asp.Net response in case of errors.</para>
+    /// <para>Mostly used when building the Asp.Net response in case 
+    /// of errors.</para>
     /// </summary>
     /// <remarks>If not defined, the default title will be used.</remarks>
     [JsonInclude]
-    Optional<string> Title { get; }
+    [AllowNull, MaybeNull]
+    string Title { get; }
 
     /// <summary>
     /// Gets the operation explanation specific to the execution operation.
-    /// <para>Mostly used when building the Asp.Net response in  case of errors.</para>
+    /// <para>Mostly used when building the Asp.Net response in 
+    /// case of errors.</para>
     /// </summary>
     /// <remarks>If not defined, the default detail will be used.</remarks>
     [JsonInclude]
-    Optional<string> Detail { get; }
+    [AllowNull, MaybeNull]
+    string Detail { get; }
 
     /// <summary>
     /// Gets a user-defined object that qualifies or contains 
@@ -64,14 +65,17 @@ public partial interface IOperationResult
     /// <returns>The result value of this <see cref="IOperationResult"/>, 
     /// which is of the type <see langword="object"/>.</returns>
     [JsonInclude]
-    Optional<object> Result { get; }
+    [AllowNull, MaybeNull]
+    object Result { get; }
 
     /// <summary>
     /// Gets the URL for location header. 
-    /// <para>Mostly used with <see cref="HttpStatusCode.Created"/> in Asp.Net.</para>
+    /// <para>Mostly used with <see cref="HttpStatusCode.Created"/> in 
+    /// Asp.Net.</para>
     /// </summary>
     [JsonInclude]
-    Optional<string> LocationUrl { get; }
+    [AllowNull, MaybeNull]
+    Uri LocationUrl { get; }
 
     /// <summary>
     /// Gets the collection of header values that will be returned 
@@ -109,7 +113,7 @@ public partial interface IOperationResult
     /// according to the status of the operation.
     /// </summary>
     [JsonIgnore]
-    public bool IsSuccess => StatusCode.IsFailureStatusCode();
+    public bool IsSuccess => StatusCode.IsSuccessStatusCode();
 
     /// <summary>
     /// Determines whether or not the current instance is 
@@ -118,23 +122,42 @@ public partial interface IOperationResult
     public bool IsFailure => StatusCode.IsFailureStatusCode();
 
     /// <summary>
+    /// Determines whether or not the errors collection contains 
+    /// an exception key. If so, returns the error.
+    /// </summary>
+    /// <param name="elementEntry">the output error if found.</param>
+    /// <returns><see langword="true"/> if collection contains key named 
+    /// <see cref="OperationResultExtensions.ExceptionKey"/>, 
+    /// otherwise <see langword="false"/>.</returns>
+    public bool TryGetExceptionEntry(
+        [NotNullWhen(true)] out ElementEntry elementEntry)
+    {
+        elementEntry = Errors.FirstOrDefault(i => i.Key.Equals(
+            OperationResultExtensions.ExceptionKey,
+            StringComparison.OrdinalIgnoreCase));
+
+        return elementEntry is { Key: not null };
+    }
+
+    /// <summary>
     /// Converts the current instance to a generic instance.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <returns>A new instance of <see cref="IOperationResult{TResult}"/>.</returns>
-    public IOperationResult<TResult> ToOperationResult<TResult>() => new OperationResult<TResult>(
+    /// <returns>A new instance of <see cref="IOperationResult{TResult}"/>
+    /// .</returns>
+    public IOperationResult<TResult> ToOperationResult<TResult>()
+        => new OperationResult<TResult>(
             StatusCode,
-            Result.IsEmpty
-                ? Optional.Empty<TResult>()
-                : Result.Value is TResult value
-                    ? Optional.Some<TResult>(value)
-                    : Optional.Empty<TResult>(),
+            (TResult?)Result,
             LocationUrl,
             Errors,
             Headers,
             Extensions,
             Title,
             Detail);
+
+    [MemberNotNullWhen(true, nameof(Result))]
+    internal bool IsGenericAndIsSuccess => IsGeneric && IsSuccess;
 }
 
 /// <summary>
@@ -146,9 +169,6 @@ public partial interface IOperationResult
 /// to Json
 /// <para>or use <see cref="OperationResultJsonConverterFactory"/> 
 /// to convert the instance to Json.</para></remarks>
-#if DEBUG
-[JsonConverter(typeof(OperationResultJsonConverterFactory))]
-#endif
 public partial interface IOperationResult<TResult> : IOperationResult
 {
     /// <summary>
@@ -159,12 +179,14 @@ public partial interface IOperationResult<TResult> : IOperationResult
     /// <see cref="IOperationResult{TResult}"/>, which is of the same 
     /// type as the operation result's type parameter.</returns>
     [JsonIgnore]
-    new Optional<TResult> Result { get; }
+    [AllowNull, MaybeNull]
+    new TResult Result { get; }
 
     [JsonIgnore]
-    Optional<object> IOperationResult.Result
-        => Result.IsNotEmpty ? Optional.Some<object>(Result.Value)
-        : Optional.Empty<object>();
+    [AllowNull, MaybeNull]
+    object IOperationResult.Result => Result is TResult result
+        ? result
+        : null;
 
     /// <summary>
     /// Determines whether or not the current instance is generic.
@@ -183,9 +205,7 @@ public partial interface IOperationResult<TResult> : IOperationResult
     public IOperationResult ToOperationResult()
         => new OperationResult(
             StatusCode,
-            Result.IsNotEmpty
-                ? Optional.Some<object>(Result.Value)
-                : Optional.Empty<object>(),
+            Result,
             LocationUrl,
             Errors,
             Headers,

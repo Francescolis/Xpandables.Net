@@ -278,18 +278,13 @@ public partial interface IOperationResult
         TBuilder WithError(string key, params string[] errorMessages);
 
         /// <summary>
-        /// Adds the <paramref name="key"/> and the 
-        /// <paramref name="exception"/> to the errors collection.
+        /// Adds the <paramref name="exception"/> to the errors collection.
         /// </summary>
-        /// <param name="key">The key of 
-        /// <see cref="ElementEntry"/> to add errors to.</param>
         /// <param name="exception">The associated exception.</param>
-        /// <exception cref="ArgumentNullException">The 
-        /// <paramref name="key"/> is null.</exception>
         /// <exception cref="ArgumentNullException">The 
         /// <paramref name="exception"/> is null.</exception>
         /// <returns>The current instance.</returns>
-        TBuilder WithError(string key, Exception exception);
+        TBuilder WithException(Exception exception);
 
         /// <summary>
         /// Adds the <paramref name="error"/> to the errors collection.

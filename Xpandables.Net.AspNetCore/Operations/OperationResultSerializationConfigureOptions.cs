@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,26 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.Converters;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Add <see cref="IOperationResult"/>/<see cref="IOperationResult{TValue}"/> converters
-/// to minimal <see cref="JsonOptions"/>. You can derive from this class to customize its behavior.
+/// Add <see cref="IOperationResult"/>/<see cref="IOperationResult{TValue}"/> 
+/// converters to minimal <see cref="JsonOptions"/>. 
+/// You can derive from this class to customize its behavior.
 /// </summary>
 /// <remarks>
-/// Adds the <see cref="JsonStringEnumConverter"/>, <see cref="OperationResultAspJsonConverterFactory"/>,
-/// <see cref="JsonDateOnlyConverter"/>, <see cref="JsonNullableDateOnlyConverter"/>, <see cref="JsonNullableTimeOnlyConverter"/> 
-/// and <see cref="JsonTimeOnlyConverter"/>.
+/// Adds the <see cref="JsonStringEnumConverter"/>, 
+/// <see cref="OperationResultAspJsonConverterFactory"/>,
+/// <see cref="DateOnlyJsonConverter"/>, 
+/// <see cref="JsonNullableDateOnlyConverter"/>, 
+/// <see cref="JsonNullableTimeOnlyConverter"/> 
+/// and <see cref="TimeOnlyJsonConverter"/>.
 /// </remarks>
-public class OperationResultSerializationConfigureOptions : IConfigureOptions<JsonOptions>
+public class OperationResultSerializationConfigureOptions :
+    IConfigureOptions<JsonOptions>
 {
     ///<inheritdoc/>
     public virtual void Configure(JsonOptions options)
@@ -43,11 +48,17 @@ public class OperationResultSerializationConfigureOptions : IConfigureOptions<Js
         options.SerializerOptions.PropertyNameCaseInsensitive = true;
         options.SerializerOptions.PropertyNamingPolicy = null;
 
-        options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.SerializerOptions.Converters.Add(new OperationResultAspJsonConverterFactory());
-        options.SerializerOptions.Converters.Add(new JsonDateOnlyConverter());
-        options.SerializerOptions.Converters.Add(new JsonNullableDateOnlyConverter());
-        options.SerializerOptions.Converters.Add(new JsonTimeOnlyConverter());
-        options.SerializerOptions.Converters.Add(new JsonNullableTimeOnlyConverter());
+        options.SerializerOptions.Converters
+            .Add(new JsonStringEnumConverter());
+        options.SerializerOptions.Converters
+            .Add(new OperationResultAspJsonConverterFactory());
+        options.SerializerOptions.Converters
+            .Add(new DateOnlyJsonConverter());
+        options.SerializerOptions.Converters
+            .Add(new JsonNullableDateOnlyConverter());
+        options.SerializerOptions.Converters
+            .Add(new TimeOnlyJsonConverter());
+        options.SerializerOptions.Converters
+            .Add(new JsonNullableTimeOnlyConverter());
     }
 }

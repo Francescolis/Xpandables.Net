@@ -17,14 +17,15 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.Converters;
 
 namespace Xpandables.Net.Http;
 
 /// <summary>
 /// For route, query and header binding sources in minimal Api, 
 /// </summary>
-/// <typeparam name="TRequest">The type of the custom binding parameter.</typeparam>
+/// <typeparam name="TRequest">The type of the custom binding parameter
+/// .</typeparam>
 public interface IHttpRequestTryParse<TRequest>
 {
     /// <summary>

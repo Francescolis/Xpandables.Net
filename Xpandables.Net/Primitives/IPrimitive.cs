@@ -18,6 +18,8 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
+using Xpandables.Net.Primitives.Converters;
+
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
@@ -89,18 +91,24 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     static abstract TPrimitive CreateInstance(TValue value);
 
     /// <summary>
-    /// Converts the <typeparamref name="TPrimitive"/> type to guid.
+    /// Converts the <typeparamref name="TPrimitive"/> type to 
+    /// <typeparamref name="TValue"/>.
     /// </summary>
     /// <param name="self">The current instance.</param>
 #pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator TValue(TPrimitive self);
-#pragma warning restore CA2225 // Operator overloads have named alternates
+
+    /// <summary>
+    /// Converts the <typeparamref name="TValue"/> type to 
+    /// <typeparamref name="TPrimitive"/>
+    /// </summary>
+    /// <param name="value"></param>
+    static abstract implicit operator TPrimitive(TValue value);
 
     /// <summary>
     /// Converts the <typeparamref name="TPrimitive"/> type to string.
     /// </summary>
     /// <param name="self"></param>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator string(TPrimitive self);
 #pragma warning restore CA2225 // Operator overloads have named alternates
 }

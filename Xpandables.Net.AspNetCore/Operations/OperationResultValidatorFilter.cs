@@ -1,6 +1,6 @@
 ﻿
-/************************************************************************************************************
- * Copyright (C) 2022 Francis-Black EWANE
+/*******************************************************************************
+ * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Primitives;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Provides with validation for minimal route and controllers using <see cref="IEndpointFilter"/>.
+/// Provides with validation for minimal route and controllers using 
+/// <see cref="IEndpointFilter"/>.
 /// </summary>
 public sealed class OperationResultValidatorFilter : IEndpointFilter
 {
@@ -34,7 +36,9 @@ public sealed class OperationResultValidatorFilter : IEndpointFilter
         = type => type.IsAssignableTo(typeof(IValidateDecorator));
 
     ///<inheritdoc/>
-    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    public async ValueTask<object?> InvokeAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
@@ -52,14 +56,19 @@ public sealed class OperationResultValidatorFilter : IEndpointFilter
 
 
 /// <summary>
-/// A Helper class used with minimal Api to validate request on endpoint using <see cref="IValidator{TArgument}"/>.
+/// A Helper class used with minimal Api to validate request on endpoint 
+/// using <see cref="IValidator{TArgument}"/>.
 /// </summary>
-/// <typeparam name="TBindingRequest">The type of the request parameter.</typeparam>
-public sealed class OperationResultValidatorFilter<TBindingRequest> : IEndpointFilter
+/// <typeparam name="TBindingRequest">The type of the request parameter
+/// .</typeparam>
+public sealed class OperationResultValidatorFilter<TBindingRequest> :
+    IEndpointFilter
     where TBindingRequest : notnull
 {
     ///<inheritdoc/>
-    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    public async ValueTask<object?> InvokeAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);

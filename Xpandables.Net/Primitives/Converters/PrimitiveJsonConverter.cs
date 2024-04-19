@@ -18,7 +18,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Primitives;
+namespace Xpandables.Net.Primitives.Converters;
 
 /// <summary>
 /// When placed on an implementation of 

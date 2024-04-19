@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +14,18 @@
  * limitations under the License.
  *
 ********************************************************************************/
+namespace Xpandables.Net.Primitives.Text;
 
-// Ignore Spelling: Finalizer
-
-using System.Diagnostics.CodeAnalysis;
-
-namespace Xpandables.Net.Operations;
-internal sealed class OperationResultFinalizerInternal
-    : IOperationResultFinalizer
+/// <summary>
+///  Defines a method to encode to encode a refresh token.
+/// </summary>
+public interface ITokenRefreshEncoder
 {
-    public OperationResultFinalizer? Finalizer { get; set; }
-    [MemberNotNullWhen(true, nameof(Finalizer))]
-    public bool CallFinalizerOnException { get; set; }
+    /// <summary>
+    /// Encodes a token to be used as a refresh token.
+    /// </summary>
+    /// <returns>An instance of <see cref="RefreshToken"/>.</returns>
+    /// <exception cref="InvalidOperationException">Unable to encode a refresh 
+    /// token. See inner exception.</exception>
+    RefreshToken EncodeToken();
 }

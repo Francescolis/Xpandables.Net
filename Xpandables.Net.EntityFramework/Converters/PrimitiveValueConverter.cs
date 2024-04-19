@@ -15,28 +15,39 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Xpandables.Net.Primitives.Converters;
+
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Converters;
+
 /// <summary>
-/// Converts property to/from JSON.
+/// Primitive value converter.
 /// </summary>
-public sealed class JsonPropertyConverter<TProperty>
-    : ValueConverter<TProperty?, string?>
+/// <typeparam name="TPrimitive">The primitive type.</typeparam>
+/// <typeparam name="TValue">The value type.</typeparam>
+public sealed class PrimitiveValueConverter<TPrimitive, TValue>
+    : ValueConverter<TPrimitive, TValue>
+    where TValue : notnull
+    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
 {
-    ///<inheritdoc/>
-    public JsonPropertyConverter()
-        : base(
-            v => v == null
-                ? null
-                : JsonSerializer
-                    .Serialize(v, JsonSerializerDefaultOptions.Options),
-            v => string.IsNullOrEmpty(v)
-                ? default
-                : JsonSerializer
-                    .Deserialize<TProperty>(v, JsonSerializerDefaultOptions.Options))
+    /// <summary>
+    /// Constructs a new instance of 
+    /// <see cref="PrimitiveValueConverter{TPrimitive, TValue}"/>.
+    /// </summary>
+    public PrimitiveValueConverter()
+        : base(v => PrimitiveToValue(v),
+            v => ValueToPrimitive(v))
     { }
+
+    private static TPrimitive ValueToPrimitive(TValue value)
+    {
+        return TPrimitive.CreateInstance(value);
+    }
+
+    private static TValue PrimitiveToValue(TPrimitive primitive)
+    {
+        return primitive.Value;
+    }
 }

@@ -15,18 +15,41 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// Contains the pagination definition.
+/// Represents a pagination definition.
 /// </summary>
-/// <param name="Index">The page index.</param>
-/// <param name="Size">The page size.</param>
 [StructLayout(LayoutKind.Auto)]
-public readonly record struct Pagination(int Index, int Size)
+[DebuggerDisplay("Index = {Index}, Size = {Size}")]
+public readonly record struct Pagination
 {
+    /// <summary>
+    /// Gets the page index.
+    /// </summary>
+    [Required]
+    public required int Index { get; init; }
+
+    /// <summary>
+    /// Gets the page size.
+    /// </summary>
+    [Required]
+    public required int Size { get; init; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Pagination"/> structure.
+    /// </summary>
+    /// <param name="index">The page index.</param>
+    /// <param name="size">The page size.</param>
+    [SetsRequiredMembers]
+    public Pagination(int index, int size)
+        => (Index, Size) = (index, size);
+
     /// <summary>
     /// Creates a new instance of <see cref="Pagination"/>.
     /// </summary>

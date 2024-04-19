@@ -19,6 +19,8 @@ using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using Xpandables.Net.Primitives;
+
 namespace Xpandables.Net.Converters;
 /// <summary>
 /// Provides with converter extensions.
@@ -88,5 +90,25 @@ public static class ConverterExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         return builder.HasConversion<JsonDocumentConverter>();
+    }
+
+    /// <summary>
+    /// Configures the property so that the property 
+    /// value is converted to/from JSON.
+    /// </summary>
+    /// <param name="builder">The property builder instance </param>
+    /// <returns>The same builder instance so that 
+    /// multiple configuration calls can be chained.</returns>
+    public static PropertyBuilder HasPrimitiveConversion
+        <TProperty, TPrimtive, TValue>(
+        this PropertyBuilder builder)
+        where TProperty : IPrimitive<TPrimtive, TValue>
+        where TPrimtive : struct, IPrimitive<TPrimtive, TValue>
+        where TValue : notnull
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        return builder
+            .HasConversion<PrimitiveValueConverter<TPrimtive, TValue>>();
     }
 }

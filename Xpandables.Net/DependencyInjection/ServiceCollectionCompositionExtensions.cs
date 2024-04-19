@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.Reflection;
@@ -33,14 +33,17 @@ public static class ServiceCollectionCompositionExtensions
 {
     /// <summary>
     /// Registers and configures registration of services using the
-    /// <see cref="IAddServiceExport"/> implementations found in the current application path.
+    /// <see cref="IAddServiceExport"/> implementations found in the current 
+    /// application path.
     /// This method uses MEF : Managed Extensibility Framework.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="configuration">The application configuration.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     public static IServiceCollection AddXServiceExport(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -59,11 +62,15 @@ public static class ServiceCollectionCompositionExtensions
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="configuration">The application configuration.</param>
-    /// <param name="configureOptions">A delegate to configure the <see cref="ExportServiceOptions"/>.</param>
+    /// <param name="configureOptions">A delegate to configure the 
+    /// <see cref="ExportServiceOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The <paramref name="configureOptions"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. See inner exception.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="configureOptions"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
     public static IServiceCollection AddXServiceExport(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -95,16 +102,21 @@ internal static class ServiceExportExtensions
     {
         try
         {
-            using ComposablePartCatalog directoryCatalog = options.SearchSubDirectories
-                ? new RecursiveDirectoryCatalog(options.Path, options.SearchPattern)
-                : new DirectoryCatalog(options.Path, options.SearchPattern);
+            using ComposablePartCatalog directoryCatalog = options
+                .SearchSubDirectories
+                ? new RecursiveDirectoryCatalog(
+                    options.Path, options.SearchPattern)
+                : new DirectoryCatalog(
+                    options.Path, options.SearchPattern);
 
-            ImportDefinition importDefinition = ApplyImportDefinition<TServiceExport>();
+            ImportDefinition importDefinition =
+                ApplyImportDefinition<TServiceExport>();
 
             using AggregateCatalog aggregateCatalog = new();
             aggregateCatalog.Catalogs.Add(directoryCatalog);
 
-            using CompositionContainer compositionContainer = new(aggregateCatalog);
+            using CompositionContainer compositionContainer =
+                new(aggregateCatalog);
             IEnumerable<TServiceExport> exportServices = compositionContainer
                 .GetExports(importDefinition)
                 .Select(def => def.Value)
@@ -112,14 +124,17 @@ internal static class ServiceExportExtensions
 
             onServiceExport(exportServices);
         }
-        catch (Exception exception) when (exception is NotSupportedException
-                                        or DirectoryNotFoundException
-                                        or UnauthorizedAccessException
-                                        or ArgumentException
-                                        or PathTooLongException
-                                        or ReflectionTypeLoadException)
+        catch (Exception exception)
+            when (exception is NotSupportedException
+                            or DirectoryNotFoundException
+                            or UnauthorizedAccessException
+                            or ArgumentException
+                            or PathTooLongException
+                            or ReflectionTypeLoadException)
         {
-            throw new InvalidOperationException("Adding or using exports failed. See inner exception.", exception);
+            throw new InvalidOperationException(
+                "Adding or using exports failed." +
+                " See inner exception.", exception);
         }
     }
 

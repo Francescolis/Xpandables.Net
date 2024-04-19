@@ -17,8 +17,8 @@
 ********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 
@@ -44,10 +44,10 @@ internal sealed class NotificationPublisher(
             return options.Value.ConsiderNoNotificationHandlerAsError
                 ? OperationResults
                     .InternalError()
-                    .WithError(
-                        ElementEntry.UndefinedKey,
+                    .WithException(
+                        new InvalidOperationException(
                         I18nXpandables.EventSourcingNoIntegrationEventHandler
-                            .StringFormat(@event.GetTypeName()))
+                            .StringFormat(@event.GetTypeName())))
                     .Build()
                 : OperationResults
                     .Ok()

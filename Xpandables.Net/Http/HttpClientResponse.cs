@@ -19,7 +19,7 @@ using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Http;
 
@@ -60,7 +60,8 @@ public class HttpClientResponse(
     /// <param name="exception">The target exception if true.</param>
     /// <returns>returns <see langword="true"/>, 
     /// otherwise <see langword="false"/>.</returns>
-    public bool IsAnException([NotNullWhen(true)] out HttpClientException? exception)
+    public bool IsAnException(
+        [NotNullWhen(true)] out HttpClientException? exception)
     {
         exception = Exception;
         return exception is not null;
@@ -186,34 +187,40 @@ public static class HttpClientResponseExtensions
 {
     /// <summary>
     /// Determines whether the status code of the current 
-    /// <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.OK"/>.
+    /// <see cref="HttpClientResponse"/> instance is 
+    /// <see cref="HttpStatusCode.OK"/>.
     /// </summary>
     /// <param name="this">The current <see cref="HttpClientResponse"/>
     /// instance.</param>
     /// <returns><see langword="true"/> if status code is 
-    /// <see cref="HttpStatusCode.OK"/>, otherwise <see langword="false"/>.</returns>
+    /// <see cref="HttpStatusCode.OK"/>, otherwise 
+    /// <see langword="false"/>.</returns>
     public static bool IsStatusCodeOK(this HttpClientResponse @this)
         => @this.IsHttpStatusCode(HttpStatusCode.OK);
 
     /// <summary>
     /// Determines whether the status code of the current 
-    /// <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.Created"/>.
+    /// <see cref="HttpClientResponse"/> instance is 
+    /// <see cref="HttpStatusCode.Created"/>.
     /// </summary>
     /// <param name="this">The current <see cref="HttpClientResponse"/> 
     /// instance.</param>
     /// <returns><see langword="true"/> if status code is 
-    /// <see cref="HttpStatusCode.Created"/>, otherwise <see langword="false"/>.</returns>
+    /// <see cref="HttpStatusCode.Created"/>, otherwise 
+    /// <see langword="false"/>.</returns>
     public static bool IsStatusCodeCreated(this HttpClientResponse @this)
         => @this.IsHttpStatusCode(HttpStatusCode.Created);
 
     /// <summary>
     /// Determines whether the status code of the current 
-    /// <see cref="HttpClientResponse"/> instance is <see cref="HttpStatusCode.Accepted"/>.
+    /// <see cref="HttpClientResponse"/> instance is 
+    /// <see cref="HttpStatusCode.Accepted"/>.
     /// </summary>
     /// <param name="this">The current <see cref="HttpClientResponse"/> 
     /// instance.</param>
     /// <returns><see langword="true"/> if status code is 
-    /// <see cref="HttpStatusCode.Accepted"/>, otherwise <see langword="false"/>.</returns>
+    /// <see cref="HttpStatusCode.Accepted"/>, otherwise 
+    /// <see langword="false"/>.</returns>
     public static bool IsStatusCodeAccepted(this HttpClientResponse @this)
         => @this.IsHttpStatusCode(HttpStatusCode.Accepted);
 

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.ComponentModel;
 
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +31,8 @@ namespace Xpandables.Net.Operations;
 /// <see cref="OperationResultControllerFilter"/>
 /// and model binder provider <see cref="FromModelBinderProvider"/>.
 /// </remarks>
-public class OperationResultControllerConfigureMvcOptions : IConfigureOptions<MvcOptions>
+public class OperationResultControllerConfigureMvcOptions :
+    IConfigureOptions<MvcOptions>
 {
     ///<inheritdoc/>
     public virtual void Configure(MvcOptions options)
@@ -41,11 +42,20 @@ public class OperationResultControllerConfigureMvcOptions : IConfigureOptions<Mv
         options.EnableEndpointRouting = false;
         options.RespectBrowserAcceptHeader = true;
         options.ReturnHttpNotAcceptable = true;
-        _ = options.Filters.Add<OperationResultControllerValidationFilterAttribute>();
-        _ = options.Filters.Add<OperationResultControllerFilter>(int.MinValue);
-        options.ModelBinderProviders.Insert(0, new FromModelBinderProvider());
+        _ = options.Filters
+            .Add<OperationResultControllerValidationFilterAttribute>();
+        _ = options.Filters
+            .Add<OperationResultControllerFilter>(int.MinValue);
+        options.ModelBinderProviders
+            .Insert(0, new FromModelBinderProvider());
 
-        _ = TypeDescriptor.AddAttributes(typeof(DateOnly), new TypeConverterAttribute(typeof(DateOnlyConverter)));
-        _ = TypeDescriptor.AddAttributes(typeof(TimeOnly), new TypeConverterAttribute(typeof(TimeOnlyConverter)));
+        _ = TypeDescriptor
+            .AddAttributes(
+            typeof(DateOnly),
+            new TypeConverterAttribute(typeof(DateOnlyConverter)));
+        _ = TypeDescriptor
+            .AddAttributes(
+            typeof(TimeOnly),
+            new TypeConverterAttribute(typeof(TimeOnlyConverter)));
     }
 }

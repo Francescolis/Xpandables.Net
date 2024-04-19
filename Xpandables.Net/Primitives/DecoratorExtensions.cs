@@ -17,20 +17,10 @@
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// A marker interface that allows classes that act like decorator, not to
-/// be registered as normal implementations.
-/// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface IDecorator
-#pragma warning restore CA1040 // Avoid empty interfaces
-{
-}
-
-/// <summary>
 /// Defines a set of methods that add extension methods 
 /// to the <see cref="IDecorator"/> interface.
 /// </summary>
-public static class IDecoratorExtensions
+public static class DecoratorExtensions
 {
     ///<summary>
     /// Determines whether the specified type is a decorator.

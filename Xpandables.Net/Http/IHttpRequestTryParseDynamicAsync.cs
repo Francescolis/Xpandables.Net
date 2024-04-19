@@ -21,7 +21,7 @@ using System.Text.Json;
 
 using Microsoft.Extensions.Primitives;
 
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.Converters;
 
 namespace Xpandables.Net.Http;
 
@@ -29,7 +29,8 @@ namespace Xpandables.Net.Http;
 /// For route, query and header custom binding sources 
 /// in minimal Api for asynchronous processes, with a dynamic context.
 /// </summary>
-/// <typeparam name="TRequest">The type of the custom binding parameter.</typeparam>
+/// <typeparam name="TRequest">The type of the custom binding parameter
+/// .</typeparam>
 public interface IHttpRequestTryParseDynamicAsync<TRequest>
 {
     /// <summary>
@@ -41,10 +42,11 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
     {
         /// <summary>
         /// The method discovered by <see langword="RequestDelegateFactory"/> 
-        /// on types used as parameters of route
-        /// handler delegates to support custom binding.
+        /// on types used as parameters of route handler delegates to support 
+        /// custom binding.
         /// </summary>
-        /// <param name="context">The <see langword="HttpContext"/> instance.</param>
+        /// <param name="context">The <see langword="HttpContext"/> 
+        /// instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> 
         /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
@@ -71,10 +73,11 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
     {
         /// <summary>
         /// The method discovered by 
-        /// <see langword="RequestDelegateFactory"/> on types used as parameters of header
-        /// handler delegates to support custom binding.
+        /// <see langword="RequestDelegateFactory"/> on types used as 
+        /// parameters of header handler delegates to support custom binding.
         /// </summary>
-        /// <param name="context">The <see langword="HttpContext"/> instance.</param>
+        /// <param name="context">The <see langword="HttpContext"/> 
+        /// instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> 
         /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
@@ -102,10 +105,10 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
         /// <summary>
         /// The method discovered by 
         /// <see langword="RequestDelegateFactory"/> on types used 
-        /// as parameters of query
-        /// handler delegates to support custom binding.
+        /// as parameters of query handler delegates to support custom binding.
         /// </summary>
-        /// <param name="context">The <see langword="HttpContext"/> instance.</param>
+        /// <param name="context">The <see langword="HttpContext"/> 
+        /// instance.</param>
         /// <param name="parameter">The <see cref="ParameterInfo"/> 
         /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
@@ -125,8 +128,8 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
 
     /// <summary>
     /// The method discovered by <see langword="RequestDelegateFactory"/> 
-    /// on types used as parameters of route
-    /// handler delegates to support custom binding.
+    /// on types used as parameters of route handler delegates to support 
+    /// custom binding.
     /// </summary>
     /// <param name="context">The <see langword="HttpContext"/> instance.</param>
     /// <param name="parameter">The <see cref="ParameterInfo"/> 

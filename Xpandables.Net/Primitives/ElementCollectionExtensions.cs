@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,26 +14,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Primitives;
-
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Primitives;
 
 /// <summary>
 /// Provides a set of static methods for <see cref="ElementCollection"/>
 /// </summary>
-public static partial class OperationResultExtensions
+public static class ElementCollectionExtensions
 {
     /// <summary>
-    /// Converts the enumerable collection of <see cref="ElementEntry"/> 
+    /// Converts the enumerable collection of <see cref="ElementEntry"/>s 
     /// to <see cref="ElementCollection"/>.
     /// </summary>
-    /// <param name="this">The source collection.</param>
+    /// <param name="entries">The source collection.</param>
     /// <returns>A <see cref="ElementCollection"/> that contains values 
     /// of <see cref="ElementEntry"/> selected from the collection.</returns>
-    public static ElementCollection ToOperationCollection(
-        this IEnumerable<ElementEntry> @this)
+    public static ElementCollection ToElementCollection(
+        this IEnumerable<ElementEntry> entries)
     {
-        ArgumentNullException.ThrowIfNull(@this);
-        return ElementCollection.With(@this.ToArray());
+        ArgumentNullException.ThrowIfNull(entries);
+
+        return ElementCollection.With(entries.ToArray());
     }
 }

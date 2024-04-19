@@ -16,7 +16,7 @@
  *
 ************************************************************************************************************/
 using FluentAssertions;
-
+using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.UnitTests;
@@ -27,8 +27,8 @@ public sealed class StringCryptographerUnitTest
     [InlineData("ValueToBeEncrypted", 12)]
     public void Assert_Value_KeySize_CanBeEncrypted(string value, ushort keySize)
     {
-        string key = StringGenerator.Generate(keySize);
-        EncryptedValue encrypted = StringCryptographer.Encrypt(value, key);
+        string key = TextGenerator.Generate(keySize);
+        EncryptedValue encrypted = TextCryptography.Encrypt(value, key);
 
         encrypted.Should().NotBeNull();
         encrypted.Key.Length.Should().Be(keySize);
@@ -38,12 +38,12 @@ public sealed class StringCryptographerUnitTest
     [InlineData("ValueToBeEncrypted")]
     public void Assert_Value_WithDefaultKeyAndSalt_Encrypted_Decrypted(string value)
     {
-        EncryptedValue encrypted = StringCryptographer.Encrypt(value);
+        EncryptedValue encrypted = TextCryptography.Encrypt(value);
 
         encrypted.Should().NotBeNull();
         encrypted.Key.Should().NotBeNull();
 
-        string result = StringCryptographer.Decrypt(encrypted);
+        string result = TextCryptography.Decrypt(encrypted);
 
         result.Should().NotBeNull();
         result.Should().Be(value);
@@ -53,11 +53,11 @@ public sealed class StringCryptographerUnitTest
     [InlineData("ValueToBeEncrypted")]
     public void Assert_Value_WithDefaultKeyAndSalt_Encrypted_IsEqualTo_Value(string value)
     {
-        EncryptedValue encrypted = StringCryptographer.Encrypt(value);
+        EncryptedValue encrypted = TextCryptography.Encrypt(value);
 
         encrypted.Should().NotBeNull();
         encrypted.Key.Should().NotBeNull();
 
-        StringCryptographer.AreEqual(encrypted, value).Should().Be(true);
+        TextCryptography.AreEqual(encrypted, value).Should().Be(true);
     }
 }

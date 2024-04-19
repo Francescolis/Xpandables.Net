@@ -36,7 +36,8 @@ public interface IDispatcher : IServiceProvider
     /// observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="command"/> is null.</exception>
-    /// <returns>A task that represents an <see cref="IOperationResult"/>.</returns>
+    /// <returns>A task that represents an <see cref="IOperationResult"/>
+    /// .</returns>
     ValueTask<IOperationResult> SendAsync<TCommand>(
         TCommand command,
         CancellationToken cancellationToken = default)
@@ -74,7 +75,8 @@ public interface IDispatcher : IServiceProvider
     /// to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="query"/> is null.</exception>
-    /// <exception cref="OperationResultException">The operation failed.</exception>
+    /// <exception cref="OperationResultException">The operation failed
+    /// .</exception>
     /// <returns>An enumerator of <typeparamref name="TResult"/> 
     /// that can be asynchronously enumerated.</returns>
     IAsyncEnumerable<TResult> FetchAsync<TQuery, TResult>(

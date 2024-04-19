@@ -22,13 +22,16 @@ namespace Xpandables.Net.Http;
 /// name with its list of error messages.
 /// </summary>
 [Serializable]
-public sealed class HttpClientValidation : Dictionary<string, IEnumerable<string>>
+public sealed class HttpClientValidation :
+    Dictionary<string, IEnumerable<string>>
 {
     /// <summary>
-    /// Adds the specified member name and list of error messages to the dictionary.
+    /// Adds the specified member name and list of error messages to the 
+    /// dictionary.
     /// </summary>
     /// <param name="memberName">The member name of the list to add.</param>
-    /// <param name="errorMessages">The list of the error messages to add.</param>
+    /// <param name="errorMessages">The list of the error messages to add
+    /// .</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="memberName"/> is null.</exception>
     /// <exception cref="ArgumentNullException">the 
@@ -60,15 +63,15 @@ public sealed class HttpClientValidation : Dictionary<string, IEnumerable<string
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpClientValidation"/> class
-    /// that is empty, has the default initial capacity, and uses the default equality
-    /// comparer for the member name.
+    /// Initializes a new instance of the <see cref="HttpClientValidation"/> 
+    /// class that is empty, has the default initial capacity, and uses the 
+    /// default equality comparer for the member name.
     /// </summary>
     public HttpClientValidation() : base() { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpClientValidation"/> class
-    /// that contains elements copied from the 
+    /// Initializes a new instance of the <see cref="HttpClientValidation"/> 
+    /// class that contains elements copied from the 
     /// specified <see cref="Dictionary{TKey, TValue}"/>
     /// and uses the default equality comparer for the member name type.
     /// </summary>
@@ -78,14 +81,18 @@ public sealed class HttpClientValidation : Dictionary<string, IEnumerable<string
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="dictionary"/> is null.</exception>
     /// <exception cref="ArgumentException">The 
-    /// <paramref name="dictionary"/> contains one or more duplicate keys.</exception>
-    public HttpClientValidation(IDictionary<string, IEnumerable<string>> dictionary)
+    /// <paramref name="dictionary"/> contains one or more duplicate keys
+    /// .</exception>
+    public HttpClientValidation(
+        IDictionary<string,
+            IEnumerable<string>> dictionary)
         : base(dictionary) { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpClientValidation"/> class
-    /// that contains elements copied from the specified <see cref="IEnumerable{T}"/>
-    /// and uses the default equality comparer for the member name type.
+    /// Initializes a new instance of the <see cref="HttpClientValidation"/> 
+    /// class that contains elements copied from the specified 
+    /// <see cref="IEnumerable{T}"/> and uses the default equality comparer for 
+    /// the member name type.
     /// </summary>
     /// <param name="collection">The collection whose elements are 
     /// copied to the new <see cref="HttpClientValidation"/>.</param>

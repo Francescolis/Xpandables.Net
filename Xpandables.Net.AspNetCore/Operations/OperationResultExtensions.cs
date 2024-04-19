@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,11 +25,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-
 using Xpandables.Net.Primitives;
-using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 
@@ -48,43 +47,53 @@ public static partial class OperationResultExtensions
     {
         ArgumentNullException.ThrowIfNull(operation);
 
-        return operation.Title.IsNotEmpty switch
+        return (operation.Title is not null) switch
         {
             true => operation.Title,
             _ => operation.StatusCode switch
             {
-                HttpStatusCode.NotFound => I18nXpandables.HttpStatusCodeNotFound,
-                HttpStatusCode.Locked => I18nXpandables.HttpStatusCodeLocked,
-                HttpStatusCode.Conflict => I18nXpandables.HttpStatusCodeConflict,
-                HttpStatusCode.Unauthorized => I18nXpandables.HttpStatusCodeUnauthorized,
-                HttpStatusCode.Forbidden => I18nXpandables.HttpStatusCodeForbidden,
-                HttpStatusCode.InternalServerError => I18nXpandables.HttpStatusCodeInternalServerError,
+                HttpStatusCode.NotFound
+                => I18nXpandables.HttpStatusCodeNotFound,
+                HttpStatusCode.Locked
+                => I18nXpandables.HttpStatusCodeLocked,
+                HttpStatusCode.Conflict
+                => I18nXpandables.HttpStatusCodeConflict,
+                HttpStatusCode.Unauthorized
+                => I18nXpandables.HttpStatusCodeUnauthorized,
+                HttpStatusCode.Forbidden
+                => I18nXpandables.HttpStatusCodeForbidden,
+                HttpStatusCode.InternalServerError
+                => I18nXpandables.HttpStatusCodeInternalServerError,
                 _ => I18nXpandables.HttpStatusCodeRequestValidation
             }
         };
     }
 
     /// <summary>
-    /// Determines whether the specified <see cref="IOperationResult"/> is an operation result file.
+    /// Determines whether the specified <see cref="IOperationResult"/> is an 
+    /// operation result file.
     /// </summary>
     /// <param name="operation">The operation to act on.</param>
-    /// <returns><see langword="true"/> if the specified <see cref="IOperationResult"/> 
+    /// <returns><see langword="true"/> if the specified 
+    /// <see cref="IOperationResult"/> 
     /// is an operation result file; otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="operation"/> is null.</exception>"
+    /// <exception cref="ArgumentNullException">The <paramref name="operation"/> 
+    /// is null.</exception>"
     public static bool IsOperationResultFile(this IOperationResult operation)
     {
         ArgumentNullException.ThrowIfNull(operation);
 
-        return operation.Result.IsNotEmpty
-            && operation.Result.Value is BinaryEntry { Content: not null };
+        return operation.Result is BinaryResult { Stream: not null };
     }
 
     /// <summary>
     /// Gets the problem extensions for the specified <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="operation">The operation to act on.</param>
-    /// <returns>The problem extensions for the specified <see cref="IOperationResult"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="operation"/> is null.</exception>
+    /// <returns>The problem extensions for the specified 
+    /// <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="operation"/> is null.</exception>
     public static IDictionary<string, object?>? GetProblemExtensions(
         this IOperationResult operation)
     {
@@ -108,17 +117,19 @@ public static partial class OperationResultExtensions
     /// Gets the problem detail for the specified <see cref="HttpStatusCode"/>.
     /// </summary>
     /// <param name="operation">The operation to act on.</param>
-    /// <returns>The problem detail for the specified <see cref="IOperationResult"/>.</returns>
+    /// <returns>The problem detail for the specified 
+    /// <see cref="IOperationResult"/>.</returns>
     public static string GetProblemDetail(this IOperationResult operation)
     {
         ArgumentNullException.ThrowIfNull(operation);
 
-        return operation.Detail.IsNotEmpty switch
+        return (operation.Detail is not null) switch
         {
             true => operation.Detail,
             _ => operation.StatusCode switch
             {
-                HttpStatusCode.InternalServerError or HttpStatusCode.Unauthorized =>
+                HttpStatusCode.InternalServerError
+                or HttpStatusCode.Unauthorized =>
                    I18nXpandables.HttpStatusCodeProblemDetailInternalError,
                 _ => I18nXpandables.HttpStatusCodeProblemDetailPropertyError
             }
@@ -131,25 +142,32 @@ public static partial class OperationResultExtensions
     /// </summary>
     /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
     /// <returns>The authentication scheme name.</returns>
-    public static async Task<string?> GetAuthenticationSchemeAsync(this HttpContext context)
+    public static async Task<string?> GetAuthenticationSchemeAsync(
+        this HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        if (context.RequestServices.GetService<IAuthenticationSchemeProvider>() is { } authenticationSchemeProvider)
+        if (context.RequestServices.GetService<IAuthenticationSchemeProvider>()
+            is { } authenticationSchemeProvider)
         {
-            IEnumerable<AuthenticationScheme> requestSchemes = await authenticationSchemeProvider
+            IEnumerable<AuthenticationScheme> requestSchemes =
+                await authenticationSchemeProvider
                 .GetRequestHandlerSchemesAsync()
                 .ConfigureAwait(false);
 
-            AuthenticationScheme? defaultSchemes = await authenticationSchemeProvider
+            AuthenticationScheme? defaultSchemes =
+                await authenticationSchemeProvider
                 .GetDefaultAuthenticateSchemeAsync()
                 .ConfigureAwait(false);
 
-            IEnumerable<AuthenticationScheme> allSchemes = await authenticationSchemeProvider
+            IEnumerable<AuthenticationScheme> allSchemes =
+                await authenticationSchemeProvider
                 .GetAllSchemesAsync()
                 .ConfigureAwait(false);
 
-            AuthenticationScheme? scheme = requestSchemes.FirstOrDefault() ?? defaultSchemes ?? allSchemes.FirstOrDefault();
+            AuthenticationScheme? scheme = requestSchemes.FirstOrDefault()
+                ?? defaultSchemes
+                ?? allSchemes.FirstOrDefault();
             if (scheme is not null)
                 return scheme.Name;
         }
@@ -158,9 +176,11 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Builds the problem details for the specified <see cref="HttpContext"/> and <see cref="IOperationResult"/>.
+    /// Builds the problem details for the specified <see cref="HttpContext"/> 
+    /// and <see cref="IOperationResult"/>.
     /// </summary>
-    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
+    /// <param name="context">The current <see cref="HttpContext"/> to act on
+    /// .</param>
     /// <param name="operation">The operation to act on.</param>
     /// <returns>The problem details for the specified <see cref="HttpContext"/> 
     /// and <see cref="IOperationResult"/>.</returns>
@@ -174,6 +194,7 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(operation);
 
         HttpStatusCode statusCode = operation.StatusCode;
+        context.Response.StatusCode = (int)statusCode;
 
         return new ValidationProblemDetails(operation.Errors.ToMinimalErrors())
         {
@@ -182,19 +203,23 @@ public static partial class OperationResultExtensions
             Status = (int)statusCode,
             Instance = $"{context.Request.Method} {context.Request.Path}",
             Type = (Environment.GetEnvironmentVariable(
-                        "ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development"
+                        "ASPNETCORE_ENVIRONMENT")
+                            ?? "Development") == "Development"
                         ? operation.GetTypeName()
                         : default,
-            Extensions = operation.GetProblemExtensions() ?? new Dictionary<string, object?>()
+            Extensions = operation.GetProblemExtensions()
+                ?? new Dictionary<string, object?>()
         };
     }
 
     /// <summary>
     /// Produces the file result for the specified <see cref="IOperationResult"/>.
     /// </summary>
-    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
+    /// <param name="context">The current <see cref="HttpContext"/> to act on
+    /// .</param>
     /// <param name="operation">The operation to act on.</param>
-    /// <returns>The file result for the specified <see cref="IOperationResult"/>.</returns>
+    /// <returns>The file result for the specified 
+    /// <see cref="IOperationResult"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
     /// or <paramref name="operation"/> is null.</exception>
     public static async ValueTask BuildFileResponseAsync(
@@ -204,11 +229,10 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(operation);
 
-        if (operation.Result.IsNotEmpty
-            && operation.Result.Value is BinaryEntry { Content: not null } file)
+        if (operation.Result is BinaryResult { Stream: not null } file)
         {
-            Microsoft.AspNetCore.Http.HttpResults.FileContentHttpResult result
-                = TypedResults.File(file.Content, file.ContentType, file.Title);
+            Microsoft.AspNetCore.Http.HttpResults.FileStreamHttpResult result
+                = TypedResults.File(file.Stream, file.ContentType, file.Name);
 
             await result
                 .ExecuteAsync(context)
@@ -217,11 +241,14 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Applies the created result for the specified <see cref="IOperationResult"/>.
+    /// Applies the created result for the specified 
+    /// <see cref="IOperationResult"/>.
     /// </summary>
-    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
+    /// <param name="context">The current <see cref="HttpContext"/> to act 
+    /// on.</param>
     /// <param name="operation">The operation to act on.</param>
-    /// <returns>The created result for the specified <see cref="IOperationResult"/>.</returns>
+    /// <returns>The created result for the specified 
+    /// <see cref="IOperationResult"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
     /// or <paramref name="operation"/> is null.</exception>
     public static async ValueTask BuildCreatedResponseAsync(
@@ -231,14 +258,14 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(operation);
 
-        if (operation.LocationUrl.IsEmpty)
+        if (operation.LocationUrl is null)
             throw new InvalidOperationException(I18nXpandables.CanNotBeNull
                 .StringFormat("IOperationResult.LocationUrl"));
 
-        IResult result = operation.Result.IsNotEmpty switch
+        IResult result = (operation.Result is not null) switch
         {
-            true => TypedResults.Created(new Uri(operation.LocationUrl.Value), operation.Result.Value),
-            _ => TypedResults.Created(new Uri(operation.LocationUrl.Value))
+            true => TypedResults.Created(operation.LocationUrl, operation.Result),
+            _ => TypedResults.Created(operation.LocationUrl)
         };
 
         await result
@@ -247,11 +274,14 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Builds the meta data context for the specified <see cref="HttpContext"/> and <see cref="IOperationResult"/>.
+    /// Builds the meta data context for the specified <see cref="HttpContext"/>
+    /// and <see cref="IOperationResult"/>.
     /// </summary>
-    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
+    /// <param name="context">The current <see cref="HttpContext"/> to act 
+    /// on.</param>
     /// <param name="operation">The operation to act on.</param>
-    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous 
+    /// operation.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
     /// or <paramref name="operation"/> is null.</exception>
     public static async ValueTask BuildMetaDataContextAsync(
@@ -261,17 +291,18 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(operation);
 
-        if (operation.LocationUrl.IsNotEmpty)
+        if (operation.LocationUrl is not null)
             context.Response.Headers.Location =
                 new Microsoft.Extensions.Primitives
-                    .StringValues(operation.LocationUrl.Value);
+                    .StringValues(operation.LocationUrl.ToString());
 
         if (operation.Headers.Any())
         {
             foreach (ElementEntry header in operation.Headers)
                 context.Response.Headers.Append(
                     header.Key,
-                    new Microsoft.Extensions.Primitives.StringValues([.. header.Values]));
+                    new Microsoft.Extensions.Primitives
+                    .StringValues([.. header.Values]));
         }
 
         if (operation.StatusCode == HttpStatusCode.Unauthorized
@@ -281,7 +312,8 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Builds the problem details for the specified <see cref="HttpContext"/> and <see cref="Exception"/>.
+    /// Builds the problem details for the specified <see cref="HttpContext"/> 
+    /// and <see cref="Exception"/>.
     /// </summary>
     /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
     /// <param name="exception">The exception to act on.</param>
@@ -296,16 +328,19 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(exception);
 
-        if (exception is ValidationException or OperationResultException or BadHttpRequestException)
+        if (exception is ValidationException
+            or OperationResultException
+            or BadHttpRequestException)
         {
             IOperationResult operation;
             if (exception is ValidationException validation)
                 operation = validation.ValidationResult.ToOperationResult();
             else if (exception is OperationResultException operationResultException)
-                operation = operationResultException.OperationResult;
+                operation = operationResultException.Operation;
             else
             {
-                BadHttpRequestException badHttpRequestException = (BadHttpRequestException)exception;
+                BadHttpRequestException badHttpRequestException =
+                    (BadHttpRequestException)exception;
 
                 int startParameterNameIndex = badHttpRequestException.Message
                     .IndexOf('"', StringComparison.InvariantCulture) + 1;
@@ -363,9 +398,11 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Gets the problem details for the specified <see cref="HttpContext"/> and <see cref="Exception"/>.
+    /// Gets the problem details for the specified <see cref="HttpContext"/> 
+    /// and <see cref="Exception"/>.
     /// </summary>
-    /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
+    /// <param name="context">The current <see cref="HttpContext"/> to act 
+    /// on.</param>
     /// <param name="exception">The exception to act on.</param>
     public static async ValueTask GetProblemDetailsAsync(
         this HttpContext context,
@@ -384,12 +421,15 @@ public static partial class OperationResultExtensions
             .Failure(statusCode)
             .Build();
 
+        context.Response.StatusCode = (int)statusCode;
+
         if (operation.StatusCode == HttpStatusCode.Unauthorized
             && await context.GetAuthenticationSchemeAsync()
                 .ConfigureAwait(false) is { } scheme)
             context.Response.Headers.Append(HeaderNames.WWWAuthenticate, scheme);
 
-        if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+        if (context.RequestServices
+            .GetService<IProblemDetailsService>() is { } problemDetailsService)
         {
             await problemDetailsService
                 .WriteAsync(new ProblemDetailsContext
@@ -407,7 +447,8 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Gets the problem details for the specified <see cref="HttpContext"/> and <see cref="IOperationResult"/>.
+    /// Gets the problem details for the specified <see cref="HttpContext"/> 
+    /// and <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="context">The current <see cref="HttpContext"/> to act on.</param>
     /// <param name="operation">The operation to act on.</param>
@@ -422,7 +463,8 @@ public static partial class OperationResultExtensions
 
         ProblemDetails problemDetails = BuildProblemDetails(context, operation);
 
-        if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+        if (context.RequestServices
+            .GetService<IProblemDetailsService>() is { } problemDetailsService)
         {
             await problemDetailsService
                 .WriteAsync(new ProblemDetailsContext
@@ -439,12 +481,16 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Returns a <see cref="ModelStateDictionary"/> from the collection of errors.
+    /// Returns a <see cref="ModelStateDictionary"/> from the collection 
+    /// of errors.
     /// </summary>
     /// <param name="errors">The collection of errors to act on.</param>
-    /// <returns>A new instance of <see cref="ModelStateDictionary"/> that contains found errors.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="errors"/> is null.</exception>
-    public static ModelStateDictionary ToModelStateDictionary(this ElementCollection errors)
+    /// <returns>A new instance of <see cref="ModelStateDictionary"/> that 
+    /// contains found errors.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="errors"/> is null.</exception>
+    public static ModelStateDictionary ToModelStateDictionary(
+        this ElementCollection errors)
     {
         ModelStateDictionary modelStateDictionary = new();
         foreach (Primitives.ElementEntry error in errors)
@@ -461,9 +507,12 @@ public static partial class OperationResultExtensions
     /// errors to act for errors property on <see cref="ValidationProblemDetails"/>.
     /// </summary>
     /// <param name="errors">The collection of errors to act on.</param>
-    /// <returns>A collection of key and values that contains found errors.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="errors"/> is null.</exception>
-    public static IDictionary<string, string[]> ToMinimalErrors(this ElementCollection errors)
+    /// <returns>A collection of key and values that contains found errors
+    /// .</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="errors"/> 
+    /// is null.</exception>
+    public static IDictionary<string, string[]> ToMinimalErrors(
+        this ElementCollection errors)
     {
         Dictionary<string, string[]> modelDictionary = [];
         foreach (ElementEntry error in errors)
@@ -477,7 +526,8 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the <see cref="ModelStateDictionary"/> to an instance of <see cref="IOperationResult"/>.
+    /// Converts the <see cref="ModelStateDictionary"/> to an instance 
+    /// of <see cref="IOperationResult"/>.
     /// </summary>
     /// <param name="modelState">The model state to act on.</param>
     /// <param name="statusCode">The status code to act on.</param>
@@ -501,18 +551,20 @@ public static partial class OperationResultExtensions
                             key,
                             modelState[key]!.Errors
                                 .Select(error => error.ErrorMessage)
-                                .ToReadOnlyCollection()))
+                                .ToArray()))
                     .ToList()))
             .Build();
     }
 
     /// <summary>
-    /// Returns an instance of <see cref="ObjectResult"/> that contains the current
-    /// operation as value and <see cref="IOperationResult.StatusCode"/> as status code.
-    /// In that case, the response will be converted to the matching action result 
-    /// by the <see cref="OperationResultControllerFilter"/>.
+    /// Returns an instance of <see cref="ObjectResult"/> that contains the 
+    /// current operation as value and <see cref="IOperationResult.StatusCode"/> 
+    /// as status code. In that case, the response will be converted to the 
+    /// matching action result by the 
+    /// <see cref="OperationResultControllerFilter"/>.
     /// </summary>
-    /// <param name="operationResult">The current operation result to act with.</param>
+    /// <param name="operationResult">The current operation result to act 
+    /// with.</param>
     /// <returns>An implementation of <see cref="IActionResult"/> response with 
     /// <see cref="IOperationResult.StatusCode"/>.</returns>
     /// <remarks>You may derive from <see cref="OperationResultControllerFilter"/> 
@@ -521,14 +573,19 @@ public static partial class OperationResultExtensions
     {
         ArgumentNullException.ThrowIfNull(operationResult);
 
-        return new ObjectResult(operationResult) { StatusCode = (int)operationResult.StatusCode };
+        return new ObjectResult(operationResult)
+        {
+            StatusCode =
+            (int)operationResult.StatusCode
+        };
     }
 
     /// <summary>
     /// Returns an implementation of <see cref="IResult"/> that contains 
     /// the current operation as value.
     /// </summary>
-    /// <param name="operationResult">The current operation result to act with.</param>
+    /// <param name="operationResult">The current operation result to act 
+    /// with.</param>
     /// <returns>An implementation of <see cref="IResult"/> 
     /// response with <see cref="IOperationResult.StatusCode"/>.</returns>
     public static IResult ToMinimalResult(this IOperationResult operationResult)

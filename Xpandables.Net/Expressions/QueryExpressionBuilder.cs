@@ -32,10 +32,11 @@ public sealed record class QueryExpressionBuilder<TSource, TResult>
 
     /// <summary>
     /// Returns  new instance of 
-    /// <see cref="QueryExpressionBuilder{TSource, TResult}"/> class 
-    /// with the specified expression.
+    /// <see cref="QueryExpressionBuilder{TSource, TResult}"/> class with the 
+    /// specified expression.
     /// </summary>
-    /// <param name="expression">The expression to be used by the instance.</param>
+    /// <param name="expression">The expression to be used by the instance
+    /// .</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="expression"/> can not be null.</exception>
     public QueryExpressionBuilder(Expression<Func<TSource, TResult>> expression)
@@ -63,8 +64,8 @@ public sealed record class QueryExpressionBuilder<TSource>
 
     /// <summary>
     /// Returns  new instance of 
-    /// <see cref="QueryExpressionBuilder{TSource, TResult}"/> class 
-    /// with the specified expression.
+    /// <see cref="QueryExpressionBuilder{TSource, TResult}"/> class with the 
+    /// specified expression.
     /// </summary>
     /// <param name="expression">The expression to be used by the instance.</param>
     /// <exception cref="ArgumentNullException">The 

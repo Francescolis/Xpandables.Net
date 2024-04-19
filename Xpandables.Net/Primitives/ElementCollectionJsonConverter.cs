@@ -15,30 +15,42 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
+// Ignore Spelling: Json
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// Base class for JSON Type Only Converter.
+/// Converts a <see cref="ElementCollection"/> to or from JSON.
 /// </summary>
-/// <typeparam name="T">The type to parse to.</typeparam>
-public abstract class JsonTypeOnlyConverter<T> : JsonConverter<T>
+public sealed class ElementCollectionJsonConverter
+    : JsonConverter<ElementCollection>
 {
     ///<inheritdoc/>
-    public sealed override T Read(
+    public override ElementCollection Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options)
-        => DoRead(ref reader);
+    {
+        ElementEntry[]? result = JsonSerializer
+            .Deserialize<ElementEntry[]>(ref reader, options);
 
-    /// <summary>
-    /// When implemented in derived classes, will return 
-    /// the an instance of <typeparamref name="T"/>
-    /// from <paramref name="reader"/> value.
-    /// </summary>
-    /// <param name="reader">The reader element of the current JSON.</param>
-    /// <returns>An object of <typeparamref name="T"/> type if available.</returns>
-    protected abstract T DoRead(ref Utf8JsonReader reader);
+        return result is null
+            ? []
+            : new ElementCollection(result);
+    }
+
+    ///<inheritdoc/>
+    public override void Write(
+        Utf8JsonWriter writer,
+        ElementCollection value,
+        JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        JsonSerializer.Serialize(writer, value.ToArray(), options);
+    }
 }

@@ -19,7 +19,8 @@ namespace Xpandables.Net.Primitives;
 
 /// <summary>
 /// Specifies that the type should have its 
-/// <see cref="IPrimitiveOnSerializing{TPrimitive, TValue}.OnSerializing(TPrimitive)"/> 
+/// <see cref="IPrimitiveOnSerializing{TPrimitive, TValue}
+/// .OnSerializing(TPrimitive)"/> 
 /// method called before serialization occurs.
 /// </summary>
 /// <typeparam name="TPrimitive">The type of target primitive.</typeparam>
@@ -38,7 +39,8 @@ public interface IPrimitiveOnSerializing<TPrimitive, TValue>
 
 /// <summary>
 /// Specifies that the JSON type should have its 
-/// <see cref="IPrimitiveOnDeserialized{TPrimitive, TValue}.OnDeserialized(TPrimitive)"/> 
+/// <see cref="IPrimitiveOnDeserialized{TPrimitive, TValue}
+/// .OnDeserialized(TPrimitive)"/> 
 /// method called after deserialization occurs.
 /// </summary>
 /// <typeparam name="TPrimitive">The type of target primitive.</typeparam>

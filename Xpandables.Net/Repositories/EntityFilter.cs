@@ -100,7 +100,8 @@ public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
 
         if (Paging is not null)
             queryable = queryable
-                .Skip(Paging.Value.Index * Paging.Value.Size).Take(Paging.Value.Size);
+                .Skip(Paging.Value.Index * Paging.Value.Size)
+                .Take(Paging.Value.Size);
 
         return queryable.Select(Selector);
     }

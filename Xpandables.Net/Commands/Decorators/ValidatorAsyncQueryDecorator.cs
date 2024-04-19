@@ -67,7 +67,8 @@ public sealed class ValidatorAsyncQueryDecorator<TQuery, TResult>(
     /// <paramref name="query"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    /// <exception cref="OperationResultException">The validation failed.</exception>
+    /// <exception cref="OperationResultException">The validation failed
+    /// .</exception>
     /// <returns>An enumerator of <typeparamref name="TResult"/> 
     /// that can be asynchronously enumerable.</returns>
     public async IAsyncEnumerable<TResult> HandleAsync(

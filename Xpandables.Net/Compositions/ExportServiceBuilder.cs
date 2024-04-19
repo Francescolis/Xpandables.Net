@@ -26,8 +26,8 @@ using Xpandables.Net.Primitives.Text;
 namespace Xpandables.Net.Compositions;
 
 /// <summary>
-/// Provides with methods for building application object 
-/// using the Managed Extensibility Framework (MEF).
+/// Provides with methods for building application object using the Managed 
+/// Extensibility Framework (MEF).
 /// </summary>
 public sealed class ExportServiceBuilder
 {

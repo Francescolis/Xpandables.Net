@@ -40,14 +40,16 @@ namespace Xpandables.Net;
 /// hich changes are notified to the decorated property.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="name"/> is null.</exception>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
+[AttributeUsage(AttributeTargets.Property,
+    AllowMultiple = true, Inherited = true)]
 public sealed class NotifyPropertyChangedForAttribute(string name) : Attribute
 {
     /// <summary>
     /// Gets the name of the target property which 
     /// changes are notified to the decorated property.
     /// </summary>
-    public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
+    public string Name { get; } = name
+        ?? throw new ArgumentNullException(nameof(name));
 }
 
 /// <summary>

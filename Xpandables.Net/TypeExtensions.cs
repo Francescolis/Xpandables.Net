@@ -194,10 +194,11 @@ public static class TypeExtensions
             loadedAssembly = Assembly.Load(assemblyName);
             return true;
         }
-        catch (Exception exception) when (exception is ArgumentException
-                                        or FileNotFoundException
-                                        or FileLoadException
-                                        or BadImageFormatException)
+        catch (Exception exception)
+            when (exception is ArgumentException
+                            or FileNotFoundException
+                            or FileLoadException
+                            or BadImageFormatException)
         {
             loadedAssembly = default;
             assemblyException = exception;
@@ -229,12 +230,13 @@ public static class TypeExtensions
             loadedAssembly = Assembly.Load(assemblyName);
             return true;
         }
-        catch (Exception exception) when (exception is ArgumentException
-                                        or FileNotFoundException
-                                        or FileLoadException
-                                        or BadImageFormatException
-                                        or PathTooLongException
-                                        or System.Security.SecurityException)
+        catch (Exception exception)
+            when (exception is ArgumentException
+                            or FileNotFoundException
+                            or FileLoadException
+                            or BadImageFormatException
+                            or PathTooLongException
+                            or System.Security.SecurityException)
         {
             loadedAssembly = default;
             assemblyException = exception;
@@ -312,14 +314,15 @@ public static class TypeExtensions
 
             return true;
         }
-        catch (Exception exception) when (exception is ArgumentNullException
-                                        or ArgumentException
-                                        or MethodAccessException
-                                        or MissingFieldException
-                                        or MissingMethodException
-                                        or TargetException
-                                        or AmbiguousMatchException
-                                        or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is ArgumentNullException
+                            or ArgumentException
+                            or MethodAccessException
+                            or MissingFieldException
+                            or MissingMethodException
+                            or TargetException
+                            or AmbiguousMatchException
+                            or InvalidOperationException)
         {
             result = default;
             invokeException = exception;
@@ -358,9 +361,10 @@ public static class TypeExtensions
             genericType = type.MakeGenericType(typeArguments);
             return true;
         }
-        catch (Exception exception) when (exception is InvalidOperationException
-                                            or ArgumentException
-                                            or NotSupportedException)
+        catch (Exception exception)
+            when (exception is InvalidOperationException
+                            or ArgumentException
+                            or NotSupportedException)
         {
             typeException = exception;
             genericType = default;
@@ -889,12 +893,13 @@ public static class TypeExtensions
             }
             return true;
         }
-        catch (Exception exception) when (exception is TargetInvocationException
-                                    or TypeLoadException
-                                    or ArgumentException
-                                    or FileNotFoundException
-                                    or FileLoadException
-                                    or BadImageFormatException)
+        catch (Exception exception)
+            when (exception is TargetInvocationException
+                            or TypeLoadException
+                            or ArgumentException
+                            or FileNotFoundException
+                            or FileLoadException
+                            or BadImageFormatException)
         {
             typeException = exception;
             type = default;
@@ -931,12 +936,13 @@ public static class TypeExtensions
 
             return true;
         }
-        catch (Exception exception) when (exception is TargetInvocationException
-                                        or TypeLoadException
-                                        or ArgumentException
-                                        or FileNotFoundException
-                                        or FileLoadException
-                                        or BadImageFormatException)
+        catch (Exception exception)
+            when (exception is TargetInvocationException
+                            or TypeLoadException
+                            or ArgumentException
+                            or FileNotFoundException
+                            or FileLoadException
+                            or BadImageFormatException)
         {
             typeException = exception;
             foundType = default;

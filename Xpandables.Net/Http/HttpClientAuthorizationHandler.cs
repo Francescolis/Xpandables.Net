@@ -20,6 +20,18 @@ using System.Net.Http.Headers;
 namespace Xpandables.Net.Http;
 
 /// <summary>
+/// Represents a method signature used to apply 
+/// <see cref="AuthenticationHeaderValue"/> to the request,
+/// or returns the value to be used for the 
+/// <see cref="AuthenticationHeaderValue"/> if not null.
+/// </summary>
+/// <param name="request">The target request to act on.</param>
+/// <returns>A string that represents the value for
+/// the <see cref="AuthenticationHeaderValue"/> if not null.</returns>
+public delegate string? HttpClientAuthenticationHeaderValueProvider(
+    HttpRequestMessage request);
+
+/// <summary>
 /// Provides with a handler that can be used with 
 /// <see cref="HttpClient"/> to add header authorization value
 /// before request execution. You must register the 
@@ -75,7 +87,8 @@ public sealed class HttpClientAuthorizationHandler(
         if (headerValue is null)
             throw new InvalidOperationException(
                 $"Expected authorization value not provided or applied by " +
-                $"the {nameof(HttpClientAuthenticationHeaderValueProvider)} instance.");
+                $"the {nameof(HttpClientAuthenticationHeaderValueProvider)} " +
+                $"instance.");
 
         request.Headers.Authorization = new AuthenticationHeaderValue(
             authorization.Scheme,

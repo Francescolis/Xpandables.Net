@@ -39,9 +39,11 @@ internal sealed class HttpClientBuildProviderInternal(
     IHttpClientResponseBuilder responseBuilder,
     IHttpClientRequestBuilder requestBuilder) : IHttpClientBuildProvider
 {
-    private readonly IHttpClientResponseBuilder _responseBuilder = responseBuilder
+    private readonly IHttpClientResponseBuilder _responseBuilder =
+        responseBuilder
         ?? throw new ArgumentNullException(nameof(responseBuilder));
-    private readonly IHttpClientRequestBuilder _requestBuilder = requestBuilder
+    private readonly IHttpClientRequestBuilder _requestBuilder =
+        requestBuilder
         ?? throw new ArgumentNullException(nameof(requestBuilder));
 
     public IHttpClientRequestBuilder RequestBuilder => _requestBuilder;

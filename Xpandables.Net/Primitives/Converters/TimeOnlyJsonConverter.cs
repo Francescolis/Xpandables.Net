@@ -18,12 +18,12 @@
 using System.Globalization;
 using System.Text.Json;
 
-namespace Xpandables.Net.Primitives;
+namespace Xpandables.Net.Primitives.Converters;
 
 /// <summary>
 /// Converts an <see cref="TimeOnly"/> to JSON and vis-versa.
 /// </summary>
-public sealed class JsonTimeOnlyConverter : JsonTypeOnlyConverter<TimeOnly>
+public sealed class TimeOnlyJsonConverter : TypeOnlyJsonConverter<TimeOnly>
 {
     ///<inheritdoc/>
     protected override TimeOnly DoRead(ref Utf8JsonReader reader)
@@ -64,7 +64,7 @@ public sealed class JsonTimeOnlyConverter : JsonTypeOnlyConverter<TimeOnly>
 /// Converts a null-able <see cref="TimeOnly"/> to JSON and vis-versa.
 /// </summary>
 public sealed class JsonNullableTimeOnlyConverter
-    : JsonTypeOnlyConverter<TimeOnly?>
+    : TypeOnlyJsonConverter<TimeOnly?>
 {
     ///<inheritdoc/>
     protected override TimeOnly? DoRead(ref Utf8JsonReader reader)

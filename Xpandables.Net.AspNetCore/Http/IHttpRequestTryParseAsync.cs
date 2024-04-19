@@ -20,8 +20,7 @@ using System.Reflection;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
-
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.Converters;
 
 namespace Xpandables.Net.Http;
 

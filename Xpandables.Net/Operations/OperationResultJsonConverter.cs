@@ -149,7 +149,8 @@ public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
     /// </summary>
     /// <param name="typeToConvert">The type handled by the converter.</param>
     /// <param name="options">The serialization options to use.</param>
-    /// <returns> A converter for which <see cref="IOperationResult"/> or <see cref="IOperationResult{TValue}"/> 
+    /// <returns> A converter for which <see cref="IOperationResult"/> or 
+    /// <see cref="IOperationResult{TValue}"/> 
     /// is compatible with typeToConvert.</returns>
     public override JsonConverter? CreateConverter(
         Type typeToConvert,
@@ -159,7 +160,8 @@ public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
 
         if ((typeToConvert.IsGenericType
             && typeToConvert.IsInterface
-            && typeToConvert.GetGenericTypeDefinition() == typeof(IOperationResult<>))
+            && typeToConvert
+            .GetGenericTypeDefinition() == typeof(IOperationResult<>))
         || (typeToConvert.IsGenericType
             && typeToConvert.GetInterfaces()
                 .Exists(i => i.IsGenericType

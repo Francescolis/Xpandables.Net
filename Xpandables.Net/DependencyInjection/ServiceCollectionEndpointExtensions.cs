@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-using Microsoft.Extensions.DependencyInjection;
-
+********************************************************************************/
 using System.Reflection;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Optionals;
 using Xpandables.Net.Primitives.Collections;
@@ -35,14 +35,16 @@ public static class ServiceCollectionEndpointExtensions
     internal static bool ResolveEndpointFromServiceCollection;
 
     /// <summary>
-    /// Registers all the classes that implement the <see langword="IEndpointRoute"/> that will be resolved by 
-    /// the <see langword="MapXEndpointRoutes"/> to add endpoint to the application.
+    /// Registers all the classes that implement the 
+    /// <see langword="IEndpointRoute"/> that will be resolved by the 
+    /// <see langword="MapXEndpointRoutes"/> to add endpoint to the application.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="services"/> is null.</exception>
     public static IServiceCollection AddXEndpointRoutes(
         this IServiceCollection services,
         params Assembly[] assemblies)
@@ -60,18 +62,21 @@ public static class ServiceCollectionEndpointExtensions
             ?.GetExportedTypes()
             .FirstOrDefault(t => t.Name == IEndpointRouteName) is not { } type)
             throw new InvalidOperationException(
-                I18nXpandables.PathAssemblyUnavailable, new ArgumentException(XpandablesNetAspNetCore));
+                I18nXpandables.PathAssemblyUnavailable,
+                new ArgumentException(XpandablesNetAspNetCore));
 
         Type endpointRouteInterfaceType = type;
 
-        List<Type> endpointRouteTypes = assemblies.SelectMany(ass => ass.GetExportedTypes())
+        List<Type> endpointRouteTypes = assemblies
+            .SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                 && !type.IsInterface
                 && !type.IsGenericType
                 && type.IsClass
                 && type.IsSealed
                 && type.GetInterfaces()
-                    .Exists(inter => !inter.IsGenericType && inter == endpointRouteInterfaceType))
+                    .Exists(inter => !inter.IsGenericType
+                        && inter == endpointRouteInterfaceType))
             .Select(type => type)
             .ToList();
 

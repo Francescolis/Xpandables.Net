@@ -19,11 +19,11 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Commands.Decorators;
-internal sealed class OperationResultFinalizerCommandDecorator<TCommand>(
+internal sealed class OperationFinalizerCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
-    IOperationResultFinalizer operationResultFinalizer)
+    IOperationFinalizer operationResultFinalizer)
     : ICommandHandler<TCommand>, IDecorator
-    where TCommand : notnull, ICommand, IOperationResultFinalizerDecorator
+    where TCommand : notnull, ICommand, IOperationFinalizerDecorator
 {
     public async ValueTask<IOperationResult> HandleAsync(
         TCommand command,
@@ -45,10 +45,10 @@ internal sealed class OperationResultFinalizerCommandDecorator<TCommand>(
             {
                 return operationResultFinalizer
                     .Finalizer
-                    .Invoke(resultException.OperationResult);
+                    .Invoke(resultException.Operation);
             }
 
-            return resultException.OperationResult;
+            return resultException.Operation;
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)
@@ -62,10 +62,8 @@ internal sealed class OperationResultFinalizerCommandDecorator<TCommand>(
 
             return OperationResults
                 .InternalError()
-                .WithTitle("OperationResultFinalizerCommandDecorator")
-                .WithError(
-                    nameof(OperationResultFinalizerCommandDecorator<TCommand>),
-                    exception)
+                .WithTitle("OperationFinalizerCommandDecorator")
+                .WithException(exception)
                 .Build();
         }
     }

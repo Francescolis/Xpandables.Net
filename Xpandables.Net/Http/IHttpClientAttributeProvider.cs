@@ -15,13 +15,22 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Primitives;
+namespace Xpandables.Net.Http;
 
 /// <summary>
-/// A marker interface that allows the command handler
-/// class implementation to be decorated with transaction behavior according to
-/// the decorated class type.
+/// An interface, when implemented in a request, will return a class 
+/// representing an <see cref="HttpClientAttribute"/> to be dynamically 
+/// applied on the implementing class.
+/// This interface takes priority over the <see cref="HttpClientAttribute"/> 
+/// declaration.
 /// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface ITransactionDecorator { }
-#pragma warning restore CA1040 // Avoid empty interfaces
+public interface IHttpClientAttributeProvider
+{
+    /// <summary>
+    /// Returns the <see cref="HttpClientAttribute"/> to be applied on 
+    /// the implementing instance.
+    /// </summary>
+    /// <param name="serviceProvider">The ambient service provider.</param>
+    /// <returns>A new instance of <see cref="HttpClientAttribute"/>.</returns>
+    HttpClientAttribute Build(IServiceProvider serviceProvider);
+}

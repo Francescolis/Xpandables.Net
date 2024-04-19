@@ -63,7 +63,8 @@ public sealed class ValidatorCommandDecorator<TCommand>(
     /// <paramref name="command" /> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    /// <returns>A task that represents an <see cref="OperationResult"/>.</returns>
+    /// <returns>A task that represents an <see cref="OperationResult"/>
+    /// .</returns>
     public async ValueTask<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)

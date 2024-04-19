@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 
 // Ignore Spelling: Impl
 
@@ -31,13 +31,17 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionHostedServiceExtensions
 {
     /// <summary>
-    /// Adds the <typeparamref name="TBackgroundService"/> type implementation to the services with singleton life time.
+    /// Adds the <typeparamref name="TBackgroundService"/> type implementation 
+    /// to the services with singleton life time.
     /// </summary>
-    /// <typeparam name="TBackgroundService">The background service type implementation.</typeparam>
+    /// <typeparam name="TBackgroundService">The background service type 
+    /// implementation.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXBackgroundService<TBackgroundService>(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXBackgroundService<TBackgroundService>(
+        this IServiceCollection services)
         where TBackgroundService : class, IBackgroundService
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -47,23 +51,33 @@ public static class ServiceCollectionHostedServiceExtensions
     }
 
     /// <summary>
-    /// Adds the <typeparamref name="TBackgroundServiceImpl"/> as <typeparamref name="TBackgroundServiceInterface"/>
+    /// Adds the <typeparamref name="TBackgroundServiceImpl"/> as 
+    /// <typeparamref name="TBackgroundServiceInterface"/>
     /// type implementation to the services with singleton life time.
     /// </summary>
-    /// <typeparam name="TBackgroundServiceInterface">The background service type interface.</typeparam>
-    /// <typeparam name="TBackgroundServiceImpl">The background service type implementation.</typeparam>
+    /// <typeparam name="TBackgroundServiceInterface">The background service 
+    /// type interface.</typeparam>
+    /// <typeparam name="TBackgroundServiceImpl">The background service type 
+    /// implementation.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
     public static IServiceCollection AddXBackgroundService
-        <TBackgroundServiceInterface, TBackgroundServiceImpl>(this IServiceCollection services)
+        <TBackgroundServiceInterface, TBackgroundServiceImpl>(
+        this IServiceCollection services)
         where TBackgroundServiceInterface : class, IBackgroundService
-        where TBackgroundServiceImpl : BackgroundServiceBase<TBackgroundServiceImpl>, TBackgroundServiceInterface
+        where TBackgroundServiceImpl :
+        BackgroundServiceBase
+        <TBackgroundServiceImpl>, TBackgroundServiceInterface
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.AddSingleton<TBackgroundServiceInterface, TBackgroundServiceImpl>();
-        _ = services.AddHostedService(provider => (TBackgroundServiceImpl)provider.GetRequiredService<TBackgroundServiceInterface>());
+        _ = services.AddSingleton
+            <TBackgroundServiceInterface, TBackgroundServiceImpl>();
+        _ = services.AddHostedService(provider =>
+        (TBackgroundServiceImpl)provider
+            .GetRequiredService<TBackgroundServiceInterface>());
         return services;
     }
 
@@ -72,17 +86,21 @@ public static class ServiceCollectionHostedServiceExtensions
     /// event scheduler of <see cref="INotificationScheduler"/>
     /// to manage integration event publishing.
     /// </summary>
-    /// <typeparam name="TNotificationScheduler">The type that implements <see cref="INotificationScheduler"/>.</typeparam>
+    /// <typeparam name="TNotificationScheduler">The type that implements 
+    /// <see cref="INotificationScheduler"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
     public static IServiceCollection AddXNotificationScheduler
         <TNotificationScheduler>(this IServiceCollection services)
-        where TNotificationScheduler : BackgroundServiceBase<TNotificationScheduler>, INotificationScheduler
+        where TNotificationScheduler :
+        BackgroundServiceBase<TNotificationScheduler>, INotificationScheduler
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.AddXBackgroundService<INotificationScheduler, TNotificationScheduler>();
+        _ = services.AddXBackgroundService
+            <INotificationScheduler, TNotificationScheduler>();
 
         return services;
     }
@@ -94,7 +112,9 @@ public static class ServiceCollectionHostedServiceExtensions
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXNotificationScheduler(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXNotificationScheduler(
+        this IServiceCollection services)
         => services.AddXNotificationScheduler<NotificationScheduler>();
 }

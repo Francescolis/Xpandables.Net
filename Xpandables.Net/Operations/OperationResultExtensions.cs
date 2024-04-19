@@ -24,15 +24,92 @@ using Xpandables.Net.Primitives.I18n;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Provides a set of static methods for <see cref="OperationResultException"/>.
+/// Provides a set of static methods for <see cref="IOperationResult"/>.
 /// </summary>
-public static partial class OperationResultExtensions
+public static class OperationResultExtensions
 {
+    private const int _minSuccessStatusCode = 200;
+    private const int _maxSuccessStatusCode = 299;
+    /// <summary>
+    /// Defines the key for the exception in the <see cref="ElementCollection"/>.
+    /// </summary>
+    public const string ExceptionKey = "Exception";
+
+    /// <summary>
+    /// Determines whether the specified status code is a success one.
+    /// </summary>
+    /// <param name="statusCode">The status code to act on.</param>
+    /// <returns><see langword="true"/> if the status is success, 
+    /// otherwise returns <see langword="false"/></returns>
+    public static bool IsSuccessStatusCode(this HttpStatusCode statusCode)
+        => (int)statusCode is >= _minSuccessStatusCode
+            and <= _maxSuccessStatusCode;
+
+    /// <summary>
+    /// Determines whether the specified status code is a failure one.
+    /// </summary>
+    /// <param name="statusCode">The status code to act on.</param>
+    /// <returns><see langword="true"/> if the status is failure, 
+    /// otherwise returns <see langword="false"/></returns>
+    public static bool IsFailureStatusCode(this HttpStatusCode statusCode)
+        => !IsSuccessStatusCode(statusCode);
+
+    /// <summary>
+    /// Ensures that the specified status code is a success code.
+    /// Throws an exception if the status code is not a success.
+    /// </summary>
+    /// <param name="statusCode">The status code value to be checked.</param>
+    /// <returns>Returns the status code if it's a success code 
+    /// or throws an <see cref="InvalidOperationException"/> exception.</returns>
+    /// <exception cref="InvalidOperationException">The code 
+    /// <paramref name="statusCode"/> is not a success status code.</exception>
+    public static HttpStatusCode EnsureSuccessStatusCode(
+        this HttpStatusCode statusCode)
+    {
+        if (!IsSuccessStatusCode(statusCode))
+            throw new InvalidOperationException(
+                $"The code '{statusCode}' is not a success status code.",
+                new ArgumentOutOfRangeException(
+                    nameof(statusCode),
+                    $"{statusCode}",
+                    $"The status code must be greater or " +
+                    $"equal to {_minSuccessStatusCode} and " +
+                    $"lower or equal to {_maxSuccessStatusCode}"));
+
+        return statusCode;
+    }
+
+    /// <summary>
+    /// Ensures that the specified status code is a failure code.
+    /// Throws an exception if the status code is not a failure; 
+    /// </summary>
+    /// <param name="statusCode">The status code value to be checked.</param>
+    /// <returns>Returns the status code if it's a failure code 
+    /// or throws an <see cref="InvalidOperationException"/> exception.</returns>
+    /// <exception cref="InvalidOperationException">The code 
+    /// <paramref name="statusCode"/> is not a failure status code.</exception>
+    public static HttpStatusCode EnsureFailureStatusCode(
+        this HttpStatusCode statusCode)
+    {
+        if (!IsFailureStatusCode(statusCode))
+            throw new InvalidOperationException(
+                $"The code '{statusCode}' is not a failure status code",
+                new ArgumentOutOfRangeException(
+                    nameof(statusCode),
+                    $"{statusCode}",
+                    $"The status code must be greater " +
+                    $"than {_maxSuccessStatusCode} or " +
+                    $"lower than {_minSuccessStatusCode}"));
+
+        return statusCode;
+    }
+
     /// <summary>
     /// Converts the current <see cref="IOperationResult"/> 
     /// to <see cref="OperationResultException"/>.
     /// </summary>
-    /// <param name="operationResult">The operation result to be converted.</param>
+    /// <param name="operationResult">The operation result to be 
+    /// converted.</param>
     /// <returns>An instance of <see cref="OperationResultException"/>
     /// with the result.</returns>
     public static OperationResultException ToOperationResultException(
@@ -47,7 +124,7 @@ public static partial class OperationResultExtensions
     /// Converts the current <see cref="ValidationResult"/> 
     /// to a <see cref="IOperationResult"/>.
     /// </summary>
-    /// <param name="this">The validation result to act on.</param>
+    /// <param name="instance">The validation result to act on.</param>
     /// <returns>An implementation of <see cref="IOperationResult"/> with 
     /// <see cref="IOperationResult.StatusCode"/> = 
     /// <see cref="HttpStatusCode.BadRequest"/>
@@ -55,17 +132,19 @@ public static partial class OperationResultExtensions
     /// <see cref="ValidationResult.MemberNames"/> are not null, 
     /// otherwise throws an <see cref="InvalidOperationException"/>.</returns>
     public static IOperationResult ToOperationResult(
-        this ValidationResult @this)
+        this ValidationResult instance)
     {
-        ArgumentNullException.ThrowIfNull(@this);
+        ArgumentNullException.ThrowIfNull(instance);
 
-        if (@this.ErrorMessage is null || !@this.MemberNames.Any())
-            throw new InvalidOperationException("ErrorMessage or MemberNames is null !");
+        if (instance.ErrorMessage is null ||
+            !instance.MemberNames.Any())
+            throw new InvalidOperationException(
+                "ErrorMessage or MemberNames is null !");
 
         ElementCollection errors = [];
-        foreach (string memberName in @this.MemberNames)
+        foreach (string memberName in instance.MemberNames)
             if (!string.IsNullOrEmpty(memberName))
-                errors.Add(memberName, @this.ErrorMessage);
+                errors.Add(memberName, instance.ErrorMessage);
 
         return OperationResults
             .BadRequest()
@@ -77,7 +156,7 @@ public static partial class OperationResultExtensions
     /// Converts the current <see cref="ValidationException"/> 
     /// to a <see cref="IOperationResult"/>.
     /// </summary>
-    /// <param name="this">The validation exception to act on.</param>
+    /// <param name="instance">The validation exception to act on.</param>
     /// <returns>An implementation of <see cref="IOperationResult"/> 
     /// with <see cref="IOperationResult.StatusCode"/> = 
     /// <see cref="HttpStatusCode.BadRequest"/>
@@ -85,11 +164,11 @@ public static partial class OperationResultExtensions
     /// <see cref="ValidationResult.MemberNames"/> are not null, 
     /// otherwise throws an <see cref="InvalidOperationException"/>.</returns>
     public static IOperationResult ToOperationResult(
-        this ValidationException @this)
+        this ValidationException instance)
     {
-        ArgumentNullException.ThrowIfNull(@this);
+        ArgumentNullException.ThrowIfNull(instance);
 
-        return @this.ValidationResult.ToOperationResult();
+        return instance.ValidationResult.ToOperationResult();
     }
 
     /// <summary>
@@ -113,7 +192,7 @@ public static partial class OperationResultExtensions
 
         return builder
             .WithDetail(exception.Message)
-            .WithError(ElementEntry.UndefinedKey, exception.ToString())
+            .WithException(exception)
             .Build();
     }
 
@@ -137,7 +216,7 @@ public static partial class OperationResultExtensions
         }
         catch (OperationResultException operationResultException)
         {
-            return operationResultException.OperationResult;
+            return operationResultException.Operation;
         }
         catch (Exception exception)
             when (exception is not OperationResultException)
@@ -166,7 +245,7 @@ public static partial class OperationResultExtensions
         }
         catch (OperationResultException operationResultException)
         {
-            return operationResultException.OperationResult;
+            return operationResultException.Operation;
         }
         catch (Exception exception)
             when (exception is not OperationResultException)
@@ -200,13 +279,13 @@ public static partial class OperationResultExtensions
                 : OperationResults
                     .BadRequest<TResult>()
                     .WithError(
-                        ElementEntry.UndefinedKey,
+                        typeof(TResult).Name,
                         I18nXpandables.OperationResultValueIsNull)
                     .Build();
         }
         catch (OperationResultException operationResultException)
         {
-            return operationResultException.OperationResult
+            return operationResultException.Operation
                 .ToOperationResult<TResult>();
         }
         catch (Exception exception)
@@ -224,8 +303,10 @@ public static partial class OperationResultExtensions
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="task">The task to act on.</param>
-    /// <returns>An instance of <see cref="IOperationResult{TResult}"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="task"/> is null.</exception>
+    /// <returns>An instance of <see cref="IOperationResult{TResult}"/>
+    /// .</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="task"/> 
+    /// is null.</exception>
     public static async ValueTask<IOperationResult<TResult>>
         ToOperationResultAsync<TResult>(
         this Task<TResult> task)
@@ -242,13 +323,13 @@ public static partial class OperationResultExtensions
                 : OperationResults
                     .BadRequest<TResult>()
                     .WithError(
-                        ElementEntry.UndefinedKey,
+                        typeof(TResult).Name,
                         I18nXpandables.OperationResultValueIsNull)
                     .Build();
         }
         catch (OperationResultException operationResultException)
         {
-            return operationResultException.OperationResult
+            return operationResultException.Operation
                 .ToOperationResult<TResult>();
         }
         catch (Exception exception)

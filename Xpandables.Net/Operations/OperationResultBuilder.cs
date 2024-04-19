@@ -37,10 +37,10 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     private protected readonly ElementCollection _errors = [];
     private protected readonly ElementCollection _extensions = [];
     private protected HttpStatusCode _statusCode = statusCode;
-    private protected Optional<string> _uri = Optional.Empty<string>();
-    private protected Optional<object> _result = Optional.Empty<object>();
-    private protected Optional<string> _title = Optional.Empty<string>();
-    private protected Optional<string> _detail = Optional.Empty<string>();
+    private protected Uri? _uri;
+    private protected object? _result;
+    private protected string? _title;
+    private protected string? _detail;
 
     TBuilder IOperationResult.IStatusBuilder<TBuilder>
         .WithStatusCode(HttpStatusCode statusCode)
@@ -76,10 +76,10 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         _statusCode = _statusCode.IsSuccessStatusCode()
             ? HttpStatusCode.OK
             : HttpStatusCode.BadRequest;
-        _uri = Optional.Empty<string>();
-        _result = Optional.Empty<object>();
-        _detail = Optional.Empty<string>();
-        _title = Optional.Empty<string>();
+        _uri = null;
+        _result = null;
+        _detail = null;
+        _title = null;
 
         return (this as TBuilder)!;
     }
@@ -103,9 +103,12 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     }
 
     TBuilder IOperationResult.IErrorBuilder<TBuilder>
-        .WithError(string key, Exception exception)
+        .WithException(Exception exception)
     {
-        _errors.Add(key, exception.ToString());
+        _errors.Add(
+            OperationResultExtensions.ExceptionKey,
+            exception.ToString());
+
         return (this as TBuilder)!;
     }
 
@@ -207,14 +210,13 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
 
     TBuilder IOperationResult.IUrlBuilder<TBuilder>.WithUrl(string url)
     {
-        _uri = url;
+        _uri = new Uri(url);
         return (this as TBuilder)!;
     }
 
     TBuilder IOperationResult.IUrlBuilder<TBuilder>.WithUrl(Uri uri)
     {
-        _ = uri ?? throw new ArgumentNullException(nameof(uri));
-        _uri = uri.AbsolutePath;
+        _uri = uri ?? throw new ArgumentNullException(nameof(uri));
         return (this as TBuilder)!;
     }
 }
@@ -225,13 +227,10 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     IOperationResult.IBuilder<TResult>
     where TBuilder : class, IOperationResult.IBuilder<TResult>
 {
-    IOperationResult<TResult> IOperationResult.IBuilder<TResult>.Build() => new OperationResult<TResult>(
+    IOperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
+        => new OperationResult<TResult>(
             _statusCode,
-             _result.IsEmpty
-                ? Optional.Empty<TResult>()
-                : _result.Value is TResult value
-                    ? Optional.Some<TResult>(value)
-                    : Optional.Empty<TResult>(),
+             (TResult?)_result,
             _uri,
             _errors,
             _headers,
@@ -243,7 +242,7 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
         .WithResult(TResult result)
     {
         _ = result ?? throw new ArgumentNullException(nameof(result));
-        _result = Optional.Some<object>(result);
+        _result = result;
         return (this as TBuilder)!;
     }
 }

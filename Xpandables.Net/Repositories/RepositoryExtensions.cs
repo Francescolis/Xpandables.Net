@@ -34,7 +34,8 @@ public static class RepositoryExtensions
     /// <typeparam name="TSource">The type of the source model.</typeparam>
     /// <typeparam name="TCompose">The type of the compose model.</typeparam>
     /// <typeparam name="TResult">The type of the result model.</typeparam>
-    /// <returns>A statement matching the composition of target functions.</returns>
+    /// <returns>A statement matching the composition of target functions
+    /// .</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="source"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The 

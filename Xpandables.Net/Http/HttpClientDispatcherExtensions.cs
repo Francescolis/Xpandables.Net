@@ -100,7 +100,7 @@ public static class HttpClientDispatcherExtensions
     /// <param name="request">The request to act with. T
     /// he request must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements 
-    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// the <see cref="IHttpClientAttributeProvider"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
     /// <returns>Returns a task 
@@ -126,7 +126,7 @@ public static class HttpClientDispatcherExtensions
     /// <param name="httpRestClientHandler">the current handler instance.</param>
     /// <param name="request">The request to act with. The request must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements the 
-    /// <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <see cref="IHttpClientAttributeProvider"/> interface.</param>
     /// <param name="serializerOptions">Options to control 
     /// the behavior during parsing.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
@@ -152,7 +152,7 @@ public static class HttpClientDispatcherExtensions
     /// <param name="request">The request to act with. 
     /// The request must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements 
-    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// the <see cref="IHttpClientAttributeProvider"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
@@ -176,7 +176,7 @@ public static class HttpClientDispatcherExtensions
     /// <param name="request">The request to act with. 
     /// The request must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements 
-    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// the <see cref="IHttpClientAttributeProvider"/> interface.</param>
     /// <param name="serializerOptions">Options to control 
     /// the behavior during parsing.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
@@ -202,10 +202,11 @@ public static class HttpClientDispatcherExtensions
     /// <param name="request">The request to act with. 
     /// The request must be decorated with
     /// the <see cref="HttpClientAttribute"/> or implements 
-    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// the <see cref="IHttpClientAttributeProvider"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken to 
     /// observe while waiting for the task to complete.</param>
-    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
+    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>
+    /// .</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
     public static ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
@@ -219,7 +220,8 @@ public static class HttpClientDispatcherExtensions
     }
 
     /// <summary>
-    /// Sends the request that returns a response of <typeparamref name="TResult"/> type.
+    /// Sends the request that returns a response of 
+    /// <typeparamref name="TResult"/> type.
     /// Make use of <see langword="using"/> key work when call.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -227,8 +229,9 @@ public static class HttpClientDispatcherExtensions
     /// <param name="request">The request to act with. 
     /// The request must be decorated with
     /// the <see cref="HttpClientAttribute"/> or implements the 
-    /// <see cref="IHttpClientAttributeBuilder"/> interface.</param>
-    /// <param name="serializerOptions">Options to control the behavior during parsing.</param>
+    /// <see cref="IHttpClientAttributeProvider"/> interface.</param>
+    /// <param name="serializerOptions">Options to control the behavior 
+    /// during parsing.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
@@ -249,11 +252,14 @@ public static class HttpClientDispatcherExtensions
     /// 'errors' from the exception message to <see cref="HttpClientValidation"/>.
     /// </summary>
     /// <param name="httpRestClientException">The target exception.</param>
-    /// <param name="clientValidation">The <see cref="HttpClientValidation"/> instance if true.</param>
+    /// <param name="clientValidation">The <see cref="HttpClientValidation"/>
+    /// instance if true.</param>
     /// <param name="exception">The handled exception during process.</param>
-    /// <param name="serializerOptions">The optional settings for serializer.</param>
+    /// <param name="serializerOptions">The optional settings for serializer
+    /// .</param>
     /// <returns><see langword="true"/> if exception message is 
-    /// <see cref="HttpClientValidation"/>, otherwise <see langword="false"/>.</returns>
+    /// <see cref="HttpClientValidation"/>, otherwise <see langword="false"/>
+    /// .</returns>
     public static bool IsHttpRestClientValidation(
         this HttpClientException httpRestClientException,
         [MaybeNullWhen(false)] out HttpClientValidation clientValidation,
@@ -326,9 +332,10 @@ public static class HttpClientDispatcherExtensions
                 out _,
                 serializerOptions))
             {
-                ElementEntry[] operationErrors = clientValidation.SelectMany(
-                    kvp => kvp.Value,
-                    (kvp, value) => new ElementEntry(kvp.Key, kvp.Value.ToArray()))
+                ElementEntry[] operationErrors = clientValidation
+                    .SelectMany(kvp => kvp.Value,
+                    (kvp, value) =>
+                        new ElementEntry(kvp.Key, kvp.Value.ToArray()))
                     .ToArray();
 
                 return OperationResults
@@ -341,7 +348,7 @@ public static class HttpClientDispatcherExtensions
             {
                 return OperationResults
                     .Failure(response.StatusCode)
-                    .WithError(ElementEntry.UndefinedKey, exception)
+                    .WithException(exception)
                     .WithHeaders(headers)
                     .Build();
             }
@@ -358,11 +365,13 @@ public static class HttpClientDispatcherExtensions
     /// Returns an <see cref="IOperationResult{TValue}"/> 
     /// from the <see cref="HttpClientResponse{TResult}"/>.
     /// If <paramref name="response"/> contains a result and this result 
-    /// is <typeparamref name="TValue"/>, the operation will be set with, otherwise null.
+    /// is <typeparamref name="TValue"/>, the operation will be set with, 
+    /// otherwise null.
     /// </summary>
     /// <typeparam name="TValue">The type of the operation content.</typeparam>
     /// <param name="response">The response to act on.</param>
-    /// <param name="serializerOptions">The optional settings for serializer.</param>
+    /// <param name="serializerOptions">The optional settings for 
+    /// serializer.</param>
     /// <returns>An <see cref="IOperationResult{TValue}"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="response"/> is null.</exception>
@@ -397,9 +406,10 @@ public static class HttpClientDispatcherExtensions
                 out _,
                 serializerOptions))
             {
-                ElementEntry[] operationErrors = clientValidation.SelectMany(
-                    kvp => kvp.Value,
-                    (kvp, value) => new ElementEntry(kvp.Key, kvp.Value.ToArray()))
+                ElementEntry[] operationErrors = clientValidation
+                    .SelectMany(kvp => kvp.Value,
+                    (kvp, value) =>
+                        new ElementEntry(kvp.Key, kvp.Value.ToArray()))
                     .ToArray();
 
                 return OperationResults
@@ -412,7 +422,7 @@ public static class HttpClientDispatcherExtensions
             {
                 return OperationResults
                     .Failure<TValue>(response.StatusCode)
-                    .WithError(ElementEntry.UndefinedKey, exception)
+                    .WithException(exception)
                     .WithHeaders(headers)
                     .Build();
             }

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
@@ -23,13 +23,17 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 /// <typeparam name="T">The type to be resolved.</typeparam>
 /// <remarks>
-/// Initializes a new instance of the <see cref="LazyResolved{T}" /> class that uses a preinitialized specified value from the service provider.
+/// Initializes a new instance of the <see cref="LazyResolved{T}" /> class that 
+/// uses a preinitialized specified value from the service provider.
 /// </remarks>
-/// <param name="serviceProvider">The service provider used for preinitialized value.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="serviceProvider"/> is null.</exception>
+/// <param name="serviceProvider">The service provider used for preinitialized 
+/// value.</param>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="serviceProvider"/> is null.</exception>
 public sealed class LazyResolved<T>(IServiceProvider serviceProvider)
     : Lazy<T>((T?)serviceProvider?.GetService(typeof(T))
-        ?? throw new InvalidOperationException($"No registration found for '{typeof(T).Name}'."))
+        ?? throw new InvalidOperationException(
+            $"No registration found for '{typeof(T).Name}'."))
     where T : notnull
 {
 }

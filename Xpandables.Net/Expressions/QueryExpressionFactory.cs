@@ -33,8 +33,7 @@ public static class QueryExpressionFactory
     /// result that return <see langword="true"/>.
     /// </summary>
     /// <typeparam name="TSource">The data type source.</typeparam>
-    /// <returns>a new instance of
-    /// <see cref="QueryExpression{TSource}"/> 
+    /// <returns>a new instance of <see cref="QueryExpression{TSource}"/> 
     /// with boolean result.</returns>
     public static QueryExpression<TSource> Create<TSource>()
         => new QueryExpressionBuilder<TSource>(_ => true);
@@ -46,8 +45,7 @@ public static class QueryExpressionFactory
     /// </summary>
     /// <typeparam name="TSource">The data type source.</typeparam>
     /// <param name="expression">The expression to be wrapped.</param>
-    /// <returns>a new instance of 
-    /// <see cref="QueryExpression{TSource}"/> with 
+    /// <returns>a new instance of <see cref="QueryExpression{TSource}"/> with 
     /// boolean result.</returns>
     public static QueryExpression<TSource> Create<TSource>(
         Expression<Func<TSource, bool>> expression)
@@ -61,8 +59,8 @@ public static class QueryExpressionFactory
     /// <typeparam name="TProperty">The property type.</typeparam>
     /// <param name="propertyExpression">The expression 
     /// that contains the member name.</param>
-    /// <returns>A string that represents the name of 
-    /// the member found in the expression.</returns>
+    /// <returns>A string that represents the name of the member found in the 
+    /// expression.</returns>
     public static string? GetMemberName<TSource, TProperty>(
         this Expression<Func<TSource, TProperty>> propertyExpression)
         where TSource : class
@@ -99,8 +97,8 @@ public static class QueryExpressionFactory
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="propertyOrFieldName"/> is null.</exception>
     /// <exception cref="ArgumentException">No property or field 
-    /// named propertyOrFieldName is
-    /// defined in expression.Type or its base types.</exception>
+    /// named propertyOrFieldName is defined in expression.Type or its 
+    /// base types.</exception>
     public static Expression<Func<TSource, TProperty>>
         CreateAccessorFor<TSource, TProperty>(
         this string propertyOrFieldName)
@@ -124,10 +122,12 @@ public static class QueryExpressionFactory<TResult>
 {
     /// <summary>
     /// Creates a new instance of 
-    /// <see cref="QueryExpression{TSource, TResult}"/> with the specified expression.
+    /// <see cref="QueryExpression{TSource, TResult}"/> with the specified 
+    /// expression.
     /// </summary>
     /// <typeparam name="TSource">The data type source.</typeparam>
-    /// <param name="expression">The expression to be used by the instance.</param>
+    /// <param name="expression">The expression to be used by the instance
+    /// .</param>
     /// <returns>a new instance of 
     /// <see cref="QueryExpression{TSource, TResult}"/></returns>
     /// <exception cref="ArgumentNullException">The 
@@ -137,10 +137,11 @@ public static class QueryExpressionFactory<TResult>
         => new QueryExpressionBuilder<TSource, TResult>(expression);
 
     /// <summary>
-    /// Returns the <see cref="Expression{TDelegate}"/> 
-    /// that represents the And form of two expressions.
+    /// Returns the <see cref="Expression{TDelegate}"/> that represents the 
+    /// And form of two expressions.
     /// </summary>
-    /// <typeparam name="TSource">The type of the expression parameter.</typeparam>
+    /// <typeparam name="TSource">The type of the expression parameter
+    /// .</typeparam>
     /// <param name="left">The expression value  for left side.</param>
     /// <param name="right">The expression value for right side.</param>
     /// <returns><see cref="Expression{TDelegate}"/> result</returns>
@@ -163,10 +164,11 @@ public static class QueryExpressionFactory<TResult>
     }
 
     /// <summary>
-    /// Returns the <see cref="Expression{TDelegate}"/> t
-    /// hat represents the Or form of two expressions.
+    /// Returns the <see cref="Expression{TDelegate}"/> that represents the 
+    /// Or form of two expressions.
     /// </summary>
-    /// <typeparam name="TSource">The type of the expression parameter.</typeparam>
+    /// <typeparam name="TSource">The type of the expression parameter
+    /// .</typeparam>
     /// <param name="left">The expression value  for left side.</param>
     /// <param name="right">The expression value for right side.</param>
     /// <returns><see cref="Expression{TDelegate}"/> result</returns>
@@ -189,10 +191,11 @@ public static class QueryExpressionFactory<TResult>
     }
 
     /// <summary>
-    /// Returns the <see cref="Expression{TDelegate}"/> that 
-    /// represents the Not form of an expression.
+    /// Returns the <see cref="Expression{TDelegate}"/> that represents the 
+    /// Not form of an expression.
     /// </summary>
-    /// <typeparam name="TSource">The type of the expression parameter.</typeparam>
+    /// <typeparam name="TSource">The type of the expression parameter
+    /// .</typeparam>
     /// <param name="expression">The expression value.</param>
     /// <returns><see cref="Expression{TDelegate}"/> result</returns>
     /// <exception cref="ArgumentNullException">The 

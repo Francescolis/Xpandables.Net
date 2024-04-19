@@ -34,7 +34,8 @@ public interface IHttpClientRequestBuilder
     /// The method used to construct an <see cref="HttpRequestMessage"/> 
     /// from the source.
     /// The <paramref name="source"/> may implement some interfaces 
-    /// such as <see cref="IHttpRequestHeader"/>, <see cref="IHttpRequestString"/> and so on.
+    /// such as <see cref="IHttpRequestHeader"/>, 
+    /// <see cref="IHttpRequestString"/> and so on.
     /// </summary>
     /// <typeparam name="TSource">The type of the object.</typeparam>
     /// <param name="source">The source object to act on.</param>
@@ -50,7 +51,7 @@ public interface IHttpClientRequestBuilder
     /// <exception cref="ArgumentException">
     /// The <paramref name="source"/> must be decorated with
     /// <see cref="HttpClientAttribute"/> or 
-    /// implement <see cref="IHttpClientAttributeBuilder"/>.</exception>
+    /// implement <see cref="IHttpClientAttributeProvider"/>.</exception>
     /// <exception cref="InvalidOperationException">
     /// Unable to build the request message.</exception>
     ValueTask<HttpRequestMessage> BuildHttpRequestAsync<TSource>(
@@ -110,7 +111,8 @@ internal sealed class HttpClientRequestBuilderInternal(
                 BodyFormat.FormUrlEncoded => ReadFormUrlEncodedContent(source),
                 BodyFormat.Multipart => ReadMultipartContent(source, attribute),
                 BodyFormat.Stream => ReadStreamContent(source),
-                BodyFormat.String => ReadStringContent(source, attribute, serializerOptions),
+                BodyFormat.String => ReadStringContent(
+                    source, attribute, serializerOptions),
                 _ => throw new NotImplementedException(
                     $"Unknown body format : {attribute.BodyFormat}")
             };
@@ -139,13 +141,16 @@ internal sealed class HttpClientRequestBuilderInternal(
             TSource source,
             IServiceProvider serviceProvider)
         {
-            if (source is IHttpClientAttributeBuilder httpRestClientAttributeProvider)
+            if (source is IHttpClientAttributeProvider
+                httpRestClientAttributeProvider)
                 return httpRestClientAttributeProvider.Build(serviceProvider);
 
             return source.GetType().GetCustomAttribute<HttpClientAttribute>()
                 ?? throw new ArgumentNullException(
-                    $"{source.GetType().Name} must be decorated with {nameof(HttpClientAttribute)} " +
-                    $"attribute or implement {nameof(IHttpClientAttributeBuilder)} interface.");
+                    $"{source.GetType().Name} must be decorated " +
+                    $"with {nameof(HttpClientAttribute)} " +
+                    $"attribute or implement " +
+                    $"{nameof(IHttpClientAttributeProvider)} interface.");
         }
     }
 

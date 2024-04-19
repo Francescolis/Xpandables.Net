@@ -21,12 +21,12 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Commands.Decorators;
-internal sealed class OperationResultFinalizerAsyncQueryDecorator<TQuery, TResult>(
+internal sealed class OperationFinalizerAsyncQueryDecorator<TQuery, TResult>(
     IAsyncQueryHandler<TQuery, TResult> decoratee,
-    IOperationResultFinalizer operationResultFinalizer)
+    IOperationFinalizer operationResultFinalizer)
     : IAsyncQueryHandler<TQuery, TResult>, IDecorator
     where TQuery : notnull, IAsyncQuery<TResult>,
-    IOperationResultFinalizerDecorator
+    IOperationFinalizerDecorator
 {
     public async IAsyncEnumerable<TResult> HandleAsync(
         TQuery query,
@@ -66,7 +66,7 @@ internal sealed class OperationResultFinalizerAsyncQueryDecorator<TQuery, TResul
                     if (finalizerResult.IsFailure)
                         throw new OperationResultException(finalizerResult);
 
-                    if (finalizerResult.Result.IsNotEmpty)
+                    if (finalizerResult.Result is not null)
                     {
                         result = finalizerResult.Result;
                         resultExist = true;

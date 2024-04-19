@@ -18,6 +18,7 @@
 using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Validators;
 
@@ -41,7 +42,8 @@ public class Validator<TArgument>(IServiceProvider serviceProvider)
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     /// <summary>
-    /// Validates the argument and returns validation state with errors if necessary.
+    /// Validates the argument and returns validation state with errors if 
+    /// necessary.
     /// The default behavior uses 
     /// the <see cref="Validator.TryValidateObject(
     /// object, ValidationContext, ICollection{ValidationResult}?, bool)"/>.
@@ -51,7 +53,8 @@ public class Validator<TArgument>(IServiceProvider serviceProvider)
     /// <paramref name="argument"/> is null.</exception>
     /// <exception cref="ValidationException">The 
     /// exception thrown by the validator</exception>
-    /// <returns>Returns a result state that contains validation information.</returns>
+    /// <returns>Returns a result state that contains validation information
+    /// .</returns>
     public virtual IOperationResult Validate(TArgument argument)
     {
         List<ValidationResult> validationResults = [];

@@ -25,25 +25,17 @@ using Xpandables.Net.Primitives;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Defines a delegate that allows to finalize the operation result.
-/// </summary>
-/// <param name="operationResult">The operation result to act on.</param>
-/// <returns>An instance of <see cref="OperationResult"/>.</returns>
-public delegate IOperationResult OperationResultFinalizer(
-    IOperationResult operationResult);
-
-/// <summary>
 /// Defines the action that get applied and the end of a process 
-/// before the result is returned to the caller.
+/// before the <see cref="IOperationResult"/> is returned to the caller.
 /// In order to be activated, the target event should implement 
-/// the <see cref="IOperationResultFinalizerDecorator"/> interface, 
+/// the <see cref="IOperationFinalizerDecorator"/> interface, 
 /// the target handling class should reference the current interface 
 /// to set the delegate.
 /// </summary>
 /// <remarks>Be aware of the fact that the finalizer did not get called
 /// in case of exception. If you want so, set the property 
 /// <see cref="CallFinalizerOnException"/> to <see langword="true"/>.</remarks>
-public interface IOperationResultFinalizer
+public interface IOperationFinalizer
 {
     /// <summary>
     /// Defines whether the finalizer should be called in case of exception.
@@ -57,5 +49,5 @@ public interface IOperationResultFinalizer
     /// <summary>
     /// Defines the delegate that allows to finalize the operation result.
     /// </summary>
-    OperationResultFinalizer? Finalizer { get; set; }
+    Func<IOperationResult, IOperationResult>? Finalizer { get; set; }
 }

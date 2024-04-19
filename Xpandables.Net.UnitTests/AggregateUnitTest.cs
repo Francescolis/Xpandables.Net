@@ -40,7 +40,7 @@ public sealed class AggregateUnitTest
     {
         IServiceProvider serviceProvider = new ServiceCollection()
             .AddLogging()
-            .AddXCommandQueryHandlers(options => options.UsePersistence().UseOperationResultFinalizer())
+            .AddXCommandQueryHandlers(options => options.UsePersistence().UseOperationFinalizer())
             .AddXDispatcher()
             .AddXPersistenceCommandHandler()
             .AddXAggregateStore()
@@ -174,14 +174,14 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore
     }
 }
 public readonly record struct CreatePersonRequestCommand(Guid Id, string FirstName, string LastName)
-    : ICommand, IPersistenceDecorator, IOperationResultFinalizerDecorator;
+    : ICommand, IPersistenceDecorator, IOperationFinalizerDecorator;
 public sealed class CreatePersonRequestCommandHandler(
     IAggregateStore<Person, PersonId> aggregateStore,
-    IOperationResultFinalizer resultContext) : ICommandHandler<CreatePersonRequestCommand>
+    IOperationFinalizer resultContext) : ICommandHandler<CreatePersonRequestCommand>
 {
     private readonly IAggregateStore<Person, PersonId> _aggregateStore = aggregateStore
         ?? throw new ArgumentNullException(nameof(aggregateStore));
-    private readonly IOperationResultFinalizer _resultContext = resultContext
+    private readonly IOperationFinalizer _resultContext = resultContext
         ?? throw new ArgumentNullException(nameof(resultContext));
 
     public async ValueTask<IOperationResult> HandleAsync(

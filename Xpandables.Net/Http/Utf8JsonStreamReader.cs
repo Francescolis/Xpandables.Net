@@ -216,7 +216,8 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
     public readonly bool HasValueSequence => _jsonReader.HasValueSequence;
     public readonly long TokenStartIndex => _jsonReader.TokenStartIndex;
     public readonly JsonTokenType TokenType => _jsonReader.TokenType;
-    public readonly ReadOnlySequence<byte> ValueSequence => _jsonReader.ValueSequence;
+    public readonly ReadOnlySequence<byte> ValueSequence
+        => _jsonReader.ValueSequence;
     public readonly ReadOnlySpan<byte> ValueSpan => _jsonReader.ValueSpan;
 
     public bool GetBoolean() => _jsonReader.GetBoolean();
@@ -224,7 +225,8 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
     public byte[] GetBytesFromBase64() => _jsonReader.GetBytesFromBase64();
     public string GetComment() => _jsonReader.GetComment();
     public DateTime GetDateTime() => _jsonReader.GetDateTime();
-    public DateTimeOffset GetDateTimeOffset() => _jsonReader.GetDateTimeOffset();
+    public DateTimeOffset GetDateTimeOffset()
+        => _jsonReader.GetDateTimeOffset();
     public decimal GetDecimal() => _jsonReader.GetDecimal();
     public double GetDouble() => _jsonReader.GetDouble();
     public Guid GetGuid() => _jsonReader.GetGuid();
@@ -236,21 +238,36 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
     public string? GetString() => _jsonReader.GetString();
     public uint GetUInt32() => _jsonReader.GetUInt32();
     public ulong GetUInt64() => _jsonReader.GetUInt64();
-    public bool TryGetDecimal(out byte value) => _jsonReader.TryGetByte(out value);
-    public bool TryGetDecimal(out decimal value) => _jsonReader.TryGetDecimal(out value);
-    public bool TryGetBytesFromBase64(out byte[]? value) => _jsonReader.TryGetBytesFromBase64(out value);
-    public bool TryGetDateTime(out DateTime value) => _jsonReader.TryGetDateTime(out value);
-    public bool TryGetDateTimeOffset(out DateTimeOffset value) => _jsonReader.TryGetDateTimeOffset(out value);
-    public bool TryGetDouble(out double value) => _jsonReader.TryGetDouble(out value);
-    public bool TryGetGuid(out Guid value) => _jsonReader.TryGetGuid(out value);
-    public bool TryGetInt16(out short value) => _jsonReader.TryGetInt16(out value);
-    public bool TryGetInt32(out int value) => _jsonReader.TryGetInt32(out value);
-    public bool TryGetInt64(out long value) => _jsonReader.TryGetInt64(out value);
-    public bool TryGetSByte(out sbyte value) => _jsonReader.TryGetSByte(out value);
-    public bool TryGetSingle(out float value) => _jsonReader.TryGetSingle(out value);
-    public bool TryGetUInt16(out ushort value) => _jsonReader.TryGetUInt16(out value);
-    public bool TryGetUInt32(out uint value) => _jsonReader.TryGetUInt32(out value);
-    public bool TryGetUInt64(out ulong value) => _jsonReader.TryGetUInt64(out value);
+    public bool TryGetDecimal(out byte value)
+        => _jsonReader.TryGetByte(out value);
+    public bool TryGetDecimal(out decimal value)
+        => _jsonReader.TryGetDecimal(out value);
+    public bool TryGetBytesFromBase64(out byte[]? value)
+        => _jsonReader.TryGetBytesFromBase64(out value);
+    public bool TryGetDateTime(out DateTime value)
+        => _jsonReader.TryGetDateTime(out value);
+    public bool TryGetDateTimeOffset(out DateTimeOffset value)
+        => _jsonReader.TryGetDateTimeOffset(out value);
+    public bool TryGetDouble(out double value)
+        => _jsonReader.TryGetDouble(out value);
+    public bool TryGetGuid(out Guid value)
+        => _jsonReader.TryGetGuid(out value);
+    public bool TryGetInt16(out short value)
+        => _jsonReader.TryGetInt16(out value);
+    public bool TryGetInt32(out int value)
+        => _jsonReader.TryGetInt32(out value);
+    public bool TryGetInt64(out long value)
+        => _jsonReader.TryGetInt64(out value);
+    public bool TryGetSByte(out sbyte value)
+        => _jsonReader.TryGetSByte(out value);
+    public bool TryGetSingle(out float value)
+        => _jsonReader.TryGetSingle(out value);
+    public bool TryGetUInt16(out ushort value)
+        => _jsonReader.TryGetUInt16(out value);
+    public bool TryGetUInt32(out uint value)
+        => _jsonReader.TryGetUInt32(out value);
+    public bool TryGetUInt64(out ulong value)
+        => _jsonReader.TryGetUInt64(out value);
 
     private sealed class SequenceSegment
         : ReadOnlySequenceSegment<byte>, IDisposable
@@ -265,7 +282,8 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
             Previous = previous;
 
             Memory = Buffer.Memory;
-            RunningIndex = previous?.RunningIndex + previous?.Memory.Length ?? 0;
+            RunningIndex =
+                previous?.RunningIndex + previous?.Memory.Length ?? 0;
         }
 
         public void SetNext(SequenceSegment next) => Next = next;

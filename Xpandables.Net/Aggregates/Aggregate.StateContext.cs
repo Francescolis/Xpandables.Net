@@ -32,7 +32,8 @@ namespace Xpandables.Net.Aggregates;
 public abstract class AggregateStateContext
     <TAggregate, TAggregateState, TAggregateId>
     : Aggregate<TAggregateId>, IStateContext<TAggregateState>
-    where TAggregate : AggregateStateContext<TAggregate, TAggregateState, TAggregateId>
+    where TAggregate : AggregateStateContext
+        <TAggregate, TAggregateState, TAggregateId>
     where TAggregateState : State<TAggregate>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {

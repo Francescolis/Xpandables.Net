@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Commands.Decorators;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
-using Xpandables.Net.Validators;
 using Xpandables.Net.Visitors;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -62,14 +62,26 @@ public sealed record class CommandOptions
     /// <summary>
     /// Enables operation result finalizer behavior to commands/queries 
     /// that are decorated with the 
-    /// <see cref="IOperationResultFinalizerDecorator"/> interface.
+    /// <see cref="IOperationFinalizerDecorator"/> interface.
     /// </summary>
     /// <remarks>The target implementation handler(s) must reference 
-    /// the <see cref="IOperationResultFinalizer"/> in order to configure 
+    /// the <see cref="IOperationFinalizer"/> in order to configure 
     /// the result.</remarks>
-    public CommandOptions UseOperationResultFinalizer()
+    public CommandOptions UseOperationFinalizer()
     {
-        IsOperationResultFinalizerEnabled = true;
+        IsOperationFinalizerEnabled = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Enables snapshot behavior to aggregate that are decorated with the
+    /// <see cref="IOriginator"/> interface.
+    /// </summary>
+    /// <remarks> You may need to define the <see cref="SnapShotOptions"/> 
+    /// in the configuration file.</remarks>
+    public CommandOptions UseSnapShot()
+    {
+        IsSnapShotEnabled = true;
         return this;
     }
 
@@ -90,5 +102,6 @@ public sealed record class CommandOptions
     internal bool IsVisitorEnabled { get; private set; }
     internal bool IsTransactionEnabled { get; private set; }
     internal bool IsPersistenceEnabled { get; private set; }
-    internal bool IsOperationResultFinalizerEnabled { get; private set; }
+    internal bool IsOperationFinalizerEnabled { get; private set; }
+    internal bool IsSnapShotEnabled { get; private set; }
 }

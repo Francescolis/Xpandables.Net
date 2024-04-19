@@ -39,8 +39,10 @@ public interface IDomainEventMapper<TAggregateId>
     /// <summary>
     /// Maps the specified domain events to notifications.
     /// </summary>
-    /// <param name="events">The collection of domain events to be  mapped.</param>
-    /// <returns>A collection of notifications from the domain events mapped.</returns>
+    /// <param name="events">The collection of domain events to be  
+    /// mapped.</param>
+    /// <returns>A collection of notifications from the domain events mapped
+    /// .</returns>
     public IEnumerable<INotification> MapAll(
         IEnumerable<IDomainEvent<TAggregateId>> events)
         => events.Select(Map);

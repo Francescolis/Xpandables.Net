@@ -15,26 +15,27 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// An element for a collection.
+/// Represents an entry for <see cref="ElementCollection"/>.
 /// </summary>
-/// <param name="Key">The key associated with the element.</param>
-/// <param name="Values">The collection of strings 
-/// that represents the values.</param>
-/// <exception cref="ArgumentNullException">
-/// The <paramref name="Key"/> is null.</exception>
-/// <exception cref="ArgumentNullException">
-/// The <paramref name="Values"/> is null.</exception>
-public readonly record struct ElementEntry(
-    string Key,
-    IReadOnlyCollection<string> Values)
+public readonly record struct ElementEntry
 {
     /// <summary>
-    /// Defines the error key for errors without key.
+    /// Gets the key associated with the element.
     /// </summary>
-    public const string UndefinedKey = "UndefinedKey";
+    [Required, DataType(DataType.Text)]
+    public required string Key { get; init; }
+
+    /// <summary>
+    /// Gets the collection of strings that represents the values.
+    /// </summary>
+    [Required]
+    public required IReadOnlyCollection<string> Values { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the 
@@ -46,12 +47,18 @@ public readonly record struct ElementEntry(
     /// <paramref name="key"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="values"/> is empty.</exception>
+    [SetsRequiredMembers]
     public ElementEntry(string key, params string[] values)
-        : this(
-              key ?? throw new ArgumentNullException(nameof(key)),
-              (values?.Length ?? 0) == 0
-              ? throw new ArgumentOutOfRangeException
-              (nameof(values), $"{nameof(values)} can not be empty.")
-              : values!.ToList())
-    { }
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(values);
+
+        if (values.Length == 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(values),
+                $"{nameof(values)} can not be empty.");
+
+        Key = key;
+        Values = values.ToList();
+    }
 }

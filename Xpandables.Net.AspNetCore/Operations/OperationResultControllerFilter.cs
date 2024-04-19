@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -26,22 +26,27 @@ namespace Xpandables.Net.Operations;
 /// When used as a filter, it'll automatically convert bad operation result 
 /// to MVC Core <see cref="ValidationProblemDetails"/>,
 /// and exceptionally, convert <see cref="IOperationResult{TValue}"/> where 
-/// TValue is <see cref="BinaryEntry"/> to <see cref="FileContentResult"/>.
+/// TValue is <see cref="BinaryResult"/> to <see cref="FileContentResult"/>.
 /// It also add location header.
 /// </summary>
 public sealed class OperationResultControllerFilter(
-    IOperationResultResponseBuilder resultResponseBuilder) : IAsyncAlwaysRunResultFilter
+    IOperationResultResponseBuilder resultResponseBuilder) :
+    IAsyncAlwaysRunResultFilter
 {
-    private readonly IOperationResultResponseBuilder _resultResponseBuilder = resultResponseBuilder
+    private readonly IOperationResultResponseBuilder _resultResponseBuilder =
+        resultResponseBuilder
         ?? throw new ArgumentNullException(nameof(resultResponseBuilder));
 
     ///<inheritdoc/>
-    public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+    public async Task OnResultExecutionAsync(
+        ResultExecutingContext context,
+        ResultExecutionDelegate next)
     {
         _ = context ?? throw new ArgumentNullException(nameof(context));
         _ = next ?? throw new ArgumentNullException(nameof(next));
 
-        if (context.Result is ObjectResult objectResult && objectResult.Value is IOperationResult operationResult)
+        if (context.Result is ObjectResult objectResult
+            && objectResult.Value is IOperationResult operationResult)
         {
             await _resultResponseBuilder
                 .ExecuteAsync(context.HttpContext, operationResult)

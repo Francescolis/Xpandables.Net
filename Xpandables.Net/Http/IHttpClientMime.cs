@@ -36,7 +36,8 @@ public interface IHttpClientMime
 /// <summary>
 /// Provides a mapping between file extensions and MIME types.
 /// </summary>
-/// <remarks>From <see langword="Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider"/></remarks>
+/// <remarks>From <see langword="FileExtensionContentTypeProvider"/>
+/// from <see langword="AspNetCore"/>.</remarks>
 public sealed class HttpClientMime : IHttpClientMime
 {
     private static readonly FrozenDictionary<string, string> _mimeTypes =

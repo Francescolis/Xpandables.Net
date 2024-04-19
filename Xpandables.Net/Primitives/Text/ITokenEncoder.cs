@@ -15,24 +15,24 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
+using System.Security.Claims;
 
-namespace Xpandables.Net.Primitives;
+namespace Xpandables.Net.Primitives.Text;
 
 /// <summary>
-/// Provides a set of static (Shared in Visual Basic)
-/// methods for <see cref="JsonSerializerOptions"/>.
+///  Defines a method to encode a token from a collection of claims.
 /// </summary>
-public static class JsonSerializerDefaultOptions
+public interface ITokenEncoder
 {
-    /// <inheritdoc/>
-    public static JsonSerializerOptions OptionPropertyNameCaseInsensitiveTrue
-        => new() { PropertyNameCaseInsensitive = true };
-
-    /// <inheritdoc/>
-    public static JsonSerializerOptions OptionDefaultWeb
-        => new(JsonSerializerDefaults.Web);
-
-    /// <inheritdoc/>
-    public static JsonSerializerOptions Options => new();
+    /// <summary>
+    /// Uses the collection of claims to encode a token.
+    /// </summary>
+    /// <param name="claims">The collection of claims to be used for encoding 
+    /// token .</param>
+    /// <returns>An instance of <see cref="AccessToken"/> token.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// The <paramref name="claims"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Unable to encode the token 
+    /// with the specified claims. See inner exception.</exception>
+    AccessToken EncodeToken(IEnumerable<Claim> claims);
 }

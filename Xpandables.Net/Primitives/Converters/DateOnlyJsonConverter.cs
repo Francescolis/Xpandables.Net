@@ -21,12 +21,12 @@
 using System.Globalization;
 using System.Text.Json;
 
-namespace Xpandables.Net.Primitives;
+namespace Xpandables.Net.Primitives.Converters;
 
 /// <summary>
 /// Converts an <see cref="DateOnly"/> to JSON and vis-versa.
 /// </summary>
-public sealed class JsonDateOnlyConverter : JsonTypeOnlyConverter<DateOnly>
+public sealed class DateOnlyJsonConverter : TypeOnlyJsonConverter<DateOnly>
 {
     ///<inheritdoc/>
     protected override DateOnly DoRead(ref Utf8JsonReader reader)
@@ -49,7 +49,7 @@ public sealed class JsonDateOnlyConverter : JsonTypeOnlyConverter<DateOnly>
 /// Converts a null-able <see cref="DateOnly"/> to JSON and vis-versa.
 /// </summary>
 public sealed class JsonNullableDateOnlyConverter
-    : JsonTypeOnlyConverter<DateOnly?>
+    : TypeOnlyJsonConverter<DateOnly?>
 {
     ///<inheritdoc/>
     protected override DateOnly? DoRead(ref Utf8JsonReader reader)

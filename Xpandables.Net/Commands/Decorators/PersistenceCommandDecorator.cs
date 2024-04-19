@@ -91,7 +91,7 @@ public sealed class PersistenceCommandDecorator<TCommand>(
         }
         catch (OperationResultException resultException)
         {
-            return resultException.OperationResult;
+            return resultException.Operation;
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)
@@ -100,9 +100,7 @@ public sealed class PersistenceCommandDecorator<TCommand>(
                 .InternalError()
                 .WithDetail(I18nXpandables.ActionSpecifiedFailedSeeException
                     .StringFormat(nameof(PersistenceCommandDecorator<TCommand>)))
-                .WithError(
-                    nameof(PersistenceCommandDecorator<TCommand>),
-                    exception)
+                .WithException(exception)
                 .Build();
         }
     }

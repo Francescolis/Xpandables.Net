@@ -414,7 +414,8 @@ public static class OptionalExtensions
     /// <returns>The value from the sequence if exists 
     /// or the empty optional.</returns>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="source"/> or <paramref name="predicate"/> is null.</exception>
+    /// <paramref name="source"/> or <paramref name="predicate"/> is null
+    /// .</exception>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Reliability",
         "CA2007:Consider calling ConfigureAwait on the awaited task",
@@ -426,7 +427,8 @@ public static class OptionalExtensions
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(predicate);
 
-        await using IAsyncEnumerator<T> enumerator = source.GetAsyncEnumerator();
+        await using IAsyncEnumerator<T> enumerator =
+            source.GetAsyncEnumerator();
         while (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
             if (await predicate(enumerator.Current).ConfigureAwait(false))
@@ -626,7 +628,8 @@ public static class OptionalExtensions
     /// <returns>The values of the optionals that are not empty.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="source"/> is null.</exception>
-    public static IEnumerable<T> WhereSome<T>(this IEnumerable<Optional<T>> source)
+    public static IEnumerable<T> WhereSome<T>(
+        this IEnumerable<Optional<T>> source)
     {
         ArgumentNullException.ThrowIfNull(source);
 

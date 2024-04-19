@@ -28,10 +28,10 @@ namespace Xpandables.Net.Http;
 /// or <see cref="IHttpRequestString"/>.</remarks>
 #pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientRequest { }
-#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
-/// This interface is used as a marker for request that contains a specific-type result.
+/// This interface is used as a marker for request that contains a 
+/// specific-type result.
 /// </summary>
 /// <typeparam name="TResponse">Type of the result of the query.</typeparam>
 /// <remarks>May be used in combination with <see cref="IHttpRequestByteArray"/>, 
@@ -42,11 +42,11 @@ public interface IHttpClientRequest { }
 /// or <see cref="IHttpRequestString"/>.</remarks>
 #pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientRequest<out TResponse> { }
-#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
-/// This interface is used as a marker for request when using the asynchronous query pattern
-/// that contains a <see cref="IAsyncEnumerable{TResult}"/> of specific-type result.
+/// This interface is used as a marker for request when using the asynchronous 
+/// query pattern that contains a <see cref="IAsyncEnumerable{TResult}"/> of 
+/// specific-type result.
 /// </summary>
 /// <typeparam name="TResponse">Type of the result of the request.</typeparam>
 /// <remarks>May be used in combination with <see cref="IHttpRequestByteArray"/>, 
@@ -55,6 +55,5 @@ public interface IHttpClientRequest<out TResponse> { }
 /// <see cref="IHttpRequestPatch"/>, <see cref="IHttpRequestPathString"/>, 
 /// <see cref="IHttpRequestQueryString"/>, <see cref="IHttpRequestStream"/> 
 /// or <see cref="IHttpRequestString"/>.</remarks>
-#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientAsyncRequest<out TResponse> { }
 #pragma warning restore CA1040 // Avoid empty interfaces

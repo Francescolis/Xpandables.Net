@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
 namespace Xpandables.Net.Operations;
@@ -22,7 +22,8 @@ namespace Xpandables.Net.Operations;
 /// <summary>
 /// Intercepts the operation result and transforms it to a minimal response.
 /// </summary>
-/// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix (<see cref="string.Empty"/>).</remarks>
+/// <remarks>To be applied on many routes, please use <see langword="MapGroup"/>
+/// with empty prefix (<see cref="string.Empty"/>).</remarks>
 public sealed class OperationResultEndpointFilter : IEndpointFilter
 {
     ///<inheritdoc/>

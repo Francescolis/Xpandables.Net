@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-
-using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Validators;
 
@@ -35,19 +36,24 @@ internal readonly record struct ValidationDescriptor(
     IValidator Validator);
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
-internal sealed class OperationResultRequestValidator : IOperationResultRequestValidator
+internal sealed class OperationResultRequestValidator :
+    IOperationResultRequestValidator
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
 {
-    public async ValueTask<object?> ValidateAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    public async ValueTask<object?> ValidateAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
     {
         List<ArgumentDescriptor> arguments = context
             .Arguments
             .Select((p, i) => new ArgumentDescriptor(i, p, p?.GetType()))
             .ToList();
 
-        IOperationResult.IFailureBuilder operationResultBuilder = OperationResults.BadRequest();
+        IOperationResult.IFailureBuilder operationResultBuilder =
+            OperationResults.BadRequest();
 
-        foreach (ValidationDescriptor validationDescriptor in GetValidationDescriptors())
+        foreach (ValidationDescriptor validationDescriptor
+            in GetValidationDescriptors())
         {
             if (validationDescriptor.Argument is null)
                 continue;
@@ -65,7 +71,8 @@ internal sealed class OperationResultRequestValidator : IOperationResultRequestV
             }
             catch (ValidationException exception)
             {
-                IOperationResult operationException = exception.ToOperationResult();
+                IOperationResult operationException = exception
+                    .ToOperationResult();
                 _ = operationResultBuilder
                     .WithErrors(operationException.Errors)
                     .WithHeaders(operationException.Headers);
@@ -81,10 +88,14 @@ internal sealed class OperationResultRequestValidator : IOperationResultRequestV
 
         IEnumerable<ValidationDescriptor> GetValidationDescriptors()
         {
-            foreach (ArgumentDescriptor item in arguments.Where(ValidatorPredicate))
+            foreach (ArgumentDescriptor item in arguments
+                .Where(ValidatorPredicate))
             {
                 if (!typeof(IValidator<>)
-                    .TryMakeGenericType(out Type? validatorType, out _, item.ParameterType!))
+                    .TryMakeGenericType(
+                    out Type? validatorType,
+                    out _,
+                    item.ParameterType!))
                     continue;
 
                 IEnumerable<IValidator> validators = context
@@ -93,7 +104,10 @@ internal sealed class OperationResultRequestValidator : IOperationResultRequestV
                     .GetServices(validatorType).OfType<IValidator>();
 
                 foreach (IValidator validator in validators)
-                    yield return new(item.Index, item.ParameterType!, item.Parameter, validator);
+                    yield return new(
+                        item.Index,
+                        item.ParameterType!,
+                        item.Parameter, validator);
             }
         }
 
@@ -102,6 +116,8 @@ internal sealed class OperationResultRequestValidator : IOperationResultRequestV
     private static bool ValidatorPredicate(ArgumentDescriptor argument)
         => argument.ParameterType != null
             && (argument.ParameterType.IsClass
-                || (argument.ParameterType.IsValueType && !argument.ParameterType.IsEnum))
-            && OperationResultValidatorFilter.ValidatorPredicate(argument.ParameterType);
+                || (argument.ParameterType.IsValueType
+                && !argument.ParameterType.IsEnum))
+            && OperationResultValidatorFilter
+                .ValidatorPredicate(argument.ParameterType);
 }

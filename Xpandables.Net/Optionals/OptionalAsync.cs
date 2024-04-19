@@ -19,8 +19,8 @@ namespace Xpandables.Net.Optionals;
 public partial record struct Optional<T>
 {
     /// <summary>
-    /// Applies the <paramref name="some"/> method if the instance contains a value.
-    /// Otherwise, returns the current instance.
+    /// Applies the <paramref name="some"/> method if the instance contains 
+    /// a value. Otherwise, returns the current instance.
     /// </summary>
     /// <param name="some">The method that get called 
     /// when the instance contains a value.</param>
@@ -112,7 +112,8 @@ public partial record struct Optional<T>
     /// <paramref name="empty"/> is null.</exception>
     /// <returns>The current instance where the <paramref name="empty"/> 
     /// has been applied if the instance is empty.</returns>
-    public async readonly ValueTask<Optional<T>> EmptyAsync(Func<ValueTask> empty)
+    public async readonly ValueTask<Optional<T>> EmptyAsync(
+        Func<ValueTask> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
 

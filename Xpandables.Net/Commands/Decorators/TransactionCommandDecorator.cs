@@ -88,7 +88,7 @@ public sealed class TransactionCommandDecorator<TCommand>(
         }
         catch (OperationResultException resultException)
         {
-            return resultException.OperationResult;
+            return resultException.Operation;
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)
@@ -97,9 +97,7 @@ public sealed class TransactionCommandDecorator<TCommand>(
                 .InternalError()
                 .WithDetail(I18nXpandables.ActionSpecifiedFailedSeeException
                     .StringFormat(nameof(TransactionCommandDecorator<TCommand>)))
-                .WithError(
-                    nameof(TransactionCommandDecorator<TCommand>),
-                    exception)
+                .WithException(exception)
                 .Build();
         }
     }

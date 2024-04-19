@@ -33,8 +33,8 @@ public record class QueryExpressionOr<TSource, TResult>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionOr{TSource, TResult}"/> c
-    /// lass with the query expressions for composition.
+    /// <see cref="QueryExpressionOr{TSource, TResult}"/> class with the query 
+    /// expressions for composition.
     /// </summary>
     /// <param name="left">The query expression for the left side.</param>
     /// <param name="right">The query expression for the right side.</param>
@@ -52,8 +52,8 @@ public record class QueryExpressionOr<TSource, TResult>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionOr{TSource, TResult}"/> class 
-    /// with the expressions for composition.
+    /// <see cref="QueryExpressionOr{TSource, TResult}"/> class with the 
+    /// expressions for composition.
     /// </summary>
     /// <param name="left">The query expression for the left side.</param>
     /// <param name="rightExpression">The expression for the right side.</param>
@@ -82,8 +82,8 @@ public record class QueryExpressionOr<TSource, TResult>
 
 
 /// <summary>
-/// Provides the <see cref="QueryExpression{TSource}"/> "Or" profile.
-/// for TResult as <see cref="bool"/>.
+/// Provides the <see cref="QueryExpression{TSource}"/> "Or" profile for 
+/// TResult as <see cref="bool"/>.
 /// </summary>
 /// <typeparam name="TSource">The data type to apply expression to.</typeparam>
 public sealed record class QueryExpressionOr<TSource>
@@ -96,8 +96,8 @@ public sealed record class QueryExpressionOr<TSource>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionOr{TSource}"/> c
-    /// lass with the query expressions for composition.
+    /// <see cref="QueryExpressionOr{TSource}"/> class with the query 
+    /// expressions for composition.
     /// </summary>
     /// <param name="left">The query expression for the left side.</param>
     /// <param name="right">The query expression for the right side.</param>
@@ -115,8 +115,8 @@ public sealed record class QueryExpressionOr<TSource>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionOr{TSource}"/> class 
-    /// with the expressions for composition.
+    /// <see cref="QueryExpressionOr{TSource}"/> class with the expressions 
+    /// for composition.
     /// </summary>
     /// <param name="left">The query expression for the left side.</param>
     /// <param name="rightExpression">The expression for the right side.</param>

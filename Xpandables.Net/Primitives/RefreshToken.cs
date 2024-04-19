@@ -16,18 +16,26 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace Xpandables.Net.Primitives;
 
 /// <summary>
-/// Contains properties for a refresh token.
-/// <para>Returns a new instance of <see cref="RefreshToken"/> 
-/// with its properties.</para>
+/// Contains the properties : <see cref="Value"/> and <see cref="Expiry"/> 
+/// of a refresh token.
 /// </summary>
-/// <param name="Value">The value of the refresh token.</param>
-/// <param name="Expiry">The token expiry date.</param>
-/// <exception cref="ArgumentNullException">The 
-/// <paramref name="Value"/> is null.</exception>
-public readonly record struct RefreshToken(
-    [property: Required, DataType(DataType.Text)] string Value,
-    [property: Required, DataType(DataType.DateTime)] DateTime Expiry);
+[DebuggerDisplay("Value = {Value}, Expiry = {Expiry}")]
+public readonly record struct RefreshToken
+{
+    /// <summary>
+    /// Gets the value of the token.
+    /// </summary>
+    [Required, DataType(DataType.Text)]
+    public required string Value { get; init; }
+
+    /// <summary>
+    /// Gets the token expiry date.
+    /// </summary>
+    [Required, DataType(DataType.DateTime)]
+    public required DateTime Expiry { get; init; }
+}

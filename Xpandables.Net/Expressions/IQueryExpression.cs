@@ -21,10 +21,8 @@ namespace Xpandables.Net.Expressions;
 
 /// <summary>
 /// Defines a methods that returns an <see cref="Expression{TDelegate}"/> 
-/// that can be used to query
-/// This can significantly improve the use of the command/query pattern, 
-/// allowing class conversion
-/// to an expression tree.
+/// that can be used to query. This can significantly improve the use of the 
+/// command/query pattern, allowing class conversion to an expression tree.
 /// </summary>
 /// <typeparam name="TSource">The data type to apply expression to.</typeparam>
 /// <typeparam name="TResult">The type of the result of expression.</typeparam>
@@ -37,11 +35,10 @@ public interface IQueryExpression<TSource, TResult>
 }
 
 /// <summary>
-/// Defines a methods that returns an 
-/// <see cref="Expression{TDelegate}"/> that can be used to query
-/// the <typeparamref name="TSource"/> instance with <see cref="bool"/> result.
-/// This can significantly improve the use of the command/query pattern, 
-/// allowing class conversion to an expression tree.
+/// Defines a methods that returns an <see cref="Expression{TDelegate}"/> 
+/// that can be used to query the <typeparamref name="TSource"/> instance 
+/// with <see cref="bool"/> result. This can significantly improve the use of 
+/// the command/query pattern, allowing class conversion to an expression tree.
 /// </summary>
 /// <typeparam name="TSource">The data type to apply expression to.</typeparam>
 public interface IQueryExpression<TSource> : IQueryExpression<TSource, bool> { }

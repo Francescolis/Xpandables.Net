@@ -33,8 +33,8 @@ public record class QueryExpressionAnd<TSource, TResult>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionAnd{TSource, TResult}"/> class 
-    /// with the query expressions for composition.
+    /// <see cref="QueryExpressionAnd{TSource, TResult}"/> class with the query 
+    /// expressions for composition.
     /// </summary>
     /// <param name="left">The query expression for the left side.</param>
     /// <param name="right">The query expression for the right side.</param>
@@ -52,8 +52,8 @@ public record class QueryExpressionAnd<TSource, TResult>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionAnd{TSource, TResult}"/> class 
-    /// with the expressions for composition.
+    /// <see cref="QueryExpressionAnd{TSource, TResult}"/> class with the 
+    /// expressions for composition.
     /// </summary>
     /// <param name="left">The query expression  for the left side.</param>
     /// <param name="rightExpression">The expression for the right side.</param>
@@ -94,8 +94,8 @@ public sealed record class QueryExpressionAnd<TSource>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionAnd{TSource}"/> class 
-    /// with the query expressions for composition.
+    /// <see cref="QueryExpressionAnd{TSource}"/> class with the query 
+    /// expressions for composition.
     /// </summary>
     /// <param name="left">The query expression for the left side.</param>
     /// <param name="right">The query expression for the right side.</param>
@@ -113,8 +113,8 @@ public sealed record class QueryExpressionAnd<TSource>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionAnd{TSource}"/> class 
-    /// with the expressions for composition.
+    /// <see cref="QueryExpressionAnd{TSource}"/> class with the expressions 
+    /// for composition.
     /// </summary>
     /// <param name="left">The query expression  for the left side.</param>
     /// <param name="rightExpression">The expression for the right side.</param>

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Custom implementation of <see cref="IResult"/> interface for <see cref="IOperationResult"/>.
+/// Custom implementation of <see cref="IResult"/> interface for 
+/// <see cref="IOperationResult"/>.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of <see cref="OperationResultMinimal"/> that holds the specified operation result.
+/// Creates a new instance of <see cref="OperationResultMinimal"/> that holds 
+/// the specified operation result.
 /// </remarks>
 /// <param name="operationResult">The operation result to act on.</param>
-/// <exception cref="ArgumentNullException">The <paramref name="operationResult"/> is null.</exception>
-public sealed class OperationResultMinimal(IOperationResult operationResult) : IResult
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="operationResult"/> is null.</exception>
+public sealed class OperationResultMinimal(IOperationResult operationResult) :
+    IResult
 {
     private readonly IOperationResult _operationResult = operationResult
         ?? throw new ArgumentNullException(nameof(operationResult));

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-
+********************************************************************************/
 using System.Diagnostics;
 
 using Xpandables.Net.Primitives.I18n;
@@ -34,26 +33,35 @@ public static class AggregateExtensions
     /// </summary>
     /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
     /// <typeparam name="TAggregateId">The type of aggregate id.</typeparam>
-    /// <returns>An instance of aggregate of <typeparamref name="TAggregate"/> type.</returns>
-    /// <exception cref="InvalidOperationException">Unable to create the instance.</exception>
+    /// <returns>An instance of aggregate of <typeparamref name="TAggregate"/> 
+    /// type.</returns>
+    /// <exception cref="InvalidOperationException">Unable to create the 
+    /// instance.</exception>
     [DebuggerStepThrough]
-    public static TAggregate CreateEmptyAggregateInstance<TAggregate, TAggregateId>()
+    public static TAggregate CreateEmptyAggregateInstance
+        <TAggregate, TAggregateId>()
         where TAggregateId : struct, IAggregateId<TAggregateId>
         where TAggregate : class, IAggregate<TAggregateId>
     {
         try
         {
-            if (Activator.CreateInstance(typeof(TAggregate), true) is not TAggregate aggregate)
+            if (Activator.CreateInstance(
+                typeof(TAggregate),
+                true) is not TAggregate aggregate)
                 throw new InvalidOperationException(
-                    I18nXpandables.AggregateFailedToCreateInstance.StringFormat(typeof(TAggregate).Name),
-                    new ArgumentNullException(typeof(TAggregate).Name, "Null value."));
+                    I18nXpandables.AggregateFailedToCreateInstance
+                        .StringFormat(typeof(TAggregate).Name),
+                    new ArgumentNullException(
+                        typeof(TAggregate).Name,
+                        "Null value."));
 
             return aggregate;
         }
         catch (Exception exception)
         {
             throw new InvalidOperationException(
-                I18nXpandables.AggregateFailedToCreateInstance.StringFormat(typeof(TAggregate).Name),
+                I18nXpandables.AggregateFailedToCreateInstance
+                    .StringFormat(typeof(TAggregate).Name),
                 exception);
         }
     }

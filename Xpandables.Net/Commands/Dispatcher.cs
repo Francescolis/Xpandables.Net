@@ -18,7 +18,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Commands;
 
@@ -48,7 +47,7 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
         {
             return OperationResults
                 .InternalError<TResult>()
-                .WithError(ElementEntry.UndefinedKey, exception)
+                .WithException(exception)
                 .Build();
         }
     }
@@ -76,7 +75,7 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
         {
             return OperationResults
                 .InternalError()
-                .WithError(ElementEntry.UndefinedKey, exception)
+                .WithException(exception)
                 .Build();
         }
     }

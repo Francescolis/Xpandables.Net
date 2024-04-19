@@ -18,7 +18,7 @@
 using System.Net;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Optionals;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
 
@@ -49,13 +49,13 @@ public sealed record OperationResult : OperationResultBase
     /// operation problem.</param>
     internal OperationResult(
         HttpStatusCode statusCode,
-        Optional<object>? result = default,
-        Optional<string>? locationUrl = default,
+        object? result = default,
+        Uri? locationUrl = default,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
         ElementCollection? extensions = default,
-        Optional<string>? title = default,
-        Optional<string>? detail = default)
+        string? title = default,
+        string? detail = default)
         : base(
             statusCode,
             result,
@@ -97,13 +97,13 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
     /// operation problem.</param>
     internal OperationResult(
         HttpStatusCode statusCode,
-        Optional<TResult>? result = default,
-        Optional<string>? locationUrl = default,
+        TResult? result = default,
+        Uri? locationUrl = default,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
         ElementCollection? extensions = default,
-        Optional<string>? title = default,
-        Optional<string>? detail = default)
+        string? title = default,
+        string? detail = default)
         : base(
             statusCode,
             result,

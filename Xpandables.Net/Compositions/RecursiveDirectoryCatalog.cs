@@ -34,8 +34,8 @@ public sealed class RecursiveDirectoryCatalog
     /// <summary>
     /// Initializes a new instance of the 
     /// <see cref="RecursiveDirectoryCatalog"/> class 
-    /// with <see cref="ComposablePartDefinition"/> objects based
-    /// on all the DLL files in the specified directory path and its sub-directories.
+    /// with <see cref="ComposablePartDefinition"/> objects based on all the DLL 
+    /// files in the specified directory path and its sub-directories.
     /// </summary>
     /// <param name="path">Path to the directory to scan for assemblies 
     /// to add to the catalog.</param>
@@ -46,9 +46,9 @@ public sealed class RecursiveDirectoryCatalog
     /// <summary>
     /// Initializes a new instance of the 
     /// <see cref="RecursiveDirectoryCatalog"/> class 
-    /// with <see cref="ComposablePartDefinition"/> objects based on
-    /// the specified search pattern in the specified directory 
-    /// path and its sub-directories.
+    /// with <see cref="ComposablePartDefinition"/> objects based on the 
+    /// specified search pattern in the specified directory path and its 
+    /// sub-directories.
     /// </summary>
     /// <param name="path">Path to the directory to scan for 
     /// assemblies to add to the catalog.</param>
@@ -61,7 +61,9 @@ public sealed class RecursiveDirectoryCatalog
     public RecursiveDirectoryCatalog(string path, string searchPattern)
     {
         _path = path ?? throw new ArgumentNullException(nameof(path));
-        _ = searchPattern ?? throw new ArgumentNullException(nameof(searchPattern));
+        _ = searchPattern ?? throw new ArgumentNullException(
+            nameof(searchPattern));
+
         Initialize(path, searchPattern);
     }
 

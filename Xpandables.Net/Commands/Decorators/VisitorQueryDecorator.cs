@@ -25,8 +25,8 @@ namespace Xpandables.Net.Commands.Decorators;
 /// This class allows the application author to add visitor 
 /// support to query control flow.
 /// The target query should implement the 
-/// <see cref="IVisitable{TVisitable}"/> interface in order to activate the behavior.
-/// The class decorates the target query handler 
+/// <see cref="IVisitable{TVisitable}"/> interface in order to activate the 
+/// behavior. The class decorates the target query handler 
 /// with an implementation of <see cref="ICompositeVisitor{TElement}"/>
 /// and applies all visitors found to the target query 
 /// before the query get handled. You should provide with implementation

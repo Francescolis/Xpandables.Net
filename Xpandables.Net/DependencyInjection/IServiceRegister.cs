@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
-/// When implemented by a class, provides with a method to register services to service collection.
+/// When implemented by a class, provides with a method to register services 
+/// to service collection.
 /// </summary>
 /// <remarks>All the implementation classes get registered using the 
 /// <see langword="AddXRegisters(IServiceCollection, IConfiguration?, System.Reflection.Assembly[])"/>.</remarks>
@@ -41,7 +42,9 @@ public interface IServiceRegister
     /// </summary>
     /// <param name="services">The service collection to act on.</param>
     /// <param name="configuration">The current service configuration.</param>
-    public void RegisterServices(IServiceCollection services, IConfiguration configuration)
+    public void RegisterServices(
+        IServiceCollection services,
+        IConfiguration configuration)
     {
         // add your code here
     }

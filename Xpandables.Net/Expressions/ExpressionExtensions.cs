@@ -39,7 +39,8 @@ public static class ExpressionExtensions
             ?? throw new ArgumentNullException(nameof(parameterTypes));
 
         return parameterTypes
-            .Select((type, index) => Expression.Parameter(type, $"param{index + 1}"))
+            .Select((type, index)
+                => Expression.Parameter(type, $"param{index + 1}"))
             .ToArray();
     }
 
@@ -85,7 +86,8 @@ public static class ExpressionExtensions
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="propertyExpression"/> is null.</exception>
     /// <exception cref="ArgumentException">The 
-    /// <paramref name="propertyExpression"/> is not a member expression."</exception>
+    /// <paramref name="propertyExpression"/> is not a member expression
+    /// ."</exception>
     public static string GetMemberNameFromExpression<T, TProperty>(
         this Expression<Func<T, TProperty>> propertyExpression)
         where T : class

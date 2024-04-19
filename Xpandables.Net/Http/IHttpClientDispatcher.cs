@@ -32,7 +32,7 @@ namespace Xpandables.Net.Http;
 /// <see cref="IHttpRequestHeader"/>, <see cref="IHttpRequestPatch"/>
 /// or <see cref="IHttpRequestPathString"/>, and must be decorated 
 /// with <see cref="HttpClientAttribute"/> 
-/// or implement <see cref="IHttpClientAttributeBuilder"/>.
+/// or implement <see cref="IHttpClientAttributeProvider"/>.
 /// </summary>
 public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
 {
@@ -52,7 +52,8 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// be used for serialization.
     /// </summary>
     /// <remarks>The instance can be provided by registering the 
-    /// <see cref="JsonSerializerOptions"/> that will be automatically resolved by the system.</remarks>
+    /// <see cref="JsonSerializerOptions"/> that will be automatically 
+    /// resolved by the system.</remarks>
     JsonSerializerOptions? SerializerOptions { get; }
 
     /// <summary>
@@ -63,12 +64,13 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// <param name="request">The request to act with. The request
     /// must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements the 
-    /// <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <see cref="IHttpClientAttributeProvider"/> interface.</param>
     /// <param name="serializerOptions">Options to control the 
     /// behavior during parsing.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
+    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>
+    /// .</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
     /// <exception cref="InvalidOperationException">
@@ -85,7 +87,7 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// <param name="request">The request to act with. The request 
     /// must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements the 
-    /// <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// <see cref="IHttpClientAttributeProvider"/> interface.</param>
     /// <param name="serializerOptions">Options to control the 
     /// behavior during parsing.</param>
     /// <param name="cancellationToken">A CancellationToken to 
@@ -101,19 +103,21 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Sends the request that returns a response of <typeparamref name="TResult"/> type.
+    /// Sends the request that returns a response of 
+    /// <typeparamref name="TResult"/> type.
     /// Make use of <see langword="using"/> key work when call.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="request">The request to act with. 
     /// The request must be decorated with
     /// the <see cref="HttpClientAttribute"/> or implements 
-    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
+    /// the <see cref="IHttpClientAttributeProvider"/> interface.</param>
     /// <param name="serializerOptions">Options to control 
     /// the behavior during parsing.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
-    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
+    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>
+    /// .</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 

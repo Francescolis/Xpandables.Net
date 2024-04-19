@@ -28,7 +28,8 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// </summary>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents the number of persisted objects.</returns>
+    /// <returns>A task that represents the number of persisted objects
+    /// .</returns>
     /// <exception cref="InvalidOperationException">All exceptions 
     /// related to the operation.</exception>
     /// <exception cref="OperationCanceledException">The 
@@ -70,7 +71,8 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
 /// Provides with the base unit of work interface for a specific data context.
 /// </summary>
 /// <typeparam name="TDataContext">The type of the context.</typeparam>
-public interface IUnitOfWork<TDataContext> : IUnitOfWork where TDataContext : class
+public interface IUnitOfWork<TDataContext> : IUnitOfWork
+    where TDataContext : class
 {
     /// <summary>
     /// Returns the repository read implementation that matches 

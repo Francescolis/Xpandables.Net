@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.AspNetCore.Routing;
 
 using Xpandables.Net.DependencyInjection;
@@ -22,8 +22,8 @@ using Xpandables.Net.DependencyInjection;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// When implemented by a class, provides with a method to add routes and a method to add 
-/// services for an application when targeting minimal Api.
+/// When implemented by a class, provides with a method to add routes and a 
+/// method to add services for an application when targeting minimal Api.
 /// Inherits <see cref="IServiceRegister"/> interface.
 /// </summary>
 /// <remarks>All the implementation classes get registered using the 

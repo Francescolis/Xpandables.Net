@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+using System.Reflection;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using System.Reflection;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
 /// Transforms the operation result to a minimal response.
 /// </summary>
-public sealed class OperationResultMiddleware(IOperationResultResponseBuilder resultResponseBuilder) : IMiddleware
+public sealed class OperationResultMiddleware(
+    IOperationResultResponseBuilder resultResponseBuilder) : IMiddleware
 {
     private readonly bool _bypassResponseHasStarted = true;
-    private readonly IOperationResultResponseBuilder _resultResponseBuilder = resultResponseBuilder
+    private readonly IOperationResultResponseBuilder _resultResponseBuilder =
+        resultResponseBuilder
         ?? throw new ArgumentNullException(nameof(resultResponseBuilder));
 
     ///<inheritdoc/>
@@ -42,15 +44,22 @@ public sealed class OperationResultMiddleware(IOperationResultResponseBuilder re
         {
             await next(context).ConfigureAwait(false);
         }
-        catch (Exception exception) when (!context.Response.HasStarted && _bypassResponseHasStarted)
+        catch (Exception exception)
+            when (!context.Response.HasStarted && _bypassResponseHasStarted)
         {
             if (exception is TargetInvocationException targetInvocation)
                 exception = targetInvocation.InnerException ?? targetInvocation;
 
-            ILogger<OperationResultMiddleware> logger = context.RequestServices.GetRequiredService<ILogger<OperationResultMiddleware>>();
-            logger.ErrorExecutingProcess(nameof(OperationResultMiddleware), exception);
+            ILogger<OperationResultMiddleware> logger = context
+                .RequestServices
+                .GetRequiredService<ILogger<OperationResultMiddleware>>();
 
-            await _resultResponseBuilder.OnExceptionAsync(context, exception)
+            logger.ErrorExecutingProcess(
+                nameof(OperationResultMiddleware),
+                exception);
+
+            await _resultResponseBuilder
+                .OnExceptionAsync(context, exception)
                 .ConfigureAwait(false);
         }
     }

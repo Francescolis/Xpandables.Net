@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-
+********************************************************************************/
 using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 
-using Xpandables.Net.Primitives;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+using Xpandables.Net.Primitives.Converters;
 
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Abstract class that holds the <see cref="FromModelBinder"/> dictionary attributes.
+/// Abstract class that holds the <see cref="FromModelBinder"/> dictionary
+/// attributes.
 /// </summary>
 public abstract class FromModelBinder
 {
@@ -38,20 +39,27 @@ public abstract class FromModelBinder
     protected FromModelBinder() { }
 
     /// <summary>
-    /// Contains a dictionary with key as attribute and the request path values matching the specified name.
+    /// Contains a dictionary with key as attribute and the request path 
+    /// values matching the specified name.
     /// </summary>
-    protected static IDictionary<Attribute, Func<HttpContext, string, object?>> RequestAttributeModelReader
+    protected static IDictionary<Attribute, Func<HttpContext, string, object?>>
+        RequestAttributeModelReader
         => new Dictionary<Attribute, Func<HttpContext, string, object?>>
         {
-            { new FromHeaderAttribute(), (context, name) => context.Request.Headers[name].FirstOrDefault() },
-            { new FromRouteAttribute(), (context, name) => context.Request.RouteValues[name] },
-            { new FromQueryAttribute(), (context, name) => context.Request.Query[CultureInfo.CurrentCulture.TextInfo.ToTitleCase( name)].FirstOrDefault() }
+            { new FromHeaderAttribute(), (context, name)
+                => context.Request.Headers[name].FirstOrDefault() },
+            { new FromRouteAttribute(), (context, name)
+                => context.Request.RouteValues[name] },
+            { new FromQueryAttribute(), (context, name)
+                => context.Request.Query[CultureInfo.CurrentCulture.TextInfo.
+                    ToTitleCase( name)].FirstOrDefault() }
         };
 }
 
 /// <summary>
 /// Model binder used to bind models from the specified attributes :
-/// <see cref="FromHeaderAttribute"/>, <see cref="FromRouteAttribute"/> and <see cref="FromQueryAttribute"/>.
+/// <see cref="FromHeaderAttribute"/>, <see cref="FromRouteAttribute"/> and 
+/// <see cref="FromQueryAttribute"/>.
 /// <para>It tries to bind with a parameterless constructor, 
 /// if not found, uses serialization with <see cref="System.Text.Json"/>.</para>
 /// </summary>
@@ -62,7 +70,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
     ///<inheritdoc/>
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        _ = bindingContext ?? throw new ArgumentNullException(nameof(bindingContext));
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         string? modelName = bindingContext.ModelMetadata.BinderModelName;
         Type modelType = bindingContext.ModelMetadata.ModelType;
@@ -75,7 +83,9 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         return Task.CompletedTask;
     }
 
-    private static void BindingWithModelType(ModelBindingContext bindingContext, Type modelType)
+    private static void BindingWithModelType(
+        ModelBindingContext bindingContext,
+        Type modelType)
     {
         List<PropertyInfo> modelProperties = modelType.GetProperties()
             .Where(p => p.GetSetMethod()?.IsPublic == true)
@@ -95,12 +105,14 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         }
 
         // create properties
-        Dictionary<string, object?> propertyValues = CreateProperties(bindingContext, modelProperties);
+        Dictionary<string, object?> propertyValues =
+            CreateProperties(bindingContext, modelProperties);
         if (bindingContext.ModelState.IsValid is false)
             return;
 
         // try parameter constructor
-        model = CreateConstructorInstance(bindingContext, modelType, propertyValues);
+        model = CreateConstructorInstance(
+            bindingContext, modelType, propertyValues);
         if (model is not null)
         {
             bindingContext.Result = ModelBindingResult.Success(model);
@@ -108,7 +120,8 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         }
 
         // try parameterless constructor
-        model = CreateParameterlessInstance(bindingContext, modelType, modelProperties, propertyValues);
+        model = CreateParameterlessInstance(
+            bindingContext, modelType, modelProperties, propertyValues);
         if (model is not null)
         {
             bindingContext.Result = ModelBindingResult.Success(model);
@@ -116,7 +129,8 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         }
 
         // try deserialization
-        model = CreateDeserializedInstance(bindingContext, modelType, propertyValues);
+        model = CreateDeserializedInstance(
+            bindingContext, modelType, propertyValues);
         if (model is not null)
         {
             bindingContext.Result = ModelBindingResult.Success(model);
@@ -128,14 +142,16 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         string modelName,
         Type modelType)
     {
-        object? attributeValue = RequestAttributeModelReader[new TAttribute()](bindingContext.HttpContext, modelName);
+        object? attributeValue = RequestAttributeModelReader[new TAttribute()](
+            bindingContext.HttpContext, modelName);
 
         if (attributeValue is string value)
         {
             try
             {
                 object? model = JsonSerializer
-                    .Deserialize(value, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
+                    .Deserialize(
+                    value, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
 
                 bindingContext.Result = ModelBindingResult.Success(model);
             }
@@ -191,8 +207,14 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
     {
         try
         {
-            string dictString = JsonSerializer.Serialize(propertyValues, JsonSerializerDefaultOptions.OptionDefaultWeb);
-            return JsonSerializer.Deserialize(dictString, modelType, JsonSerializerDefaultOptions.OptionDefaultWeb);
+            string dictString = JsonSerializer
+                .Serialize(
+                propertyValues, JsonSerializerDefaultOptions.OptionDefaultWeb);
+            return JsonSerializer
+                .Deserialize(
+                dictString,
+                modelType,
+                JsonSerializerDefaultOptions.OptionDefaultWeb);
         }
         catch (Exception exception)
             when (exception is ArgumentNullException
@@ -215,7 +237,8 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         {
             try
             {
-                return Activator.CreateInstance(modelType, [.. propertyValues.Values]);
+                return Activator.CreateInstance(
+                    modelType, [.. propertyValues.Values]);
             }
             catch (Exception exception)
                 when (exception is ArgumentNullException
@@ -274,7 +297,8 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
             else
             {
                 _ = bindingContext.ModelState
-                    .TryAddModelError(bindingContext.ModelName, "Invalid value : creating instance null");
+                    .TryAddModelError(bindingContext.ModelName, "Invalid value " +
+                    ": creating instance null");
             }
 
             return model;
@@ -309,11 +333,13 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
             foreach (PropertyInfo property in propertyInfos)
             {
                 currentPropertyInfo = property;
-                object? value = RequestAttributeModelReader[new TAttribute()](bindingContext.HttpContext, property.Name);
+                object? value = RequestAttributeModelReader[new TAttribute()](
+                    bindingContext.HttpContext, property.Name);
                 object? converted = default;
 
                 if (value is not null)
-                    converted = value.ChangeTypeNullable(property.PropertyType, CultureInfo.CurrentCulture);
+                    converted = value.ChangeTypeNullable(
+                        property.PropertyType, CultureInfo.CurrentCulture);
 
                 propertyValues.Add(property.Name, converted);
             }
@@ -328,9 +354,11 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
                     or InvalidCastException)
         {
             if (currentPropertyInfo is not null)
-                _ = bindingContext.ModelState.TryAddModelException(currentPropertyInfo.Name, exception);
+                _ = bindingContext.ModelState
+                    .TryAddModelException(currentPropertyInfo.Name, exception);
             else
-                _ = bindingContext.ModelState.TryAddModelException(bindingContext.ModelName, exception);
+                _ = bindingContext.ModelState
+                    .TryAddModelException(bindingContext.ModelName, exception);
         }
 
         return propertyValues;

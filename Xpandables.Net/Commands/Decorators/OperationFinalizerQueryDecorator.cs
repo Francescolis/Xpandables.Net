@@ -19,11 +19,11 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Commands.Decorators;
-internal sealed class OperationResultFinalizerQueryDecorator<TQuery, TResult>(
+internal sealed class OperationFinalizerQueryDecorator<TQuery, TResult>(
     IQueryHandler<TQuery, TResult> decoratee,
-    IOperationResultFinalizer operationResultFinalizer)
+    IOperationFinalizer operationResultFinalizer)
     : IQueryHandler<TQuery, TResult>, IDecorator
-    where TQuery : notnull, IQuery<TResult>, IOperationResultFinalizerDecorator
+    where TQuery : notnull, IQuery<TResult>, IOperationFinalizerDecorator
 {
     public async ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query,
@@ -46,11 +46,11 @@ internal sealed class OperationResultFinalizerQueryDecorator<TQuery, TResult>(
             if (operationResultFinalizer.CallFinalizerOnException)
             {
                 return operationResultFinalizer
-                    .Finalizer.Invoke(resultException.OperationResult)
+                    .Finalizer.Invoke(resultException.Operation)
                     .ToOperationResult<TResult>();
             }
 
-            return resultException.OperationResult
+            return resultException.Operation
                 .ToOperationResult<TResult>();
         }
         catch (Exception exception)
@@ -65,10 +65,8 @@ internal sealed class OperationResultFinalizerQueryDecorator<TQuery, TResult>(
 
             return OperationResults
                 .InternalError<TResult>()
-                .WithTitle("OperationResultFinalizerQueryDecorator")
-                .WithError(
-                    nameof(OperationResultFinalizerQueryDecorator<TQuery, TResult>),
-                    exception)
+                .WithTitle("OperationFinalizerQueryDecorator")
+                .WithException(exception)
                 .Build();
         }
     }

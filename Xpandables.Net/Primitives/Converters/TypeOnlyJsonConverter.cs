@@ -15,42 +15,31 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
-// Ignore Spelling: Json
-
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Primitives;
+namespace Xpandables.Net.Primitives.Converters;
 
-namespace Xpandables.Net.Operations;
-
-///<inheritdoc/>
-public sealed class OperationResultCollectionJsonConverter
-    : JsonConverter<ElementCollection>
+/// <summary>
+/// Base class for JSON Type Only Converter.
+/// </summary>
+/// <typeparam name="T">The type to parse to.</typeparam>
+public abstract class TypeOnlyJsonConverter<T> : JsonConverter<T>
 {
     ///<inheritdoc/>
-    public override ElementCollection Read(
+    public sealed override T Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options)
-    {
-        ElementEntry[]? result = JsonSerializer
-            .Deserialize<ElementEntry[]>(ref reader, options);
+        => DoRead(ref reader);
 
-        return result is null
-            ? []
-            : new ElementCollection(result);
-    }
-
-    ///<inheritdoc/>
-    public override void Write(
-        Utf8JsonWriter writer,
-        ElementCollection value,
-        JsonSerializerOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        JsonSerializer.Serialize(writer, value.ToArray(), options);
-    }
+    /// <summary>
+    /// When implemented in derived classes, will return 
+    /// the an instance of <typeparamref name="T"/>
+    /// from <paramref name="reader"/> value.
+    /// </summary>
+    /// <param name="reader">The reader element of the current JSON.</param>
+    /// <returns>An object of <typeparamref name="T"/> type if 
+    /// available.</returns>
+    protected abstract T DoRead(ref Utf8JsonReader reader);
 }
