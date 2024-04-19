@@ -17,7 +17,6 @@
 ********************************************************************************/
 using System.Net;
 
-using Xpandables.Net.Optionals;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Operations;
@@ -230,7 +229,7 @@ internal abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     IOperationResult<TResult> IOperationResult.IBuilder<TResult>.Build()
         => new OperationResult<TResult>(
             _statusCode,
-             (TResult?)_result,
+             _result,
             _uri,
             _errors,
             _headers,

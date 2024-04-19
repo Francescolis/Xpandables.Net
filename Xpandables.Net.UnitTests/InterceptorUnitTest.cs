@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
-
+********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Commands;
@@ -34,7 +33,11 @@ public sealed class InterceptorTests
     [InlineData(10, ExpectedValue)]
     public async Task InterceptionClassicMethod(int value, int expected)
     {
-        ICalculator calculator = InterceptorFactory.CreateProxy<ICalculator>(new CalculatorInterceptor(), new Calculator());
+        ICalculator calculator = InterceptorFactory
+            .CreateProxy<ICalculator>(
+            new CalculatorInterceptor(),
+            new Calculator());
+
         int result = await calculator.CalculateAsync(value);
 
         Assert.Equal(expected, result);
@@ -49,7 +52,8 @@ public sealed class InterceptorTests
             .AddXInterceptor<ICalculator, CalculatorInterceptor>()
             .BuildServiceProvider();
 
-        ICalculator calculator = serviceProvider.GetRequiredService<ICalculator>();
+        ICalculator calculator = serviceProvider
+            .GetRequiredService<ICalculator>();
         int result = await calculator.CalculateAsync(value);
 
         Assert.Equal(expected, result);
@@ -57,14 +61,16 @@ public sealed class InterceptorTests
 
     [Theory]
     [InlineData(10, ExpectedValue)]
-    public async Task InterceptorDependencyAttributeMethod(int value, int expected)
+    public async Task InterceptorDependencyAttributeMethod(
+        int value, int expected)
     {
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddTransient<ICalculator, Calculator>()
             .AddXInterceptorAttributes()
             .BuildServiceProvider();
 
-        ICalculator calculator = serviceProvider.GetRequiredService<ICalculator>();
+        ICalculator calculator = serviceProvider
+            .GetRequiredService<ICalculator>();
         int result = await calculator.CalculateAsync(value);
 
         Assert.Equal(expected, result);
@@ -72,17 +78,20 @@ public sealed class InterceptorTests
 
     [Theory]
     [InlineData(10, ExpectedValue)]
-    public async Task InterceptorDependencyHandlerMethod(int value, int expected)
+    public async Task InterceptorDependencyHandlerMethod(
+        int value, int expected)
     {
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddXQueryHandlers(typeof(Calculator).Assembly)
-            .AddXInterceptorHandlers<CalculatorInterceptor>(typeof(Calculator).Assembly)
+            .AddXInterceptorHandlers<CalculatorInterceptor>(
+            typeof(Calculator).Assembly)
             .BuildServiceProvider();
 
-        IQueryHandler<Args, int> handler = serviceProvider.GetRequiredService<IQueryHandler<Args, int>>();
+        IQueryHandler<Args, int> handler = serviceProvider
+            .GetRequiredService<IQueryHandler<Args, int>>();
         IOperationResult<int> result = await handler.HandleAsync(new(value));
 
-        Assert.Equal(expected, result.Result.ValueOrDefault(0));
+        Assert.Equal(expected, result.Result);
     }
 
     public sealed class CalculatorInterceptor : Interceptor
@@ -90,7 +99,8 @@ public sealed class InterceptorTests
         public override void Intercept(IInvocation invocation)
         {
             if (invocation.Arguments.First().Value is Args)
-                invocation.Arguments.First().ChangeValueTo(new Args(ExpectedValue));
+                invocation.Arguments.First().ChangeValueTo(
+                    new Args(ExpectedValue));
             else
                 invocation.Arguments.First().ChangeValueTo(ExpectedValue);
 
@@ -100,7 +110,9 @@ public sealed class InterceptorTests
 
     public sealed class CalculatorInterceptorAttribute : InterceptorAttribute
     {
-        public override IInterceptor Create(IServiceProvider serviceProvider) => new CalculatorInterceptor();
+        public override IInterceptor Create(
+            IServiceProvider serviceProvider)
+            => new CalculatorInterceptor();
     }
 
     [CalculatorInterceptor]
@@ -114,12 +126,15 @@ public sealed class InterceptorTests
         ValueTask<int> ICalculator.CalculateAsync(int args) => new(args);
     }
 
-    public readonly record struct Args(int Value) : IQuery<int>, IInterceptorDecorator;
-    public class HandleArgs : IQueryHandler<Args, int>
+    public readonly record struct Args(int Value) :
+        IQuery<int>, IInterceptorDecorator;
+    public sealed class HandleArgs : IQueryHandler<Args, int>
     {
-        public ValueTask<IOperationResult<int>> HandleAsync(Args query, CancellationToken cancellationToken = default)
+        public ValueTask<IOperationResult<int>> HandleAsync(
+            Args query, CancellationToken cancellationToken = default)
         {
-            return new ValueTask<IOperationResult<int>>(OperationResults.Ok(query.Value).Build());
+            return new ValueTask<IOperationResult<int>>(
+                OperationResults.Ok(query.Value).Build());
         }
     }
 }

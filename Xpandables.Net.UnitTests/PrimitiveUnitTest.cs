@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json;
 
 using FluentAssertions;
 
 using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.Converters;
 
 namespace Xpandables.Net.UnitTests;
 public sealed class PrimitiveUnitTest
 {
     [Theory]
     [InlineData("\"email@email.com\"", "email@email.com")]
-    public void AssertThatPrimitiveJsonStringValueIsConvertedToPrimitiveType(string jsonEmail, string expectedResult)
+    public void AssertThatPrimitiveJsonStringValueIsConvertedToPrimitiveType(
+        string jsonEmail, string expectedResult)
     {
         Email instance = JsonSerializer.Deserialize<Email>(jsonEmail);
         instance.Value.Should().Be(expectedResult);
@@ -57,7 +59,8 @@ public sealed class PrimitiveUnitTest
             throw new NotImplementedException();
         }
 
-        public static implicit operator Email(string? value) => new(value ?? string.Empty);
+        public static implicit operator Email(string? value)
+            => new(value ?? string.Empty);
     }
 
     public class Person

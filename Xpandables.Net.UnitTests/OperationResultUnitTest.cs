@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Net;
 using System.Text.Json;
 
 using FluentAssertions;
 
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.UnitTests;
 public sealed class OperationResultUnitTest
 {
     [Theory]
     [InlineData("key", "Header")]
-    public void OperationResult_Should_Return_Headers(string hKey, string hValue)
+    public void OperationResult_Should_Return_Headers(
+        string hKey, string hValue)
     {
         IOperationResult operationResult = OperationResults
             .Ok()
@@ -43,7 +43,8 @@ public sealed class OperationResultUnitTest
 
     [Theory]
     [InlineData("key", "Header", "errorKey", "errorMessage")]
-    public void OperationResult_Should_Return_Errors(string hKey, string hValue, string eKey, string eMessage)
+    public void OperationResult_Should_Return_Errors(
+        string hKey, string hValue, string eKey, string eMessage)
     {
         IOperationResult operationResult = OperationResults
             .BadRequest()
@@ -66,9 +67,11 @@ public sealed class OperationResultUnitTest
     }
 
     [Theory]
-    [InlineData("key", "Header", "errorKey", "errorMessage", "result", "http://localhost7152/")]
+    [InlineData("key", "Header", "errorKey", "errorMessage", "result",
+        "http://localhost7152/")]
     public void JsonConverter_Should_Serialize_And_Deserialize_OperationResult(
-        string hKey, string hValue, string eKey, string eMessage, string result, string url)
+        string hKey, string hValue, string eKey,
+        string eMessage, string result, string url)
     {
         IOperationResult<string> badResult = OperationResults
             .BadRequest<string>()
@@ -85,8 +88,10 @@ public sealed class OperationResultUnitTest
         string barResultJson = JsonSerializer.Serialize(badResult);
         string okResultJson = JsonSerializer.Serialize(okResult);
 
-        IOperationResult<string> expectedOkResult = JsonSerializer.Deserialize<IOperationResult<string>>(okResultJson)!;
-        IOperationResult<string> expectedBadResult = JsonSerializer.Deserialize<IOperationResult<string>>(barResultJson)!;
+        IOperationResult<string> expectedOkResult =
+            JsonSerializer.Deserialize<IOperationResult<string>>(okResultJson)!;
+        IOperationResult<string> expectedBadResult =
+            JsonSerializer.Deserialize<IOperationResult<string>>(barResultJson)!;
 
         expectedBadResult.Headers.First()
             .Key
@@ -100,7 +105,7 @@ public sealed class OperationResultUnitTest
             .Values.First()
             .Should()
             .Be(eMessage);
-        
+
         expectedOkResult.Headers.First()
             .Key
             .Should()
@@ -109,7 +114,7 @@ public sealed class OperationResultUnitTest
             .Values.First()
             .Should()
             .Be(hValue);
-        expectedOkResult.LocationUrl.Value
+        expectedOkResult.LocationUrl!.ToString()
             .Should()
             .Be(url);
     }
@@ -140,9 +145,10 @@ public sealed class OperationResultUnitTest
             .WithError("Structype", "erromessage")
             .Build();
 
-        optional.Result.Should().BeEmpty();
+        Func<StructType> access = () => optional.Result;
+        access.Should().Throw<NullReferenceException>();
+
         optional.IsFailure.Should().BeTrue();
-        optional.Result.IsEmpty.Should().BeTrue();
     }
 
     readonly record struct StructType(string Value);

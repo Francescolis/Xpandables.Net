@@ -1,5 +1,5 @@
 
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using FluentAssertions;
+
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Text;
 
@@ -25,7 +26,8 @@ public sealed class StringCryptographerUnitTest
 {
     [Theory]
     [InlineData("ValueToBeEncrypted", 12)]
-    public void Assert_Value_KeySize_CanBeEncrypted(string value, ushort keySize)
+    public void Assert_Value_KeySize_CanBeEncrypted(
+        string value, ushort keySize)
     {
         string key = TextGenerator.Generate(keySize);
         EncryptedValue encrypted = TextCryptography.Encrypt(value, key);
@@ -36,7 +38,8 @@ public sealed class StringCryptographerUnitTest
 
     [Theory]
     [InlineData("ValueToBeEncrypted")]
-    public void Assert_Value_WithDefaultKeyAndSalt_Encrypted_Decrypted(string value)
+    public void Assert_Value_WithDefaultKeyAndSalt_Encrypted_Decrypted(
+        string value)
     {
         EncryptedValue encrypted = TextCryptography.Encrypt(value);
 
@@ -51,7 +54,8 @@ public sealed class StringCryptographerUnitTest
 
     [Theory]
     [InlineData("ValueToBeEncrypted")]
-    public void Assert_Value_WithDefaultKeyAndSalt_Encrypted_IsEqualTo_Value(string value)
+    public void Assert_Value_WithDefaultKeyAndSalt_Encrypted_IsEqualTo_Value(
+        string value)
     {
         EncryptedValue encrypted = TextCryptography.Encrypt(value);
 

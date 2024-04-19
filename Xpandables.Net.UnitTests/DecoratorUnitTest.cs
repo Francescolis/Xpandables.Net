@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,6 @@ using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
-using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.UnitTests;
 
@@ -106,17 +106,20 @@ public sealed class DecoratorUnitTest
             .GetService<IQueryHandler<QueryDecorated, string>>();
 
         handler.Should().NotBeNull();
-        handler.Should().BeOfType<CustomValidationQueryDecorator<QueryDecorated, string>>();
+        handler.Should().BeOfType<CustomValidationQueryDecorator
+            <QueryDecorated, string>>();
     }
 
     [Fact]
     public void Decorator_Should_Match_Number_Registered()
     {
-        IEnumerable<IQueryHandler<QueryDecorated, string>> handlers = _serviceProvider
+        IEnumerable<IQueryHandler<QueryDecorated, string>> handlers =
+            _serviceProvider
             .GetServices<IQueryHandler<QueryDecorated, string>>();
 
         handlers.Should().Contain(
-            handler => handler.GetType() == typeof(CustomValidationQueryDecorator<QueryDecorated, string>));
+            handler => handler.GetType() ==
+            typeof(CustomValidationQueryDecorator<QueryDecorated, string>));
         handlers.Should().HaveCount(3);
     }
 

@@ -49,8 +49,8 @@ public sealed record OperationResult : OperationResultBase
     /// operation problem.</param>
     internal OperationResult(
         HttpStatusCode statusCode,
-        object? result = default,
-        Uri? locationUrl = default,
+        object? result = null,
+        Uri? locationUrl = null,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
         ElementCollection? extensions = default,
@@ -97,8 +97,8 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
     /// operation problem.</param>
     internal OperationResult(
         HttpStatusCode statusCode,
-        TResult? result = default,
-        Uri? locationUrl = default,
+        object? result = null,
+        Uri? locationUrl = null,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
         ElementCollection? extensions = default,

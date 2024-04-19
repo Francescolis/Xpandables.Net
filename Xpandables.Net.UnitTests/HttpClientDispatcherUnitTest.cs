@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
+using System.Text.Json;
+
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using System.Text.Json;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
@@ -37,20 +37,24 @@ public sealed class HttpClientDispatcherUnitTest
             .AddXHttpClientRequestBuilder()
             .AddXHttpClientResponseBuilder()
             .AddXHttpClientBuildProvider()
-            .AddXHttpClientDispatcher<IHttpMonkeyDispatcher, HttpMonkeyDispatcher>(_ => "token", (_, httpClient) =>
+            .AddXHttpClientDispatcher<IHttpMonkeyDispatcher, HttpMonkeyDispatcher>(
+            _ => "token", (_, httpClient) =>
             {
                 httpClient.BaseAddress = new Uri("https://www.montemagno.com/");
                 httpClient.Timeout = new TimeSpan(0, 5, 0);
                 httpClient.DefaultRequestHeaders.Accept.Clear();
                 httpClient.DefaultRequestHeaders
                     .Accept
-                    .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(HttpClientParameters.ContentType.Json));
+                    .Add(new System.Net.Http.Headers
+                    .MediaTypeWithQualityHeaderValue(
+                        HttpClientParameters.ContentType.Json));
             });
 
         ServiceProvider provider = services.BuildServiceProvider();
 
         _dispatcher = provider.GetRequiredService<IHttpMonkeyDispatcher>();
-        _httpClientRequestBuilder = provider.GetRequiredService<IHttpClientRequestBuilder>();
+        _httpClientRequestBuilder = provider
+            .GetRequiredService<IHttpClientRequestBuilder>();
     }
 
     [Fact]
@@ -81,7 +85,8 @@ public sealed class HttpClientDispatcherUnitTest
         string expectedResult = JsonSerializer.Serialize(request.PatchOperations);
 
         HttpRequestMessage message = await _httpClientRequestBuilder
-            .BuildHttpRequestAsync(request, _dispatcher.HttpClient, new(JsonSerializerDefaults.Web));
+            .BuildHttpRequestAsync(
+            request, _dispatcher.HttpClient, new(JsonSerializerDefaults.Web));
 
         Assert.NotNull(message.Content);
 
@@ -94,15 +99,20 @@ public sealed class HttpClientDispatcherUnitTest
 
 [HttpClient(Path = "/api/call",
     IsNullable = false, IsSecured = false,
-    Location = HttpClientParameters.Location.Body, ContentType = HttpClientParameters.ContentType.JsonPatch,
+    Location = HttpClientParameters.Location.Body,
+    ContentType = HttpClientParameters.ContentType.JsonPatch,
     Method = HttpClientParameters.Method.PATCH)]
-sealed record Request(string Name, DateTime BirthDate, int Age) : HttpRequestPatch<Request>, IHttpClientRequest;
+sealed record Request(string Name, DateTime BirthDate, int Age) :
+    HttpRequestPatch<Request>, IHttpClientRequest;
 readonly record struct CountryRequest(string? Name = default);
 
-readonly record struct Monkey(string Name, string Location, string Details, string Image, int Population, double Latitude, double Longitude);
+readonly record struct Monkey(
+    string Name, string Location, string Details, string Image,
+    int Population, double Latitude, double Longitude);
 
 [HttpClient(Path = "monkeys.json", IsSecured = false, IsNullable = true,
-    Method = HttpClientParameters.Method.GET, Location = HttpClientParameters.Location.Body)]
+    Method = HttpClientParameters.Method.GET,
+    Location = HttpClientParameters.Location.Body)]
 sealed record Query : IHttpClientAsyncRequest<Monkey>;
 interface IHttpMonkeyDispatcher : IHttpClientDispatcher
 {
@@ -121,7 +131,8 @@ sealed class HttpMonkeyDispatcher(
     public async IAsyncEnumerable<Monkey> GetMonkeyAsync()
     {
         Query query = new();
-        using HttpClientResponse<IAsyncEnumerable<Monkey>> response = await SendAsync(query).ConfigureAwait(false);
+        using HttpClientResponse<IAsyncEnumerable<Monkey>> response
+            = await SendAsync(query).ConfigureAwait(false);
 
         await foreach (Monkey monkey in response.Result)
             yield return monkey;

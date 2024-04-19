@@ -30,6 +30,9 @@ namespace Xpandables.Net.Operations;
 /// for Asp.Net to convert only <see cref="IOperationResult.Result"/> to Json
 /// <para>or use <see cref="OperationResultJsonConverterFactory"/> 
 /// to convert the instance to Json.</para></remarks>
+#if DEBUG
+[JsonConverter(typeof(OperationResultJsonConverterFactory))]
+#endif
 public partial interface IOperationResult
 {
     /// <summary>
@@ -169,6 +172,9 @@ public partial interface IOperationResult
 /// to Json
 /// <para>or use <see cref="OperationResultJsonConverterFactory"/> 
 /// to convert the instance to Json.</para></remarks>
+#if DEBUG
+[JsonConverter(typeof(OperationResultJsonConverterFactory))]
+#endif
 public partial interface IOperationResult<TResult> : IOperationResult
 {
     /// <summary>
@@ -178,15 +184,10 @@ public partial interface IOperationResult<TResult> : IOperationResult
     /// <returns>The result value of this 
     /// <see cref="IOperationResult{TResult}"/>, which is of the same 
     /// type as the operation result's type parameter.</returns>
+    /// <remarks>May throw <see cref="NullReferenceException"/>.</remarks>
     [JsonIgnore]
     [AllowNull, MaybeNull]
     new TResult Result { get; }
-
-    [JsonIgnore]
-    [AllowNull, MaybeNull]
-    object IOperationResult.Result => Result is TResult result
-        ? result
-        : null;
 
     /// <summary>
     /// Determines whether or not the current instance is generic.
@@ -197,6 +198,14 @@ public partial interface IOperationResult<TResult> : IOperationResult
 
     [JsonIgnore]
     bool IOperationResult.IsGeneric => true;
+
+    /// <summary>
+    /// Determines whether or not the current instance is successful 
+    /// according to the status of the operation.
+    /// </summary>
+    [JsonIgnore]
+    [MemberNotNullWhen(true, nameof(Result))]
+    public new bool IsSuccess => StatusCode.IsSuccessStatusCode();
 
     /// <summary>
     /// Converts the current instance to a non-generic instance.

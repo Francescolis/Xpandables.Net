@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -30,18 +31,28 @@ namespace Xpandables.Net.UnitTests;
 
 public readonly record struct ProductId(Guid Value) : IAggregateId<ProductId>
 {
-    public static ProductId CreateInstance(Guid value) => throw new NotImplementedException();
-    public static ProductId DefaultInstance() => throw new NotImplementedException();
-    public static implicit operator Guid(ProductId self) => throw new NotImplementedException();
-    public static implicit operator string(ProductId self) => throw new NotImplementedException();
-    public static implicit operator ProductId(Guid value) => new(value);
+    public static ProductId CreateInstance(Guid value)
+        => throw new NotImplementedException();
+    public static ProductId DefaultInstance()
+        => throw new NotImplementedException();
+    public static implicit operator Guid(ProductId self)
+        => throw new NotImplementedException();
+    public static implicit operator string(ProductId self)
+        => throw new NotImplementedException();
+    public static implicit operator ProductId(Guid value)
+        => new(value);
 }
-public readonly record struct AddProductCommand(Guid ProductId, int Quantity) : ICommand;
-public readonly record struct GetProductQuery(Guid ProductId) : IQuery<string>;
-public readonly record struct GetProductAsyncQuery(Guid ProductId) : IAsyncQuery<string>;
-public sealed record class ProductAddedEvent(Guid ProductId, int Qty) : DomainEvent<ProductId>;
+public readonly record struct AddProductCommand(
+    Guid ProductId, int Quantity) : ICommand;
+public readonly record struct GetProductQuery(
+    Guid ProductId) : IQuery<string>;
+public readonly record struct GetProductAsyncQuery(
+    Guid ProductId) : IAsyncQuery<string>;
+public sealed record class ProductAddedEvent(
+    Guid ProductId, int Qty) : DomainEvent<ProductId>;
 public sealed record class ProductAddedIntegrationEvent : Notification;
-public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand>
+public sealed class AddProductCommandHandler :
+    ICommandHandler<AddProductCommand>
 {
     public async ValueTask<IOperationResult> HandleAsync(
         AddProductCommand command,
@@ -54,7 +65,8 @@ public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand
     }
 }
 
-public sealed class GetProductQueryHandler : IQueryHandler<GetProductQuery, string>
+public sealed class GetProductQueryHandler :
+    IQueryHandler<GetProductQuery, string>
 {
     public async ValueTask<IOperationResult<string>> HandleAsync(
         GetProductQuery query,
@@ -67,7 +79,8 @@ public sealed class GetProductQueryHandler : IQueryHandler<GetProductQuery, stri
     }
 }
 
-public sealed class GetProductAsyncQueryHandler : IAsyncQueryHandler<GetProductAsyncQuery, string>
+public sealed class GetProductAsyncQueryHandler :
+    IAsyncQueryHandler<GetProductAsyncQuery, string>
 {
     public IAsyncEnumerable<string> HandleAsync(
         GetProductAsyncQuery query,
@@ -75,7 +88,8 @@ public sealed class GetProductAsyncQueryHandler : IAsyncQueryHandler<GetProductA
             .ToAsyncEnumerable();
 }
 
-public sealed class ProductAddedEventHandler : IDomainEventHandler<ProductAddedEvent, ProductId>
+public sealed class ProductAddedEventHandler :
+    IDomainEventHandler<ProductAddedEvent, ProductId>
 {
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedEvent @event,
@@ -132,7 +146,8 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_AsyncQueryHandler()
     {
-        IAsyncQueryHandler<GetProductAsyncQuery, string>? handler = _serviceProvider
+        IAsyncQueryHandler<GetProductAsyncQuery, string>? handler =
+            _serviceProvider
             .GetService<IAsyncQueryHandler<GetProductAsyncQuery, string>>();
 
         handler.Should().NotBeNull();
@@ -142,7 +157,8 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_DomainEventHandler()
     {
-        IDomainEventHandler<ProductAddedEvent, ProductId>? handler = _serviceProvider
+        IDomainEventHandler<ProductAddedEvent, ProductId>? handler =
+            _serviceProvider
             .GetService<IDomainEventHandler<ProductAddedEvent, ProductId>>();
 
         handler.Should().NotBeNull();
@@ -152,7 +168,8 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_IntegrationEventHandler()
     {
-        INotificationHandler<ProductAddedIntegrationEvent>? handler = _serviceProvider
+        INotificationHandler<ProductAddedIntegrationEvent>? handler =
+            _serviceProvider
             .GetService<INotificationHandler<ProductAddedIntegrationEvent>>();
 
         handler.Should().NotBeNull();

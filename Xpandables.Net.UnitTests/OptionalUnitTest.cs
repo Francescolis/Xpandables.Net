@@ -1,4 +1,5 @@
-﻿/************************************************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using System.Text.Json;
 
 using FluentAssertions;
@@ -33,7 +34,8 @@ sealed record class Cache<T>
 {
     private readonly Dictionary<string, T> data = [];
     public void Store(string key, T value) => data[key] = value;
-    public Optional<T> Get(string key) => data.TryGetValue(key, out T? value) ? value : default;
+    public Optional<T> Get(string key)
+        => data.TryGetValue(key, out T? value) ? value : default;
 }
 
 public sealed class OptionalUnitTest
@@ -41,11 +43,13 @@ public sealed class OptionalUnitTest
     const string Value = "Hello World";
     [Theory]
     [InlineData(Value)]
-    public void OptionalJsonConverter_Should_Serialize_And_Deserialize_Optional(string value)
+    public void OptionalJsonConverter_Should_Serialize_And_Deserialize_Optional(
+        string value)
     {
         Optional<StructType> optional = Optional.Some(new StructType(value));
         string json = JsonSerializer.Serialize(optional);
-        Optional<StructType> deserialized = JsonSerializer.Deserialize<Optional<StructType>>(json);
+        Optional<StructType> deserialized = JsonSerializer
+            .Deserialize<Optional<StructType>>(json);
 
         var op = Optional.Some(new { Name = value });
         string json1 = JsonSerializer.Serialize(op);
@@ -68,7 +72,8 @@ public sealed class OptionalUnitTest
     [InlineData(4, 0, 4)]
     [InlineData(0, 6, 6)]
     [InlineData(0, 0, 0)]
-    public void Optional_Should_Return_Some_Optional_When_On_Link_Syntax(int fromA, int fromB, int result)
+    public void Optional_Should_Return_Some_Optional_When_On_Link_Syntax(
+        int fromA, int fromB, int result)
     {
         Optional<int> optional = from a in Optional.Some(fromA)
                                  from b in Optional.Some(fromB)
@@ -80,7 +85,8 @@ public sealed class OptionalUnitTest
     [Theory]
     [InlineData(42, true)]
     [InlineData(43, false)]
-    public void Optional_Should_Return_Boolean_Optional_When_Bind_To_Boolean(int x, bool result)
+    public void Optional_Should_Return_Boolean_Optional_When_Bind_To_Boolean(
+        int x, bool result)
     {
         Optional<bool> optional = Optional
             .Some(x)
@@ -91,7 +97,8 @@ public sealed class OptionalUnitTest
 
     [Theory]
     [InlineData(Value)]
-    public void Optional_Should_Return_Some_Optional_When_StructValue_Is_NotNull(string value)
+    public void Optional_Should_Return_Some_Optional_When_StructValue_Is_NotNull(
+        string value)
     {
         Optional<StructType> optional = Optional.Empty<StructType>();
 
@@ -100,7 +107,8 @@ public sealed class OptionalUnitTest
     }
 
     [Theory]
-    [InlineData("car", "truck", "bus", "My favorite vehicle is {0}", "No favorite vehicle")]
+    [InlineData("car", "truck", "bus", "My favorite vehicle is {0}",
+        "No favorite vehicle")]
     public void Optional_Should_Chain_Return_Some_Or_Empty_According_To_Value(
         string car, string truck, string bus, string favorite, string noFavorite)
     {
@@ -120,6 +128,7 @@ public sealed class OptionalUnitTest
             .Empty(() => noFavorite);
 
         noFavoriteMessage.Should().BeEquivalentTo(noFavorite);
-        favoriteTruckMessage.Should().BeEquivalentTo(string.Format(favorite, truck));
+        favoriteTruckMessage.Should().BeEquivalentTo(
+            string.Format(favorite, truck));
     }
 }

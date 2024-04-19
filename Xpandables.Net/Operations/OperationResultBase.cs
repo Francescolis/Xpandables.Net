@@ -94,13 +94,13 @@ public abstract record OperationResultBase : IOperationResult
     /// operation problem.</param>
     protected OperationResultBase(
         HttpStatusCode statusCode,
-        object? result = default,
-        Uri? locationUrl = default,
+        object? result = null,
+        Uri? locationUrl = null,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
         ElementCollection? extensions = default,
-        string? title = default,
-        string? detail = default)
+        string? title = null,
+        string? detail = null)
     {
         StatusCode = statusCode;
         Result = result;
@@ -131,7 +131,7 @@ public abstract record OperationResultBase<TResult>
     /// <inheritdoc/>
     [JsonIgnore]
     [AllowNull, MaybeNull]
-    public new TResult Result { get; internal init; }
+    public new TResult Result => (TResult?)base.Result;
 
     /// <summary>
     /// Creates a new instance of <see cref="OperationResult{TValue}"/> 
@@ -148,8 +148,8 @@ public abstract record OperationResultBase<TResult>
     /// execution operation problem.</param>
     protected OperationResultBase(
         HttpStatusCode statusCode,
-        TResult? result = default,
-        Uri? locationUrl = default,
+        object? result = null,
+        Uri? locationUrl = null,
         ElementCollection? errors = default,
         ElementCollection? headers = default,
         ElementCollection? extensions = default,
@@ -163,5 +163,6 @@ public abstract record OperationResultBase<TResult>
             headers,
             extensions,
             title,
-            detail) => Result = result;
+            detail)
+    { }
 }
