@@ -122,6 +122,7 @@ public partial interface IOperationResult
     /// Determines whether or not the current instance is 
     /// failed according to the status of the operation.
     /// </summary>
+    [JsonIgnore]
     public bool IsFailure => StatusCode.IsFailureStatusCode();
 
     /// <summary>
@@ -206,6 +207,14 @@ public partial interface IOperationResult<TResult> : IOperationResult
     [JsonIgnore]
     [MemberNotNullWhen(true, nameof(Result))]
     public new bool IsSuccess => StatusCode.IsSuccessStatusCode();
+
+    /// <summary>
+    /// Determines whether or not the current instance is 
+    /// failed according to the status of the operation.
+    /// </summary>
+    [JsonIgnore]
+    [MemberNotNullWhen(false, nameof(Result))]
+    public new bool IsFailure => StatusCode.IsFailureStatusCode();
 
     /// <summary>
     /// Converts the current instance to a non-generic instance.
