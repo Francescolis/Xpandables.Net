@@ -100,15 +100,14 @@ public static class ConverterExtensions
     /// <returns>The same builder instance so that 
     /// multiple configuration calls can be chained.</returns>
     public static PropertyBuilder HasPrimitiveConversion
-        <TProperty, TPrimtive, TValue>(
+        <TPrimitive, TValue>(
         this PropertyBuilder builder)
-        where TProperty : IPrimitive<TPrimtive, TValue>
-        where TPrimtive : struct, IPrimitive<TPrimtive, TValue>
+        where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
         where TValue : notnull
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         return builder
-            .HasConversion<PrimitiveValueConverter<TPrimtive, TValue>>();
+            .HasConversion<PrimitiveValueConverter<TPrimitive, TValue>>();
     }
 }
