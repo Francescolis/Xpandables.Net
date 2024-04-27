@@ -23,26 +23,10 @@ using Xpandables.Net.Primitives.Text;
 namespace Xpandables.Net.Commands.Decorators;
 
 /// <summary>
-/// Represents a method signature to be used to apply
-/// transactional behavior to a command task.
-/// </summary>
-/// <param name="cancellationToken">A CancellationToken 
-/// to observe while waiting for the task to complete.</param>
-/// <param name="transactionalCommandTask">The command task definition 
-/// to be executed under transaction.</param>
-/// <returns>A task that represents an object of
-/// <see cref="IOperationResult"/>.</returns>
-public delegate ValueTask<IOperationResult> TransactionCommandHandler(
-    CancellationToken cancellationToken,
-    Func<ValueTask<IOperationResult>> transactionalCommandTask);
-
-/// <summary>
 /// This class allows the application author to add transaction 
 /// support to command control flow.
 /// The target command should implement the 
 /// <see cref="ITransactionDecorator"/> in order to activate the behavior.
-/// The class decorates the target command handler with 
-/// a definition of <see cref="TransactionCommandHandler"/>.
 /// </summary>
 /// <typeparam name="TCommand">Type of the command.</typeparam>
 /// <remarks>
@@ -51,14 +35,14 @@ public delegate ValueTask<IOperationResult> TransactionCommandHandler(
 /// with the handler to be decorated and the transaction scope provider.
 /// </remarks>
 /// <param name="decoratee">The decorated command handler.</param>
-/// <param name="transactionDelegate">The transaction scope provider.</param>
+/// <param name="transactionStore">The transaction store to use.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="decoratee"/> is null.</exception>
 /// <exception cref="ArgumentNullException">The 
-/// <paramref name="transactionDelegate"/> is null.</exception>
+/// <paramref name="transactionStore"/> is null.</exception>
 public sealed class TransactionCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
-    TransactionCommandHandler transactionDelegate) :
+    ICommandTransactional transactionStore) :
     ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, ITransactionDecorator
 {
@@ -81,10 +65,14 @@ public sealed class TransactionCommandDecorator<TCommand>(
     {
         try
         {
-            return await transactionDelegate(
-                cancellationToken,
-                () => decoratee.HandleAsync(command, cancellationToken))
-                .ConfigureAwait(false);
+            await using (await transactionStore
+                .TransactionAsync(cancellationToken)
+                .ConfigureAwait(false))
+            {
+                return await decoratee
+                    .HandleAsync(command, cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
         catch (OperationResultException resultException)
         {

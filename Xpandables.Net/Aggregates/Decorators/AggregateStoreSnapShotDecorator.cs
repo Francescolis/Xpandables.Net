@@ -25,7 +25,7 @@ using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Aggregates.Decorators;
 
-internal sealed class AggregatetStoreSnapShotDecorator<TAggregate, TAggregateId>(
+internal sealed class AggregateStoreSnapShotDecorator<TAggregate, TAggregateId>(
     IAggregateStore<TAggregate, TAggregateId> decoratee,
     IDomainEventStore eventStore,
     ISnapShotStore snapShotStore,

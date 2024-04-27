@@ -29,9 +29,10 @@ namespace Xpandables.Net.Aggregates;
 /// <remarks>
 /// Initializes the aggregate store.
 /// </remarks>
-/// <param name="eventStore"></param>
-/// <param name="eventPublisher"></param>
-/// <exception cref="ArgumentNullException"></exception>
+/// <param name="eventPublisher">The event publisher to use.</param>
+/// <param name="eventStore">The event store to use.</param>
+/// <exception cref="ArgumentNullException">The <paramref name="eventPublisher"/> 
+/// or <paramref name="eventStore"/> is null.</exception>"
 public sealed class AggregateStore<TAggregate, TAggregateId>(
     IDomainEventStore eventStore,
     IDomainEventPublisher<TAggregateId> eventPublisher)

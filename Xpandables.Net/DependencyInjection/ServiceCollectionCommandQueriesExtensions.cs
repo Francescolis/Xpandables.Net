@@ -407,7 +407,7 @@ public static class ServiceCollectionCommandQueriesExtensions
             _ = services.AddXPersistenceCommandDecorator();
         }
 
-        if (definedOptions.IsTransactionEnabled)
+        if (definedOptions.IsTransactionCommandEnabled)
         {
             _ = services.AddXTransactionCommandDecorator();
         }
@@ -432,6 +432,12 @@ public static class ServiceCollectionCommandQueriesExtensions
             _ = services.AddXSnapshotDecorator();
         }
 
+        if (definedOptions.IsTransactionAggregateEnabled)
+        {
+            _ = services.AddXAggregateStoreTransactional();
+        }
+
+
         return services;
     }
 
@@ -455,6 +461,25 @@ public static class ServiceCollectionCommandQueriesExtensions
                 typeof(IPersistenceDecorator));
 
         return services;
+    }
+
+    /// <summary>
+    /// Registers transactional scope behavior to the serviceswith scope 
+    /// life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXTransactionStoreCommand
+        <TTransactionStoreCommand>(
+        this IServiceCollection services)
+        where TTransactionStoreCommand : class, ICommandTransactional
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddScoped<ICommandTransactional, TTransactionStoreCommand>();
     }
 
     /// <summary>
@@ -523,31 +548,6 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(persistenceHandlerBuilder);
 
         services.TryAddScoped(persistenceHandlerBuilder);
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the transaction command handler delegate to be used to apply 
-    /// transaction to commands decorated with 
-    /// <see cref="ITransactionDecorator"/>.
-    /// The delegate is use by the
-    /// <see cref="TransactionCommandDecorator{TCommand}"/>.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <param name="transactionHandlerBuilder">The transaction command handler
-    /// factory.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// or <paramref name="transactionHandlerBuilder"/> is null.</exception>
-    public static IServiceCollection AddXTransactionCommandHandler(
-        this IServiceCollection services,
-        Func<IServiceProvider, TransactionCommandHandler> transactionHandlerBuilder)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(transactionHandlerBuilder);
-
-        services.TryAddScoped(transactionHandlerBuilder);
 
         return services;
     }

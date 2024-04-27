@@ -82,6 +82,69 @@ public static class ServiceCollectionAggregateExtensions
     }
 
     /// <summary>
+    /// Registers the default transactional aggregagte to the 
+    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
+    /// type implementation, that adds transaction behavior to aggregate store. 
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXAggregateStoreTransactional(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddXAggregateStoreTransactional(
+                typeof(AggregateStoreTransactional<,>));
+    }
+
+    /// <summary>
+    /// Registers the specified transactional aggregate to the 
+    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
+    /// type implementation, that adds transaction behavior to aggregate store. 
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="transactionalType">The transactional type.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXAggregateStoreTransactional(
+        this IServiceCollection services,
+        Type transactionalType)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.AddScoped(
+                typeof(IAggregateStoreTransactional<,>),
+                transactionalType);
+    }
+
+    /// <summary>
+    /// Registers the implementation 
+    /// <typeparamref name="TAggregateTransactional"/> for
+    /// <see cref="IAggregateTransactional"/> type 
+    /// to the services with scope life time.
+    /// </summary>
+    /// <typeparam name="TAggregateTransactional">The type of that
+    /// implements <see cref="IAggregateTransactional"/>.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXAggregateTransactional
+        <TAggregateTransactional>(
+        this IServiceCollection services)
+        where TAggregateTransactional : class, IAggregateTransactional
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddScoped<IAggregateTransactional, TAggregateTransactional>();
+    }
+
+    /// <summary>
     /// Registers the implementation as <see cref="IDomainEventStore"/> 
     /// to the services with scope life time.
     /// </summary>
@@ -172,7 +235,7 @@ public static class ServiceCollectionAggregateExtensions
     }
 
     /// <summary>
-    /// Adds the snapShot decorator to the 
+    /// Adds the default snapShot decorator to the 
     /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
     /// type implementation, that adds snapShot behavior to aggregate store. 
     /// You may need to define the <see cref="SnapShotOptions"/> 
@@ -189,7 +252,31 @@ public static class ServiceCollectionAggregateExtensions
 
         return services.XTryDecorate(
                 typeof(IAggregateStore<,>),
-                typeof(AggregatetStoreSnapShotDecorator<,>),
+                typeof(AggregateStoreSnapShotDecorator<,>),
+                typeof(IOriginator));
+    }
+
+    /// <summary>
+    /// Adds the specified snapShot decorator to the 
+    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
+    /// type implementation, that adds snapShot behavior to aggregate store. 
+    /// You may need to define the <see cref="SnapShotOptions"/> 
+    /// in the configuration file.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="decoratorType">The type of the decorator.
+    /// Must be generic.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXSnapshotDecorator(
+        this IServiceCollection services, Type decoratorType)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.XTryDecorate(
+                typeof(IAggregateStore<,>),
+                decoratorType,
                 typeof(IOriginator));
     }
 
@@ -205,7 +292,8 @@ public static class ServiceCollectionAggregateExtensions
     /// <param name="implementationHandlerFactory">The factory that creates the 
     /// domain event handler.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
     public static IServiceCollection AddXDomainEventHandler
         <TDomainEvent, TAggregateId, TDomainEventHandler>(
         this IServiceCollection services,

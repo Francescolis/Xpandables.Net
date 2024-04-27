@@ -15,8 +15,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.SnapShots;
-using Xpandables.Net.Commands.Decorators;
+using Xpandables.Net.Commands;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Visitors;
@@ -89,18 +90,32 @@ public sealed record class CommandOptions
     /// Enables transaction behavior to commands that are decorated 
     /// with the <see cref="ITransactionDecorator"/> interface.
     /// You must register a definition for
-    /// <see cref="TransactionCommandHandler"/> 
+    /// <see cref="ICommandTransactional"/>
     /// that provides with the transactional behavior.
     /// </summary>
-    public CommandOptions UseTransaction()
+    public CommandOptions UseTransactionCommand()
     {
-        IsTransactionEnabled = true;
+        IsTransactionCommandEnabled = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Enables transaction behavior to aggregates that are decorated 
+    /// with the <see cref="ITransactionDecorator"/> interface.
+    /// You must register a definition for
+    /// <see cref="IAggregateTransactional"/>
+    /// that provides with the transactional behavior.
+    /// </summary>
+    public CommandOptions UseTransactionAggregate()
+    {
+        IsTransactionAggregateEnabled = true;
         return this;
     }
 
     internal bool IsValidatorEnabled { get; private set; }
     internal bool IsVisitorEnabled { get; private set; }
-    internal bool IsTransactionEnabled { get; private set; }
+    internal bool IsTransactionCommandEnabled { get; private set; }
+    internal bool IsTransactionAggregateEnabled { get; private set; }
     internal bool IsPersistenceEnabled { get; private set; }
     internal bool IsOperationFinalizerEnabled { get; private set; }
     internal bool IsSnapShotEnabled { get; private set; }

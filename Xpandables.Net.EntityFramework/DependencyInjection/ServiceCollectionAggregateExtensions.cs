@@ -55,6 +55,24 @@ public static class ServiceCollectionAggregateExtensions
     }
 
     /// <summary>
+    /// Registers the default implementation of
+    /// <see cref="IAggregateTransactional"/> type 
+    /// to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXAggregateTransactional(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.AddXAggregateTransactional<AggregateTransactional>();
+    }
+
+
+    /// <summary>
     /// Registers the default implementation as <see cref="IDomainEventStore"/> to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>

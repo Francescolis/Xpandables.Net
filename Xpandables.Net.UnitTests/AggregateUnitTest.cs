@@ -31,6 +31,7 @@ using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Primitives.Converters;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Transactions;
 
 namespace Xpandables.Net.UnitTests;
 public sealed class AggregateUnitTest
@@ -40,7 +41,7 @@ public sealed class AggregateUnitTest
     public async Task CreatePersonAndBeContactAsync(
         string firstName, string lastName)
     {
-        IServiceProvider serviceProvider = new ServiceCollection()
+        IServiceCollection serviceDescriptors = new ServiceCollection()
             .AddLogging()
             .AddXCommandQueryHandlers(options =>
                 options
@@ -49,12 +50,21 @@ public sealed class AggregateUnitTest
             .AddXDispatcher()
             .AddXPersistenceCommandHandler()
             .AddXAggregateStore()
+            .AddXAggregateTransactional<PersonTransactional>()
+            .AddXCommandOptions(options => options.UseTransactionAggregate())
             .AddXOperationResultFinalizer()
             .AddXDomainEventPublisher()
             .AddXNotificationPublisher()
             .AddXDomainEventStore<EventStoreTest>()
-            .AddXNotificationStore<NotificationStoreText>()
-            .BuildServiceProvider();
+            .AddXNotificationStore<NotificationStoreText>();
+
+        IServiceProvider serviceProvider = serviceDescriptors
+            .BuildServiceProvider(
+            new ServiceProviderOptions
+            {
+                ValidateOnBuild = false,
+                ValidateScopes = false
+            });
 
         // person id
         Guid personId = Guid.NewGuid();
@@ -230,7 +240,7 @@ public readonly record struct CreatePersonRequestCommand(
     Guid Id, string FirstName, string LastName)
     : ICommand, IPersistenceDecorator, IOperationFinalizerDecorator;
 public sealed class CreatePersonRequestCommandHandler(
-    IAggregateStore<Person, PersonId> aggregateStore,
+    IAggregateStoreTransactional<Person, PersonId> aggregateStore,
     IOperationFinalizer resultContext) :
     ICommandHandler<CreatePersonRequestCommand>
 {
@@ -268,19 +278,20 @@ public sealed class CreatePersonRequestCommandHandler(
                 _ => op
             };
 
-        await _aggregateStore
+        return await _aggregateStore
             .AppendAsync(person, cancellationToken)
-            .ConfigureAwait(false);
-        return OperationResults.Ok().Build();
+            .ConfigureAwait(false) is { IsFailure: true } failureOperation
+            ? failureOperation
+            : OperationResults.Ok().Build();
     }
 }
 
 public readonly record struct SendContactRequestCommand(
     Guid SenderId, Guid ReceiverId) :
-    ICommand, IPersistenceDecorator;
+    ICommand;
 
 public sealed class SendContactRequestCommandHandler
-    (IAggregateStore<Person, PersonId> aggregateStore) :
+    (IAggregateStoreTransactional<Person, PersonId> aggregateStore) :
     ICommandHandler<SendContactRequestCommand>
 {
     public async ValueTask<IOperationResult> HandleAsync(
@@ -306,11 +317,11 @@ public sealed class SendContactRequestCommandHandler
         if (operationContact.IsFailure)
             return operationContact;
 
-        await aggregateStore
+        return await aggregateStore
             .AppendAsync(personResult.Result, cancellationToken)
-            .ConfigureAwait(false);
-
-        return OperationResults.Ok().Build();
+            .ConfigureAwait(false) is { IsFailure: true } failureOperation
+            ? failureOperation
+            : OperationResults.Ok().Build();
     }
 }
 
@@ -404,7 +415,7 @@ public sealed record ContactRequestSentNotification(
     string SenderName,
     Guid ReceiverId) : Notification;
 
-public sealed class Person : Aggregate<PersonId>
+public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
 {
     public string FirstName { get; private set; } = default!;
     public string LastName { get; private set; } = default!;
@@ -444,5 +455,21 @@ public sealed class Person : Aggregate<PersonId>
 
         On<ContactRequestSentDomainEvent>(@event
             => _contactIds.Add(@event.ContactId));
+    }
+}
+
+public sealed class PersonTransactional :
+    Transactional, IAggregateTransactional
+{
+    protected override ValueTask BeginTransactionAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return ValueTask.CompletedTask;
+    }
+
+    protected override ValueTask CompleteTransactionAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return ValueTask.CompletedTask;
     }
 }
