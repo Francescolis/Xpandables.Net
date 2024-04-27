@@ -15,8 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -75,48 +73,21 @@ public sealed record class CommandOptions
     }
 
     /// <summary>
-    /// Enables snapshot behavior to aggregate that are decorated with the
-    /// <see cref="IOriginator"/> interface.
-    /// </summary>
-    /// <remarks> You may need to define the <see cref="SnapShotOptions"/> 
-    /// in the configuration file.</remarks>
-    public CommandOptions UseSnapShot()
-    {
-        IsSnapShotEnabled = true;
-        return this;
-    }
-
-    /// <summary>
     /// Enables transaction behavior to commands that are decorated 
     /// with the <see cref="ITransactionDecorator"/> interface.
     /// You must register a definition for
     /// <see cref="ICommandTransactional"/>
     /// that provides with the transactional behavior.
     /// </summary>
-    public CommandOptions UseTransactionCommand()
+    public CommandOptions UseTransaction()
     {
-        IsTransactionCommandEnabled = true;
-        return this;
-    }
-
-    /// <summary>
-    /// Enables transaction behavior to aggregates that are decorated 
-    /// with the <see cref="ITransactionDecorator"/> interface.
-    /// You must register a definition for
-    /// <see cref="IAggregateTransactional"/>
-    /// that provides with the transactional behavior.
-    /// </summary>
-    public CommandOptions UseTransactionAggregate()
-    {
-        IsTransactionAggregateEnabled = true;
+        IsTransactionEnabled = true;
         return this;
     }
 
     internal bool IsValidatorEnabled { get; private set; }
     internal bool IsVisitorEnabled { get; private set; }
-    internal bool IsTransactionCommandEnabled { get; private set; }
-    internal bool IsTransactionAggregateEnabled { get; private set; }
+    internal bool IsTransactionEnabled { get; private set; }
     internal bool IsPersistenceEnabled { get; private set; }
     internal bool IsOperationFinalizerEnabled { get; private set; }
-    internal bool IsSnapShotEnabled { get; private set; }
 }

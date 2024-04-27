@@ -407,7 +407,7 @@ public static class ServiceCollectionCommandQueriesExtensions
             _ = services.AddXPersistenceCommandDecorator();
         }
 
-        if (definedOptions.IsTransactionCommandEnabled)
+        if (definedOptions.IsTransactionEnabled)
         {
             _ = services.AddXTransactionCommandDecorator();
         }
@@ -426,17 +426,6 @@ public static class ServiceCollectionCommandQueriesExtensions
         {
             _ = services.AddXOperationFinalizerDecorator();
         }
-
-        if (definedOptions.IsSnapShotEnabled)
-        {
-            _ = services.AddXSnapshotDecorator();
-        }
-
-        if (definedOptions.IsTransactionAggregateEnabled)
-        {
-            _ = services.AddXAggregateStoreTransactional();
-        }
-
 
         return services;
     }

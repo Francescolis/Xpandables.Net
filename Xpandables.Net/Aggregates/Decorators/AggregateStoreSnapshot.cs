@@ -21,16 +21,17 @@ using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Transactions;
 
 namespace Xpandables.Net.Aggregates.Decorators;
 
-internal sealed class AggregateStoreSnapShotDecorator<TAggregate, TAggregateId>(
+internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
     IAggregateStore<TAggregate, TAggregateId> decoratee,
+    IAggregateTransactional transactional,
     IDomainEventStore eventStore,
     ISnapShotStore snapShotStore,
     IOptions<SnapShotOptions> snapShotOptions)
-    : IAggregateStore<TAggregate, TAggregateId>, IDecorator
+    : IAggregateStoreSnapshot<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>, IOriginator
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
@@ -38,11 +39,19 @@ internal sealed class AggregateStoreSnapShotDecorator<TAggregate, TAggregateId>(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
-        if (snapShotOptions.Value.IsOn
-            && aggregate.Version % snapShotOptions.Value.Frequency == 0
-            && aggregate.Version >= snapShotOptions.Value.Frequency)
+        ArgumentNullException.ThrowIfNull(aggregate);
+
+        try
         {
-            try
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+            await using ITransactional disposable = await transactional
+                .TransactionAsync(cancellationToken)
+                .ConfigureAwait(false);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
+            if (snapShotOptions.Value.IsOn
+                && aggregate.Version % snapShotOptions.Value.Frequency == 0
+                && aggregate.Version >= snapShotOptions.Value.Frequency)
             {
                 SnapShotDescriptor descriptor = new(
                     aggregate,
@@ -52,19 +61,25 @@ internal sealed class AggregateStoreSnapShotDecorator<TAggregate, TAggregateId>(
                 await snapShotStore.AppendAsync(descriptor, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception exception)
-                when (exception is not ArgumentNullException)
-            {
-                return OperationResults
-                    .InternalError()
-                    .WithException(exception)
-                    .Build();
-            }
-        }
 
-        return await decoratee
-            .AppendAsync(aggregate, cancellationToken)
-            .ConfigureAwait(false);
+            disposable.Result = await decoratee
+              .AppendAsync(aggregate, cancellationToken)
+              .ConfigureAwait(false);
+
+            return disposable.Result;
+        }
+        catch (OperationResultException operationEx)
+        {
+            return operationEx.Operation;
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
+        {
+            return OperationResults
+                .InternalError()
+                .WithException(exception)
+                .Build();
+        }
     }
 
     public async ValueTask<IOperationResult<TAggregate>> ReadAsync(

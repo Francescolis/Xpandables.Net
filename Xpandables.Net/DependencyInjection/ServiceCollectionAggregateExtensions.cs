@@ -122,6 +122,50 @@ public static class ServiceCollectionAggregateExtensions
     }
 
     /// <summary>
+    /// Registers the default snapShot to the 
+    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
+    /// type implementation, that adds snapShot behavior to aggregate store. 
+    /// You may need to define the <see cref="SnapShotOptions"/> 
+    /// in the configuration file.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXAggregateStoreSnapshot(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddXAggregateStoreSnapshot(
+                typeof(AggregateStoreSnapshot<,>));
+    }
+
+    /// <summary>
+    /// Registers the specified snapShot to the 
+    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
+    /// type implementation, that adds snapShot behavior to aggregate store. 
+    /// You may need to define the <see cref="SnapShotOptions"/> 
+    /// in the configuration file.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="snapshotType">The snapshot type.
+    /// Must be generic.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXAggregateStoreSnapshot(
+        this IServiceCollection services, Type snapshotType)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddScoped(typeof(IAggregateStoreSnapshot<,>), snapshotType);
+    }
+
+
+    /// <summary>
     /// Registers the implementation 
     /// <typeparamref name="TAggregateTransactional"/> for
     /// <see cref="IAggregateTransactional"/> type 
@@ -232,52 +276,6 @@ public static class ServiceCollectionAggregateExtensions
                 ServiceLifetime.Scoped));
 
         return services;
-    }
-
-    /// <summary>
-    /// Adds the default snapShot decorator to the 
-    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
-    /// type implementation, that adds snapShot behavior to aggregate store. 
-    /// You may need to define the <see cref="SnapShotOptions"/> 
-    /// in the configuration file.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXSnapshotDecorator(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.XTryDecorate(
-                typeof(IAggregateStore<,>),
-                typeof(AggregateStoreSnapShotDecorator<,>),
-                typeof(IOriginator));
-    }
-
-    /// <summary>
-    /// Adds the specified snapShot decorator to the 
-    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
-    /// type implementation, that adds snapShot behavior to aggregate store. 
-    /// You may need to define the <see cref="SnapShotOptions"/> 
-    /// in the configuration file.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <param name="decoratorType">The type of the decorator.
-    /// Must be generic.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXSnapshotDecorator(
-        this IServiceCollection services, Type decoratorType)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.XTryDecorate(
-                typeof(IAggregateStore<,>),
-                decoratorType,
-                typeof(IOriginator));
     }
 
     /// <summary>
