@@ -21,13 +21,13 @@
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-		<PackageReleaseNotes>Add Notifications</PackageReleaseNotes>
+		<PackageReleaseNotes>Add Transacional</PackageReleaseNotes>
 		<PackageOutputPath>D:\fewan\source\nugets\</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>8.0.4</Version>
-		<AssemblyVersion>8.0.4</AssemblyVersion>
-		<FileVersion>8.0.4</FileVersion>
-		<PackageVersion>8.0.4</PackageVersion>
+		<Version>8.0.5</Version>
+		<AssemblyVersion>8.0.5</AssemblyVersion>
+		<FileVersion>8.0.5</FileVersion>
+		<PackageVersion>8.0.5</PackageVersion>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
