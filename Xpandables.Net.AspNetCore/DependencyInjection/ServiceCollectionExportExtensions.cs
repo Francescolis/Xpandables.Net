@@ -38,7 +38,8 @@ public static class ServiceCollectionExportExtensions
     /// <paramref name="application"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    public static WebApplication UseXServiceExport(this WebApplication application)
+    public static WebApplication UseXServiceExport(
+        this WebApplication application)
     {
         ArgumentNullException.ThrowIfNull(application);
 

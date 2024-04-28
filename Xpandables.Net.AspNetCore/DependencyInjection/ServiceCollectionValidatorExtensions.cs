@@ -29,52 +29,68 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionValidatorExtensions
 {
     /// <summary>
-    /// Registers the operation result request validator response builder.
+    /// Registers the operation result request validator.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-    /// <typeparam name="TOperationResultRequestValidator">The type of the operation result request validator.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the 
+    /// service to.</param>
+    /// <typeparam name="TOperationResultRequestValidator">The type of the 
+    /// operation result request validator.</typeparam>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXOperationResultRequestValidator<TOperationResultRequestValidator>(
+    public static IServiceCollection AddXOperationResultRequestValidator
+        <TOperationResultRequestValidator>(
         this IServiceCollection services)
-        where TOperationResultRequestValidator : class, IOperationResultRequestValidator
+        where TOperationResultRequestValidator :
+        class, IOperationResultRequestValidator
     {
         ArgumentNullException.ThrowIfNull(services);
 
         return services
-            .AddScoped<IOperationResultRequestValidator, TOperationResultRequestValidator>();
+            .AddScoped<IOperationResultRequestValidator,
+            TOperationResultRequestValidator>();
     }
 
     /// <summary>
     /// Registers the default operation result request validator response builder.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the 
+    /// service to.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     public static IServiceCollection AddXOperationResultRequestValidator(
         this IServiceCollection services)
         => services
-            .AddXOperationResultRequestValidator<OperationResultRequestValidator>();
+            .AddXOperationResultRequestValidator
+        <OperationResultRequestValidator>();
 
     /// <summary>
-    /// Applies the validation filter factory to the request of the target route(s).
+    /// Applies the validation filter factory to the request of the target 
+    /// route(s).
     /// </summary>
-    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to 
+    /// add the filter to.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
-    public static TBuilder WithXValidatorFilterFactory<TBuilder>(this TBuilder builder)
+    public static TBuilder WithXValidatorFilterFactory<TBuilder>(
+        this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
-        _ = builder.AddEndpointFilterFactory(OperationResultValidatorFilterFactory.MinimalFilterFactory);
+        _ = builder.AddEndpointFilterFactory(
+            OperationResultValidatorFilterFactory.MinimalFilterFactory);
 
         return builder;
     }
 
     /// <summary>
-    /// Applies the validation filter factory to the request of the target route(s) according to the predicate.
+    /// Applies the validation filter factory to the request of the target 
+    /// route(s) according to the predicate.
     /// </summary>
-    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
-    /// <param name="predicate">The predicate that a request must match in order to be validated.</param>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to 
+    /// add the filter to.</param>
+    /// <param name="predicate">The predicate that a request must match in order 
+    /// to be validated.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
-    public static TBuilder WithXValidatorFilterFactory<TBuilder>(this TBuilder builder, Predicate<Type> predicate)
+    public static TBuilder WithXValidatorFilterFactory<TBuilder>(
+        this TBuilder builder,
+        Predicate<Type> predicate)
         where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -88,28 +104,38 @@ public static class ServiceCollectionValidatorExtensions
     /// <summary>
     /// Applies the validation filter to the request of the target route(s).
     /// </summary>
-    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> 
+    /// to add the filter to.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
-    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with 
+    /// <remarks>To be applied on many routes, please use 
+    /// <see langword="MapGroup"/> with 
     /// empty prefix (<see cref="string.Empty"/>).</remarks>
-    public static TBuilder WithXValidatorFilter<TBuilder>(this TBuilder builder)
+    public static TBuilder WithXValidatorFilter<TBuilder>(
+        this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
-        _ = builder.AddEndpointFilter(new OperationResultValidatorFilter().InvokeAsync);
+        _ = builder.AddEndpointFilter(
+            new OperationResultValidatorFilter().InvokeAsync);
 
         return builder;
     }
 
     /// <summary>
-    /// Applies the validation process to the request of the target route(s) according to the predicate.
+    /// Applies the validation process to the request of the target route(s) 
+    /// according to the predicate.
     /// </summary>
-    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the filter to.</param>
-    /// <param name="predicate">The predicate that a request must match in order to be validated.</param>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to 
+    /// add the filter to.</param>
+    /// <param name="predicate">The predicate that a request must match in order 
+    /// to be validated.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
-    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix 
+    /// <remarks>To be applied on many routes, please use 
+    /// <see langword="MapGroup"/> with empty prefix 
     /// (<see cref="string.Empty"/>).</remarks>
-    public static TBuilder WithXValidatorFilter<TBuilder>(this TBuilder builder, Predicate<Type> predicate)
+    public static TBuilder WithXValidatorFilter<TBuilder>(
+        this TBuilder builder,
+        Predicate<Type> predicate)
         where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
