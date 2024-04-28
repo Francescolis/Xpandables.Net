@@ -31,7 +31,7 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionDomainExtensions
 {
     internal readonly static MethodInfo AddDomainEventHandlerMethod =
-        typeof(ServiceCollectionAggregateExtensions)
+        typeof(ServiceCollectionDomainExtensions)
         .GetMethod(nameof(AddXDomainEventHandler))!;
 
     /// <summary>

@@ -28,8 +28,8 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Primitives.Converters;
+using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Transactions;
 
 namespace Xpandables.Net.UnitTests;
 public sealed class AggregateUnitTest
@@ -45,14 +45,15 @@ public sealed class AggregateUnitTest
                 options
                 .UsePersistence()
                 .UseOperationFinalizer())
+            .AddXDomainEventHandlers()
             .AddXDispatcher()
             .AddXPersistenceCommandHandler()
             .AddXAggregateStore()
-            .AddXAggregateStoreTransactional()
-            .AddXAggregateTransactional<PersonTransactional>()
+            .AddXUnitOfWorkAggregate<PersonUnitOfWork>()
             .AddXOperationResultFinalizer()
             .AddXDomainEventPublisher()
             .AddXNotificationPublisher()
+            .AddXEventDomainDuplicateDecorator()
             .AddXDomainEventStore<EventStoreTest>()
             .AddXNotificationStore<NotificationStoreText>();
 
@@ -125,7 +126,7 @@ public sealed class AggregateUnitTest
 
         contactResult.StatusCode
             .Should()
-            .Be(System.Net.HttpStatusCode.BadRequest);
+            .Be(System.Net.HttpStatusCode.Conflict);
 
         contactResult.IsSuccess
             .Should()
@@ -231,14 +232,37 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore
         CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(filter);
+
+        IQueryable<IEventDomain<TAggregateId>> query = _store.Values
+            .SelectMany(x => x)
+            .ToList()
+            .OfType<IEventDomain<TAggregateId>>()
+            .AsQueryable();
+
+        if (filter.EventTypeName is not null)
+            query = query.Where(e => e.GetType().Name == filter.EventTypeName);
+
+        if (filter.AggregateIdTypeName is not null)
+            query = query.Where(e => typeof(TAggregateId).Name == filter.AggregateIdTypeName);
+
+        if (filter.DataCriteria is not null)
+        {
+            Func<System.Text.Json.JsonDocument, bool> dataCriteria = filter.DataCriteria.Compile();
+            query = query.Where(e => e.ToJsonDocument(JsonSerializerDefaultOptions.OptionPropertyNameCaseInsensitiveTrue, default), j => dataCriteria(j));
+        }
+
+        return query
+            .Select(s => s)
+            .OfType<IEventDomain<TAggregateId>>()
+            .ToAsyncEnumerable();
     }
 }
 public readonly record struct CreatePersonRequestCommand(
     Guid Id, string FirstName, string LastName)
     : ICommand, IPersistenceDecorator, IOperationFinalizerDecorator;
 public sealed class CreatePersonRequestCommandHandler(
-    IAggregateStoreTransactional<Person, PersonId> aggregateStore,
+    IAggregateStore<Person, PersonId> aggregateStore,
     IOperationFinalizer resultContext) :
     ICommandHandler<CreatePersonRequestCommand>
 {
@@ -289,7 +313,7 @@ public readonly record struct SendContactRequestCommand(
     ICommand;
 
 public sealed class SendContactRequestCommandHandler
-    (IAggregateStoreTransactional<Person, PersonId> aggregateStore) :
+    (IAggregateStore<Person, PersonId> aggregateStore) :
     ICommandHandler<SendContactRequestCommand>
 {
     public async ValueTask<IOperationResult> HandleAsync(
@@ -371,7 +395,8 @@ public readonly record struct PersonId(Guid Value) : IAggregateId<PersonId>
 [PrimitiveJsonConverter]
 public readonly record struct ContactId(Guid Value) : IPrimitive<Guid>;
 
-public sealed record PersonCreatedDomainEvent : DomainEvent<Person, PersonId>
+public sealed record PersonCreatedDomainEvent :
+    DomainEvent<Person, PersonId>, IEventDomainDuplicate
 {
     [JsonConstructor]
     private PersonCreatedDomainEvent() { }
@@ -385,10 +410,33 @@ public sealed record PersonCreatedDomainEvent : DomainEvent<Person, PersonId>
 
     public string FirstName { get; init; } = default!;
     public string LastName { get; init; } = default!;
+
+    [JsonIgnore]
+    public IEventFilter? Filter => new EventFilter
+    {
+        EventTypeName = nameof(PersonCreatedDomainEvent),
+        AggregateIdTypeName = nameof(PersonId),
+        Pagination = Pagination.With(0, 1),
+        DataCriteria = x
+            => x.RootElement
+                    .GetProperty(nameof(FirstName))
+                    .GetString() == FirstName ||
+                x.RootElement
+                .GetProperty(nameof(LastName))
+                    .GetString() == LastName
+
+    };
+
+    [JsonIgnore]
+    public IOperationResult OnFailure => OperationResults
+            .Conflict()
+            .WithError(nameof(FirstName), "Duplicate found")
+            .WithError(nameof(LastName), "Duplicate found")
+            .Build();
 }
 
 public sealed record ContactRequestSentDomainEvent :
-    DomainEvent<Person, PersonId>
+    DomainEvent<Person, PersonId>, IEventDomainDuplicate
 {
     private ContactRequestSentDomainEvent() { }
 
@@ -401,6 +449,29 @@ public sealed record ContactRequestSentDomainEvent :
 
     public string FullName { get; init; } = default!;
     public ContactId ContactId { get; init; } = default!;
+
+    [JsonIgnore]
+    public IEventFilter? Filter => new EventFilter
+    {
+        EventTypeName = nameof(PersonCreatedDomainEvent),
+        AggregateIdTypeName = nameof(PersonId),
+        Pagination = Pagination.With(0, 1),
+        DataCriteria = x
+            => x.RootElement
+                    .GetProperty(nameof(FullName))
+                    .GetString() == FullName ||
+                x.RootElement
+                .GetProperty(nameof(ContactId))
+                    .GetGuid() == ContactId.Value
+
+    };
+
+    [JsonIgnore]
+    public IOperationResult OnFailure => OperationResults
+            .Conflict()
+            .WithError(nameof(FullName), "Duplicate found")
+            .WithError(nameof(ContactId), "Duplicate found")
+            .Build();
 }
 
 public sealed record PersonCreatedNotification(
@@ -429,11 +500,11 @@ public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
 
     public IOperationResult BeContact(ContactId contactId)
     {
-        if (_contactIds.Contains(contactId))
-            return OperationResults
-                .BadRequest()
-                .WithError(nameof(ContactId), "The contact already exist.")
-                .Build();
+        //if (_contactIds.Contains(contactId))
+        //    return OperationResults
+        //        .BadRequest()
+        //        .WithError(nameof(ContactId), "The contact already exist.")
+        //        .Build();
 
         ContactRequestSentDomainEvent @event = new(this, contactId);
         PushEvent(@event);
@@ -456,18 +527,25 @@ public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
     }
 }
 
-public sealed class PersonTransactional :
-    Transactional, IAggregateTransactional
+public sealed class PersonUnitOfWork : Disposable, IUnitOfWork
 {
-    protected override ValueTask BeginTransactionAsync(
-        CancellationToken cancellationToken = default)
+    public ValueTask<int> PersistAsync(CancellationToken cancellationToken = default)
     {
-        return ValueTask.CompletedTask;
+        return ValueTask.FromResult(0);
     }
 
-    protected override ValueTask CompleteTransactionAsync(
-        CancellationToken cancellationToken = default)
+    IRepository<TEntity> IUnitOfWork.GetRepository<TEntity>()
     {
-        return ValueTask.CompletedTask;
+        throw new NotImplementedException();
+    }
+
+    IRepositoryRead<TEntity> IUnitOfWork.GetRepositoryRead<TEntity>()
+    {
+        throw new NotImplementedException();
+    }
+
+    IRepositoryWrite<TEntity> IUnitOfWork.GetRepositoryWrite<TEntity>()
+    {
+        throw new NotImplementedException();
     }
 }

@@ -27,7 +27,11 @@ public static class JsonSerializerDefaultOptions
 {
     /// <inheritdoc/>
     public static JsonSerializerOptions OptionPropertyNameCaseInsensitiveTrue
-        => new() { PropertyNameCaseInsensitive = true };
+        => new()
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = null
+        };
 
     /// <inheritdoc/>
     public static JsonSerializerOptions OptionDefaultWeb

@@ -95,7 +95,6 @@ public static class ServiceCollectionRepositoryExtensions
         => services
             .AddKeyedScoped<IUnitOfWork, UnitOfWork<TDataContext>>(serviceKey);
 
-
     /// <summary>
     /// Registers the default generic <see cref="IUnitOfWork{TDataContext}"/>
     /// implementation to the services with scope life time.

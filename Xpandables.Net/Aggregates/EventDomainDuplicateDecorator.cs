@@ -14,9 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Linq.Expressions;
-using System.Text.Json;
-
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
@@ -28,9 +25,9 @@ namespace Xpandables.Net.Aggregates;
 public interface IEventDomainDuplicate
 {
     /// <summary>
-    /// Gets the criteria to check for duplicate domain events.
+    /// Gets the filter to check for duplicate domain events.
     /// </summary>
-    Expression<Func<JsonDocument, bool>>? Criteria { get; }
+    IEventFilter? Filter { get; }
 
     /// <summary>
     /// Gets the operation result to return when the domain event is duplicated.
@@ -48,7 +45,7 @@ public interface IEventDomainDuplicate
 public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
     IDomainEventStore eventStore,
     IDomainEventHandler<TEventDomain, TAggragateId> decoratee) :
-    IDomainEventHandler<TEventDomain, TAggragateId>
+    IDomainEventHandler<TEventDomain, TAggragateId>, IDecorator
     where TEventDomain : notnull, IEventDomain<TAggragateId>, IEventDomainDuplicate
     where TAggragateId : struct, IAggregateId<TAggragateId>
 {
@@ -63,10 +60,17 @@ public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
     {
         IEventFilter eventFilter = new EventFilter()
         {
-            AggregateIdTypeName = typeof(TAggragateId).Name,
-            EventTypeName = @event.GetType().Name,
-            Pagination = Pagination.With(0, 1),
-            DataCriteria = @event.Criteria
+            AggregateIdTypeName = @event.Filter?.AggregateIdTypeName,
+            EventTypeName = @event.Filter?.EventTypeName,
+            Pagination = @event.Filter?.Pagination ?? Pagination.With(0, 1),
+            DataCriteria = @event.Filter?.DataCriteria,
+            AggregateId = @event.Filter?.AggregateId.GetValueOrDefault(),
+            FromCreatedOn = @event.Filter?.FromCreatedOn.GetValueOrDefault(),
+            ToCreatedOn = @event.Filter?.ToCreatedOn.GetValueOrDefault(),
+            Id = @event.Filter?.Id,
+            OnError = @event.Filter?.OnError,
+            Status = @event.Filter?.Status,
+            Version = @event.Filter?.Version
         };
 
         return eventStore
