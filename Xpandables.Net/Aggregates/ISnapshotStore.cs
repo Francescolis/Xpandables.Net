@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Operations;
-
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
@@ -30,10 +28,10 @@ public interface ISnapshotStore
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="event"/> is null.</exception>   
-    /// <returns>A task that represents an 
-    /// <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> AppendAsync(
+    /// <paramref name="event"/> is null.</exception>
+    /// <returns>A value that represents an asynchronous 
+    /// operation.</returns>
+    ValueTask AppendAsync(
        IEventSnapshot @event,
        CancellationToken cancellationToken = default);
 
@@ -45,9 +43,9 @@ public interface ISnapshotStore
     /// for.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <returns>A task that represents an 
-    /// <see cref="IOperationResult{TResult}"/>.</returns>
-    ValueTask<IOperationResult<IEventSnapshot>> ReadAsync(
+    /// <returns>A value that represents an asynchronous operation
+    /// that returns the snapshot.</returns>
+    ValueTask<IEventSnapshot?> ReadAsync(
         Guid objectId,
         CancellationToken cancellationToken = default);
 }

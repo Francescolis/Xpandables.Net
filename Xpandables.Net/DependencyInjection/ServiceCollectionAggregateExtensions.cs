@@ -19,7 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Decorators;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -74,46 +73,6 @@ public static class ServiceCollectionAggregateExtensions
     }
 
     /// <summary>
-    /// Registers the default transactional aggregagte to the 
-    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
-    /// type implementation, that adds transaction behavior to aggregate store. 
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXAggregateStoreTransactional(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services
-            .AddXAggregateStoreTransactional(
-                typeof(AggregateStoreTransactional<,>));
-    }
-
-    /// <summary>
-    /// Registers the specified transactional aggregate to the 
-    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
-    /// type implementation, that adds transaction behavior to aggregate store. 
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <param name="transactionalType">The transactional type.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXAggregateStoreTransactional(
-        this IServiceCollection services,
-        Type transactionalType)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.AddScoped(
-                typeof(IAggregateStoreTransactional<,>),
-                transactionalType);
-    }
-
-    /// <summary>
     /// Registers the default snapShot to the 
     /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
     /// type implementation, that adds snapShot behavior to aggregate store. 
@@ -154,29 +113,5 @@ public static class ServiceCollectionAggregateExtensions
 
         return services
             .AddScoped(typeof(IAggregateStoreSnapshot<,>), snapshotType);
-    }
-
-
-    /// <summary>
-    /// Registers the implementation 
-    /// <typeparamref name="TAggregateTransactional"/> for
-    /// <see cref="IAggregateTransactional"/> type 
-    /// to the services with scope life time.
-    /// </summary>
-    /// <typeparam name="TAggregateTransactional">The type of that
-    /// implements <see cref="IAggregateTransactional"/>.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
-    /// is null.</exception>
-    public static IServiceCollection AddXAggregateTransactional
-        <TAggregateTransactional>(
-        this IServiceCollection services)
-        where TAggregateTransactional : class, IAggregateTransactional
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services
-            .AddScoped<IAggregateTransactional, TAggregateTransactional>();
     }
 }

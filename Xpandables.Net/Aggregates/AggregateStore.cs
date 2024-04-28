@@ -15,8 +15,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.DependencyInjection;
+
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.I18n;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -30,11 +33,13 @@ namespace Xpandables.Net.Aggregates;
 /// </remarks>
 /// <param name="eventPublisher">The event publisher to use.</param>
 /// <param name="eventStore">The event store to use.</param>
+/// <param name="unitOfWork">The unit of work to use.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="eventPublisher"/> 
 /// or <paramref name="eventStore"/> is null.</exception>"
 public sealed class AggregateStore<TAggregate, TAggregateId>(
     IDomainEventStore eventStore,
-    IDomainEventPublisher<TAggregateId> eventPublisher)
+    IDomainEventPublisher<TAggregateId> eventPublisher,
+    [FromKeyedServices(EventOptions.UnitOfWorkKey)] IUnitOfWork unitOfWork)
     : IAggregateStore<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
@@ -62,6 +67,10 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
 
                     return operationResult;
             }
+
+            _ = await unitOfWork
+                .PersistAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             aggregate.MarkEventsAsCommitted();
 

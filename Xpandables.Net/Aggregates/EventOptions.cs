@@ -24,6 +24,12 @@ namespace Xpandables.Net.Aggregates;
 public sealed record EventOptions
 {
     /// <summary>
+    /// Gets the key to use to store the aggregate unit of work in the
+    /// service collection.
+    /// </summary>
+    public const string UnitOfWorkKey = nameof(IAggregate);
+
+    /// <summary>
     /// Gets the list of user-defined converters that were registered.
     /// </summary>
     public IList<EventConverter> Converters { get; }

@@ -15,9 +15,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
@@ -29,57 +29,27 @@ namespace Xpandables.Net.Aggregates;
 /// Represents a snapshot store that stores the snapshot of the aggregate.
 /// </summary>
 /// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
-/// <param name="repository">The repository to use.</param>
+/// <param name="unitOfWork">The unit of work to use.</param>
 /// <param name="options">The event configuration options to use.</param>
 public sealed class SnapshotStore<TEventEntity>(
-    IRepository<TEventEntity> repository,
+    [FromKeyedServices(EventOptions.UnitOfWorkKey)] IUnitOfWork unitOfWork,
     IOptions<EventOptions> options) :
-    Disposable, ISnapshotStore
+    EventStore<TEventEntity>(unitOfWork, options), ISnapshotStore
     where TEventEntity : class, IEventEntitySnapshot
 {
-    private IDisposable[] _disposables = [];
-
     ///<inheritdoc/>
-    public async ValueTask<IOperationResult> AppendAsync(
+    public async ValueTask AppendAsync(
         IEventSnapshot @event,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        try
-        {
-            EventConverter<TEventEntity> converter = options.Value
-              .Converters
-              .FirstOrDefault(x => x.CanConvert(@event.GetType()))
-              .As<EventConverter<TEventEntity>>()
-              ?? throw new InvalidOperationException(
-                  I18nXpandables.AggregateFailedToFindConverter
-                      .StringFormat(
-                          @event.GetType().GetNameWithoutGenericArity()));
-
-            TEventEntity entity = converter
-                .ConvertTo(@event, options.Value.SerializerOptions);
-
-            Array.Resize(ref _disposables, _disposables.Length + 1);
-            _disposables[^1] = entity;
-
-            await repository
-                .InsertAsync(entity, cancellationToken)
-                .ConfigureAwait(false);
-
-            return OperationResults
-                .Ok()
-                .Build();
-        }
-        catch (Exception exception)
-            when (exception is not ArgumentNullException)
-        {
-            return exception.ToOperationResult();
-        }
+        await AppendEventAsync(@event, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
-    public async ValueTask<IOperationResult<IEventSnapshot>> ReadAsync(
+    public async ValueTask<IEventSnapshot?> ReadAsync(
         Guid objectId,
         CancellationToken cancellationToken = default)
     {
@@ -87,25 +57,20 @@ public sealed class SnapshotStore<TEventEntity>(
 
         EntityFilter<TEventEntity> filter = new()
         {
-            Criteria = x => x.ObjectId == objectId
+            Criteria = x => x.ObjectId == objectId,
+            OrderBy = x => x.OrderByDescending(o => o.Version),
         };
 
-        Optional<TEventEntity> entityOptional = await repository
+        Optional<TEventEntity> entityOptional = await Repository
             .TryFindAsync(filter, cancellationToken)
             .ConfigureAwait(false);
 
         if (entityOptional.IsEmpty)
-            return OperationResults
-                .NotFound<IEventSnapshot>()
-                .WithError(
-                    nameof(Snapshot),
-                    I18nXpandables.AggregateFailedToFindSnapshot
-                        .StringFormat(objectId))
-                .Build();
+            return default;
 
         TEventEntity entity = entityOptional.Value;
 
-        EventConverter<TEventEntity> converter = options.Value
+        EventConverter<TEventEntity> converter = Options
             .Converters
             .FirstOrDefault(x => x.CanConvert(typeof(TEventEntity)))
             .As<EventConverter<TEventEntity>>()
@@ -115,23 +80,8 @@ public sealed class SnapshotStore<TEventEntity>(
                         .GetNameWithoutGenericArity()));
 
         IEventSnapshot @event = (IEventSnapshot)converter
-            .ConvertFrom(entity, options.Value.SerializerOptions);
+            .ConvertFrom(entity, Options.SerializerOptions);
 
-        return OperationResults
-            .Ok(@event)
-            .Build();
-    }
-
-    ///<inheritdoc/>
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        if (!disposing)
-            return;
-
-        foreach (IDisposable disposable in _disposables)
-            disposable?.Dispose();
-
-        await base.DisposeAsync(disposing)
-            .ConfigureAwait(false);
+        return @event;
     }
 }

@@ -17,6 +17,7 @@
 ********************************************************************************/
 using System.Runtime.CompilerServices;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Primitives.I18n;
@@ -29,16 +30,14 @@ namespace Xpandables.Net.Aggregates;
 /// Represents the domain event store.
 /// </summary>
 /// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
-/// <param name="repository">The repository to use.</param>
+/// <param name="unitOfWork">The unit of work to use.</param>
 /// <param name="options">The event configuration options.</param>
 public sealed class DomainEventStore<TEventEntity>(
-    IRepository<TEventEntity> repository,
-    IOptions<EventOptions> options)
-    : Disposable, IDomainEventStore
+    [FromKeyedServices(EventOptions.UnitOfWorkKey)] IUnitOfWork unitOfWork,
+    IOptions<EventOptions> options) :
+    EventStore<TEventEntity>(unitOfWork, options), IDomainEventStore
     where TEventEntity : class, IEventEntityDomain
 {
-    private IDisposable[] _disposables = [];
-
     ///<inheritdoc/>
     public async ValueTask AppendAsync<TAggregateId>(
         IEventDomain<TAggregateId> @event,
@@ -47,23 +46,7 @@ public sealed class DomainEventStore<TEventEntity>(
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        EventConverter<TEventEntity> converter = options.Value
-            .Converters
-            .FirstOrDefault(x => x.CanConvert(@event.GetType()))
-            .As<EventConverter<TEventEntity>>()
-            ?? throw new InvalidOperationException(
-                I18nXpandables.AggregateFailedToFindConverter
-                    .StringFormat(
-                        @event.GetType().GetNameWithoutGenericArity()));
-
-        TEventEntity entity = converter
-            .ConvertTo(@event, options.Value.SerializerOptions);
-
-        Array.Resize(ref _disposables, _disposables.Length + 1);
-        _disposables[^1] = entity;
-
-        await repository
-            .InsertAsync(entity, cancellationToken)
+        await AppendEventAsync(@event, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -82,7 +65,7 @@ public sealed class DomainEventStore<TEventEntity>(
                 .GetNameWithoutGenericArity()
         };
 
-        EventConverter<TEventEntity> converter = options.Value
+        EventConverter<TEventEntity> converter = Options
             .Converters
             .FirstOrDefault(x => x.CanConvert(typeof(TEventEntity)))
             .As<EventConverter<TEventEntity>>()
@@ -91,67 +74,25 @@ public sealed class DomainEventStore<TEventEntity>(
                     .StringFormat(
                         typeof(TEventEntity).GetNameWithoutGenericArity()));
 
-        await foreach (TEventEntity entity in repository
+        await foreach (TEventEntity entity in Repository
            .FetchAsync(filter, cancellationToken))
         {
             yield return converter
-                .ConvertFrom(entity, options.Value.SerializerOptions)
+                .ConvertFrom(entity, Options.SerializerOptions)
                 .AsRequired<IEventDomain<TAggregateId>>();
         }
     }
 
     ///<inheritdoc/>
-    public async IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
+    public IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
        IEventFilter eventFilter,
-       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+       CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(eventFilter);
 
-        EventEntityFilter<TEventEntity> applyFilter = options.Value
-            .Filters
-            .FirstOrDefault(x => x.CanFilter(typeof(TEventEntity)))
-            .As<EventEntityFilter<TEventEntity>>()
-            ?? throw new InvalidOperationException(
-                I18nXpandables.AggregateFailedToFindFilter
-                    .StringFormat(
-                        typeof(TEventEntity).GetNameWithoutGenericArity()));
-
-        EventConverter<TEventEntity> converter = options.Value
-            .Converters
-            .FirstOrDefault(x => x.CanConvert(typeof(TEventEntity)))
-            .As<EventConverter<TEventEntity>>()
-            ?? throw new InvalidOperationException(
-                I18nXpandables.AggregateFailedToFindConverter
-                    .StringFormat(
-                        typeof(TEventEntity).GetNameWithoutGenericArity()));
-
-        EntityFilter<TEventEntity> filter = new()
-        {
-            Criteria = applyFilter.Filter(eventFilter),
-            Paging = eventFilter.Pagination,
-            OrderBy = x => x.OrderBy(o => o.Version)
-        };
-
-        await foreach (TEventEntity entity in repository
-           .FetchAsync(filter, cancellationToken))
-        {
-            yield return converter
-                .ConvertFrom(entity, options.Value.SerializerOptions)
-                .AsRequired<IEventDomain<TAggregateId>>();
-        }
-    }
-
-    ///<inheritdoc/>
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        if (!disposing)
-            return;
-
-        foreach (IDisposable disposable in _disposables)
-            disposable?.Dispose();
-
-        await base.DisposeAsync(disposing)
-            .ConfigureAwait(false);
+        return ReadEventAsync<IEventDomain<TAggregateId>>(
+            eventFilter,
+            cancellationToken);
     }
 }
