@@ -49,6 +49,6 @@ public interface IAggregateId : IPrimitive<Guid>
 /// and <see cref="IPrimitive{TPrimitive, TValue}"/>.</remarks>
 public interface IAggregateId<TAggregateId>
     : IAggregateId, IPrimitive<TAggregateId, Guid>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+    where TAggregateId : notnull, IAggregateId<TAggregateId>
 {
 }
