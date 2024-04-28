@@ -87,6 +87,7 @@ public sealed record EventOptions
             JsonSerializerDefaults.Web)
         {
             PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = null,
             WriteIndented = true
         };
     }
