@@ -17,6 +17,8 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
+using Xpandables.Net.Aggregates;
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
@@ -28,8 +30,37 @@ public static class RepositoryExtensions
     /// Combines the first expression to be used as parameter 
     /// for the second expression.
     /// </summary>
+    /// <typeparam name="TResult">The type of the result model.</typeparam>
+    /// <typeparam name="TIntermediate">The type of the intermediate model.
+    /// </typeparam>
+    /// <typeparam name="TFirstParam">The type of the first parameter.</typeparam>
+    /// <param name="first">The first expression for composition.</param>
+    /// <param name="second">The second expression for composition.</param>
+    /// <returns>A statement matching the composition of target functions.</returns>
+    public static Expression<Func<TFirstParam, TResult>> Combine
+        <TFirstParam, TIntermediate, TResult>(
+        this Expression<Func<TFirstParam, TIntermediate>> first,
+        Expression<Func<TFirstParam, TIntermediate, TResult>> second)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        ParameterExpression param = Expression
+            .Parameter(typeof(TFirstParam), "param");
+
+        Expression newFirst = first.Body.Replace(first.Parameters[0], param);
+        Expression newSecond = second.Body.Replace(second.Parameters[0], param)
+            .Replace(second.Parameters[1], newFirst);
+
+        return Expression.Lambda<Func<TFirstParam, TResult>>(newSecond, param);
+    }
+
+    /// <summary>
+    /// Combines the first expression to be used as parameter 
+    /// for the second expression.
+    /// </summary>
     /// <param name="source">The first expression for composition.</param>
-    /// <param name="composeResult">The compose expression to apply 
+    /// <param name="composeSource">The compose expression to apply 
     /// the source expression to.</param>
     /// <typeparam name="TSource">The type of the source model.</typeparam>
     /// <typeparam name="TCompose">The type of the compose model.</typeparam>
@@ -39,19 +70,19 @@ public static class RepositoryExtensions
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="source"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="composeResult"/> is null.</exception>
+    /// <paramref name="composeSource"/> is null.</exception>
     public static Expression<Func<TSource, TResult>>
         Compose<TSource, TCompose, TResult>(
         this Expression<Func<TSource, TCompose>> source,
-        Expression<Func<TCompose, TResult>> composeResult)
+        Expression<Func<TCompose, TResult>> composeSource)
         where TCompose : notnull
     {
         ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(composeResult);
+        ArgumentNullException.ThrowIfNull(composeSource);
 
         ParameterExpression param = Expression.Parameter(typeof(TSource), null);
         InvocationExpression invoke = Expression.Invoke(source, param);
-        InvocationExpression result = Expression.Invoke(composeResult, invoke);
+        InvocationExpression result = Expression.Invoke(composeSource, invoke);
 
         return Expression.Lambda<Func<TSource, TResult>>(result, param);
     }
@@ -83,4 +114,41 @@ public static class RepositoryExtensions
         Expression<Func<TParam, bool>> whereClause)
         where TParam : notnull =>
         source.Where(propertyExpression.Compose(whereClause));
+
+    internal static Expression Replace(
+        this Expression expression,
+        Expression searchEx,
+        Expression replaceEx)
+        => new ReplaceVisitor(searchEx, replaceEx).Visit(expression);
+
+    internal class ReplaceVisitor(Expression from, Expression to) :
+        ExpressionVisitor
+    {
+        private readonly Expression from = from, to = to;
+
+        public override Expression Visit(Expression? node)
+            => node == from ? to : base.Visit(node)!;
+    }
+
+    internal sealed class EventFilterEntityVisitor : ExpressionVisitor
+    {
+        internal static readonly ParameterExpression EventEntityParameter
+            = Expression.Parameter(typeof(IEventEntityDomain));
+        internal static readonly EventFilterEntityVisitor EventEntityVisitor
+            = new(typeof(IEventEntityDomain), nameof(IEventEntityDomain.Data));
+
+        internal readonly ParameterExpression Parameter;
+        private readonly Expression _expression;
+
+        internal EventFilterEntityVisitor(Type parameterType, string member)
+        {
+            Parameter = Expression.Parameter(parameterType);
+            _expression = Expression.PropertyOrField(Parameter, member);
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+            => node.Type == _expression.Type
+            ? _expression
+            : base.VisitParameter(node);
+    }
 }

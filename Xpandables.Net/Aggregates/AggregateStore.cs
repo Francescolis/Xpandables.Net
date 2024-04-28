@@ -15,7 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.I18n;
 
@@ -49,7 +48,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
 
         try
         {
-            foreach (IDomainEvent<TAggregateId> @event
+            foreach (IEventDomain<TAggregateId> @event
                 in aggregate.GetUncommittedEvents())
             {
                 await eventStore
@@ -97,7 +96,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
             TAggregate aggregate = AggregateExtensions
                 .CreateEmptyAggregateInstance<TAggregate, TAggregateId>();
 
-            await foreach (IDomainEvent<TAggregateId> @event in eventStore
+            await foreach (IEventDomain<TAggregateId> @event in eventStore
                 .ReadAsync(aggregateId, cancellationToken))
             {
                 aggregate.LoadFromHistory(@event);

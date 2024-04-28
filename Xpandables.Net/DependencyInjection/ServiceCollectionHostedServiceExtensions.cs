@@ -19,8 +19,7 @@
 // Ignore Spelling: Impl
 
 using Microsoft.Extensions.DependencyInjection;
-
-using Xpandables.Net.Aggregates.Notifications;
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.HostedServices;
 
 namespace Xpandables.Net.DependencyInjection;

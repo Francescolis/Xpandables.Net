@@ -20,8 +20,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;

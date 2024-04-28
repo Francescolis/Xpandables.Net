@@ -166,4 +166,13 @@
   <data name="OperationResultValueIsNull" xml:space="preserve">
     <value>Pas de résultat à l'exécution de la tâche.</value>
   </data>
+  <data name="AggregateFailedToFindConverter" xml:space="preserve">
+    <value>Pas de convertisseur trouvé pour le type évènement '{0}'.</value>
+  </data>
+  <data name="AggregateFailedToFindFilter" xml:space="preserve">
+    <value>Pas de filtre trouvé pour le type d'entité '{0}'.</value>
+  </data>
+  <data name="AggregateFailedToFindSnapshot" xml:space="preserve">
+    <value>Pas de snapshot trouvé pour l'id {0}.</value>
+  </data>
 </root>

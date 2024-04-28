@@ -15,7 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aggregates;
@@ -55,7 +54,7 @@ public interface IAggregateStore<TAggregate, TAggregateId>
     /// <exception cref="ArgumentNullException">The <paramref name="aggregateId"/> 
     /// is null.</exception>
     /// <remarks>You can also apply snapshot pattern for performance
-    /// using the <see cref="ISnapShotStore"/>.</remarks>
+    /// using the <see cref="ISnapshotStore"/>.</remarks>
     ValueTask<IOperationResult<TAggregate>> ReadAsync(
         TAggregateId aggregateId,
         CancellationToken cancellationToken = default);

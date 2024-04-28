@@ -18,19 +18,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Aggregates.DomainEvents;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the base <see cref="EntityDomainEvent"/> configuration.
+/// Defines the base <see cref="EventEntityDomain"/> configuration.
 /// </summary>
 public sealed class EntityDomainEventTypeConfiguration
-    : IEntityTypeConfiguration<EntityDomainEvent>
+    : IEntityTypeConfiguration<EventEntityDomain>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
+    public void Configure(EntityTypeBuilder<EventEntityDomain> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

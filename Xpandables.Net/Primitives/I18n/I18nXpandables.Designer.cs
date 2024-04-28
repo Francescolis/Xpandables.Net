@@ -88,6 +88,33 @@ namespace Xpandables.Net.Primitives.I18n {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pas de convertisseur trouvé pour le type évènement &apos;{0}&apos;..
+        /// </summary>
+        public static string AggregateFailedToFindConverter {
+            get {
+                return ResourceManager.GetString("AggregateFailedToFindConverter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pas de filtre trouvé pour le type d&apos;entité &apos;{0}&apos;..
+        /// </summary>
+        public static string AggregateFailedToFindFilter {
+            get {
+                return ResourceManager.GetString("AggregateFailedToFindFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pas de snapshot trouvé pour l&apos;id {0}..
+        /// </summary>
+        public static string AggregateFailedToFindSnapshot {
+            get {
+                return ResourceManager.GetString("AggregateFailedToFindSnapshot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Echec d lecture de l&apos;aggrégat..
         /// </summary>
         public static string AggregateFailedToRead {

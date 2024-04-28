@@ -21,7 +21,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Notifications;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -55,20 +54,13 @@ public static class ServiceCollectionNotificationExtensions
         Func<IServiceProvider, TNotificationHandler>?
         implementationHandlerFactory = default)
         where TNotificationHandler : class, INotificationHandler<TNotification>
-        where TNotification : notnull, INotification
+        where TNotification : notnull, IEventNotification
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.DoRegisterTypeServiceLifeTime
+        return services.DoRegisterTypeServiceLifeTime
             <INotificationHandler<TNotification>, TNotificationHandler>(
             implementationHandlerFactory);
-
-        _ = services.AddScoped<NotificationHandler<TNotification>>(
-            provider => provider
-                .GetRequiredService<INotificationHandler<TNotification>>()
-                .HandleAsync);
-
-        return services;
     }
 
     /// <summary>
@@ -214,5 +206,4 @@ public static class ServiceCollectionNotificationExtensions
     public static IServiceCollection AddXTransientSubscriber(
         this IServiceCollection services)
         => services.AddXTransientPublisher<TransientPublisherSubscriber>();
-
 }

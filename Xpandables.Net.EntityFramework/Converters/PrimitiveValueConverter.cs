@@ -15,7 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 using Xpandables.Net.Primitives;

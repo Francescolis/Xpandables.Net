@@ -18,19 +18,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the <see cref="EntityNotification"/> configuration.
+/// Defines the <see cref="EventEntityNotification"/> configuration.
 /// </summary>
 public sealed class EntityNotificationTypeConfiguration
-    : IEntityTypeConfiguration<EntityNotification>
+    : IEntityTypeConfiguration<EventEntityNotification>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<EntityNotification> builder)
+    public void Configure(EntityTypeBuilder<EventEntityNotification> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -39,7 +38,10 @@ public sealed class EntityNotificationTypeConfiguration
         _ = builder.HasIndex(p => p.Id).IsUnique();
 
         _ = builder.Property(p => p.Data);
-        _ = builder.Property(p => p.TypeFullName);
+        _ = builder.Property(p => p.EventTypeFullName);
+        _ = builder.Property(p => p.EventTypeName);
+        _ = builder.Property(p => p.Version);
+        _ = builder.Property(p => p.Status);
         _ = builder.Property(p => p.ErrorMessage);
 
         _ = builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);

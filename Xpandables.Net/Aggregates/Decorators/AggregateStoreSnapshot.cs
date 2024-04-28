@@ -17,10 +17,9 @@
 ********************************************************************************/
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Optionals;
+using Xpandables.Net.Primitives.I18n;
+using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Transactions;
 
 namespace Xpandables.Net.Aggregates.Decorators;
@@ -29,8 +28,8 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
     IAggregateStore<TAggregate, TAggregateId> decoratee,
     IAggregateTransactional transactional,
     IDomainEventStore eventStore,
-    ISnapShotStore snapShotStore,
-    IOptions<SnapShotOptions> snapShotOptions)
+    ISnapshotStore snapShotStore,
+    IOptions<EventOptions> options)
     : IAggregateStoreSnapshot<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>, IOriginator
     where TAggregateId : struct, IAggregateId<TAggregateId>
@@ -49,17 +48,26 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
                 .ConfigureAwait(false);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
-            if (snapShotOptions.Value.IsOn
-                && aggregate.Version % snapShotOptions.Value.Frequency == 0
-                && aggregate.Version >= snapShotOptions.Value.Frequency)
+            if (IsSnapshopOptionsActive(aggregate))
             {
-                SnapShotDescriptor descriptor = new(
-                    aggregate,
-                    aggregate.AggregateId,
-                    aggregate.Version);
+                EventConverter<IAggregate> converter = options.Value
+                    .Converters
+                    .FirstOrDefault(x => x.CanConvert(typeof(IAggregate)))
+                    .As<EventConverter<IAggregate>>()
+                    ?? throw new InvalidOperationException(
+                        I18nXpandables.AggregateFailedToFindConverter
+                            .StringFormat(nameof(IAggregate)));
 
-                await snapShotStore.AppendAsync(descriptor, cancellationToken)
-                    .ConfigureAwait(false);
+                IEventSnapshot snapshot = converter
+                    .ConvertFrom(aggregate, options.Value.SerializerOptions)
+                    .AsRequired<IEventSnapshot>();
+
+                disposable.Result = await snapShotStore
+                   .AppendAsync(snapshot, cancellationToken)
+                   .ConfigureAwait(false);
+
+                if (disposable.Result.IsFailure)
+                    return disposable.Result;
             }
 
             disposable.Result = await decoratee
@@ -88,7 +96,7 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
     {
         ArgumentNullException.ThrowIfNull(aggregateId);
 
-        if (snapShotOptions.Value.IsOff)
+        if (options.Value.SnapshotOptions.IsOff)
         {
             return await decoratee
                 .ReadAsync(aggregateId, cancellationToken)
@@ -97,21 +105,23 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
 
         TAggregate? aggregate = default;
 
-        try
-        {
-            Optional<TAggregate> optionalResult = await snapShotStore
-                .ReadAsync<TAggregate>(aggregateId.Value, cancellationToken)
-                .ConfigureAwait(false);
+        IOperationResult<IEventSnapshot> snapshotResult = await snapShotStore
+            .ReadAsync(aggregateId.Value, cancellationToken)
+            .ConfigureAwait(false);
 
-            _ = optionalResult.Map(result => aggregate = result);
-        }
-        catch (Exception exception)
-            when (exception is not ArgumentNullException)
+        if (snapshotResult.IsSuccess)
         {
-            return OperationResults
-                .BadRequest<TAggregate>()
-                .WithException(exception)
-                .Build();
+            EventConverter<IAggregate> converter = options.Value
+                .Converters
+                .FirstOrDefault(x => x.CanConvert(typeof(IAggregate)))
+                .As<EventConverter<IAggregate>>()
+                ?? throw new InvalidOperationException(
+                    I18nXpandables.AggregateFailedToFindConverter
+                        .StringFormat(nameof(IAggregate)));
+
+            aggregate = converter
+                .ConvertTo(snapshotResult.Result, options.Value.SerializerOptions)
+                .AsRequired<TAggregate>();
         }
 
         if (aggregate is null)
@@ -123,7 +133,7 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
 
         // because the snapshot is not always aligned with the last events,
         // we need to add those events if available
-        DomainEventFilter filter = new()
+        IEventFilter filter = new EventFilter()
         {
             AggregateId = aggregateId.Value,
             AggregateIdTypeName = typeof(TAggregateId).Name,
@@ -132,7 +142,7 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
 
         try
         {
-            await foreach (IDomainEvent<TAggregateId>? @event in eventStore
+            await foreach (IEventDomain<TAggregateId>? @event in eventStore
                 .ReadAsync<TAggregateId>(filter, cancellationToken)
                 .ConfigureAwait(false))
             {
@@ -152,4 +162,9 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
             .Ok(aggregate)
             .Build();
     }
+
+    private bool IsSnapshopOptionsActive(IAggregate aggregate) =>
+        options.Value.SnapshotOptions.IsOn
+            && aggregate.Version % options.Value.SnapshotOptions.Frequency == 0
+            && aggregate.Version >= options.Value.SnapshotOptions.Frequency;
 }

@@ -1,5 +1,5 @@
 ﻿
-/************************************************************************************************************
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-************************************************************************************************************/
+********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Aggregates.Notifications;
-using Xpandables.Net.Aggregates.SnapShots;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -31,7 +28,8 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionAggregateExtensions
 {
     /// <summary>
-    /// Registers the <see cref="DataContextDomain"/> type class to the services with scoped life time.
+    /// Registers the <see cref="DataContextDomain"/> type class to the services
+    /// with scoped life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="optionsAction">An optional action to configure the 
@@ -41,7 +39,8 @@ public static class ServiceCollectionAggregateExtensions
     /// <param name="optionsLifetime">The lifetime with which to register the 
     /// DbContextOptions service in the container.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
     public static IServiceCollection AddXDomainDataContext(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder>? optionsAction = null,
@@ -50,8 +49,8 @@ public static class ServiceCollectionAggregateExtensions
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        _ = services.AddDbContext<DataContextDomain>(optionsAction, contextLifetime, optionsLifetime);
-        return services;
+        return services.AddDbContext<DataContextDomain>(
+            optionsAction, contextLifetime, optionsLifetime);
     }
 
     /// <summary>
@@ -73,46 +72,56 @@ public static class ServiceCollectionAggregateExtensions
 
 
     /// <summary>
-    /// Registers the default implementation as <see cref="IDomainEventStore"/> to the services with scope life time.
+    /// Registers the default implementation as <see cref="IDomainEventStore"/>
+    /// to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXDomainEventStore(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXDomainEventStore(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddXDomainEventStore<DomainEventStore>();
+        return services.AddXDomainEventStore
+            <DomainEventStore<EventEntityDomain>>();
     }
 
     /// <summary>
-    /// Registers the default implementation as <see cref="INotificationStore"/> to the services with scope life time.
+    /// Registers the default implementation as <see cref="INotificationStore"/>
+    /// to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXNotificationStore(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXNotificationStore(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddXNotificationStore<NotificationStore>();
+        return services.AddXNotificationStore
+            <NotificationStore<EventEntityNotification>>();
     }
 
     /// <summary>
-    /// Adds the default <see cref="ISnapShotStore"/> snapshot store behavior 
+    /// Adds the default <see cref="ISnapshotStore"/> snapshot store behavior 
     /// to command handlers with scoped life time.
     /// </summary>
-    /// <remarks>You need to define the <see cref="SnapShotOptions"/> in configuration file.</remarks>
+    /// <remarks>You need to define the <see cref="SnapshotOptions"/> in 
+    /// configuration file.</remarks>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXSnapshotStore(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXSnapshotStore(
+        this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.AddXSnapshotStore<SnapShotStore>();
-
-        return services;
+        return services
+            .AddXSnapshotStore<SnapshotStore<EventEntitySnapshot>>();
     }
 
 }

@@ -166,4 +166,13 @@
   <data name="OperationResultValueIsNull" xml:space="preserve">
     <value>Operation Result value is null.</value>
   </data>
+  <data name="AggregateFailedToFindConverter" xml:space="preserve">
+    <value>Failed to find a converter for '{0}' event type.</value>
+  </data>
+  <data name="AggregateFailedToFindFilter" xml:space="preserve">
+    <value>Failed to find a filter for '{0}' entity type.</value>
+  </data>
+  <data name="AggregateFailedToFindSnapshot" xml:space="preserve">
+    <value>Failed to find snapshot for id {0}.</value>
+  </data>
 </root>

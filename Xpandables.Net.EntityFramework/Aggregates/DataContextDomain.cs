@@ -18,9 +18,6 @@
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Aggregates.Configurations;
-using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Aggregates.Notifications;
-using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
@@ -55,17 +52,17 @@ public sealed class DataContextDomain(
     }
 
     /// <summary>
-    /// A collection of <see cref="EntityDomainEvent"/> entities.
+    /// A collection of <see cref="EventEntityDomain"/> entities.
     /// </summary>
-    public DbSet<EntityDomainEvent> Events { get; set; }
+    public DbSet<EventEntityDomain> Events { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="EntityNotification"/> entities.
+    /// A collection of <see cref="EventEntityNotification"/> entities.
     /// </summary>
-    public DbSet<EntityNotification> Notifications { get; set; }
+    public DbSet<EventEntityNotification> Notifications { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="EntitySnapShot"/> entities.
+    /// A collection of <see cref="EventEntitySnapshot"/> entities.
     /// </summary>
-    public DbSet<EntitySnapShot> SnapShots { get; set; }
+    public DbSet<EventEntitySnapshot> SnapShots { get; set; }
 }

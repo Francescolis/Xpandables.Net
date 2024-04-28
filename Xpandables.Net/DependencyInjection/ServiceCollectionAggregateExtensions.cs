@@ -15,15 +15,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Reflection;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.Decorators;
-using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Aggregates.SnapShots;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -33,10 +29,6 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionAggregateExtensions
 {
-    internal readonly static MethodInfo AddDomainEventHandlerMethod =
-        typeof(ServiceCollectionAggregateExtensions)
-        .GetMethod(nameof(AddXDomainEventHandler))!;
-
     /// <summary>
     /// Registers the specified generic 
     /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> type 
@@ -125,7 +117,7 @@ public static class ServiceCollectionAggregateExtensions
     /// Registers the default snapShot to the 
     /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
     /// type implementation, that adds snapShot behavior to aggregate store. 
-    /// You may need to define the <see cref="SnapShotOptions"/> 
+    /// You may need to define the <see cref="SnapshotOptions"/> 
     /// in the configuration file.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -146,7 +138,7 @@ public static class ServiceCollectionAggregateExtensions
     /// Registers the specified snapShot to the 
     /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
     /// type implementation, that adds snapShot behavior to aggregate store. 
-    /// You may need to define the <see cref="SnapShotOptions"/> 
+    /// You may need to define the <see cref="SnapshotOptions"/> 
     /// in the configuration file.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -186,161 +178,5 @@ public static class ServiceCollectionAggregateExtensions
 
         return services
             .AddScoped<IAggregateTransactional, TAggregateTransactional>();
-    }
-
-    /// <summary>
-    /// Registers the implementation as <see cref="IDomainEventStore"/> 
-    /// to the services with scope life time.
-    /// </summary>
-    /// <typeparam name="TDomainEventStore">The type of that 
-    /// implements <see cref="IDomainEventStore"/>.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXDomainEventStore
-        <TDomainEventStore>(this IServiceCollection services)
-        where TDomainEventStore : class, IDomainEventStore
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAdd(
-            new ServiceDescriptor(
-                typeof(IDomainEventStore),
-                typeof(TDomainEventStore),
-                ServiceLifetime.Scoped));
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the <typeparamref name="TDomainEventMapper"/> as 
-    /// <see cref="IDomainEventMapper{TAggregateId}"/> type implementation 
-    /// to the services with scope life time.
-    /// </summary>
-    /// <typeparam name="TAggregateId">the type of aggregate Id.</typeparam>
-    /// <typeparam name="TDomainEventMapper">The domain event mapper type 
-    /// implementation.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXDomainEventMapper
-        <TAggregateId, TDomainEventMapper>(this IServiceCollection services)
-        where TDomainEventMapper : class, IDomainEventMapper<TAggregateId>
-        where TAggregateId : struct, IAggregateId<TAggregateId>
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAdd(
-            new ServiceDescriptor(
-                typeof(IDomainEventMapper<TAggregateId>),
-                typeof(TDomainEventMapper),
-                ServiceLifetime.Scoped));
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the default <see cref="IDomainEventPublisher{TAggregateId}"/> 
-    /// implementation to the services with scope life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXDomainEventPublisher(
-        this IServiceCollection services)
-        => services.AddXDomainEventPublisher(typeof(DomainEventPublisher<>));
-
-    /// <summary>
-    /// Registers the <paramref name="domainEventPublisherType"/> as 
-    /// <see cref="IDomainEventPublisher{TAggregateId}"/> type implementation 
-    /// to the services with scope life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <param name="domainEventPublisherType">The domain event publisher type 
-    /// implementation.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXDomainEventPublisher(
-        this IServiceCollection services, Type domainEventPublisherType)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAdd(
-            new ServiceDescriptor(
-                typeof(IDomainEventPublisher<>),
-                domainEventPublisherType,
-                ServiceLifetime.Scoped));
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the <typeparamref name="TDomainEventHandler"/> to the services 
-    /// with scope life time using the factory if specified.
-    /// </summary>
-    /// <typeparam name="TDomainEvent">The type of the domain event</typeparam>
-    /// <typeparam name="TAggregateId">the type of aggregate Id.</typeparam>
-    /// <typeparam name="TDomainEventHandler">The type of the domain 
-    /// event handler.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <param name="implementationHandlerFactory">The factory that creates the 
-    /// domain event handler.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXDomainEventHandler
-        <TDomainEvent, TAggregateId, TDomainEventHandler>(
-        this IServiceCollection services,
-        Func<IServiceProvider, TDomainEventHandler>?
-        implementationHandlerFactory = default)
-        where TDomainEventHandler : class,
-            IDomainEventHandler<TDomainEvent, TAggregateId>
-        where TDomainEvent : notnull, IDomainEvent<TAggregateId>
-        where TAggregateId : struct, IAggregateId<TAggregateId>
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        _ = services
-            .DoRegisterTypeServiceLifeTime
-            <IDomainEventHandler<TDomainEvent, TAggregateId>, TDomainEventHandler>(
-            implementationHandlerFactory);
-
-        return services
-            .AddScoped<DomainEventHandler<TDomainEvent, TAggregateId>>(
-            provider => provider
-                .GetRequiredService
-                <IDomainEventHandler<TDomainEvent, TAggregateId>>()
-                .HandleAsync);
-    }
-
-    /// <summary>
-    /// Registers the <see cref="IDomainEventHandler{TDomainEvent, TAggregateId}"/> 
-    /// implementations to the services with scope life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <param name="assemblies">The assemblies to scan for implemented types. 
-    /// If not set, the calling assembly will be used.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="services"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="assemblies"/> is null.</exception>
-    public static IServiceCollection AddXDomainEventHandlers(
-        this IServiceCollection services,
-        params Assembly[] assemblies)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(assemblies);
-
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
-
-        return services.DoRegisterInterfaceWithMethodFromAssemblies(
-            typeof(IDomainEventHandler<,>),
-            AddDomainEventHandlerMethod,
-            assemblies);
     }
 }

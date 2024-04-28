@@ -18,19 +18,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Aggregates.SnapShots;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the <see cref="EntitySnapShot"/> configuration.
+/// Defines the <see cref="EventEntitySnapshot"/> configuration.
 /// </summary>
 public sealed class EntitySnapShotTypeConfiguration
-    : IEntityTypeConfiguration<EntitySnapShot>
+    : IEntityTypeConfiguration<EventEntitySnapshot>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<EntitySnapShot> builder)
+    public void Configure(EntityTypeBuilder<EventEntitySnapshot> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -39,8 +38,8 @@ public sealed class EntitySnapShotTypeConfiguration
         _ = builder.HasIndex(p => p.Id).IsUnique();
 
         _ = builder.Property(p => p.ObjectId);
-        _ = builder.Property(p => p.ObjectTypeName);
-        _ = builder.Property(p => p.MementoTypeName);
+        _ = builder.Property(p => p.EventTypeName);
+        _ = builder.Property(p => p.EventTypeFullName);
         _ = builder.Property(p => p.Data);
         _ = builder.Property(p => p.Version);
 

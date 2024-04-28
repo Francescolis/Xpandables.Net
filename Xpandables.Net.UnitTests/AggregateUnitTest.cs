@@ -22,8 +22,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.DomainEvents;
-using Xpandables.Net.Aggregates.Notifications;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
@@ -152,12 +150,12 @@ public sealed class AggregateUnitTest
 public sealed class NotificationStoreText : Disposable, INotificationStore
 {
     readonly record struct NotificationRecord(
-        INotification Event, string? Exception, string Status);
+        IEventNotification Event, string? Exception, string Status);
 
     private static readonly Dictionary<Guid, NotificationRecord> _store = [];
 
     public ValueTask AppendAsync(
-        INotification @event,
+        IEventNotification @event,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -167,8 +165,8 @@ public sealed class NotificationStoreText : Disposable, INotificationStore
         return ValueTask.CompletedTask;
     }
 
-    public IAsyncEnumerable<INotification> ReadAsync(
-        INotificationFilter filter,
+    public IAsyncEnumerable<IEventNotification> ReadAsync(
+        IEventFilter filter,
         CancellationToken _ = default)
     {
         return _store.Values
@@ -198,10 +196,10 @@ public sealed class NotificationStoreText : Disposable, INotificationStore
 public sealed class EventStoreTest : Disposable, IDomainEventStore
 {
     private static readonly Dictionary
-        <Guid, List<IDomainEvent<PersonId>>> _store = [];
+        <Guid, List<IEventDomain<PersonId>>> _store = [];
 
     public ValueTask AppendAsync<TAggregateId>(
-        IDomainEvent<TAggregateId> @event,
+        IEventDomain<TAggregateId> @event,
         CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
@@ -210,26 +208,26 @@ public sealed class EventStoreTest : Disposable, IDomainEventStore
         if (!_store.TryGetValue(@event.AggregateId, out _))
             _store.Add(@event.AggregateId, []);
 
-        _store[@event.AggregateId].Add((IDomainEvent<PersonId>)@event);
+        _store[@event.AggregateId].Add((IEventDomain<PersonId>)@event);
 
         return ValueTask.CompletedTask;
     }
 
-    public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
+    public IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
         TAggregateId aggregateId,
         CancellationToken _ = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         return _store.Values
             .SelectMany(x => x)
-            .OfType<IDomainEvent<TAggregateId>>()
+            .OfType<IEventDomain<TAggregateId>>()
             .Where(e => e.AggregateId == aggregateId.Value)
             .Select(s => s)
             .ToAsyncEnumerable();
     }
 
-    public IAsyncEnumerable<IDomainEvent<TAggregateId>> ReadAsync<TAggregateId>(
-        IDomainEventFilter filter,
+    public IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
+        IEventFilter filter,
         CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
     {

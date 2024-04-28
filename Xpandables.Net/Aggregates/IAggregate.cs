@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Aggregates.DomainEvents;
+using System.ComponentModel;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -26,19 +25,18 @@ namespace Xpandables.Net.Aggregates;
 /// A DDD aggregate is a cluster of objects that can be treated 
 /// as a single unit.</para>
 /// </summary>
-/// <typeparam name="TAggregateId">The type of aggregate Id</typeparam>
-public interface IAggregate<TAggregateId> : IDomainEventSourcing<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+public interface IAggregate
 {
     /// <summary>
     /// Gets the unique aggregate identifier.
     /// </summary>
-    TAggregateId AggregateId { get; }
+    IAggregateId AggregateId { get; }
 
     /// <summary>
     /// Gets the current version of the instance.
     /// </summary>
     ulong Version { get; }
+
 
     /// <summary>
     /// Determines whether or not the underlying instance is a empty one.
@@ -49,4 +47,25 @@ public interface IAggregate<TAggregateId> : IDomainEventSourcing<TAggregateId>
     /// <returns>Returns <see langword="true"/> if it is not empty, 
     /// otherwise <see langword="false"/>.</returns>
     public virtual bool IsEmpty => AggregateId.IsNew();
+}
+
+/// <summary>
+/// Defines base properties for an aggregate that is identified by 
+/// <see cref="IAggregateId{TAggregateId}"/> type.
+/// <para>Aggregate is a pattern in Domain-Driven Design.
+/// A DDD aggregate is a cluster of objects that can be treated 
+/// as a single unit.</para>
+/// </summary>
+/// <typeparam name="TAggregateId">The type of aggregate Id</typeparam>
+public interface IAggregate<TAggregateId> :
+    IAggregate, IDomainEventSourcing<TAggregateId>
+    where TAggregateId : struct, IAggregateId<TAggregateId>
+{
+    /// <summary>
+    /// Gets the unique aggregate identifier.
+    /// </summary>
+    new TAggregateId AggregateId { get; }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    IAggregateId IAggregate.AggregateId => AggregateId;
 }
