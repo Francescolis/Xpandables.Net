@@ -35,6 +35,25 @@ public static class ServiceCollectionDomainExtensions
         .GetMethod(nameof(AddXDomainEventHandler))!;
 
     /// <summary>
+    /// Registers the 
+    /// <see cref="EventDomainDuplicateDecorator{TEventDomain, TAggragateId}"/>
+    /// decorator to handle duplicate domain events.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXEventDomainDuplicateDecorator(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .XTryDecorate(
+                typeof(IDomainEventHandler<,>),
+                typeof(EventDomainDuplicateDecorator<,>),
+                typeof(IEventDomainDuplicate));
+    }
+
+    /// <summary>
     /// Registers the implementation as <see cref="IDomainEventStore"/> 
     /// to the services with scope life time.
     /// </summary>
