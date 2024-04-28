@@ -28,11 +28,9 @@ namespace Xpandables.Net.Aggregates;
 /// working in a multi-threaded environment.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of  aggregate Id</typeparam>
-/// <typeparam name="TDomainEvent">The domain event type.</typeparam>
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public interface IDomainEventHandler<in TDomainEvent, in TAggregateId>
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TDomainEvent : notnull, IEventDomain<TAggregateId>
+/// <typeparam name="TEventDomain">The domain event type.</typeparam>
+public interface IEventDomainHandler<in TEventDomain, in TAggregateId>
+    where TEventDomain : notnull, IEventDomain<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
@@ -46,8 +44,9 @@ public interface IDomainEventHandler<in TDomainEvent, in TAggregateId>
     /// waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>
-    /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+    /// <returns>A value that represents an <see cref="IOperationResult"/>.
+    /// </returns>
     ValueTask<IOperationResult> HandleAsync(
-        TDomainEvent @event,
+        TEventDomain @event,
         CancellationToken cancellationToken = default);
 }

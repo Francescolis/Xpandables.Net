@@ -25,8 +25,8 @@ namespace Xpandables.Net.Aggregates;
 
 internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
     IAggregateStore<TAggregate, TAggregateId> decoratee,
-    IDomainEventStore eventStore,
-    ISnapshotStore snapShotStore,
+    IEventDomainStore eventStore,
+    IEventSnapshotStore snapShotStore,
     IOptions<EventOptions> options)
     : IAggregateStoreSnapshot<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>, IOriginator

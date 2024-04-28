@@ -200,7 +200,7 @@ public sealed class AggregateEventConverter :
         JsonDocument data = memento.ToJsonDocument(options);
         ulong version = entity.Version;
 
-        return new Snapshot()
+        return new EventSnapshot()
         {
             Memento = memento,
             Version = version,

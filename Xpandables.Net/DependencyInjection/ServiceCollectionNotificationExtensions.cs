@@ -32,7 +32,7 @@ public static class ServiceCollectionNotificationExtensions
 {
     internal readonly static MethodInfo AddNotificationHandlerMethod
         = typeof(ServiceCollectionNotificationExtensions)
-        .GetMethod(nameof(AddXNotificationHandler))!;
+        .GetMethod(nameof(AddXEventNotificationHandler))!;
 
     /// <summary>
     /// Adds the <typeparamref name="TNotificationHandler"/> to the services 
@@ -48,23 +48,23 @@ public static class ServiceCollectionNotificationExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXNotificationHandler
+    public static IServiceCollection AddXEventNotificationHandler
         <TNotification, TNotificationHandler>(
         this IServiceCollection services,
         Func<IServiceProvider, TNotificationHandler>?
         implementationHandlerFactory = default)
-        where TNotificationHandler : class, INotificationHandler<TNotification>
+        where TNotificationHandler : class, IEventNotificationHandler<TNotification>
         where TNotification : notnull, IEventNotification
     {
         ArgumentNullException.ThrowIfNull(services);
 
         return services.DoRegisterTypeServiceLifeTime
-            <INotificationHandler<TNotification>, TNotificationHandler>(
+            <IEventNotificationHandler<TNotification>, TNotificationHandler>(
             implementationHandlerFactory);
     }
 
     /// <summary>
-    /// Adds the <see cref="INotificationHandler{TNotification}"/> 
+    /// Adds the <see cref="IEventNotificationHandler{TNotification}"/> 
     /// implementations to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -75,7 +75,7 @@ public static class ServiceCollectionNotificationExtensions
     /// is null.</exception>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="assemblies"/> is null.</exception>
-    public static IServiceCollection AddXNotificationHandlers(
+    public static IServiceCollection AddXEventNotificationHandlers(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -85,30 +85,30 @@ public static class ServiceCollectionNotificationExtensions
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
-            typeof(INotificationHandler<>),
+            typeof(IEventNotificationHandler<>),
             AddNotificationHandlerMethod,
             assemblies);
     }
 
     /// <summary>
-    /// Registers the implementation as <see cref="INotificationStore"/> to 
+    /// Registers the implementation as <see cref="IEventNotificationStore"/> to 
     /// the services with scope life time.
     /// </summary>
     /// <typeparam name="TNotificationStore">The type of that implements 
-    /// <see cref="INotificationStore"/>.</typeparam>
+    /// <see cref="IEventNotificationStore"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXNotificationStore
+    public static IServiceCollection AddXEventNotificationStore
         <TNotificationStore>(this IServiceCollection services)
-        where TNotificationStore : class, INotificationStore
+        where TNotificationStore : class, IEventNotificationStore
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(INotificationStore),
+                typeof(IEventNotificationStore),
                 typeof(TNotificationStore),
                 ServiceLifetime.Scoped));
 
@@ -116,20 +116,20 @@ public static class ServiceCollectionNotificationExtensions
     }
 
     /// <summary>
-    /// Registers the default <see cref="INotificationPublisher"/> 
+    /// Registers the default <see cref="IEventNotificationPublisher"/> 
     /// implementation to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXNotificationPublisher(
+    public static IServiceCollection AddXEventNotificationPublisher(
         this IServiceCollection services)
-        => services.AddXNotificationPublisher<NotificationPublisher>();
+        => services.AddXEventNotificationPublisher<EventNotificationPublisher>();
 
     /// <summary>
     /// Registers the <typeparamref name="TNotificationPublisher"/> 
-    /// as <see cref="INotificationPublisher"/> type implementation 
+    /// as <see cref="IEventNotificationPublisher"/> type implementation 
     /// to the services with scope life time.
     /// </summary>
     /// <typeparam name="TNotificationPublisher">The notification publisher type
@@ -138,16 +138,16 @@ public static class ServiceCollectionNotificationExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXNotificationPublisher
+    public static IServiceCollection AddXEventNotificationPublisher
         <TNotificationPublisher>(
         this IServiceCollection services)
-        where TNotificationPublisher : class, INotificationPublisher
+        where TNotificationPublisher : class, IEventNotificationPublisher
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(INotificationPublisher),
+                typeof(IEventNotificationPublisher),
                 typeof(TNotificationPublisher),
                 ServiceLifetime.Scoped));
 

@@ -20,7 +20,7 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Represents a set of methods to append/read notifications to/from store.
 /// </summary>
-public interface INotificationStore : IDisposable
+public interface IEventNotificationStore : IDisposable
 {
     /// <summary>
     /// Asynchronously appends the specified notification to the store.

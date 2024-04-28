@@ -32,10 +32,10 @@ namespace Xpandables.Net.Aggregates;
 /// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
 /// <param name="unitOfWork">The unit of work to use.</param>
 /// <param name="options">The event configuration options.</param>
-public sealed class DomainEventStore<TEventEntity>(
+public sealed class EventDomainStore<TEventEntity>(
     [FromKeyedServices(EventOptions.UnitOfWorkKey)] IUnitOfWork unitOfWork,
     IOptions<EventOptions> options) :
-    EventStore<TEventEntity>(unitOfWork, options), IDomainEventStore
+    EventStore<TEventEntity>(unitOfWork, options), IEventDomainStore
     where TEventEntity : class, IEventEntityDomain
 {
     ///<inheritdoc/>

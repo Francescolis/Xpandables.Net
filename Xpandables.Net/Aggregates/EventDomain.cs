@@ -24,8 +24,8 @@ namespace Xpandables.Net.Aggregates;
 /// </summary>
 /// <typeparam name="TAggregateId">The type of aggregate.</typeparam>
 /// <remarks>Initializes a new instance of 
-/// <see cref="DomainEvent{TAggregateId}"/>.</remarks>
-public abstract record class DomainEvent<TAggregateId>
+/// <see cref="EventDomain{TAggregateId}"/>.</remarks>
+public abstract record class EventDomain<TAggregateId>
     : Event, IEventDomain<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
@@ -44,27 +44,27 @@ public abstract record class DomainEvent<TAggregateId>
 /// <typeparam name="TAggregateId">The type of aggregate.</typeparam>
 /// <remarks>Add a private parameterless constructor and decorate it 
 /// with the <see cref="JsonConstructorAttribute"/> attribute.</remarks>
-public abstract record DomainEvent<TAggregate, TAggregateId>
-    : DomainEvent<TAggregateId>
+public abstract record EventDomain<TAggregate, TAggregateId>
+    : EventDomain<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
 {
     /// <summary>
     /// Initializes a new instance of 
-    /// <see cref="DomainEvent{TAggregate, TAggregateId}"/>.
+    /// <see cref="EventDomain{TAggregate, TAggregateId}"/>.
     /// </summary>
     /// <remarks>Used for deserialization.</remarks>
     [JsonConstructor]
-    protected DomainEvent() { }
+    protected EventDomain() { }
 
     /// <summary>
     /// Initializes a new instance of 
-    /// <see cref="DomainEvent{TAggregate, TAggregateId}"/>.
+    /// <see cref="EventDomain{TAggregate, TAggregateId}"/>.
     /// </summary>
     /// <param name="aggregate">The target aggregate instance.</param>
     /// <exception cref="ArgumentNullException">
     /// The <paramref name="aggregate"/> is null.</exception>
-    protected DomainEvent(TAggregate aggregate)
+    protected EventDomain(TAggregate aggregate)
     {
         ArgumentNullException.ThrowIfNull(aggregate);
 

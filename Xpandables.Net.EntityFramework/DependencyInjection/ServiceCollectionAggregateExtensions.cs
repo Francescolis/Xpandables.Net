@@ -29,29 +29,29 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionAggregateExtensions
 {
     /// <summary>
-    /// Registers the default <see cref="IUnitOfWork"/> for aggregate.
+    /// Registers the default <see cref="IUnitOfWork"/> for events.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXUnitOfWorkAggregate(
+    public static IServiceCollection AddXEventUnitOfWork(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         return services
             .AddXUnitOfWorkKeyed
-                <DataContextAggregate>(EventOptions.UnitOfWorkKey);
+                <EventDataContext>(EventOptions.UnitOfWorkKey);
     }
 
     /// <summary>
     /// Registers the <typeparamref name="TDataContext"/> type class reference
-    /// as <see cref="IUnitOfWork"/> for aggregate.
+    /// as <see cref="IUnitOfWork"/> for events.
     /// </summary>
     /// <typeparam name="TDataContext">The type of the data context that derives
     /// from <see cref="DataContext"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXUnitOfWorkAggregate<TDataContext>(
+    public static IServiceCollection AddXEventUnitOfWork<TDataContext>(
         this IServiceCollection services)
         where TDataContext : DataContext
     {
@@ -62,7 +62,7 @@ public static class ServiceCollectionAggregateExtensions
     }
 
     /// <summary>
-    /// Registers the <see cref="DataContextAggregate"/> type class to the 
+    /// Registers the <see cref="EventDataContext"/> type class to the 
     /// services with scoped life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -75,7 +75,7 @@ public static class ServiceCollectionAggregateExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXDataContextAggregate(
+    public static IServiceCollection AddXEventDataContext(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder>? optionsAction = null,
         ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
@@ -83,46 +83,46 @@ public static class ServiceCollectionAggregateExtensions
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        return services.AddDbContext<DataContextAggregate>(
+        return services.AddDbContext<EventDataContext>(
             optionsAction, contextLifetime, optionsLifetime);
     }
 
     /// <summary>
-    /// Registers the default implementation as <see cref="IDomainEventStore"/>
+    /// Registers the default implementation as <see cref="IEventDomainStore"/>
     /// to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXDomainEventStore(
+    public static IServiceCollection AddXEventDomainStore(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddXDomainEventStore
-            <DomainEventStore<EventEntityDomain>>();
+        return services.AddXEventDomainStore
+            <EventDomainStore<EventEntityDomain>>();
     }
 
     /// <summary>
-    /// Registers the default implementation as <see cref="INotificationStore"/>
+    /// Registers the default implementation as <see cref="IEventNotificationStore"/>
     /// to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
-    public static IServiceCollection AddXNotificationStore(
+    public static IServiceCollection AddXEventNotificationStore(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddXNotificationStore
-            <NotificationStore<EventEntityNotification>>();
+        return services.AddXEventNotificationStore
+            <EventNotificationStore<EventEntityNotification>>();
     }
 
     /// <summary>
-    /// Adds the default <see cref="ISnapshotStore"/> snapshot store behavior 
+    /// Adds the default <see cref="IEventSnapshotStore"/> snapshot store behavior 
     /// to command handlers with scoped life time.
     /// </summary>
     /// <remarks>You need to define the <see cref="SnapshotOptions"/> in 
@@ -131,13 +131,13 @@ public static class ServiceCollectionAggregateExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXSnapshotStore(
+    public static IServiceCollection AddXEventSnapshotStore(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         return services
-            .AddXSnapshotStore<SnapshotStore<EventEntitySnapshot>>();
+            .AddXEventSnapshotStore<EventSnapshotStore<EventEntitySnapshot>>();
     }
 
 }

@@ -22,42 +22,42 @@ namespace Xpandables.Net.Aggregates;
 /// Defines a marker interface to be used to mark an object to act as 
 /// a notification for a specific domain event.
 /// </summary>
-/// <typeparam name="TDomainEvent">The type the target domain event.</typeparam>
+/// <typeparam name="TEventDomain">The type the target domain event.</typeparam>
 /// <typeparam name="TAggregateId">the aggregate Id type.</typeparam>
-public interface INotification<out TDomainEvent, out TAggregateId>
+public interface IEventNotification<out TEventDomain, out TAggregateId>
     : IEventNotification
-    where TDomainEvent : notnull, IEventDomain<TAggregateId>
+    where TEventDomain : notnull, IEventDomain<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
     /// Gets the domain event associated with the notification.
     /// </summary>
-    TDomainEvent DomainEvent { get; }
+    TEventDomain DomainEvent { get; }
 }
 
 /// <summary>
 /// Represents an Event Router helper class used to wrap a domain 
 /// event into a notification.
 /// </summary>
-/// <typeparam name="TDomainEvent">The type of domain event.</typeparam>
+/// <typeparam name="TEventDomain">The type of domain event.</typeparam>
 /// <typeparam name="TAggregateId">the aggregate Id type.</typeparam>
-public sealed record NotificationWrapper<TDomainEvent, TAggregateId> :
-    Notification, INotification<TDomainEvent, TAggregateId>
-    where TDomainEvent : notnull, IEventDomain<TAggregateId>
+public sealed record EventNotificationWrapper<TEventDomain, TAggregateId> :
+    EventNotification, IEventNotification<TEventDomain, TAggregateId>
+    where TEventDomain : notnull, IEventDomain<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     ///<inheritdoc/>
-    public TDomainEvent DomainEvent { get; }
+    public TEventDomain DomainEvent { get; }
 
     /// <summary>
     /// Defines a new instance of 
-    /// <see cref="NotificationWrapper{TDomainEvent, TAggregateId}"/> 
+    /// <see cref="EventNotificationWrapper{TEventDomain, TAggregateId}"/> 
     /// using the specified domain event.
     /// </summary>
     /// <param name="domainEvent">The domain event to be wrapped.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="domainEvent"/> is null.</exception>
-    public NotificationWrapper(TDomainEvent domainEvent)
+    public EventNotificationWrapper(TEventDomain domainEvent)
         => DomainEvent = domainEvent
             ?? throw new ArgumentNullException(nameof(domainEvent));
 }

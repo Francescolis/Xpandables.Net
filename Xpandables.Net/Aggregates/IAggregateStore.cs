@@ -54,7 +54,7 @@ public interface IAggregateStore<TAggregate, TAggregateId>
     /// <exception cref="ArgumentNullException">The <paramref name="aggregateId"/> 
     /// is null.</exception>
     /// <remarks>You can also apply snapshot pattern for performance
-    /// using the <see cref="ISnapshotStore"/>.</remarks>
+    /// using the <see cref="IEventSnapshotStore"/>.</remarks>
     ValueTask<IOperationResult<TAggregate>> ReadAsync(
         TAggregateId aggregateId,
         CancellationToken cancellationToken = default);

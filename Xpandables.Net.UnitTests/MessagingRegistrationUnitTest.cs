@@ -47,8 +47,8 @@ public readonly record struct GetProductQuery(
 public readonly record struct GetProductAsyncQuery(
     Guid ProductId) : IAsyncQuery<string>;
 public sealed record class ProductAddedEvent(
-    Guid ProductId, int Qty) : DomainEvent<ProductId>;
-public sealed record class ProductAddedIntegrationEvent : Notification;
+    Guid ProductId, int Qty) : EventDomain<ProductId>;
+public sealed record class ProductAddedIntegrationEvent : EventNotification;
 public sealed class AddProductCommandHandler :
     ICommandHandler<AddProductCommand>
 {
@@ -87,7 +87,7 @@ public sealed class GetProductAsyncQueryHandler :
 }
 
 public sealed class ProductAddedEventHandler :
-    IDomainEventHandler<ProductAddedEvent, ProductId>
+    IEventDomainHandler<ProductAddedEvent, ProductId>
 {
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedEvent @event,
@@ -98,7 +98,7 @@ public sealed class ProductAddedEventHandler :
 }
 
 public sealed class ProductAddedIntegrationEventHandler
-    : INotificationHandler<ProductAddedIntegrationEvent>
+    : IEventNotificationHandler<ProductAddedIntegrationEvent>
 {
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedIntegrationEvent @event,
@@ -116,8 +116,8 @@ public sealed class MessagingRegistrationUnitTest
             .AddXCommandHandlers()
             .AddXQueryHandlers()
             .AddXAsyncQueryHandlers()
-            .AddXDomainEventHandlers()
-            .AddXNotificationHandlers()
+            .AddXEventDomainHandlers()
+            .AddXEventNotificationHandlers()
             .BuildServiceProvider();
     }
 
@@ -155,9 +155,9 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_DomainEventHandler()
     {
-        IDomainEventHandler<ProductAddedEvent, ProductId>? handler =
+        IEventDomainHandler<ProductAddedEvent, ProductId>? handler =
             _serviceProvider
-            .GetService<IDomainEventHandler<ProductAddedEvent, ProductId>>();
+            .GetService<IEventDomainHandler<ProductAddedEvent, ProductId>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<ProductAddedEventHandler>();
@@ -166,9 +166,9 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_IntegrationEventHandler()
     {
-        INotificationHandler<ProductAddedIntegrationEvent>? handler =
+        IEventNotificationHandler<ProductAddedIntegrationEvent>? handler =
             _serviceProvider
-            .GetService<INotificationHandler<ProductAddedIntegrationEvent>>();
+            .GetService<IEventNotificationHandler<ProductAddedIntegrationEvent>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<ProductAddedIntegrationEventHandler>();

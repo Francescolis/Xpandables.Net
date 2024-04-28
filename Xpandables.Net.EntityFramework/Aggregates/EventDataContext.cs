@@ -23,17 +23,17 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Provides the base aggregate db context.
+/// Provides the base events db context.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="DataContextAggregate"/> 
+/// Initializes a new instance of <see cref="EventDataContext"/> 
 /// with the specified configuration.
 /// </remarks>
 /// <param name="contextOptions">The configuration to be applied.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="contextOptions"/> is null.</exception>
-public sealed class DataContextAggregate(
-    DbContextOptions<DataContextAggregate> contextOptions)
+public sealed class EventDataContext(
+    DbContextOptions<EventDataContext> contextOptions)
     : DataContext(contextOptions)
 {
     ///<inheritdoc/>

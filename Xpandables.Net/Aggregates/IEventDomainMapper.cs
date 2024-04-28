@@ -23,7 +23,7 @@ namespace Xpandables.Net.Aggregates;
 /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
 /// <remarks>The implementation should be a singleton class or 
 /// a class with singleton lifetime.</remarks>
-public interface IDomainEventMapper<TAggregateId>
+public interface IEventDomainMapper<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>

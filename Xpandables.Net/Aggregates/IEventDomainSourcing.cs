@@ -20,7 +20,7 @@ namespace Xpandables.Net.Aggregates;
 /// Event-sourcing pattern interface using domain event.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of aggregate Id</typeparam>
-public interface IDomainEventSourcing<TAggregateId>
+public interface IEventDomainSourcing<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
@@ -62,10 +62,10 @@ public interface IDomainEventSourcing<TAggregateId>
     /// <summary>
     /// Pushes the specified domain event to the aggregate instance.
     /// </summary>
-    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <typeparam name="TEventDomain">The type of the event.</typeparam>
     /// <param name="event">The domain event instance to act on.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>
-    void PushEvent<TEvent>(TEvent @event)
-        where TEvent : notnull, IEventDomain<TAggregateId>;
+    void PushEvent<TEventDomain>(TEventDomain @event)
+        where TEventDomain : notnull, IEventDomain<TAggregateId>;
 }

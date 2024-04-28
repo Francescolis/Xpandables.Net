@@ -20,27 +20,25 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Allows an application author to define a handler for specific type 
-/// notification.The notification must implement <see cref="IEventNotification"/>
-/// interface. The implementation must be thread-safe when working 
-/// in a multi-threaded environment.
+/// Defines a method to automatically publish events.
 /// </summary>
-/// <typeparam name="TNotification">The integration event 
-/// type to be handled.</typeparam>
-public interface INotificationHandler<in TNotification>
-    where TNotification : notnull, IEventNotification
+/// <typeparam name="TAggregateId"></typeparam>
+public interface IEventDomainPublisher<TAggregateId>
+    where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>
-    /// Asynchronously handles the notification of specific type.
+    /// Publishes the specified event to all registered subscribers.
     /// </summary>
-    /// <param name="event">The notification instance to act on.</param>
+    /// <typeparam name="TEventDomain">Type of event.</typeparam>
+    /// <param name="event">The event to be published.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>
-    /// <returns>A value that 
-    /// represents an <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> HandleAsync(
-        TNotification @event,
-        CancellationToken cancellationToken = default);
+    /// <returns>A value that represents an implementation 
+    /// of <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult> PublishAsync<TEventDomain>(
+        TEventDomain @event,
+        CancellationToken cancellationToken = default)
+        where TEventDomain : notnull, IEventDomain<TAggregateId>;
 }

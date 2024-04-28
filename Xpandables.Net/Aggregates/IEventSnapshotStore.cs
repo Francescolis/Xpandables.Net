@@ -19,7 +19,7 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Used to persist and read an object to/from an snapshot.
 /// </summary>
-public interface ISnapshotStore
+public interface IEventSnapshotStore
 {
     /// <summary>
     /// Asynchronously appends the specified snapshot to the store.

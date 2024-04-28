@@ -45,17 +45,17 @@ public sealed class AggregateUnitTest
                 options
                 .UsePersistence()
                 .UseOperationFinalizer())
-            .AddXDomainEventHandlers()
+            .AddXEventDomainHandlers()
             .AddXDispatcher()
             .AddXPersistenceCommandHandler()
             .AddXAggregateStore()
             .AddXUnitOfWorkAggregate<PersonUnitOfWork>()
             .AddXOperationResultFinalizer()
-            .AddXDomainEventPublisher()
-            .AddXNotificationPublisher()
+            .AddXEventDomainPublisher()
+            .AddXEventNotificationPublisher()
             .AddXEventDomainDuplicateDecorator()
-            .AddXDomainEventStore<EventStoreTest>()
-            .AddXNotificationStore<NotificationStoreText>();
+            .AddXEventDomainStore<EventStoreTest>()
+            .AddXEventNotificationStore<NotificationStoreText>();
 
         IServiceProvider serviceProvider = serviceDescriptors
             .BuildServiceProvider(
@@ -148,7 +148,7 @@ public sealed class AggregateUnitTest
     }
 }
 
-public sealed class NotificationStoreText : Disposable, INotificationStore
+public sealed class NotificationStoreText : Disposable, IEventNotificationStore
 {
     readonly record struct NotificationRecord(
         IEventNotification Event, string? Exception, string Status);
@@ -194,7 +194,7 @@ public sealed class NotificationStoreText : Disposable, INotificationStore
         await ValueTask.CompletedTask.ConfigureAwait(false);
     }
 }
-public sealed class EventStoreTest : Disposable, IDomainEventStore
+public sealed class EventStoreTest : Disposable, IEventDomainStore
 {
     private static readonly Dictionary
         <Guid, List<IEventDomain<PersonId>>> _store = [];
@@ -348,8 +348,8 @@ public sealed class SendContactRequestCommandHandler
 }
 
 public sealed class ContactCreatedDomainEventHandler
-    (INotificationStore notificationStore)
-    : IDomainEventHandler<PersonCreatedDomainEvent, PersonId>
+    (IEventNotificationStore notificationStore)
+    : IEventDomainHandler<PersonCreatedDomainEvent, PersonId>
 {
     public async ValueTask<IOperationResult> HandleAsync(
         PersonCreatedDomainEvent @event,
@@ -364,8 +364,8 @@ public sealed class ContactCreatedDomainEventHandler
 }
 
 public sealed class ContactRequestSentDomainEventHandler
-    (INotificationStore notificationStore)
-    : IDomainEventHandler<ContactRequestSentDomainEvent, PersonId>
+    (IEventNotificationStore notificationStore)
+    : IEventDomainHandler<ContactRequestSentDomainEvent, PersonId>
 {
     public async ValueTask<IOperationResult> HandleAsync(
         ContactRequestSentDomainEvent @event,
@@ -396,7 +396,7 @@ public readonly record struct PersonId(Guid Value) : IAggregateId<PersonId>
 public readonly record struct ContactId(Guid Value) : IPrimitive<Guid>;
 
 public sealed record PersonCreatedDomainEvent :
-    DomainEvent<Person, PersonId>, IEventDomainDuplicate
+    EventDomain<Person, PersonId>, IEventDomainDuplicate
 {
     [JsonConstructor]
     private PersonCreatedDomainEvent() { }
@@ -436,7 +436,7 @@ public sealed record PersonCreatedDomainEvent :
 }
 
 public sealed record ContactRequestSentDomainEvent :
-    DomainEvent<Person, PersonId>, IEventDomainDuplicate
+    EventDomain<Person, PersonId>, IEventDomainDuplicate
 {
     private ContactRequestSentDomainEvent() { }
 
@@ -477,12 +477,12 @@ public sealed record ContactRequestSentDomainEvent :
 public sealed record PersonCreatedNotification(
     Guid PersonId,
     string FirstName,
-    string LastName) : Notification;
+    string LastName) : EventNotification;
 
 public sealed record ContactRequestSentNotification(
     Guid SenderId,
     string SenderName,
-    Guid ReceiverId) : Notification;
+    Guid ReceiverId) : EventNotification;
 
 public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
 {

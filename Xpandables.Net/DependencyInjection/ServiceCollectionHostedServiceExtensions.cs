@@ -82,11 +82,11 @@ public static class ServiceCollectionHostedServiceExtensions
 
     /// <summary>
     /// Adds the specified background service implementation 
-    /// event scheduler of <see cref="INotificationScheduler"/>
+    /// event scheduler of <see cref="IEventNotificationScheduler"/>
     /// to manage integration event publishing.
     /// </summary>
     /// <typeparam name="TNotificationScheduler">The type that implements 
-    /// <see cref="INotificationScheduler"/>.</typeparam>
+    /// <see cref="IEventNotificationScheduler"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
@@ -94,19 +94,19 @@ public static class ServiceCollectionHostedServiceExtensions
     public static IServiceCollection AddXNotificationScheduler
         <TNotificationScheduler>(this IServiceCollection services)
         where TNotificationScheduler :
-        BackgroundServiceBase<TNotificationScheduler>, INotificationScheduler
+        BackgroundServiceBase<TNotificationScheduler>, IEventNotificationScheduler
     {
         ArgumentNullException.ThrowIfNull(services);
 
         _ = services.AddXBackgroundService
-            <INotificationScheduler, TNotificationScheduler>();
+            <IEventNotificationScheduler, TNotificationScheduler>();
 
         return services;
     }
 
     /// <summary>
     /// Adds the default background service implementation integration e
-    /// vent scheduler of <see cref="INotificationScheduler"/>
+    /// vent scheduler of <see cref="IEventNotificationScheduler"/>
     /// type to manage integration event publishing.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -115,5 +115,5 @@ public static class ServiceCollectionHostedServiceExtensions
     /// is null.</exception>
     public static IServiceCollection AddXNotificationScheduler(
         this IServiceCollection services)
-        => services.AddXNotificationScheduler<NotificationScheduler>();
+        => services.AddXNotificationScheduler<EventNotificationScheduler>();
 }

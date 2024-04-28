@@ -43,9 +43,9 @@ public interface IEventDomainDuplicate
 /// <param name="eventStore"></param>
 /// <param name="decoratee"></param>
 public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
-    IDomainEventStore eventStore,
-    IDomainEventHandler<TEventDomain, TAggragateId> decoratee) :
-    IDomainEventHandler<TEventDomain, TAggragateId>, IDecorator
+    IEventDomainStore eventStore,
+    IEventDomainHandler<TEventDomain, TAggragateId> decoratee) :
+    IEventDomainHandler<TEventDomain, TAggragateId>, IDecorator
     where TEventDomain : notnull, IEventDomain<TAggragateId>, IEventDomainDuplicate
     where TAggragateId : struct, IAggregateId<TAggragateId>
 {

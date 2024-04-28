@@ -20,7 +20,7 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Represents a snapshot.
 /// </summary>
-public sealed record Snapshot : Event, IEventSnapshot
+public sealed record EventSnapshot : Event, IEventSnapshot
 {
     ///<inheritdoc/>
     public IMemento Memento { get; init; } = default!;

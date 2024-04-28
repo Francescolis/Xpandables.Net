@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +15,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.HostedServices;
+
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents a notification.
+/// Provides with a method to schedule notifications when requested.
 /// </summary>
-public abstract record Notification : Event, IEventNotification
-{
-}
+public interface IEventNotificationScheduler : IBackgroundService { }

@@ -24,48 +24,44 @@ using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Aggregates;
 
-internal sealed class DomainEventPublisher<TAggregateId>(
+internal sealed class EventNotificationPublisher(
     IServiceProvider serviceProvider,
-    IOptions<EventOptions> options)
-    : IDomainEventPublisher<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+    IOptions<EventOptions> options) : IEventNotificationPublisher
 {
-    public async ValueTask<IOperationResult> PublishAsync<TDomainEvent>(
-        TDomainEvent @event,
+    public async ValueTask<IOperationResult> PublishAsync<TEventNotification>(
+        TEventNotification @event,
         CancellationToken cancellationToken = default)
-        where TDomainEvent : notnull, IEventDomain<TAggregateId>
+        where TEventNotification : notnull, IEventNotification
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        List<IDomainEventHandler<TDomainEvent, TAggregateId>> handlers =
-            serviceProvider
-            .GetServices<IDomainEventHandler<TDomainEvent, TAggregateId>>()
+        List<IEventNotificationHandler<TEventNotification>> handlers = serviceProvider
+            .GetServices<IEventNotificationHandler<TEventNotification>>()
             .ToList();
 
-        if (handlers.Count <= 0)
+        if (handlers.Count == 0)
         {
-            return options.Value.ConsiderNoDomainEventHandlerAsError
+            return options.Value.ConsiderNoNotificationHandlerAsError
                 ? OperationResults
                     .InternalError()
                     .WithException(
                         new InvalidOperationException(
-                        I18nXpandables.EventSourcingNoDomainEventHandler
+                        I18nXpandables.EventSourcingNoIntegrationEventHandler
                             .StringFormat(@event.GetTypeName())))
                     .Build()
-                : OperationResults.
-                    Ok()
+                : OperationResults
+                    .Ok()
                     .Build();
         }
 
-        foreach (IDomainEventHandler<TDomainEvent, TAggregateId>? handler
-            in handlers)
+        foreach (IEventNotificationHandler<TEventNotification>? handler in handlers)
         {
             if (await handler
                 .HandleAsync(@event, cancellationToken)
                 .ConfigureAwait(false)
-                is { IsFailure: true } failureOperation)
+                is { IsFailure: true } failedOperation)
             {
-                return failureOperation;
+                return failedOperation;
             }
         }
 

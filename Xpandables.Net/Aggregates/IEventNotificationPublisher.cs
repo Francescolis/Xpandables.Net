@@ -22,12 +22,12 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Defines a method to automatically publish notifications.
 /// </summary>
-public interface INotificationPublisher
+public interface IEventNotificationPublisher
 {
     /// <summary>
     /// Publishes the specified notification to all registered subscribers.
     /// </summary>
-    /// <typeparam name="TNotification">Type of notification.</typeparam>
+    /// <typeparam name="TEventNotification">Type of notification.</typeparam>
     /// <param name="event">The notification to be published.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
@@ -36,8 +36,8 @@ public interface INotificationPublisher
     /// <paramref name="event"/> is null.</exception>
     /// <returns>A value that represents an 
     /// implementation of <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> PublishAsync<TNotification>(
-        TNotification @event,
+    ValueTask<IOperationResult> PublishAsync<TEventNotification>(
+        TEventNotification @event,
         CancellationToken cancellationToken = default)
-        where TNotification : notnull, IEventNotification;
+        where TEventNotification : notnull, IEventNotification;
 }

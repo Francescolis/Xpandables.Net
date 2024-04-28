@@ -24,7 +24,7 @@ namespace Xpandables.Net.Aggregates;
 public sealed record EventOptions
 {
     /// <summary>
-    /// Gets the key to use to store the aggregate unit of work in the
+    /// Gets the key to use to store events unit of work in the
     /// service collection.
     /// </summary>
     public const string UnitOfWorkKey = nameof(IAggregate);
@@ -94,7 +94,7 @@ public sealed record EventOptions
 
 
 /// <summary>
-/// Defines the <see cref="INotificationScheduler"/> options.
+/// Defines the <see cref="IEventNotificationScheduler"/> options.
 /// </summary>
 public sealed record class NotificationOptions
 {

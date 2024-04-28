@@ -58,7 +58,7 @@ public interface IAggregate
 /// </summary>
 /// <typeparam name="TAggregateId">The type of aggregate Id</typeparam>
 public interface IAggregate<TAggregateId> :
-    IAggregate, IDomainEventSourcing<TAggregateId>
+    IAggregate, IEventDomainSourcing<TAggregateId>
     where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     /// <summary>

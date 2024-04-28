@@ -66,11 +66,11 @@ public abstract class Aggregate<TAggregateId> : IAggregate<TAggregateId>
 
         foreach (IEventDomain<TAggregateId> @event in events)
         {
-            (this as IDomainEventSourcing<TAggregateId>).LoadFromHistory(@event);
+            (this as IEventDomainSourcing<TAggregateId>).LoadFromHistory(@event);
         }
     }
 
-    void IDomainEventSourcing<TAggregateId>.LoadFromHistory(
+    void IEventDomainSourcing<TAggregateId>.LoadFromHistory(
         IEventDomain<TAggregateId> @event)
     {
         Mutate(@event);

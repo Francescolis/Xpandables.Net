@@ -21,7 +21,7 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Represents a set of methods to append/read domain events to/from store.
 /// </summary>
-public interface IDomainEventStore : IDisposable
+public interface IEventDomainStore : IDisposable
 {
     /// <summary>
     /// Asynchronously appends the specified domain event to the store.

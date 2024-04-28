@@ -26,11 +26,11 @@ using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
-internal sealed class NotificationScheduler(
+internal sealed class EventNotificationScheduler(
     IServiceScopeFactory scopeFactory,
     IOptions<NotificationOptions> options,
-    ILogger<NotificationScheduler> logger)
-    : BackgroundServiceBase<NotificationScheduler>, INotificationScheduler
+    ILogger<EventNotificationScheduler> logger)
+    : BackgroundServiceBase<EventNotificationScheduler>, IEventNotificationScheduler
 {
     private int _attempts;
 
@@ -54,7 +54,7 @@ internal sealed class NotificationScheduler(
             catch (OperationCanceledException cancelException)
             {
                 logger.CancelExecutingProcess(
-                    nameof(NotificationScheduler),
+                    nameof(EventNotificationScheduler),
                     cancelException);
 
                 IsRunning = false;
@@ -63,7 +63,7 @@ internal sealed class NotificationScheduler(
                 when (exception is not OperationCanceledException)
             {
                 logger.ErrorExecutingProcess(
-                    nameof(NotificationScheduler),
+                    nameof(EventNotificationScheduler),
                     exception);
 
                 if (++_attempts > options.Value.MaxAttempts)
@@ -82,7 +82,7 @@ internal sealed class NotificationScheduler(
                 }
 
                 logger.RetryExecutingProcess(
-                    nameof(NotificationScheduler),
+                    nameof(EventNotificationScheduler),
                     _attempts,
                     options.Value.DelayMilliSeconds);
             }
@@ -93,11 +93,11 @@ internal sealed class NotificationScheduler(
     {
         using AsyncServiceScope service = scopeFactory.CreateAsyncScope();
 
-        INotificationPublisher publisher = service.ServiceProvider
-            .GetRequiredService<INotificationPublisher>();
+        IEventNotificationPublisher publisher = service.ServiceProvider
+            .GetRequiredService<IEventNotificationPublisher>();
 
-        INotificationStore eventStore = service.ServiceProvider
-            .GetRequiredService<INotificationStore>();
+        IEventNotificationStore eventStore = service.ServiceProvider
+            .GetRequiredService<IEventNotificationStore>();
 
         IEventFilter filter = new EventFilter
         {

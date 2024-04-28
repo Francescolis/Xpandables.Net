@@ -29,10 +29,10 @@ namespace Xpandables.Net.Aggregates;
 /// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
 /// <param name="unitOfWork">The unit of work to use.</param>
 /// <param name="options">The event configuration options to use.</param>
-public sealed class NotificationStore<TEventEntity>(
+public sealed class EventNotificationStore<TEventEntity>(
     [FromKeyedServices(EventOptions.UnitOfWorkKey)] IUnitOfWork unitOfWork,
     IOptions<EventOptions> options) :
-    EventStore<TEventEntity>(unitOfWork, options), INotificationStore
+    EventStore<TEventEntity>(unitOfWork, options), IEventNotificationStore
     where TEventEntity : class, IEventEntityNotification
 {
     ///<inheritdoc/>

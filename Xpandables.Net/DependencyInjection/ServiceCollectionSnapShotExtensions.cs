@@ -23,12 +23,12 @@ namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
 /// Provides a set of static methods for <see cref="IServiceCollection"/> to
-/// register <see cref="ISnapshotStore"/>
+/// register <see cref="IEventSnapshotStore"/>
 /// </summary>
 public static class ServiceCollectionSnapshotExtensions
 {
     /// <summary>
-    /// Adds the specified type as <see cref="ISnapshotStore"/> snapshot 
+    /// Adds the specified type as <see cref="IEventSnapshotStore"/> snapshot 
     /// store behavior to command handlers with scoped life time.
     /// </summary>
     /// <remarks>You need to define the <see cref="SnapshotOptions"/> in 
@@ -37,13 +37,13 @@ public static class ServiceCollectionSnapshotExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXSnapshotStore<TSnapshotStore>(
+    public static IServiceCollection AddXEventSnapshotStore<TSnapshotStore>(
         this IServiceCollection services)
-        where TSnapshotStore : class, ISnapshotStore
+        where TSnapshotStore : class, IEventSnapshotStore
     {
         ArgumentNullException.ThrowIfNull(services);
 
         return services
-            .AddScoped<ISnapshotStore, TSnapshotStore>();
+            .AddScoped<IEventSnapshotStore, TSnapshotStore>();
     }
 }
