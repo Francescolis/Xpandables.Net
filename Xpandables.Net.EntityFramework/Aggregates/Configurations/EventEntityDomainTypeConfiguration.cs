@@ -25,7 +25,7 @@ namespace Xpandables.Net.Aggregates.Configurations;
 /// <summary>
 /// Defines the base <see cref="EventEntityDomain"/> configuration.
 /// </summary>
-public sealed class EntityDomainEventTypeConfiguration
+public sealed class EventEntityDomainTypeConfiguration
     : IEntityTypeConfiguration<EventEntityDomain>
 {
     ///<inheritdoc/>

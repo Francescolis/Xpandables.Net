@@ -23,13 +23,13 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the <see cref="EventEntityNotification"/> configuration.
+/// Defines the <see cref="EventEntitySnapshot"/> configuration.
 /// </summary>
-public sealed class EntityNotificationTypeConfiguration
-    : IEntityTypeConfiguration<EventEntityNotification>
+public sealed class EventEntitySnapShotTypeConfiguration
+    : IEntityTypeConfiguration<EventEntitySnapshot>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<EventEntityNotification> builder)
+    public void Configure(EntityTypeBuilder<EventEntitySnapshot> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -37,12 +37,11 @@ public sealed class EntityNotificationTypeConfiguration
         _ = builder.HasKey(p => p.Id);
         _ = builder.HasIndex(p => p.Id).IsUnique();
 
-        _ = builder.Property(p => p.Data);
-        _ = builder.Property(p => p.EventTypeFullName);
+        _ = builder.Property(p => p.ObjectId);
         _ = builder.Property(p => p.EventTypeName);
+        _ = builder.Property(p => p.EventTypeFullName);
+        _ = builder.Property(p => p.Data);
         _ = builder.Property(p => p.Version);
-        _ = builder.Property(p => p.Status);
-        _ = builder.Property(p => p.ErrorMessage);
 
         _ = builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);
     }

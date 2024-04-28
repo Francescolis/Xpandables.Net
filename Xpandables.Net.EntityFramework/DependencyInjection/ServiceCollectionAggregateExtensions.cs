@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -28,8 +29,41 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionAggregateExtensions
 {
     /// <summary>
-    /// Registers the <see cref="DataContextDomain"/> type class to the services
-    /// with scoped life time.
+    /// Registers the default <see cref="IUnitOfWork"/> for aggregate.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXUnitOfWorkAggregate(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddXUnitOfWorkKeyed
+                <DataContextAggregate>(EventOptions.UnitOfWorkKey);
+    }
+
+    /// <summary>
+    /// Registers the <typeparamref name="TDataContext"/> type class reference
+    /// as <see cref="IUnitOfWork"/> for aggregate.
+    /// </summary>
+    /// <typeparam name="TDataContext">The type of the data context that derives
+    /// from <see cref="DataContext"/>.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXUnitOfWorkAggregate<TDataContext>(
+        this IServiceCollection services)
+        where TDataContext : DataContext
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddXUnitOfWorkKeyed<TDataContext>(EventOptions.UnitOfWorkKey);
+    }
+
+    /// <summary>
+    /// Registers the <see cref="DataContextAggregate"/> type class to the 
+    /// services with scoped life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="optionsAction">An optional action to configure the 
@@ -41,7 +75,7 @@ public static class ServiceCollectionAggregateExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXDomainDataContext(
+    public static IServiceCollection AddXDataContextAggregate(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder>? optionsAction = null,
         ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
@@ -49,27 +83,9 @@ public static class ServiceCollectionAggregateExtensions
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        return services.AddDbContext<DataContextDomain>(
+        return services.AddDbContext<DataContextAggregate>(
             optionsAction, contextLifetime, optionsLifetime);
     }
-
-    /// <summary>
-    /// Registers the default implementation of
-    /// <see cref="IAggregateTransactional"/> type 
-    /// to the services with scope life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
-    /// is null.</exception>
-    public static IServiceCollection AddXAggregateTransactional(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.AddXAggregateTransactional<AggregateTransactional>();
-    }
-
 
     /// <summary>
     /// Registers the default implementation as <see cref="IDomainEventStore"/>

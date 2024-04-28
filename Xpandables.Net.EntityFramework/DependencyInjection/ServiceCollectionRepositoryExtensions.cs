@@ -29,18 +29,21 @@ public static class ServiceCollectionRepositoryExtensions
 {
     /// <summary>
     /// Registers the <typeparamref name="TDataContext"/> type class reference 
-    /// implementation derives from <see cref="DataContext"/> to the services with scoped life time.
+    /// implementation derives from <see cref="DataContext"/> to the services 
+    /// with scoped life time.
     /// </summary>
     /// <typeparam name="TDataContext">The type of the data context that derives 
     /// from <see cref="DataContext"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <param name="optionsAction">An optional action to configure the 
     /// Microsoft.EntityFrameworkCore.DbContextOptions for the context.</param>
-    /// <param name="contextLifetime">The lifetime with which to register the context service in the container.</param>
+    /// <param name="contextLifetime">The lifetime with which to register the 
+    /// context service in the container.</param>
     /// <param name="optionsLifetime">The lifetime with which to register the DbContextOptions 
     /// service in the container.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
     public static IServiceCollection AddXDataContext<TDataContext>(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder>? optionsAction = null,
@@ -48,31 +51,60 @@ public static class ServiceCollectionRepositoryExtensions
         ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
         where TDataContext : DataContext
     {
-        _ = services ?? throw new ArgumentNullException(nameof(services));
+        ArgumentNullException.ThrowIfNull(services);
 
-        _ = services.AddDbContext<TDataContext>(optionsAction, contextLifetime, optionsLifetime);
-        return services;
+        return services
+            .AddDbContext<TDataContext>(
+                optionsAction,
+                contextLifetime,
+                optionsLifetime);
     }
 
     /// <summary>
-    /// Registers the <see cref="UnitOfWork{TDataContext}"/> using the <typeparamref name="TDataContext"/> 
-    /// as <see cref="IUnitOfWork"/> to the services with scope life time.
+    /// Registers the <see cref="UnitOfWork{TDataContext}"/> using the 
+    /// <typeparamref name="TDataContext"/> as <see cref="IUnitOfWork"/> to 
+    /// the services with scope life time.
     /// </summary>
-    /// <typeparam name="TDataContext">The type of the context for unit of work.</typeparam>
+    /// <typeparam name="TDataContext">The type of the context for unit of 
+    /// work.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXUnitOfWork<TDataContext>(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXUnitOfWork<TDataContext>(
+        this IServiceCollection services)
         where TDataContext : DataContext
         => services.AddScoped<IUnitOfWork, UnitOfWork<TDataContext>>();
 
     /// <summary>
-    /// Registers the default generic <see cref="IUnitOfWork{TDataContext}"/> implementation
-    /// to the services with scope life time.
+    /// Registers the <see cref="UnitOfWork{TDataContext}"/> using the 
+    /// <typeparamref name="TDataContext"/> as <see cref="IUnitOfWork"/> to 
+    /// the services with scope life time using the key.
+    /// </summary>
+    /// <typeparam name="TDataContext">The type of the context for unit of 
+    /// work.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="serviceKey">The key to use for the unit of work.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXUnitOfWorkKeyed<TDataContext>(
+        this IServiceCollection services,
+        string serviceKey)
+        where TDataContext : DataContext
+        => services
+            .AddKeyedScoped<IUnitOfWork, UnitOfWork<TDataContext>>(serviceKey);
+
+
+    /// <summary>
+    /// Registers the default generic <see cref="IUnitOfWork{TDataContext}"/>
+    /// implementation to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXUnitOfWorks(this IServiceCollection services)
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXUnitOfWorks(
+        this IServiceCollection services)
         => services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
 }

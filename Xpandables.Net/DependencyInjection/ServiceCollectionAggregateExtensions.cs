@@ -29,6 +29,39 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionAggregateExtensions
 {
     /// <summary>
+    /// Configures the <see cref="EventOptions"/> with the default values.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXEventOptions(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .Configure<EventOptions>(EventOptions.Default);
+    }
+
+    /// <summary>
+    /// Configures the <see cref="EventOptions"/> with the specified values.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="configureOptions">The configuration options.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXEventOptions(
+        this IServiceCollection services,
+        Action<EventOptions> configureOptions)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        return services
+            .Configure(configureOptions);
+    }
+
+    /// <summary>
     /// Registers the specified generic 
     /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> type 
     /// implementations 

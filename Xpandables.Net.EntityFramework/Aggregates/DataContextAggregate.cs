@@ -23,17 +23,17 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Provides the base domain db context.
+/// Provides the base aggregate db context.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="DataContextDomain"/> 
+/// Initializes a new instance of <see cref="DataContextAggregate"/> 
 /// with the specified configuration.
 /// </remarks>
 /// <param name="contextOptions">The configuration to be applied.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="contextOptions"/> is null.</exception>
-public sealed class DataContextDomain(
-    DbContextOptions<DataContextDomain> contextOptions)
+public sealed class DataContextAggregate(
+    DbContextOptions<DataContextAggregate> contextOptions)
     : DataContext(contextOptions)
 {
     ///<inheritdoc/>
@@ -42,11 +42,11 @@ public sealed class DataContextDomain(
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
         _ = modelBuilder
-            .ApplyConfiguration(new EntityDomainEventTypeConfiguration());
+            .ApplyConfiguration(new EventEntityDomainTypeConfiguration());
         _ = modelBuilder
-            .ApplyConfiguration(new EntityNotificationTypeConfiguration());
+            .ApplyConfiguration(new EventEntityNotificationTypeConfiguration());
         _ = modelBuilder
-            .ApplyConfiguration(new EntitySnapShotTypeConfiguration());
+            .ApplyConfiguration(new EventEntitySnapShotTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

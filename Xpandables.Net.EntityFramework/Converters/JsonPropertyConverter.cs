@@ -38,6 +38,7 @@ public sealed class JsonPropertyConverter<TProperty>
             v => string.IsNullOrEmpty(v)
                 ? default
                 : JsonSerializer
-                    .Deserialize<TProperty>(v, JsonSerializerDefaultOptions.Options))
+                    .Deserialize<TProperty>(
+                        v, JsonSerializerDefaultOptions.Options))
     { }
 }
