@@ -42,7 +42,7 @@ public sealed class PrimitiveValueConverter<TPrimitive, TValue>
 
     private static TPrimitive ValueToPrimitive(TValue value)
     {
-        return TPrimitive.CreateInstance(value);
+        return TPrimitive.Create(value);
     }
 
     private static TValue PrimitiveToValue(TPrimitive primitive)

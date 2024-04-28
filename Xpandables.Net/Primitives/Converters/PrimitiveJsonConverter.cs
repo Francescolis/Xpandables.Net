@@ -59,8 +59,8 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue>
         TPrimitive primitive = JsonSerializer
             .Deserialize<TValue?>(ref reader, options) switch
         {
-            TValue value => TPrimitive.CreateInstance(value),
-            _ => TPrimitive.DefaultInstance()
+            TValue value => TPrimitive.Create(value),
+            _ => TPrimitive.Default()
         };
 
         if (primitive

@@ -74,14 +74,14 @@ public interface IPrimitive<out TValue> : IPrimitive
 /// <remarks>Decorate your <see langword="struct"/> implementation 
 /// with <see cref="PrimitiveJsonConverterAttribute"/>.</remarks>
 public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
-    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
+    where TPrimitive : notnull, IPrimitive<TPrimitive, TValue>
     where TValue : notnull
 {
     /// <summary>
     /// Returns a default instance of <typeparamref name="TPrimitive"/>.
     /// </summary>
     /// <returns>An instance of <typeparamref name="TPrimitive"/>.</returns>
-    static abstract TPrimitive DefaultInstance();
+    static abstract TPrimitive Default();
 
     /// <summary>
     /// Creates a new instance of <typeparamref name="TPrimitive"/> type.
@@ -89,7 +89,7 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// <param name="value">The value.</param>
     /// <returns>Returns an instance 
     /// of <typeparamref name="TPrimitive"/> with the new value.</returns>
-    static abstract TPrimitive CreateInstance(TValue value);
+    static abstract TPrimitive Create(TValue value);
 
     /// <summary>
     /// Converts the <typeparamref name="TPrimitive"/> type to 
@@ -105,7 +105,7 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// </summary>
     /// <param name="value">The nullable value.</param>
     [return: NotNullIfNotNull(nameof(value))]
-    static abstract implicit operator TPrimitive(TValue? value);
+    static abstract implicit operator TPrimitive([AllowNull] TValue? value);
 
     /// <summary>
     /// Converts the <typeparamref name="TPrimitive"/> type to string.

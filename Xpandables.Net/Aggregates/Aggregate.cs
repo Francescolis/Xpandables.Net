@@ -45,7 +45,7 @@ public abstract class Aggregate<TAggregateId> : IAggregate<TAggregateId>
 
     ///<inheritdoc/>
     public TAggregateId AggregateId { get; protected set; }
-        = TAggregateId.DefaultInstance();
+        = TAggregateId.Default();
 
     /// <summary>
     /// Constructs the default instance of an aggregate root.

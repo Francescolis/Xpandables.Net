@@ -50,9 +50,9 @@ public sealed class PrimitiveUnitTest
     {
         public static string DefaultValue => "NOEMAIL@EMAIL.COM";
 
-        public static Email CreateInstance(string value) => new(value);
+        public static Email Create(string value) => new(value);
 
-        public static Email DefaultInstance() => new(DefaultValue);
+        public static Email Default() => new(DefaultValue);
 
         public static implicit operator string(Email self)
         {

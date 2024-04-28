@@ -137,7 +137,7 @@ public sealed class AggregateUnitTest
             .GetRequiredService<IAggregateStore<Person, PersonId>>();
 
         IOperationResult<Person> personResult = await store
-            .ReadAsync(PersonId.CreateInstance(guid));
+            .ReadAsync(PersonId.Create(guid));
 
         Assert.True(personResult.IsSuccess);
         Person person = personResult.Result;
@@ -276,7 +276,7 @@ public sealed class CreatePersonRequestCommandHandler(
         CreatePersonRequestCommand command,
         CancellationToken cancellationToken = default)
     {
-        PersonId personId = PersonId.CreateInstance(command.Id);
+        PersonId personId = PersonId.Create(command.Id);
 
         IOperationResult<Person> testResult = await _aggregateStore
             .ReadAsync(personId, cancellationToken)
@@ -320,7 +320,7 @@ public sealed class SendContactRequestCommandHandler
         SendContactRequestCommand command,
         CancellationToken cancellationToken = default)
     {
-        PersonId personId = PersonId.CreateInstance(command.SenderId);
+        PersonId personId = PersonId.Create(command.SenderId);
 
         IOperationResult<Person> personResult = await aggregateStore
             .ReadAsync(personId, cancellationToken)
@@ -382,8 +382,8 @@ public sealed class ContactRequestSentDomainEventHandler
 [PrimitiveJsonConverter]
 public readonly record struct PersonId(Guid Value) : IAggregateId<PersonId>
 {
-    public static PersonId CreateInstance(Guid value) => new(value);
-    public static PersonId DefaultInstance() => CreateInstance(Guid.Empty);
+    public static PersonId Create(Guid value) => new(value);
+    public static PersonId Default() => Create(Guid.Empty);
 
     public static implicit operator Guid(PersonId self) => self.Value;
 

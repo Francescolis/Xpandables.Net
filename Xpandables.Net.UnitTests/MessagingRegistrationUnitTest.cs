@@ -29,9 +29,9 @@ namespace Xpandables.Net.UnitTests;
 
 public readonly record struct ProductId(Guid Value) : IAggregateId<ProductId>
 {
-    public static ProductId CreateInstance(Guid value)
+    public static ProductId Create(Guid value)
         => throw new NotImplementedException();
-    public static ProductId DefaultInstance()
+    public static ProductId Default()
         => throw new NotImplementedException();
     public static implicit operator Guid(ProductId self)
         => throw new NotImplementedException();
