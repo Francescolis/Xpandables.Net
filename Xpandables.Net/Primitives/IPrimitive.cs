@@ -74,7 +74,7 @@ public interface IPrimitive<out TValue> : IPrimitive
 /// <remarks>Decorate your <see langword="struct"/> implementation 
 /// with <see cref="PrimitiveJsonConverterAttribute"/>.</remarks>
 public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
-    where TPrimitive : notnull, IPrimitive<TPrimitive, TValue>
+    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
     where TValue : notnull
 {
     /// <summary>
