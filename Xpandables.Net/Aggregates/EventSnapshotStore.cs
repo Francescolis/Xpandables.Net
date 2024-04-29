@@ -61,7 +61,7 @@ public sealed class EventSnapshotStore<TEventEntity>(
             OrderBy = x => x.OrderByDescending(o => o.Version),
         };
 
-        Optional<TEventEntity> entityOptional = await Repository
+        Optional<TEventEntity> entityOptional = await RepositoryRead
             .TryFindAsync(filter, cancellationToken)
             .ConfigureAwait(false);
 

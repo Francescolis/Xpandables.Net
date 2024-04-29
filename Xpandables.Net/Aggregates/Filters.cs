@@ -15,10 +15,9 @@
  *
 ********************************************************************************/
 using System.Linq.Expressions;
+using System.Text.Json;
 
 using Xpandables.Net.Expressions;
-
-using static Xpandables.Net.Repositories.RepositoryExtensions;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -73,19 +72,10 @@ public sealed class EventEntityDomainFilter :
 
         if (eventFilter.DataCriteria is not null)
         {
-            _ = Expression.Invoke(
-                eventFilter.DataCriteria,
-                Expression.PropertyOrField(
-                    EventFilterEntityVisitor.EventEntityParameter,
-                    nameof(EventEntityDomain.Data)));
+            Func<JsonDocument, bool> dataCriteria = eventFilter
+                .DataCriteria.Compile();
 
-            Expression<Func<EventEntityDomain, bool>> dataCriteria
-                = Expression.Lambda<Func<EventEntityDomain, bool>>(
-                EventFilterEntityVisitor.EventEntityVisitor
-                    .Visit(eventFilter.DataCriteria.Body),
-                EventFilterEntityVisitor.EventEntityVisitor.Parameter);
-
-            expression = expression.And(dataCriteria);
+            expression = expression.And(x => dataCriteria(x.Data));
         }
 
         return expression;
@@ -138,19 +128,10 @@ public sealed class EventEntityNotificationFilter :
 
         if (eventFilter.DataCriteria is not null)
         {
-            _ = Expression.Invoke(
-                eventFilter.DataCriteria,
-                Expression.PropertyOrField(
-                    EventFilterEntityVisitor.EventEntityParameter,
-                    nameof(EventEntityNotification.Data)));
+            Func<JsonDocument, bool> dataCriteria = eventFilter
+                .DataCriteria.Compile();
 
-            Expression<Func<EventEntityNotification, bool>> dataCriteria
-                = Expression.Lambda<Func<EventEntityNotification, bool>>(
-                EventFilterEntityVisitor.EventEntityVisitor
-                    .Visit(eventFilter.DataCriteria.Body),
-                EventFilterEntityVisitor.EventEntityVisitor.Parameter);
-
-            expression = expression.And(dataCriteria);
+            expression = expression.And(x => dataCriteria(x.Data));
         }
 
         return expression;

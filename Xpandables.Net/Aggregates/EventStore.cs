@@ -39,7 +39,12 @@ public abstract class EventStore<TEventEntity>(
     private IDisposable[] _disposables = [];
 
     ///<inheritdoc/>
-    protected IRepository<TEventEntity> Repository => unitOfWork.GetRepository<TEventEntity>();
+    protected IRepositoryRead<TEventEntity> RepositoryRead =>
+        unitOfWork.GetRepositoryRead<TEventEntity>();
+
+    ///<inheritdoc/>
+    protected IRepositoryWrite<TEventEntity> RepositoryWrite =>
+        unitOfWork.GetRepositoryWrite<TEventEntity>();
 
     ///<inheritdoc/>
     protected EventOptions Options => options.Value;
@@ -54,7 +59,7 @@ public abstract class EventStore<TEventEntity>(
 
         EventConverter<TEventEntity> converter = Options
           .Converters
-          .FirstOrDefault(x => x.CanConvert(@event.GetType()))
+          .FirstOrDefault(x => x.CanConvert(typeof(TEventEntity)))
           .As<EventConverter<TEventEntity>>()
           ?? throw new InvalidOperationException(
               I18nXpandables.AggregateFailedToFindConverter
@@ -67,7 +72,7 @@ public abstract class EventStore<TEventEntity>(
         Array.Resize(ref _disposables, _disposables.Length + 1);
         _disposables[^1] = entity;
 
-        await Repository
+        await RepositoryWrite
             .InsertAsync(entity, cancellationToken)
             .ConfigureAwait(false);
     }
@@ -105,7 +110,7 @@ public abstract class EventStore<TEventEntity>(
             OrderBy = x => x.OrderBy(o => o.Version)
         };
 
-        await foreach (TEventEntity entity in Repository
+        await foreach (TEventEntity entity in RepositoryRead
            .FetchAsync(entityFilter, cancellationToken))
         {
             yield return converter

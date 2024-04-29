@@ -58,19 +58,28 @@ public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
         TEventDomain @event,
         CancellationToken cancellationToken = default)
     {
+        if (@event.Filter is null)
+            return await decoratee
+                .HandleAsync(@event, cancellationToken)
+                .ConfigureAwait(false);
+
         IEventFilter eventFilter = new EventFilter()
         {
-            AggregateIdTypeName = @event.Filter?.AggregateIdTypeName,
-            EventTypeName = @event.Filter?.EventTypeName,
-            Pagination = @event.Filter?.Pagination ?? Pagination.With(0, 1),
-            DataCriteria = @event.Filter?.DataCriteria,
-            AggregateId = @event.Filter?.AggregateId.GetValueOrDefault(),
-            FromCreatedOn = @event.Filter?.FromCreatedOn.GetValueOrDefault(),
-            ToCreatedOn = @event.Filter?.ToCreatedOn.GetValueOrDefault(),
-            Id = @event.Filter?.Id,
-            OnError = @event.Filter?.OnError,
-            Status = @event.Filter?.Status,
-            Version = @event.Filter?.Version
+            AggregateIdTypeName = @event.Filter.AggregateIdTypeName,
+            EventTypeName = @event.Filter.EventTypeName,
+            Pagination = @event.Filter.Pagination ?? Pagination.With(0, 1),
+            DataCriteria = @event.Filter.DataCriteria,
+            AggregateId = @event.Filter.AggregateId.HasValue
+                ? @event.Filter.AggregateId.Value : null,
+            FromCreatedOn = @event.Filter.FromCreatedOn.HasValue
+                ? @event.Filter.FromCreatedOn.Value : null,
+            ToCreatedOn = @event.Filter.ToCreatedOn.HasValue
+                ? @event.Filter.ToCreatedOn.Value : null,
+            Id = @event.Filter.Id.HasValue ? @event.Filter.Id.Value : null,
+            OnError = @event.Filter.OnError,
+            Status = @event.Filter.Status,
+            Version = @event.Filter.Version.HasValue
+                ? @event.Filter.Version.Value : null
         };
 
         return eventStore

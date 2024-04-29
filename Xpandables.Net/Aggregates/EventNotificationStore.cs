@@ -59,7 +59,7 @@ public sealed class EventNotificationStore<TEventEntity>(
             Criteria = x => x.Id == eventId
         };
 
-        Optional<TEventEntity> entityOptional = await Repository
+        Optional<TEventEntity> entityOptional = await RepositoryRead
             .TryFindAsync(filter, cancellationToken)
             .ConfigureAwait(false);
 
@@ -73,7 +73,7 @@ public sealed class EventNotificationStore<TEventEntity>(
             ? EntityStatus.INACTIVE
             : EntityStatus.DELETED);
 
-        await Repository
+        await RepositoryWrite
             .UpdateAsync(entity, cancellationToken)
             .ConfigureAwait(false);
     }

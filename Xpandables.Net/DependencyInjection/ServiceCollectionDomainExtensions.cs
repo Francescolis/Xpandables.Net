@@ -79,6 +79,23 @@ public static class ServiceCollectionDomainExtensions
     }
 
     /// <summary>
+    /// Registers the default implementation as <see cref="IEventDomainStore"/>
+    /// to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXEventDomainStore(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.AddXEventDomainStore
+            <EventDomainStore<EventEntityDomain>>();
+    }
+
+    /// <summary>
     /// Registers the <typeparamref name="TDomainEventMapper"/> as 
     /// <see cref="IEventDomainMapper{TAggregateId}"/> type implementation 
     /// to the services with scope life time.

@@ -126,11 +126,13 @@ public class UnitOfWork<TDataContext>(TDataContext context)
     protected new TDataContext Context { get; } = context;
 
     ///<inheritdoc/>
-    public override IRepositoryRead<TEntity, TDataContext> GetRepositoryRead<TEntity>()
+    public override IRepositoryRead<TEntity, TDataContext>
+        GetRepositoryRead<TEntity>()
         => new RepositoryRead<TEntity, TDataContext>(Context);
 
     ///<inheritdoc/>
-    public override IRepositoryWrite<TEntity, TDataContext> GetRepositoryWrite<TEntity>()
+    public override IRepositoryWrite<TEntity, TDataContext>
+        GetRepositoryWrite<TEntity>()
         => new RepositoryWrite<TEntity, TDataContext>(Context);
 
     ///<inheritdoc/>

@@ -46,4 +46,24 @@ public static class ServiceCollectionSnapshotExtensions
         return services
             .AddScoped<IEventSnapshotStore, TSnapshotStore>();
     }
+
+    /// <summary>
+    /// Adds the default <see cref="IEventSnapshotStore"/> snapshot store behavior 
+    /// to command handlers with scoped life time.
+    /// </summary>
+    /// <remarks>You need to define the <see cref="SnapshotOptions"/> in 
+    /// configuration file.</remarks>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXEventSnapshotStore(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services
+            .AddXEventSnapshotStore<EventSnapshotStore<EventEntitySnapshot>>();
+    }
+
 }

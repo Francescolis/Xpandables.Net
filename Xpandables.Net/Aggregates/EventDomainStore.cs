@@ -74,7 +74,7 @@ public sealed class EventDomainStore<TEventEntity>(
                     .StringFormat(
                         typeof(TEventEntity).GetNameWithoutGenericArity()));
 
-        await foreach (TEventEntity entity in Repository
+        await foreach (TEventEntity entity in RepositoryRead
            .FetchAsync(filter, cancellationToken))
         {
             yield return converter

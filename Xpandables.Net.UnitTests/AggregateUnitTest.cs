@@ -28,7 +28,6 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Primitives.Converters;
-using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.UnitTests;
@@ -41,6 +40,7 @@ public sealed class AggregateUnitTest
     {
         IServiceCollection serviceDescriptors = new ServiceCollection()
             .AddLogging()
+            .Configure<EventOptions>(EventOptions.Default)
             .AddXCommandQueryHandlers(options =>
                 options
                 .UsePersistence()
@@ -54,8 +54,8 @@ public sealed class AggregateUnitTest
             .AddXEventDomainPublisher()
             .AddXEventNotificationPublisher()
             .AddXEventDomainDuplicateDecorator()
-            .AddXEventDomainStore<EventStoreTest>()
-            .AddXEventNotificationStore<NotificationStoreText>();
+            .AddXEventDomainStore()
+            .AddXEventNotificationStore();
 
         IServiceProvider serviceProvider = serviceDescriptors
             .BuildServiceProvider(
@@ -148,119 +148,10 @@ public sealed class AggregateUnitTest
     }
 }
 
-public sealed class NotificationStoreText : Disposable, IEventNotificationStore
-{
-    readonly record struct NotificationRecord(
-        IEventNotification Event, string? Exception, string Status);
-
-    private static readonly Dictionary<Guid, NotificationRecord> _store = [];
-
-    public ValueTask AppendAsync(
-        IEventNotification @event,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(@event);
-
-        _store[@event.Id] = new(@event, default, EntityStatus.ACTIVE);
-
-        return ValueTask.CompletedTask;
-    }
-
-    public IAsyncEnumerable<IEventNotification> ReadAsync(
-        IEventFilter filter,
-        CancellationToken _ = default)
-    {
-        return _store.Values
-            .Where(e => e.Exception == null && e.Status == EntityStatus.ACTIVE)
-            .Select(s => s.Event)
-            .ToAsyncEnumerable();
-    }
-
-    public async ValueTask AppendCloseAsync(
-     Guid eventId,
-     Exception? exception = default,
-     CancellationToken cancellationToken = default)
-    {
-        if (!_store.TryGetValue(eventId, out NotificationRecord _))
-            throw new InvalidOperationException(
-                $"Unable to find notification with id : {eventId}");
-
-        _store[eventId] = _store[eventId] with
-        {
-            Exception = exception?.ToString(),
-            Status = EntityStatus.DELETED
-        };
-
-        await ValueTask.CompletedTask.ConfigureAwait(false);
-    }
-}
-public sealed class EventStoreTest : Disposable, IEventDomainStore
-{
-    private static readonly Dictionary
-        <Guid, List<IEventDomain<PersonId>>> _store = [];
-
-    public ValueTask AppendAsync<TAggregateId>(
-        IEventDomain<TAggregateId> @event,
-        CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
-    {
-        ArgumentNullException.ThrowIfNull(@event);
-
-        if (!_store.TryGetValue(@event.AggregateId, out _))
-            _store.Add(@event.AggregateId, []);
-
-        _store[@event.AggregateId].Add((IEventDomain<PersonId>)@event);
-
-        return ValueTask.CompletedTask;
-    }
-
-    public IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
-        TAggregateId aggregateId,
-        CancellationToken _ = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
-    {
-        return _store.Values
-            .SelectMany(x => x)
-            .OfType<IEventDomain<TAggregateId>>()
-            .Where(e => e.AggregateId == aggregateId.Value)
-            .Select(s => s)
-            .ToAsyncEnumerable();
-    }
-
-    public IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
-        IEventFilter filter,
-        CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-
-        IQueryable<IEventDomain<TAggregateId>> query = _store.Values
-            .SelectMany(x => x)
-            .ToList()
-            .OfType<IEventDomain<TAggregateId>>()
-            .AsQueryable();
-
-        if (filter.EventTypeName is not null)
-            query = query.Where(e => e.GetType().Name == filter.EventTypeName);
-
-        if (filter.AggregateIdTypeName is not null)
-            query = query.Where(e => typeof(TAggregateId).Name == filter.AggregateIdTypeName);
-
-        if (filter.DataCriteria is not null)
-        {
-            Func<System.Text.Json.JsonDocument, bool> dataCriteria = filter.DataCriteria.Compile();
-            query = query.Where(e => e.ToJsonDocument(JsonSerializerDefaultOptions.OptionPropertyNameCaseInsensitiveTrue, default), j => dataCriteria(j));
-        }
-
-        return query
-            .Select(s => s)
-            .OfType<IEventDomain<TAggregateId>>()
-            .ToAsyncEnumerable();
-    }
-}
 public readonly record struct CreatePersonRequestCommand(
     Guid Id, string FirstName, string LastName)
     : ICommand, IPersistenceDecorator, IOperationFinalizerDecorator;
+
 public sealed class CreatePersonRequestCommandHandler(
     IAggregateStore<Person, PersonId> aggregateStore,
     IOperationFinalizer resultContext) :
@@ -393,7 +284,19 @@ public readonly record struct PersonId(Guid Value) : IAggregateId<PersonId>
 }
 
 [PrimitiveJsonConverter]
-public readonly record struct ContactId(Guid Value) : IPrimitive<Guid>;
+public readonly record struct ContactId(Guid Value) :
+    IPrimitive<ContactId, Guid>
+{
+    public static ContactId Create(Guid value) => new(value);
+    public static ContactId Default() => Create(Guid.Empty);
+
+    public static implicit operator Guid(ContactId self) => self.Value;
+
+    public static implicit operator string(ContactId self)
+        => self.Value.ToString();
+    public static implicit operator ContactId(Guid value) => new(value);
+
+}
 
 public sealed record PersonCreatedDomainEvent :
     EventDomain<Person, PersonId>, IEventDomainDuplicate
@@ -438,6 +341,7 @@ public sealed record PersonCreatedDomainEvent :
 public sealed record ContactRequestSentDomainEvent :
     EventDomain<Person, PersonId>, IEventDomainDuplicate
 {
+    [JsonConstructor]
     private ContactRequestSentDomainEvent() { }
 
     public ContactRequestSentDomainEvent(
@@ -453,7 +357,7 @@ public sealed record ContactRequestSentDomainEvent :
     [JsonIgnore]
     public IEventFilter? Filter => new EventFilter
     {
-        EventTypeName = nameof(PersonCreatedDomainEvent),
+        EventTypeName = nameof(ContactRequestSentDomainEvent),
         AggregateIdTypeName = nameof(PersonId),
         Pagination = Pagination.With(0, 1),
         DataCriteria = x
@@ -463,7 +367,6 @@ public sealed record ContactRequestSentDomainEvent :
                 x.RootElement
                 .GetProperty(nameof(ContactId))
                     .GetGuid() == ContactId.Value
-
     };
 
     [JsonIgnore]
@@ -500,12 +403,6 @@ public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
 
     public IOperationResult BeContact(ContactId contactId)
     {
-        //if (_contactIds.Contains(contactId))
-        //    return OperationResults
-        //        .BadRequest()
-        //        .WithError(nameof(ContactId), "The contact already exist.")
-        //        .Build();
-
         ContactRequestSentDomainEvent @event = new(this, contactId);
         PushEvent(@event);
 
@@ -529,23 +426,57 @@ public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
 
 public sealed class PersonUnitOfWork : Disposable, IUnitOfWork
 {
-    public ValueTask<int> PersistAsync(CancellationToken cancellationToken = default)
+    private static readonly HashSet<IEventEntity> _store = [];
+
+    [ThreadStatic]
+    private static HashSet<IEventEntity> _events = [];
+
+    public IRepository<TEntity> GetRepository<TEntity>()
+        where TEntity : class
+        => new RepositoryPerson<TEntity>(_store);
+
+    public IRepositoryRead<TEntity> GetRepositoryRead<TEntity>()
+        where TEntity : class
+        => new RepositoryPerson<TEntity>(_store);
+
+    public IRepositoryWrite<TEntity> GetRepositoryWrite<TEntity>()
+        where TEntity : class
+        => new RepositoryPerson<TEntity>(_events);
+
+    public ValueTask<int> PersistAsync(
+        CancellationToken cancellationToken = default)
     {
-        return ValueTask.FromResult(0);
+        int count = _events.Count;
+        if (_events.Count != 0)
+        {
+            _events.ForEach(e => _store.Add(e));
+            _events.Clear();
+        }
+
+        return ValueTask.FromResult(count);
+    }
+}
+
+public sealed class RepositoryPerson<TEvent> : RepositoryBase<TEvent>
+    where TEvent : class
+{
+    private readonly HashSet<IEventEntity> _events = [];
+
+    public RepositoryPerson(HashSet<IEventEntity> events) => _events = events;
+    public override ValueTask InsertAsync(
+        TEvent entity,
+        CancellationToken cancellationToken = default)
+    {
+        _events.Add((IEventEntity)entity);
+        return ValueTask.CompletedTask;
     }
 
-    IRepository<TEntity> IUnitOfWork.GetRepository<TEntity>()
+    public override IAsyncEnumerable<TResult> FetchAsync<TResult>(
+        IEntityFilter<TEvent, TResult> filter,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
-
-    IRepositoryRead<TEntity> IUnitOfWork.GetRepositoryRead<TEntity>()
-    {
-        throw new NotImplementedException();
-    }
-
-    IRepositoryWrite<TEntity> IUnitOfWork.GetRepositoryWrite<TEntity>()
-    {
-        throw new NotImplementedException();
+        return filter
+            .GetQueryableFiltered(_events.OfType<TEvent>().AsQueryable())
+            .ToAsyncEnumerable();
     }
 }
