@@ -41,7 +41,7 @@ namespace Xpandables.Net.EntityFramework.Repositories;
 /// </summary>
 public class RepositoryWrite<TEntity>(DataContext context)
     : IRepositoryWrite<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
     /// <summary>
     /// Gets the current context instance.
@@ -166,7 +166,7 @@ public class RepositoryWrite<TEntity>(DataContext context)
 /// </summary>
 public class RepositoryWrite<TEntity, TDataContext>(TDataContext context)
     : RepositoryWrite<TEntity>(context), IRepositoryWrite<TEntity, TDataContext>
-    where TEntity : class, IEntity
+    where TEntity : class
     where TDataContext : DataContext
 {
     /// <summary>

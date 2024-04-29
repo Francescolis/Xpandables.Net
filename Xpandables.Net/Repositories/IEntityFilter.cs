@@ -33,7 +33,7 @@ namespace Xpandables.Net.Repositories;
 /// <typeparam name="TEntity">The type of the target entity.</typeparam>
 /// <typeparam name="TResult">The type of result.</typeparam>
 public interface IEntityFilter<TEntity, TResult>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
     /// <summary>
     /// Specifies the projection filter to be applied on specific type entities.
@@ -83,5 +83,5 @@ public interface IEntityFilter<TEntity, TResult>
 /// <see cref="IQueryable{T}"/> with T as <typeparamref name="TEntity"/>.</remarks>
 /// <typeparam name="TEntity">The type of the target entity.</typeparam>
 public interface IEntityFilter<TEntity> : IEntityFilter<TEntity, TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
 { }

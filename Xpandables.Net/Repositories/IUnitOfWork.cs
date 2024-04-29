@@ -44,7 +44,7 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
     IRepository<TEntity> GetRepository<TEntity>()
-        where TEntity : class, IEntity;
+        where TEntity : class;
 
     /// <summary>
     /// Returns the repository read implementation that matches 
@@ -54,7 +54,7 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
     IRepositoryRead<TEntity> GetRepositoryRead<TEntity>()
-        where TEntity : class, IEntity;
+        where TEntity : class;
 
     /// <summary>
     /// Returns the repository write implementation that matches 
@@ -64,7 +64,7 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
     IRepositoryWrite<TEntity> GetRepositoryWrite<TEntity>()
-        where TEntity : class, IEntity;
+        where TEntity : class;
 }
 
 /// <summary>
@@ -82,7 +82,7 @@ public interface IUnitOfWork<TDataContext> : IUnitOfWork
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
     new IRepositoryRead<TEntity, TDataContext> GetRepositoryRead<TEntity>()
-        where TEntity : class, IEntity;
+        where TEntity : class;
 
     /// <summary>
     /// Returns the repository write implementation that matches 
@@ -92,5 +92,5 @@ public interface IUnitOfWork<TDataContext> : IUnitOfWork
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
     new IRepositoryWrite<TEntity, TDataContext> GetRepositoryWrite<TEntity>()
-        where TEntity : class, IEntity;
+        where TEntity : class;
 }

@@ -41,7 +41,7 @@ namespace Xpandables.Net.Repositories;
 public class Repository<TEntity>(
     IRepositoryRead<TEntity> repositoryRead,
     IRepositoryWrite<TEntity> repositoryWrite) : IRepository<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
     ///<inheritdoc/>
     public virtual ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
@@ -135,7 +135,7 @@ public class Repository<TEntity, TDataContext>(
     IRepositoryRead<TEntity, TDataContext> repositoryRead,
     IRepositoryWrite<TEntity, TDataContext> repositoryWrite)
     : Repository<TEntity>(repositoryRead, repositoryWrite)
-    where TEntity : class, IEntity
+    where TEntity : class
     where TDataContext : DataContext
 {
 }

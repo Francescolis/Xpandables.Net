@@ -23,7 +23,7 @@ namespace Xpandables.Net.Repositories;
 /// </summary>
 /// <typeparam name="TEntity">The entity object type.</typeparam>
 public interface IRepositoryRead<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
     /// <summary>
     /// Tries to return an entity of the <typeparamref name="TEntity"/> 
@@ -115,7 +115,7 @@ public interface IRepositoryRead<TEntity>
 /// <typeparam name="TDataContext">The data context type.</typeparam>
 public interface IRepositoryRead<TEntity, TDataContext>
     : IRepositoryRead<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
     where TDataContext : class
 {
 }

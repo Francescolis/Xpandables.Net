@@ -22,7 +22,7 @@ namespace Xpandables.Net.Repositories;
 /// <typeparam name="TEntity">The entity object type.</typeparam>
 public interface IRepository<TEntity>
     : IRepositoryRead<TEntity>, IRepositoryWrite<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
 
 }

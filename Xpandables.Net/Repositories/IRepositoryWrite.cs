@@ -23,7 +23,7 @@ namespace Xpandables.Net.Repositories;
 /// </summary>
 /// <typeparam name="TEntity">The entity object type.</typeparam>
 public interface IRepositoryWrite<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
     /// <summary>
     /// Marks the specified entity to be inserted to the data storage 
@@ -155,7 +155,7 @@ public interface IRepositoryWrite<TEntity>
 /// <typeparam name="TDataContext">The data context type.</typeparam>
 public interface IRepositoryWrite<TEntity, TDataContext>
     : IRepositoryWrite<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
     where TDataContext : class
 {
 }

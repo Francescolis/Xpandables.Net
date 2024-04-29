@@ -40,7 +40,7 @@ namespace Xpandables.Net.EntityFramework.Repositories;
 /// </summary>
 public class RepositoryRead<TEntity>(DataContext context)
     : IRepositoryRead<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
     /// <summary>
     /// Gets the current context instance.
@@ -125,7 +125,7 @@ public class RepositoryRead<TEntity>(DataContext context)
 /// </summary>
 public class RepositoryRead<TEntity, TDataContext>(TDataContext context)
     : RepositoryRead<TEntity>(context), IRepositoryRead<TEntity, TDataContext>
-    where TEntity : class, IEntity
+    where TEntity : class
     where TDataContext : DataContext
 {
     /// <summary>

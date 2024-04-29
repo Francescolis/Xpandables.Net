@@ -30,7 +30,7 @@ namespace Xpandables.Net.Repositories;
 /// <typeparam name="TEntity">The type of the target entity.</typeparam>
 public record EntityFilter<TEntity>
     : EntityFilter<TEntity, TEntity>, IEntityFilter<TEntity>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
     /// <summary>
     /// Creates a new instance of <see cref="EntityFilter{TEntity}"/> 
@@ -56,7 +56,7 @@ public record EntityFilter<TEntity>
 /// <typeparam name="TResult">The type of result.</typeparam>
 /// <remarks>You must at least provides a value for the "Selector".</remarks>
 public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
-    where TEntity : class, IEntity
+    where TEntity : class
 {
     /// <summary>
     /// Creates a new instance of 
