@@ -152,7 +152,7 @@ public partial interface IOperationResult
     public IOperationResult<TResult> ToOperationResult<TResult>()
         => new OperationResult<TResult>(
             StatusCode,
-            (TResult?)Result,
+            Result is not null ? (TResult?)Result : null,
             LocationUrl,
             Errors,
             Headers,
