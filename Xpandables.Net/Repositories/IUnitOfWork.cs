@@ -34,7 +34,7 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// related to the operation.</exception>
     /// <exception cref="OperationCanceledException">The 
     /// operation has been canceled.</exception>
-    ValueTask<int> PersistAsync(CancellationToken cancellationToken = default);
+    ValueTask PersistAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns the repository implementation that matches 

@@ -64,5 +64,5 @@ public sealed class EventDataContext(
     /// <summary>
     /// A collection of <see cref="EventEntitySnapshot"/> entities.
     /// </summary>
-    public DbSet<EventEntitySnapshot> SnapShots { get; set; }
+    public DbSet<EventEntitySnapshot> Snapshots { get; set; }
 }

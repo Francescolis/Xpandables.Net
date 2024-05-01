@@ -68,7 +68,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
                     return operationResult;
             }
 
-            _ = await unitOfWork
+            await unitOfWork
                 .PersistAsync(cancellationToken)
                 .ConfigureAwait(false);
 

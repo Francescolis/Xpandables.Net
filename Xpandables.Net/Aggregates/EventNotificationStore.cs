@@ -76,6 +76,9 @@ public sealed class EventNotificationStore<TEventEntity>(
         await RepositoryWrite
             .UpdateAsync(entity, cancellationToken)
             .ConfigureAwait(false);
+
+        await UnitOfWork.PersistAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>

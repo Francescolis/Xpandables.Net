@@ -443,7 +443,7 @@ public sealed class PersonUnitOfWork : Disposable, IUnitOfWork
         where TEntity : class
         => new RepositoryPerson<TEntity>(_events);
 
-    public ValueTask<int> PersistAsync(
+    public async ValueTask PersistAsync(
         CancellationToken cancellationToken = default)
     {
         int count = _events.Count;
@@ -453,7 +453,7 @@ public sealed class PersonUnitOfWork : Disposable, IUnitOfWork
             _events.Clear();
         }
 
-        return ValueTask.FromResult(count);
+        await ValueTask.CompletedTask;
     }
 }
 

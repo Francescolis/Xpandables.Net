@@ -38,12 +38,12 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
     protected DataContext Context { get; } = context;
 
     ///<inheritdoc/>
-    public async ValueTask<int> PersistAsync(
+    public async ValueTask PersistAsync(
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return await Context
+            _ = await Context
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
         }

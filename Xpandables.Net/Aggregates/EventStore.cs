@@ -47,6 +47,9 @@ public abstract class EventStore<TEventEntity>(
         unitOfWork.GetRepositoryWrite<TEventEntity>();
 
     ///<inheritdoc/>
+    protected IUnitOfWork UnitOfWork => unitOfWork;
+
+    ///<inheritdoc/>
     protected EventOptions Options => options.Value;
 
     ///<inheritdoc/>
