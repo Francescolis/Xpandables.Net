@@ -18,6 +18,7 @@ using System.Linq.Expressions;
 using System.Text.Json;
 
 using Xpandables.Net.Expressions;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
@@ -72,10 +73,11 @@ public sealed class EventEntityDomainFilter :
 
         if (eventFilter.DataCriteria is not null)
         {
-            Func<JsonDocument, bool> dataCriteria = eventFilter
-                .DataCriteria.Compile();
-
-            expression = expression.And(x => dataCriteria(x.Data));
+            expression = expression.And(
+                RepositoryExtensions
+                .Compose<EventEntityDomain, JsonDocument, bool>(
+                    x => x.Data,
+                    eventFilter.DataCriteria));
         }
 
         return expression;
@@ -128,10 +130,11 @@ public sealed class EventEntityNotificationFilter :
 
         if (eventFilter.DataCriteria is not null)
         {
-            Func<JsonDocument, bool> dataCriteria = eventFilter
-                .DataCriteria.Compile();
-
-            expression = expression.And(x => dataCriteria(x.Data));
+            expression = expression.And(
+                RepositoryExtensions
+                .Compose<EventEntityNotification, JsonDocument, bool>(
+                    x => x.Data,
+                    eventFilter.DataCriteria));
         }
 
         return expression;
