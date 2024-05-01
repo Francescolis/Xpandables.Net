@@ -255,6 +255,34 @@ public static class OperationResultExtensions
     }
 
     /// <summary>
+    /// Converts the current <see cref="Action"/> 
+    /// to a <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <param name="action">The action to act on.</param>
+    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="action"/> is null.</exception>
+    public static IOperationResult ToOperationResult(this Action action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        try
+        {
+            action();
+            return OperationResults.Ok().Build();
+        }
+        catch (OperationResultException operationResultException)
+        {
+            return operationResultException.Operation;
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            return exception.ToOperationResult();
+        }
+    }
+
+    /// <summary>
     /// Converts the current <see cref="ValueTask{TResult}"/> 
     /// to a <see cref="IOperationResult{TResult}"/>.
     /// </summary>
@@ -272,6 +300,48 @@ public static class OperationResultExtensions
         try
         {
             TResult result = await valueTask.ConfigureAwait(false);
+            return result is { }
+                ? OperationResults
+                    .Ok(result)
+                    .Build()
+                : OperationResults
+                    .BadRequest<TResult>()
+                    .WithError(
+                        typeof(TResult).Name,
+                        I18nXpandables.OperationResultValueIsNull)
+                    .Build();
+        }
+        catch (OperationResultException operationResultException)
+        {
+            return operationResultException.Operation
+                .ToOperationResult<TResult>();
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            return exception
+                .ToOperationResult()
+                .ToOperationResult<TResult>();
+        }
+    }
+
+    /// <summary>
+    /// Converts the current <see cref="Func{TResult}"/> 
+    /// to a <see cref="IOperationResult{TResult}"/>.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="func">The func to act on.</param>
+    /// <returns>An instance of <see cref="IOperationResult{TResult}"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="func"/> is null.</exception>
+    public static IOperationResult<TResult> ToOperationResult<TResult>(
+        this Func<TResult> func)
+    {
+        ArgumentNullException.ThrowIfNull(func);
+
+        try
+        {
+            TResult result = func();
             return result is { }
                 ? OperationResults
                     .Ok(result)
