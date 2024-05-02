@@ -38,7 +38,7 @@ public sealed class HttpClientDispatcherUnitTest
             .AddXHttpClientResponseBuilder()
             .AddXHttpClientBuildProvider()
             .AddXHttpClientDispatcher<IHttpMonkeyDispatcher, HttpMonkeyDispatcher>(
-            _ => "token", (_, httpClient) =>
+            (_, httpClient) =>
             {
                 httpClient.BaseAddress = new Uri("https://www.montemagno.com/");
                 httpClient.Timeout = new TimeSpan(0, 5, 0);
@@ -110,7 +110,7 @@ readonly record struct Monkey(
     string Name, string Location, string Details, string Image,
     int Population, double Latitude, double Longitude);
 
-[HttpClient(Path = "monkeys.json", IsSecured = false, IsNullable = true,
+[HttpClient(Path = "monkeys.json", IsSecured = true, IsNullable = true,
     Method = HttpClientParameters.Method.GET,
     Location = HttpClientParameters.Location.Body)]
 sealed record Query : IHttpClientAsyncRequest<Monkey>;

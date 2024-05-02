@@ -151,9 +151,9 @@ public static class ServiceCollectionHttpExtensions
     ///  binding with a named <see cref="HttpClient"/> and security header 
     ///  value provider for authorization. 
     /// </summary>
+    /// <typeparam name="THttpClientAuthorizationHandler">The type that
+    /// will be used to authorize the request.</typeparam>
     /// <param name="services">The collection of services.</param>
-    /// <param name="authenticationHeaderValue">The security header value 
-    /// provider.</param>
     /// <param name="configureClient">A delegate that is used to configure an 
     /// <see cref="HttpClient"/>.</param>
     /// <returns>The <see cref="IHttpClientBuilder"/> instance.</returns>
@@ -161,19 +161,19 @@ public static class ServiceCollectionHttpExtensions
     /// <paramref name="services"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="configureClient"/> is null.</exception>
-    public static IHttpClientBuilder AddXHttpClientDispatcher(
+    public static IHttpClientBuilder AddXHttpClientDispatcher
+        <THttpClientAuthorizationHandler>(
         this IServiceCollection services,
-        HttpClientAuthenticationHeaderValueProvider authenticationHeaderValue,
         Action<IServiceProvider, HttpClient> configureClient)
+        where THttpClientAuthorizationHandler : HttpClientAuthorizationHandler
     {
         ArgumentNullException.ThrowIfNull(services);
 
         return services
-            .AddScoped<HttpClientAuthorizationHandler>()
-            .AddScoped(_ => authenticationHeaderValue)
+            .AddScoped<THttpClientAuthorizationHandler>()
             .AddHttpClient
             <IHttpClientDispatcher, HttpClientDispatcherDefault>(configureClient)
-            .ConfigurePrimaryHttpMessageHandler<HttpClientAuthorizationHandler>();
+            .ConfigurePrimaryHttpMessageHandler<THttpClientAuthorizationHandler>();
     }
 
     /// <summary>
@@ -238,60 +238,24 @@ public static class ServiceCollectionHttpExtensions
     /// inherits from <see cref="IHttpClientDispatcher"/>.</typeparam>
     /// <typeparam name="THttpClientDispatcherImpl">The type that implements 
     /// <typeparamref name="THttpClientDispatcherInterface"/>.</typeparam>
+    /// <typeparam name="THttpClientAuthorizationHandler">The type that will be
+    /// used to authorize the request.</typeparam>
     /// <param name="services">The collection of services.</param>
-    /// <param name="authenticationHeaderValue">The security header value 
-    /// provider.</param>
     /// <returns>The <see cref="IHttpClientBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
     public static IHttpClientBuilder AddXHttpClientDispatcher
-        <THttpClientDispatcherInterface, THttpClientDispatcherImpl>(
-        this IServiceCollection services,
-        HttpClientAuthenticationHeaderValueProvider authenticationHeaderValue)
+        <THttpClientDispatcherInterface, THttpClientDispatcherImpl,
+        THttpClientAuthorizationHandler>(
+        this IServiceCollection services)
         where THttpClientDispatcherInterface : class, IHttpClientDispatcher
         where THttpClientDispatcherImpl : class, THttpClientDispatcherInterface
+        where THttpClientAuthorizationHandler : HttpClientAuthorizationHandler
     {
         ArgumentNullException.ThrowIfNull(services);
         return services
-            .AddScoped<HttpClientAuthorizationHandler>()
-            .AddScoped(_ => authenticationHeaderValue)
+            .AddScoped<THttpClientAuthorizationHandler>()
             .AddHttpClient<THttpClientDispatcherInterface, THttpClientDispatcherImpl>()
-            .ConfigurePrimaryHttpMessageHandler<HttpClientAuthorizationHandler>();
-    }
-
-    /// <summary>
-    /// Registers the <typeparamref name="THttpClientDispatcherImpl"/> type
-    /// as <typeparamref name="THttpClientDispatcherInterface"/>
-    /// to be used as <see cref="IHttpClientDispatcher"/> and a security 
-    /// header value provider for authorization.
-    /// </summary>
-    /// <typeparam name="THttpClientDispatcherInterface">The interface type 
-    /// that inherits from <see cref="IHttpClientDispatcher"/>.</typeparam>
-    /// <typeparam name="THttpClientDispatcherImpl">The type that implements
-    /// <typeparamref name="THttpClientDispatcherInterface"/>.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <param name="authenticationHeaderValue">The security header value 
-    /// provider.</param>
-    /// <param name="configureClient">A delegate that is used to configure an 
-    /// <see cref="HttpClient"/>.</param>
-    /// <returns>The <see cref="IHttpClientBuilder"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IHttpClientBuilder AddXHttpClientDispatcher
-        <THttpClientDispatcherInterface, THttpClientDispatcherImpl>(
-        this IServiceCollection services,
-        HttpClientAuthenticationHeaderValueProvider authenticationHeaderValue,
-        Action<IServiceProvider, HttpClient> configureClient)
-        where THttpClientDispatcherInterface : class, IHttpClientDispatcher
-        where THttpClientDispatcherImpl : class, THttpClientDispatcherInterface
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        return services
-            .AddScoped<HttpClientAuthorizationHandler>()
-            .AddScoped(_ => authenticationHeaderValue)
-            .AddHttpClient
-            <THttpClientDispatcherInterface, THttpClientDispatcherImpl>(
-            configureClient)
-            .ConfigurePrimaryHttpMessageHandler<HttpClientAuthorizationHandler>();
+            .ConfigurePrimaryHttpMessageHandler<THttpClientAuthorizationHandler>();
     }
 }

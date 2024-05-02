@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,39 +14,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Represents a method signature used to apply 
-/// <see cref="AuthenticationHeaderValue"/> to the request,
-/// or returns the value to be used for the 
-/// <see cref="AuthenticationHeaderValue"/> if not null.
-/// </summary>
-/// <param name="request">The target request to act on.</param>
-/// <returns>A string that represents the value for
-/// the <see cref="AuthenticationHeaderValue"/> if not null.</returns>
-public delegate string? HttpClientAuthenticationHeaderValueProvider(
-    HttpRequestMessage request);
-
-/// <summary>
-/// Provides with a handler that can be used with 
+/// Provides with an abstract handler that can be used with 
 /// <see cref="HttpClient"/> to add header authorization value
-/// before request execution. You must register the 
-/// <see cref="HttpClientAuthenticationHeaderValueProvider"/> provider.
+/// before request execution.
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of 
-/// <see cref="HttpClientAuthorizationHandler"/> class with the provider delegate.
+/// <see cref="HttpClientAuthorizationHandler"/> class.
+/// You need to register your handler in the DI container using one of the
+/// extension methods like <see cref="HttpClientBuilderExtensions
+/// .ConfigurePrimaryHttpMessageHandler{THandler}(IHttpClientBuilder)"/>.
 /// </remarks>
-/// <param name="providerDelegate">The authentication header 
-/// delegate to act with.</param>
-/// <exception cref="ArgumentNullException">The 
-/// <paramref name="providerDelegate"/> is null.</exception>
-public sealed class HttpClientAuthorizationHandler(
-    HttpClientAuthenticationHeaderValueProvider providerDelegate)
-    : HttpClientHandler
+public abstract class HttpClientAuthorizationHandler : HttpClientHandler
 {
     /// <summary>
     /// Creates an instance of System.Net.Http.HttpResponseMessage 
@@ -62,7 +45,7 @@ public sealed class HttpClientAuthorizationHandler(
     /// <paramref name="request"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The token is not available. 
     /// See inner exception.</exception>
-    protected override async Task<HttpResponseMessage> SendAsync(
+    protected sealed override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
@@ -76,26 +59,22 @@ public sealed class HttpClientAuthorizationHandler(
                 .SendAsync(request, cancellationToken)
                 .ConfigureAwait(false);
 
-        string? headerValue = providerDelegate(request);
-
-        if (request.Headers
-            .Authorization is not { Parameter: null } authorization)
-            return await base
-                .SendAsync(request, cancellationToken)
-                .ConfigureAwait(false);
-
-        if (headerValue is null)
-            throw new InvalidOperationException(
-                $"Expected authorization value not provided or applied by " +
-                $"the {nameof(HttpClientAuthenticationHeaderValueProvider)} " +
-                $"instance.");
-
-        request.Headers.Authorization = new AuthenticationHeaderValue(
-            authorization.Scheme,
-            headerValue);
+        await ApplySecurityAsync(request, cancellationToken)
+            .ConfigureAwait(false);
 
         return await base
             .SendAsync(request, cancellationToken)
             .ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// When overridden in a derived class, applies the security
+    /// on the request message.
+    /// </summary>
+    /// <remarks>The method get called only if the request is secured.</remarks>
+    /// <param name="request">The request message to apply security.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    protected abstract Task ApplySecurityAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken);
 }
