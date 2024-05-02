@@ -360,7 +360,6 @@ public static class HttpClientDispatcherExtensions
             .Build();
     }
 
-
     /// <summary>
     /// Returns an <see cref="IOperationResult{TValue}"/> 
     /// from the <see cref="HttpClientResponse{TResult}"/>.
@@ -497,4 +496,16 @@ public static class HttpClientDispatcherExtensions
         T _,
         JsonSerializerOptions? options = default)
          => JsonSerializer.Deserialize<T>(json, options);
+
+    internal static async ValueTask<HttpClientException?>
+        BuildExceptionAsync(this HttpResponseMessage httpResponse)
+    {
+        return await httpResponse.Content.ReadAsStringAsync()
+            .ConfigureAwait(false) switch
+        {
+            { } content when !string.IsNullOrWhiteSpace(content)
+                => new HttpClientException(content),
+            _ => default
+        };
+    }
 }

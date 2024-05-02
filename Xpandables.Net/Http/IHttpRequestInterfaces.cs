@@ -59,7 +59,7 @@ public interface IHttpRequestPatch
     /// </summary>
     /// <remarks>The default behavior returns an empty collection.</remarks>
     public IEnumerable<IPatchOperation> PatchOperations
-        => Enumerable.Empty<IPatchOperation>();
+        => [];
 }
 
 /// <summary>
