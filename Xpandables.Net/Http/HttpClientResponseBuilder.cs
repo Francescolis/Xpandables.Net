@@ -29,12 +29,15 @@ public abstract class HttpClientResponseBuilder
     /// instance can build the response for the specified status code.
     /// </summary>
     /// <param name="statusCode">The status code of the response.</param>
+    /// <param name="genericType">The type of the response.</param>
     /// <returns><see langword="true"/> if the instance can build the
     /// specified request; otherwise, <see langword="false"/>.</returns>
-    public abstract bool CanBuild(HttpStatusCode statusCode);
+    public abstract bool CanBuild(
+        HttpStatusCode statusCode,
+        Type? genericType);
 
     /// <summary>
-    /// Builds the response from the <see cref="HttpResponseMessage"/>.
+    /// Builds a response of <see cref="HttpClientResponse"/> type.
     /// </summary>
     /// <param name="httpResponse">The response message to act on.</param>
     /// <param name="options">The serialization options to use.</param>
@@ -47,60 +50,59 @@ public abstract class HttpClientResponseBuilder
 }
 
 /// <summary>
-/// Builds the response from the <see cref="HttpRequestMessage"/> that contains
-/// a result of a specific type.
+/// Builds the response from the <see cref="HttpRequestMessage"/>.
 /// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public abstract class HttpClientResponseBuilder<TResult>
+public abstract class HttpClientResponseResultBuilder :
+    HttpClientResponseBuilder
 {
     /// <summary>
-    /// When overridden in a derived class, determines whether the builder
-    /// instance can build the response for the specified status code.
-    /// </summary>
-    /// <param name="statusCode">The status code of the response.</param>
-    /// <returns><see langword="true"/> if the instance can build the
-    /// specified request; otherwise, <see langword="false"/>.</returns>
-    public abstract bool CanBuild(HttpStatusCode statusCode);
-
-    /// <summary>
-    /// Builds the response from the <see cref="HttpResponseMessage"/>.
+    /// Builds a response of <typeparamref name="TResult"/> type.
     /// </summary>
     /// <param name="httpResponse">The response message to act on.</param>
     /// <param name="options">The serialization options to use.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The built response.</returns>
-    public abstract ValueTask<HttpClientResponse<TResult>> BuildAsync(
+    public abstract ValueTask<HttpClientResponse<TResult>> BuildAsync<TResult>(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default);
+
+    /// <inheritdoc/>
+    public sealed override ValueTask<HttpClientResponse> BuildAsync(
+        HttpResponseMessage httpResponse,
+        JsonSerializerOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 /// <summary>
 /// Builds the response from the <see cref="HttpRequestMessage"/> that contains
-/// an <see cref="IAsyncEnumerable{T}"/> of a specific type.
+/// a result of a specific type.
 /// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public abstract class HttpClientResponseAsyncBuilder<TResult>
+public abstract class HttpClientResponseIAsyncResultBuilder :
+    HttpClientResponseBuilder
 {
     /// <summary>
-    /// When overridden in a derived class, determines whether the builder
-    /// instance can build the response for the specified status code.
-    /// </summary>
-    /// <param name="statusCode">The status code of the response.</param>
-    /// <returns><see langword="true"/> if the instance can build the
-    /// specified request; otherwise, <see langword="false"/>.</returns>
-    public abstract bool CanBuild(HttpStatusCode statusCode);
-
-    /// <summary>
-    /// Builds the response from the <see cref="HttpResponseMessage"/>.
+    /// Builds a response of <see cref="HttpClientResponse{TResult}"/>> type.
     /// </summary>
     /// <param name="httpResponse">The response message to act on.</param>
     /// <param name="options">The serialization options to use.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The built response.</returns>
-    public abstract ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
-        BuildAsync(
+    public abstract ValueTask<HttpClientResponse
+        <IAsyncEnumerable<TResult>>> BuildAsync<TResult>(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default);
+
+    /// <inheritdoc/>
+    public sealed override ValueTask<HttpClientResponse> BuildAsync(
+        HttpResponseMessage httpResponse,
+        JsonSerializerOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
