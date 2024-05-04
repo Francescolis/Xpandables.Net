@@ -37,6 +37,8 @@ public interface IRepositoryWrite<TEntity>
     /// <paramref name="entity"/> is null.</exception>
     /// <exception cref="OperationCanceledException">If 
     /// the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask InsertAsync(
         TEntity entity,
         CancellationToken cancellationToken = default);
@@ -54,6 +56,8 @@ public interface IRepositoryWrite<TEntity>
     /// <paramref name="entities"/> is null.</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask InsertManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default);
@@ -70,6 +74,8 @@ public interface IRepositoryWrite<TEntity>
     /// <paramref name="entity"/> is null.</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask UpdateAsync(
         TEntity entity,
         CancellationToken cancellationToken = default);
@@ -87,6 +93,8 @@ public interface IRepositoryWrite<TEntity>
     /// <paramref name="entities"/> is null.</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask UpdateManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default);
@@ -109,6 +117,8 @@ public interface IRepositoryWrite<TEntity>
     /// .</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask UpdateManyAsync(
         IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, object>> updater,
@@ -127,6 +137,8 @@ public interface IRepositoryWrite<TEntity>
     /// <paramref name="filter"/> is null.</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask DeleteAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default);
@@ -143,6 +155,8 @@ public interface IRepositoryWrite<TEntity>
     /// <paramref name="entity"/> is null.</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask DeleteAsync(
         TEntity entity,
         CancellationToken cancellationToken = default);

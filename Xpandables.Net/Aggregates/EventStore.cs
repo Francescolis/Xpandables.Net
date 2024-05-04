@@ -18,8 +18,6 @@ using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Primitives.I18n;
-using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
@@ -61,16 +59,12 @@ public abstract class EventStore<TEventEntity>(
         ArgumentNullException.ThrowIfNull(@event);
 
         EventConverter<TEventEntity> converter = Options
-          .Converters
-          .FirstOrDefault(x => x.CanConvert(typeof(TEventEntity)))
-          .As<EventConverter<TEventEntity>>()
-          ?? throw new InvalidOperationException(
-              I18nXpandables.AggregateFailedToFindConverter
-                  .StringFormat(
-                      @event.GetType().GetNameWithoutGenericArity()));
+            .GetEventConverterFor<EventConverter<TEventEntity>>(
+                typeof(TEventEntity));
 
-        TEventEntity entity = converter
-        .ConvertTo(@event, Options.SerializerOptions);
+        TEventEntity entity = converter.ConvertTo(
+            @event,
+            Options.SerializerOptions);
 
         Array.Resize(ref _disposables, _disposables.Length + 1);
         _disposables[^1] = entity;
@@ -89,22 +83,12 @@ public abstract class EventStore<TEventEntity>(
         ArgumentNullException.ThrowIfNull(eventFilter);
 
         EventEntityFilter<TEventEntity> filter = Options
-                .Filters
-                .FirstOrDefault(x => x.CanFilter(typeof(TEventEntity)))
-                .As<EventEntityFilter<TEventEntity>>()
-                ?? throw new InvalidOperationException(
-                    I18nXpandables.AggregateFailedToFindFilter
-                        .StringFormat(
-                            typeof(TEventEntity).GetNameWithoutGenericArity()));
+            .GetEventEntityFilterFor<EventEntityFilter<TEventEntity>>(
+                typeof(TEventEntity));
 
         EventConverter<TEventEntity> converter = Options
-            .Converters
-            .FirstOrDefault(x => x.CanConvert(typeof(TEventEntity)))
-            .As<EventConverter<TEventEntity>>()
-            ?? throw new InvalidOperationException(
-                I18nXpandables.AggregateFailedToFindConverter
-                    .StringFormat(
-                        typeof(TEventEntity).GetNameWithoutGenericArity()));
+            .GetEventConverterFor<EventConverter<TEventEntity>>(
+                typeof(TEventEntity));
 
         EntityFilter<TEventEntity> entityFilter = new()
         {

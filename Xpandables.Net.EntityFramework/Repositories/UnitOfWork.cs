@@ -89,12 +89,14 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
     ///<inheritdoc/>
     public virtual IRepositoryRead<TEntity> GetRepositoryRead<TEntity>()
         where TEntity : class
-        => new RepositoryRead<TEntity>(Context);
+        => new RepositoryReadDecorator<TEntity>(
+            new RepositoryRead<TEntity>(Context));
 
     ///<inheritdoc/>
     public virtual IRepositoryWrite<TEntity> GetRepositoryWrite<TEntity>()
         where TEntity : class
-        => new RepositoryWrite<TEntity>(Context);
+        => new RepositoryWriteDecorator<TEntity>(
+            new RepositoryWrite<TEntity>(Context));
 
     ///<inheritdoc/>
     public virtual IRepository<TEntity> GetRepository<TEntity>()
@@ -128,12 +130,14 @@ public class UnitOfWork<TDataContext>(TDataContext context)
     ///<inheritdoc/>
     public override IRepositoryRead<TEntity, TDataContext>
         GetRepositoryRead<TEntity>()
-        => new RepositoryRead<TEntity, TDataContext>(Context);
+        => new RepositoryReadDecorator<TEntity, TDataContext>(
+            new RepositoryRead<TEntity, TDataContext>(Context));
 
     ///<inheritdoc/>
     public override IRepositoryWrite<TEntity, TDataContext>
         GetRepositoryWrite<TEntity>()
-        => new RepositoryWrite<TEntity, TDataContext>(Context);
+        => new RepositoryWriteDecorator<TEntity, TDataContext>(
+            new RepositoryWrite<TEntity, TDataContext>(Context));
 
     ///<inheritdoc/>
     public override IRepository<TEntity> GetRepository<TEntity>()

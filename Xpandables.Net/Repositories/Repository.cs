@@ -133,9 +133,10 @@ public class Repository<TEntity>(
 /// </summary>
 public class Repository<TEntity, TDataContext>(
     IRepositoryRead<TEntity, TDataContext> repositoryRead,
-    IRepositoryWrite<TEntity, TDataContext> repositoryWrite)
-    : Repository<TEntity>(repositoryRead, repositoryWrite)
+    IRepositoryWrite<TEntity, TDataContext> repositoryWrite) :
+    Repository<TEntity>(repositoryRead, repositoryWrite),
+    IRepository<TEntity, TDataContext>
     where TEntity : class
-    where TDataContext : DataContext
+    where TDataContext : class
 {
 }

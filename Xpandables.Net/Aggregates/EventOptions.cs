@@ -16,6 +16,9 @@
 ********************************************************************************/
 using System.Text.Json;
 
+using Xpandables.Net.Primitives.I18n;
+using Xpandables.Net.Primitives.Text;
+
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
@@ -65,6 +68,47 @@ public sealed record EventOptions
     /// Determines whether to consider no notification handler as an error.
     /// </summary>
     public bool ConsiderNoNotificationHandlerAsError { get; set; }
+
+    /// <summary>
+    /// Returns the <see cref="EventConverter"/> instance for the specified type.
+    /// </summary>
+    /// <typeparam name="TEventConverter">The type of the event converter
+    /// .</typeparam>
+    /// <param name="type">The type to convert.</param>
+    /// <returns>The <see cref="EventConverter"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">The converter was not 
+    /// found.</exception>"
+    public TEventConverter GetEventConverterFor<TEventConverter>(
+        Type type)
+        where TEventConverter : EventConverter
+        => Converters
+            .FirstOrDefault(x => x.CanConvert(type))
+            .As<TEventConverter>()
+              ?? throw new InvalidOperationException(
+                I18nXpandables.AggregateFailedToFindConverter
+                    .StringFormat(
+                        typeof(TEventConverter).GetNameWithoutGenericArity()));
+
+    /// <summary>
+    /// Returns the <see cref="EventEntityFilter"/> instance for the specified 
+    /// type.
+    /// </summary>
+    /// <typeparam name="TEventEntityFilter">The type of the event entity filter.
+    /// <paramref name="type"/>The type to filter.</typeparam>
+    /// <returns>The <see cref="EventEntityFilter"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">The filter was not found.
+    /// </exception>
+    public TEventEntityFilter GetEventEntityFilterFor<TEventEntityFilter>(
+        Type type)
+        where TEventEntityFilter : EventEntityFilter
+        => Filters
+            .FirstOrDefault(x => x.CanFilter(type))
+            .As<TEventEntityFilter>()
+            ?? throw new InvalidOperationException(
+                I18nXpandables.AggregateFailedToFindFilter
+                    .StringFormat(
+                        typeof(TEventEntityFilter)
+                            .GetNameWithoutGenericArity()));
 
     /// <summary>
     /// Builds the default <see cref="EventOptions"/> instance.

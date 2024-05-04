@@ -24,5 +24,18 @@ public interface IRepository<TEntity>
     : IRepositoryRead<TEntity>, IRepositoryWrite<TEntity>
     where TEntity : class
 {
+}
 
+/// <summary>
+/// Represents a set of methods to read/write objects from a data store.
+/// </summary>
+/// <typeparam name="TEntity">The entity object type.</typeparam>
+/// <typeparam name="TDataContext">The data context type.</typeparam>
+public interface IRepository<TEntity, TDataContext> :
+    IRepository<TEntity>,
+    IRepositoryRead<TEntity, TDataContext>,
+    IRepositoryWrite<TEntity, TDataContext>
+    where TEntity : class
+    where TDataContext : class
+{
 }

@@ -35,6 +35,8 @@ public interface IEventDomainStore : IDisposable
     /// <paramref name="event"/> is null.</exception>   
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
+    /// <exception cref="OperationCanceledException">The operation was 
+    /// canceled.</exception>
     ValueTask AppendAsync<TAggregateId>(
         IEventDomain<TAggregateId> @event,
         CancellationToken cancellationToken = default)
@@ -46,7 +48,8 @@ public interface IEventDomainStore : IDisposable
     /// if not found, returns an empty collection.
     /// </summary>
     /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
-    /// <param name="aggregateId">The aggregate identifier to search events for.</param>
+    /// <param name="aggregateId">The aggregate identifier to search events 
+    /// for.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>An enumerator of <see cref="IEventDomain{TAggregateId}"/> 
@@ -55,6 +58,8 @@ public interface IEventDomainStore : IDisposable
     /// <paramref name="aggregateId"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed.
     /// See inner exception.</exception>
+    /// <exception cref="OperationCanceledException">The operation was
+    /// canceled.</exception>
     /// <remarks>For performance, use the method with filters.</remarks>
     IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
         TAggregateId aggregateId,
@@ -76,6 +81,8 @@ public interface IEventDomainStore : IDisposable
     /// <paramref name="eventFilter"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
+    /// <exception cref="OperationCanceledException">The operation was
+    /// canceled.</exception>
     IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
         IEventFilter eventFilter,
         CancellationToken cancellationToken = default)

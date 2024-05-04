@@ -20,8 +20,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Primitives.I18n;
-using Xpandables.Net.Primitives.Text;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
@@ -51,7 +49,8 @@ public sealed class EventDomainStore<TEventEntity>(
     }
 
     ///<inheritdoc/>
-    public async IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
+    public async IAsyncEnumerable<IEventDomain<TAggregateId>>
+        ReadAsync<TAggregateId>(
         TAggregateId aggregateId,
          [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TAggregateId : struct, IAggregateId<TAggregateId>
@@ -66,13 +65,8 @@ public sealed class EventDomainStore<TEventEntity>(
         };
 
         EventConverter<TEventEntity> converter = Options
-            .Converters
-            .FirstOrDefault(x => x.CanConvert(typeof(TEventEntity)))
-            .As<EventConverter<TEventEntity>>()
-            ?? throw new InvalidOperationException(
-                I18nXpandables.AggregateFailedToFindConverter
-                    .StringFormat(
-                        typeof(TEventEntity).GetNameWithoutGenericArity()));
+            .GetEventConverterFor<EventConverter<TEventEntity>>(
+                typeof(TEventEntity));
 
         await foreach (TEventEntity entity in RepositoryRead
            .FetchAsync(filter, cancellationToken))

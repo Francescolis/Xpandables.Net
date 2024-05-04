@@ -133,6 +133,15 @@ namespace Xpandables.Net.Primitives.I18n {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to La déserialisation du type &apos;{0}&apos; a échoué..
+        /// </summary>
+        public static string EventConverterFailedToDeserialize {
+            get {
+                return ResourceManager.GetString("EventConverterFailedToDeserialize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to L&apos;évènement avec la même clé {0} existe déjà dans la collection..
         /// </summary>
         public static string EventSourcingDomainEventAlreadyExist {
@@ -246,6 +255,15 @@ namespace Xpandables.Net.Primitives.I18n {
         public static string HttpStatusCodeUnauthorized {
             get {
                 return ResourceManager.GetString("HttpStatusCodeUnauthorized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Impossible de parser le document &apos;{0}&apos;..
+        /// </summary>
+        public static string JsonDocumentFailedToParse {
+            get {
+                return ResourceManager.GetString("JsonDocumentFailedToParse", resourceCulture);
             }
         }
         

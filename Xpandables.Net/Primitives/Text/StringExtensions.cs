@@ -23,6 +23,8 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Xpandables.Net.Primitives.I18n;
+
 namespace Xpandables.Net.Primitives.Text;
 
 /// <summary>
@@ -524,13 +526,12 @@ public static class StringExtensions
     /// during parsing.</param>
     /// <returns>An instance of <see cref="JsonDocument"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="document"/>
-    /// is null.</exception>
-    /// <exception cref="NotSupportedException">There is no compatible 
-    /// <see cref="JsonConverter"/>
-    /// for <typeparamref name="TDocument"/> 
-    /// or its serializable members.</exception>
+    /// is null.</exception>   
     /// <exception cref="ArgumentException">The <paramref name="documentOptions"/> 
     /// contains unsupported options.</exception>
+    /// <exception cref="InvalidOperationException">The JSON is invalid. -or-
+    /// contentType is not compatible with the JSON. -or- There is remaining
+    /// string in the span beyond a single JSON value.</exception>
     public static JsonDocument ToJsonDocument<TDocument>(
         this TDocument document,
         JsonSerializerOptions? serializerOptions = default,
@@ -539,12 +540,22 @@ public static class StringExtensions
     {
         _ = document ?? throw new ArgumentNullException(nameof(document));
 
-        string documentString = JsonSerializer.Serialize(
-            document,
-            document.GetType(),
-            serializerOptions);
+        try
+        {
+            string documentString = JsonSerializer.Serialize(
+          document,
+          document.GetType(),
+          serializerOptions);
 
-        return JsonDocument.Parse(documentString, documentOptions);
+            return JsonDocument.Parse(documentString, documentOptions);
+        }
+        catch (Exception exception)
+            when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                I18nXpandables.JsonDocumentFailedToParse
+                .StringFormat(document.GetType().Name), exception);
+        }
     }
 
     /// <summary>

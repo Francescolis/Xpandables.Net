@@ -42,6 +42,8 @@ public interface IRepositoryRead<TEntity>
     /// <paramref name="key"/> is null.</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
@@ -64,6 +66,8 @@ public interface IRepositoryRead<TEntity>
     /// <paramref name="filter"/> is null.</exception>
     /// <exception cref="OperationCanceledException"
     /// >If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default);
@@ -83,6 +87,8 @@ public interface IRepositoryRead<TEntity>
     /// <paramref name="filter"/> is null.</exception>
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     IAsyncEnumerable<TResult> FetchAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default);
@@ -103,6 +109,8 @@ public interface IRepositoryRead<TEntity>
     /// <paramref name="filter"/> is null.</exception>
     /// <exception cref="OperationCanceledException">If 
     /// the <see cref="CancellationToken" /> is canceled.</exception>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     ValueTask<int> CountAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default);

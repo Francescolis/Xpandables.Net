@@ -35,6 +35,8 @@ public abstract class EventConverter
     /// <param name="typeToConvert">The type of the object to convert.</param>
     /// <returns><see langword="true"/> if the instance can convert the 
     /// specified object type; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="typeToConvert"/> is null.</exception>"
     public abstract bool CanConvert(Type typeToConvert);
 }
 
@@ -56,6 +58,8 @@ public abstract class EventConverter<TEventEntity> : EventConverter
     /// <returns>The entity converted from the event.</returns>
     /// <exception cref="InvalidOperationException">Unbale to convert to
     /// <typeparamref name="TEventEntity"/> type.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="event"/> is null.</exception>"
     public abstract TEventEntity ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = default);
@@ -68,6 +72,8 @@ public abstract class EventConverter<TEventEntity> : EventConverter
     /// <returns>The event converted from the entity.</returns>
     /// <exception cref="InvalidOperationException">Unbale to convert to
     /// event type.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="entity"/> is null.</exception>
     public abstract IEvent ConvertFrom(
         TEventEntity entity,
         JsonSerializerOptions? options = default);

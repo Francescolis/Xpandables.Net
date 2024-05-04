@@ -175,4 +175,10 @@
   <data name="AggregateFailedToFindSnapshot" xml:space="preserve">
     <value>Pas de snapshot trouvé pour l'id {0}.</value>
   </data>
+  <data name="EventConverterFailedToDeserialize" xml:space="preserve">
+    <value>La déserialisation du type '{0}' a échoué.</value>
+  </data>
+  <data name="JsonDocumentFailedToParse" xml:space="preserve">
+    <value>Impossible de parser le document '{0}'.</value>
+  </data>
 </root>

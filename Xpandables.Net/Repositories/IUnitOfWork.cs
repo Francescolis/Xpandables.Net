@@ -43,6 +43,8 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// <typeparam name="TEntity">The type of the target entity.</typeparam>
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     IRepository<TEntity> GetRepository<TEntity>()
         where TEntity : class;
 
@@ -53,6 +55,8 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// <typeparam name="TEntity">The type of the target entity.</typeparam>
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     IRepositoryRead<TEntity> GetRepositoryRead<TEntity>()
         where TEntity : class;
 
@@ -63,6 +67,8 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
     /// <typeparam name="TEntity">The type of the target entity.</typeparam>
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     IRepositoryWrite<TEntity> GetRepositoryWrite<TEntity>()
         where TEntity : class;
 }
@@ -81,6 +87,8 @@ public interface IUnitOfWork<TDataContext> : IUnitOfWork
     /// <typeparam name="TEntity">The type of the target entity.</typeparam>
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     new IRepositoryRead<TEntity, TDataContext> GetRepositoryRead<TEntity>()
         where TEntity : class;
 
@@ -91,6 +99,8 @@ public interface IUnitOfWork<TDataContext> : IUnitOfWork
     /// <typeparam name="TEntity">The type of the target entity.</typeparam>
     /// <returns>An instance of an object that 
     /// implements <see cref="IRepository{TEntity}"/> interface.</returns>
+    /// <exception cref="InvalidOperationException"> The operation failed.
+    /// See inner exception.</exception>
     new IRepositoryWrite<TEntity, TDataContext> GetRepositoryWrite<TEntity>()
         where TEntity : class;
 }

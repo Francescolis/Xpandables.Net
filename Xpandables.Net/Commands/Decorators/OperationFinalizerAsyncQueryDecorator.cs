@@ -32,11 +32,13 @@ internal sealed class OperationFinalizerAsyncQueryDecorator<TQuery, TResult>(
         TQuery query,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on 
+        // the awaited task
         await using IAsyncEnumerator<TResult> asyncEnumerator = decoratee
             .HandleAsync(query, cancellationToken)
             .GetAsyncEnumerator(cancellationToken);
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on 
+        // the awaited task
 
 
         TResult? result = default;

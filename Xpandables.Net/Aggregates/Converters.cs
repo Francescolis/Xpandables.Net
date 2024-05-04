@@ -35,16 +35,28 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
         EventEntityDomain entity,
         JsonSerializerOptions? options = null)
     {
-        Type eventType = Type.GetType(entity.EventTypeFullName, true)
+        ArgumentNullException.ThrowIfNull(entity);
+
+        try
+        {
+            Type eventType = Type.GetType(entity.EventTypeFullName, true)
             ?? throw new InvalidOperationException(
                 $"Type '{entity.EventTypeName}' not found.");
 
-        object? @event = JsonSerializer
-            .Deserialize(entity.Data, eventType, options);
+            object? @event = JsonSerializer
+                .Deserialize(entity.Data, eventType, options);
 
-        return @event as IEventDomain
-            ?? throw new InvalidOperationException(
-                $"Failed to deserialize '{entity.EventTypeName}'.");
+            return @event as IEventDomain
+                ?? throw new InvalidOperationException(
+                    $"Failed to deserialize '{entity.EventTypeName}'.");
+        }
+        catch (Exception exception)
+            when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                I18nXpandables.EventConverterFailedToDeserialize
+                    .StringFormat(entity.EventTypeName), exception);
+        }
     }
 
     ///<inheritdoc/>
@@ -52,6 +64,8 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
         IEvent @event,
         JsonSerializerOptions? options = null)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         IEventDomain eventDomain = @event.As<IEventDomain>()
             ?? throw new InvalidOperationException(
                 $"Event {@event.GetType().Name} is not an event domain.");
@@ -89,21 +103,35 @@ public sealed class EventEntityNotificationConverter :
         EventEntityNotification entity,
         JsonSerializerOptions? options = null)
     {
-        Type eventType = Type.GetType(entity.EventTypeFullName, true)
-            ?? throw new InvalidOperationException(
-                $"Type '{entity.EventTypeName}' not found.");
+        ArgumentNullException.ThrowIfNull(entity);
 
-        object? @event = JsonSerializer
-            .Deserialize(entity.Data, eventType, options);
+        try
+        {
+            Type eventType = Type.GetType(entity.EventTypeFullName, true)
+         ?? throw new InvalidOperationException(
+             $"Type '{entity.EventTypeName}' not found.");
 
-        return @event as IEventNotification
-            ?? throw new InvalidOperationException(
-                $"Failed to deserialize '{entity.EventTypeName}'.");
+            object? @event = JsonSerializer
+                .Deserialize(entity.Data, eventType, options);
+
+            return @event as IEventNotification
+                ?? throw new InvalidOperationException(
+                    $"Failed to deserialize '{entity.EventTypeName}'.");
+        }
+        catch (Exception exception)
+           when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                I18nXpandables.EventConverterFailedToDeserialize
+                    .StringFormat(entity.EventTypeName), exception);
+        }
     }
 
     ///<inheritdoc/>
     public override EventEntityNotification ConvertTo(IEvent @event, JsonSerializerOptions? options = null)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         IEventNotification eventNotification = @event.As<IEventNotification>()
               ?? throw new InvalidOperationException(
                   $"Event {@event.GetType().Name} is not a notification.");
@@ -137,16 +165,28 @@ public sealed class EventEntitySnapshotConverter :
         EventEntitySnapshot entity,
         JsonSerializerOptions? options = null)
     {
-        Type eventType = Type.GetType(entity.EventTypeFullName, true)
-            ?? throw new InvalidOperationException(
-                $"Type '{entity.EventTypeName}' not found.");
+        ArgumentNullException.ThrowIfNull(entity);
 
-        object? @event = JsonSerializer
-            .Deserialize(entity.Data, eventType, options);
+        try
+        {
+            Type eventType = Type.GetType(entity.EventTypeFullName, true)
+        ?? throw new InvalidOperationException(
+            $"Type '{entity.EventTypeName}' not found.");
 
-        return @event as IEventSnapshot
-            ?? throw new InvalidOperationException(
-                $"Failed to deserialize '{entity.EventTypeName}'.");
+            object? @event = JsonSerializer
+                .Deserialize(entity.Data, eventType, options);
+
+            return @event as IEventSnapshot
+                ?? throw new InvalidOperationException(
+                    $"Failed to deserialize '{entity.EventTypeName}'.");
+        }
+        catch (Exception exception)
+            when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                I18nXpandables.EventConverterFailedToDeserialize
+                    .StringFormat(entity.EventTypeName), exception);
+        }
     }
 
     ///<inheritdoc/>
@@ -154,6 +194,8 @@ public sealed class EventEntitySnapshotConverter :
         IEvent @event,
         JsonSerializerOptions? options = null)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         IEventSnapshot eventSnapshop = @event.As<IEventSnapshot>()
             ?? throw new InvalidOperationException(
                 $"Event {@event.GetType().Name} is not a snapshot.");
@@ -189,25 +231,37 @@ public sealed class AggregateEventConverter :
         IAggregate entity,
         JsonSerializerOptions? options = null)
     {
+        ArgumentNullException.ThrowIfNull(entity);
+
         IOriginator originator = entity.As<IOriginator>()
             ?? throw new InvalidOperationException(
                 $"Event {entity.GetTypeName()} is must " +
                 $"implement '{nameof(IOriginator)}'.");
 
-        string entityTypeName = entity.GetTypeName();
-        string entityTypeFullName = entity.GetTypeFullName();
-        IMemento memento = originator.CreateMemento();
-        JsonDocument data = memento.ToJsonDocument(options);
-        ulong version = entity.Version;
-
-        return new EventSnapshot()
+        try
         {
-            Memento = memento,
-            Version = version,
-            ObjectId = entity.AggregateId.Value,
-            EntityTypeName = entityTypeName,
-            EntityTypeFullName = entityTypeFullName,
-        };
+            string entityTypeName = entity.GetTypeName();
+            string entityTypeFullName = entity.GetTypeFullName();
+            IMemento memento = originator.CreateMemento();
+            JsonDocument data = memento.ToJsonDocument(options);
+            ulong version = entity.Version;
+
+            return new EventSnapshot()
+            {
+                Memento = memento,
+                Version = version,
+                ObjectId = entity.AggregateId.Value,
+                EntityTypeName = entityTypeName,
+                EntityTypeFullName = entityTypeFullName,
+            };
+        }
+        catch (Exception exception)
+            when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                I18nXpandables.EventConverterFailedToDeserialize
+                    .StringFormat(entity.GetTypeName()), exception);
+        }
     }
 
     ///<inheritdoc/>
@@ -215,27 +269,39 @@ public sealed class AggregateEventConverter :
         IEvent @event,
         JsonSerializerOptions? options = null)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         IEventSnapshot eventSnapshop = @event.As<IEventSnapshot>()
             ?? throw new InvalidOperationException(
                 $"Event {@event.GetType().Name} is not a snapshot.");
 
-        Type type = Type.GetType(eventSnapshop.EntityTypeFullName, true)
-            ?? throw new InvalidOperationException(
-                $"Type '{eventSnapshop.EntityTypeName}' not found.");
+        try
+        {
+            Type type = Type.GetType(eventSnapshop.EntityTypeFullName, true)
+           ?? throw new InvalidOperationException(
+               $"Type '{eventSnapshop.EntityTypeName}' not found.");
 
-        IOriginator instance = Activator
-            .CreateInstance(type, true)
-            .As<IOriginator>()
-            ?? throw new InvalidOperationException(
-                I18nXpandables.AggregateFailedToCreateInstance
-                    .StringFormat(type.GetNameWithoutGenericArity()));
-
-        instance.SetMemento(eventSnapshop.Memento);
-
-        return instance as IAggregate
-            ?? throw new InvalidOperationException(
+            IOriginator instance = Activator
+                .CreateInstance(type, true)
+                .As<IOriginator>()
+                ?? throw new InvalidOperationException(
                     I18nXpandables.AggregateFailedToCreateInstance
                         .StringFormat(type.GetNameWithoutGenericArity()));
+
+            instance.SetMemento(eventSnapshop.Memento);
+
+            return instance as IAggregate
+                ?? throw new InvalidOperationException(
+                        I18nXpandables.AggregateFailedToCreateInstance
+                            .StringFormat(type.GetNameWithoutGenericArity()));
+        }
+        catch (Exception exception)
+             when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                I18nXpandables.EventConverterFailedToDeserialize
+                    .StringFormat(eventSnapshop.EntityTypeName), exception);
+        }
     }
 }
 

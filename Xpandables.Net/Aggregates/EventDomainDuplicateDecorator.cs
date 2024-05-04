@@ -82,16 +82,27 @@ public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
                 ? @event.Filter.Version.Value : null
         };
 
-        return eventStore
-            .ReadAsync<TAggragateId>(eventFilter, cancellationToken)
-            .ToBlockingEnumerable(cancellationToken)
-            .Any() switch
+        try
         {
-            true => @event.OnFailure,
-            _ => await decoratee
-                .HandleAsync(@event, cancellationToken)
-                .ConfigureAwait(false)
-        };
+            return eventStore
+        .ReadAsync<TAggragateId>(eventFilter, cancellationToken)
+        .ToBlockingEnumerable(cancellationToken)
+        .Any() switch
+            {
+                true => @event.OnFailure,
+                _ => await decoratee
+                    .HandleAsync(@event, cancellationToken)
+                    .ConfigureAwait(false)
+            };
 
+        }
+        catch (Exception exception)
+        when (exception is not OperationResultException)
+        {
+            return OperationResults
+                .InternalError()
+                .WithException(exception)
+                .Build();
+        }
     }
 }
