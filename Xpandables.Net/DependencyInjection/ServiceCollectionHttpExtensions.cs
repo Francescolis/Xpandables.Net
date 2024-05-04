@@ -48,20 +48,20 @@ public static class ServiceCollectionHttpExtensions
     public static IServiceCollection AddXHttpClientDispatcherBuilders(
         this IServiceCollection services)
         => services
-            .AddScoped<IHttpClientResponseBuilder,
+            .AddTransient<IHttpClientResponseBuilder,
                 SuccessHttpClientResponseBuilder>()
-            .AddScoped<IHttpClientResponseBuilder,
+            .AddTransient<IHttpClientResponseBuilder,
                 FailureHttpClientResponseBuilder>()
-            .AddScoped(
+            .AddTransient(
                 typeof(IHttpClientResponseResultBuilder<>),
                 typeof(SuccessHttpClientResponseResultBuilder<>))
-            .AddScoped(
+            .AddTransient(
                 typeof(IHttpClientResponseResultBuilder<>),
                 typeof(FailureHttpClientResponseResultBuilder<>))
-            .AddScoped(
+            .AddTransient(
                 typeof(IHttpClientResponseIAsyncResultBuilder<>),
                 typeof(SuccessHttpClientResponseAsyncResultBuilder<>))
-            .AddScoped(
+            .AddTransient(
                 typeof(IHttpClientResponseIAsyncResultBuilder<>),
                 typeof(FailureHttpClientResponseAsyncResultBuilder<>));
 
