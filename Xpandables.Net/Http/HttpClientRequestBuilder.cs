@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
-namespace Xpandables.Net.Http.Builders;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Build the request for the <see cref="HttpClient"/>.

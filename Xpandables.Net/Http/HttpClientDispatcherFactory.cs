@@ -22,7 +22,7 @@ using Microsoft.Extensions.Options;
 
 using static Xpandables.Net.Http.HttpClientParameters;
 
-namespace Xpandables.Net.Http.Builders;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// The default implementation of the 

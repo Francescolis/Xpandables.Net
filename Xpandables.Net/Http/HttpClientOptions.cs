@@ -19,10 +19,6 @@ using System.Text.Json;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Http.Builders;
-using Xpandables.Net.Http.Builders.Requests;
-using Xpandables.Net.Http.Builders.Responses;
-
 namespace Xpandables.Net.Http;
 
 /// <summary>

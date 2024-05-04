@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Http.Builders;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Represents a factory that creates <see cref="HttpRequestMessage"/> 

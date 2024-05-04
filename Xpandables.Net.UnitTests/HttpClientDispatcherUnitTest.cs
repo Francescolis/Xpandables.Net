@@ -23,7 +23,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Builders;
 
 using static Xpandables.Net.Http.HttpClientParameters.Patch;
 

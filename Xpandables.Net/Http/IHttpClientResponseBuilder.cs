@@ -17,7 +17,7 @@
 using System.Net;
 using System.Text.Json;
 
-namespace Xpandables.Net.Http.Builders;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines the base contract for building the response from

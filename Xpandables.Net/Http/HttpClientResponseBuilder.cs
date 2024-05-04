@@ -17,7 +17,7 @@
 ********************************************************************************/
 using System.Net;
 
-namespace Xpandables.Net.Http.Builders;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Builds the response from the <see cref="HttpRequestMessage"/>.

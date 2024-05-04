@@ -19,7 +19,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Build the attribute for a request.

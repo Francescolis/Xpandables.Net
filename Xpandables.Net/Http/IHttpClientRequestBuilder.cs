@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Http.Builders;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Builds the request for <see cref="IHttpClientDispatcher"/>.

@@ -457,12 +457,12 @@ public sealed class PersonUnitOfWork : Disposable, IUnitOfWork
     }
 }
 
-public sealed class RepositoryPerson<TEvent> : RepositoryBase<TEvent>
+public sealed class RepositoryPerson<TEvent>(HashSet<IEventEntity> events) :
+    RepositoryBase<TEvent>
     where TEvent : class
 {
-    private readonly HashSet<IEventEntity> _events = [];
+    private readonly HashSet<IEventEntity> _events = events;
 
-    public RepositoryPerson(HashSet<IEventEntity> events) => _events = events;
     public override ValueTask InsertAsync(
         TEvent entity,
         CancellationToken cancellationToken = default)

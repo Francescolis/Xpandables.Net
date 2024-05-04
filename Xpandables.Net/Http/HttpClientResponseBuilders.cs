@@ -18,11 +18,10 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.Collections;
 
-namespace Xpandables.Net.Http.Builders.Responses;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Builds the success response of <see cref="HttpClientResponse"/> type.
