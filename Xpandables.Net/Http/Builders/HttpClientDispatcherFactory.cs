@@ -29,8 +29,7 @@ namespace Xpandables.Net.Http.Builders;
 /// <see cref="IHttpClientDispatcherFactory"/> interface.
 /// </summary>
 public sealed class HttpClientDispatcherFactory
-    (IOptions<HttpClientOptions> options,
-    IServiceProvider serviceProvider) :
+    (IOptions<HttpClientOptions> options) :
     IHttpClientDispatcherFactory
 {
     ///<inheritdoc/>
@@ -199,7 +198,6 @@ public sealed class HttpClientDispatcherFactory
 
         IHttpClientResponseBuilder builder
             = Options.GetResponseBuilderFor<IHttpClientResponseBuilder>(
-                serviceProvider,
                 response.StatusCode);
 
         return await builder
@@ -222,7 +220,6 @@ public sealed class HttpClientDispatcherFactory
         IHttpClientResponseResultBuilder<TResult> builder
             = Options.GetResponseBuilderFor
             <IHttpClientResponseResultBuilder<TResult>>(
-                serviceProvider,
                 response.StatusCode);
 
         return await builder
@@ -244,7 +241,6 @@ public sealed class HttpClientDispatcherFactory
         IHttpClientResponseIAsyncResultBuilder<TResult> builder
             = Options.GetResponseBuilderFor
             <IHttpClientResponseIAsyncResultBuilder<TResult>>(
-                serviceProvider,
                 response.StatusCode);
 
         return await builder

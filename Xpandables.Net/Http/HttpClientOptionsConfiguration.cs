@@ -36,7 +36,7 @@ public sealed class HttpClientOptionsConfiguration(
     public void Configure(HttpClientOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        _ = _serviceProvider;
-        //options.SetServiceProvider(_serviceProvider);
+
+        options.SetServiceProvider(_serviceProvider);
     }
 }

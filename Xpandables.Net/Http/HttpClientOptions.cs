@@ -76,18 +76,16 @@ public sealed record HttpClientOptions
     /// </summary>
     /// <typeparam name="TBuilder">The type of the builder to resolve
     /// .</typeparam>
-    /// <param name="serviceProvider">The service provider to use.</param>
     /// <param name="targetStatusCode">The status code of the response.</param>
     /// <exception cref="InvalidOperationException">No response builder found for
     /// the specified type.</exception>
     public TBuilder GetResponseBuilderFor<TBuilder>(
-        IServiceProvider serviceProvider,
         HttpStatusCode targetStatusCode)
         where TBuilder : IHttpClientResponseBuilderBase
     {
         CheckBuilderTypeIsRegistered<TBuilder>();
 
-        return serviceProvider
+        return ServiceProvider
             .GetServices<TBuilder>()
             .FirstOrDefault(builder => builder.CanBuild(targetStatusCode))
             ?? throw new InvalidOperationException(

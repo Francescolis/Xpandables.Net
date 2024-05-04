@@ -39,7 +39,7 @@ public sealed class HttpClientDispatcherUnitTest
         services
             .Configure<HttpClientOptions>(HttpClientOptions.Default)
             .AddXHttpClientDispatcherBuilders()
-            //.AddXHttpClientOptions()
+            .AddXHttpClientOptions()
             .AddXHttpClientDispatcherFactory()
             .AddXHttpClientDispatcher<IHttpMonkeyDispatcher, HttpMonkeyDispatcher>(
             (_, httpClient) =>
