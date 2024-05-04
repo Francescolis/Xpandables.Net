@@ -177,19 +177,16 @@ public static class HttpClientDispatcherExtensions
     /// The request must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements 
     /// the <see cref="IHttpClientAttributeProvider"/> interface.</param>
-    /// <param name="serializerOptions">Options to control 
-    /// the behavior during parsing.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
     public static ValueTask<HttpClientResponse> SendAsync(
         this IHttpClientDispatcher httpRestClientHandler,
-        IHttpClientRequest request,
-        JsonSerializerOptions serializerOptions)
+        IHttpClientRequest request)
     {
         ArgumentNullException.ThrowIfNull(httpRestClientHandler);
         return httpRestClientHandler
-            .SendAsync(request, serializerOptions: serializerOptions);
+            .SendAsync(request);
     }
 
     /// <summary>
@@ -230,19 +227,16 @@ public static class HttpClientDispatcherExtensions
     /// The request must be decorated with
     /// the <see cref="HttpClientAttribute"/> or implements the 
     /// <see cref="IHttpClientAttributeProvider"/> interface.</param>
-    /// <param name="serializerOptions">Options to control the behavior 
-    /// during parsing.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
     public static ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
-        IHttpClientRequest<TResult> request,
-        JsonSerializerOptions serializerOptions)
+        IHttpClientRequest<TResult> request)
     {
         ArgumentNullException.ThrowIfNull(httpRestClientHandler);
         return httpRestClientHandler
-            .SendAsync(request, serializerOptions: serializerOptions);
+            .SendAsync(request);
     }
 
     /// <summary>

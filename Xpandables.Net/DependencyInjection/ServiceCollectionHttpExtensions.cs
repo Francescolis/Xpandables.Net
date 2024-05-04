@@ -17,8 +17,11 @@
 ********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Builders;
+using Xpandables.Net.Http.Builders.Responses;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -28,98 +31,79 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionHttpExtensions
 {
     /// <summary>
-    /// Registers the <see cref="IHttpClientBuildProvider"/> default 
-    /// implementation to the services with scope life time.
+    /// Registers the <see cref="HttpClientOptions"/> configuration to 
+    /// the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientBuildProvider(
+    public static IServiceCollection AddXHttpClientOptions(
         this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAddScoped
-            <IHttpClientBuildProvider, HttpClientBuildProviderInternal>();
-        return services;
-    }
+        => services
+            .AddScoped<IConfigureOptions<HttpClientOptions>,
+                HttpClientOptionsConfiguration>();
 
     /// <summary>
-    /// Registers the <see cref="IHttpClientRequestBuilder"/> default 
-    /// implementation to the services with scope life time.
+    /// Registers the <see cref="HttpClientOptions"/> builders to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientRequestBuilder(
+    public static IServiceCollection AddXHttpClientDispatcherBuilders(
         this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
+        => services
+            .AddScoped<IHttpClientResponseBuilder,
+                SuccessHttpClientResponseBuilder>()
+            .AddScoped<IHttpClientResponseBuilder,
+                FailureHttpClientResponseBuilder>()
+            .AddScoped(
+                typeof(IHttpClientResponseResultBuilder<>),
+                typeof(SuccessHttpClientResponseResultBuilder<>))
+            .AddScoped(
+                typeof(IHttpClientResponseResultBuilder<>),
+                typeof(FailureHttpClientResponseResultBuilder<>))
+            .AddScoped(
+                typeof(IHttpClientResponseIAsyncResultBuilder<>),
+                typeof(SuccessHttpClientResponseAsyncResultBuilder<>))
+            .AddScoped(
+                typeof(IHttpClientResponseIAsyncResultBuilder<>),
+                typeof(FailureHttpClientResponseAsyncResultBuilder<>));
 
-        services.TryAddScoped
-            <IHttpClientRequestBuilder, HttpClientRequestBuilderInternal>();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the <typeparamref name="THttpClientRequestBuilder"/> type 
-    /// implementation to the services with scope life time.
-    /// </summary>
-    /// <typeparam name="THttpClientRequestBuilder">The type to be used to 
-    /// build the request.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientRequestBuilder
-        <THttpClientRequestBuilder>(this IServiceCollection services)
-        where THttpClientRequestBuilder : class, IHttpClientRequestBuilder
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAddScoped
-            <IHttpClientRequestBuilder, THttpClientRequestBuilder>();
-        return services;
-    }
 
     /// <summary>
-    /// Registers the <see cref="IHttpClientResponseBuilder"/> default 
+    /// Registers the <see cref="HttpClientDispatcherFactory"/> default 
     /// implementation to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientResponseBuilder(
+    public static IServiceCollection AddXHttpClientDispatcherFactory(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped
-            <IHttpClientResponseBuilder, HttpClientResponseBuilderInternal>();
+            <IHttpClientDispatcherFactory, HttpClientDispatcherFactory>();
         return services;
     }
 
     /// <summary>
-    /// Registers the <typeparamref name="THttpClientResponseBuilder"/> type 
+    /// Registers the <typeparamref name="THttpClientDispatcherFactory"/> type 
     /// implementation to the services with scope life time.
     /// </summary>
-    /// <typeparam name="THttpClientResponseBuilder">The type to use to build 
-    /// the response.</typeparam>
+    /// <typeparam name="THttpClientDispatcherFactory">The type to use to build 
+    /// requests and responses.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientResponseBuilder
-        <THttpClientResponseBuilder>(this IServiceCollection services)
-        where THttpClientResponseBuilder : class, IHttpClientResponseBuilder
+    public static IServiceCollection AddXHttpClientDispatcherFactory
+        <THttpClientDispatcherFactory>(this IServiceCollection services)
+        where THttpClientDispatcherFactory : class, IHttpClientDispatcherFactory
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped
-            <IHttpClientResponseBuilder, THttpClientResponseBuilder>();
+            <IHttpClientDispatcherFactory, THttpClientDispatcherFactory>();
         return services;
     }
 

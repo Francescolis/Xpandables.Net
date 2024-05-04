@@ -16,7 +16,8 @@
  *
 ********************************************************************************/
 using System.Net;
-using System.Text.Json;
+
+using Xpandables.Net.Http.Builders;
 
 namespace Xpandables.Net.Http;
 
@@ -24,13 +25,9 @@ namespace Xpandables.Net.Http;
 /// Default implementation of the <see cref="IHttpClientDispatcher"/> interface.
 /// </summary>
 public sealed class HttpClientDispatcherDefault(
-    IHttpClientBuildProvider httpClientBuildProvider,
     HttpClient httpClient,
-    JsonSerializerOptions? jsonSerializerOptions)
-    : HttpClientDispatcher(
-        httpClientBuildProvider,
-        httpClient,
-        jsonSerializerOptions)
+    IHttpClientDispatcherFactory dispatcherFactory)
+    : HttpClientDispatcher(httpClient, dispatcherFactory)
 {
 }
 
@@ -40,21 +37,12 @@ public sealed class HttpClientDispatcherDefault(
 /// </summary>
 ///<inheritdoc/>
 public abstract class HttpClientDispatcher(
-    IHttpClientBuildProvider httpClientBuildProvider,
     HttpClient httpClient,
-    JsonSerializerOptions? jsonSerializerOptions)
+    IHttpClientDispatcherFactory dispatcherFactory)
     : Disposable, IHttpClientDispatcher
 {
     ///<inheritdoc/>
-    public IHttpClientBuildProvider HttpClientBuildProvider
-        => httpClientBuildProvider;
-
-    ///<inheritdoc/>
     public HttpClient HttpClient => httpClient;
-
-    ///<inheritdoc/>
-    public JsonSerializerOptions? SerializerOptions
-        => jsonSerializerOptions;
 
     ///<inheritdoc/>
     protected override void Dispose(bool disposing)
@@ -71,17 +59,14 @@ public abstract class HttpClientDispatcher(
     public virtual async ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
         SendAsync<TResult>(
         IHttpClientAsyncRequest<TResult> request,
-        JsonSerializerOptions? serializerOptions = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            using HttpRequestMessage httpRequest = await HttpClientBuildProvider
-                .RequestBuilder
-                .BuildHttpRequestAsync(
+            using HttpRequestMessage httpRequest = await dispatcherFactory
+                .BuildRequestAsync(
                     request,
-                    HttpClient,
-                    serializerOptions ?? SerializerOptions)
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             // Due to the fact that the result is an IAsyncEnumerable,
@@ -93,25 +78,14 @@ public abstract class HttpClientDispatcher(
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return await HttpClientBuildProvider
-                .ResponseBuilder
-                .BuildHttpResponseAsync<TResult>(
+            return await dispatcherFactory
+                .BuildResponseResultAsync<TResult>(
                     response,
-                    serializerOptions ?? SerializerOptions,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
-            when (exception is ArgumentNullException
-                            or ArgumentException
-                            or InvalidOperationException
-                            or OperationCanceledException
-                            or HttpRequestException
-                            or AggregateException
-                            or TaskCanceledException
-                            or JsonException
-                            or TimeoutException
-                            or WebException)
+            when (exception is not ArgumentNullException)
         {
             return new HttpClientResponse<IAsyncEnumerable<TResult>>(
                 HttpStatusCode.BadRequest,
@@ -126,42 +100,26 @@ public abstract class HttpClientDispatcher(
     ///<inheritdoc/>
     public virtual async ValueTask<HttpClientResponse> SendAsync(
         IHttpClientRequest request,
-        JsonSerializerOptions? serializerOptions = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            using HttpRequestMessage httpRequest = await HttpClientBuildProvider
-                .RequestBuilder
-                 .BuildHttpRequestAsync(
+            using HttpRequestMessage httpRequest = await dispatcherFactory
+                .BuildRequestAsync(
                     request,
-                    HttpClient,
-                    serializerOptions ?? SerializerOptions)
-                 .ConfigureAwait(false);
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             using HttpResponseMessage response = await HttpClient
                 .SendAsync(httpRequest, cancellationToken)
                 .ConfigureAwait(false);
 
-            return await HttpClientBuildProvider
-                .ResponseBuilder
-                .BuildHttpResponse(
-                    response,
-                    serializerOptions ?? SerializerOptions,
-                    cancellationToken)
+            return await dispatcherFactory
+                .BuildResponseAsync(response, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
-            when (exception is ArgumentNullException
-                            or ArgumentException
-                            or InvalidOperationException
-                            or OperationCanceledException
-                            or HttpRequestException
-                            or TaskCanceledException
-                            or AggregateException
-                            or JsonException
-                            or TimeoutException
-                            or WebException)
+            when (exception is not ArgumentNullException)
         {
             return new HttpClientResponse(
                 HttpStatusCode.BadRequest,
@@ -175,17 +133,14 @@ public abstract class HttpClientDispatcher(
     ///<inheritdoc/>
     public virtual async ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
         IHttpClientRequest<TResult> request,
-        JsonSerializerOptions? serializerOptions = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            using HttpRequestMessage httpRequest = await HttpClientBuildProvider
-                .RequestBuilder
-                .BuildHttpRequestAsync(
+            using HttpRequestMessage httpRequest = await dispatcherFactory
+                .BuildRequestAsync(
                     request,
-                    HttpClient,
-                    serializerOptions ?? SerializerOptions)
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             using HttpResponseMessage response = await HttpClient
@@ -195,25 +150,12 @@ public abstract class HttpClientDispatcher(
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return await HttpClientBuildProvider
-                .ResponseBuilder
-                .BuildHttpResponse<TResult>(
-                    response,
-                    serializerOptions ?? SerializerOptions,
-                    cancellationToken)
+            return await dispatcherFactory
+                .BuildResponseAsync<TResult>(response, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
-            when (exception is ArgumentNullException
-                            or ArgumentException
-                            or InvalidOperationException
-                            or OperationCanceledException
-                            or HttpRequestException
-                            or JsonException
-                            or AggregateException
-                            or TaskCanceledException
-                            or TimeoutException
-                            or WebException)
+            when (exception is not ArgumentNullException)
         {
             return new HttpClientResponse<TResult>(
                 HttpStatusCode.BadRequest,

@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,51 +15,39 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.Builders;
 
 /// <summary>
-/// Build the request for the <see cref="HttpClient"/>.
+/// Builds the request for <see cref="IHttpClientDispatcher"/>.
 /// </summary>
-public abstract class HttpClientRequestBuilder
+/// <typeparam name="TInterfaceRequest">The type of the interface
+/// implemented by the request source.</typeparam>
+public interface IHttpClientRequestBuilder<TInterfaceRequest>
 {
     /// <summary>
     /// Gets the request type being built by the current builder instance.
     /// </summary>
-    public abstract Type? Type { get; }
+    Type? Type { get; }
 
     /// <summary>
     /// When overridden in a derived class, determines whether the builder
     /// instance can build the specified request implementing the
     /// <typeparamref name="TInterfaceRequest"/> type.
     /// </summary>
-    /// <typeparam name="TInterfaceRequest">The type of interface implement by 
-    /// the request to build.</typeparam>
+    /// <param name="targetType">The type of the target interface.</param>
     /// <returns><see langword="true"/> if the instance can build the
     /// specified request; otherwise, <see langword="false"/>.</returns>
-    public abstract bool CanBuild<TInterfaceRequest>();
-}
-
-/// <summary>
-/// Build the request for the <see cref="HttpClient"/>.
-/// </summary>
-/// <typeparam name="TInterfaceRequest">The type of the interface
-/// implemented by the request source.</typeparam>
-public abstract class HttpClientRequestBuilder<TInterfaceRequest> :
-    HttpClientRequestBuilder
-    where TInterfaceRequest : class
-{
-    /// <inheritdoc/>
-    public sealed override Type? Type => typeof(TInterfaceRequest);
+    bool CanBuild(Type targetType);
 
     /// <summary>
     /// Builds the request for the <see cref="HttpClient"/>.
     /// </summary>
-    /// <param name="request">The request source to use.</param>
+    /// <param name="attribute">The attribute to act with.</param>
+    /// <param name="request">The request data source to use.</param>
     /// <param name="requestMessage">The request message to act on.</param>
-    /// <param name="serviceProvider">The service provider to use.</param>
     /// <returns>The built request.</returns>
-    public abstract HttpRequestMessage Build(
+    HttpRequestMessage Build(
+        HttpClientAttribute attribute,
         TInterfaceRequest request,
-        HttpRequestMessage requestMessage,
-        IServiceProvider serviceProvider);
+        HttpRequestMessage requestMessage);
 }

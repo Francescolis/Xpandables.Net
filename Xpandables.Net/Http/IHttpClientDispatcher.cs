@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
 namespace Xpandables.Net.Http;
 
 /// <summary>
@@ -43,20 +40,6 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     HttpClient HttpClient { get; }
 
     /// <summary>
-    /// Contains the <see cref="IHttpClientBuildProvider"/> instance.
-    /// </summary>
-    IHttpClientBuildProvider HttpClientBuildProvider { get; }
-
-    /// <summary>
-    /// Gets the current <see cref="JsonSerializerOptions"/> to
-    /// be used for serialization.
-    /// </summary>
-    /// <remarks>The instance can be provided by registering the 
-    /// <see cref="JsonSerializerOptions"/> that will be automatically 
-    /// resolved by the system.</remarks>
-    JsonSerializerOptions? SerializerOptions { get; }
-
-    /// <summary>
     /// Sends the request that returns a collection that can be async-enumerated.
     /// Make use of <see langword="using"/> key work when call.
     /// </summary>
@@ -65,8 +48,6 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements the 
     /// <see cref="IHttpClientAttributeProvider"/> interface.</param>
-    /// <param name="serializerOptions">Options to control the 
-    /// behavior during parsing.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>
@@ -77,7 +58,6 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// The operation failed. See inner exception.</exception>
     ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
         IHttpClientAsyncRequest<TResult> request,
-        JsonSerializerOptions? serializerOptions = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -88,8 +68,6 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// must be decorated with 
     /// the <see cref="HttpClientAttribute"/> or implements the 
     /// <see cref="IHttpClientAttributeProvider"/> interface.</param>
-    /// <param name="serializerOptions">Options to control the 
-    /// behavior during parsing.</param>
     /// <param name="cancellationToken">A CancellationToken to 
     /// observe while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
@@ -99,7 +77,6 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// The operation failed. See inner exception.</exception>
     ValueTask<HttpClientResponse> SendAsync(
         IHttpClientRequest request,
-        JsonSerializerOptions? serializerOptions = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -112,8 +89,6 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// The request must be decorated with
     /// the <see cref="HttpClientAttribute"/> or implements 
     /// the <see cref="IHttpClientAttributeProvider"/> interface.</param>
-    /// <param name="serializerOptions">Options to control 
-    /// the behavior during parsing.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>
@@ -124,6 +99,5 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// See inner exception.</exception>
     ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
         IHttpClientRequest<TResult> request,
-        JsonSerializerOptions? serializerOptions = default,
         CancellationToken cancellationToken = default);
 }

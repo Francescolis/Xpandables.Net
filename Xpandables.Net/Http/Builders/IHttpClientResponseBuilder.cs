@@ -17,25 +17,39 @@
 using System.Net;
 using System.Text.Json;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.Builders;
 
 /// <summary>
-/// Builds the response from the <see cref="HttpRequestMessage"/>.
+/// Defines the base contract for building the response from
+/// the <see cref="HttpResponseMessage"/>.
 /// </summary>
-public abstract class HttpClientResponseBuilder
+public interface IHttpClientResponseBuilderBase
 {
+    /// <summary>
+    /// Gets the response content type result being built by the current 
+    /// builder instance.
+    /// </summary>
+    Type? Type { get; }
+
     /// <summary>
     /// When overridden in a derived class, determines whether the builder
     /// instance can build the response for the specified status code.
     /// </summary>
-    /// <param name="statusCode">The status code of the response.</param>
-    /// <param name="genericType">The type of the response.</param>
+    /// <param name="targetStatusCode">The status code of the response.</param>
+    /// <param name="resultType">The type of the result.</param>
     /// <returns><see langword="true"/> if the instance can build the
     /// specified request; otherwise, <see langword="false"/>.</returns>
-    public abstract bool CanBuild(
-        HttpStatusCode statusCode,
-        Type? genericType);
+    bool CanBuild(
+        HttpStatusCode targetStatusCode,
+        Type? resultType = default);
+}
 
+/// <summary>
+/// Defines the base contract for building the response from
+/// the <see cref="HttpResponseMessage"/>.
+/// </summary>
+public interface IHttpClientResponseBuilder : IHttpClientResponseBuilderBase
+{
     /// <summary>
     /// Builds a response of <see cref="HttpClientResponse"/> type.
     /// </summary>
@@ -43,46 +57,19 @@ public abstract class HttpClientResponseBuilder
     /// <param name="options">The serialization options to use.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The built response.</returns>
-    public abstract ValueTask<HttpClientResponse> BuildAsync(
+    ValueTask<HttpClientResponse> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Builds the response from the <see cref="HttpRequestMessage"/>.
+/// Builds the response <see cref="HttpClientResponse{TResult}"/> 
+/// from the <see cref="HttpRequestMessage"/>.
 /// </summary>
-public abstract class HttpClientResponseResultBuilder :
-    HttpClientResponseBuilder
-{
-    /// <summary>
-    /// Builds a response of <typeparamref name="TResult"/> type.
-    /// </summary>
-    /// <param name="httpResponse">The response message to act on.</param>
-    /// <param name="options">The serialization options to use.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The built response.</returns>
-    public abstract ValueTask<HttpClientResponse<TResult>> BuildAsync<TResult>(
-        HttpResponseMessage httpResponse,
-        JsonSerializerOptions options,
-        CancellationToken cancellationToken = default);
-
-    /// <inheritdoc/>
-    public sealed override ValueTask<HttpClientResponse> BuildAsync(
-        HttpResponseMessage httpResponse,
-        JsonSerializerOptions options,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-/// <summary>
-/// Builds the response from the <see cref="HttpRequestMessage"/> that contains
-/// a result of a specific type.
-/// </summary>
-public abstract class HttpClientResponseIAsyncResultBuilder :
-    HttpClientResponseBuilder
+/// <typeparam name="TResult">The type of the result to build.</typeparam>
+public interface IHttpClientResponseResultBuilder<TResult> :
+    IHttpClientResponseBuilderBase
 {
     /// <summary>
     /// Builds a response of <see cref="HttpClientResponse{TResult}"/>> type.
@@ -91,18 +78,29 @@ public abstract class HttpClientResponseIAsyncResultBuilder :
     /// <param name="options">The serialization options to use.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The built response.</returns>
-    public abstract ValueTask<HttpClientResponse
-        <IAsyncEnumerable<TResult>>> BuildAsync<TResult>(
+    ValueTask<HttpClientResponse<TResult>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default);
+}
 
-    /// <inheritdoc/>
-    public sealed override ValueTask<HttpClientResponse> BuildAsync(
+/// <summary>
+/// Builds the response <see cref="HttpClientResponse{TResult}"/> 
+/// from the <see cref="HttpRequestMessage"/>.
+/// </summary>
+/// <typeparam name="TResult">The type of the result to build.</typeparam>
+public interface IHttpClientResponseIAsyncResultBuilder<TResult> :
+    IHttpClientResponseBuilderBase
+{
+    /// <summary>
+    /// Builds a response of <see cref="HttpClientResponse{TResult}"/>> type.
+    /// </summary>
+    /// <param name="httpResponse">The response message to act on.</param>
+    /// <param name="options">The serialization options to use.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The built response.</returns>
+    ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
+        CancellationToken cancellationToken = default);
 }

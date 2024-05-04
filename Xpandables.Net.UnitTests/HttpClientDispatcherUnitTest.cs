@@ -23,20 +23,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Builders;
 
 namespace Xpandables.Net.UnitTests;
 public sealed class HttpClientDispatcherUnitTest
 {
     private readonly IHttpMonkeyDispatcher _dispatcher;
-    private readonly IHttpClientRequestBuilder _httpClientRequestBuilder;
+    private readonly IHttpClientDispatcherFactory _httpClientDispatcherFactory;
     public HttpClientDispatcherUnitTest()
     {
         ServiceCollection services = new();
+
         services
-            .AddSingleton(new JsonSerializerOptions(JsonSerializerDefaults.Web))
-            .AddXHttpClientRequestBuilder()
-            .AddXHttpClientResponseBuilder()
-            .AddXHttpClientBuildProvider()
+            .Configure<HttpClientOptions>(HttpClientOptions.Default)
+            .AddXHttpClientDispatcherBuilders()
+            //.AddXHttpClientOptions()
+            .AddXHttpClientDispatcherFactory()
             .AddXHttpClientDispatcher<IHttpMonkeyDispatcher, HttpMonkeyDispatcher>(
             (_, httpClient) =>
             {
@@ -53,8 +55,8 @@ public sealed class HttpClientDispatcherUnitTest
         ServiceProvider provider = services.BuildServiceProvider();
 
         _dispatcher = provider.GetRequiredService<IHttpMonkeyDispatcher>();
-        _httpClientRequestBuilder = provider
-            .GetRequiredService<IHttpClientRequestBuilder>();
+        _httpClientDispatcherFactory = provider
+            .GetRequiredService<IHttpClientDispatcherFactory>();
     }
 
     [Fact]
@@ -84,9 +86,9 @@ public sealed class HttpClientDispatcherUnitTest
 
         string expectedResult = JsonSerializer.Serialize(request.PatchOperations);
 
-        HttpRequestMessage message = await _httpClientRequestBuilder
-            .BuildHttpRequestAsync(
-            request, _dispatcher.HttpClient, new(JsonSerializerDefaults.Web));
+        HttpRequestMessage message = await _httpClientDispatcherFactory
+            .BuildRequestAsync(
+            request, CancellationToken.None);
 
         Assert.NotNull(message.Content);
 
@@ -120,13 +122,11 @@ interface IHttpMonkeyDispatcher : IHttpClientDispatcher
 }
 
 sealed class HttpMonkeyDispatcher(
-    IHttpClientBuildProvider httpClientBuildProvider,
     HttpClient httpClient,
-    JsonSerializerOptions? jsonSerializerOptions)
+    IHttpClientDispatcherFactory dispatcherFactory)
     : HttpClientDispatcher(
-        httpClientBuildProvider,
         httpClient,
-        jsonSerializerOptions), IHttpMonkeyDispatcher
+        dispatcherFactory), IHttpMonkeyDispatcher
 {
     public async IAsyncEnumerable<Monkey> GetMonkeyAsync()
     {

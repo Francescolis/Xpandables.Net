@@ -22,27 +22,32 @@ using System.Text.Json;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.Collections;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.Builders.Responses;
 
 /// <summary>
-/// Builds the success response from the <see cref="HttpRequestMessage"/>.
+/// Builds the success response of <see cref="HttpClientResponse"/> type.
 /// </summary>
 public sealed class SuccessHttpClientResponseBuilder :
-    HttpClientResponseBuilder
+    HttpClientResponseBuilderBase, IHttpClientResponseBuilder
 {
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode statusCode,
-        Type? genericType)
-        => statusCode.IsSuccessStatusCode()
-            && genericType is null;
+    public override Type? Type => null;
 
     ///<inheritdoc/>
-    public override async ValueTask<HttpClientResponse> BuildAsync(
+    public override bool CanBuild(
+        HttpStatusCode targetStatusCode,
+        Type? resultType = default)
+        => targetStatusCode.IsSuccessStatusCode()
+            && resultType is null;
+
+    ///<inheritdoc/>
+    public async ValueTask<HttpClientResponse> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(httpResponse);
+
         await Task.Yield();
 
         if (httpResponse.Content.Headers.ContentDisposition is not null)
@@ -86,55 +91,69 @@ public sealed class SuccessHttpClientResponseBuilder :
 }
 
 /// <summary>
-/// Builds the failure response from the <see cref="HttpRequestMessage"/>.
+/// Builds the failure response of <see cref="HttpClientResponse"/> type.
 /// </summary>
 public sealed class FailureHttpClientResponseBuilder :
-     HttpClientResponseBuilder
+    HttpClientResponseBuilderBase, IHttpClientResponseBuilder
 {
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode statusCode,
-        Type? genericType)
-        => statusCode.IsFailureStatusCode()
-            && genericType is null;
+    public override Type? Type => null;
 
     ///<inheritdoc/>
-    public async override ValueTask<HttpClientResponse> BuildAsync(
+    public override bool CanBuild(
+        HttpStatusCode targetStatusCode,
+        Type? resultType = default)
+        => targetStatusCode.IsFailureStatusCode()
+            && resultType is null;
+
+    ///<inheritdoc/>
+    public async ValueTask<HttpClientResponse> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default)
-        => new HttpClientResponse(
+    {
+        ArgumentNullException.ThrowIfNull(httpResponse);
+
+        return new HttpClientResponse(
             httpResponse.StatusCode,
             httpResponse.ReadHttpResponseHeaders(),
             httpResponse.Version,
             httpResponse.ReasonPhrase,
             await httpResponse.BuildExceptionAsync()
             .ConfigureAwait(false));
+    }
 }
 
 /// <summary>
-/// Builds the success response from the <see cref="HttpRequestMessage"/>
-/// of a specific type result.
+/// Builds the success response of <see cref="HttpClientResponse{TResult}"/>
+/// type with a specific type result.
 /// </summary>
-public sealed class SucessHttpClientResponseResultBuilder
-    : HttpClientResponseResultBuilder
+/// <typeparam name="TResult">Type of the result.</typeparam>
+public sealed class SuccessHttpClientResponseResultBuilder<TResult>
+    : HttpClientResponseBuilderBase, IHttpClientResponseResultBuilder<TResult>
+    where TResult : notnull
 {
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode statusCode,
-        Type? genericType)
-        => statusCode.IsSuccessStatusCode()
-            && genericType is not null
-            && !genericType.IsInterface
-            && !genericType.IsAsyncEnumerable();
+    public override Type? Type => typeof(TResult);
 
     ///<inheritdoc/>
-    public async override ValueTask<HttpClientResponse<TResult>>
-        BuildAsync<TResult>(
+    public override bool CanBuild(
+        HttpStatusCode targetStatusCode,
+        Type? resultType = default)
+        => targetStatusCode.IsSuccessStatusCode()
+            && resultType is not null
+            && !resultType.IsValueType
+            && !resultType.IsInterface
+            && !resultType.IsAsyncEnumerable();
+
+    ///<inheritdoc/>
+    public async ValueTask<HttpClientResponse<TResult>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(httpResponse);
+
         using Stream stream = await httpResponse.Content
              .ReadAsStreamAsync(cancellationToken)
              .ConfigureAwait(false);
@@ -168,59 +187,77 @@ public sealed class SucessHttpClientResponseResultBuilder
 }
 
 /// <summary>
-/// Builds the failure response from the <see cref="HttpRequestMessage"/>
-/// of a specific type result.
+/// Builds the failure response of <see cref="HttpClientResponse{TResult}"/>
+/// type with a specific type result.
 /// </summary>
-public sealed class FailureHttpClientResponseResultBuilder
-    : HttpClientResponseResultBuilder
+/// <typeparam name="TResult">Type of the result.</typeparam>
+public sealed class FailureHttpClientResponseResultBuilder<TResult>
+    : HttpClientResponseBuilderBase, IHttpClientResponseResultBuilder<TResult>
+    where TResult : notnull
 {
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode statusCode,
-        Type? genericType)
-        => statusCode.IsFailureStatusCode()
-            && genericType is not null
-            && !genericType.IsInterface
-            && !genericType.IsAsyncEnumerable();
+    public override Type? Type => typeof(TResult);
 
     ///<inheritdoc/>
-    public async override ValueTask<HttpClientResponse
-        <TResult>> BuildAsync<TResult>(
-        HttpResponseMessage httpResponse,
-        JsonSerializerOptions options,
-        CancellationToken cancellationToken = default)
-        => new HttpClientResponse<TResult>(
-              httpResponse.StatusCode,
-              httpResponse.ReadHttpResponseHeaders(),
-              default,
-              httpResponse.Version,
-              httpResponse.ReasonPhrase,
-              await httpResponse.BuildExceptionAsync()
-              .ConfigureAwait(false));
-}
-
-/// <summary>
-/// Builds the success response from the <see cref="HttpRequestMessage"/>
-/// of an <see cref="IAsyncEnumerable{T}"/> of specific type.
-/// </summary>
-public sealed class SucessHttpClientResponseIAsyncResultBuilder
-    : HttpClientResponseIAsyncResultBuilder
-{
-    ///<inheritdoc/>
     public override bool CanBuild(
-        HttpStatusCode statusCode,
-        Type? genericType)
-        => statusCode.IsSuccessStatusCode()
-            && genericType is not null
-            && genericType.IsInterface
-            && genericType.IsAsyncEnumerable();
+        HttpStatusCode targetStatusCode,
+        Type? resultType = default)
+        => targetStatusCode.IsFailureStatusCode()
+            && resultType is not null
+            && !resultType.IsValueType
+            && !resultType.IsInterface
+            && !resultType.IsAsyncEnumerable();
+
     ///<inheritdoc/>
-    public async override ValueTask<HttpClientResponse
-        <IAsyncEnumerable<TResult>>> BuildAsync<TResult>(
+    public async ValueTask<HttpClientResponse
+        <TResult>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(httpResponse);
+
+        return new HttpClientResponse<TResult>(
+            httpResponse.StatusCode,
+            httpResponse.ReadHttpResponseHeaders(),
+            default,
+            httpResponse.Version,
+            httpResponse.ReasonPhrase,
+            await httpResponse.BuildExceptionAsync()
+            .ConfigureAwait(false));
+    }
+}
+
+/// <summary>
+/// Builds the success response of <see cref="HttpClientResponse{TResult}"/>
+/// type with a specific <see cref="IAsyncEnumerable{T}"/> type result.
+/// </summary>
+/// <typeparam name="TResult">Type of the result.</typeparam>
+public sealed class SuccessHttpClientResponseAsyncResultBuilder<TResult>
+    : HttpClientResponseBuilderBase, IHttpClientResponseIAsyncResultBuilder<TResult>
+{
+    ///<inheritdoc/>
+    public override Type? Type => typeof(IAsyncEnumerable<TResult>);
+
+    ///<inheritdoc/>
+    public override bool CanBuild(
+        HttpStatusCode targetStatusCode,
+        Type? resultType = default)
+        => targetStatusCode.IsSuccessStatusCode()
+            && resultType is not null
+            && !resultType.IsValueType
+            && resultType.IsInterface
+            && resultType.IsAsyncEnumerable();
+
+    ///<inheritdoc/>
+    public async ValueTask<HttpClientResponse
+        <IAsyncEnumerable<TResult>>> BuildAsync(
+        HttpResponseMessage httpResponse,
+        JsonSerializerOptions options,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(httpResponse);
+
         Stream stream = await httpResponse.Content
                .ReadAsStreamAsync(cancellationToken)
                .ConfigureAwait(false);
@@ -302,30 +339,39 @@ public sealed class SucessHttpClientResponseIAsyncResultBuilder
 /// Builds the failure response from the <see cref="HttpRequestMessage"/>
 /// of an <see cref="IAsyncEnumerable{T}"/> of specific type.
 /// </summary>
-public sealed class FailureHttpClientResponseIAsyncResultBuilder
-    : HttpClientResponseIAsyncResultBuilder
+/// <typeparam name="TResult">Type of the result.</typeparam>
+public sealed class FailureHttpClientResponseAsyncResultBuilder<TResult>
+     : HttpClientResponseBuilderBase, IHttpClientResponseIAsyncResultBuilder<TResult>
 {
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode statusCode,
-        Type? genericType)
-        => statusCode.IsFailureStatusCode()
-            && genericType is not null
-            && genericType.IsInterface
-            && genericType.IsAsyncEnumerable();
+    public override Type? Type => typeof(IAsyncEnumerable<TResult>);
 
     ///<inheritdoc/>
-    public async override ValueTask<HttpClientResponse
+    public override bool CanBuild(
+        HttpStatusCode targetStatusCode,
+        Type? resultType = default)
+        => targetStatusCode.IsFailureStatusCode()
+            && resultType is not null
+            && !resultType.IsValueType
+            && resultType.IsInterface
+            && resultType.IsAsyncEnumerable();
+
+    ///<inheritdoc/>
+    public async ValueTask<HttpClientResponse
         <IAsyncEnumerable<TResult>>>
-        BuildAsync<TResult>(HttpResponseMessage httpResponse,
+        BuildAsync(HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default)
-        => new HttpClientResponse<IAsyncEnumerable<TResult>>(
-            httpResponse.StatusCode,
-            httpResponse.ReadHttpResponseHeaders(),
-            default,
-            httpResponse.Version,
-            httpResponse.ReasonPhrase,
-            await httpResponse.BuildExceptionAsync()
-            .ConfigureAwait(false));
+    {
+        ArgumentNullException.ThrowIfNull(httpResponse);
+
+        return new HttpClientResponse<IAsyncEnumerable<TResult>>(
+                httpResponse.StatusCode,
+                httpResponse.ReadHttpResponseHeaders(),
+                default,
+                httpResponse.Version,
+                httpResponse.ReasonPhrase,
+                await httpResponse.BuildExceptionAsync()
+                .ConfigureAwait(false));
+    }
 }
