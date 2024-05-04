@@ -41,7 +41,7 @@ public abstract class DataContext : DbContext
             || e.Entry.Entity is not IEntity entity)
                 return;
 
-            entity.SetStatus(EntityStatus.INACTIVE);
+            entity.SetStatus(entity.Status);
         };
 
         ChangeTracker.StateChanged += (sender, e) =>
