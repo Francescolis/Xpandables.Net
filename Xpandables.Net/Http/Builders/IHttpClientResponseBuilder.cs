@@ -36,12 +36,9 @@ public interface IHttpClientResponseBuilderBase
     /// instance can build the response for the specified status code.
     /// </summary>
     /// <param name="targetStatusCode">The status code of the response.</param>
-    /// <param name="resultType">The type of the result.</param>
     /// <returns><see langword="true"/> if the instance can build the
     /// specified request; otherwise, <see langword="false"/>.</returns>
-    bool CanBuild(
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default);
+    bool CanBuild(HttpStatusCode targetStatusCode);
 }
 
 /// <summary>

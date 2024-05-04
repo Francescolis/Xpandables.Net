@@ -74,19 +74,24 @@ public sealed record HttpClientOptions
     /// <summary>
     /// Resolves the response builder for the specified type.
     /// </summary>
-    public object GetHttpClientResponseBuilder(
+    /// <typeparam name="TBuilder">The type of the builder to resolve
+    /// .</typeparam>
+    /// <param name="serviceProvider">The service provider to use.</param>
+    /// <param name="targetStatusCode">The status code of the response.</param>
+    /// <exception cref="InvalidOperationException">No response builder found for
+    /// the specified type.</exception>
+    public TBuilder GetResponseBuilderFor<TBuilder>(
         IServiceProvider serviceProvider,
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default)
+        HttpStatusCode targetStatusCode)
+        where TBuilder : IHttpClientResponseBuilderBase
     {
-        Type type = GetHttpResponseInterfaceType(resultType);
+        CheckBuilderTypeIsRegistered<TBuilder>();
 
         return serviceProvider
-            .GetServices(type)
-            .OfType<IHttpClientResponseBuilderBase>()
-            .FirstOrDefault(sce => sce.CanBuild(targetStatusCode, resultType))
+            .GetServices<TBuilder>()
+            .FirstOrDefault(builder => builder.CanBuild(targetStatusCode))
             ?? throw new InvalidOperationException(
-                $"No response builder found for {resultType?.Name}.");
+                $"No response builder found for {typeof(TBuilder).Name}.");
     }
 
     /// <summary>
@@ -95,13 +100,14 @@ public sealed record HttpClientOptions
     /// <typeparam name="TInterface">The type of the interface 
     /// implemented.</typeparam>
     public IHttpClientRequestBuilder<TInterface>
-        GetHttpClientRequestBuilder<TInterface>()
+        GetRequestBuilderFor<TInterface>()
         where TInterface : class
         => RequestBuilders
             .FirstOrDefault(x => x.CanBuild(typeof(TInterface)))
             .As<IHttpClientRequestBuilder<TInterface>>()
             ?? throw new InvalidOperationException(
-                $"No request builder found for {typeof(TInterface).Name}.");
+                $"No request builder registered for {typeof(TInterface).Name}" +
+                $"in the '{nameof(RequestBuilders)}'.");
 
     /// <summary>
     /// Builds the default <see cref="HttpClientOptions"/> instance.
@@ -157,40 +163,23 @@ public sealed record HttpClientOptions
         options.SerializerOptions ??= new(JsonSerializerDefaults.Web)
         {
             PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = null
-            //WriteIndented = true
+            PropertyNamingPolicy = null,
+            WriteIndented = true
         };
     }
 
-    private Type GetHttpResponseInterfaceType(Type? type)
+    private void CheckBuilderTypeIsRegistered<TBuilder>()
+        where TBuilder : IHttpClientResponseBuilderBase
     {
-        Type? resultType = default;
+        Type builderType = typeof(TBuilder).IsGenericType
+            ? typeof(TBuilder).GetGenericTypeDefinition()
+            : typeof(TBuilder);
 
-        if (type is null)
-            resultType = ResponseBuilders
-                .Keys
-                .FirstOrDefault(t => t == typeof(IHttpClientResponseBuilder));
-
-        if (type is not null && !type.IsGenericType)
-            resultType = ResponseBuilders
-                .Keys
-                .FirstOrDefault(t =>
-                    t == typeof(IHttpClientResponseResultBuilder<>))
-                ?.MakeGenericType(type);
-
-        if (type is not null && type.IsGenericType)
-        {
-            Type[] types = type.GetGenericArguments();
-            Type iasyncType = types[0];
-            resultType = ResponseBuilders
-                .Keys
-                .FirstOrDefault(t =>
-                    t == typeof(IHttpClientResponseIAsyncResultBuilder<>))
-                ?.MakeGenericType(iasyncType);
-        }
-
-        return resultType ??
-            throw new InvalidOperationException(
-                $"No response builder found for {type?.Name}.");
+        _ = ResponseBuilders
+            .Keys
+            .FirstOrDefault(t => t == builderType)
+            ?? throw new InvalidOperationException(
+                $"No response builder found for {typeof(TBuilder).Name}" +
+                $"in the {nameof(ResponseBuilders)}.");
     }
 }

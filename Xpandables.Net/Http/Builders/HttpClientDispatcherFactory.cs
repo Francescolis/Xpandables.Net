@@ -65,7 +65,7 @@ public sealed class HttpClientDispatcherFactory
         {
             IHttpRequestPathString pathRequest = (IHttpRequestPathString)request;
             requestMessage = _options
-                .GetHttpClientRequestBuilder<IHttpRequestPathString>()
+                .GetRequestBuilderFor<IHttpRequestPathString>()
                 .Build(attribute, pathRequest, requestMessage);
         }
 
@@ -73,7 +73,7 @@ public sealed class HttpClientDispatcherFactory
         {
             IHttpRequestQueryString queryRequest = (IHttpRequestQueryString)request;
             requestMessage = _options
-                .GetHttpClientRequestBuilder<IHttpRequestQueryString>()
+                .GetRequestBuilderFor<IHttpRequestQueryString>()
                 .Build(attribute, queryRequest, requestMessage);
         }
 
@@ -81,7 +81,7 @@ public sealed class HttpClientDispatcherFactory
         {
             IHttpRequestCookie cookieRequest = (IHttpRequestCookie)request;
             requestMessage = _options
-                .GetHttpClientRequestBuilder<IHttpRequestCookie>()
+                .GetRequestBuilderFor<IHttpRequestCookie>()
                 .Build(attribute, cookieRequest, requestMessage);
         }
 
@@ -89,7 +89,7 @@ public sealed class HttpClientDispatcherFactory
         {
             IHttpRequestHeader headerRequest = (IHttpRequestHeader)request;
             requestMessage = _options
-                .GetHttpClientRequestBuilder<IHttpRequestHeader>()
+                .GetRequestBuilderFor<IHttpRequestHeader>()
                 .Build(attribute, headerRequest, requestMessage);
         }
 
@@ -100,7 +100,7 @@ public sealed class HttpClientDispatcherFactory
             {
                 IHttpRequestByteArray byteRequest = (IHttpRequestByteArray)request;
                 requestMessage = _options
-                    .GetHttpClientRequestBuilder<IHttpRequestByteArray>()
+                    .GetRequestBuilderFor<IHttpRequestByteArray>()
                     .Build(attribute, byteRequest, requestMessage);
             }
 
@@ -109,7 +109,7 @@ public sealed class HttpClientDispatcherFactory
                 IHttpRequestFormUrlEncoded formRequest =
                     (IHttpRequestFormUrlEncoded)request;
                 requestMessage = _options
-                    .GetHttpClientRequestBuilder<IHttpRequestFormUrlEncoded>()
+                    .GetRequestBuilderFor<IHttpRequestFormUrlEncoded>()
                     .Build(attribute, formRequest, requestMessage);
             }
 
@@ -118,7 +118,7 @@ public sealed class HttpClientDispatcherFactory
                 IHttpRequestMultipart multipartRequest =
                     (IHttpRequestMultipart)request;
                 requestMessage = _options
-                    .GetHttpClientRequestBuilder<IHttpRequestMultipart>()
+                    .GetRequestBuilderFor<IHttpRequestMultipart>()
                     .Build(attribute, multipartRequest, requestMessage);
             }
 
@@ -126,7 +126,7 @@ public sealed class HttpClientDispatcherFactory
             {
                 IHttpRequestStream streamRequest = (IHttpRequestStream)request;
                 requestMessage = _options
-                    .GetHttpClientRequestBuilder<IHttpRequestStream>()
+                    .GetRequestBuilderFor<IHttpRequestStream>()
                     .Build(attribute, streamRequest, requestMessage);
             }
 
@@ -134,7 +134,7 @@ public sealed class HttpClientDispatcherFactory
             {
                 IHttpRequestString stringRequest = (IHttpRequestString)request;
                 requestMessage = _options
-                    .GetHttpClientRequestBuilder<IHttpRequestString>()
+                    .GetRequestBuilderFor<IHttpRequestString>()
                     .Build(attribute, stringRequest, requestMessage);
             }
 
@@ -180,10 +180,9 @@ public sealed class HttpClientDispatcherFactory
         ArgumentNullException.ThrowIfNull(response);
 
         IHttpClientResponseBuilder builder
-            = _options.GetHttpClientResponseBuilder(
+            = _options.GetResponseBuilderFor<IHttpClientResponseBuilder>(
                 serviceProvider,
-                response.StatusCode)
-                .AsRequired<IHttpClientResponseBuilder>();
+                response.StatusCode);
 
         return await builder
             .BuildAsync(
@@ -203,10 +202,10 @@ public sealed class HttpClientDispatcherFactory
 
 
         IHttpClientResponseResultBuilder<TResult> builder
-            = _options.GetHttpClientResponseBuilder(
+            = _options.GetResponseBuilderFor
+            <IHttpClientResponseResultBuilder<TResult>>(
                 serviceProvider,
-                response.StatusCode, typeof(TResult))
-                .AsRequired<IHttpClientResponseResultBuilder<TResult>>();
+                response.StatusCode);
 
         return await builder
             .BuildAsync(
@@ -225,11 +224,10 @@ public sealed class HttpClientDispatcherFactory
         ArgumentNullException.ThrowIfNull(response);
 
         IHttpClientResponseIAsyncResultBuilder<TResult> builder
-            = _options.GetHttpClientResponseBuilder(
+            = _options.GetResponseBuilderFor
+            <IHttpClientResponseIAsyncResultBuilder<TResult>>(
                 serviceProvider,
-                response.StatusCode, typeof(IAsyncEnumerable<TResult>))
-                .AsRequired
-                <IHttpClientResponseIAsyncResultBuilder<TResult>>();
+                response.StatusCode);
 
         return await builder
                 .BuildAsync(

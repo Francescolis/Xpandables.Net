@@ -34,11 +34,8 @@ public sealed class SuccessHttpClientResponseBuilder :
     public override Type? Type => null;
 
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default)
-        => targetStatusCode.IsSuccessStatusCode()
-            && resultType is null;
+    public override bool CanBuild(HttpStatusCode targetStatusCode)
+        => targetStatusCode.IsSuccessStatusCode();
 
     ///<inheritdoc/>
     public async ValueTask<HttpClientResponse> BuildAsync(
@@ -100,11 +97,8 @@ public sealed class FailureHttpClientResponseBuilder :
     public override Type? Type => null;
 
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default)
-        => targetStatusCode.IsFailureStatusCode()
-            && resultType is null;
+    public override bool CanBuild(HttpStatusCode targetStatusCode)
+        => targetStatusCode.IsFailureStatusCode();
 
     ///<inheritdoc/>
     public async ValueTask<HttpClientResponse> BuildAsync(
@@ -138,13 +132,8 @@ public sealed class SuccessHttpClientResponseResultBuilder<TResult>
 
     ///<inheritdoc/>
     public override bool CanBuild(
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default)
-        => targetStatusCode.IsSuccessStatusCode()
-            && resultType is not null
-            && !resultType.IsValueType
-            && !resultType.IsInterface
-            && !resultType.IsAsyncEnumerable();
+        HttpStatusCode targetStatusCode)
+        => targetStatusCode.IsSuccessStatusCode();
 
     ///<inheritdoc/>
     public async ValueTask<HttpClientResponse<TResult>> BuildAsync(
@@ -199,14 +188,8 @@ public sealed class FailureHttpClientResponseResultBuilder<TResult>
     public override Type? Type => typeof(TResult);
 
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default)
-        => targetStatusCode.IsFailureStatusCode()
-            && resultType is not null
-            && !resultType.IsValueType
-            && !resultType.IsInterface
-            && !resultType.IsAsyncEnumerable();
+    public override bool CanBuild(HttpStatusCode targetStatusCode)
+        => targetStatusCode.IsFailureStatusCode();
 
     ///<inheritdoc/>
     public async ValueTask<HttpClientResponse
@@ -240,14 +223,8 @@ public sealed class SuccessHttpClientResponseAsyncResultBuilder<TResult>
     public override Type? Type => typeof(IAsyncEnumerable<TResult>);
 
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default)
-        => targetStatusCode.IsSuccessStatusCode()
-            && resultType is not null
-            && !resultType.IsValueType
-            && resultType.IsInterface
-            && resultType.IsAsyncEnumerable();
+    public override bool CanBuild(HttpStatusCode targetStatusCode)
+        => targetStatusCode.IsSuccessStatusCode();
 
     ///<inheritdoc/>
     public async ValueTask<HttpClientResponse
@@ -347,14 +324,8 @@ public sealed class FailureHttpClientResponseAsyncResultBuilder<TResult>
     public override Type? Type => typeof(IAsyncEnumerable<TResult>);
 
     ///<inheritdoc/>
-    public override bool CanBuild(
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default)
-        => targetStatusCode.IsFailureStatusCode()
-            && resultType is not null
-            && !resultType.IsValueType
-            && resultType.IsInterface
-            && resultType.IsAsyncEnumerable();
+    public override bool CanBuild(HttpStatusCode targetStatusCode)
+        => targetStatusCode.IsFailureStatusCode();
 
     ///<inheritdoc/>
     public async ValueTask<HttpClientResponse

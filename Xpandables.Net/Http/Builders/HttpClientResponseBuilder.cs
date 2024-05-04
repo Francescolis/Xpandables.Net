@@ -29,7 +29,5 @@ public abstract class HttpClientResponseBuilderBase :
     public abstract Type? Type { get; }
 
     /// <inheritdoc/>
-    public abstract bool CanBuild(
-        HttpStatusCode targetStatusCode,
-        Type? resultType = default);
+    public abstract bool CanBuild(HttpStatusCode targetStatusCode);
 }
