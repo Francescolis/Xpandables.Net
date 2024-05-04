@@ -37,7 +37,7 @@ public static class ServiceCollectionHttpExtensions
     public static IServiceCollection AddXHttpClientOptions(
         this IServiceCollection services)
         => services
-            .AddScoped<IConfigureOptions<HttpClientOptions>,
+            .AddTransient<IConfigureOptions<HttpClientOptions>,
                 HttpClientOptionsConfiguration>();
 
     /// <summary>
