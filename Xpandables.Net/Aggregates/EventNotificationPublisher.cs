@@ -50,7 +50,7 @@ internal sealed class EventNotificationPublisher(
                             .StringFormat(@event.GetTypeName())))
                     .Build()
                 : OperationResults
-                    .Ok()
+                    .NotFound()
                     .Build();
         }
 

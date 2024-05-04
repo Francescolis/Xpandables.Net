@@ -15,6 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -117,6 +119,9 @@ internal sealed class EventNotificationScheduler(
                 OperationResultException? exception = operationResult.IsFailure
                     ? new OperationResultException(operationResult)
                     : default;
+
+                if (operationResult.StatusCode == HttpStatusCode.NotFound)
+                    continue;
 
                 await eventStore
                     .AppendCloseAsync(@event.Id, exception, cancellationToken)
