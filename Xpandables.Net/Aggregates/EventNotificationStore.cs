@@ -47,6 +47,30 @@ public sealed class EventNotificationStore<TEventEntity>(
     }
 
     ///<inheritdoc/>
+    public async ValueTask AppendPersistAsync(
+        IEventNotification @event,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+
+        EventConverter<TEventEntity> converter = Options
+            .GetEventConverterFor<EventConverter<TEventEntity>>(
+                typeof(TEventEntity));
+
+        using TEventEntity entity = converter.ConvertTo(
+            @event,
+            Options.SerializerOptions);
+
+        await RepositoryWrite
+            .InsertAsync(entity, cancellationToken)
+            .ConfigureAwait(false);
+
+        await UnitOfWork.PersistAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+
+    ///<inheritdoc/>
     public async ValueTask AppendCloseAsync(
         Guid eventId,
         Exception? exception = default,

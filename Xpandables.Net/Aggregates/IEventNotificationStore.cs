@@ -33,12 +33,32 @@ public interface IEventNotificationStore : IDisposable
     /// <paramref name="event"/> is null.</exception>   
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
+    /// <exception cref="OperationCanceledException">The operation was 
+    /// canceled.</exception>
     ValueTask AppendAsync(
         IEventNotification @event,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously sets the exception that occurred while 
+    /// Asynchronously appends the specified notification and force persistence
+    /// to the store without waiting for the control flow.
+    /// </summary>
+    /// <param name="event">The notification to act on.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe 
+    /// while waiting for the task to complete.</param>
+    /// <returns>A value that represents an asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="event"/> is null.</exception>   
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
+    /// <exception cref="OperationCanceledException">The operation was 
+    /// canceled.</exception>
+    ValueTask AppendPersistAsync(
+        IEventNotification @event,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously sets the exception if defined that occurred while 
     /// processing the specified notification,
     /// and closes the entity notification.
     /// </summary>
@@ -51,6 +71,8 @@ public interface IEventNotificationStore : IDisposable
     /// <paramref name="eventId"/> is null.</exception>   
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
+    /// <exception cref="OperationCanceledException">The operation was 
+    /// canceled.</exception>
     ValueTask AppendCloseAsync(
         Guid eventId,
         Exception? exception = default,
@@ -69,6 +91,8 @@ public interface IEventNotificationStore : IDisposable
     /// <paramref name="eventFilter"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
+    /// <exception cref="OperationCanceledException">The operation was 
+    /// canceled.</exception>
     IAsyncEnumerable<IEventNotification> ReadAsync(
         IEventFilter eventFilter,
         CancellationToken cancellationToken = default);
