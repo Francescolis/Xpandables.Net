@@ -23,6 +23,11 @@ namespace Xpandables.Net.Http.Builders;
 public interface IHttpClientDispatcherFactory
 {
     /// <summary>
+    /// Gets the options of the <see cref="IHttpClientDispatcher"/>.
+    /// </summary>
+    HttpClientOptions Options { get; }
+
+    /// <summary>
     /// Builds a request message from the specified request object.
     /// </summary>
     /// <typeparam name="TRequest">The type of the request data.</typeparam>

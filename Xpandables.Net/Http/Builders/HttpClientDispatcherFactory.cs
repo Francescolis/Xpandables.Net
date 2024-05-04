@@ -33,7 +33,8 @@ public sealed class HttpClientDispatcherFactory
     IServiceProvider serviceProvider) :
     IHttpClientDispatcherFactory
 {
-    private readonly HttpClientOptions _options = options.Value;
+    ///<inheritdoc/>
+    public HttpClientOptions Options => options.Value;
 
     ///<inheritdoc/>
     public ValueTask<HttpRequestMessage> BuildRequestAsync<TRequest>(
@@ -64,7 +65,7 @@ public sealed class HttpClientDispatcherFactory
         if ((attribute.Location & Location.Path) == Location.Path)
         {
             IHttpRequestPathString pathRequest = (IHttpRequestPathString)request;
-            requestMessage = _options
+            requestMessage = Options
                 .GetRequestBuilderFor<IHttpRequestPathString>()
                 .Build(attribute, pathRequest, requestMessage);
         }
@@ -72,7 +73,7 @@ public sealed class HttpClientDispatcherFactory
         if ((attribute.Location & Location.Query) == Location.Query)
         {
             IHttpRequestQueryString queryRequest = (IHttpRequestQueryString)request;
-            requestMessage = _options
+            requestMessage = Options
                 .GetRequestBuilderFor<IHttpRequestQueryString>()
                 .Build(attribute, queryRequest, requestMessage);
         }
@@ -80,7 +81,7 @@ public sealed class HttpClientDispatcherFactory
         if ((attribute.Location & Location.Cookie) == Location.Cookie)
         {
             IHttpRequestCookie cookieRequest = (IHttpRequestCookie)request;
-            requestMessage = _options
+            requestMessage = Options
                 .GetRequestBuilderFor<IHttpRequestCookie>()
                 .Build(attribute, cookieRequest, requestMessage);
         }
@@ -88,7 +89,7 @@ public sealed class HttpClientDispatcherFactory
         if ((attribute.Location & Location.Header) == Location.Header)
         {
             IHttpRequestHeader headerRequest = (IHttpRequestHeader)request;
-            requestMessage = _options
+            requestMessage = Options
                 .GetRequestBuilderFor<IHttpRequestHeader>()
                 .Build(attribute, headerRequest, requestMessage);
         }
@@ -99,7 +100,7 @@ public sealed class HttpClientDispatcherFactory
             if (attribute.BodyFormat == BodyFormat.ByteArray)
             {
                 IHttpRequestByteArray byteRequest = (IHttpRequestByteArray)request;
-                requestMessage = _options
+                requestMessage = Options
                     .GetRequestBuilderFor<IHttpRequestByteArray>()
                     .Build(attribute, byteRequest, requestMessage);
             }
@@ -108,7 +109,7 @@ public sealed class HttpClientDispatcherFactory
             {
                 IHttpRequestFormUrlEncoded formRequest =
                     (IHttpRequestFormUrlEncoded)request;
-                requestMessage = _options
+                requestMessage = Options
                     .GetRequestBuilderFor<IHttpRequestFormUrlEncoded>()
                     .Build(attribute, formRequest, requestMessage);
             }
@@ -117,7 +118,7 @@ public sealed class HttpClientDispatcherFactory
             {
                 IHttpRequestMultipart multipartRequest =
                     (IHttpRequestMultipart)request;
-                requestMessage = _options
+                requestMessage = Options
                     .GetRequestBuilderFor<IHttpRequestMultipart>()
                     .Build(attribute, multipartRequest, requestMessage);
             }
@@ -125,17 +126,34 @@ public sealed class HttpClientDispatcherFactory
             if (attribute.BodyFormat == BodyFormat.Stream)
             {
                 IHttpRequestStream streamRequest = (IHttpRequestStream)request;
-                requestMessage = _options
+                requestMessage = Options
                     .GetRequestBuilderFor<IHttpRequestStream>()
                     .Build(attribute, streamRequest, requestMessage);
             }
 
             if (attribute.BodyFormat == BodyFormat.String)
             {
-                IHttpRequestString stringRequest = (IHttpRequestString)request;
-                requestMessage = _options
-                    .GetRequestBuilderFor<IHttpRequestString>()
-                    .Build(attribute, stringRequest, requestMessage);
+                if (request is IHttpRequestPatch patchRequest)
+                {
+                    requestMessage = Options
+                        .GetRequestBuilderFor<IHttpRequestPatch>()
+                        .Build(attribute, patchRequest, requestMessage);
+                }
+                else
+                {
+                    // because it is the default value,
+                    // it is not supposed to be implemented
+                    // so we need to create an instance of the
+                    // string request and build it.
+
+                    IHttpRequestString stringRequest =
+                        request as IHttpRequestString
+                        ?? new HttpRequestString(request);
+
+                    requestMessage = Options
+                        .GetRequestBuilderFor<IHttpRequestString>()
+                        .Build(attribute, stringRequest, requestMessage);
+                }
             }
 
             if (requestMessage.Content is not null
@@ -159,7 +177,7 @@ public sealed class HttpClientDispatcherFactory
         HttpClientAttribute ResolveAttribute(TRequest request)
         {
             if (request is IHttpClientAttributeProvider attributeProvider)
-                return attributeProvider.Build(_options.ServiceProvider);
+                return attributeProvider.Build(Options.ServiceProvider);
 
             return request!
                 .GetType()
@@ -180,14 +198,14 @@ public sealed class HttpClientDispatcherFactory
         ArgumentNullException.ThrowIfNull(response);
 
         IHttpClientResponseBuilder builder
-            = _options.GetResponseBuilderFor<IHttpClientResponseBuilder>(
+            = Options.GetResponseBuilderFor<IHttpClientResponseBuilder>(
                 serviceProvider,
                 response.StatusCode);
 
         return await builder
             .BuildAsync(
                 response,
-                _options.SerializerOptions,
+                Options.SerializerOptions,
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -202,7 +220,7 @@ public sealed class HttpClientDispatcherFactory
 
 
         IHttpClientResponseResultBuilder<TResult> builder
-            = _options.GetResponseBuilderFor
+            = Options.GetResponseBuilderFor
             <IHttpClientResponseResultBuilder<TResult>>(
                 serviceProvider,
                 response.StatusCode);
@@ -210,7 +228,7 @@ public sealed class HttpClientDispatcherFactory
         return await builder
             .BuildAsync(
                 response,
-                _options.SerializerOptions,
+                Options.SerializerOptions,
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -224,7 +242,7 @@ public sealed class HttpClientDispatcherFactory
         ArgumentNullException.ThrowIfNull(response);
 
         IHttpClientResponseIAsyncResultBuilder<TResult> builder
-            = _options.GetResponseBuilderFor
+            = Options.GetResponseBuilderFor
             <IHttpClientResponseIAsyncResultBuilder<TResult>>(
                 serviceProvider,
                 response.StatusCode);
@@ -232,8 +250,16 @@ public sealed class HttpClientDispatcherFactory
         return await builder
                 .BuildAsync(
                     response,
-                    _options.SerializerOptions,
+                    Options.SerializerOptions,
                     cancellationToken)
                 .ConfigureAwait(false);
     }
 }
+
+internal sealed class HttpRequestString
+    (object stringContent) : IHttpRequestString
+{
+    ///<inheritdoc/>
+    public object GetStringContent() => stringContent;
+}
+

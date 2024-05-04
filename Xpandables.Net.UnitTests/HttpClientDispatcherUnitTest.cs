@@ -25,6 +25,8 @@ using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.Builders;
 
+using static Xpandables.Net.Http.HttpClientParameters.Patch;
+
 namespace Xpandables.Net.UnitTests;
 public sealed class HttpClientDispatcherUnitTest
 {
@@ -75,16 +77,18 @@ public sealed class HttpClientDispatcherUnitTest
     {
         Request request = new("MyName", DateTime.UtcNow, 32)
         {
-            PatchOperationsBuilder = req => new List<IPatchOperation>
-            {
-                HttpClientParameters.Patch.Add(nameof(req.Name), req.Name),
-                HttpClientParameters.Patch.Add(nameof(req.BirthDate), req.BirthDate),
-                HttpClientParameters.Patch.Replace(nameof(req.Age), req.Age)
-            }
+            PatchOperationsBuilder = req =>
+            [
+                Add(nameof(req.Name), req.Name),
+                Add(nameof(req.BirthDate), req.BirthDate),
+                Replace(nameof(req.Age), req.Age)
+            ]
         };
 
 
-        string expectedResult = JsonSerializer.Serialize(request.PatchOperations);
+        string expectedResult = JsonSerializer.Serialize(
+            request.PatchOperations,
+        _httpClientDispatcherFactory.Options.SerializerOptions); ;
 
         HttpRequestMessage message = await _httpClientDispatcherFactory
             .BuildRequestAsync(

@@ -18,7 +18,10 @@
 
 // Ignore Spelling: Multipart
 
+using System.Collections.ObjectModel;
+
 using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.HttpClientParameters.Patch;
 
 namespace Xpandables.Net.Http;
 
@@ -39,7 +42,7 @@ public interface IHttpRequestString
 /// </summary>
 public interface IPatchOperation
 {
-    internal Patch.PatchOperation GetOperation();
+    internal PatchOperation GetOperation();
 }
 
 /// <summary>
@@ -58,8 +61,7 @@ public interface IHttpRequestPatch
     /// Returns the patch document.
     /// </summary>
     /// <remarks>The default behavior returns an empty collection.</remarks>
-    public IEnumerable<IPatchOperation> PatchOperations
-        => [];
+    public Collection<PatchOperation> PatchOperations => [];
 }
 
 /// <summary>
@@ -72,13 +74,13 @@ public abstract record HttpRequestPatch<TRecord> : IHttpRequestPatch
     /// <summary>
     /// Applies the <see cref="PatchOperationsBuilder"/> to the current instance.
     /// </summary>
-    public IEnumerable<IPatchOperation> PatchOperations
+    public Collection<PatchOperation> PatchOperations
         => PatchOperationsBuilder((TRecord)this);
 
     /// <summary>
     /// Provides with a method to build operations.
     /// </summary>
-    public required Func<TRecord, IEnumerable<IPatchOperation>>
+    public required Func<TRecord, Collection<PatchOperation>>
         PatchOperationsBuilder
     { get; init; }
 }
