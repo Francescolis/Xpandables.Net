@@ -136,8 +136,6 @@ public abstract class NotifyPropertyChanged
     /// <param name="field">The field of 
     /// the property (the back-end field).</param>
     /// <param name="value">The new value of the property (the value).</param>
-    /// <param name="onChanged">The delegate to be executed 
-    /// if the value changed.</param>
     /// <param name="propertyName">The name of the property. 
     /// Optional (Already known at compile time).</param>
     /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
@@ -147,7 +145,6 @@ public abstract class NotifyPropertyChanged
     protected bool SetProperty<TValue>(
         [NotNullIfNotNull(nameof(value))] ref TValue field,
         TValue value,
-        Action? onChanged = default,
         [CallerMemberName] string propertyName = "")
     {
         ArgumentException.ThrowIfNullOrEmpty(propertyName);
@@ -159,7 +156,129 @@ public abstract class NotifyPropertyChanged
 
         field = value;
 
+        OnPropertyChanged(propertyName);
+
+        PropagatePropertyChangedOnDependents(propertyName);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if the property does not match the old one.
+    /// If so, sets the property and notifies listeners.
+    /// </summary>
+    /// <typeparam name="TValue">Type of the value.</typeparam>
+    /// <param name="field">The field of 
+    /// the property (the back-end field).</param>
+    /// <param name="value">The new value of the property (the value).</param>
+    /// <param name="onChanged">The delegate to be executed 
+    /// if the value changed.</param>
+    /// <param name="propertyName">The name of the property. 
+    /// Optional (Already known at compile time).</param>
+    /// <returns><see langword="true"/>if the value was changed, <see langword="false"/>
+    /// if the existing value matches the desired value.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="propertyName"/> is null or empty.</exception>
+    protected bool SetProperty<TValue>(
+        [NotNullIfNotNull(nameof(value))] ref TValue field,
+        TValue value,
+        Action onChanged,
+        [CallerMemberName] string propertyName = "")
+    {
+        ArgumentException.ThrowIfNullOrEmpty(propertyName);
+        ArgumentNullException.ThrowIfNull(onChanged);
+
+        if (EqualityComparer<TValue>.Default.Equals(field, value))
+            return false;
+
+        OnPropertyChanging(propertyName);
+
+        field = value;
+
         onChanged?.Invoke();
+
+        OnPropertyChanged(propertyName);
+
+        PropagatePropertyChangedOnDependents(propertyName);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if the property does not match the old one.
+    /// If so, sets the property and notifies listeners.
+    /// </summary>
+    /// <typeparam name="TValue">Type of the value.</typeparam>
+    /// <param name="field">The field of the property 
+    /// (the back-end field).</param>
+    /// <param name="value">The new value of the property (the value).</param>
+    /// <param name="onChanged">The delegate to be executed 
+    /// if the value changed.</param>
+    /// <param name="propertyName">The name of the property. 
+    /// Optional (Already known at compile time).</param>
+    /// <returns><see langword="true"/>if the value was 
+    /// changed, <see langword="false"/>
+    /// if the existing value matches the desired value.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="propertyName"/> is null or empty.</exception>
+    protected bool SetProperty<TValue>(
+        [NotNullIfNotNull(nameof(value))] ref TValue field,
+        TValue value,
+        Action<TValue, TValue> onChanged,
+        [CallerMemberName] string propertyName = "")
+    {
+        ArgumentException.ThrowIfNullOrEmpty(propertyName);
+        ArgumentNullException.ThrowIfNull(onChanged);
+
+        if (EqualityComparer<TValue>.Default.Equals(field, value))
+            return false;
+
+        OnPropertyChanging(propertyName);
+
+        TValue oldValue = field;
+        field = value;
+
+        onChanged.Invoke(oldValue, value);
+
+        OnPropertyChanged(propertyName);
+
+        PropagatePropertyChangedOnDependents(propertyName);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if the property does not match the old one.
+    /// If so, sets the property and notifies listeners.
+    /// </summary>
+    /// <typeparam name="TValue">Type of the value.</typeparam>
+    /// <param name="field">The field of the property 
+    /// (the back-end field).</param>
+    /// <param name="value">The new value of the property (the value).</param>
+    /// <param name="comparer">The instance comparer used 
+    /// for values comparison.</param>
+    /// <param name="propertyName">The name of the property. 
+    /// Optional (Already known at compile time).</param>
+    /// <returns><see langword="true"/>if the value
+    /// was changed, <see langword="false"/>
+    /// if the existing value matches the desired value.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="propertyName"/> is null or empty.</exception>
+    protected bool SetProperty<TValue>(
+        [NotNullIfNotNull(nameof(value))] ref TValue field,
+        TValue value,
+        IEqualityComparer<TValue> comparer,
+        [CallerMemberName] string propertyName = "")
+    {
+        ArgumentException.ThrowIfNullOrEmpty(propertyName);
+        ArgumentNullException.ThrowIfNull(comparer);
+
+        if (comparer.Equals(field, value))
+            return false;
+
+        OnPropertyChanging(propertyName);
+
+        field = value;
 
         OnPropertyChanged(propertyName);
 
@@ -191,11 +310,12 @@ public abstract class NotifyPropertyChanged
         [NotNullIfNotNull(nameof(value))] ref TValue field,
         TValue value,
         IEqualityComparer<TValue> comparer,
-        Action? onChanged = default,
+        Action onChanged,
         [CallerMemberName] string propertyName = "")
     {
         ArgumentException.ThrowIfNullOrEmpty(propertyName);
         ArgumentNullException.ThrowIfNull(comparer);
+        ArgumentNullException.ThrowIfNull(onChanged);
 
         if (comparer.Equals(field, value))
             return false;
@@ -204,7 +324,7 @@ public abstract class NotifyPropertyChanged
 
         field = value;
 
-        onChanged?.Invoke();
+        onChanged.Invoke();
 
         OnPropertyChanged(propertyName);
 
@@ -236,11 +356,12 @@ public abstract class NotifyPropertyChanged
         [NotNullIfNotNull(nameof(value))] ref TValue field,
         TValue value,
         IEqualityComparer<TValue> comparer,
-        Action<TValue, TValue>? onChanged = default,
+        Action<TValue, TValue> onChanged,
         [CallerMemberName] string propertyName = "")
     {
         ArgumentException.ThrowIfNullOrEmpty(propertyName);
         ArgumentNullException.ThrowIfNull(comparer);
+        ArgumentNullException.ThrowIfNull(onChanged);
 
         if (comparer.Equals(field, value))
             return false;
@@ -250,7 +371,7 @@ public abstract class NotifyPropertyChanged
         TValue oldValue = field;
         field = value;
 
-        onChanged?.Invoke(oldValue, value);
+        onChanged.Invoke(oldValue, value);
 
         OnPropertyChanged(propertyName);
 
