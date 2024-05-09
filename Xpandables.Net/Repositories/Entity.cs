@@ -106,5 +106,9 @@ public abstract class Entity<TId> : Entity, IEntity<TId>
 
     ///<inheritdoc/>
     [Key]
-    public new TId Id { get; protected set; } = default!;
+    public new TId Id
+    {
+        get => (TId)base.Id;
+        protected set => base.Id = value;
+    }
 }
