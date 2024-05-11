@@ -7,7 +7,7 @@
 		<Platforms>x64</Platforms>
 		<NeutralLanguage>fr-FR</NeutralLanguage>
 		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>D:\fewan\source\repos\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>D:\Sources\Repos\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<AnalysisLevel>preview-all</AnalysisLevel>
@@ -22,7 +22,7 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<PackageReleaseNotes>Add Notifications</PackageReleaseNotes>
-		<PackageOutputPath>D:\fewan\source\nugets\</PackageOutputPath>
+		<PackageOutputPath>D:\Sources\Nugets</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
 		<Version>8.0.5</Version>
 		<AssemblyVersion>8.0.5</AssemblyVersion>
