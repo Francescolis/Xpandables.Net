@@ -19,6 +19,7 @@
 // Ignore Spelling: Impl
 
 using Microsoft.Extensions.DependencyInjection;
+
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.HostedServices;
 
@@ -91,7 +92,7 @@ public static class ServiceCollectionHostedServiceExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
-    public static IServiceCollection AddXNotificationScheduler
+    public static IServiceCollection AddXEventIntegrationScheduler
         <TNotificationScheduler>(this IServiceCollection services)
         where TNotificationScheduler :
         BackgroundServiceBase<TNotificationScheduler>, IEventIntegrationScheduler
@@ -113,7 +114,7 @@ public static class ServiceCollectionHostedServiceExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXNotificationScheduler(
+    public static IServiceCollection AddXEventIntegrationScheduler(
         this IServiceCollection services)
-        => services.AddXNotificationScheduler<EventIntegrationScheduler>();
+        => services.AddXEventIntegrationScheduler<EventIntegrationScheduler>();
 }
