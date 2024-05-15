@@ -18,14 +18,14 @@
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents a set of methods to append/read notifications to/from store.
+/// Represents a set of methods to append/read integration events to/from store.
 /// </summary>
-public interface IEventNotificationStore : IDisposable
+public interface IEventIntegrationStore : IDisposable
 {
     /// <summary>
-    /// Asynchronously appends the specified notification to the store.
+    /// Asynchronously appends the specified integration event to the store.
     /// </summary>
-    /// <param name="event">The notification to act on.</param>
+    /// <param name="event">The integration event to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation.</returns>
@@ -36,14 +36,14 @@ public interface IEventNotificationStore : IDisposable
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
     ValueTask AppendAsync(
-        IEventNotification @event,
+        IEventIntegration @event,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously appends the specified notification and force persistence
-    /// to the store without waiting for the control flow.
+    /// Asynchronously appends the specified integration event and force
+    /// persistence to the store without waiting for the control flow.
     /// </summary>
-    /// <param name="event">The notification to act on.</param>
+    /// <param name="event">The integration event to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation.</returns>
@@ -54,15 +54,14 @@ public interface IEventNotificationStore : IDisposable
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
     ValueTask AppendPersistAsync(
-        IEventNotification @event,
+        IEventIntegration @event,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously sets the exception if defined that occurred while 
-    /// processing the specified notification,
-    /// and closes the entity notification.
+    /// Asynchronously updates integration event with the exception if defined,
+    /// and closes the entity integration event.
     /// </summary>
-    /// <param name="eventId">The notification id to act on.</param>
+    /// <param name="eventId">The integration event id to act on.</param>
     /// <param name="exception">The handled exception.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
@@ -73,19 +72,20 @@ public interface IEventNotificationStore : IDisposable
     /// See inner exception.</exception>
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
-    ValueTask AppendCloseAsync(
+    ValueTask UpdateAsync(
         Guid eventId,
         Exception? exception = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously returns a collection of notifications matching the filter.
-    /// if not found, returns an empty collection.
+    /// Asynchronously returns a collection of integration events matching the 
+    /// filter if not found, returns an empty collection.
     /// </summary>
-    /// <param name="eventFilter">The filter to search notification for.</param>
+    /// <param name="eventFilter">The filter to search integration event for
+    /// .</param>
     /// <param name="cancellationToken">A CancellationToken to 
     /// observe while waiting for the task to complete.</param>
-    /// <returns>An enumerator of <see cref="IEventNotification"/> 
+    /// <returns>An enumerator of <see cref="IEventIntegration"/> 
     /// type that can be asynchronously enumerated.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="eventFilter"/> is null.</exception>
@@ -93,7 +93,7 @@ public interface IEventNotificationStore : IDisposable
     /// See inner exception.</exception>
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
-    IAsyncEnumerable<IEventNotification> ReadAsync(
+    IAsyncEnumerable<IEventIntegration> ReadAsync(
         IEventFilter eventFilter,
         CancellationToken cancellationToken = default);
 }

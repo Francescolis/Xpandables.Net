@@ -28,11 +28,11 @@ using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates;
 
-internal sealed class EventNotificationScheduler(
+internal sealed class EventIntegrationScheduler(
     IServiceScopeFactory scopeFactory,
-    IOptions<NotificationOptions> options,
-    ILogger<EventNotificationScheduler> logger)
-    : BackgroundServiceBase<EventNotificationScheduler>, IEventNotificationScheduler
+    IOptions<SchedulerOptions> options,
+    ILogger<EventIntegrationScheduler> logger)
+    : BackgroundServiceBase<EventIntegrationScheduler>, IEventIntegrationScheduler
 {
     private int _attempts;
 
@@ -56,7 +56,7 @@ internal sealed class EventNotificationScheduler(
             catch (OperationCanceledException cancelException)
             {
                 logger.CancelExecutingProcess(
-                    nameof(EventNotificationScheduler),
+                    nameof(EventIntegrationScheduler),
                     cancelException);
 
                 IsRunning = false;
@@ -65,7 +65,7 @@ internal sealed class EventNotificationScheduler(
                 when (exception is not OperationCanceledException)
             {
                 logger.ErrorExecutingProcess(
-                    nameof(EventNotificationScheduler),
+                    nameof(EventIntegrationScheduler),
                     exception);
 
                 if (++_attempts > options.Value.MaxAttempts)
@@ -84,7 +84,7 @@ internal sealed class EventNotificationScheduler(
                 }
 
                 logger.RetryExecutingProcess(
-                    nameof(EventNotificationScheduler),
+                    nameof(EventIntegrationScheduler),
                     _attempts,
                     options.Value.DelayMilliSeconds);
             }
@@ -95,11 +95,11 @@ internal sealed class EventNotificationScheduler(
     {
         using AsyncServiceScope service = scopeFactory.CreateAsyncScope();
 
-        IEventNotificationPublisher publisher = service.ServiceProvider
-            .GetRequiredService<IEventNotificationPublisher>();
+        IEventIntegrationPublisher publisher = service.ServiceProvider
+            .GetRequiredService<IEventIntegrationPublisher>();
 
-        IEventNotificationStore eventStore = service.ServiceProvider
-            .GetRequiredService<IEventNotificationStore>();
+        IEventIntegrationStore eventStore = service.ServiceProvider
+            .GetRequiredService<IEventIntegrationStore>();
 
         IEventFilter filter = new EventFilter
         {
@@ -107,7 +107,7 @@ internal sealed class EventNotificationScheduler(
             Status = EntityStatus.ACTIVE
         };
 
-        await foreach (IEventNotification @event in eventStore
+        await foreach (IEventIntegration @event in eventStore
             .ReadAsync(filter, cancellationToken))
         {
             try
@@ -124,14 +124,14 @@ internal sealed class EventNotificationScheduler(
                     continue;
 
                 await eventStore
-                    .AppendCloseAsync(@event.Id, exception, cancellationToken)
+                    .UpdateAsync(@event.Id, exception, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception exception)
                 when (exception is not ArgumentNullException)
             {
                 await eventStore
-                    .AppendCloseAsync(@event.Id, exception, cancellationToken)
+                    .UpdateAsync(@event.Id, exception, cancellationToken)
                     .ConfigureAwait(false);
             }
         }

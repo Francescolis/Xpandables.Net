@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.HostedServices;
-
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Provides with a method to schedule notifications when requested.
+/// Defines a marker interface to be used to mark an object to act
+/// as an integration event.
+/// An integration is "something that has happened in the past".
+/// An integration is an event that can cause side effects 
+/// to other micro-services, Bounded-Contexts or external systems.
 /// </summary>
-public interface IEventNotificationScheduler : IBackgroundService { }
+public interface IEventIntegration : IEvent
+{
+}

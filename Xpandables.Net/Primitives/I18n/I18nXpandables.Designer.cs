@@ -151,6 +151,15 @@ namespace Xpandables.Net.Primitives.I18n {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to La notification {0} existe déjà dans la collection..
+        /// </summary>
+        public static string EventSourcingEventIntegrationAlreadyExists {
+            get {
+                return ResourceManager.GetString("EventSourcingEventIntegrationAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pas de Domain Event Handler trouvé pour &apos;{0}&apos;.
         /// </summary>
         public static string EventSourcingNoDomainEventHandler {
@@ -165,15 +174,6 @@ namespace Xpandables.Net.Primitives.I18n {
         public static string EventSourcingNoIntegrationEventHandler {
             get {
                 return ResourceManager.GetString("EventSourcingNoIntegrationEventHandler", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to La notification {0} existe déjà dans la collection..
-        /// </summary>
-        public static string EventSourcingNotificationAlreadyExists {
-            get {
-                return ResourceManager.GetString("EventSourcingNotificationAlreadyExists", resourceCulture);
             }
         }
         
@@ -288,9 +288,9 @@ namespace Xpandables.Net.Primitives.I18n {
         /// <summary>
         ///   Looks up a localized string similar to Echec de l&apos;ajout de la notification..
         /// </summary>
-        public static string OutboxFailedToAppendNotification {
+        public static string OutboxFailedToAppendEventIntegration {
             get {
-                return ResourceManager.GetString("OutboxFailedToAppendNotification", resourceCulture);
+                return ResourceManager.GetString("OutboxFailedToAppendEventIntegration", resourceCulture);
             }
         }
         

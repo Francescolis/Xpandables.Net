@@ -55,9 +55,9 @@ public sealed record EventOptions
     public SnapshotOptions SnapshotOptions { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the notification options.
+    /// Gets or sets the integration event options.
     /// </summary>
-    public NotificationOptions NotificationOptions { get; set; } = new();
+    public SchedulerOptions NotificationOptions { get; set; } = new();
 
     /// <summary>
     /// Determines whether to consider no event handler as an error.
@@ -65,9 +65,9 @@ public sealed record EventOptions
     public bool ConsiderNoDomainEventHandlerAsError { get; set; }
 
     /// <summary>
-    /// Determines whether to consider no notification handler as an error.
+    /// Determines whether to consider no integration event handler as an error.
     /// </summary>
-    public bool ConsiderNoNotificationHandlerAsError { get; set; }
+    public bool ConsiderNoEventIntegrationHandlerAsError { get; set; }
 
     /// <summary>
     /// Returns the <see cref="EventConverter"/> instance for the specified type.
@@ -139,9 +139,9 @@ public sealed record EventOptions
 
 
 /// <summary>
-/// Defines the <see cref="IEventNotificationScheduler"/> options.
+/// Defines the <see cref="IEventIntegrationScheduler"/> options.
 /// </summary>
-public sealed record class NotificationOptions
+public sealed record class SchedulerOptions
 {
     /// <summary>
     /// The delay between two executions.
@@ -150,7 +150,7 @@ public sealed record class NotificationOptions
     public int DelayMilliSeconds { get; init; } = 15000;
 
     /// <summary>
-    /// The total number of notifications to load for each thread.
+    /// The total number of integration events to load for each thread.
     /// </summary>
     /// <remarks>The default value is 100.</remarks>
     public int TotalPerThread { get; init; } = 100;

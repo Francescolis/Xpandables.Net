@@ -23,13 +23,13 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the <see cref="EventEntityNotification"/> configuration.
+/// Defines the <see cref="EventEntityIntegration"/> configuration.
 /// </summary>
 public sealed class EventEntityNotificationTypeConfiguration
-    : IEntityTypeConfiguration<EventEntityNotification>
+    : IEntityTypeConfiguration<EventEntityIntegration>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<EventEntityNotification> builder)
+    public void Configure(EntityTypeBuilder<EventEntityIntegration> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

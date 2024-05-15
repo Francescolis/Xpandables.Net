@@ -52,10 +52,10 @@ public sealed class AggregateUnitTest
             .AddXUnitOfWorkAggregate<PersonUnitOfWork>()
             .AddXOperationResultFinalizer()
             .AddXEventDomainPublisher()
-            .AddXEventNotificationPublisher()
+            .AddXEventIntegrationPublisher()
             .AddXEventDomainDuplicateDecorator()
             .AddXEventDomainStore()
-            .AddXEventNotificationStore();
+            .AddXEventIntegrationStore();
 
         IServiceProvider serviceProvider = serviceDescriptors
             .BuildServiceProvider(
@@ -239,7 +239,7 @@ public sealed class SendContactRequestCommandHandler
 }
 
 public sealed class ContactCreatedDomainEventHandler
-    (IEventNotificationStore notificationStore)
+    (IEventIntegrationStore notificationStore)
     : IEventDomainHandler<PersonCreatedDomainEvent, PersonId>
 {
     public async ValueTask<IOperationResult> HandleAsync(
@@ -255,7 +255,7 @@ public sealed class ContactCreatedDomainEventHandler
 }
 
 public sealed class ContactRequestSentDomainEventHandler
-    (IEventNotificationStore notificationStore)
+    (IEventIntegrationStore notificationStore)
     : IEventDomainHandler<ContactRequestSentDomainEvent, PersonId>
 {
     public async ValueTask<IOperationResult> HandleAsync(
@@ -380,12 +380,12 @@ public sealed record ContactRequestSentDomainEvent :
 public sealed record PersonCreatedNotification(
     Guid PersonId,
     string FirstName,
-    string LastName) : EventNotification;
+    string LastName) : EventIntegration;
 
 public sealed record ContactRequestSentNotification(
     Guid SenderId,
     string SenderName,
-    Guid ReceiverId) : EventNotification;
+    Guid ReceiverId) : EventIntegration;
 
 public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
 {

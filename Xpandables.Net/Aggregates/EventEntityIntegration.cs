@@ -19,10 +19,10 @@ using System.Text.Json;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents a notification event entity.
+/// Represents an integration event entity.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="EventEntityNotification"/> with
+/// Initializes a new instance of <see cref="EventEntityIntegration"/> with
 /// the specified values.
 /// </remarks>
 /// <param name="id">The identifier of the event.</param>
@@ -31,14 +31,15 @@ namespace Xpandables.Net.Aggregates;
 /// <param name="version">The version of the event.</param>
 /// <param name="data">The data of the event.</param>
 /// <param name="errorMessage">The error message of the event.</param>
-public sealed class EventEntityNotification(
+public sealed class EventEntityIntegration(
     Guid id,
     string eventTypeName,
     string eventTypeFullName,
     ulong version,
     JsonDocument data,
     string? errorMessage = default) :
-    EventEntity(id, eventTypeName, eventTypeFullName, version, data), IEventEntityNotification
+    EventEntity(id, eventTypeName, eventTypeFullName, version, data),
+    IEventEntityIntegration
 {
     ///<inheritdoc/>
     public string? ErrorMessage { get; set; } = errorMessage;

@@ -24,24 +24,24 @@ using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Aggregates;
 
-internal sealed class EventNotificationPublisher(
+internal sealed class EventIntegrationPublisher(
     IServiceProvider serviceProvider,
-    IOptions<EventOptions> options) : IEventNotificationPublisher
+    IOptions<EventOptions> options) : IEventIntegrationPublisher
 {
     public async ValueTask<IOperationResult> PublishAsync<TEventNotification>(
         TEventNotification @event,
         CancellationToken cancellationToken = default)
-        where TEventNotification : notnull, IEventNotification
+        where TEventNotification : notnull, IEventIntegration
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        List<IEventNotificationHandler<TEventNotification>> handlers = serviceProvider
-            .GetServices<IEventNotificationHandler<TEventNotification>>()
+        List<IEventIntegrationHandler<TEventNotification>> handlers = serviceProvider
+            .GetServices<IEventIntegrationHandler<TEventNotification>>()
             .ToList();
 
         if (handlers.Count == 0)
         {
-            return options.Value.ConsiderNoNotificationHandlerAsError
+            return options.Value.ConsiderNoEventIntegrationHandlerAsError
                 ? OperationResults
                     .InternalError()
                     .WithException(
@@ -54,7 +54,7 @@ internal sealed class EventNotificationPublisher(
                     .Build();
         }
 
-        foreach (IEventNotificationHandler<TEventNotification>? handler in handlers)
+        foreach (IEventIntegrationHandler<TEventNotification>? handler in handlers)
         {
             if (await handler
                 .HandleAsync(@event, cancellationToken)

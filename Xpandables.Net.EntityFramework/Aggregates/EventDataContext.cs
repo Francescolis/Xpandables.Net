@@ -57,9 +57,9 @@ public sealed class EventDataContext(
     public DbSet<EventEntityDomain> Events { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="EventEntityNotification"/> entities.
+    /// A collection of <see cref="EventEntityIntegration"/> entities.
     /// </summary>
-    public DbSet<EventEntityNotification> Notifications { get; set; }
+    public DbSet<EventEntityIntegration> Notifications { get; set; }
 
     /// <summary>
     /// A collection of <see cref="EventEntitySnapshot"/> entities.

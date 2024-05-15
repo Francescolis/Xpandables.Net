@@ -17,12 +17,8 @@
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Defines a marker interface to be used to mark an object to act
-/// as a notification.
-/// A notification is "something that has happened in the past".
-/// A notification is an event that can cause side effects 
-/// to other micro-services, Bounded-Contexts or external systems.
+/// Represents an integration event.
 /// </summary>
-public interface IEventNotification : IEvent
+public abstract record EventIntegration : Event, IEventIntegration
 {
 }

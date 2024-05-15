@@ -48,7 +48,7 @@ public readonly record struct GetProductAsyncQuery(
     Guid ProductId) : IAsyncQuery<string>;
 public sealed record class ProductAddedEvent(
     Guid ProductId, int Qty) : EventDomain<ProductId>;
-public sealed record class ProductAddedIntegrationEvent : EventNotification;
+public sealed record class ProductAddedIntegrationEvent : EventIntegration;
 public sealed class AddProductCommandHandler :
     ICommandHandler<AddProductCommand>
 {
@@ -98,7 +98,7 @@ public sealed class ProductAddedEventHandler :
 }
 
 public sealed class ProductAddedIntegrationEventHandler
-    : IEventNotificationHandler<ProductAddedIntegrationEvent>
+    : IEventIntegrationHandler<ProductAddedIntegrationEvent>
 {
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedIntegrationEvent @event,
@@ -117,7 +117,7 @@ public sealed class MessagingRegistrationUnitTest
             .AddXQueryHandlers()
             .AddXAsyncQueryHandlers()
             .AddXEventDomainHandlers()
-            .AddXEventNotificationHandlers()
+            .AddXEventIntegrationHandlers()
             .BuildServiceProvider();
     }
 
@@ -166,9 +166,9 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_IntegrationEventHandler()
     {
-        IEventNotificationHandler<ProductAddedIntegrationEvent>? handler =
+        IEventIntegrationHandler<ProductAddedIntegrationEvent>? handler =
             _serviceProvider
-            .GetService<IEventNotificationHandler<ProductAddedIntegrationEvent>>();
+            .GetService<IEventIntegrationHandler<ProductAddedIntegrationEvent>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<ProductAddedIntegrationEventHandler>();

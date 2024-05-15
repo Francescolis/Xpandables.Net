@@ -103,11 +103,8 @@
   <data name="AggregateFailedToRead" xml:space="preserve">
     <value>Failed to read aggregate.</value>
   </data>
-  <data name="OutboxFailedToAppendNotification" xml:space="preserve">
-    <value>Failed to append notification.</value>
-  </data>
-  <data name="EventSourcingNotificationAlreadyExists" xml:space="preserve">
-    <value>The integration event {0} already exist in the collection.</value>
+  <data name="OutboxFailedToAppendEventIntegration" xml:space="preserve">
+    <value>Failed to append integration event.</value>
   </data>
   <data name="EventSourcingDomainEventAlreadyExist" xml:space="preserve">
     <value>The event with the same key {0} already exist in the collection.</value>
@@ -180,5 +177,8 @@
   </data>
   <data name="JsonDocumentFailedToParse" xml:space="preserve">
     <value>Parsing document '{0}' failed.</value>
+  </data>
+  <data name="EventSourcingEventIntegrationAlreadyExists" xml:space="preserve">
+    <value>The integration event {0} already exist in the collection.</value>
   </data>
 </root>

@@ -103,10 +103,10 @@
   <data name="AggregateFailedToRead" xml:space="preserve">
     <value>Echec d lecture de l'aggrégat.</value>
   </data>
-  <data name="OutboxFailedToAppendNotification" xml:space="preserve">
+  <data name="OutboxFailedToAppendEventIntegration" xml:space="preserve">
     <value>Echec de l'ajout de la notification.</value>
   </data>
-  <data name="EventSourcingNotificationAlreadyExists" xml:space="preserve">
+  <data name="EventSourcingEventIntegrationAlreadyExists" xml:space="preserve">
     <value>La notification {0} existe déjà dans la collection.</value>
   </data>
   <data name="EventSourcingDomainEventAlreadyExist" xml:space="preserve">

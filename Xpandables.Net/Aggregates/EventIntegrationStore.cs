@@ -24,20 +24,20 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents a notification store.
+/// Represents an integration event store.
 /// </summary>
 /// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
 /// <param name="unitOfWork">The unit of work to use.</param>
 /// <param name="options">The event configuration options to use.</param>
-public sealed class EventNotificationStore<TEventEntity>(
+public sealed class EventIntegrationStore<TEventEntity>(
     [FromKeyedServices(EventOptions.UnitOfWorkKey)] IUnitOfWork unitOfWork,
     IOptions<EventOptions> options) :
-    EventStore<TEventEntity>(unitOfWork, options), IEventNotificationStore
-    where TEventEntity : class, IEventEntityNotification
+    EventStore<TEventEntity>(unitOfWork, options), IEventIntegrationStore
+    where TEventEntity : class, IEventEntityIntegration
 {
     ///<inheritdoc/>
     public async ValueTask AppendAsync(
-        IEventNotification @event,
+        IEventIntegration @event,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -48,7 +48,7 @@ public sealed class EventNotificationStore<TEventEntity>(
 
     ///<inheritdoc/>
     public async ValueTask AppendPersistAsync(
-        IEventNotification @event,
+        IEventIntegration @event,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -71,7 +71,7 @@ public sealed class EventNotificationStore<TEventEntity>(
 
 
     ///<inheritdoc/>
-    public async ValueTask AppendCloseAsync(
+    public async ValueTask UpdateAsync(
         Guid eventId,
         Exception? exception = default,
         CancellationToken cancellationToken = default)
@@ -106,13 +106,13 @@ public sealed class EventNotificationStore<TEventEntity>(
     }
 
     ///<inheritdoc/>
-    public IAsyncEnumerable<IEventNotification> ReadAsync(
+    public IAsyncEnumerable<IEventIntegration> ReadAsync(
         IEventFilter eventFilter,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(eventFilter);
 
-        return ReadEventAsync<IEventNotification>(
+        return ReadEventAsync<IEventIntegration>(
             eventFilter,
             cancellationToken);
     }

@@ -17,8 +17,12 @@
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents a notification.
+/// Represents an integration event entity.
 /// </summary>
-public abstract record EventNotification : Event, IEventNotification
+public interface IEventEntityIntegration : IEventEntity
 {
+    /// <summary>
+    /// Gets or sets the error message of the integration event.
+    /// </summary>
+    string? ErrorMessage { get; set; }
 }

@@ -89,18 +89,18 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
 }
 
 /// <summary>
-/// Represents the <see cref="EventEntityNotification"/> converter.
+/// Represents the <see cref="EventEntityIntegration"/> converter.
 /// </summary>
 public sealed class EventEntityNotificationConverter :
-    EventConverter<EventEntityNotification>
+    EventConverter<EventEntityIntegration>
 {
     ///<inheritdoc/>
     public override bool CanConvert(Type typeToConvert)
-        => typeToConvert == typeof(EventEntityNotification);
+        => typeToConvert == typeof(EventEntityIntegration);
 
     ///<inheritdoc/>
     public override IEvent ConvertFrom(
-        EventEntityNotification entity,
+        EventEntityIntegration entity,
         JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -114,7 +114,7 @@ public sealed class EventEntityNotificationConverter :
             object? @event = JsonSerializer
                 .Deserialize(entity.Data, eventType, options);
 
-            return @event as IEventNotification
+            return @event as IEventIntegration
                 ?? throw new InvalidOperationException(
                     $"Failed to deserialize '{entity.EventTypeName}'.");
         }
@@ -128,20 +128,20 @@ public sealed class EventEntityNotificationConverter :
     }
 
     ///<inheritdoc/>
-    public override EventEntityNotification ConvertTo(IEvent @event, JsonSerializerOptions? options = null)
+    public override EventEntityIntegration ConvertTo(IEvent @event, JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        IEventNotification eventNotification = @event.As<IEventNotification>()
+        IEventIntegration eventNotification = @event.As<IEventIntegration>()
               ?? throw new InvalidOperationException(
-                  $"Event {@event.GetType().Name} is not a notification.");
+                  $"Event {@event.GetType().Name} is not an integration event.");
 
         string eventTypeName = eventNotification.GetTypeName();
         string eventTypeFullName = eventNotification.GetTypeFullName();
         JsonDocument data = eventNotification.ToJsonDocument(options);
         ulong version = eventNotification.Version;
 
-        return new EventEntityNotification(
+        return new EventEntityIntegration(
             eventNotification.Id,
             eventTypeName,
             eventTypeFullName,

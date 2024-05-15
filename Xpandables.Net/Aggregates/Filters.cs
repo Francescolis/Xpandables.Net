@@ -85,21 +85,21 @@ public sealed class EventEntityDomainFilter :
 }
 
 /// <summary>
-/// Represents the filter for <see cref="EventEntityNotification"/>.
+/// Represents the filter for <see cref="EventEntityIntegration"/>.
 /// </summary>
 public sealed class EventEntityNotificationFilter :
-    EventEntityFilter<EventEntityNotification>
+    EventEntityFilter<EventEntityIntegration>
 {
     ///<inheritdoc/>
     public override bool CanFilter(Type typeToFilter)
-        => typeToFilter == typeof(EventEntityNotification);
+        => typeToFilter == typeof(EventEntityIntegration);
 
     ///<inheritdoc/>
-    public override Expression<Func<EventEntityNotification, bool>> Filter(
+    public override Expression<Func<EventEntityIntegration, bool>> Filter(
         IEventFilter eventFilter)
     {
-        QueryExpression<EventEntityNotification> expression
-            = QueryExpressionFactory.Create<EventEntityNotification>();
+        QueryExpression<EventEntityIntegration> expression
+            = QueryExpressionFactory.Create<EventEntityIntegration>();
 
         if (eventFilter.Id is not null)
             expression = expression.And(x => x.Id == eventFilter.Id);
@@ -132,7 +132,7 @@ public sealed class EventEntityNotificationFilter :
         {
             expression = expression.And(
                 RepositoryExtensions
-                .Compose<EventEntityNotification, JsonDocument, bool>(
+                .Compose<EventEntityIntegration, JsonDocument, bool>(
                     x => x.Data,
                     eventFilter.DataCriteria));
         }

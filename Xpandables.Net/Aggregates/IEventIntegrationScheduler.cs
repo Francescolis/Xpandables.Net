@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +15,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.HostedServices;
+
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents a notification event entity.
+/// Provides with a method to schedule integration events when requested.
 /// </summary>
-public interface IEventEntityNotification : IEventEntity
-{
-    /// <summary>
-    /// Gets or sets the error message of the notification.
-    /// </summary>
-    string? ErrorMessage { get; set; }
-}
+public interface IEventIntegrationScheduler : IBackgroundService { }

@@ -20,24 +20,27 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Defines a method to automatically publish notifications.
+/// Allows an application author to define a handler for specific type 
+/// integration event.The integration event must implement 
+/// <see cref="IEventIntegration"/> interface. The implementation must be 
+/// thread-safe when working in a multi-threaded environment.
 /// </summary>
-public interface IEventNotificationPublisher
+/// <typeparam name="TEventIntegration">The integration event 
+/// type to be handled.</typeparam>
+public interface IEventIntegrationHandler<in TEventIntegration>
+    where TEventIntegration : notnull, IEventIntegration
 {
     /// <summary>
-    /// Publishes the specified notification to all registered subscribers.
+    /// Asynchronously handles the integration event of specific type.
     /// </summary>
-    /// <typeparam name="TEventNotification">Type of notification.</typeparam>
-    /// <param name="event">The notification to be published.</param>
-    /// <param name="cancellationToken">A CancellationToken 
-    /// to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents an asynchronous operation.</returns>
+    /// <param name="event">The integration event instance to act on.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe 
+    /// while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>
-    /// <returns>A value that represents an 
-    /// implementation of <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> PublishAsync<TEventNotification>(
-        TEventNotification @event,
-        CancellationToken cancellationToken = default)
-        where TEventNotification : notnull, IEventNotification;
+    /// <returns>A value that 
+    /// represents an <see cref="IOperationResult"/>.</returns>
+    ValueTask<IOperationResult> HandleAsync(
+        TEventIntegration @event,
+        CancellationToken cancellationToken = default);
 }
