@@ -65,7 +65,7 @@ public static class ServiceCollectionEventIntegrationExtensions
     }
 
     /// <summary>
-    /// Adds the <see cref="IEventIntegrationHandler{TNotification}"/> 
+    /// Adds the <see cref="IEventIntegrationHandler{TEventIntegration}"/> 
     /// implementations to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>

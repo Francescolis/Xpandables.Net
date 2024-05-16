@@ -28,15 +28,15 @@ internal sealed class EventIntegrationPublisher(
     IServiceProvider serviceProvider,
     IOptions<EventOptions> options) : IEventIntegrationPublisher
 {
-    public async ValueTask<IOperationResult> PublishAsync<TEventNotification>(
-        TEventNotification @event,
+    public async ValueTask<IOperationResult> PublishAsync<TEventIntegration>(
+        TEventIntegration @event,
         CancellationToken cancellationToken = default)
-        where TEventNotification : notnull, IEventIntegration
+        where TEventIntegration : notnull, IEventIntegration
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        List<IEventIntegrationHandler<TEventNotification>> handlers = serviceProvider
-            .GetServices<IEventIntegrationHandler<TEventNotification>>()
+        List<IEventIntegrationHandler<TEventIntegration>> handlers = serviceProvider
+            .GetServices<IEventIntegrationHandler<TEventIntegration>>()
             .ToList();
 
         if (handlers.Count == 0)
@@ -54,7 +54,7 @@ internal sealed class EventIntegrationPublisher(
                     .Build();
         }
 
-        foreach (IEventIntegrationHandler<TEventNotification>? handler in handlers)
+        foreach (IEventIntegrationHandler<TEventIntegration>? handler in handlers)
         {
             if (await handler
                 .HandleAsync(@event, cancellationToken)

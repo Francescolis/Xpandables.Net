@@ -86,21 +86,21 @@ public static class ServiceCollectionHostedServiceExtensions
     /// event scheduler of <see cref="IEventIntegrationScheduler"/>
     /// to manage integration event publishing.
     /// </summary>
-    /// <typeparam name="TNotificationScheduler">The type that implements 
+    /// <typeparam name="TEventIntegrationScheduler">The type that implements 
     /// <see cref="IEventIntegrationScheduler"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
     public static IServiceCollection AddXEventIntegrationScheduler
-        <TNotificationScheduler>(this IServiceCollection services)
-        where TNotificationScheduler :
-        BackgroundServiceBase<TNotificationScheduler>, IEventIntegrationScheduler
+        <TEventIntegrationScheduler>(this IServiceCollection services)
+        where TEventIntegrationScheduler :
+        BackgroundServiceBase<TEventIntegrationScheduler>, IEventIntegrationScheduler
     {
         ArgumentNullException.ThrowIfNull(services);
 
         _ = services.AddXBackgroundService
-            <IEventIntegrationScheduler, TNotificationScheduler>();
+            <IEventIntegrationScheduler, TEventIntegrationScheduler>();
 
         return services;
     }

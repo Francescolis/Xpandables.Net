@@ -21,7 +21,7 @@
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-		<PackageReleaseNotes>Add Notifications</PackageReleaseNotes>
+		<PackageReleaseNotes>Add Event Integrations</PackageReleaseNotes>
 		<PackageOutputPath>D:\Sources\Nugets</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
 		<Version>8.0.5</Version>

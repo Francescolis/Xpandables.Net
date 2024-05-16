@@ -57,7 +57,7 @@ public sealed record EventOptions
     /// <summary>
     /// Gets or sets the integration event options.
     /// </summary>
-    public SchedulerOptions NotificationOptions { get; set; } = new();
+    public SchedulerOptions SchedulerOptions { get; set; } = new();
 
     /// <summary>
     /// Determines whether to consider no event handler as an error.
@@ -120,12 +120,12 @@ public sealed record EventOptions
         ArgumentNullException.ThrowIfNull(options);
 
         options.Converters.Add(new EventEntityDomainConverter());
-        options.Converters.Add(new EventEntityNotificationConverter());
+        options.Converters.Add(new EventEntityIntegrationConverter());
         options.Converters.Add(new EventEntitySnapshotConverter());
         options.Converters.Add(new AggregateEventConverter());
 
         options.Filters.Add(new EventEntityDomainFilter());
-        options.Filters.Add(new EventEntityNotificationFilter());
+        options.Filters.Add(new EventEntityIntegrationFilter());
 
         options.SerializerOptions ??= new JsonSerializerOptions(
             JsonSerializerDefaults.Web)

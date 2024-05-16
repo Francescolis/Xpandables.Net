@@ -44,7 +44,7 @@ public sealed class EventDataContext(
         _ = modelBuilder
             .ApplyConfiguration(new EventEntityDomainTypeConfiguration());
         _ = modelBuilder
-            .ApplyConfiguration(new EventEntityNotificationTypeConfiguration());
+            .ApplyConfiguration(new EventEntityIntegrationTypeConfiguration());
         _ = modelBuilder
             .ApplyConfiguration(new EventEntitySnapShotTypeConfiguration());
 
@@ -54,12 +54,12 @@ public sealed class EventDataContext(
     /// <summary>
     /// A collection of <see cref="EventEntityDomain"/> entities.
     /// </summary>
-    public DbSet<EventEntityDomain> Events { get; set; }
+    public DbSet<EventEntityDomain> Domains { get; set; }
 
     /// <summary>
     /// A collection of <see cref="EventEntityIntegration"/> entities.
     /// </summary>
-    public DbSet<EventEntityIntegration> Notifications { get; set; }
+    public DbSet<EventEntityIntegration> Integrations { get; set; }
 
     /// <summary>
     /// A collection of <see cref="EventEntitySnapshot"/> entities.

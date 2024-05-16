@@ -239,32 +239,32 @@ public sealed class SendContactRequestCommandHandler
 }
 
 public sealed class ContactCreatedDomainEventHandler
-    (IEventIntegrationStore notificationStore)
+    (IEventIntegrationStore eventIntegrationStore)
     : IEventDomainHandler<PersonCreatedDomainEvent, PersonId>
 {
     public async ValueTask<IOperationResult> HandleAsync(
         PersonCreatedDomainEvent @event,
         CancellationToken cancellationToken = default)
     {
-        PersonCreatedNotification integrationEvent =
+        PersonCreatedEventIntegration integrationEvent =
             new(@event.AggregateId, @event.FirstName, @event.LastName);
-        return await notificationStore
+        return await eventIntegrationStore
             .AppendAsync(integrationEvent, cancellationToken)
             .ToOperationResultAsync();
     }
 }
 
 public sealed class ContactRequestSentDomainEventHandler
-    (IEventIntegrationStore notificationStore)
+    (IEventIntegrationStore eventIntegrationStore)
     : IEventDomainHandler<ContactRequestSentDomainEvent, PersonId>
 {
     public async ValueTask<IOperationResult> HandleAsync(
         ContactRequestSentDomainEvent @event,
         CancellationToken cancellationToken = default)
     {
-        ContactRequestSentNotification integration =
+        ContactRequestSentEventIntegration integration =
             new(@event.AggregateId, @event.FullName, @event.ContactId.Value);
-        return await notificationStore
+        return await eventIntegrationStore
             .AppendAsync(integration, cancellationToken)
             .ToOperationResultAsync();
     }
@@ -377,12 +377,12 @@ public sealed record ContactRequestSentDomainEvent :
             .Build();
 }
 
-public sealed record PersonCreatedNotification(
+public sealed record PersonCreatedEventIntegration(
     Guid PersonId,
     string FirstName,
     string LastName) : EventIntegration;
 
-public sealed record ContactRequestSentNotification(
+public sealed record ContactRequestSentEventIntegration(
     Guid SenderId,
     string SenderName,
     Guid ReceiverId) : EventIntegration;

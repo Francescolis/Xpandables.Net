@@ -87,7 +87,7 @@ public sealed class EventEntityDomainFilter :
 /// <summary>
 /// Represents the filter for <see cref="EventEntityIntegration"/>.
 /// </summary>
-public sealed class EventEntityNotificationFilter :
+public sealed class EventEntityIntegrationFilter :
     EventEntityFilter<EventEntityIntegration>
 {
     ///<inheritdoc/>

@@ -25,7 +25,7 @@ namespace Xpandables.Net.Aggregates.Configurations;
 /// <summary>
 /// Defines the <see cref="EventEntityIntegration"/> configuration.
 /// </summary>
-public sealed class EventEntityNotificationTypeConfiguration
+public sealed class EventEntityIntegrationTypeConfiguration
     : IEntityTypeConfiguration<EventEntityIntegration>
 {
     ///<inheritdoc/>

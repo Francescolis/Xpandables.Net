@@ -91,7 +91,7 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
 /// <summary>
 /// Represents the <see cref="EventEntityIntegration"/> converter.
 /// </summary>
-public sealed class EventEntityNotificationConverter :
+public sealed class EventEntityIntegrationConverter :
     EventConverter<EventEntityIntegration>
 {
     ///<inheritdoc/>
@@ -132,17 +132,17 @@ public sealed class EventEntityNotificationConverter :
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        IEventIntegration eventNotification = @event.As<IEventIntegration>()
+        IEventIntegration eventIntegration = @event.As<IEventIntegration>()
               ?? throw new InvalidOperationException(
                   $"Event {@event.GetType().Name} is not an integration event.");
 
-        string eventTypeName = eventNotification.GetTypeName();
-        string eventTypeFullName = eventNotification.GetTypeFullName();
-        JsonDocument data = eventNotification.ToJsonDocument(options);
-        ulong version = eventNotification.Version;
+        string eventTypeName = eventIntegration.GetTypeName();
+        string eventTypeFullName = eventIntegration.GetTypeFullName();
+        JsonDocument data = eventIntegration.ToJsonDocument(options);
+        ulong version = eventIntegration.Version;
 
         return new EventEntityIntegration(
-            eventNotification.Id,
+            eventIntegration.Id,
             eventTypeName,
             eventTypeFullName,
             version,
