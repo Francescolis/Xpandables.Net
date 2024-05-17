@@ -25,7 +25,7 @@ namespace Xpandables.Net.Interceptions;
 public static class InterceptorFactory
 {
     /// <summary>
-    /// Creates an instance of <typeparamref name="TInterface"/> 
+    /// Creates an implementation of <typeparamref name="TInterface"/> 
     /// that will be intercepted with the specified interceptor.
     /// </summary>
     /// <typeparam name="TInterface">The type of the interface.</typeparam>

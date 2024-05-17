@@ -68,7 +68,7 @@ public sealed class OperationResultUnitTest
 
     [Theory]
     [InlineData("key", "Header", "errorKey", "errorMessage", "result",
-        "http://localhost7152/")]
+        "http://localhost:7152/")]
     public void JsonConverter_Should_Serialize_And_Deserialize_OperationResult(
         string hKey, string hValue, string eKey,
         string eMessage, string result, string url)
@@ -85,13 +85,13 @@ public sealed class OperationResultUnitTest
             .WithUrl(url)
             .Build();
 
-        string barResultJson = JsonSerializer.Serialize(badResult);
+        string badResultJson = JsonSerializer.Serialize(badResult);
         string okResultJson = JsonSerializer.Serialize(okResult);
 
         IOperationResult<string> expectedOkResult =
             JsonSerializer.Deserialize<IOperationResult<string>>(okResultJson)!;
         IOperationResult<string> expectedBadResult =
-            JsonSerializer.Deserialize<IOperationResult<string>>(barResultJson)!;
+            JsonSerializer.Deserialize<IOperationResult<string>>(badResultJson)!;
 
         expectedBadResult.Headers.First()
             .Key
@@ -138,7 +138,7 @@ public sealed class OperationResultUnitTest
     }
 
     [Fact]
-    public void OperationResult_Should_Return_Empty_Optional()
+    public void OperationResult_Struct_Should_Throws_ExceptionWhen_Null()
     {
         IOperationResult<StructType> optional = OperationResults
             .NotFound<StructType>()
