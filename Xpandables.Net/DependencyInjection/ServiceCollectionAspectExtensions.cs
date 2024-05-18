@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aspects;
 using Xpandables.Net.Interceptions;
+using Xpandables.Net.Primitives.Collections;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -29,11 +30,11 @@ namespace Xpandables.Net.DependencyInjection;
 public static partial class ServiceCollectionAspectExtensions
 {
     /// <summary>
-    /// Ensures that all interfaces decorated with derived 
-    /// <see cref="InterceptorAttribute"/> class, 
-    /// the <see cref="InterceptorAttribute.Create(IServiceProvider)"/> 
-    /// interceptor is returned, wrapping all original implementation 
-    /// registered class type found in the specified collection of assemblies.
+    /// Ensures that all classes decorated with derived 
+    /// <see cref="AspectAttribute"/> class will be decorated with the
+    /// expected <see cref="OnAspect"/> implementation, wrapping all original 
+    /// implementation registered class type found in the specified collection 
+    /// of assemblies.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
@@ -51,44 +52,63 @@ public static partial class ServiceCollectionAspectExtensions
 
         if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
-        var decoratedInterfaces = assemblies
-            .SelectMany(ass => ass.GetExportedTypes())
-            .Where(type => type.IsSealed
-                && !type.IsInterface
-                && type.GetCustomAttributes(true)
-                    .OfType<AspectAttribute>().Any())
-            .Select(type => new
-            {
-                Attribute = type
-                    .GetCustomAttributes(true)
-                    .OfType<AspectAttribute>()
-                    .First(),
-                Type = type
-                    .GetCustomAttributes(true)
-                    .OfType<AspectAttribute>()
-                    .First()
-                    .InterfaceType
-            });
+        assemblies
+           .SelectMany(ass => ass.GetExportedTypes())
+           .Where(type => type.IsSealed
+                   && type.IsClass
+                   && type.GetCustomAttributes(true)
+                       .OfType<AspectAttribute>().Any())
+           .Select(type => new
+           {
+               Attributes = type
+                   .GetCustomAttributes(true)
+                   .OfType<AspectAttribute>()
+                   .ToList(),
+               type
+                   .GetCustomAttributes(true)
+                   .OfType<AspectAttribute>()
+                   .First()
+                   .InterfaceType,
+               Type = type
+           })
+           .ForEach(found =>
+           {
+               foreach (AspectAttribute attribute in found.Attributes
+                .OrderBy(o => o.Order))
+               {
+                   _ = services.XTryDecorate(
+                       found.InterfaceType,
+                       (instance, provider) =>
+                       {
+                           IInterceptor interceptor = attribute.Create(provider);
+                           return InterceptorFactory
+                                 .CreateProxy(
+                                    found.InterfaceType,
+                                    interceptor,
+                                    instance);
+                       });
+               }
+           });
 
-        foreach (var decoInterf in decoratedInterfaces)
-        {
-            foreach (Type type in assemblies
-                .SelectMany(ass => ass.GetExportedTypes())
-                .Where(type => !type.IsAbstract
-                    && !type.IsInterface
-                    && type.IsClass
-                    && decoInterf.Type.IsAssignableFrom(type)))
-            {
-                _ = services.XTryDecorate(decoInterf.Type,
-                    (instance, provider) =>
-                    {
-                        IInterceptor interceptor = decoInterf.Attribute
-                            .Create(provider);
-                        return InterceptorFactory
-                            .CreateProxy(decoInterf.Type, interceptor, instance);
-                    });
-            }
-        }
+        //foreach (var decoInterf in decoratedInterfaces)
+        //{
+        //    foreach (Type type in assemblies
+        //        .SelectMany(ass => ass.GetExportedTypes())
+        //        .Where(type => !type.IsAbstract
+        //            && !type.IsInterface
+        //            && type.IsClass
+        //            && decoInterf.InterfaceType.IsAssignableFrom(type)))
+        //    {
+        //        _ = services.XTryDecorate(decoInterf.InterfaceType,
+        //            (instance, provider) =>
+        //            {
+        //                IInterceptor interceptor = decoInterf.Attribute
+        //                    .Create(provider);
+        //                return InterceptorFactory
+        //                    .CreateProxy(decoInterf.InterfaceType, interceptor, instance);
+        //            });
+        //    }
+        //}
 
         return services;
     }

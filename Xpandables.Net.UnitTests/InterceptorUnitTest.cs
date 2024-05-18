@@ -161,15 +161,4 @@ public sealed class InterceptorTests
                 OperationResults.Ok(query.Value).Build());
         }
     }
-
-    public sealed class ArgsValidator : IAspectValidator<Args>
-    {
-        public IOperationResult Validate(Args argument)
-        {
-            return OperationResults
-                .BadRequest()
-                .WithError("Args", "Invalid value.")
-                .Build();
-        }
-    }
 }
