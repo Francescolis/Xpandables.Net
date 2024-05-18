@@ -81,7 +81,7 @@ public sealed class InterceptorTests
 
     [Theory]
     [InlineData(10)]
-    public async Task AspectDependencyAttributeMethod(int value)
+    public async Task AspectValidatorDependencyAttributeMethod(int value)
     {
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddXQueryHandlers(typeof(Calculator).Assembly)
@@ -95,6 +95,26 @@ public sealed class InterceptorTests
         IOperationResult result = await handler.HandleAsync(new(value));
 
         Assert.True(result.IsFailure);
+    }
+
+    [Theory]
+    [InlineData(10, ExpectedValue)]
+    public async Task AspectVisitorDependencyAttributeMethod(
+        int value, int expected)
+    {
+        ServiceProvider serviceProvider = new ServiceCollection()
+            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddScoped(typeof(OnAspectVisitor<>))
+            .AddScoped(typeof(OnAspectValidator<>))
+            .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
+            .AddXAspectBehaviors()
+            .BuildServiceProvider();
+
+        IQueryHandler<Args, int> handler = serviceProvider
+                 .GetRequiredService<IQueryHandler<Args, int>>();
+        IOperationResult<int> result = await handler.HandleAsync(new(value));
+
+        Assert.Equal(expected, result.Result);
     }
 
     [Theory]
@@ -147,18 +167,34 @@ public sealed class InterceptorTests
         ValueTask<int> ICalculator.CalculateAsync(int args) => new(args);
     }
 
-    public sealed record Args([property: Range(20, 25)] int Value) :
-        IQuery<int>, IInterceptorDecorator;
+    public sealed record Args : IQuery<int>, IInterceptorDecorator, IAspectVisitable
+    {
+        public Args(int value)
+        {
+            Value = value;
+        }
 
-    [AspectValidator<IQueryHandler<Args, int>>(ThrowException = true)]
+        [Range(5, 25)]
+        public int Value { get; set; }
+    }
+
+    [AspectValidator<IQueryHandler<Args, int>>(ThrowException = false)]
+    [AspectVisitor<IQueryHandler<Args, int>>(Order = 1)]
     public sealed class HandleArgs : IQueryHandler<Args, int>
     {
-        [AspectValidator<IQueryHandler<Args, int>>(ThrowException = false)]
         public ValueTask<IOperationResult<int>> HandleAsync(
             Args query, CancellationToken cancellationToken = default)
         {
             return new ValueTask<IOperationResult<int>>(
                 OperationResults.Ok(query.Value).Build());
+        }
+    }
+
+    public sealed class AspectVisitor : IAspectVisitor<Args>
+    {
+        public void Visit(Args element)
+        {
+            element.Value = ExpectedValue;// element with { Value = ExpectedValue };
         }
     }
 }

@@ -33,15 +33,7 @@ public abstract class OnAspect : Interceptor
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
-        AspectAttribute = invocation.Target.GetType()
-            .GetMethod(invocation.Method.Name)?
-            .GetCustomAttributes(true)
-            .OfType<AspectAttribute>()
-            .FirstOrDefault()
-            ?? invocation.Target.GetType()
-            .GetCustomAttributes(true)
-            .OfType<AspectAttribute>()
-            .First();
+        AspectAttribute = GetAspectAttribute(invocation);
 
         return CanHandleInvocation(invocation);
     }
@@ -60,6 +52,47 @@ public abstract class OnAspect : Interceptor
     /// otherwise <see langword="false"/></returns>
     protected virtual bool CanHandleInvocation(IInvocation invocation)
         => invocation is not null;
+
+    /// <summary>
+    /// Returns the aspect attribute applied on the method.
+    /// </summary>
+    /// <param name="invocation">The method argument to be called.</param>
+    /// <returns>The aspect attribute applied on the method.</returns>
+    protected static AspectAttribute GetAspectAttribute(IInvocation invocation)
+    {
+        ArgumentNullException.ThrowIfNull(invocation);
+
+        Type target = GetRealInstance(invocation);
+
+        return target
+            .GetMethod(invocation.Method.Name)?
+            .GetCustomAttributes(true)
+            .OfType<AspectAttribute>()
+            .FirstOrDefault()
+            ?? target
+            .GetCustomAttributes(true)
+            .OfType<AspectAttribute>()
+            .First();
+    }
+
+    /// <summary>
+    /// Returns the real instance of the invocation target.
+    /// </summary>
+    /// <param name="invocation">The method argument to be called.</param>
+    /// <returns>The real instance of the invocation target.</returns>
+    protected static Type GetRealInstance(IInvocation invocation)
+    {
+        ArgumentNullException.ThrowIfNull(invocation);
+
+        object target = invocation.Target;
+
+        while (target is InterceptorProxy proxy)
+        {
+            target = proxy.Instance;
+        }
+
+        return target.GetType();
+    }
 }
 
 /// <summary>

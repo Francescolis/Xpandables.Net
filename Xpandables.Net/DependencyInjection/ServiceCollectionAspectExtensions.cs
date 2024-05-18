@@ -74,7 +74,7 @@ public static partial class ServiceCollectionAspectExtensions
            .ForEach(found =>
            {
                foreach (AspectAttribute attribute in found.Attributes
-                .OrderBy(o => o.Order))
+                .OrderByDescending(o => o.Order))
                {
                    _ = services.XTryDecorate(
                        found.InterfaceType,

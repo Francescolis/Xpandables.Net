@@ -26,6 +26,9 @@ namespace Xpandables.Net.Interceptions;
 /// </summary>
 public abstract class InterceptorProxy : DispatchProxy
 {
+    internal object Instance { get; set; } = default!;
+    internal IInterceptor Interceptor { get; set; } = default!;
+
     /// <summary>
     /// Contains the GetType method.
     /// </summary>
@@ -66,18 +69,11 @@ public abstract class InterceptorProxy : DispatchProxy
 public class InterceptorProxy<TInterface> : InterceptorProxy
     where TInterface : class
 {
-    private TInterface _realInstance;
-    private IInterceptor _interceptor;
-
     /// <summary>
     /// Initializes a new instance of 
     /// <see cref="InterceptorProxy{TInstance}"/> with default values.
     /// </summary>
-    public InterceptorProxy()
-    {
-        _realInstance = default!;
-        _interceptor = default!;
-    }
+    public InterceptorProxy() { }
 
     /// <summary>
     /// Initializes the decorated instance and the interceptor 
@@ -91,9 +87,9 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
     /// <paramref name="interceptor"/> is null.</exception>
     internal void SetParameters(TInterface instance, IInterceptor interceptor)
     {
-        _realInstance = instance
+        Instance = instance
             ?? throw new ArgumentNullException(nameof(instance));
-        _interceptor = interceptor
+        Interceptor = interceptor
             ?? throw new ArgumentNullException(nameof(interceptor));
     }
 
@@ -122,21 +118,21 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
 
     private object? DoInvoke(MethodInfo method, params object?[]? args)
     {
-        Invocation invocation = new(method, _realInstance, args);
+        Invocation invocation = new(method, Instance, args);
 
-        if (_interceptor.CanHandle(invocation))
+        if (Interceptor.CanHandle(invocation))
         {
             Stopwatch watch = Stopwatch.StartNew();
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                _interceptor.Intercept(invocation);
+                Interceptor.Intercept(invocation);
             }
             catch (Exception exception)
             {
                 invocation.SetException(
                     new InvalidOperationException(
-                        $"The interceptor {_interceptor.GetType().Name} " +
+                        $"The interceptor {Interceptor.GetType().Name} " +
                         $"throws an exception.",
                         exception));
             }
@@ -169,5 +165,5 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
     [DebuggerStepThrough]
     private object? Bypass(
         MethodInfo targetMethod,
-        object?[]? args) => targetMethod.Invoke(_realInstance, args);
+        object?[]? args) => targetMethod.Invoke(Instance, args);
 }

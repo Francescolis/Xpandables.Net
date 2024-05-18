@@ -29,7 +29,7 @@ public abstract class AspectAttribute(Type interfaceType) : InterceptorAttribute
     /// Gets the zero-base order in which the aspect will be applied.
     /// The default value is zero.
     /// </summary>
-    public virtual int Order => 0;
+    public virtual int Order { get; set; }
 
     /// <summary>
     /// Gets the interface type implemented by the decorated class.
