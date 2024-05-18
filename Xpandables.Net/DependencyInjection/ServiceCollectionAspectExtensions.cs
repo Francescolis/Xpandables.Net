@@ -50,7 +50,8 @@ public static partial class ServiceCollectionAspectExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
 
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+        if (assemblies.Length == 0)
+            assemblies = [Assembly.GetCallingAssembly()];
 
         assemblies
            .SelectMany(ass => ass.GetExportedTypes())
@@ -90,27 +91,33 @@ public static partial class ServiceCollectionAspectExtensions
                }
            });
 
-        //foreach (var decoInterf in decoratedInterfaces)
-        //{
-        //    foreach (Type type in assemblies
-        //        .SelectMany(ass => ass.GetExportedTypes())
-        //        .Where(type => !type.IsAbstract
-        //            && !type.IsInterface
-        //            && type.IsClass
-        //            && decoInterf.InterfaceType.IsAssignableFrom(type)))
-        //    {
-        //        _ = services.XTryDecorate(decoInterf.InterfaceType,
-        //            (instance, provider) =>
-        //            {
-        //                IInterceptor interceptor = decoInterf.Attribute
-        //                    .Create(provider);
-        //                return InterceptorFactory
-        //                    .CreateProxy(decoInterf.InterfaceType, interceptor, instance);
-        //            });
-        //    }
-        //}
-
         return services;
     }
 
+    /// <summary>
+    /// Registers all the derived classes from <see cref="OnAspect"/> to the
+    /// service collection with scoped lifetime.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types.
+    /// </param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXOnAspects(
+        this IServiceCollection services, params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
+        if (assemblies.Length == 0)
+            assemblies = [Assembly.GetCallingAssembly()];
+
+        assemblies
+             .SelectMany(ass => ass.GetExportedTypes())
+             .Where(type => type.IsSealed
+                     && type.IsClass
+                     && typeof(OnAspect).IsAssignableFrom(type))
+             .ForEach(type => services.AddScoped(type));
+
+        return services;
+    }
 }

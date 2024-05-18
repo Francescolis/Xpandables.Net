@@ -104,8 +104,7 @@ public sealed class InterceptorTests
     {
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddXQueryHandlers(typeof(Calculator).Assembly)
-            .AddScoped(typeof(OnAspectVisitor<>))
-            .AddScoped(typeof(OnAspectValidator<>))
+            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
             .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
             .AddXAspectBehaviors()
             .BuildServiceProvider();
