@@ -126,6 +126,7 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
 
         if (_interceptor.CanHandle(invocation))
         {
+            Stopwatch watch = Stopwatch.StartNew();
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
@@ -133,11 +134,16 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
             }
             catch (Exception exception)
             {
-                _ = invocation.AddException(
+                invocation.SetException(
                     new InvalidOperationException(
                         $"The interceptor {_interceptor.GetType().Name} " +
                         $"throws an exception.",
                         exception));
+            }
+            finally
+            {
+                watch.Stop();
+                invocation.SetElapsedTime(watch.Elapsed);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }

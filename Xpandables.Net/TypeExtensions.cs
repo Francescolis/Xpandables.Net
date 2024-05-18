@@ -65,6 +65,28 @@ public static class TypeExtensions
     }
 
     /// <summary>
+    /// Gets the return type from the task or value task.
+    /// </summary>
+    /// <param name="returnType">The return type to be checked.</param>
+    /// <returns>The return type.</returns>
+    public static Type? GetUnderlyingReturnTypeFromTaskOrValueTask(
+        this Type returnType)
+    {
+        ArgumentNullException.ThrowIfNull(returnType);
+
+        if (returnType.IsGenericType)
+        {
+            Type genericType = returnType.GetGenericTypeDefinition();
+            if (genericType == typeof(Task<>))
+                return returnType.GetGenericArguments()[0];
+            if (genericType == typeof(ValueTask<>))
+                return returnType.GetGenericArguments()[0];
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Returns the description string attribute of 
     /// the current <see cref="Enum"/> value type.
     /// if not found, returns the value as string.

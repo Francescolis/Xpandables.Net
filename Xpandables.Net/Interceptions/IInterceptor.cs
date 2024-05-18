@@ -55,10 +55,10 @@ public interface IInterceptor
     /// mechanism can be skipped completely.
     /// Returns <see langword="true"/> if so, otherwise <see langword="false"/>.
     /// </summary>
-    /// <param name="argument">The argument to handle.</param>
+    /// <param name="invocation">The method argument to be called.</param>
     /// <returns><see langword="true"/> if it can handle the argument, 
     /// otherwise <see langword="false"/></returns>
-    bool CanHandle(IInvocation argument);
+    bool CanHandle(IInvocation invocation);
 
     /// <summary>
     /// Method used to intercept the parameter method call.
@@ -87,10 +87,10 @@ public abstract class Interceptor : IInterceptor
     /// Returns <see langword="true"/> if so, otherwise <see langword="false"/>.
     /// The default behavior returns <see langword="true"/>.
     /// </summary>
-    /// <param name="argument">The argument to handle.</param>
+    /// <param name="invocation">The method argument to be called.</param>
     /// <returns><see langword="true"/> if it can handle the argument, 
     /// otherwise <see langword="false"/></returns>
-    public virtual bool CanHandle(IInvocation argument) => true;
+    public virtual bool CanHandle(IInvocation invocation) => true;
 
     /// <summary>
     /// Method used to intercept the parameter method call.

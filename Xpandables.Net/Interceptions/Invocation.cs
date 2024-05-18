@@ -25,8 +25,8 @@ namespace Xpandables.Net.Interceptions;
 /// </summary>
 internal sealed record class Invocation : IInvocation
 {
-    public MethodInfo InvocationMethod { get; }
-    public object InvocationInstance { get; }
+    public MethodInfo Method { get; }
+    public object Target { get; }
     public IParameterCollection Arguments { get; }
     public Exception? Exception { get; private set; }
     public object? ReturnValue { get; private set; }
@@ -48,40 +48,54 @@ internal sealed record class Invocation : IInvocation
         object targetInstance,
         params object?[]? argsValue)
     {
-        InvocationMethod = targetMethod
+        Method = targetMethod
             ?? throw new ArgumentNullException(nameof(targetMethod));
-        InvocationInstance = targetInstance
+        Target = targetInstance
             ?? throw new ArgumentNullException(nameof(targetInstance));
         Arguments = new ParameterCollection(targetMethod, argsValue);
     }
 
-    public IInvocation AddException(Exception? exception)
+    public void SetException(Exception? exception)
     {
         Exception = exception;
-        return this;
     }
 
-    public IInvocation AddReturnValue(object? returnValue)
+    public void SetReturnValue(object? returnValue)
     {
         ReturnValue = returnValue;
-        return this;
+        Type returnType = Method.ReturnType;
+
+        if (ReturnValue is not null)
+        {
+            if (returnType.IsAssignableFrom(ReturnValue.GetType()))
+                return;
+
+            if (returnType.IsGenericType)
+            {
+                if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
+                    ReturnValue = Activator
+                        .CreateInstance(returnType, () => ReturnValue);
+
+                if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+                    ReturnValue = Activator
+                        .CreateInstance(returnType, ReturnValue);
+            }
+        }
     }
 
-    public IInvocation AddElapsedTime(TimeSpan elapsedTime)
+    public void SetElapsedTime(TimeSpan elapsedTime)
     {
         ElapsedTime = elapsedTime;
-        return this;
     }
 
     public void Proceed()
     {
         Stopwatch watch = Stopwatch.StartNew();
-        watch.Start();
 
         try
         {
-            ReturnValue = InvocationMethod.Invoke(
-                                InvocationInstance,
+            ReturnValue = Method.Invoke(
+                                Target,
                                 Arguments.Select(arg => arg.Value).ToArray());
 
             if (ReturnValue is Task { Exception: { } } taskException)

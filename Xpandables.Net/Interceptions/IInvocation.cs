@@ -20,19 +20,19 @@ using System.Reflection;
 namespace Xpandables.Net.Interceptions;
 
 /// <summary>
-/// Provides the structure for an interception event.
+/// Provides with the structure for an interception event.
 /// </summary>
 public interface IInvocation
 {
     /// <summary>
     /// Contains the invocation target method info.
     /// </summary>
-    MethodInfo InvocationMethod { get; }
+    internal MethodInfo Method { get; }
 
     /// <summary>
     /// Contains the invocation target instance.
     /// </summary>
-    object InvocationInstance { get; }
+    object Target { get; }
 
     /// <summary>
     /// Contains the arguments (position in signature, names and 
@@ -63,7 +63,7 @@ public interface IInvocation
     /// <summary>
     /// Gets the invocation method return type.
     /// </summary>
-    public sealed Type ReturnType => InvocationMethod.ReturnType;
+    public sealed Type ReturnType => Method.ReturnType;
 
     /// <summary>
     /// Sets the exception value.
@@ -71,8 +71,7 @@ public interface IInvocation
     /// take care to provide a <see cref="ReturnValue" /> if necessary.
     /// </summary>
     /// <param name="exception">The exception value.</param>
-    /// <returns>The current instance with exception value.</returns>
-    IInvocation AddException(Exception? exception);
+    void SetException(Exception? exception);
 
     /// <summary>
     /// Sets the executed method return value, only for non-void method.
@@ -80,15 +79,13 @@ public interface IInvocation
     /// Otherwise it will throw an exception.
     /// </summary>
     /// <param name="returnValue">The return value to be used.</param>
-    /// <returns>The current instance with return value.</returns>
-    IInvocation AddReturnValue(object? returnValue);
+    void SetReturnValue(object? returnValue);
 
     /// <summary>
     /// Sets the executed method elapsed time.
     /// </summary>
     /// <param name="elapsedTime">The method elapsed.</param>
-    /// <returns>The current instance with the new elapsed time.</returns>
-    IInvocation AddElapsedTime(TimeSpan elapsedTime);
+    void SetElapsedTime(TimeSpan elapsedTime);
 
     /// <summary>
     /// Executes the underlying method.

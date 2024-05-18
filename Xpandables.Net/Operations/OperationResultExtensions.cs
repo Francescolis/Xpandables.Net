@@ -17,6 +17,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Reflection;
 
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
@@ -30,6 +31,10 @@ public static class OperationResultExtensions
 {
     private const int _minSuccessStatusCode = 200;
     private const int _maxSuccessStatusCode = 299;
+
+    private readonly static MethodInfo ToOperationResultMethod =
+        typeof(IOperationResult).GetMethod(nameof(ToOperationResult))!;
+
     /// <summary>
     /// Defines the key for the exception in the <see cref="ElementCollection"/>.
     /// </summary>
@@ -118,6 +123,25 @@ public static class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(operationResult);
 
         return new OperationResultException(operationResult);
+    }
+
+    /// <summary>
+    /// Converts the current instance to a generic one zith the specified type.
+    /// </summary>
+    /// <param name="operationResult">The current instance.</param>
+    /// <param name="genericType">The underlying type.</param>
+    /// <returns>A new instance of <see cref="IOperationResult{TResult}"/>
+    /// .</returns>
+    public static dynamic ToOperationResult(
+        this IOperationResult operationResult,
+        Type genericType)
+    {
+        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(genericType);
+
+        return ToOperationResultMethod
+            .MakeGenericMethod(genericType)
+            .Invoke(operationResult, null)!;
     }
 
     /// <summary>

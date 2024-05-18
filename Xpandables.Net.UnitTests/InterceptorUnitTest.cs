@@ -17,6 +17,7 @@
 ********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Aspects;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Interceptions;
@@ -77,6 +78,24 @@ public sealed class InterceptorTests
     }
 
     [Theory]
+    [InlineData(10)]
+    public async Task AspectDependencyAttributeMethod(int value)
+    {
+        ServiceProvider serviceProvider = new ServiceCollection()
+            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddScoped(typeof(OnAspectValidator<>))
+            .AddScoped<IAspectValidator<Args>, ArgsValidator>()
+            .AddXAspectBehaviors()
+            .BuildServiceProvider();
+
+        IQueryHandler<Args, int> handler = serviceProvider
+                 .GetRequiredService<IQueryHandler<Args, int>>();
+        IOperationResult result = await handler.HandleAsync(new(value));
+
+        Assert.True(result.IsFailure);
+    }
+
+    [Theory]
     [InlineData(10, ExpectedValue)]
     public async Task InterceptorDependencyHandlerMethod(
         int value, int expected)
@@ -128,13 +147,27 @@ public sealed class InterceptorTests
 
     public readonly record struct Args(int Value) :
         IQuery<int>, IInterceptorDecorator;
+
+    [AspectValidator<IQueryHandler<Args, int>>(ThrowException = true)]
     public sealed class HandleArgs : IQueryHandler<Args, int>
     {
+        [AspectValidator<IQueryHandler<Args, int>>(ThrowException = false)]
         public ValueTask<IOperationResult<int>> HandleAsync(
             Args query, CancellationToken cancellationToken = default)
         {
             return new ValueTask<IOperationResult<int>>(
                 OperationResults.Ok(query.Value).Build());
+        }
+    }
+
+    public sealed class ArgsValidator : IAspectValidator<Args>
+    {
+        public IOperationResult Validate(Args argument)
+        {
+            return OperationResults
+                .BadRequest()
+                .WithError("Args", "Invalid value.")
+                .Build();
         }
     }
 }
