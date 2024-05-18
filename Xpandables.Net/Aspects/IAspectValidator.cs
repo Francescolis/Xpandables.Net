@@ -28,9 +28,7 @@ public interface IAspectValidator : IAspect
     /// Validates the argument and returns validation state with errors if 
     /// necessary.
     /// </summary>
-    /// <param name="argument">The target argument to be validated.</param>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="argument"/> is null.</exception>
+    /// <param name="argument">The target argument to be validated.</param>    
     /// <returns>Returns a result state that contains validation information
     /// .</returns>
     IOperationResult Validate(object? argument);
@@ -49,8 +47,6 @@ public interface IAspectValidator<TArgument> : IAspectValidator
     /// necessary.
     /// </summary>
     /// <param name="argument">The target argument to be validated.</param>
-    /// <exception cref="ArgumentNullException">The
-    /// <paramref name="argument"/> is null.</exception>
     /// <returns>Returns a result state that contains validation information
     /// </returns>
     IOperationResult Validate(TArgument? argument);

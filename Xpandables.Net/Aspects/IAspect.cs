@@ -22,7 +22,7 @@ namespace Xpandables.Net.Aspects;
 public interface IAspect
 {
     /// <summary>
-    /// Gets the zero-base order in which the aspect will be executed.
+    /// Gets the zero-base order in which the aspect will be aplied.
     /// The default value is zero.
     /// </summary>
     public virtual int Order => 0;

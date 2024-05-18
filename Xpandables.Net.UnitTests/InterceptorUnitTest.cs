@@ -15,6 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aspects;
@@ -84,7 +86,7 @@ public sealed class InterceptorTests
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddXQueryHandlers(typeof(Calculator).Assembly)
             .AddScoped(typeof(OnAspectValidator<>))
-            .AddScoped<IAspectValidator<Args>, ArgsValidator>()
+            .AddScoped(typeof(IAspectValidator<>), typeof(AspectValidator<>))
             .AddXAspectBehaviors()
             .BuildServiceProvider();
 
@@ -145,7 +147,7 @@ public sealed class InterceptorTests
         ValueTask<int> ICalculator.CalculateAsync(int args) => new(args);
     }
 
-    public readonly record struct Args(int Value) :
+    public sealed record Args([property: Range(20, 25)] int Value) :
         IQuery<int>, IInterceptorDecorator;
 
     [AspectValidator<IQueryHandler<Args, int>>(ThrowException = true)]

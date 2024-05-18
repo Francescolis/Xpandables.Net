@@ -19,7 +19,7 @@ using Xpandables.Net.Interceptions;
 namespace Xpandables.Net.Aspects;
 
 /// <summary>
-/// Base class for aspect implementation.
+/// Base class for aspect implementation interceptor.
 /// </summary>
 public abstract class OnAspect : Interceptor
 {
