@@ -16,7 +16,6 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Xpandables.Net.Primitives.Converters;
@@ -88,7 +87,8 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>Returns an instance 
-    /// of <typeparamref name="TPrimitive"/> with the new value.</returns>
+    /// of <typeparamref name="TPrimitive"/> with the new value
+    /// or null if the value is null.</returns>
     static abstract TPrimitive Create(TValue value);
 
     /// <summary>
@@ -98,14 +98,6 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// <param name="self">The current instance.</param>
 #pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator TValue(TPrimitive self);
-
-    /// <summary>
-    /// Converts the nullable <typeparamref name="TValue"/> type to 
-    /// <typeparamref name="TPrimitive"/>
-    /// </summary>
-    /// <param name="value">The nullable value.</param>
-    [return: NotNullIfNotNull(nameof(value))]
-    static abstract implicit operator TPrimitive([AllowNull] TValue? value);
 
     /// <summary>
     /// Converts the <typeparamref name="TPrimitive"/> type to string.

@@ -24,10 +24,10 @@
 		<PackageReleaseNotes>Add Transacional</PackageReleaseNotes>
 		<PackageOutputPath>D:\Sources\Nugets</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>8.0.5</Version>
-		<AssemblyVersion>8.0.5</AssemblyVersion>
-		<FileVersion>8.0.5</FileVersion>
-		<PackageVersion>8.0.5</PackageVersion>
+		<Version>8.0.6</Version>
+		<AssemblyVersion>8.0.6</AssemblyVersion>
+		<FileVersion>8.0.6</FileVersion>
+		<PackageVersion>8.0.6</PackageVersion>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>

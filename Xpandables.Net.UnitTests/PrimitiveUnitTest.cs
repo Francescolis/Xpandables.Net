@@ -50,7 +50,7 @@ public sealed class PrimitiveUnitTest
     {
         public static string DefaultValue => "NOEMAIL@EMAIL.COM";
 
-        public static Email Create(string value) => new(value);
+        public static Email Create(string? value) => value is null ? null : new(value);
 
         public static Email Default() => new(DefaultValue);
 
