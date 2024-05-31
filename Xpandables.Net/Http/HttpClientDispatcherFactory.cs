@@ -93,7 +93,7 @@ public sealed class HttpClientDispatcherFactory
                 .Build(attribute, headerRequest, requestMessage);
         }
 
-        if (attribute.IsNullable == false
+        if (!attribute.IsNullable
             && (attribute.Location & Location.Body) == Location.Body)
         {
             if (attribute.BodyFormat == BodyFormat.ByteArray)

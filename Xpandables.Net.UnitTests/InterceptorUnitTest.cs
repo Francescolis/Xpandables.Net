@@ -86,7 +86,9 @@ public sealed class InterceptorTests
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddXQueryHandlers(typeof(Calculator).Assembly)
             .AddScoped(typeof(OnAspectValidator<>))
+            .AddScoped(typeof(OnAspectVisitor<>))
             .AddScoped(typeof(IAspectValidator<>), typeof(AspectValidator<>))
+            .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
             .AddXAspectBehaviors()
             .BuildServiceProvider();
 
@@ -177,8 +179,8 @@ public sealed class InterceptorTests
         public int Value { get; set; }
     }
 
-    [AspectValidator<IQueryHandler<Args, int>>(ThrowException = false)]
-    [AspectVisitor<IQueryHandler<Args, int>>(Order = 1)]
+    [AspectValidator<IQueryHandler<Args, int>>(ThrowException = false, Order = 1)]
+    [AspectVisitor<IQueryHandler<Args, int>>(Order = 0)]
     public sealed class HandleArgs : IQueryHandler<Args, int>
     {
         public ValueTask<IOperationResult<int>> HandleAsync(

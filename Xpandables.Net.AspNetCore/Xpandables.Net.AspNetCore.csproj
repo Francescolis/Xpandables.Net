@@ -7,7 +7,7 @@
 		<Platforms>x64</Platforms>
 		<NeutralLanguage>fr-FR</NeutralLanguage>
 		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>D:\Sources\Repos\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>C:\Users\fewan\DevOps\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<AnalysisLevel>preview-all</AnalysisLevel>
@@ -22,7 +22,7 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<PackageReleaseNotes>Add Event Integration</PackageReleaseNotes>
-		<PackageOutputPath>D:\Sources\Nugets</PackageOutputPath>
+		<PackageOutputPath>C:\Users\fewan\DevOps\Nugets</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
 		<Version>8.0.6</Version>
 		<AssemblyVersion>8.0.6</AssemblyVersion>
