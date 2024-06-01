@@ -44,6 +44,7 @@ public sealed class OnAspectFinalizer<TInterface>(IAspectFinalizer aspectFinaliz
                 if (result is Exception reThrow)
                     invocation.SetException(reThrow);
                 else
+                    if (invocation.ReturnType != typeof(void))
                     invocation.SetReturnValue(result);
             }
             else if (invocation.Exception is null)
@@ -53,6 +54,7 @@ public sealed class OnAspectFinalizer<TInterface>(IAspectFinalizer aspectFinaliz
                 if (result is Exception reThrow)
                     invocation.SetException(reThrow);
                 else
+                    if (invocation.ReturnType != typeof(void))
                     invocation.SetReturnValue(result);
             }
         }
@@ -64,6 +66,7 @@ public sealed class OnAspectFinalizer<TInterface>(IAspectFinalizer aspectFinaliz
             if (result is Exception reThrow)
                 invocation.SetException(reThrow);
             else
+                if (invocation.ReturnType != typeof(void))
                 invocation.SetReturnValue(result);
         }
     }
