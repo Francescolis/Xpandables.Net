@@ -50,6 +50,13 @@ public interface IInvocation
     Exception? Exception { get; }
 
     /// <summary>
+    /// Determines whether the exception should be rethrown.
+    /// This allows the autor to manually set or remove an exception.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.</remarks>
+    bool ReThrowException { get; set; }
+
+    /// <summary>
     /// Gets the executed method return value, only provided 
     /// for non-void method and when no exception handled.
     /// </summary>

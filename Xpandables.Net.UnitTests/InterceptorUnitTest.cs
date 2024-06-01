@@ -119,6 +119,25 @@ public sealed class InterceptorTests
     }
 
     [Theory]
+    [InlineData(10, 10)]
+    public async Task AspectRetryDependencyAttributeMethod(
+         int value, int expected)
+    {
+        ServiceProvider serviceProvider = new ServiceCollection()
+            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddScoped(typeof(OnAspectRetry<>))
+            .AddXAspectBehaviors()
+            .BuildServiceProvider();
+
+        IQueryHandler<Args1, int> handler = serviceProvider
+                 .GetRequiredService<IQueryHandler<Args1, int>>();
+
+        IOperationResult<int> result = await handler.HandleAsync(new(value));
+
+        Assert.Equal(expected, result.Result);
+    }
+
+    [Theory]
     [InlineData(10, ExpectedValue)]
     public async Task InterceptorDependencyHandlerMethod(
         int value, int expected)
@@ -179,6 +198,8 @@ public sealed class InterceptorTests
         public int Value { get; set; }
     }
 
+    public sealed record Args1(int Value) : IQuery<int>, IInterceptorDecorator;
+
     [AspectValidator<IQueryHandler<Args, int>>(ThrowException = false, Order = 1)]
     [AspectVisitor<IQueryHandler<Args, int>>(Order = 0)]
     public sealed class HandleArgs : IQueryHandler<Args, int>
@@ -191,11 +212,26 @@ public sealed class InterceptorTests
         }
     }
 
+    [AspectRetry<IQueryHandler<Args1, int>>]
+    public sealed class HandleExceptionArgs : IQueryHandler<Args1, int>
+    {
+        int attemtp = 0;
+        public ValueTask<IOperationResult<int>> HandleAsync(
+            Args1 query, CancellationToken cancellationToken = default)
+        {
+            if (attemtp++ < 2)
+                throw new InvalidOperationException("Invalid operation exception");
+
+            return new ValueTask<IOperationResult<int>>(
+                OperationResults.Ok(query.Value).Build());
+        }
+    }
+
     public sealed class AspectVisitor : IAspectVisitor<Args>
     {
         public void Visit(Args element)
         {
-            element.Value = ExpectedValue;// element with { Value = ExpectedValue };
+            element.Value = ExpectedValue;
         }
     }
 }

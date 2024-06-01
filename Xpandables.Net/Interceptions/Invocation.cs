@@ -17,6 +17,7 @@
 ********************************************************************************/
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace Xpandables.Net.Interceptions;
 
@@ -25,10 +26,12 @@ namespace Xpandables.Net.Interceptions;
 /// </summary>
 internal sealed record class Invocation : IInvocation
 {
+    internal ExceptionDispatchInfo? _exceptionDispatchInfo;
     public MethodInfo Method { get; }
     public object Target { get; }
     public IParameterCollection Arguments { get; }
-    public Exception? Exception { get; private set; }
+    public Exception? Exception => _exceptionDispatchInfo?.SourceException;
+    public bool ReThrowException { get; set; }
     public object? ReturnValue { get; private set; }
     public TimeSpan ElapsedTime { get; private set; }
 
@@ -57,7 +60,9 @@ internal sealed record class Invocation : IInvocation
 
     public void SetException(Exception? exception)
     {
-        Exception = exception;
+        _exceptionDispatchInfo = exception is null
+            ? null
+            : ExceptionDispatchInfo.Capture(exception);
     }
 
     public void SetReturnValue(object? returnValue)
@@ -94,23 +99,21 @@ internal sealed record class Invocation : IInvocation
 
         try
         {
-            ReturnValue = Method.Invoke(
-                                Target,
-                                Arguments.Select(arg => arg.Value).ToArray());
+            ReturnValue = Method
+                .Invoke(
+                    Target,
+                    Arguments.Select(arg => arg.Value).ToArray());
 
             if (ReturnValue is Task { Exception: { } } taskException)
-                Exception = taskException.Exception.GetBaseException();
+                _exceptionDispatchInfo = ExceptionDispatchInfo.Capture(taskException.Exception);
+
+            if (!ReThrowException)
+                _exceptionDispatchInfo?.Throw();
         }
         catch (Exception exception)
-            when (exception is TargetException
-                            or ArgumentNullException
-                            or TargetInvocationException
-                            or TargetParameterCountException
-                            or MethodAccessException
-                            or InvalidOperationException
-                            or NotSupportedException)
+            when (ReThrowException is true)
         {
-            Exception = exception;
+            _exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
         }
         finally
         {

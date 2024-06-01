@@ -62,7 +62,7 @@ public abstract class OnAspect : Interceptor
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
-        Type target = GetRealInstance(invocation);
+        Type target = GetRealInstance(invocation).GetType();
 
         return target
             .GetMethod(invocation.Method.Name)?
@@ -80,7 +80,7 @@ public abstract class OnAspect : Interceptor
     /// </summary>
     /// <param name="invocation">The method argument to be called.</param>
     /// <returns>The real instance of the invocation target.</returns>
-    protected static Type GetRealInstance(IInvocation invocation)
+    protected static object GetRealInstance(IInvocation invocation)
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
@@ -91,7 +91,7 @@ public abstract class OnAspect : Interceptor
             target = proxy.Instance;
         }
 
-        return target.GetType();
+        return target;
     }
 }
 

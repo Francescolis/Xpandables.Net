@@ -52,6 +52,8 @@ public sealed class OnAspectValidator<TInterface>
 
         if (errors.Any())
         {
+            invocation.ReThrowException = true;
+
             IOperationResult result = OperationResults
                 .BadRequest()
                 .WithErrors(errors)

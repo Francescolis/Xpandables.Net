@@ -17,7 +17,6 @@
 ********************************************************************************/
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 
 namespace Xpandables.Net.Interceptions;
 
@@ -122,34 +121,16 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
 
         if (Interceptor.CanHandle(invocation))
         {
-            Stopwatch watch = Stopwatch.StartNew();
-#pragma warning disable CA1031 // Do not catch general exception types
-            try
-            {
-                Interceptor.Intercept(invocation);
-            }
-            catch (Exception exception)
-            {
-                invocation.SetException(
-                    new InvalidOperationException(
-                        $"The interceptor {Interceptor.GetType().Name} " +
-                        $"throws an exception.",
-                        exception));
-            }
-            finally
-            {
-                watch.Stop();
-                invocation.SetElapsedTime(watch.Elapsed);
-            }
-#pragma warning restore CA1031 // Do not catch general exception types
+            Interceptor.Intercept(invocation);
         }
         else
         {
             invocation.Proceed();
         }
 
-        if (invocation.Exception is { } ex)
-            ExceptionDispatchInfo.Capture(ex).Throw();
+        if (invocation._exceptionDispatchInfo is not null
+            && invocation.ReThrowException)
+            invocation._exceptionDispatchInfo.Throw();
 
         return invocation.ReturnValue;
     }
