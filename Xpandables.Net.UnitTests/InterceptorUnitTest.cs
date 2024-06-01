@@ -85,9 +85,8 @@ public sealed class InterceptorTests
     {
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddXQueryHandlers(typeof(Calculator).Assembly)
-            .AddScoped(typeof(OnAspectValidator<>))
-            .AddScoped(typeof(OnAspectVisitor<>))
-            .AddScoped(typeof(IAspectValidator<>), typeof(AspectValidator<>))
+            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
+            .AddXAspectValidator()
             .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
             .AddXAspectBehaviors()
             .BuildServiceProvider();
@@ -125,12 +124,32 @@ public sealed class InterceptorTests
     {
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddXQueryHandlers(typeof(Calculator).Assembly)
-            .AddScoped(typeof(OnAspectRetry<>))
+            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
             .AddXAspectBehaviors()
             .BuildServiceProvider();
 
         IQueryHandler<Args1, int> handler = serviceProvider
                  .GetRequiredService<IQueryHandler<Args1, int>>();
+
+        IOperationResult<int> result = await handler.HandleAsync(new(value));
+
+        Assert.Equal(expected, result.Result);
+    }
+
+    [Theory]
+    [InlineData(10, 10)]
+    public async Task AspectFinalizerDependencyAttributeMethod(
+         int value, int expected)
+    {
+        ServiceProvider serviceProvider = new ServiceCollection()
+            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
+            .AddScoped<IAspectFinalizer, AspectFinalizer>()
+            .AddXAspectBehaviors()
+            .BuildServiceProvider();
+
+        IQueryHandler<Args2, int> handler = serviceProvider
+                 .GetRequiredService<IQueryHandler<Args2, int>>();
 
         IOperationResult<int> result = await handler.HandleAsync(new(value));
 
@@ -199,6 +218,7 @@ public sealed class InterceptorTests
     }
 
     public sealed record Args1(int Value) : IQuery<int>, IInterceptorDecorator;
+    public sealed record Args2(int Value) : IQuery<int>, IInterceptorDecorator;
 
     [AspectValidator<IQueryHandler<Args, int>>(ThrowException = false, Order = 1)]
     [AspectVisitor<IQueryHandler<Args, int>>(Order = 0)]
@@ -224,6 +244,24 @@ public sealed class InterceptorTests
 
             return new ValueTask<IOperationResult<int>>(
                 OperationResults.Ok(query.Value).Build());
+        }
+    }
+
+    [AspectFinalizer<IQueryHandler<Args2, int>>(CallFinalizerOnException = true)]
+    public sealed class HandleFinalizeArgs(
+        IAspectFinalizer aspectFinalizer) : IQueryHandler<Args2, int>
+    {
+        int attemtp = 0;
+        public ValueTask<IOperationResult<int>> HandleAsync(
+            Args2 query, CancellationToken cancellationToken = default)
+        {
+            aspectFinalizer.Finalizer = obj => obj switch
+            {
+                Exception _ => OperationResults.Ok(query.Value).Build(),
+                _ => obj!
+            };
+
+            throw new InvalidOperationException("Invalid operation exception");
         }
     }
 

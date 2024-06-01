@@ -30,9 +30,18 @@ namespace Xpandables.Net.DependencyInjection;
 public static partial class ServiceCollectionAspectExtensions
 {
     /// <summary>
+    /// Registers the <see cref="AspectValidator{TArgument}"/> as
+    /// <see cref="IAspectValidator{TArgument}"/>.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    public static IServiceCollection AddXAspectValidator(
+        this IServiceCollection services)
+        => services.AddScoped(typeof(IAspectValidator<>), typeof(AspectValidator<>));
+
+    /// <summary>
     /// Ensures that all classes decorated with derived 
     /// <see cref="AspectAttribute"/> class will be decorated with the
-    /// expected <see cref="OnAspect"/> implementation, wrapping all original 
+    /// expected <see cref="OnAspect{TAspectAttribute}"/> implementation, wrapping all original 
     /// implementation registered class type found in the specified collection 
     /// of assemblies.
     /// </summary>
@@ -95,7 +104,7 @@ public static partial class ServiceCollectionAspectExtensions
     }
 
     /// <summary>
-    /// Registers all the derived classes from <see cref="OnAspect"/> to the
+    /// Registers all the derived classes from <see cref="OnAspect{TAspectAttribute}"/> to the
     /// service collection with scoped lifetime.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -115,7 +124,10 @@ public static partial class ServiceCollectionAspectExtensions
              .SelectMany(ass => ass.GetExportedTypes())
              .Where(type => type.IsSealed
                      && type.IsClass
-                     && typeof(OnAspect).IsAssignableFrom(type))
+                     && type.IsGenericType
+                     && type.GetBaseTypes()
+                        .Any(b => b.IsGenericType
+                            && b.GetGenericTypeDefinition() == typeof(OnAspect<>)))
              .ForEach(type => services.AddScoped(type));
 
         return services;

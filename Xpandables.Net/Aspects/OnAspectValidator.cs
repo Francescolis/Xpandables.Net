@@ -26,12 +26,12 @@ namespace Xpandables.Net.Aspects;
 /// </summary> 
 /// <typeparam name="TInterface">The type of the interface.</typeparam>
 /// <param name="serviceProvider">The service provider.</param>
-public sealed class OnAspectValidator<TInterface>
-    (IServiceProvider serviceProvider) : OnAspect<TInterface>
+public sealed class OnAspectValidator<TInterface>(IServiceProvider serviceProvider) :
+    OnAspect<AspectValidatorAttribute<TInterface>, TInterface>
     where TInterface : class
 {
     ///<inheritdoc/>
-    public override void Intercept(IInvocation invocation)
+    protected override void InterceptCore(IInvocation invocation)
     {
         ElementCollection errors = [];
 
@@ -66,8 +66,7 @@ public sealed class OnAspectValidator<TInterface>
                 result = result
                     .ToOperationResult(returnType.GetGenericArguments()[0]);
 
-            if (AspectAttribute is AspectValidatorAttribute<TInterface> attribute
-                && attribute.ThrowException)
+            if (AspectAttribute.ThrowException)
             {
                 invocation.SetException(
                     new OperationResultException(result));

@@ -24,8 +24,8 @@ namespace Xpandables.Net.Aspects;
 /// </summary>
 /// <typeparam name="TInterface">The type of the interface.</typeparam>
 /// <param name="aspectRetry">The aspect retry.</param>
-public sealed class OnAspectRetry<TInterface>
-    (IAspectRetry? aspectRetry = default) : OnAspect<TInterface>
+public sealed class OnAspectRetry<TInterface>(IAspectRetry? aspectRetry = default) :
+    OnAspect<AspectRetryAttribute<TInterface>, TInterface>
     where TInterface : class
 {
     /// <summary>
@@ -39,21 +39,13 @@ public sealed class OnAspectRetry<TInterface>
     public TimeSpan Delay { get; internal set; }
 
     ///<inheritdoc/>
-    public override void Intercept(IInvocation invocation)
+    protected override void InterceptCore(IInvocation invocation)
     {
-        if (AspectAttribute is AspectRetryAttribute<TInterface> retryAttribute)
-        {
-            if (retryAttribute.IsDisabled)
-            {
-                invocation.Proceed();
-                return;
-            }
 
-            if (MaxRetries <= 0)
-            {
-                MaxRetries = retryAttribute.MaxRetries;
-                Delay = retryAttribute.Delay;
-            }
+        if (MaxRetries <= 0)
+        {
+            MaxRetries = AspectAttribute.MaxRetries;
+            Delay = AspectAttribute.Delay;
         }
 
         for (int attempt = 0; ; attempt++)

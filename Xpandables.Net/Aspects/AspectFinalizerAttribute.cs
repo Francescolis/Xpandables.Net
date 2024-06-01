@@ -21,46 +21,26 @@ using Xpandables.Net.Interceptions;
 namespace Xpandables.Net.Aspects;
 
 /// <summary>
-/// Aspect retry attribute, when applied to a class that implements the
-/// <typeparamref name="TInterface"/>,specifies that, for all the methods of
-/// this class, the method should be retried if it fails <see cref="MaxRetries"/> times.
+/// Aspect finalizer attribute, when applied to a class that implements the
+/// <typeparamref name="TInterface"/>, specifies that the finalizer will get called
+/// after the method invocation.
 /// </summary>
 /// <typeparam name="TInterface">The type of the interface.</typeparam>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
     AllowMultiple = true)]
-public sealed class AspectRetryAttribute<TInterface> :
+public sealed class AspectFinalizerAttribute<TInterface> :
     AspectAttribute<TInterface>
     where TInterface : class
 {
-    private int _maxRetries = 3;
-
     /// <summary>
-    /// Gets or sets the maximum number of retries.
+    /// Defines whether the finalizer should be called in case of exception.
     /// </summary>
-    /// <remarks>The default value is 3.</remarks>
-    public int MaxRetries
-    {
-        get => _maxRetries;
-        set => _maxRetries = value <= 0
-            ? throw new ArgumentOutOfRangeException(nameof(value))
-            : value;
-    }
+    /// <remarks>If set to <see langword="true"/>, the finalizer is responsible
+    /// to return the right result in the expected type and
+    /// must be defined.</remarks>
+    public bool CallFinalizerOnException { get; set; }
 
-    /// <summary>
-    /// Gets or sets the delay between retries.
-    /// </summary>
-    /// <remarks>The default value is 1000.</remarks>
-    public TimeSpan Delay { get; set; } = TimeSpan.FromMilliseconds(1000);
-
-    ///<inheritdoc/>
+    /// <inheritdoc/>
     public override IInterceptor Create(IServiceProvider serviceProvider)
-    {
-        OnAspectRetry<TInterface> aspectRetry = serviceProvider
-            .GetRequiredService<OnAspectRetry<TInterface>>();
-
-        aspectRetry.MaxRetries = MaxRetries;
-        aspectRetry.Delay = Delay;
-
-        return aspectRetry;
-    }
+        => serviceProvider.GetRequiredService<OnAspectFinalizer<TInterface>>();
 }

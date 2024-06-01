@@ -21,12 +21,14 @@ namespace Xpandables.Net.Aspects;
 /// <summary>
 /// Base class for aspect implementation interceptor.
 /// </summary>
-public abstract class OnAspect : Interceptor
+/// <typeparam name="TAspectAttribute">The type of the aspect attribute.</typeparam>
+public abstract class OnAspect<TAspectAttribute> : Interceptor
+    where TAspectAttribute : AspectAttribute
 {
     /// <summary>
     /// Gets the aspect attribute applied on the method.
     /// </summary>  
-    protected AspectAttribute AspectAttribute { get; private set; } = default!;
+    protected TAspectAttribute AspectAttribute { get; private set; } = default!;
 
     ///<inheritdoc/>
     public sealed override bool CanHandle(IInvocation invocation)
@@ -37,6 +39,26 @@ public abstract class OnAspect : Interceptor
 
         return CanHandleInvocation(invocation);
     }
+
+    ///<inheritdoc/>
+    public sealed override void Intercept(IInvocation invocation)
+    {
+        ArgumentNullException.ThrowIfNull(invocation);
+
+        if (AspectAttribute.IsDisabled)
+        {
+            invocation.Proceed();
+            return;
+        }
+
+        InterceptCore(invocation);
+    }
+
+    /// <summary>
+    /// When implemented in a derived class, intercepts the method invocation.
+    /// </summary>
+    /// <param name="invocation">The method argument to be called.</param>
+    protected abstract void InterceptCore(IInvocation invocation);
 
     /// <summary>
     /// Returns a flag indicating if this behavior will actually 
@@ -58,7 +80,7 @@ public abstract class OnAspect : Interceptor
     /// </summary>
     /// <param name="invocation">The method argument to be called.</param>
     /// <returns>The aspect attribute applied on the method.</returns>
-    protected static AspectAttribute GetAspectAttribute(IInvocation invocation)
+    protected static TAspectAttribute GetAspectAttribute(IInvocation invocation)
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
@@ -67,11 +89,11 @@ public abstract class OnAspect : Interceptor
         return target
             .GetMethod(invocation.Method.Name)?
             .GetCustomAttributes(true)
-            .OfType<AspectAttribute>()
+            .OfType<TAspectAttribute>()
             .FirstOrDefault()
             ?? target
             .GetCustomAttributes(true)
-            .OfType<AspectAttribute>()
+            .OfType<TAspectAttribute>()
             .First();
     }
 
@@ -98,8 +120,10 @@ public abstract class OnAspect : Interceptor
 /// <summary>
 /// Base class for aspect implementation.
 /// </summary>
+/// <typeparam name="TAspectAttribute">The type of the aspect attribute.</typeparam>
 /// <typeparam name="TInterface">The type of the interface.</typeparam>
-public abstract class OnAspect<TInterface> : OnAspect
+public abstract class OnAspect<TAspectAttribute, TInterface> : OnAspect<TAspectAttribute>
+    where TAspectAttribute : AspectAttribute
     where TInterface : class
 {
 }

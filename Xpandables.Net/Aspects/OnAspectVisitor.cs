@@ -25,12 +25,12 @@ namespace Xpandables.Net.Aspects;
 /// <typeparam name="TInterface">The type of the interface.</typeparam>
 /// <param name="serviceProvider">The service provider.</param>
 
-public sealed class OnAspectVisitor<TInterface>
-     (IServiceProvider serviceProvider) : OnAspect<TInterface>
+public sealed class OnAspectVisitor<TInterface>(IServiceProvider serviceProvider) :
+    OnAspect<AspectVisitorAttribute<TInterface>, TInterface>
     where TInterface : class
 {
     ///<inheritdoc/>
-    public override void Intercept(IInvocation invocation)
+    protected override void InterceptCore(IInvocation invocation)
     {
         foreach (Parameter argument in invocation.Arguments
             .Where(p => p.PassingBy == Parameter.PassingState.In

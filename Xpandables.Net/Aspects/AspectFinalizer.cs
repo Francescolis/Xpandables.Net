@@ -17,13 +17,12 @@
 namespace Xpandables.Net.Aspects;
 
 /// <summary>
-/// Base interface used to define an aspect.
+/// Represents the default implementation of the <see cref="IAspectFinalizer"/> 
+/// interface.
 /// </summary>
-public interface IAspect
+public sealed class AspectFinalizer : IAspectFinalizer
 {
-    /// <summary>
-    /// Gets the zero-base order in which the aspect will be aplied.
-    /// The default value is zero.
-    /// </summary>
-    public virtual int Order => 0;
+    /// <inheritdoc/>
+    public Func<object?, object> Finalizer { get; set; }
+        = _ => throw new InvalidOperationException("The finalizer is not set.");
 }

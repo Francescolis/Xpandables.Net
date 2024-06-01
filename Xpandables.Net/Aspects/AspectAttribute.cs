@@ -32,6 +32,12 @@ public abstract class AspectAttribute(Type interfaceType) : InterceptorAttribute
     public virtual int Order { get; set; }
 
     /// <summary>
+    /// Determines whether the aspect is disabled.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.</remarks>
+    public bool IsDisabled { get; set; }
+
+    /// <summary>
     /// Gets the interface type implemented by the decorated class.
     /// </summary>
     public Type InterfaceType => interfaceType

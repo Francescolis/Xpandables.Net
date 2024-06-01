@@ -67,6 +67,7 @@ internal sealed record class Invocation : IInvocation
 
     public void SetReturnValue(object? returnValue)
     {
+        _exceptionDispatchInfo = null;
         ReturnValue = returnValue;
         Type returnType = Method.ReturnType;
 
