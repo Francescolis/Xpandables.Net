@@ -147,6 +147,7 @@ public sealed record HttpClientOptions
         options.RequestBuilders.Add(new HttpClientRequestQueryStringBuilder());
         options.RequestBuilders.Add(new HttpClientRequestCookieBuilder());
         options.RequestBuilders.Add(new HttpClientRequestHeaderBuilder());
+        options.RequestBuilders.Add(new HttpClientRequestBasicAuthBuilder());
         options.RequestBuilders.Add(new HttpClientRequestByteArrayBuilder());
         options.RequestBuilders.Add(new HttpClientRequestFormUrlEncodedBuilder());
         options.RequestBuilders.Add(new HttpClientRequestMultipartBuilder());

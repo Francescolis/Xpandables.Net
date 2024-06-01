@@ -251,7 +251,6 @@ public sealed class InterceptorTests
     public sealed class HandleFinalizeArgs(
         IAspectFinalizer aspectFinalizer) : IQueryHandler<Args2, int>
     {
-        int attemtp = 0;
         public ValueTask<IOperationResult<int>> HandleAsync(
             Args2 query, CancellationToken cancellationToken = default)
         {

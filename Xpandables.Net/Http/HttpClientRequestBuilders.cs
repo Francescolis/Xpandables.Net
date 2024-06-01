@@ -192,6 +192,36 @@ public sealed class HttpClientRequestHeaderBuilder :
 }
 
 /// <summary>
+/// Build the basic authentication for a request.
+/// </summary>
+public sealed class HttpClientRequestBasicAuthBuilder :
+    HttpClientRequestBuilder<IHttpRequestBasicAuth>
+{
+    ///<inheritdoc/>
+    public override bool CanBuild(Type targetType)
+        => typeof(IHttpRequestBasicAuth)
+        .IsAssignableFrom(targetType);
+
+    ///<inheritdoc/>
+    public override HttpRequestMessage Build
+        (HttpClientAttribute attribute,
+        IHttpRequestBasicAuth request,
+        HttpRequestMessage requestMessage)
+    {
+        string basicContent = request.GetBasicContent();
+        byte[] credentials = Encoding.UTF8.GetBytes(basicContent);
+        string base64Credentials = Convert.ToBase64String(credentials);
+
+        requestMessage.Headers.Authorization
+            = new AuthenticationHeaderValue(
+                "Basic",
+                base64Credentials);
+
+        return requestMessage;
+    }
+}
+
+/// <summary>
 /// Build the byte content for a request.
 /// </summary>
 public sealed class HttpClientRequestByteArrayBuilder :

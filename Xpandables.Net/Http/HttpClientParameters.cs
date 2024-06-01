@@ -124,7 +124,13 @@ public sealed class HttpClientParameters
         /// Used to pass a specific cookie value to the API. 
         /// You must <see cref="IHttpRequestCookie"/> to provide with content.
         /// </summary>
-        Cookie = 16
+        Cookie = 16,
+
+        /// <summary>
+        /// Used to pass basic auth information to the API.
+        /// You must implement <see cref="IHttpRequestBasicAuth"/>
+        /// </summary> 
+        BasicAuth = 32
     }
 
     /// <summary>

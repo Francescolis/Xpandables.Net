@@ -59,8 +59,6 @@ public sealed class HttpClientDispatcherFactory
             .Add(new StringWithQualityHeaderValue(
                 Thread.CurrentThread.CurrentCulture.Name));
 
-
-
         if ((attribute.Location & Location.Path) == Location.Path)
         {
             IHttpRequestPathString pathRequest = (IHttpRequestPathString)request;
@@ -91,6 +89,14 @@ public sealed class HttpClientDispatcherFactory
             requestMessage = Options
                 .GetRequestBuilderFor<IHttpRequestHeader>()
                 .Build(attribute, headerRequest, requestMessage);
+        }
+
+        if ((attribute.Location & Location.BasicAuth) == Location.BasicAuth)
+        {
+            IHttpRequestBasicAuth basicAuthRequest = (IHttpRequestBasicAuth)request;
+            requestMessage = Options
+                .GetRequestBuilderFor<IHttpRequestBasicAuth>()
+                .Build(attribute, basicAuthRequest, requestMessage);
         }
 
         if (!attribute.IsNullable

@@ -183,6 +183,18 @@ public interface IHttpRequestHeader
 }
 
 /// <summary>
+/// Provides with a method to retrieve the basic authentication
+/// content.
+/// </summary>
+public interface IHttpRequestBasicAuth
+{
+    /// <summary>
+    /// Returns the basic authentication header.
+    /// </summary>
+    string GetBasicContent();
+}
+
+/// <summary>
 /// Provides with a method to retrieve the query 
 /// string content for query string Uri when using <see cref="Location.Query"/>.
 /// This can be combined with other locations.
