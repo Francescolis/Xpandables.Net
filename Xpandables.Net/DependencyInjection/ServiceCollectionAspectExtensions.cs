@@ -39,6 +39,15 @@ public static partial class ServiceCollectionAspectExtensions
         => services.AddScoped(typeof(IAspectValidator<>), typeof(AspectValidator<>));
 
     /// <summary>
+    /// Registers the <see cref="AspectFinalizer"/> as
+    /// <see cref="IAspectFinalizer"/>.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    public static IServiceCollection AddXAspectFinalizer(
+        this IServiceCollection services)
+        => services.AddScoped<IAspectFinalizer, AspectFinalizer>();
+
+    /// <summary>
     /// Ensures that all classes decorated with derived 
     /// <see cref="AspectAttribute"/> class will be decorated with the
     /// expected <see cref="OnAspect{TAspectAttribute}"/> implementation, wrapping all original 
