@@ -212,10 +212,7 @@ public sealed class InterceptorTests
 
     public sealed record Args : IQuery<int>, IInterceptorDecorator, IAspectVisitable
     {
-        public Args(int value)
-        {
-            Value = value;
-        }
+        public Args(int value) => Value = value;
 
         [Range(5, 25)]
         public int Value { get; set; }
@@ -230,10 +227,7 @@ public sealed class InterceptorTests
     {
         public ValueTask<IOperationResult<int>> HandleAsync(
             Args query, CancellationToken cancellationToken = default)
-        {
-            return new ValueTask<IOperationResult<int>>(
-                OperationResults.Ok(query.Value).Build());
-        }
+            => new(OperationResults.Ok(query.Value).Build());
     }
 
     [AspectRetry<IQueryHandler<Args1, int>>]
@@ -272,9 +266,6 @@ public sealed class InterceptorTests
 
     public sealed class AspectVisitor : IAspectVisitor<Args>
     {
-        public void Visit(Args element)
-        {
-            element.Value = ExpectedValue;
-        }
+        public void Visit(Args element) => element.Value = ExpectedValue;
     }
 }

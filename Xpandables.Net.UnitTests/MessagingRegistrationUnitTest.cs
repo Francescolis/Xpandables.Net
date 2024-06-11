@@ -92,9 +92,7 @@ public sealed class ProductAddedEventHandler :
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedEvent @event,
         CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
+        => throw new NotImplementedException();
 }
 
 public sealed class ProductAddedIntegrationEventHandler
@@ -103,15 +101,12 @@ public sealed class ProductAddedIntegrationEventHandler
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedIntegrationEvent @event,
         CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
+        => throw new NotImplementedException();
 }
 public sealed class MessagingRegistrationUnitTest
 {
     private readonly IServiceProvider _serviceProvider;
-    public MessagingRegistrationUnitTest()
-    {
+    public MessagingRegistrationUnitTest() =>
         _serviceProvider = new ServiceCollection()
             .AddXCommandHandlers()
             .AddXQueryHandlers()
@@ -119,7 +114,6 @@ public sealed class MessagingRegistrationUnitTest
             .AddXEventDomainHandlers()
             .AddXEventIntegrationHandlers()
             .BuildServiceProvider();
-    }
 
     [Fact]
     public void MessagingRegistration_Should_Return_CommandHandler()

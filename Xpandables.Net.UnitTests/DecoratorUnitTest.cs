@@ -78,16 +78,13 @@ public sealed class CustomValidationQueryDecorator<TQuery, TResult>(
     public ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query,
         CancellationToken cancellationToken = default)
-    {
-        return _handler.HandleAsync(query, cancellationToken);
-    }
+        => _handler.HandleAsync(query, cancellationToken);
 }
 
 public sealed class DecoratorUnitTest
 {
     private readonly IServiceProvider _serviceProvider;
-    public DecoratorUnitTest()
-    {
+    public DecoratorUnitTest() =>
         _serviceProvider = new ServiceCollection()
             .AddXQueryHandlers()
             .AddXValidatorGenerics()
@@ -97,7 +94,6 @@ public sealed class DecoratorUnitTest
                 typeof(CustomValidationQueryDecorator<,>),
                 typeof(IValidateDecorator))
             .BuildServiceProvider();
-    }
 
     [Fact]
     public void DecoratorRegistration_Should_Return_DecoratorHandler()

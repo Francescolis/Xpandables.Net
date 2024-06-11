@@ -433,9 +433,14 @@ public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
 public sealed class PersonUnitOfWork : Disposable, IUnitOfWork
 {
     private static readonly HashSet<IEventEntity> _store = [];
+    public PersonUnitOfWork() => _ = _events ??= [];
 
     [ThreadStatic]
-    private static HashSet<IEventEntity> _events = [];
+#pragma warning disable CS8618 
+    // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private static HashSet<IEventEntity> _events;
+#pragma warning restore CS8618 
+    // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public IRepository<TEntity> GetRepository<TEntity>()
         where TEntity : class
@@ -479,10 +484,7 @@ public sealed class RepositoryPerson<TEvent>(HashSet<IEventEntity> events) :
 
     public override IAsyncEnumerable<TResult> FetchAsync<TResult>(
         IEntityFilter<TEvent, TResult> filter,
-        CancellationToken cancellationToken = default)
-    {
-        return filter
+        CancellationToken cancellationToken = default) => filter
             .GetQueryableFiltered(_events.OfType<TEvent>().AsQueryable())
             .ToAsyncEnumerable();
-    }
 }

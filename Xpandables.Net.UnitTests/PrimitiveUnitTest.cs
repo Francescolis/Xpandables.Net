@@ -50,14 +50,13 @@ public sealed class PrimitiveUnitTest
     {
         public static string DefaultValue => "NOEMAIL@EMAIL.COM";
 
-        public static Email Create(string? value) => value is null ? null : new(value);
+        public static Email Create(string? value)
+            => value is null ? null : new(value);
 
         public static Email Default() => new(DefaultValue);
 
         public static implicit operator string(Email self)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         public static implicit operator Email(string? value)
             => new(value ?? string.Empty);

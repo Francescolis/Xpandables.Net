@@ -36,13 +36,11 @@ public sealed class ValidatorUnitTest
     private const string Password = "MyPassword";
 
     private readonly IServiceProvider _serviceProvider;
-    public ValidatorUnitTest()
-    {
+    public ValidatorUnitTest() =>
         _serviceProvider = new ServiceCollection()
             .AddXValidatorGenerics()
             .AddXValidators()
             .BuildServiceProvider();
-    }
 
     [Theory]
     [InlineData("MyName", "password")]
@@ -50,7 +48,7 @@ public sealed class ValidatorUnitTest
         string userName, string password)
     {
         ICompositeValidator<Login> validators = new CompositeValidator<Login>(
-            new[] { new ValidatorThrowsValidationException() });
+            [new ValidatorThrowsValidationException()]);
 
         ICommandHandler<Login> commandHandler = new HandleLogin();
         ValidatorCommandDecorator<Login> validatorDecorator =
@@ -68,7 +66,7 @@ public sealed class ValidatorUnitTest
         string userName, string password)
     {
         ICompositeValidator<Login> validators = new CompositeValidator<Login>(
-            new[] { new ValidatorReturnsOperationResult() });
+            [new ValidatorReturnsOperationResult()]);
 
         ICommandHandler<Login> commandHandler = new HandleLogin();
         ValidatorCommandDecorator<Login> validatorDecorator =
@@ -96,13 +94,11 @@ public sealed class ValidatorUnitTest
         public ValueTask<IOperationResult> HandleAsync(
             Login command,
             CancellationToken cancellationToken = default)
-        {
-            return new ValueTask<IOperationResult>(
+            => new(
                 OperationResults
                 .Ok()
                 .WithHeader(nameof(Login.UserLogin), command.UserLogin)
                 .Build());
-        }
     }
 
     public sealed class ValidatorReturnsOperationResult : IValidator<Login>
