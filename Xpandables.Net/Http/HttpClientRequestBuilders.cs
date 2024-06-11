@@ -61,9 +61,11 @@ public sealed class HttpClientRequestPathBuilder :
            = request.GetPathStringSource();
 
         if (pathString.Count > 0)
+        {
             requestMessage.RequestUri =
                 new Uri(AddPathString(
                     attribute.Path ?? requestMessage.RequestUri!.AbsoluteUri, pathString), UriKind.Relative);
+        }
 
         return requestMessage;
     }
@@ -76,13 +78,17 @@ public sealed class HttpClientRequestPathBuilder :
         ArgumentNullException.ThrowIfNull(pathString);
 
         if (pathString.Count == 0)
+        {
             return path;
+        }
 
         foreach (KeyValuePair<string, string> parameter in pathString)
+        {
             path = path.Replace(
                 $"{{{parameter.Key}}}",
                 parameter.Value,
                 StringComparison.InvariantCultureIgnoreCase);
+        }
 
         return path;
     }
@@ -135,8 +141,10 @@ public sealed class HttpClientRequestCookieBuilder :
              = request.GetCookieSource();
 
         foreach (KeyValuePair<string, object?> parameter in cookieSource)
+        {
             _ = requestMessage.Options
                 .TryAdd(parameter.Key, parameter.Value);
+        }
 
         return requestMessage;
     }
@@ -238,7 +246,9 @@ public sealed class HttpClientRequestByteArrayBuilder :
         HttpRequestMessage requestMessage)
     {
         if (request.GetByteContent() is { } byteArray)
+        {
             requestMessage.Content = byteArray;
+        }
 
         return requestMessage;
     }
@@ -261,7 +271,9 @@ public sealed class HttpClientRequestFormUrlEncodedBuilder :
         HttpRequestMessage requestMessage)
     {
         if (request.GetFormSource() is { } formContent)
+        {
             requestMessage.Content = new FormUrlEncodedContent(formContent);
+        }
 
         return requestMessage;
     }
@@ -310,12 +322,17 @@ public sealed class HttpClientRequestStreamBuilder :
         {
             if (request is IHttpRequestMultipart multipartRequest
                 && streamContent.Headers.ContentType is null)
+            {
                 if (new HttpClientMime().GetMimeType
                     (multipartRequest.GetFileName()) is string mediaType)
+                {
                     streamContent.Headers.ContentType
                         = new MediaTypeHeaderValue(mediaType);
+                }
+            }
 
             if (requestMessage.Content is MultipartFormDataContent content)
+            {
                 if (request is IHttpRequestMultipart multipart)
                 {
                     content.Add(
@@ -328,9 +345,11 @@ public sealed class HttpClientRequestStreamBuilder :
                     content.Add(streamContent);
                     requestMessage.Content = content;
                 }
-
+            }
             else
+            {
                 requestMessage.Content = streamContent;
+            }
         }
 
         return requestMessage;
@@ -363,9 +382,13 @@ public sealed class HttpClientRequestStringBuilder :
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         if (requestMessage.Content is MultipartFormDataContent multipart)
+        {
             multipart.Add(content);
+        }
         else
+        {
             requestMessage.Content = content;
+        }
 
         return requestMessage;
     }
@@ -397,9 +420,13 @@ public sealed class HttpClientRequestPatchBuilder :
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         if (requestMessage.Content is MultipartFormDataContent multipart)
+        {
             multipart.Add(content);
+        }
         else
+        {
             requestMessage.Content = content;
+        }
 
         return requestMessage;
     }

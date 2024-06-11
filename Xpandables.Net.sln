@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.AspNetCore",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.EntityFramework", "Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj", "{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpandables.Net.Api", "Xpandables.Net.Api\Xpandables.Net.Api.csproj", "{104D953A-46E6-48A2-9687-940A997F0D2E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,20 +57,12 @@ Global
 		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Release|Any CPU.Build.0 = Release|x64
 		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Release|x64.ActiveCfg = Release|x64
 		{AE4E73BC-D4C0-4921-9066-872E47C5A4CB}.Release|x64.Build.0 = Release|x64
-		{104D953A-46E6-48A2-9687-940A997F0D2E}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{104D953A-46E6-48A2-9687-940A997F0D2E}.Debug|Any CPU.Build.0 = Debug|x64
-		{104D953A-46E6-48A2-9687-940A997F0D2E}.Debug|x64.ActiveCfg = Debug|x64
-		{104D953A-46E6-48A2-9687-940A997F0D2E}.Debug|x64.Build.0 = Debug|x64
-		{104D953A-46E6-48A2-9687-940A997F0D2E}.Release|Any CPU.ActiveCfg = Release|x64
-		{104D953A-46E6-48A2-9687-940A997F0D2E}.Release|Any CPU.Build.0 = Release|x64
-		{104D953A-46E6-48A2-9687-940A997F0D2E}.Release|x64.ActiveCfg = Release|x64
-		{104D953A-46E6-48A2-9687-940A997F0D2E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_NeutralResourcesLanguage = fr-FR
 		SolutionGuid = {ED5B36FA-0F71-47A7-BE1E-A0FFC836A6B1}
+		RESX_NeutralResourcesLanguage = fr-FR
 	EndGlobalSection
 EndGlobal

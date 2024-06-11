@@ -61,7 +61,9 @@ public abstract class AspectAttribute<TInterface> : AspectAttribute
     protected AspectAttribute() : base(typeof(TInterface))
     {
         if (!typeof(TInterface).IsInterface)
+        {
             throw new InvalidOperationException(
                 $"{typeof(TInterface).Name} is not an interface.");
+        }
     }
 }

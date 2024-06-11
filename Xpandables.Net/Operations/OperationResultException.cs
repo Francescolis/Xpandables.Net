@@ -66,28 +66,21 @@ public sealed class OperationResultException : Exception
     ///<see cref="Operation"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException()
-    {
-        throw new NotSupportedException();
-    }
+        => throw new NotSupportedException();
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
     ///<see cref="Operation"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException(string message) : base(message)
-    {
-        throw new NotSupportedException();
-    }
+        => throw new NotSupportedException();
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
     ///<see cref="Operation"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public OperationResultException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-        throw new NotSupportedException();
-    }
+        : base(message, innerException) => throw new NotSupportedException();
 
     ///<inheritdoc/>
     public override string ToString() => Operation.ToJsonString();

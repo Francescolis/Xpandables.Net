@@ -53,7 +53,9 @@ internal sealed class OperationFinalizerAsyncQueryDecorator<TQuery, TResult>(
                     .ConfigureAwait(false);
 
                 if (resultExist)
+                {
                     result = asyncEnumerator.Current;
+                }
             }
             catch (Exception exception)
             {
@@ -66,7 +68,9 @@ internal sealed class OperationFinalizerAsyncQueryDecorator<TQuery, TResult>(
                         .ToOperationResult<TResult>();
 
                     if (finalizerResult.IsFailure)
+                    {
                         throw new OperationResultException(finalizerResult);
+                    }
 
                     if (finalizerResult.Result is not null)
                     {
@@ -89,7 +93,9 @@ internal sealed class OperationFinalizerAsyncQueryDecorator<TQuery, TResult>(
             {
                 yield return result!;
                 if (finalResult)
+                {
                     yield break;
+                }
             }
             else
             {

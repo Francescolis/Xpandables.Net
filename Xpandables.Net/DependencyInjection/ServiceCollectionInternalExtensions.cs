@@ -56,8 +56,7 @@ internal static class ServiceCollectionInternalExtensions
     internal static IEnumerable<GenericTypes> DoGetGenericTypeMatchingServiceType(
            Type serviceType,
            Assembly[] assemblies)
-    {
-        return assemblies.SelectMany(ass => ass.GetExportedTypes())
+        => assemblies.SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                            && !type.IsInterface
                            && type.IsSealed
@@ -72,7 +71,6 @@ internal static class ServiceCollectionInternalExtensions
                 type.GetInterfaces()
                     .Where(inter => inter.IsGenericType
                         && inter.GetGenericTypeDefinition() == serviceType)));
-    }
 
     internal static IServiceCollection DoRegisterTypeServiceLifeTime
         <TInterface, TImplementation>(
@@ -83,17 +81,21 @@ internal static class ServiceCollectionInternalExtensions
          where TImplementation : class, TInterface
     {
         if (implFactory is not null)
+        {
             services.Add(
                 new ServiceDescriptor(
                     typeof(TInterface),
                     implFactory,
                     serviceLifetime));
+        }
         else
+        {
             services.Add(
                 new ServiceDescriptor(
                     typeof(TInterface),
                     typeof(TImplementation),
                     serviceLifetime));
+        }
 
         return services;
     }
@@ -110,8 +112,10 @@ internal static class ServiceCollectionInternalExtensions
 
         foreach (Type[] argument in arguments)
         {
-            if (!argument.Any(arg => markerType.IsAssignableFrom(arg)))
+            if (!argument.Any(markerType.IsAssignableFrom))
+            {
                 continue;
+            }
 
             if (serviceType
                 .TryMakeGenericType(
@@ -151,15 +155,13 @@ internal static class ServiceCollectionInternalExtensions
     internal sealed class ArgumentTypeComparer : IEqualityComparer<Type[]>
     {
         public bool Equals(Type[]? x, Type[]? y)
-        {
-            return (x, y) switch
+            => (x, y) switch
             {
                 (null, null) => true,
                 (null, _) => false,
                 (_, null) => false,
                 _ => x.SequenceEqual(y)
             };
-        }
 
         public int GetHashCode(Type[] obj)
             => obj.Aggregate(0, (current, type) => current ^ type.GetHashCode());
@@ -240,16 +242,22 @@ internal static class ServiceCollectionInternalExtensions
         _ = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
 
         if (descriptor.ImplementationInstance != null)
+        {
             return descriptor.ImplementationInstance;
+        }
 
         if (descriptor.ImplementationType != null)
+        {
             return ActivatorUtilities
                 .GetServiceOrCreateInstance(
                     serviceProvider,
                     descriptor.ImplementationType);
+        }
 
         if (descriptor.ImplementationFactory is { })
+        {
             return descriptor.ImplementationFactory(serviceProvider);
+        }
 
         throw new InvalidOperationException(
             $"Unable to get instance from descriptor {descriptor.ServiceType.Name}.");

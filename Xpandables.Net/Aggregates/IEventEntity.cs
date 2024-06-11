@@ -70,7 +70,9 @@ public interface IEventEntity : IEntity<Guid>, IDisposable
         {
             if (Type.GetType(entity.EventTypeFullName)
                 is not { } eventType)
+            {
                 return default;
+            }
 
             object? result = entity.Data.Deserialize(eventType, options);
 

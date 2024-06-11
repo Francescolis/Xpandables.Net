@@ -136,7 +136,10 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
 
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
             typeof(ICommandHandler<>),
@@ -220,8 +223,11 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
 
-        if (assemblies.Length == 0) assemblies =
+        if (assemblies.Length == 0)
+        {
+            assemblies =
                 [Assembly.GetCallingAssembly()];
+        }
 
         _ = services.AddXQueryHandlerWrapper();
 
@@ -310,7 +316,10 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
 
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         _ = services.AddXAsyncQueryHandlerWrapper();
 
@@ -340,7 +349,9 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(assemblies);
 
         if (assemblies.Length == 0)
+        {
             assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         _ = services.AddXCommandHandlers(assemblies);
         _ = services.AddXQueryHandlers(assemblies);
@@ -701,10 +712,15 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(assemblies);
 
         if (!typeof(IInterceptor).IsAssignableFrom(interceptorType))
+        {
             throw new ArgumentException($"{nameof(interceptorType)} must " +
                 $"implement {nameof(IInterceptor)}.");
+        }
 
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         Type[] genericHandlerInterfaceTypes =
         [
@@ -736,6 +752,7 @@ public static class ServiceCollectionCommandQueriesExtensions
 
         _ = services.AddTransient(interceptorType);
         foreach (var hander in handlers)
+        {
             foreach (Type typeInterface in hander.Interfaces)
             {
                 _ = services.XTryDecorate(typeInterface, (instance, provider) =>
@@ -746,6 +763,7 @@ public static class ServiceCollectionCommandQueriesExtensions
                         .CreateProxy(typeInterface, interceptor, instance);
                 });
             }
+        }
 
         return services;
     }

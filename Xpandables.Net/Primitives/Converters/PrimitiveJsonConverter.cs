@@ -65,7 +65,9 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue>
 
         if (primitive
             is IPrimitiveOnDeserialized<TPrimitive, TValue> { } deserialized)
+        {
             primitive = deserialized.OnDeserialized(primitive);
+        }
 
         return primitive;
     }
@@ -77,7 +79,9 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue>
         JsonSerializerOptions options)
     {
         if (value is IPrimitiveOnSerializing<TPrimitive, TValue> { } serializing)
+        {
             value = serializing.OnSerializing(value);
+        }
 
         JsonSerializer.Serialize(writer, value.Value, typeof(TValue), options);
     }

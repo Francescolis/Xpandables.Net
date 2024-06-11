@@ -61,9 +61,11 @@ public static class ServiceCollectionEndpointExtensions
             .FirstOrDefault(ass => ass.GetName().Name == XpandablesNetAspNetCore)
             ?.GetExportedTypes()
             .FirstOrDefault(t => t.Name == IEndpointRouteName) is not { } type)
+        {
             throw new InvalidOperationException(
                 I18nXpandables.PathAssemblyUnavailable,
                 new ArgumentException(XpandablesNetAspNetCore));
+        }
 
         Type endpointRouteInterfaceType = type;
 

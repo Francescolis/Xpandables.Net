@@ -84,10 +84,9 @@ public sealed class PersistenceCommandDecorator<TCommand>(
                 .HandleAsync(command, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (commandResult.IsFailure)
-                return commandResult;
-
-            return await persistenceCommandHandler(cancellationToken)
+            return commandResult.IsFailure
+                ? commandResult
+                : await persistenceCommandHandler(cancellationToken)
                 .ConfigureAwait(false)
                     is { IsFailure: true } persistenceResult
                 ? persistenceResult

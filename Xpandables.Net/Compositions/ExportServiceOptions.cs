@@ -58,7 +58,9 @@ public sealed record class ExportServiceOptions
         {
             if (System.IO.Path
                 .GetDirectoryName(assembly.Location) is string directoryName)
+            {
                 return directoryName;
+            }
         }
 
         throw new InvalidOperationException(

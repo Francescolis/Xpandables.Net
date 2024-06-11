@@ -90,8 +90,10 @@ public static class TextGenerator
             uint number = BitConverter.ToUInt32(uintBuffer, 0);
 
             if (number < max)
+            {
                 _ = stringResult.Append(lookupCharacters[(int)
                     (number % lookupCharacters.Length)]);
+            }
         }
 
         return stringResult.ToString();

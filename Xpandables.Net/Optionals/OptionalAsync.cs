@@ -33,7 +33,9 @@ public partial record struct Optional<T>
         ArgumentNullException.ThrowIfNull(some);
 
         if (HasValue)
+        {
             _value = await some(Value).ConfigureAwait(false);
+        }
 
         return this;
     }
@@ -97,7 +99,9 @@ public partial record struct Optional<T>
         ArgumentNullException.ThrowIfNull(empty);
 
         if (!HasValue)
+        {
             _value = await empty().ConfigureAwait(false);
+        }
 
         return this;
     }
@@ -118,7 +122,9 @@ public partial record struct Optional<T>
         ArgumentNullException.ThrowIfNull(empty);
 
         if (!HasValue)
+        {
             await empty().ConfigureAwait(false);
+        }
 
         return this;
     }

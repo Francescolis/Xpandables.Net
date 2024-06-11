@@ -37,10 +37,14 @@ public sealed class OnAspectVisitor<TInterface>(IServiceProvider serviceProvider
                 && p.Type != typeof(CancellationToken)))
         {
             if (argument.Value is null)
+            {
                 continue;
+            }
 
             if (argument.Value is not IAspectVisitable visitable)
+            {
                 continue;
+            }
 
             Type type = typeof(IAspectVisitor<>)
                 .MakeGenericType(argument.Type);

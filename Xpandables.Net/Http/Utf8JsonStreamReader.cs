@@ -149,14 +149,20 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
         int depth = 0;
 
         if (TokenType is JsonTokenType.StartObject or JsonTokenType.StartArray)
+        {
             depth++;
+        }
 
         while (depth > 0 && Read())
         {
             if (TokenType is JsonTokenType.StartObject or JsonTokenType.StartArray)
+            {
                 depth++;
+            }
             else if (TokenType is JsonTokenType.EndObject or JsonTokenType.EndArray)
+            {
                 depth--;
+            }
         }
 
         _keepBuffers = false;
@@ -290,7 +296,11 @@ internal ref struct Utf8JsonStreamReader(Stream stream, int bufferSize)
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
+
             _disposed = true;
             Buffer.Dispose();
             Previous?.Dispose();

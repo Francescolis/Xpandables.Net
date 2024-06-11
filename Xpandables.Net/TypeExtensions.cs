@@ -78,9 +78,14 @@ public static class TypeExtensions
         {
             Type genericType = returnType.GetGenericTypeDefinition();
             if (genericType == typeof(Task<>))
+            {
                 return returnType.GetGenericArguments()[0];
+            }
+
             if (genericType == typeof(ValueTask<>))
+            {
                 return returnType.GetGenericArguments()[0];
+            }
         }
 
         return null;
@@ -637,8 +642,13 @@ public static class TypeExtensions
         ArgumentNullException.ThrowIfNull(@this);
         ArgumentNullException.ThrowIfNull(target);
         foreach (SerializationEntry entry in @this)
+        {
             if (entry.Name.Equals(target, StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
+        }
+
         return false;
     }
     /// <summary>
@@ -748,36 +758,48 @@ public static class TypeExtensions
             ?? throw new ArgumentNullException(nameof(nameOfExpression));
 
         if (nameOfExpression.Body is not ConstantExpression constantExpression)
+        {
             throw new ArgumentNullException(
                 nameof(nameOfExpression),
                 "Constant Expression expected.");
+        }
 
         if (constantExpression.Value?.ToString() is not { } propertyName)
+        {
             throw new ArgumentException(
                 $"Constant Expression Value is null. {nameof(nameOfExpression)}");
+        }
 
         if (source.GetType().GetProperty(propertyName) is not { } propertyInfo)
+        {
             throw new ArgumentException(
                 $"Property {propertyName} does not exist " +
                 $"in the {source.GetType().Name}.");
+        }
 
         if (propertyInfo.GetSetMethod(true) is not { })
+        {
             throw new ArgumentException($"Property {propertyInfo.Name} is" +
                 $" not settable.");
+        }
 
         if (value is not null
             && !propertyInfo.PropertyType.IsInstanceOfType(value))
+        {
             throw new ArgumentException(
                 $"Property type '{propertyInfo.PropertyType.Name}' " +
                 $"of {propertyName} and type of the value '{value.GetType().Name}' " +
                 $"does not match.");
+        }
 
         if (value is null
             && Nullable.GetUnderlyingType(propertyInfo.PropertyType) is not { })
+        {
             throw new ArgumentException(
                 $"Unable to assign null to a property " +
                 $"type '{propertyInfo.PropertyType.Name}' " +
                 $"of {propertyName} that is not nullable.");
+        }
 
         try
         {
@@ -822,26 +844,34 @@ public static class TypeExtensions
         _ = propertyName ?? throw new ArgumentNullException(nameof(propertyName));
 
         if (source.GetType().GetProperty(propertyName) is not { } propertyInfo)
+        {
             throw new ArgumentException($"Property {propertyName} does " +
                 $"not exist in the {source.GetType().Name}.");
+        }
 
         if (propertyInfo.GetSetMethod(true) is not { })
+        {
             throw new ArgumentException(
                 $"Property {propertyInfo.Name} is not settable.");
+        }
 
         if (value is not null
             && !propertyInfo.PropertyType.IsInstanceOfType(value))
+        {
             throw new ArgumentException(
                 $"Property type '{propertyInfo.PropertyType.Name}' " +
                 $"of {propertyName} and type of the " +
                 $"value '{value.GetType().Name}' does not match.");
+        }
 
         if (value is null
             && Nullable.GetUnderlyingType(propertyInfo.PropertyType) is not { })
+        {
             throw new ArgumentException(
                 $"Unable to assign null to a property " +
                 $"type '{propertyInfo.PropertyType.Name}' " +
                 $"of {propertyName} that is not nullable.");
+        }
 
         try
         {
@@ -995,7 +1025,9 @@ public static class TypeExtensions
         _ = assemblyName ?? throw new ArgumentNullException(nameof(assemblyName));
 
         if (typeName.TryGetType(out foundType, out typeException))
+        {
             return true;
+        }
 
         if (!assemblyName.TryLoadAssembly(out Assembly? assembly, out typeException))
         {

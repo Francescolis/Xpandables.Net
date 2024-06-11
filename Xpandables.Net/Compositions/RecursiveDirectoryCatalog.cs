@@ -122,7 +122,9 @@ public sealed class RecursiveDirectoryCatalog
         _aggregateCatalog.Changing += (sender, e) => Changing?.Invoke(sender, e);
 
         foreach (DirectoryCatalog? catalog in directoryCatalogs)
+        {
             _aggregateCatalog.Catalogs.Add(catalog);
+        }
     }
 
     private string GetDisplayName() => $"{GetType().Name} (RecursivePath={_path})";
@@ -131,7 +133,9 @@ public sealed class RecursiveDirectoryCatalog
     {
         List<string> result = [path];
         foreach (string child in Directory.GetDirectories(path))
+        {
             result.AddRange(GetFoldersRecursive(child));
+        }
 
         return result;
     }
@@ -140,7 +144,9 @@ public sealed class RecursiveDirectoryCatalog
     protected override void Dispose(bool disposing)
     {
         if (disposing)
+        {
             _aggregateCatalog?.Dispose();
+        }
 
         base.Dispose(disposing);
     }

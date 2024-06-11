@@ -41,10 +41,12 @@ public sealed class AspectValidator<TArgument>
     public IOperationResult Validate(TArgument? argument)
     {
         if (argument is null)
+        {
             return OperationResults
                 .BadRequest()
                 .WithError(nameof(argument), "The argument is null")
                 .Build();
+        }
 
         List<ValidationResult> validationResults = [];
         ValidationContext validationContext =

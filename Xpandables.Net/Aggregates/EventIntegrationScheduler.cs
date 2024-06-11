@@ -121,7 +121,9 @@ internal sealed class EventIntegrationScheduler(
                     : default;
 
                 if (operationResult.StatusCode == HttpStatusCode.NotFound)
+                {
                     continue;
+                }
 
                 await eventStore
                     .UpdateAsync(@event.Id, exception, cancellationToken)

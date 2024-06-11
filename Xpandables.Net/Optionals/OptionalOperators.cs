@@ -82,25 +82,37 @@ public partial record struct Optional<T> :
     public readonly int CompareTo(Optional<T> other)
     {
         if (HasValue && other.HasValue)
+        {
             return Comparer<T>.Default.Compare(Value, other.Value);
+        }
 
         if (HasValue && !other.HasValue)
+        {
             return 1;
+        }
         else
+        {
             return -1;
+        }
     }
 
     ///<inheritdoc/>
     public readonly int CompareTo([AllowNull] T other)
     {
         if (HasValue && other is null)
+        {
             return 1;
+        }
 
         if (!HasValue && other is { })
+        {
             return -1;
+        }
 
         if (HasValue && other is { })
+        {
             return Comparer<T>.Default.Compare(Value, other);
+        }
 
         return 0;
     }
@@ -111,10 +123,14 @@ public partial record struct Optional<T> :
         ArgumentNullException.ThrowIfNull(comparer);
 
         if (other is Optional<T> optional)
+        {
             return comparer.Compare(this, optional);
+        }
 
         if (other is T value && HasValue)
+        {
             return comparer.Compare(Value, value);
+        }
 
         return -1;
     }
@@ -134,7 +150,9 @@ public partial record struct Optional<T> :
     {
         const int hash = 17;
         if (HasValue)
+        {
             return Value.GetHashCode() ^ 31;
+        }
 
         return hash ^ 29;
     }
@@ -155,7 +173,9 @@ public partial record struct Optional<T> :
 
         const int hash = 17;
         if (HasValue)
+        {
             return GetHashCode() ^ comparer.GetHashCode(Value);
+        }
 
         return hash ^ 29;
     }

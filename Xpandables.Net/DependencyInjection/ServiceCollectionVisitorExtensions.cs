@@ -82,7 +82,9 @@ public static class ServiceCollectionVisitorExtensions
         ArgumentNullException.ThrowIfNull(assemblies);
 
         if (assemblies.Length == 0)
+        {
             assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
             typeof(IVisitor<>),

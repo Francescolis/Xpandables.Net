@@ -113,7 +113,9 @@ public static class CollectionExtensions
 
         using IEnumerator<T> enumerator = source.GetEnumerator();
         while (enumerator.MoveNext())
+        {
             action(enumerator.Current);
+        }
     }
 
     /// <summary>
@@ -138,7 +140,9 @@ public static class CollectionExtensions
 
         Span<T> spanSource = CollectionsMarshal.AsSpan(source);
         foreach (ref T item in spanSource)
+        {
             action(ref item);
+        }
     }
 
     /// <summary>
@@ -169,7 +173,9 @@ public static class CollectionExtensions
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
         while (await enumeratorAsync.MoveNextAsync().ConfigureAwait(false))
+        {
             action(enumeratorAsync.Current);
+        }
     }
 
     /// <summary>
@@ -199,8 +205,10 @@ public static class CollectionExtensions
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
         while (await enumeratorAsync.MoveNextAsync().ConfigureAwait(false))
+        {
             await action(enumeratorAsync.Current, cancellationToken)
                 .ConfigureAwait(false);
+        }
     }
 
     /// <summary>

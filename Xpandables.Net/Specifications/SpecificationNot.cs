@@ -44,5 +44,5 @@ public sealed record class SpecificationNot<TSource> : Specification<TSource>
     /// the clause <see langword="Where"/> in a query.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
-        => QueryExpressionFactory<bool>.Not(_other.GetExpression());
+        => QueryExpressionFactory.Not(_other.GetExpression());
 }

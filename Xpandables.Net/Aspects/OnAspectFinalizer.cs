@@ -42,20 +42,28 @@ public sealed class OnAspectFinalizer<TInterface>(IAspectFinalizer aspectFinaliz
                 object result = aspectFinalizer.Finalizer.Invoke(ex);
 
                 if (result is Exception reThrow)
+                {
                     invocation.SetException(reThrow);
+                }
                 else
                     if (invocation.ReturnType != typeof(void))
+                {
                     invocation.SetReturnValue(result);
+                }
             }
             else if (invocation.Exception is null)
             {
                 object result = aspectFinalizer.Finalizer
                     .Invoke(invocation.ReturnValue);
                 if (result is Exception reThrow)
+                {
                     invocation.SetException(reThrow);
+                }
                 else
                     if (invocation.ReturnType != typeof(void))
+                {
                     invocation.SetReturnValue(result);
+                }
             }
         }
         catch (Exception exception)
@@ -64,10 +72,14 @@ public sealed class OnAspectFinalizer<TInterface>(IAspectFinalizer aspectFinaliz
             object result = aspectFinalizer.Finalizer.Invoke(exception);
 
             if (result is Exception reThrow)
+            {
                 invocation.SetException(reThrow);
+            }
             else
                 if (invocation.ReturnType != typeof(void))
+            {
                 invocation.SetReturnValue(result);
+            }
         }
     }
 }

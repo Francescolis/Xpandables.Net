@@ -64,8 +64,9 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
                     .PublishAsync((dynamic)@event, cancellationToken)
                     .ConfigureAwait(false)
                     is IOperationResult { IsFailure: true } operationResult)
-
+                {
                     return operationResult;
+                }
             }
 
             await unitOfWork

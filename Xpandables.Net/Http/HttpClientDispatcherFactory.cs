@@ -163,8 +163,10 @@ public sealed class HttpClientDispatcherFactory
 
             if (requestMessage.Content is not null
                 && requestMessage.Content.Headers.ContentType is null)
+            {
                 requestMessage.Content.Headers.ContentType
                     = new MediaTypeHeaderValue(attribute.ContentType);
+            }
         }
 
         if (attribute.IsSecured)
@@ -182,7 +184,9 @@ public sealed class HttpClientDispatcherFactory
         HttpClientAttribute ResolveAttribute(TRequest request)
         {
             if (request is IHttpClientAttributeProvider attributeProvider)
+            {
                 return attributeProvider.Build(Options.ServiceProvider);
+            }
 
             return request!
                 .GetType()

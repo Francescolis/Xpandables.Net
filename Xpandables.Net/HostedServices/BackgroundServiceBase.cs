@@ -39,12 +39,14 @@ public abstract class BackgroundServiceBase<TBackgroundService>
         CancellationToken cancellationToken = default)
     {
         if (IsRunning)
+        {
             return OperationResults
                 .BadRequest()
                 .WithError(
                     "status",
                     $"{typeof(TBackgroundService).Name} is already up.")
                 .Build();
+        }
 
         IsRunning = true;
         await StartAsync(cancellationToken).ConfigureAwait(false);
@@ -56,12 +58,14 @@ public abstract class BackgroundServiceBase<TBackgroundService>
         CancellationToken cancellationToken = default)
     {
         if (!IsRunning)
+        {
             return OperationResults
                 .BadRequest()
                 .WithError(
                     "status",
                     $"{typeof(TBackgroundService).Name} is already down.")
                 .Build();
+        }
 
         IsRunning = false;
         await StopAsync(cancellationToken).ConfigureAwait(false);

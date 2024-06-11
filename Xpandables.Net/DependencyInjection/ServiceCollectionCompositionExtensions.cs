@@ -86,7 +86,9 @@ public static class ServiceCollectionCompositionExtensions
             definedOptions, exportServices =>
         {
             foreach (IAddServiceExport export in exportServices)
+            {
                 export.AddServices(services, configuration);
+            }
         });
 
         return services;

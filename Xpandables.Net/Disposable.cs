@@ -110,7 +110,10 @@ public abstract class Disposable : IAsyncDisposable, IDisposable
     /// </remarks>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
-        if (IsDisposed) return;
+        if (IsDisposed)
+        {
+            return;
+        }
 
         if (disposing)
         {
@@ -158,7 +161,9 @@ public abstract class Disposable : IAsyncDisposable, IDisposable
     protected virtual void Dispose(bool disposing)
     {
         if (IsDisposed)
+        {
             return;
+        }
 
         if (disposing)
         {

@@ -45,17 +45,16 @@ public static class AggregateExtensions
     {
         try
         {
-            if (Activator.CreateInstance(
+            return Activator.CreateInstance(
                 typeof(TAggregate),
-                true) is not TAggregate aggregate)
-                throw new InvalidOperationException(
+                true) is not TAggregate aggregate
+                ? throw new InvalidOperationException(
                     I18nXpandables.AggregateFailedToCreateInstance
                         .StringFormat(typeof(TAggregate).Name),
                     new ArgumentNullException(
                         typeof(TAggregate).Name,
-                        "Null value."));
-
-            return aggregate;
+                        "Null value."))
+                : aggregate;
         }
         catch (Exception exception)
         {

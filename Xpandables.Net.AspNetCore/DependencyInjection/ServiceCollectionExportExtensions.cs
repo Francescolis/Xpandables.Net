@@ -76,7 +76,9 @@ public static class ServiceCollectionExportExtensions
             exportServices =>
             {
                 foreach (IUseServiceExport export in exportServices)
+                {
                     export.UseServices(application);
+                }
             });
 
         return application;

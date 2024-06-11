@@ -72,9 +72,7 @@ internal sealed class OperationResultResponseBuilder :
     }
 
     public async Task OnExceptionAsync(HttpContext context, Exception exception)
-    {
-        await context
+        => await context
            .GetProblemDetailsAsync(exception)
            .ConfigureAwait(false);
-    }
 }

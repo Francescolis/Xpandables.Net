@@ -93,15 +93,21 @@ public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
         IQueryable<TEntity> queryable)
     {
         if (Criteria is not null)
+        {
             queryable = queryable.Where(Criteria);
+        }
 
         if (OrderBy is not null)
+        {
             queryable = OrderBy(queryable);
+        }
 
         if (Paging is not null)
+        {
             queryable = queryable
                 .Skip(Paging.Value.Index * Paging.Value.Size)
                 .Take(Paging.Value.Size);
+        }
 
         return queryable.Select(Selector);
     }

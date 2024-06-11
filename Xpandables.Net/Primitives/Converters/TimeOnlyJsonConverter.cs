@@ -90,10 +90,14 @@ public sealed class JsonNullableTimeOnlyConverter
         ArgumentNullException.ThrowIfNull(writer);
 
         if (value is null)
+        {
             writer.WriteNullValue();
+        }
         else
+        {
             writer.WriteStringValue(
                 value.Value.ToString("O", CultureInfo.CurrentCulture));
+        }
     }
 
     ///<inheritdoc/>
@@ -104,9 +108,13 @@ public sealed class JsonNullableTimeOnlyConverter
     {
         ArgumentNullException.ThrowIfNull(writer);
         if (value is null)
+        {
             writer.WriteNullValue();
+        }
         else
+        {
             writer.WritePropertyName(
                 value.Value.ToString("O", CultureInfo.CurrentCulture));
+        }
     }
 }

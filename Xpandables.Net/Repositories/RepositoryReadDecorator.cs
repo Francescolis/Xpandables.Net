@@ -61,7 +61,9 @@ public class RepositoryReadDecorator<TEntity>
                               .ConfigureAwait(false);
 
                 if (resultExist)
+                {
                     result = asyncEnumerator.Current;
+                }
             }
             catch (Exception exception)
                when (exception is not InvalidOperationException

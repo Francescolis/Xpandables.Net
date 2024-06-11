@@ -80,7 +80,9 @@ public abstract class EventEntity : Entity<Guid>, IEventEntity
     protected virtual void Dispose(bool disposing)
     {
         if (IsDisposed)
+        {
             return;
+        }
 
         if (disposing)
         {

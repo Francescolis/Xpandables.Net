@@ -61,7 +61,7 @@ public abstract record class QueryExpression<TSource, TResult>
          Expression<Func<TSource, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(expression);
-        return QueryExpressionFactory<TResult>.Create(expression);
+        return QueryExpressionFactory.Create(expression);
     }
 
     ///<inheritdoc/>

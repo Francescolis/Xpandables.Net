@@ -15,7 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Collections.Immutable;
 using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
@@ -57,7 +56,7 @@ public abstract class Aggregate<TAggregateId> : IAggregate<TAggregateId>
 
     /// <inheritdoc/>
     public IReadOnlyCollection<IEventDomain<TAggregateId>> GetUncommittedEvents()
-        => _events.OrderBy(o => o.Version).ToImmutableArray();
+        => [.. _events.OrderBy(o => o.Version)];
 
     /// <inheritdoc/>
     public void LoadFromHistory(IEnumerable<IEventDomain<TAggregateId>> events)
@@ -80,7 +79,9 @@ public abstract class Aggregate<TAggregateId> : IAggregate<TAggregateId>
     private void Apply(IEventDomain<TAggregateId> @event)
     {
         if (_events.Any(e => Equals(e.Id, @event.Id)))
+        {
             return;
+        }
 
         Version++;
         @event = @event.WithVersion(Version);
@@ -94,7 +95,9 @@ public abstract class Aggregate<TAggregateId> : IAggregate<TAggregateId>
     {
         if (!_eventHandlers
             .TryGetValue(@event.GetType(), out Delegate? messageHandler))
+        {
             return;
+        }
 
         AggregateId = @event.AggregateId;
         _ = messageHandler.DynamicInvoke(@event);

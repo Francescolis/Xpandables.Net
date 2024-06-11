@@ -72,7 +72,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     {
         ArgumentNullException.ThrowIfNull(entries);
 
-        return new(entries.ToList());
+        return new([.. entries]);
     }
 
     /// <summary>

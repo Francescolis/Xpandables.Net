@@ -100,7 +100,9 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(operation);
 
         if (!operation.Extensions.Any())
+        {
             return default;
+        }
 
         Dictionary<string, object?> modelDictionary = [];
         foreach (ElementEntry extension in operation.Extensions)
@@ -169,7 +171,9 @@ public static partial class OperationResultExtensions
                 ?? defaultSchemes
                 ?? allSchemes.FirstOrDefault();
             if (scheme is not null)
+            {
                 return scheme.Name;
+            }
         }
 
         return default;
@@ -259,8 +263,10 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(operation);
 
         if (operation.LocationUrl is null)
+        {
             throw new InvalidOperationException(I18nXpandables.CanNotBeNull
                 .StringFormat("IOperationResult.LocationUrl"));
+        }
 
         IResult result = (operation.Result is not null) switch
         {
@@ -292,23 +298,29 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(operation);
 
         if (operation.LocationUrl is not null)
+        {
             context.Response.Headers.Location =
                 new Microsoft.Extensions.Primitives
                     .StringValues(operation.LocationUrl.ToString());
+        }
 
         if (operation.Headers.Any())
         {
             foreach (ElementEntry header in operation.Headers)
+            {
                 context.Response.Headers.Append(
                     header.Key,
                     new Microsoft.Extensions.Primitives
                     .StringValues([.. header.Values]));
+            }
         }
 
         if (operation.StatusCode == HttpStatusCode.Unauthorized
                  && await context.GetAuthenticationSchemeAsync()
                      .ConfigureAwait(false) is { } scheme)
+        {
             context.Response.Headers.Append(HeaderNames.WWWAuthenticate, scheme);
+        }
     }
 
     /// <summary>
@@ -334,9 +346,13 @@ public static partial class OperationResultExtensions
         {
             IOperationResult operation;
             if (exception is ValidationException validation)
+            {
                 operation = validation.ValidationResult.ToOperationResult();
+            }
             else if (exception is OperationResultException operationResultException)
+            {
                 operation = operationResultException.Operation;
+            }
             else
             {
                 BadHttpRequestException badHttpRequestException =
@@ -426,7 +442,9 @@ public static partial class OperationResultExtensions
         if (operation.StatusCode == HttpStatusCode.Unauthorized
             && await context.GetAuthenticationSchemeAsync()
                 .ConfigureAwait(false) is { } scheme)
+        {
             context.Response.Headers.Append(HeaderNames.WWWAuthenticate, scheme);
+        }
 
         if (context.RequestServices
             .GetService<IProblemDetailsService>() is { } problemDetailsService)
@@ -496,7 +514,9 @@ public static partial class OperationResultExtensions
         foreach (Primitives.ElementEntry error in errors)
         {
             foreach (string errorMessage in error.Values)
+            {
                 modelStateDictionary.AddModelError(error.Key, errorMessage);
+            }
         }
 
         return modelStateDictionary;
@@ -538,8 +558,11 @@ public static partial class OperationResultExtensions
         ArgumentNullException.ThrowIfNull(modelState);
 
         _ = modelState ?? throw new ArgumentNullException(nameof(modelState));
-        if (modelState.IsValid) throw new ArgumentException(
+        if (modelState.IsValid)
+        {
+            throw new ArgumentException(
             I18nXpandables.OperationResultCanNotConvertModelState);
+        }
 
         return OperationResults.Failure(statusCode)
             .WithErrors(ElementCollection.With(
@@ -589,7 +612,5 @@ public static partial class OperationResultExtensions
     /// <returns>An implementation of <see cref="IResult"/> 
     /// response with <see cref="IOperationResult.StatusCode"/>.</returns>
     public static IResult ToMinimalResult(this IOperationResult operationResult)
-    {
-        return new OperationResultMinimal(operationResult);
-    }
+        => new OperationResultMinimal(operationResult);
 }

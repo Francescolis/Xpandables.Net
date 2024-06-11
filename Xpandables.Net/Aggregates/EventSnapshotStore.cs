@@ -66,7 +66,9 @@ public sealed class EventSnapshotStore<TEventEntity>(
             .ConfigureAwait(false);
 
         if (entityOptional.IsEmpty)
+        {
             return default;
+        }
 
         TEventEntity entity = entityOptional.Value;
 

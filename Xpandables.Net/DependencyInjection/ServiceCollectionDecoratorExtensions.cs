@@ -331,15 +331,16 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(markerType);
 
         if (!markerType.IsInterface)
+        {
             throw new ArgumentException(
                 $"The {nameof(markerType)} must be an interface.");
+        }
 
-        if (serviceType.GetTypeInfo().IsGenericTypeDefinition
-            && decoratorType.GetTypeInfo().IsGenericTypeDefinition)
-            return services.DecorateOpenGenerics(
-                    serviceType, decoratorType, markerType);
-
-        return services;
+        return serviceType.GetTypeInfo().IsGenericTypeDefinition
+            && decoratorType.GetTypeInfo().IsGenericTypeDefinition
+            ? services.DecorateOpenGenerics(
+                    serviceType, decoratorType, markerType)
+            : services;
     }
 
     /// <summary>

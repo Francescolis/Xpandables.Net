@@ -37,7 +37,9 @@ public sealed class OperationResultEndpointFilter : IEndpointFilter
         object? result = await next(context).ConfigureAwait(false);
 
         if (result is IOperationResult operationResult)
+        {
             return operationResult.ToMinimalResult();
+        }
 
         return result;
     }

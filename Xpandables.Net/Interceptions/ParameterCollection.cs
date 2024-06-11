@@ -61,8 +61,10 @@ public sealed record class Parameter
         PassingState isPassed)
     {
         if (position < 0)
+        {
             throw new ArgumentOutOfRangeException(
                 $"{position} must be greater or equal to zero.");
+        }
 
         Position = position;
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -152,7 +154,9 @@ public sealed record class Parameter
         ArgumentNullException.ThrowIfNull(parameterInfo);
 
         if (parameterInfo.IsOut)
+        {
             return PassingState.Out;
+        }
 
         return parameterInfo.ParameterType.IsByRef
                 ? PassingState.Ref

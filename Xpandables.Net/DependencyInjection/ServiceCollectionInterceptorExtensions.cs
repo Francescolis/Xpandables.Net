@@ -51,8 +51,10 @@ public static class ServiceCollectionInterceptorExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         if (!typeof(TInterface).IsInterface)
+        {
             throw new ArgumentException(
                 $"{typeof(TInterface).Name} must be an interface.");
+        }
 
         _ = services.AddTransient<TInterceptor>();
         _ = services.XTryDecorate<TInterface>((instance, provider) =>
@@ -93,13 +95,17 @@ public static class ServiceCollectionInterceptorExtensions
         ArgumentNullException.ThrowIfNull(interceptorType);
 
         if (!interfaceType.IsInterface)
+        {
             throw new ArgumentException(
                 $"{interfaceType.Name} must be an interface.");
+        }
 
         if (!typeof(IInterceptor).IsAssignableFrom(interceptorType))
+        {
             throw new ArgumentException(
                 $"{nameof(interceptorType)} must implement" +
                 $" {nameof(IInterceptor)}.");
+        }
 
         _ = services.AddTransient(interceptorType);
         _ = services.XTryDecorate(interfaceType, (instance, provider) =>
@@ -134,7 +140,10 @@ public static class ServiceCollectionInterceptorExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
 
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         var decoratedInterfaces = assemblies
             .SelectMany(ass => ass.GetExportedTypes())

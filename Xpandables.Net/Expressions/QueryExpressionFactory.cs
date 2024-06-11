@@ -77,11 +77,15 @@ public static class QueryExpressionFactory
         }
 
         if (propertyExpression.Body is MemberExpression memberExpression)
+        {
             return memberExpression.Member.Name;
+        }
 
         if (propertyExpression.Body is UnaryExpression
             { Operand: MemberExpression operandExpression })
+        {
             return operandExpression.Member.Name;
+        }
 
         return default;
     }
@@ -111,28 +115,21 @@ public static class QueryExpressionFactory
             = Expression.PropertyOrField(paramExpr, propertyOrFieldName);
         return Expression.Lambda<Func<TSource, TProperty>>(bodyExpr, paramExpr);
     }
-}
 
-/// <summary>
-/// Provides the query expression factory that contains
-/// methods to create generic query expressions.
-/// </summary>
-/// <typeparam name="TResult">The result type.</typeparam>
-public static class QueryExpressionFactory<TResult>
-{
     /// <summary>
     /// Creates a new instance of 
     /// <see cref="QueryExpression{TSource, TResult}"/> with the specified 
     /// expression.
     /// </summary>
     /// <typeparam name="TSource">The data type source.</typeparam>
+    /// <typeparam name="TResult">The data type result.</typeparam>
     /// <param name="expression">The expression to be used by the instance
     /// .</param>
     /// <returns>a new instance of 
     /// <see cref="QueryExpression{TSource, TResult}"/></returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="expression"/> is null.</exception>
-    public static QueryExpression<TSource, TResult> Create<TSource>(
+    public static QueryExpression<TSource, TResult> Create<TSource, TResult>(
         Expression<Func<TSource, TResult>> expression)
         => new QueryExpressionBuilder<TSource, TResult>(expression);
 
@@ -142,6 +139,7 @@ public static class QueryExpressionFactory<TResult>
     /// </summary>
     /// <typeparam name="TSource">The type of the expression parameter
     /// .</typeparam>
+    /// <typeparam name="TResult">The type of the expression result.</typeparam>
     /// <param name="left">The expression value  for left side.</param>
     /// <param name="right">The expression value for right side.</param>
     /// <returns><see cref="Expression{TDelegate}"/> result</returns>
@@ -149,7 +147,7 @@ public static class QueryExpressionFactory<TResult>
     /// <paramref name="left"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="right"/> is null.</exception>
-    public static Expression<Func<TSource, TResult>> And<TSource>(
+    public static Expression<Func<TSource, TResult>> And<TSource, TResult>(
         Expression<Func<TSource, TResult>> left,
         Expression<Func<TSource, TResult>> right)
     {
@@ -169,6 +167,7 @@ public static class QueryExpressionFactory<TResult>
     /// </summary>
     /// <typeparam name="TSource">The type of the expression parameter
     /// .</typeparam>
+    /// <typeparam name="TResult">The type of the expression result.</typeparam>
     /// <param name="left">The expression value  for left side.</param>
     /// <param name="right">The expression value for right side.</param>
     /// <returns><see cref="Expression{TDelegate}"/> result</returns>
@@ -176,7 +175,7 @@ public static class QueryExpressionFactory<TResult>
     /// <paramref name="left"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="right"/> is null.</exception>
-    public static Expression<Func<TSource, TResult>> Or<TSource>(
+    public static Expression<Func<TSource, TResult>> Or<TSource, TResult>(
         Expression<Func<TSource, TResult>> left,
         Expression<Func<TSource, TResult>> right)
     {
@@ -196,11 +195,12 @@ public static class QueryExpressionFactory<TResult>
     /// </summary>
     /// <typeparam name="TSource">The type of the expression parameter
     /// .</typeparam>
+    /// <typeparam name="TResult">The type of the expression result.</typeparam>
     /// <param name="expression">The expression value.</param>
     /// <returns><see cref="Expression{TDelegate}"/> result</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="expression"/>is null.</exception>
-    public static Expression<Func<TSource, TResult>> Not<TSource>(
+    public static Expression<Func<TSource, TResult>> Not<TSource, TResult>(
         Expression<Func<TSource, TResult>> expression)
     {
         Expression<Func<TSource, TResult>> left

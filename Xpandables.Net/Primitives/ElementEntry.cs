@@ -54,11 +54,13 @@ public readonly record struct ElementEntry
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.Length == 0)
+        {
             throw new ArgumentOutOfRangeException(
                 nameof(values),
                 $"{nameof(values)} can not be empty.");
+        }
 
         Key = key;
-        Values = values.ToList();
+        Values = [.. values];
     }
 }

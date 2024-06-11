@@ -76,7 +76,7 @@ public record class QueryExpressionOr<TSource, TResult>
     /// the clause <see langword="Where"/> in a query.
     /// </summary>
     public override Expression<Func<TSource, TResult>> GetExpression()
-        => _cache ??= QueryExpressionFactory<TResult>
+        => _cache ??= QueryExpressionFactory
             .Or(_left.GetExpression(), _right.GetExpression());
 }
 
@@ -139,6 +139,6 @@ public sealed record class QueryExpressionOr<TSource>
     /// the clause <see langword="Where"/> in a query.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
-        => _cache ??= QueryExpressionFactory<bool>
+        => _cache ??= QueryExpressionFactory
             .Or(_left.GetExpression(), _right.GetExpression());
 }

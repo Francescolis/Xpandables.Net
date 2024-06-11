@@ -110,10 +110,14 @@ public abstract class EventStore<TEventEntity>(
     protected sealed override async ValueTask DisposeAsync(bool disposing)
     {
         if (!disposing)
+        {
             return;
+        }
 
         foreach (IDisposable disposable in _disposables)
+        {
             disposable?.Dispose();
+        }
 
         await base.DisposeAsync(disposing)
             .ConfigureAwait(false);

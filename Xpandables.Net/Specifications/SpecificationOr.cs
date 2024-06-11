@@ -53,6 +53,6 @@ public sealed record class SpecificationOr<TSource> : Specification<TSource>
     /// the clause <see langword="Where"/> in a query.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
-        => QueryExpressionFactory<bool>
+        => QueryExpressionFactory
         .Or(_left.GetExpression(), _right.GetExpression());
 }

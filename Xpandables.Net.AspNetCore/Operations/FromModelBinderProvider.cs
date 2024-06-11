@@ -46,18 +46,24 @@ public sealed class FromModelBinderProvider : IModelBinderProvider
 
             if (metaData.Attributes.Attributes
                 .OfType<FromHeaderAttribute>().FirstOrDefault() is not null)
+            {
                 return new BinderTypeModelBinder(
                     typeof(FromModelBinder<FromHeaderAttribute>));
+            }
 
             if (metaData.Attributes.Attributes
                 .OfType<FromQueryAttribute>().FirstOrDefault() is not null)
+            {
                 return new BinderTypeModelBinder(
                     typeof(FromModelBinder<FromQueryAttribute>));
+            }
 
             if (metaData.Attributes.Attributes
                 .OfType<FromRouteAttribute>().FirstOrDefault() is not null)
+            {
                 return new BinderTypeModelBinder(
                     typeof(FromModelBinder<FromRouteAttribute>));
+            }
         }
 
         return default;

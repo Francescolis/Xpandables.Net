@@ -79,7 +79,10 @@ public static class ServiceCollectionSpecificationExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
 
-        if (assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         return services.DoRegisterInterfaceWithMethodFromAssemblies(
             typeof(ISpecification<>),

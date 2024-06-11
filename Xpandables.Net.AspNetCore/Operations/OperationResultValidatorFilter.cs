@@ -83,7 +83,9 @@ public sealed class OperationResultValidatorFilter<TBindingRequest> :
                 .ConfigureAwait(false);
 
             if (operation.IsFailure)
+            {
                 return operation.ToMinimalResult();
+            }
         }
 
         return await next

@@ -87,7 +87,9 @@ public sealed class TransientPublisherSubscriber
         if (disposing)
         {
             foreach (List<object> value in _subscribers.Value!.Values)
+            {
                 value.Clear();
+            }
 
             _subscribers.Value!.Clear();
         }

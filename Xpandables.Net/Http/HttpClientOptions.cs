@@ -36,7 +36,7 @@ public sealed record HttpClientOptions
     /// Gets the list of user-defined request builders that were registered.
     /// </summary>
     public IList<HttpClientRequestBuilder> RequestBuilders { get; }
-        = new List<HttpClientRequestBuilder>();
+        = [];
 
     /// <summary>
     /// Gets or sets the attribute builder to be used.

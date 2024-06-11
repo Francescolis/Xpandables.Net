@@ -59,9 +59,11 @@ public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
         CancellationToken cancellationToken = default)
     {
         if (@event.Filter is null)
+        {
             return await decoratee
                 .HandleAsync(@event, cancellationToken)
                 .ConfigureAwait(false);
+        }
 
         IEventFilter eventFilter = new EventFilter()
         {

@@ -174,10 +174,12 @@ public sealed class CreatePersonRequestCommandHandler(
             .ConfigureAwait(false);
 
         if (testResult.IsSuccess)
+        {
             return OperationResults
                 .Conflict()
                 .WithError(nameof(PersonId), "Person already exist")
                 .Build();
+        }
 
         Person person = Person
             .Create(personId, command.FirstName, command.LastName);
@@ -218,17 +220,21 @@ public sealed class SendContactRequestCommandHandler
             .ConfigureAwait(false);
 
         if (!personResult.IsSuccess)
+        {
             return OperationResults
                  .NotFound()
                  .WithError(nameof(PersonId), "Person not found")
                  .Build();
+        }
 
         ContactId receivedId = new(command.ReceiverId);
         IOperationResult operationContact = personResult.Result
             .BeContact(receivedId);
 
         if (operationContact.IsFailure)
+        {
             return operationContact;
+        }
 
         return await aggregateStore
             .AppendAsync(personResult.Result, cancellationToken)

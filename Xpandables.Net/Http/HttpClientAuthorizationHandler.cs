@@ -55,9 +55,11 @@ public abstract class HttpClientAuthorizationHandler : HttpClientHandler
             .TryGetValue(
                 new(nameof(HttpClientAttribute.IsSecured)),
                 out bool? isSecured) || !isSecured.GetValueOrDefault())
+        {
             return await base
                 .SendAsync(request, cancellationToken)
                 .ConfigureAwait(false);
+        }
 
         await ApplySecurityAsync(request, cancellationToken)
             .ConfigureAwait(false);

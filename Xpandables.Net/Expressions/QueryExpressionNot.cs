@@ -61,7 +61,7 @@ public record class QueryExpressionNot<TSource, TResult>
     /// in a query.
     /// </summary>
     public override Expression<Func<TSource, TResult>> GetExpression()
-        => _cache ??= QueryExpressionFactory<TResult>
+        => _cache ??= QueryExpressionFactory
             .Not(_expression.GetExpression());
 }
 
@@ -108,6 +108,6 @@ public sealed record class QueryExpressionNot<TSource>
     /// in a query.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
-        => _cache ??= QueryExpressionFactory<bool>
+        => _cache ??= QueryExpressionFactory
             .Not(_expression.GetExpression());
 }

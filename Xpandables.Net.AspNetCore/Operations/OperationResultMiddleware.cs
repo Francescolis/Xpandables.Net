@@ -48,7 +48,9 @@ public sealed class OperationResultMiddleware(
             when (!context.Response.HasStarted && _bypassResponseHasStarted)
         {
             if (exception is TargetInvocationException targetInvocation)
+            {
                 exception = targetInvocation.InnerException ?? targetInvocation;
+            }
 
             ILogger<OperationResultMiddleware> logger = context
                 .RequestServices

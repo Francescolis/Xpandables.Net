@@ -47,7 +47,9 @@ public sealed class OnAspectValidator<TInterface>(IServiceProvider serviceProvid
 
             if (validator?.Validate(argument.Value)
                 is IOperationResult { IsFailure: true } failure)
+            {
                 errors.Merge(failure.Errors);
+            }
         }
 
         if (errors.Any())
@@ -63,8 +65,10 @@ public sealed class OnAspectValidator<TInterface>(IServiceProvider serviceProvid
                 .ReturnType
                 .GetUnderlyingReturnTypeFromTaskOrValueTask() is Type returnType
                 && returnType.IsGenericType)
+            {
                 result = result
                     .ToOperationResult(returnType.GetGenericArguments()[0]);
+            }
 
             if (AspectAttribute.ThrowException)
             {

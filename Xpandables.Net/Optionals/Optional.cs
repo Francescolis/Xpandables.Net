@@ -84,7 +84,9 @@ public partial record struct Optional<T> : IEnumerable<T>
         ArgumentNullException.ThrowIfNull(some);
 
         if (HasValue)
+        {
             _value = some(Value);
+        }
 
         return this;
     }
@@ -165,7 +167,9 @@ public partial record struct Optional<T> : IEnumerable<T>
         ArgumentNullException.ThrowIfNull(empty);
 
         if (!HasValue)
+        {
             _value = empty();
+        }
 
         return this;
     }
@@ -185,7 +189,9 @@ public partial record struct Optional<T> : IEnumerable<T>
         ArgumentNullException.ThrowIfNull(empty);
 
         if (!HasValue)
+        {
             empty();
+        }
 
         return this;
     }
@@ -200,7 +206,10 @@ public partial record struct Optional<T> : IEnumerable<T>
     public readonly T? ValueOrDefault()
     {
         if (HasValue)
+        {
             return Value;
+        }
+
         return default;
     }
 
@@ -216,7 +225,10 @@ public partial record struct Optional<T> : IEnumerable<T>
     public readonly T ValueOrDefault(T defaultValue)
     {
         if (HasValue)
+        {
             return Value;
+        }
+
         return defaultValue;
     }
 
@@ -235,7 +247,10 @@ public partial record struct Optional<T> : IEnumerable<T>
         ArgumentNullException.ThrowIfNull(defaultValue);
 
         if (HasValue)
+        {
             return Value;
+        }
+
         return defaultValue();
     }
 }

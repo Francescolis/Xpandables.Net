@@ -179,10 +179,14 @@ public sealed class InterceptorTests
         public override void Intercept(IInvocation invocation)
         {
             if (invocation.Arguments.First().Value is Args)
+            {
                 invocation.Arguments.First().ChangeValueTo(
                     new Args(ExpectedValue));
+            }
             else
+            {
                 invocation.Arguments.First().ChangeValueTo(ExpectedValue);
+            }
 
             invocation.Proceed();
         }
@@ -240,7 +244,9 @@ public sealed class InterceptorTests
             Args1 query, CancellationToken cancellationToken = default)
         {
             if (attemtp++ < 2)
+            {
                 throw new InvalidOperationException("Invalid operation exception");
+            }
 
             return new ValueTask<IOperationResult<int>>(
                 OperationResults.Ok(query.Value).Build());

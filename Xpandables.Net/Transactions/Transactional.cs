@@ -48,7 +48,9 @@ public abstract class Transactional : Disposable, ITransactional
     protected sealed override async ValueTask DisposeAsync(bool disposing)
     {
         if (!disposing)
+        {
             return;
+        }
 
         AppDomain.CurrentDomain.FirstChanceException -=
             Transaction_FirstChanceExceptionHanlder;

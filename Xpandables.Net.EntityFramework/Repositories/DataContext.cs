@@ -39,7 +39,9 @@ public abstract class DataContext : DbContext
         {
             if (e.FromQuery || e.Entry.State != EntityState.Added
             || e.Entry.Entity is not IEntity entity)
+            {
                 return;
+            }
 
             entity.SetStatus(entity.Status);
         };
@@ -48,7 +50,9 @@ public abstract class DataContext : DbContext
         {
             if (e.NewState != EntityState.Modified
             || e.Entry.Entity is not IEntity entity)
+            {
                 return;
+            }
 
             entity.SetStatus(EntityStatus.UPDATED);
         };

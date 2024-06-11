@@ -80,7 +80,9 @@ public sealed class ValidatorAsyncQueryDecorator<TQuery, TResult>(
             .ConfigureAwait(false);
 
         if (operation.IsFailure)
+        {
             throw new OperationResultException(operation);
+        }
 
         await foreach (TResult result in decoratee
             .HandleAsync(query, cancellationToken)

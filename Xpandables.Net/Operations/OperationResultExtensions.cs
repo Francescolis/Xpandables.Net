@@ -72,6 +72,7 @@ public static class OperationResultExtensions
         this HttpStatusCode statusCode)
     {
         if (!IsSuccessStatusCode(statusCode))
+        {
             throw new InvalidOperationException(
                 $"The code '{statusCode}' is not a success status code.",
                 new ArgumentOutOfRangeException(
@@ -80,6 +81,7 @@ public static class OperationResultExtensions
                     $"The status code must be greater or " +
                     $"equal to {_minSuccessStatusCode} and " +
                     $"lower or equal to {_maxSuccessStatusCode}"));
+        }
 
         return statusCode;
     }
@@ -97,6 +99,7 @@ public static class OperationResultExtensions
         this HttpStatusCode statusCode)
     {
         if (!IsFailureStatusCode(statusCode))
+        {
             throw new InvalidOperationException(
                 $"The code '{statusCode}' is not a failure status code",
                 new ArgumentOutOfRangeException(
@@ -105,6 +108,7 @@ public static class OperationResultExtensions
                     $"The status code must be greater " +
                     $"than {_maxSuccessStatusCode} or " +
                     $"lower than {_minSuccessStatusCode}"));
+        }
 
         return statusCode;
     }
@@ -162,13 +166,19 @@ public static class OperationResultExtensions
 
         if (instance.ErrorMessage is null ||
             !instance.MemberNames.Any())
+        {
             throw new InvalidOperationException(
                 "ErrorMessage or MemberNames is null !");
+        }
 
         ElementCollection errors = [];
         foreach (string memberName in instance.MemberNames)
+        {
             if (!string.IsNullOrEmpty(memberName))
+            {
                 errors.Add(memberName, instance.ErrorMessage);
+            }
+        }
 
         return OperationResults
             .BadRequest()

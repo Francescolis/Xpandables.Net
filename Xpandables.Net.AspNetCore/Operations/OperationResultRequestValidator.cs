@@ -56,7 +56,9 @@ internal sealed class OperationResultRequestValidator :
             in GetValidationDescriptors())
         {
             if (validationDescriptor.Argument is null)
+            {
                 continue;
+            }
 
             try
             {
@@ -65,9 +67,11 @@ internal sealed class OperationResultRequestValidator :
                     .ConfigureAwait(false);
 
                 if (operation.IsFailure)
+                {
                     _ = operationResultBuilder
                         .WithErrors(operation.Errors)
                         .WithHeaders(operation.Headers);
+                }
             }
             catch (ValidationException exception)
             {
@@ -82,7 +86,9 @@ internal sealed class OperationResultRequestValidator :
         IOperationResult operationResult = operationResultBuilder.Build();
 
         if (operationResult.Errors.Any())
+        {
             return operationResult.ToMinimalResult();
+        }
 
         return await next(context).ConfigureAwait(false);
 
@@ -96,7 +102,9 @@ internal sealed class OperationResultRequestValidator :
                     out Type? validatorType,
                     out _,
                     item.ParameterType!))
+                {
                     continue;
+                }
 
                 IEnumerable<IValidator> validators = context
                     .HttpContext
@@ -104,10 +112,12 @@ internal sealed class OperationResultRequestValidator :
                     .GetServices(validatorType).OfType<IValidator>();
 
                 foreach (IValidator validator in validators)
+                {
                     yield return new(
                         item.Index,
                         item.ParameterType!,
                         item.Parameter, validator);
+                }
             }
         }
 

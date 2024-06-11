@@ -130,7 +130,9 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
 
         if (invocation._exceptionDispatchInfo is not null
             && invocation.ReThrowException)
+        {
             invocation._exceptionDispatchInfo.Throw();
+        }
 
         return invocation.ReturnValue;
     }

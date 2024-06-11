@@ -69,7 +69,9 @@ public abstract class Entity : IEntity
             StringComparison.OrdinalIgnoreCase))
         {
             if (UpdatedOn is not null)
+            {
                 UpdatedOn = DateTime.UtcNow;
+            }
         }
         else
         {
@@ -81,7 +83,9 @@ public abstract class Entity : IEntity
             StringComparison.OrdinalIgnoreCase))
         {
             if (DeletedOn is not null)
+            {
                 DeletedOn = null;
+            }
         }
         else
         {

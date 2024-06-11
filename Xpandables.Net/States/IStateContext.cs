@@ -53,7 +53,7 @@ public interface IStateContext<TState> : IStateContext
     /// </summary>
     new TState CurrentState { get; }
 
-    IState IStateContext.CurrentState { get => CurrentState; }
+    IState IStateContext.CurrentState => CurrentState;
 
     /// <summary>
     /// Allows changing the State object at runtime.

@@ -50,7 +50,9 @@ public interface IHttpRequestTryParse<TRequest>
         _ = provider;
 
         if (value is null)
+        {
             return false;
+        }
 
         Dictionary<string, string> dict = value.Split(',')
             .Chunk(2)

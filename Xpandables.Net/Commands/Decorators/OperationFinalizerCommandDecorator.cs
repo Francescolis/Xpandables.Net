@@ -41,26 +41,20 @@ internal sealed class OperationFinalizerCommandDecorator<TCommand>(
         }
         catch (OperationResultException resultException)
         {
-            if (operationResultFinalizer.CallFinalizerOnException)
-            {
-                return operationResultFinalizer
+            return operationResultFinalizer.CallFinalizerOnException
+                ? operationResultFinalizer
                     .Finalizer
-                    .Invoke(resultException.Operation);
-            }
-
-            return resultException.Operation;
+                    .Invoke(resultException.Operation)
+                : resultException.Operation;
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)
         {
-            if (operationResultFinalizer.CallFinalizerOnException)
-            {
-                return operationResultFinalizer
+            return operationResultFinalizer.CallFinalizerOnException
+                ? operationResultFinalizer
                     .Finalizer
-                    .Invoke(exception.ToOperationResult());
-            }
-
-            return OperationResults
+                    .Invoke(exception.ToOperationResult())
+                : OperationResults
                 .InternalError()
                 .WithTitle("OperationFinalizerCommandDecorator")
                 .WithException(exception)

@@ -36,13 +36,13 @@ public sealed record EventOptions
     /// Gets the list of user-defined converters that were registered.
     /// </summary>
     public IList<EventConverter> Converters { get; }
-        = new List<EventConverter>();
+        = [];
 
     /// <summary>
     /// Gets the list of user-defined filters that were registered.
     /// </summary>
     public IList<EventEntityFilter> Filters { get; }
-        = new List<EventEntityFilter>();
+        = [];
 
     /// <summary>
     /// Gets or sets the <see cref="JsonSerializerOptions"/> to be used.

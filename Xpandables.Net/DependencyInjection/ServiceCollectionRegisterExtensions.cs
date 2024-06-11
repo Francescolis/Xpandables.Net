@@ -51,7 +51,9 @@ public static class ServiceCollectionRegisterExtensions
         ArgumentNullException.ThrowIfNull(assemblies);
 
         if (assemblies.Length == 0)
+        {
             assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         List<Type> serviceRegisters = assemblies
             .SelectMany(ass => ass.GetExportedTypes())
@@ -71,7 +73,9 @@ public static class ServiceCollectionRegisterExtensions
             {
                 route.RegisterServices(services);
                 if (configuration is not null)
+                {
                     route.RegisterServices(services, configuration);
+                }
             }
         }
 

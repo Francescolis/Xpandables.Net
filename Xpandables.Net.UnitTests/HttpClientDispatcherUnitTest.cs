@@ -66,7 +66,9 @@ public sealed class HttpClientDispatcherUnitTest
         List<Monkey> monkeys = [];
 
         await foreach (Monkey monkey in _dispatcher.GetMonkeyAsync())
+        {
             monkeys.Add(monkey);
+        }
 
         monkeys.Should().NotBeEmpty();
     }
@@ -138,6 +140,8 @@ sealed class HttpMonkeyDispatcher(
             = await SendAsync(query).ConfigureAwait(false);
 
         await foreach (Monkey monkey in response.Result)
+        {
             yield return monkey;
+        }
     }
 }

@@ -154,7 +154,10 @@ public static class TextCryptography
 
                 rfcKey.IterationCount = 100000;
 
-                if (isEncryption) aes.Padding = PaddingMode.PKCS7;
+                if (isEncryption)
+                {
+                    aes.Padding = PaddingMode.PKCS7;
+                }
 
                 aes.KeySize = 256;
                 aes.BlockSize = 128;

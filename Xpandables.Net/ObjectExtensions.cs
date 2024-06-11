@@ -50,9 +50,11 @@ public static class ObjectExtensions
     {
         ArgumentNullException.ThrowIfNull(obj);
         if (obj.GetType().IsGenericTypeParameter)
+        {
             throw new ArgumentException(
                 "Cannot get the full name of a generic type parameter.",
                 obj.GetType().Name);
+        }
 
         return obj.GetType().AssemblyQualifiedName!;
     }
@@ -117,7 +119,10 @@ public static class ObjectExtensions
         Type conversionType,
         IFormatProvider? formatProvider = default)
     {
-        if (value is null) return null;
+        if (value is null)
+        {
+            return null;
+        }
 
         Type targetType = conversionType
             ?? throw new ArgumentNullException(nameof(conversionType));
@@ -125,7 +130,11 @@ public static class ObjectExtensions
             && conversionType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
             Type? underlyingType = Nullable.GetUnderlyingType(targetType);
-            if (underlyingType is null) return null;
+            if (underlyingType is null)
+            {
+                return null;
+            }
+
             targetType = underlyingType;
         }
 
@@ -161,7 +170,10 @@ public static class ObjectExtensions
         this object? value,
         IFormatProvider? formatProvider = default)
     {
-        if (value is null) return default;
+        if (value is null)
+        {
+            return default;
+        }
 
         return value.ChangeTypeNullable(typeof(T), formatProvider) is T instance
             ? instance : default;
@@ -203,7 +215,9 @@ public static class ObjectExtensions
         ArgumentNullException.ThrowIfNull(action);
 
         if (condition)
+        {
             action(obj);
+        }
 
         return obj;
     }

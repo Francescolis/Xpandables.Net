@@ -66,10 +66,14 @@ public sealed class JsonNullableDateOnlyConverter
         ArgumentNullException.ThrowIfNull(writer);
 
         if (value is null)
+        {
             writer.WriteNullValue();
+        }
         else
+        {
             writer
                 .WriteStringValue(value.Value
                     .ToString("O", CultureInfo.CurrentCulture));
+        }
     }
 }

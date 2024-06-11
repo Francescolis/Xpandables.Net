@@ -69,7 +69,9 @@ public static partial class ServiceCollectionAspectExtensions
         ArgumentNullException.ThrowIfNull(assemblies);
 
         if (assemblies.Length == 0)
+        {
             assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         assemblies
            .SelectMany(ass => ass.GetExportedTypes())
@@ -127,7 +129,9 @@ public static partial class ServiceCollectionAspectExtensions
         ArgumentNullException.ThrowIfNull(assemblies);
 
         if (assemblies.Length == 0)
+        {
             assemblies = [Assembly.GetCallingAssembly()];
+        }
 
         assemblies
              .SelectMany(ass => ass.GetExportedTypes())

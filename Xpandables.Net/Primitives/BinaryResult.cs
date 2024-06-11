@@ -56,7 +56,9 @@ public readonly record struct BinaryResult : IDisposable
     public string ConvertToBase64String()
     {
         if (Stream is MemoryStream ms)
+        {
             return Convert.ToBase64String(ms.ToArray());
+        }
 
         using MemoryStream memoryStream = new();
         Stream.CopyTo(memoryStream);

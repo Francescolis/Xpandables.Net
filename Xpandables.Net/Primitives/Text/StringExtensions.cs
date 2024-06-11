@@ -477,7 +477,9 @@ public static class StringExtensions
         ArgumentNullException.ThrowIfNull(path);
 
         if (queryString is null)
+        {
             return path;
+        }
 
         int anchorIndex = path.IndexOf('#', StringComparison.InvariantCulture);
         string uriToBeAppended = path;

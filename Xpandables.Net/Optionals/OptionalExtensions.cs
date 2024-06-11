@@ -184,7 +184,9 @@ public static class OptionalExtensions
         ArgumentNullException.ThrowIfNull(defaultValue);
 
         if ((await optional.ConfigureAwait(false)).IsEmpty)
+        {
             return await defaultValue.ConfigureAwait(false);
+        }
 
         return (await optional.ConfigureAwait(false)).Value;
     }
@@ -209,7 +211,9 @@ public static class OptionalExtensions
         ArgumentNullException.ThrowIfNull(defaultValue);
 
         if ((await optional.ConfigureAwait(false)).IsEmpty)
+        {
             return await defaultValue().ConfigureAwait(false);
+        }
 
         return (await optional.ConfigureAwait(false)).Value;
     }
@@ -267,9 +271,13 @@ public static class OptionalExtensions
         ArgumentNullException.ThrowIfNull(empty);
 
         if (optional.IsNotEmpty)
+        {
             some(optional.Value);
+        }
         else
+        {
             empty();
+        }
     }
 
     /// <summary>
@@ -328,9 +336,13 @@ public static class OptionalExtensions
 
         Optional<T> value = await optional.ConfigureAwait(false);
         if (value.IsNotEmpty)
+        {
             await some(value.Value).ConfigureAwait(false);
+        }
         else
+        {
             await empty().ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -432,7 +444,9 @@ public static class OptionalExtensions
         while (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
             if (await predicate(enumerator.Current).ConfigureAwait(false))
+            {
                 return Optional.Some(enumerator.Current);
+            }
         }
 
         return Optional.Empty<T>();
@@ -653,7 +667,9 @@ public static class OptionalExtensions
         await foreach (Optional<T> optional in source)
         {
             if (optional.IsNotEmpty)
+            {
                 yield return optional.Value;
+            }
         }
     }
 }

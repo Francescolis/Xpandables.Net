@@ -53,11 +53,9 @@ public class RepositoryWrite<TEntity>(DataContext context)
     public virtual async ValueTask InsertAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
-    {
-        _ = await Context.Set<TEntity>()
+        => _ = await Context.Set<TEntity>()
             .AddAsync(entity, cancellationToken)
             .ConfigureAwait(false);
-    }
 
     ///<inheritdoc/>
     public virtual async ValueTask UpdateAsync(
@@ -81,7 +79,9 @@ public class RepositoryWrite<TEntity>(DataContext context)
             .AsEnumerable();
 
         if (deleteTableResult.Any())
+        {
             Context.RemoveRange(deleteTableResult);
+        }
 
         await ValueTask.CompletedTask
             .ConfigureAwait(false);

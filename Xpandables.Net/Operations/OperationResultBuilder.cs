@@ -44,10 +44,9 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     TBuilder IOperationResult.IStatusBuilder<TBuilder>
         .WithStatusCode(HttpStatusCode statusCode)
     {
-        if (_statusCode.IsSuccessStatusCode())
-            _ = statusCode.EnsureSuccessStatusCode();
-        else
-            _ = statusCode.EnsureFailureStatusCode();
+        _ = _statusCode.IsSuccessStatusCode()
+            ? statusCode.EnsureSuccessStatusCode()
+            : statusCode.EnsureFailureStatusCode();
 
         _statusCode = statusCode;
         return (this as TBuilder)!;
@@ -129,7 +128,7 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         .WithErrors(IReadOnlyCollection<ElementEntry> errors)
     {
         ArgumentNullException.ThrowIfNull(errors);
-        _errors.Merge(ElementCollection.With(errors.ToList()));
+        _errors.Merge(ElementCollection.With([.. errors]));
 
         return (this as TBuilder)!;
     }
@@ -251,9 +250,7 @@ internal sealed class SuccessBuilder
     IOperationResult.ISuccessBuilder
 {
     internal SuccessBuilder(HttpStatusCode statusCode) : base(statusCode)
-    {
-        _ = statusCode.EnsureSuccessStatusCode();
-    }
+        => _ = statusCode.EnsureSuccessStatusCode();
 }
 
 internal sealed class SuccessBuilder<TResult> :
@@ -261,9 +258,7 @@ internal sealed class SuccessBuilder<TResult> :
     IOperationResult.ISuccessBuilder<TResult>
 {
     internal SuccessBuilder(HttpStatusCode statusCode) : base(statusCode)
-    {
-        _ = statusCode.EnsureSuccessStatusCode();
-    }
+        => _ = statusCode.EnsureSuccessStatusCode();
 }
 
 internal sealed class FailureBuilder
@@ -271,9 +266,7 @@ internal sealed class FailureBuilder
     IOperationResult.IFailureBuilder
 {
     internal FailureBuilder(HttpStatusCode statusCode) : base(statusCode)
-    {
-        _ = statusCode.EnsureFailureStatusCode();
-    }
+        => _ = statusCode.EnsureFailureStatusCode();
 }
 
 internal sealed class FailureBuilder<TResult> :
@@ -281,7 +274,5 @@ internal sealed class FailureBuilder<TResult> :
     IOperationResult.IFailureBuilder<TResult>
 {
     internal FailureBuilder(HttpStatusCode statusCode) : base(statusCode)
-    {
-        _ = statusCode.EnsureFailureStatusCode();
-    }
+        => _ = statusCode.EnsureFailureStatusCode();
 }

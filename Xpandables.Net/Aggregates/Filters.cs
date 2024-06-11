@@ -40,36 +40,52 @@ public sealed class EventEntityDomainFilter :
             = QueryExpressionFactory.Create<EventEntityDomain>();
 
         if (eventFilter.AggregateId is not null)
+        {
             expression = expression.And(x =>
             x.AggregateId == eventFilter.AggregateId.Value);
+        }
 
         if (eventFilter.AggregateIdTypeName is not null)
+        {
             expression = expression.And(x =>
             x.AggregateIdTypeName.Contains(
                     eventFilter.AggregateIdTypeName));
+        }
 
         if (eventFilter.Id is not null)
+        {
             expression = expression.And(x => x.Id == eventFilter.Id);
+        }
 
         if (eventFilter.EventTypeName is not null)
+        {
             expression = expression.And(x =>
                 x.EventTypeName.Contains(eventFilter.EventTypeName));
+        }
 
         if (eventFilter.Version is not null)
+        {
             expression = expression.And(x =>
             x.Version > eventFilter.Version.Value);
+        }
 
         if (eventFilter.FromCreatedOn is not null)
+        {
             expression = expression.And(x =>
             x.CreatedOn >= eventFilter.FromCreatedOn.Value);
+        }
 
         if (eventFilter.ToCreatedOn is not null)
+        {
             expression = expression.And(x =>
             x.CreatedOn <= eventFilter.ToCreatedOn.Value);
+        }
 
         if (eventFilter.Status is not null)
+        {
             expression = expression.And(x =>
             x.Status.Contains(eventFilter.Status));
+        }
 
         if (eventFilter.DataCriteria is not null)
         {
@@ -102,31 +118,45 @@ public sealed class EventEntityIntegrationFilter :
             = QueryExpressionFactory.Create<EventEntityIntegration>();
 
         if (eventFilter.Id is not null)
+        {
             expression = expression.And(x => x.Id == eventFilter.Id);
+        }
 
         if (eventFilter.EventTypeName is not null)
+        {
             expression = expression.And(x =>
                 x.EventTypeName.Contains(eventFilter.EventTypeName));
+        }
 
         if (eventFilter.Version is not null)
+        {
             expression = expression.And(x =>
             x.Version > eventFilter.Version.Value);
+        }
 
         if (eventFilter.FromCreatedOn is not null)
+        {
             expression = expression.And(x =>
             x.CreatedOn >= eventFilter.FromCreatedOn.Value);
+        }
 
         if (eventFilter.ToCreatedOn is not null)
+        {
             expression = expression.And(x =>
             x.CreatedOn <= eventFilter.ToCreatedOn.Value);
+        }
 
         if (eventFilter.Status is not null)
+        {
             expression = expression.And(x =>
             x.Status.Contains(eventFilter.Status));
+        }
 
         if (eventFilter.OnError is not null)
+        {
             expression = expression.And(x =>
                 x.ErrorMessage != null == eventFilter.OnError.Value);
+        }
 
         if (eventFilter.DataCriteria is not null)
         {

@@ -88,7 +88,9 @@ public sealed class EventIntegrationStore<TEventEntity>(
             .ConfigureAwait(false);
 
         if (entityOptional.IsEmpty)
+        {
             return;
+        }
 
         TEventEntity entity = entityOptional.Value;
 

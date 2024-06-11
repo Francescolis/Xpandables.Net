@@ -36,7 +36,9 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
         JsonSerializerOptions options)
     {
         if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None)
+        {
             return Optional.Empty<T>();
+        }
 
         return JsonSerializer.Deserialize<T?>(ref reader, options);
     }
@@ -48,8 +50,12 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
         JsonSerializerOptions options)
     {
         if (value.IsNotEmpty)
+        {
             JsonSerializer.Serialize(writer, value.Value, options);
+        }
         else
+        {
             JsonSerializer.Serialize(writer, null, typeof(object), options);
+        }
     }
 }

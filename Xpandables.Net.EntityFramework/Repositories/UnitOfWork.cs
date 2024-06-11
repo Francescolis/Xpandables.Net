@@ -66,7 +66,9 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
             _isDisposed = true;
 
             if (disposing)
+            {
                 Context?.Dispose();
+            }
 
             base.Dispose(disposing);
         }
@@ -80,7 +82,9 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
             _isDisposed = true;
 
             if (disposing)
+            {
                 await Context.DisposeAsync().ConfigureAwait(false);
+            }
 
             await base.DisposeAsync(disposing).ConfigureAwait(false);
         }

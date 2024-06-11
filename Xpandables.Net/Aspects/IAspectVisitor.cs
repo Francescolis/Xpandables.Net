@@ -58,7 +58,9 @@ public interface IAspectVisitor<in TElement> : IAspectVisitor
         ArgumentNullException.ThrowIfNull(element);
 
         if (element is not TElement visitable)
+        {
             return;
+        }
 
         Visit(visitable);
     }

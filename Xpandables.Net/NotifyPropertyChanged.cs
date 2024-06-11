@@ -150,7 +150,9 @@ public abstract class NotifyPropertyChanged
         ArgumentException.ThrowIfNullOrEmpty(propertyName);
 
         if (EqualityComparer<TValue>.Default.Equals(field, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -189,7 +191,9 @@ public abstract class NotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(onChanged);
 
         if (EqualityComparer<TValue>.Default.Equals(field, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -231,7 +235,9 @@ public abstract class NotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(onChanged);
 
         if (EqualityComparer<TValue>.Default.Equals(field, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -274,7 +280,9 @@ public abstract class NotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(comparer);
 
         if (comparer.Equals(field, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -318,7 +326,9 @@ public abstract class NotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(onChanged);
 
         if (comparer.Equals(field, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -364,7 +374,9 @@ public abstract class NotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(onChanged);
 
         if (comparer.Equals(field, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -434,7 +446,9 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
         string propertyName = selector.GetMemberNameFromExpression();
 
         if (EqualityComparer<TValue>.Default.Equals(field, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -477,7 +491,9 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
         string propertyName = selector.GetMemberNameFromExpression();
 
         if (comparer.Equals(field, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -518,7 +534,9 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(updater);
 
         if (EqualityComparer<TValue>.Default.Equals(old, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -562,7 +580,9 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
         string propertyName = selector.GetMemberNameFromExpression();
 
         if (EqualityComparer<TValue>.Default.Equals(old, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -607,7 +627,9 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(comparer);
 
         if (comparer.Equals(old, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -655,7 +677,9 @@ public abstract class NotifyPropertyChanged<TModel> : NotifyPropertyChanged
         string propertyName = selector.GetMemberNameFromExpression();
 
         if (comparer.Equals(old, value))
+        {
             return false;
+        }
 
         OnPropertyChanging(propertyName);
 
@@ -765,10 +789,14 @@ public static class NotifyPropertyExtensions
         IDictionary<string, List<string>> dependencies)
     {
         if (string.IsNullOrWhiteSpace(propertyName))
+        {
             throw new ArgumentNullException(nameof(propertyName));
+        }
 
         if (EqualityComparer<TValue>.Default.Equals(storage, value))
+        {
             return false;
+        }
 
         storage = value;
 

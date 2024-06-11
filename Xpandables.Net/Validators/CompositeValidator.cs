@@ -46,7 +46,9 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
         {
             IOperationResult operation = validator.Validate(argument);
             if (operation.IsFailure)
+            {
                 return operation;
+            }
         }
 
         return OperationResults.Ok().Build();
@@ -68,7 +70,9 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
                 .ConfigureAwait(false);
 
             if (operation.IsFailure)
+            {
                 return operation;
+            }
         }
 
         return OperationResults.Ok().Build();

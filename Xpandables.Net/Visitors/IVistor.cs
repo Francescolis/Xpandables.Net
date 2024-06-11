@@ -65,7 +65,9 @@ public interface IVisitor<in TElement> : IVisitor
     {
         ArgumentNullException.ThrowIfNull(element);
         if (element is not TElement visitable)
+        {
             return ValueTask.CompletedTask;
+        }
 
         return VisitAsync(visitable);
     }

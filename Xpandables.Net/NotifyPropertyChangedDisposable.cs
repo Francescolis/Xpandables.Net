@@ -118,7 +118,10 @@ public abstract class NotifyPropertyChangedDisposable :
     /// </remarks>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
-        if (IsDisposed) return;
+        if (IsDisposed)
+        {
+            return;
+        }
 
         if (disposing)
         {
@@ -166,7 +169,9 @@ public abstract class NotifyPropertyChangedDisposable :
     protected virtual void Dispose(bool disposing)
     {
         if (IsDisposed)
+        {
             return;
+        }
 
         if (disposing)
         {
@@ -284,7 +289,10 @@ public abstract class NotifyPropertyChangedDisposable<TModel> :
     /// </remarks>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
-        if (IsDisposed) return;
+        if (IsDisposed)
+        {
+            return;
+        }
 
         if (disposing)
         {
@@ -332,7 +340,9 @@ public abstract class NotifyPropertyChangedDisposable<TModel> :
     protected virtual void Dispose(bool disposing)
     {
         if (IsDisposed)
+        {
             return;
+        }
 
         if (disposing)
         {

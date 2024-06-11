@@ -76,9 +76,13 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         Type modelType = bindingContext.ModelMetadata.ModelType;
 
         if (modelName is not null)
+        {
             BindingWithModelName(bindingContext, modelName, modelType);
+        }
         else
+        {
             BindingWithModelType(bindingContext, modelType);
+        }
 
         return Task.CompletedTask;
     }
@@ -98,7 +102,9 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         {
             model = CreateDefaultInstance(bindingContext, modelType);
             if (model is not null)
+            {
                 bindingContext.Result = ModelBindingResult.Success(model);
+            }
 
             // no property to bind
             return;
@@ -108,7 +114,9 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         Dictionary<string, object?> propertyValues =
             CreateProperties(bindingContext, modelProperties);
         if (bindingContext.ModelState.IsValid is false)
+        {
             return;
+        }
 
         // try parameter constructor
         model = CreateConstructorInstance(
@@ -177,6 +185,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
     {
         object? model = default;
         if (modelType.GetConstructor(Type.EmptyTypes) is not null)
+        {
             try
             {
                 model = Activator.CreateInstance(modelType);
@@ -196,6 +205,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
                 _ = bindingContext.ModelState
                     .TryAddModelException(bindingContext.ModelName, exception);
             }
+        }
 
         return model;
     }
@@ -338,8 +348,10 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
                 object? converted = default;
 
                 if (value is not null)
+                {
                     converted = value.ChangeTypeNullable(
                         property.PropertyType, CultureInfo.CurrentCulture);
+                }
 
                 propertyValues.Add(property.Name, converted);
             }
@@ -353,11 +365,10 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
                     or OverflowException
                     or InvalidCastException)
         {
-            if (currentPropertyInfo is not null)
-                _ = bindingContext.ModelState
-                    .TryAddModelException(currentPropertyInfo.Name, exception);
-            else
-                _ = bindingContext.ModelState
+            _ = currentPropertyInfo is not null
+                ? bindingContext.ModelState
+                    .TryAddModelException(currentPropertyInfo.Name, exception)
+                : bindingContext.ModelState
                     .TryAddModelException(bindingContext.ModelName, exception);
         }
 

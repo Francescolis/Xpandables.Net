@@ -43,27 +43,21 @@ internal sealed class OperationFinalizerQueryDecorator<TQuery, TResult>(
         }
         catch (OperationResultException resultException)
         {
-            if (operationResultFinalizer.CallFinalizerOnException)
-            {
-                return operationResultFinalizer
+            return operationResultFinalizer.CallFinalizerOnException
+                ? operationResultFinalizer
                     .Finalizer.Invoke(resultException.Operation)
-                    .ToOperationResult<TResult>();
-            }
-
-            return resultException.Operation
+                    .ToOperationResult<TResult>()
+                : resultException.Operation
                 .ToOperationResult<TResult>();
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)
         {
-            if (operationResultFinalizer.CallFinalizerOnException)
-            {
-                return operationResultFinalizer
+            return operationResultFinalizer.CallFinalizerOnException
+                ? operationResultFinalizer
                     .Finalizer.Invoke(exception.ToOperationResult())
-                    .ToOperationResult<TResult>();
-            }
-
-            return OperationResults
+                    .ToOperationResult<TResult>()
+                : OperationResults
                 .InternalError<TResult>()
                 .WithTitle("OperationFinalizerQueryDecorator")
                 .WithException(exception)

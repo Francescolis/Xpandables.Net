@@ -18,6 +18,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.Collections;
 
@@ -47,6 +48,7 @@ public sealed class SuccessHttpClientResponseBuilder :
         await Task.Yield();
 
         if (httpResponse.Content.Headers.ContentDisposition is not null)
+        {
             if (httpResponse
                 .Content
                 .Headers
@@ -76,6 +78,7 @@ public sealed class SuccessHttpClientResponseBuilder :
                     httpResponse.Version,
                     httpResponse.ReasonPhrase);
             }
+        }
 
         return new HttpClientResponse(
             httpResponse.StatusCode,
@@ -288,7 +291,9 @@ public sealed class SuccessHttpClientResponseAsyncResultBuilder<TResult>
                     .ConfigureAwait(false))
                 {
                     if (element is { } result)
+                    {
                         blockingCollection.Add(result, cancellationToken);
+                    }
                 }
 
             }, cancellationToken)
@@ -297,7 +302,9 @@ public sealed class SuccessHttpClientResponseAsyncResultBuilder<TResult>
                     blockingCollection.CompleteAdding();
 
                     if (t.IsFaulted)
+                    {
                         t.Exception.ReThrow();
+                    }
 
                     return Task.CompletedTask;
 
@@ -306,7 +313,9 @@ public sealed class SuccessHttpClientResponseAsyncResultBuilder<TResult>
 
             while (await blockingCollectionIterator.MoveNextAsync()
                 .ConfigureAwait(false))
+            {
                 yield return blockingCollectionIterator.Current;
+            }
         }
     }
 }

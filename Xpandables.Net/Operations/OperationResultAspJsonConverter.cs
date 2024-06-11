@@ -67,12 +67,14 @@ public sealed class OperationResultAspJsonConverter
         ArgumentNullException.ThrowIfNull(value);
 
         if (value.Result is not null)
+        {
             JsonSerializer
                 .Serialize(
                 writer,
                 value.Result,
                 value.Result.GetType(),
                 options);
+        }
     }
 }
 
@@ -129,11 +131,13 @@ public sealed class OperationResultAspJsonConverter<TValue>
         ArgumentNullException.ThrowIfNull(value);
 
         if (value.Result is not null)
+        {
             JsonSerializer.Serialize(
                 writer,
                 value.Result,
                 typeof(TValue),
                 options);
+        }
     }
 }
 

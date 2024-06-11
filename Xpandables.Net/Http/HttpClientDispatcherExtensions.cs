@@ -434,7 +434,9 @@ public static class HttpClientDispatcherExtensions
         foreach (string? key in nameValueCollection.AllKeys)
         {
             if (key is not null && nameValueCollection[key] is { } value)
+            {
                 result.Add(key, value);
+            }
         }
 
         return result;
@@ -448,7 +450,9 @@ public static class HttpClientDispatcherExtensions
         ArgumentNullException.ThrowIfNull(path);
 
         if (queryString is null)
+        {
             return path;
+        }
 
         int anchorIndex = path.IndexOf('#', StringComparison.InvariantCulture);
         string uriToBeAppended = path;
@@ -493,13 +497,11 @@ public static class HttpClientDispatcherExtensions
 
     internal static async ValueTask<HttpClientException?>
         BuildExceptionAsync(this HttpResponseMessage httpResponse)
-    {
-        return await httpResponse.Content.ReadAsStringAsync()
+        => await httpResponse.Content.ReadAsStringAsync()
             .ConfigureAwait(false) switch
         {
             { } content when !string.IsNullOrWhiteSpace(content)
                 => new HttpClientException(content),
             _ => default
         };
-    }
 }

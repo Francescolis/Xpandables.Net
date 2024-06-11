@@ -59,11 +59,9 @@ internal sealed record class Invocation : IInvocation
     }
 
     public void SetException(Exception? exception)
-    {
-        _exceptionDispatchInfo = exception is null
+        => _exceptionDispatchInfo = exception is null
             ? null
             : ExceptionDispatchInfo.Capture(exception);
-    }
 
     public void SetReturnValue(object? returnValue)
     {
@@ -74,25 +72,29 @@ internal sealed record class Invocation : IInvocation
         if (ReturnValue is not null)
         {
             if (returnType.IsAssignableFrom(ReturnValue.GetType()))
+            {
                 return;
+            }
 
             if (returnType.IsGenericType)
             {
                 if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
+                {
                     ReturnValue = Activator
                         .CreateInstance(returnType, () => ReturnValue);
+                }
 
                 if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+                {
                     ReturnValue = Activator
                         .CreateInstance(returnType, ReturnValue);
+                }
             }
         }
     }
 
     public void SetElapsedTime(TimeSpan elapsedTime)
-    {
-        ElapsedTime = elapsedTime;
-    }
+        => ElapsedTime = elapsedTime;
 
     public void Proceed()
     {
@@ -106,10 +108,14 @@ internal sealed record class Invocation : IInvocation
                     Arguments.Select(arg => arg.Value).ToArray());
 
             if (ReturnValue is Task { Exception: { } } taskException)
+            {
                 _exceptionDispatchInfo = ExceptionDispatchInfo.Capture(taskException.Exception);
+            }
 
             if (!ReThrowException)
+            {
                 _exceptionDispatchInfo?.Throw();
+            }
         }
         catch (Exception exception)
             when (ReThrowException is true)
