@@ -36,40 +36,26 @@ public sealed class OnAspectFinalizer<TInterface>(IAspectFinalizer aspectFinaliz
         try
         {
             invocation.Proceed();
+
             if (invocation.Exception is { } ex
                 && AspectAttribute.CallFinalizerOnException)
             {
-                object result = aspectFinalizer.Finalizer.Invoke(ex);
-
-                if (result is Exception reThrow)
-                {
-                    invocation.SetException(reThrow);
-                }
-                else
-                    if (invocation.ReturnType != typeof(void))
-                {
-                    invocation.SetReturnValue(result);
-                }
+                DoFinalize(ex);
             }
             else if (invocation.Exception is null)
             {
-                object result = aspectFinalizer.Finalizer
-                    .Invoke(invocation.ReturnValue);
-                if (result is Exception reThrow)
-                {
-                    invocation.SetException(reThrow);
-                }
-                else
-                    if (invocation.ReturnType != typeof(void))
-                {
-                    invocation.SetReturnValue(result);
-                }
+                DoFinalize(invocation.ReturnValue);
             }
         }
         catch (Exception exception)
             when (AspectAttribute.CallFinalizerOnException is true)
         {
-            object result = aspectFinalizer.Finalizer.Invoke(exception);
+            DoFinalize(exception);
+        }
+
+        void DoFinalize(object? value)
+        {
+            object result = aspectFinalizer.Finalizer.Invoke(value);
 
             if (result is Exception reThrow)
             {
