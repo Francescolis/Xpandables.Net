@@ -26,11 +26,13 @@ public interface IAspectValidator : IAspect
 {
     /// <summary>
     /// Validates the argument and returns validation state with errors if 
-    /// necessary.
+    /// necessary or throws an <see cref="OperationResultException"/>.
     /// </summary>
     /// <param name="argument">The target argument to be validated.</param>    
     /// <returns>Returns a result state that contains validation information
     /// .</returns>
+    /// <exception cref="OperationResultException">When the validation failed.
+    /// </exception>
     IOperationResult Validate(object? argument);
 }
 
@@ -44,11 +46,13 @@ public interface IAspectValidator<TArgument> : IAspectValidator
 {
     /// <summary>
     /// Validates the argument and returns validation state with errors if
-    /// necessary.
+    /// necessary or throws an <see cref="OperationResultException"/>.
     /// </summary>
     /// <param name="argument">The target argument to be validated.</param>
     /// <returns>Returns a result state that contains validation information
     /// </returns>
+    /// <exception cref="OperationResultException">When the validation failed.
+    /// </exception>
     IOperationResult Validate(TArgument? argument);
     IOperationResult IAspectValidator.Validate(object? argument)
         => Validate((TArgument?)argument);

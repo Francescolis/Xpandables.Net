@@ -45,10 +45,17 @@ public sealed class OnAspectValidator<TInterface>(IServiceProvider serviceProvid
             IAspectValidator? validator = serviceProvider
                 .GetService(type) as IAspectValidator;
 
-            if (validator?.Validate(argument.Value)
-                is IOperationResult { IsFailure: true } failure)
+            try
             {
-                errors.Merge(failure.Errors);
+                if (validator?.Validate(argument.Value)
+                    is IOperationResult { IsFailure: true } failure)
+                {
+                    errors.Merge(failure.Errors);
+                }
+            }
+            catch (OperationResultException exception)
+            {
+                errors.Merge(exception.Operation.Errors);
             }
         }
 
