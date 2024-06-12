@@ -23,8 +23,25 @@ namespace Xpandables.Net.Aspects;
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
     AllowMultiple = true)]
-public abstract class AspectAttribute(Type interfaceType) : InterceptorAttribute
+public abstract class AspectAttribute : InterceptorAttribute
 {
+    /// <summary>
+    /// Constructs a new instance of <see cref="AspectAttribute"/>.
+    /// </summary>
+    /// <param name="interfaceType">The interface type to intercept.</param>
+    /// <exception cref="InvalidOperationException">If the interface type is 
+    /// not an interface.</exception>
+    protected AspectAttribute(Type interfaceType)
+    {
+        ArgumentNullException.ThrowIfNull(interfaceType);
+
+        InterfaceType = interfaceType
+            .IsInterface is false
+            ? throw new InvalidOperationException(
+                $"{interfaceType.Name} must be an interface.")
+        : interfaceType;
+    }
+
     /// <summary>
     /// Gets the zero-base order in which the aspect will be applied.
     /// The default value is zero.
@@ -40,11 +57,7 @@ public abstract class AspectAttribute(Type interfaceType) : InterceptorAttribute
     /// <summary>
     /// Gets the interface type implemented by the decorated class.
     /// </summary>
-    public Type InterfaceType => interfaceType
-        .IsInterface is false
-            ? throw new InvalidOperationException(
-                $"{interfaceType.Name} is not an interface.")
-        : interfaceType;
+    public Type InterfaceType { get; }
 }
 
 
@@ -58,12 +71,7 @@ public abstract class AspectAttribute<TInterface> : AspectAttribute
     /// <summary>
     /// Constructs a new instance of <see cref="AspectAttribute{TInterface}"/>.
     /// </summary>
-    protected AspectAttribute() : base(typeof(TInterface))
-    {
-        if (!typeof(TInterface).IsInterface)
-        {
-            throw new InvalidOperationException(
-                $"{typeof(TInterface).Name} is not an interface.");
-        }
-    }
+    /// <exception cref="InvalidOperationException">If the interface type is
+    /// not an interface.</exception>
+    protected AspectAttribute() : base(typeof(TInterface)) { }
 }
