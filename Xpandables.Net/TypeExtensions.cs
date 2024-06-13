@@ -77,12 +77,8 @@ public static class TypeExtensions
         if (returnType.IsGenericType)
         {
             Type genericType = returnType.GetGenericTypeDefinition();
-            if (genericType == typeof(Task<>))
-            {
-                return returnType.GetGenericArguments()[0];
-            }
-
-            if (genericType == typeof(ValueTask<>))
+            if (genericType == typeof(Task<>)
+                || genericType == typeof(ValueTask<>))
             {
                 return returnType.GetGenericArguments()[0];
             }
@@ -195,6 +191,30 @@ public static class TypeExtensions
                 .Exists(i => i.IsGenericType
                 && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
         };
+    }
+
+    /// <summary>
+    /// Determines whether the specified type implements the specified interface.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <param name="interfaceType">The interface type to check.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="type"/> is 
+    /// null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="interfaceType"/>
+    /// is null.</exception>
+    public static bool IsAssignableFromInterface(
+        this Type type,
+        Type interfaceType)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(interfaceType);
+
+        return interfaceType.IsGenericType
+            ? type.GetInterfaces()
+            .Any(i => i.IsGenericType
+                && i.GetGenericTypeDefinition()
+                    == interfaceType.GetGenericTypeDefinition())
+            : interfaceType.IsAssignableFrom(type);
     }
 
     /// <summary>

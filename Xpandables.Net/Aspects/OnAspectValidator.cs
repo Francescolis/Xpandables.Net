@@ -22,13 +22,13 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// This class adds validation to the method arguments of implementation of
-/// the interface decorated with <see cref="AspectValidatorAttribute{TInterface}"/>.
+/// the interface decorated with <see cref="AspectValidatorAttribute"/>
+/// or <see cref="AspectValidatorAttribute{TInterface}"/>.
 /// </summary> 
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
 /// <param name="serviceProvider">The service provider.</param>
-public sealed class OnAspectValidator<TInterface>(IServiceProvider serviceProvider) :
-    OnAspect<AspectValidatorAttribute<TInterface>, TInterface>
-    where TInterface : class
+public sealed class OnAspectValidator<TAttribute>(
+    IServiceProvider serviceProvider) : OnAspect<TAttribute>
+    where TAttribute : _AspectValidatorAttribute<TAttribute>
 {
     ///<inheritdoc/>
     protected override void InterceptCore(IInvocation invocation)
@@ -68,24 +68,26 @@ public sealed class OnAspectValidator<TInterface>(IServiceProvider serviceProvid
                 .WithErrors(errors)
                 .Build();
 
-            if (invocation
+            Type returnType = invocation
                 .ReturnType
-                .GetUnderlyingReturnTypeFromTaskOrValueTask() is Type returnType
+                .GetUnderlyingReturnTypeFromTaskOrValueTask()
+                ?? invocation.ReturnType;
+
+            if (returnType.IsAssignableFromInterface(typeof(IOperationResult))
                 && returnType.IsGenericType)
             {
                 result = result
                     .ToOperationResult(returnType.GetGenericArguments()[0]);
+
+                if (!AspectAttribute.ThrowException)
+                {
+                    invocation.SetReturnValue(result);
+                    return;
+                }
             }
 
-            if (AspectAttribute.ThrowException)
-            {
-                invocation.SetException(
-                    new OperationResultException(result));
-            }
-            else
-            {
-                invocation.SetReturnValue(result);
-            }
+            invocation.SetException(
+                new OperationResultException(result));
         }
         else
         {

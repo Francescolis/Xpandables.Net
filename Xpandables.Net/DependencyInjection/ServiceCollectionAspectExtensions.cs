@@ -94,6 +94,14 @@ public static partial class ServiceCollectionAspectExtensions
            })
            .ForEach(found =>
            {
+               if (!found.Type
+                    .IsAssignableFromInterface(found.InterfaceType))
+               {
+                   throw new InvalidOperationException(
+                       $"{found.Type.Name} must implement " +
+                       $"the {found.InterfaceType.Name} in order to use Aspects.");
+               }
+
                foreach (AspectAttribute attribute in found.Attributes
                 .OrderByDescending(o => o.Order))
                {
@@ -101,6 +109,7 @@ public static partial class ServiceCollectionAspectExtensions
                        found.InterfaceType,
                        (instance, provider) =>
                        {
+                           attribute.IsInterfaceImplemented = true;
                            IInterceptor interceptor = attribute.Create(provider);
                            return InterceptorFactory
                                  .CreateProxy(
@@ -115,8 +124,9 @@ public static partial class ServiceCollectionAspectExtensions
     }
 
     /// <summary>
-    /// Registers all the derived classes from <see cref="OnAspect{TAspectAttribute}"/> to the
-    /// service collection with scoped lifetime.
+    /// Registers all the derived classes from 
+    /// <see cref="OnAspect{TAspectAttribute}"/> to theservice collection with 
+    /// scoped lifetime.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types.

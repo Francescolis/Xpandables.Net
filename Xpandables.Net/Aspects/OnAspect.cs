@@ -37,6 +37,17 @@ public abstract class OnAspect<TAspectAttribute> : Interceptor
 
         AspectAttribute = GetAspectAttribute(invocation);
 
+        if (AspectAttribute.IsInterfaceImplemented is false)
+        {
+            Type target = GetRealInstance(invocation).GetType();
+            if (!target.IsAssignableFromInterface(AspectAttribute.InterfaceType))
+            {
+                throw new InvalidOperationException(
+                    $"{target.Name} must implement " +
+                    $"{AspectAttribute.InterfaceType.Name}.");
+            }
+        }
+
         return CanHandleInvocation(invocation);
     }
 
@@ -122,7 +133,8 @@ public abstract class OnAspect<TAspectAttribute> : Interceptor
 /// </summary>
 /// <typeparam name="TAspectAttribute">The type of the aspect attribute.</typeparam>
 /// <typeparam name="TInterface">The type of the interface.</typeparam>
-public abstract class OnAspect<TAspectAttribute, TInterface> : OnAspect<TAspectAttribute>
+public abstract class OnAspect<TAspectAttribute, TInterface> :
+    OnAspect<TAspectAttribute>
     where TAspectAttribute : AspectAttribute
     where TInterface : class
 {

@@ -22,24 +22,22 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Aspects;
 
 /// <summary>
-/// Aspect validator attribute, when applied to a class that implements the
-/// <typeparamref name="TInterface"/>,specifies that, for all the methods of 
-/// this class, arguments should be validated.
+/// Base class for aspect validator attribute.
 /// </summary>
-/// <remarks>The decorated method should return <see cref="IOperationResult"/>
-/// or you must enable the <see cref="ThrowException"/>.</remarks>
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
-    AllowMultiple = true)]
-public sealed class AspectValidatorAttribute<TInterface> :
-    AspectAttribute<TInterface>
-    where TInterface : class
+/// <param name="interfaceType">The interface type to intercept.</param>
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming Styles
+public abstract class _AspectValidatorAttribute<TAttribute>(Type interfaceType) :
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore CA1707 // Identifiers should not contain underscores
+    AspectAttribute(interfaceType)
+    where TAttribute : _AspectValidatorAttribute<TAttribute>
 {
     /// <summary>
     /// Gets or sets a value indicating whether to throw an exception of type
     /// <see cref="OperationResultException"/> when the validation fails. 
-    /// If not set, the validator will return an implementation of 
-    /// <see cref="IOperationResult"/>.
+    /// If not set, the aspect will return an implementation of 
+    /// <see cref="IOperationResult"/> if possible or throws an exception.
     /// </summary>
     /// <remarks>The attribute set on the method takes priority over the one
     /// from the class.</remarks>
@@ -47,6 +45,48 @@ public sealed class AspectValidatorAttribute<TInterface> :
 
     ///<inheritdoc/>
     public override IInterceptor Create(IServiceProvider serviceProvider)
-        => serviceProvider
-            .GetRequiredService<OnAspectValidator<TInterface>>();
+        => serviceProvider.GetRequiredService<OnAspectValidator<TAttribute>>();
+}
+
+/// <summary>
+/// Aspect validator attribute, when applied to a class that implements the
+/// <paramref name="interfaceType"/>, specifies that, for all the methods of
+/// this class, arguments should be validated.
+/// </summary>
+/// <remarks>If the decorated method return <see cref="IOperationResult"/>,
+/// the aspect will return the macthing result, unless you specify to
+/// throw an exception.</remarks>
+/// <exception cref="ArgumentNullException">The interface type is null.
+/// </exception>
+/// <param name="interfaceType">The interface type to intercept.</param>
+/// <inheritdoc/>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
+    AllowMultiple = true)]
+public sealed class AspectValidatorAttribute(Type interfaceType) :
+    _AspectValidatorAttribute<AspectValidatorAttribute>(interfaceType)
+{
+}
+
+/// <summary>
+/// Aspect validator attribute, when applied to a class that implements the
+/// <typeparamref name="TInterface"/>,specifies that, for all the methods of 
+/// this class, arguments should be validated.
+/// </summary>
+/// <remarks>If the decorated method return <see cref="IOperationResult"/>,
+/// the aspect will return the macthing result, unless you specify to
+/// throw an exception.</remarks>
+/// <typeparam name="TInterface">The type of the interface.</typeparam>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
+    AllowMultiple = true)]
+public sealed class AspectValidatorAttribute<TInterface> :
+    _AspectValidatorAttribute<AspectValidatorAttribute<TInterface>>
+    where TInterface : class
+{
+    /// <summary>
+    /// Constructs a new instance of 
+    /// <see cref="AspectValidatorAttribute{TInterface}"/>.
+    /// </summary>
+    public AspectValidatorAttribute() : base(typeof(TInterface))
+    {
+    }
 }

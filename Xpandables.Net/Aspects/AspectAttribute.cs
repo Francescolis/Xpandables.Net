@@ -58,6 +58,8 @@ public abstract class AspectAttribute : InterceptorAttribute
     /// Gets the interface type implemented by the decorated class.
     /// </summary>
     public Type InterfaceType { get; }
+
+    internal bool IsInterfaceImplemented { get; set; }
 }
 
 
