@@ -50,9 +50,9 @@ public static partial class ServiceCollectionAspectExtensions
     /// <summary>
     /// Ensures that all classes decorated with derived 
     /// <see cref="AspectAttribute"/> class will be decorated with the
-    /// expected <see cref="OnAspect{TAspectAttribute}"/> implementation, wrapping all original 
-    /// implementation registered class type found in the specified collection 
-    /// of assemblies.
+    /// expected <see cref="OnAspect{TAspectAttribute}"/> implementation, 
+    /// wrapping all original implementation registered class type found in 
+    /// the specified collection of assemblies.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
@@ -157,7 +157,6 @@ public static partial class ServiceCollectionAspectExtensions
              .SelectMany(ass => ass.GetExportedTypes())
              .Where(type => type.IsSealed
                      && type.IsClass
-                     && type.IsGenericType
                      && type.GetBaseTypes()
                         .Any(b => b.IsGenericType
                             && b.GetGenericTypeDefinition() == typeof(OnAspect<>)))

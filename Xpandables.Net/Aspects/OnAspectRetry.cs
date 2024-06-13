@@ -20,13 +20,11 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// This class adds retry functionality to the method of the implementation of
-/// the interface decorated with <see cref="AspectRetryAttribute{TInterface}"/>.
+/// the interface decorated with <see cref="AspectRetryAttribute"/>.
 /// </summary>
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
 /// <param name="aspectRetry">The aspect retry.</param>
-public sealed class OnAspectRetry<TInterface>(IAspectRetry? aspectRetry = default) :
-    OnAspect<AspectRetryAttribute<TInterface>, TInterface>
-    where TInterface : class
+public sealed class OnAspectRetry(IAspectRetry? aspectRetry = default) :
+    OnAspect<AspectRetryAttribute>
 {
     /// <summary>
     /// Gets or sets the maximum number of retries.

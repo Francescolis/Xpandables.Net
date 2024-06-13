@@ -22,17 +22,18 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// Aspect visitor attribute, when applied to a class that implements the
-/// <typeparamref name="TInterface"/>,specifies that, for all the methods of 
+/// <paramref name="interfaceType"/>,specifies that, for all the methods of 
 /// this class, arguments should be visited.
 /// </summary>
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
+/// <param name="interfaceType">The interface type to intercept.</param>
+/// <exception cref="ArgumentNullException">The interface type is null.
+/// </exception>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public sealed class AspectVisitorAttribute<TInterface> :
-    AspectAttribute<TInterface>
-    where TInterface : class
+public sealed class AspectVisitorAttribute(Type interfaceType) :
+    AspectAttribute(interfaceType)
 {
     ///<inheritdoc/>
     public override IInterceptor Create(IServiceProvider serviceProvider)
         => serviceProvider
-            .GetRequiredService<OnAspectVisitor<TInterface>>();
+            .GetRequiredService<OnAspectVisitor>();
 }

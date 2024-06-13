@@ -22,15 +22,16 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// Aspect finalizer attribute, when applied to a class that implements the
-/// <typeparamref name="TInterface"/>, specifies that the finalizer will get called
+/// <paramref name="interfaceType"/>, specifies that the finalizer will get called
 /// after the method invocation.
 /// </summary>
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
+/// <param name="interfaceType">The interface type to intercept.</param>
+/// <exception cref="ArgumentNullException">The interface type is null.
+/// </exception>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
     AllowMultiple = true)]
-public sealed class AspectFinalizerAttribute<TInterface> :
-    AspectAttribute<TInterface>
-    where TInterface : class
+public sealed class AspectFinalizerAttribute(Type interfaceType) :
+    AspectAttribute(interfaceType)
 {
     /// <summary>
     /// Defines whether the finalizer should be called in case of exception.
@@ -42,5 +43,5 @@ public sealed class AspectFinalizerAttribute<TInterface> :
 
     /// <inheritdoc/>
     public override IInterceptor Create(IServiceProvider serviceProvider)
-        => serviceProvider.GetRequiredService<OnAspectFinalizer<TInterface>>();
+        => serviceProvider.GetRequiredService<OnAspectFinalizer>();
 }

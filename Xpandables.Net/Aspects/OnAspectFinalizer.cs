@@ -20,13 +20,11 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// This class adds finalizer functionality to the method of the implementation of
-/// the interface decorated with <see cref="AspectFinalizerAttribute{TInterface}"/>.
+/// the interface decorated with <see cref="AspectFinalizerAttribute"/>.
 /// </summary>
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
 /// <param name="aspectFinalizer">The aspect finalizer.</param>
-public sealed class OnAspectFinalizer<TInterface>(IAspectFinalizer aspectFinalizer) :
-    OnAspect<AspectFinalizerAttribute<TInterface>, TInterface>
-    where TInterface : class
+public sealed class OnAspectFinalizer(IAspectFinalizer aspectFinalizer) :
+    OnAspect<AspectFinalizerAttribute>
 {
     ///<inheritdoc/>
     protected override void InterceptCore(IInvocation invocation)

@@ -20,14 +20,11 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// This class adds visitation to the method arguments of implementation of
-/// the interface decorated with <see cref="AspectVisitorAttribute{TInterface}"/>.
+/// the interface decorated with <see cref="AspectVisitorAttribute"/>.
 /// </summary> 
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
 /// <param name="serviceProvider">The service provider.</param>
-
-public sealed class OnAspectVisitor<TInterface>(IServiceProvider serviceProvider) :
-    OnAspect<AspectVisitorAttribute<TInterface>, TInterface>
-    where TInterface : class
+public sealed class OnAspectVisitor(IServiceProvider serviceProvider) :
+    OnAspect<AspectVisitorAttribute>
 {
     ///<inheritdoc/>
     protected override void InterceptCore(IInvocation invocation)

@@ -22,15 +22,17 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// Aspect retry attribute, when applied to a class that implements the
-/// <typeparamref name="TInterface"/>,specifies that, for all the methods of
-/// this class, the method should be retried if it fails <see cref="MaxRetries"/> times.
+/// <paramref name="interfaceType"/>,specifies that, for all the methods of
+/// this class, the method should be retried if it fails 
+/// <see cref="MaxRetries"/> times.
 /// </summary>
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
+/// <param name="interfaceType">The interface type to intercept.</param>
+/// <exception cref="ArgumentNullException">The interface type is null.
+/// </exception>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
     AllowMultiple = true)]
-public sealed class AspectRetryAttribute<TInterface> :
-    AspectAttribute<TInterface>
-    where TInterface : class
+public sealed class AspectRetryAttribute(Type interfaceType) :
+    AspectAttribute(interfaceType)
 {
     private int _maxRetries = 3;
 
@@ -55,8 +57,8 @@ public sealed class AspectRetryAttribute<TInterface> :
     ///<inheritdoc/>
     public override IInterceptor Create(IServiceProvider serviceProvider)
     {
-        OnAspectRetry<TInterface> aspectRetry = serviceProvider
-            .GetRequiredService<OnAspectRetry<TInterface>>();
+        OnAspectRetry aspectRetry = serviceProvider
+            .GetRequiredService<OnAspectRetry>();
 
         aspectRetry.MaxRetries = MaxRetries;
         aspectRetry.Delay = Delay;

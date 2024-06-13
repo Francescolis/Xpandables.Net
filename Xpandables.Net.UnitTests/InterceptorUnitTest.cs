@@ -221,8 +221,9 @@ public sealed class InterceptorTests
     public sealed record Args1(int Value) : IQuery<int>, IInterceptorDecorator;
     public sealed record Args2(int Value) : IQuery<int>, IInterceptorDecorator;
 
-    [AspectValidator<IQueryHandler<Args, int>>(ThrowException = false, Order = 1)]
-    [AspectVisitor<IQueryHandler<Args, int>>(Order = 0)]
+    [AspectValidator(typeof(IQueryHandler<Args, int>),
+        ThrowException = false, Order = 1)]
+    [AspectVisitor(typeof(IQueryHandler<Args, int>), Order = 0)]
     public sealed class HandleArgs : IQueryHandler<Args, int>
     {
         public ValueTask<IOperationResult<int>> HandleAsync(
@@ -230,7 +231,7 @@ public sealed class InterceptorTests
             => new(OperationResults.Ok(query.Value).Build());
     }
 
-    [AspectRetry<IQueryHandler<Args1, int>>]
+    [AspectRetry(typeof(IQueryHandler<Args1, int>))]
     public sealed class HandleExceptionArgs : IQueryHandler<Args1, int>
     {
         int attemtp = 0;
@@ -247,7 +248,8 @@ public sealed class InterceptorTests
         }
     }
 
-    [AspectFinalizer<IQueryHandler<Args2, int>>(CallFinalizerOnException = true)]
+    [AspectFinalizer(typeof(IQueryHandler<Args2, int>),
+        CallFinalizerOnException = true)]
     public sealed class HandleFinalizeArgs(
         IAspectFinalizer aspectFinalizer) : IQueryHandler<Args2, int>
     {
