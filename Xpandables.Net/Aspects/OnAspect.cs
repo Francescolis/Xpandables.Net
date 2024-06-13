@@ -37,7 +37,7 @@ public abstract class OnAspect<TAspectAttribute> : Interceptor
 
         AspectAttribute = GetAspectAttribute(invocation);
 
-        if (AspectAttribute.IsInterfaceImplemented is false)
+        if (AspectAttribute.IsRegisteredByDI is false)
         {
             Type target = GetRealInstance(invocation).GetType();
             if (!target.IsAssignableFromInterface(AspectAttribute.InterfaceType))
@@ -45,6 +45,16 @@ public abstract class OnAspect<TAspectAttribute> : Interceptor
                 throw new InvalidOperationException(
                     $"{target.Name} must implement " +
                     $"{AspectAttribute.InterfaceType.Name}.");
+            }
+
+            if ((target.IsGenericTypeDefinition
+                 && !AspectAttribute.InterfaceType.IsGenericTypeDefinition)
+                 || (!target.IsGenericTypeDefinition
+                       && AspectAttribute.InterfaceType.IsGenericTypeDefinition))
+            {
+                throw new InvalidOperationException(
+                    $"{target.Name} and {AspectAttribute.InterfaceType.Name} " +
+                    "must be both generic or non-generic.");
             }
         }
 

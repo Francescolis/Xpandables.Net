@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Interceptions;
@@ -27,6 +29,7 @@ namespace Xpandables.Net.Aspects;
 /// <param name="interfaceType">The interface type to intercept.</param>
 #pragma warning disable CA1707 // Identifiers should not contain underscores
 #pragma warning disable IDE1006 // Naming Styles
+[EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class _AspectValidatorAttribute<TAttribute>(Type interfaceType) :
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore CA1707 // Identifiers should not contain underscores

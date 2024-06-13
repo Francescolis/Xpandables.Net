@@ -59,7 +59,7 @@ public abstract class AspectAttribute : InterceptorAttribute
     /// </summary>
     public Type InterfaceType { get; }
 
-    internal bool IsInterfaceImplemented { get; set; }
+    internal bool IsRegisteredByDI { get; set; }
 }
 
 

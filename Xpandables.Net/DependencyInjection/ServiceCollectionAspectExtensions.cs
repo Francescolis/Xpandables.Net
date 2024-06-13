@@ -102,14 +102,24 @@ public static partial class ServiceCollectionAspectExtensions
                        $"the {found.InterfaceType.Name} in order to use Aspects.");
                }
 
+               if ((found.Type.IsGenericTypeDefinition
+                    && !found.InterfaceType.IsGenericTypeDefinition)
+                    || (!found.Type.IsGenericTypeDefinition
+                          && found.InterfaceType.IsGenericTypeDefinition))
+               {
+                   throw new InvalidOperationException(
+                       $"{found.Type.Name} and {found.InterfaceType.Name} " +
+                       "must be both generic or non-generic.");
+               }
+
                foreach (AspectAttribute attribute in found.Attributes
-                .OrderByDescending(o => o.Order))
+                    .OrderByDescending(o => o.Order))
                {
                    _ = services.XTryDecorate(
                        found.InterfaceType,
                        (instance, provider) =>
                        {
-                           attribute.IsInterfaceImplemented = true;
+                           attribute.IsRegisteredByDI = true;
                            IInterceptor interceptor = attribute.Create(provider);
                            return InterceptorFactory
                                  .CreateProxy(
