@@ -21,13 +21,13 @@
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-		<PackageReleaseNotes>Add Event Integration</PackageReleaseNotes>
+		<PackageReleaseNotes>Refactor aspect attributes to use Type parameter</PackageReleaseNotes>
 		<PackageOutputPath>C:\Source\Nugets</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>8.0.6</Version>
-		<AssemblyVersion>8.0.6</AssemblyVersion>
-		<FileVersion>8.0.6</FileVersion>
-		<PackageVersion>8.0.6</PackageVersion>
+		<Version>8.0.7</Version>
+		<AssemblyVersion>8.0.7</AssemblyVersion>
+		<FileVersion>8.0.7</FileVersion>
+		<PackageVersion>8.0.7</PackageVersion>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
