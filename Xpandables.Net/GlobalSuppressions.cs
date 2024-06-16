@@ -31,3 +31,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Optionals.Optional`1.ToOptional(`0)~Xpandables.Net.Optionals.Optional{`0}")]
 [assembly: SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Primitives.IPrimitive`2.Create(`1)~`0")]
 [assembly: SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Primitives.IPrimitive`2.Default~`0")]
+[assembly: SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>", Scope = "type", Target = "~T:Xpandables.Net.Aggregates.IEventHandler`1")]

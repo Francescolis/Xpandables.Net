@@ -26,3 +26,18 @@ namespace Xpandables.Net.Aggregates;
 public interface IEventIntegration : IEvent
 {
 }
+
+/// <summary>
+/// Defines a marker interface to be used to mark an object to act as 
+/// an integration event for a specific domain event.
+/// </summary>
+/// <typeparam name="TEventDomain">The type the target domain event.</typeparam>
+public interface IEventIntegration<out TEventDomain>
+    : IEventIntegration
+    where TEventDomain : notnull, IEventDomain
+{
+    /// <summary>
+    /// Gets the domain event associated with the integration event.
+    /// </summary>
+    TEventDomain DomainEvent { get; }
+}

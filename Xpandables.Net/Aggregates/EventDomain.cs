@@ -20,38 +20,30 @@ using System.Text.Json.Serialization;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Helper class used to create a domain event with aggregate.
+/// Helper class used to create a domain event.
 /// </summary>
-/// <typeparam name="TAggregateId">The type of aggregate.</typeparam>
-/// <remarks>Initializes a new instance of 
-/// <see cref="EventDomain{TAggregateId}"/>.</remarks>
-public abstract record class EventDomain<TAggregateId>
-    : Event, IEventDomain<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+public abstract record class EventDomain : Event, IEventDomain
 {
     /// <inheritdoc/>
-    public IEventDomain<TAggregateId> WithVersion(ulong version)
-        => this with { Version = Version + 1 };
+    public Guid AggregateId { get; init; } = default!;
 
     /// <inheritdoc/>
-    public TAggregateId AggregateId { get; init; }
+    public virtual IEventDomain WithVersion(ulong version)
+        => this with { Version = Version + 1 };
 }
 
 /// <summary>
 /// Helper class used to create a domain event with aggregate.
 /// </summary>
 /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
-/// <typeparam name="TAggregateId">The type of aggregate.</typeparam>
 /// <remarks>Add a private parameterless constructor and decorate it 
 /// with the <see cref="JsonConstructorAttribute"/> attribute.</remarks>
-public abstract record EventDomain<TAggregate, TAggregateId>
-    : EventDomain<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
-    where TAggregate : class, IAggregate<TAggregateId>
+public abstract record EventDomain<TAggregate> : EventDomain
+    where TAggregate : class, IAggregate
 {
     /// <summary>
     /// Initializes a new instance of 
-    /// <see cref="EventDomain{TAggregate, TAggregateId}"/>.
+    /// <see cref="EventDomain{TAggregate}"/>.
     /// </summary>
     /// <remarks>Used for deserialization.</remarks>
     [JsonConstructor]
@@ -59,7 +51,7 @@ public abstract record EventDomain<TAggregate, TAggregateId>
 
     /// <summary>
     /// Initializes a new instance of 
-    /// <see cref="EventDomain{TAggregate, TAggregateId}"/>.
+    /// <see cref="EventDomain{TAggregate}"/>.
     /// </summary>
     /// <param name="aggregate">The target aggregate instance.</param>
     /// <exception cref="ArgumentNullException">

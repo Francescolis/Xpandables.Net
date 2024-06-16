@@ -30,7 +30,7 @@ public record EventFilter : IEventFilter
     public Guid? AggregateId { get; init; }
 
     /// <inheritdoc/>
-    public string? AggregateIdTypeName { get; init; }
+    public string? AggregateName { get; init; }
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? DataCriteria { get; init; }

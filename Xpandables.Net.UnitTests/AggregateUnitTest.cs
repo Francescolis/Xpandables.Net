@@ -45,15 +45,14 @@ public sealed class AggregateUnitTest
                 options
                 .UsePersistence()
                 .UseOperationFinalizer())
-            .AddXEventDomainHandlers()
+            .AddXEventHandlers()
             .AddXDispatcher()
             .AddXPersistenceCommandHandler()
             .AddXAggregateStore()
             .AddXUnitOfWorkAggregate<PersonUnitOfWork>()
             .AddXOperationResultFinalizer()
-            .AddXEventDomainPublisher()
-            .AddXEventIntegrationPublisher()
-            .AddXEventDomainDuplicateDecorator()
+            .AddXEventPublisher()
+            .AddXEventDuplicateDecorator()
             .AddXEventDomainStore()
             .AddXEventIntegrationStore();
 
@@ -133,8 +132,8 @@ public sealed class AggregateUnitTest
             .BeFalse();
 
         // read person
-        IAggregateStore<Person, PersonId> store = serviceProvider
-            .GetRequiredService<IAggregateStore<Person, PersonId>>();
+        IAggregateStore<Person> store = serviceProvider
+            .GetRequiredService<IAggregateStore<Person>>();
 
         IOperationResult<Person> personResult = await store
             .ReadAsync(PersonId.Create(guid));
@@ -153,11 +152,11 @@ public readonly record struct CreatePersonRequestCommand(
     : ICommand, IPersistenceDecorator, IOperationFinalizerDecorator;
 
 public sealed class CreatePersonRequestCommandHandler(
-    IAggregateStore<Person, PersonId> aggregateStore,
+    IAggregateStore<Person> aggregateStore,
     IOperationFinalizer resultContext) :
     ICommandHandler<CreatePersonRequestCommand>
 {
-    private readonly IAggregateStore<Person, PersonId> _aggregateStore
+    private readonly IAggregateStore<Person> _aggregateStore
         = aggregateStore
         ?? throw new ArgumentNullException(nameof(aggregateStore));
     private readonly IOperationFinalizer _resultContext = resultContext
@@ -206,7 +205,7 @@ public readonly record struct SendContactRequestCommand(
     ICommand;
 
 public sealed class SendContactRequestCommandHandler
-    (IAggregateStore<Person, PersonId> aggregateStore) :
+    (IAggregateStore<Person> aggregateStore) :
     ICommandHandler<SendContactRequestCommand>
 {
     public async ValueTask<IOperationResult> HandleAsync(
@@ -246,7 +245,7 @@ public sealed class SendContactRequestCommandHandler
 
 public sealed class ContactCreatedDomainEventHandler
     (IEventIntegrationStore eventIntegrationStore)
-    : IEventDomainHandler<PersonCreatedDomainEvent, PersonId>
+    : IEventHandler<PersonCreatedDomainEvent>
 {
     public async ValueTask<IOperationResult> HandleAsync(
         PersonCreatedDomainEvent @event,
@@ -262,7 +261,7 @@ public sealed class ContactCreatedDomainEventHandler
 
 public sealed class ContactRequestSentDomainEventHandler
     (IEventIntegrationStore eventIntegrationStore)
-    : IEventDomainHandler<ContactRequestSentDomainEvent, PersonId>
+    : IEventHandler<ContactRequestSentDomainEvent>
 {
     public async ValueTask<IOperationResult> HandleAsync(
         ContactRequestSentDomainEvent @event,
@@ -305,7 +304,7 @@ public readonly record struct ContactId(Guid Value) :
 }
 
 public sealed record PersonCreatedDomainEvent :
-    EventDomain<Person, PersonId>, IEventDomainDuplicate
+    EventDomain<Person>, IEventDuplicate
 {
     [JsonConstructor]
     private PersonCreatedDomainEvent() { }
@@ -324,7 +323,6 @@ public sealed record PersonCreatedDomainEvent :
     public IEventFilter? Filter => new EventFilter
     {
         EventTypeName = nameof(PersonCreatedDomainEvent),
-        AggregateIdTypeName = nameof(PersonId),
         Pagination = Pagination.With(0, 1),
         DataCriteria = x
             => x.RootElement
@@ -345,7 +343,7 @@ public sealed record PersonCreatedDomainEvent :
 }
 
 public sealed record ContactRequestSentDomainEvent :
-    EventDomain<Person, PersonId>, IEventDomainDuplicate
+    EventDomain<Person>, IEventDuplicate
 {
     [JsonConstructor]
     private ContactRequestSentDomainEvent() { }
@@ -364,7 +362,6 @@ public sealed record ContactRequestSentDomainEvent :
     public IEventFilter? Filter => new EventFilter
     {
         EventTypeName = nameof(ContactRequestSentDomainEvent),
-        AggregateIdTypeName = nameof(PersonId),
         Pagination = Pagination.With(0, 1),
         DataCriteria = x
             => x.RootElement
@@ -393,7 +390,7 @@ public sealed record ContactRequestSentEventIntegration(
     string SenderName,
     Guid ReceiverId) : EventIntegration;
 
-public sealed class Person : Aggregate<PersonId>, ITransactionDecorator
+public sealed class Person : Aggregate, ITransactionDecorator
 {
     public string FirstName { get; private set; } = default!;
     public string LastName { get; private set; } = default!;

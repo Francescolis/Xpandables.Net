@@ -19,33 +19,33 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Defines a method to automatically subscribe to events.
 /// </summary>
-public interface ITransientSubscriber : IDisposable
+public interface IEventSubscriber : IDisposable
 {
     /// <summary>
     /// Allows application author to subscribe to an event 
     /// with the specific handler.
     /// </summary>
-    /// <typeparam name="T">Type of event.</typeparam>
+    /// <typeparam name="TEvent">Type of event.</typeparam>
     /// <param name="subscriber">The action to be used to 
     /// handle the event.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="subscriber"/> is null</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    void Subscribe<T>(Action<T> subscriber)
-        where T : notnull;
+    void Subscribe<TEvent>(Action<TEvent> subscriber)
+        where TEvent : notnull, IEvent;
 
     /// <summary>
     /// Allows application author to subscribe 
     /// to an event with the specific handler.
     /// </summary>
-    /// <typeparam name="T">Type of event.</typeparam>
+    /// <typeparam name="TEvent">Type of event.</typeparam>
     /// <param name="subscriber">The action to be used 
     /// to handle the event.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="subscriber"/> is null</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    void Subscribe<T>(Func<T, ValueTask> subscriber)
-        where T : notnull;
+    void Subscribe<TEvent>(Func<TEvent, ValueTask> subscriber)
+        where TEvent : notnull, IEvent;
 }

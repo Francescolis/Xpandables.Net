@@ -15,44 +15,49 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.DependencyInjection;
+
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Implements <see cref="ITransientPublisher"/> 
-/// and <see cref="ITransientSubscriber"/> interfaces.
+/// Implements <see cref="IEventPublisher"/> 
+/// and <see cref="IEventSubscriber"/> interfaces.
 /// </summary>
-public sealed class TransientPublisherSubscriber
-    : Disposable, ITransientPublisher, ITransientSubscriber
+/// <remarks>
+/// Initializes a new instance 
+/// of the <see cref="EventPublisherSubscriber"/> class.
+/// </remarks>
+public sealed class EventPublisherSubscriber(IServiceProvider serviceProvider)
+        : Disposable, IEventPublisher, IEventSubscriber
 {
-    private readonly AsyncLocal<Dictionary<Type, List<object>>> _subscribers
-        = new();
-
-    /// <summary>
-    /// Initializes a new instance 
-    /// of the <see cref="TransientPublisherSubscriber"/> class.
-    /// </summary>
-    public TransientPublisherSubscriber() => _subscribers.Value = [];
+    private readonly Dictionary<Type, List<object>> _subscribers = [];
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     /// <inheritdoc/>
-    public async ValueTask<IOperationResult> PublishAsync<T>(
-        T @event, CancellationToken cancellationToken = default)
-        where T : notnull
+    public async ValueTask<IOperationResult> PublishAsync<TEvent>(
+        TEvent @event, CancellationToken cancellationToken = default)
+        where TEvent : notnull, IEvent
     {
         try
         {
             IOperationResult result = OperationResults.Ok().Build();
 
-            foreach (object subscriber in GetHandlersOf<T>())
+            foreach (object subscriber in GetHandlersOf<TEvent>())
             {
                 switch (subscriber)
                 {
-                    case Action<T> action:
+                    case Action<TEvent> action:
                         action(@event);
                         break;
-                    case Func<T, ValueTask> action:
+                    case Func<TEvent, ValueTask> action:
                         await action(@event).ConfigureAwait(false);
+                        break;
+                    case IEventHandler<TEvent> handler:
+                        result = await handler
+                            .HandleAsync(@event, cancellationToken)
+                            .ConfigureAwait(false);
                         break;
                     default: break;
                 }
@@ -72,39 +77,48 @@ public sealed class TransientPublisherSubscriber
     }
 
     /// <inheritdoc/>
-    public void Subscribe<T>(Action<T> subscriber)
-       where T : notnull
-       => GetHandlersOf<T>().Add(subscriber);
+    public void Subscribe<TEvent>(Action<TEvent> subscriber)
+       where TEvent : notnull, IEvent
+       => GetHandlersOf<TEvent>().Add(subscriber);
 
     /// <inheritdoc/>
-    public void Subscribe<T>(Func<T, ValueTask> subscriber)
-        where T : notnull
-        => GetHandlersOf<T>().Add(subscriber);
+    public void Subscribe<TEvent>(Func<TEvent, ValueTask> subscriber)
+        where TEvent : notnull, IEvent
+        => GetHandlersOf<TEvent>().Add(subscriber);
 
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            foreach (List<object> value in _subscribers.Value!.Values)
+            foreach (List<object> value in _subscribers.Values)
             {
                 value.Clear();
             }
 
-            _subscribers.Value!.Clear();
+            _subscribers.Clear();
         }
 
         base.Dispose(disposing);
     }
 
+    /// <inheritdoc/>
+    protected override ValueTask DisposeAsync(bool disposing)
+        => base.DisposeAsync(disposing);
+
     private List<object> GetHandlersOf<T>()
-        where T : notnull
+        where T : notnull, IEvent
     {
-        List<object>? result = _subscribers.Value!.GetValueOrDefault(typeof(T));
+        List<object>? result = _subscribers.GetValueOrDefault(typeof(T));
         if (result is null)
         {
             result = [];
-            _subscribers.Value![typeof(T)] = result;
+            _subscribers[typeof(T)] = result;
+        }
+
+        foreach (object handler in _serviceProvider.GetServices<IEventHandler<T>>())
+        {
+            result.Add(handler);
         }
 
         return result;

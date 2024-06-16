@@ -80,7 +80,7 @@ public static class ServiceCollectionAggregateExtensions
 
     /// <summary>
     /// Registers the specified generic 
-    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> type 
+    /// <see cref="IAggregateStore{TAggregate}"/> type 
     /// implementations 
     /// to the services with scope life time.
     /// </summary>
@@ -97,7 +97,7 @@ public static class ServiceCollectionAggregateExtensions
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IAggregateStore<,>),
+                typeof(IAggregateStore<>),
                 aggregateStoreType,
                 ServiceLifetime.Scoped));
 
@@ -106,7 +106,7 @@ public static class ServiceCollectionAggregateExtensions
 
     /// <summary>
     /// Registers the default generic 
-    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> type 
+    /// <see cref="IAggregateStore{TAggregate}"/> type 
     /// implementations 
     /// to the services with scope life time.
     /// </summary>
@@ -119,12 +119,12 @@ public static class ServiceCollectionAggregateExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddXAggregateStore(typeof(AggregateStore<,>));
+        return services.AddXAggregateStore(typeof(AggregateStore<>));
     }
 
     /// <summary>
     /// Registers the default snapShot to the 
-    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
+    /// <see cref="IAggregateStore{TAggregate}"/> 
     /// type implementation, that adds snapShot behavior to aggregate store. 
     /// You may need to define the <see cref="SnapshotOptions"/> 
     /// in the configuration file.
@@ -140,12 +140,12 @@ public static class ServiceCollectionAggregateExtensions
 
         return services
             .AddXAggregateStoreSnapshot(
-                typeof(AggregateStoreSnapshot<,>));
+                typeof(AggregateStoreSnapshot<>));
     }
 
     /// <summary>
     /// Registers the specified snapShot to the 
-    /// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> 
+    /// <see cref="IAggregateStore{TAggregate}"/> 
     /// type implementation, that adds snapShot behavior to aggregate store. 
     /// You may need to define the <see cref="SnapshotOptions"/> 
     /// in the configuration file.
@@ -162,6 +162,6 @@ public static class ServiceCollectionAggregateExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         return services
-            .AddScoped(typeof(IAggregateStoreSnapshot<,>), snapshotType);
+            .AddScoped(typeof(IAggregateStoreSnapshot<>), snapshotType);
     }
 }

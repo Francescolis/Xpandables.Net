@@ -21,14 +21,11 @@ namespace Xpandables.Net.Aggregates;
 /// Defines a contract for an aggregate store that supports snapshot 
 /// operations.
 /// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier
-/// .</typeparam>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
 /// <remarks>This interface is used because AspNetCore DI does not
 /// support Open Generic decorators.</remarks>
-public interface IAggregateStoreSnapshot<TAggregate, TAggregateId>
-    : IAggregateStore<TAggregate, TAggregateId>
-    where TAggregate : class, IAggregate<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+public interface IAggregateStoreSnapshot<TAggregate>
+    : IAggregateStore<TAggregate>
+    where TAggregate : class, IAggregate
 {
 }

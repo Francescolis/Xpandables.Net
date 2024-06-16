@@ -22,9 +22,9 @@ namespace Xpandables.Net.Aggregates;
 public interface IEventEntityDomain : IEventEntity
 {
     /// <summary>
-    /// Contains the string representation of the .Net aggregate id type name.
+    /// Contains the string representation of the .Net aggregate type name.
     /// </summary>
-    string AggregateIdTypeName { get; }
+    string AggregateTypeName { get; }
 
     /// <summary>
     /// Gets the aggregate identifier.

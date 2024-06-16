@@ -20,18 +20,16 @@ namespace Xpandables.Net.Aggregates;
 /// Allows application author to map domain event to integration event 
 /// in a Centralized Event Mapper.
 /// </summary>
-/// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
 /// <remarks>The implementation should be a singleton class or 
 /// a class with singleton lifetime.</remarks>
-public interface IEventDomainMapper<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+public interface IEventDomainMapper
 {
     /// <summary>
     /// Maps the specified domain event to an integration event.
     /// </summary>
     /// <param name="event">The domain event to be mapped.</param>
     /// <returns>An integration event from the domain event mapped.</returns>
-    IEventIntegration Map(IEventDomain<TAggregateId> @event);
+    IEventIntegration Map(IEventDomain @event);
 
     /// <summary>
     /// Maps the specified domain events to integration events.
@@ -41,6 +39,6 @@ public interface IEventDomainMapper<TAggregateId>
     /// <returns>A collection of integration events from the domain events mapped
     /// .</returns>
     public IEnumerable<IEventIntegration> MapAll(
-        IEnumerable<IEventDomain<TAggregateId>> events)
+        IEnumerable<IEventDomain> events)
         => events.Select(Map);
 }

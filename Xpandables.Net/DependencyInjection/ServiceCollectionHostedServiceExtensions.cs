@@ -116,5 +116,5 @@ public static class ServiceCollectionHostedServiceExtensions
     /// is null.</exception>
     public static IServiceCollection AddXEventIntegrationScheduler(
         this IServiceCollection services)
-        => services.AddXEventIntegrationScheduler<EventIntegrationScheduler>();
+        => services.AddXEventIntegrationScheduler<EventIntegrationSchedulerInternal>();
 }

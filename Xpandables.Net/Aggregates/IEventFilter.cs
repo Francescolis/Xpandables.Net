@@ -32,9 +32,9 @@ public interface IEventFilter
     Guid? AggregateId { get; init; }
 
     /// <summary>
-    /// Gets or sets the aggregate identifier type name to search for.
+    /// Gets or sets the aggregate type name to search for.
     /// </summary>
-    string? AggregateIdTypeName { get; init; }
+    string? AggregateName { get; init; }
 
     /// <summary>
     /// Gets or sets the predicate to be applied on the Event Data content.

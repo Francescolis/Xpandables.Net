@@ -28,7 +28,7 @@ namespace Xpandables.Net.Aggregates;
 /// <param name="id">The identifier of the event.</param>
 /// <param name="version">The version of the event.</param>
 /// <param name="aggregateId">The identifier of the aggregate.</param>
-/// <param name="aggregateIdTypeName">The type name of the aggregate.</param>
+/// <param name="aggregateTypeName">The type name of the aggregate.</param>
 /// <param name="data">The data of the event.</param>
 /// <param name="eventTypeFullName">The full name of the event type.</param>
 /// <param name="eventTypeName">The name of the event type.</param>
@@ -39,7 +39,7 @@ public sealed class EventEntityDomain(
     ulong version,
     JsonDocument data,
     Guid aggregateId,
-    string aggregateIdTypeName) :
+    string aggregateTypeName) :
     EventEntity(id, eventTypeName, eventTypeFullName, version, data), IEventEntityDomain
 {
 
@@ -47,5 +47,5 @@ public sealed class EventEntityDomain(
     public Guid AggregateId { get; } = aggregateId;
 
     ///<inheritdoc/>
-    public string AggregateIdTypeName { get; } = aggregateIdTypeName;
+    public string AggregateTypeName { get; } = aggregateTypeName;
 }

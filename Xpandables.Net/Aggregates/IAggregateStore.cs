@@ -23,10 +23,8 @@ namespace Xpandables.Net.Aggregates;
 /// Represents a store for aggregates.
 /// </summary>
 /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
-/// <typeparam name="TAggregateId">The type of aggregate Id type.</typeparam>
-public interface IAggregateStore<TAggregate, TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
-    where TAggregate : class, IAggregate<TAggregateId>
+public interface IAggregateStore<TAggregate>
+    where TAggregate : class, IAggregate
 {
     /// <summary>
     /// Asynchronously appends the specified aggregate to the store.
@@ -56,6 +54,6 @@ public interface IAggregateStore<TAggregate, TAggregateId>
     /// <remarks>You can also apply snapshot pattern for performance
     /// using the <see cref="IEventSnapshotStore"/>.</remarks>
     ValueTask<IOperationResult<TAggregate>> ReadAsync(
-        TAggregateId aggregateId,
+        Guid aggregateId,
         CancellationToken cancellationToken = default);
 }

@@ -23,14 +23,13 @@ using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Aggregates;
 
-internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
-    IAggregateStore<TAggregate, TAggregateId> decoratee,
+internal sealed class AggregateStoreSnapshot<TAggregate>(
+    IAggregateStore<TAggregate> decoratee,
     IEventDomainStore eventStore,
     IEventSnapshotStore snapShotStore,
     IOptions<EventOptions> options)
-    : IAggregateStoreSnapshot<TAggregate, TAggregateId>
-    where TAggregate : class, IAggregate<TAggregateId>, IOriginator
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+    : IAggregateStoreSnapshot<TAggregate>
+    where TAggregate : class, IAggregate, IOriginator
 {
     public async ValueTask<IOperationResult> AppendAsync(
         TAggregate aggregate,
@@ -78,7 +77,7 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
     }
 
     public async ValueTask<IOperationResult<TAggregate>> ReadAsync(
-         TAggregateId aggregateId,
+         Guid aggregateId,
          CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(aggregateId);
@@ -93,7 +92,7 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
         TAggregate? aggregate = default;
 
         if (await snapShotStore
-            .ReadAsync(aggregateId.Value, cancellationToken)
+            .ReadAsync(aggregateId, cancellationToken)
             .ConfigureAwait(false) is { } snapshot)
         {
             EventConverter<IAggregate> converter = options.Value
@@ -120,15 +119,15 @@ internal sealed class AggregateStoreSnapshot<TAggregate, TAggregateId>(
         // we need to add those events if available
         IEventFilter filter = new EventFilter()
         {
-            AggregateId = aggregateId.Value,
-            AggregateIdTypeName = typeof(TAggregateId).Name,
+            AggregateId = aggregateId,
+            AggregateName = typeof(TAggregate).Name,
             Version = aggregate.Version
         };
 
         try
         {
-            await foreach (IEventDomain<TAggregateId>? @event in eventStore
-                .ReadAsync<TAggregateId>(filter, cancellationToken)
+            await foreach (IEventDomain? @event in eventStore
+                .ReadAsync(filter, cancellationToken)
                 .ConfigureAwait(false))
             {
                 aggregate.LoadFromHistory(@event);

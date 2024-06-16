@@ -27,19 +27,6 @@ using Xpandables.Net.Primitives.Collections;
 
 namespace Xpandables.Net.UnitTests;
 
-public readonly record struct ProductId(Guid Value) : IAggregateId<ProductId>
-{
-    public static ProductId Create(Guid value)
-        => throw new NotImplementedException();
-    public static ProductId Default()
-        => throw new NotImplementedException();
-    public static implicit operator Guid(ProductId self)
-        => throw new NotImplementedException();
-    public static implicit operator string(ProductId self)
-        => throw new NotImplementedException();
-    public static implicit operator ProductId(Guid value)
-        => new(value);
-}
 public readonly record struct AddProductCommand(
     Guid ProductId, int Quantity) : ICommand;
 public readonly record struct GetProductQuery(
@@ -47,7 +34,7 @@ public readonly record struct GetProductQuery(
 public readonly record struct GetProductAsyncQuery(
     Guid ProductId) : IAsyncQuery<string>;
 public sealed record class ProductAddedEvent(
-    Guid ProductId, int Qty) : EventDomain<ProductId>;
+    Guid ProductId, int Qty) : EventDomain;
 public sealed record class ProductAddedIntegrationEvent : EventIntegration;
 public sealed class AddProductCommandHandler :
     ICommandHandler<AddProductCommand>
@@ -86,8 +73,7 @@ public sealed class GetProductAsyncQueryHandler :
             .ToAsyncEnumerable();
 }
 
-public sealed class ProductAddedEventHandler :
-    IEventDomainHandler<ProductAddedEvent, ProductId>
+public sealed class ProductAddedEventHandler : IEventHandler<ProductAddedEvent>
 {
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedEvent @event,
@@ -95,8 +81,8 @@ public sealed class ProductAddedEventHandler :
         => throw new NotImplementedException();
 }
 
-public sealed class ProductAddedIntegrationEventHandler
-    : IEventIntegrationHandler<ProductAddedIntegrationEvent>
+public sealed class ProductAddedIntegrationEventHandler :
+    IEventHandler<ProductAddedIntegrationEvent>
 {
     public ValueTask<IOperationResult> HandleAsync(
         ProductAddedIntegrationEvent @event,
@@ -111,8 +97,7 @@ public sealed class MessagingRegistrationUnitTest
             .AddXCommandHandlers()
             .AddXQueryHandlers()
             .AddXAsyncQueryHandlers()
-            .AddXEventDomainHandlers()
-            .AddXEventIntegrationHandlers()
+            .AddXEventHandlers()
             .BuildServiceProvider();
 
     [Fact]
@@ -149,9 +134,9 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_DomainEventHandler()
     {
-        IEventDomainHandler<ProductAddedEvent, ProductId>? handler =
+        IEventHandler<ProductAddedEvent>? handler =
             _serviceProvider
-            .GetService<IEventDomainHandler<ProductAddedEvent, ProductId>>();
+            .GetService<IEventHandler<ProductAddedEvent>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<ProductAddedEventHandler>();
@@ -160,9 +145,9 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_IntegrationEventHandler()
     {
-        IEventIntegrationHandler<ProductAddedIntegrationEvent>? handler =
+        IEventHandler<ProductAddedIntegrationEvent>? handler =
             _serviceProvider
-            .GetService<IEventIntegrationHandler<ProductAddedIntegrationEvent>>();
+            .GetService<IEventHandler<ProductAddedIntegrationEvent>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<ProductAddedIntegrationEventHandler>();

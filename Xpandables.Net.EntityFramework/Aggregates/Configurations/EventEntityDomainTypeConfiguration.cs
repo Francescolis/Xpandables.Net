@@ -39,7 +39,7 @@ public sealed class EventEntityDomainTypeConfiguration
         new { p.Id, p.EventTypeName, p.Version }).IsUnique();
 
         _ = builder.Property(p => p.Id);
-        _ = builder.Property(p => p.AggregateIdTypeName);
+        _ = builder.Property(p => p.AggregateTypeName);
         _ = builder.Property(p => p.AggregateId);
         _ = builder.Property(p => p.Data);
         _ = builder.Property(p => p.EventTypeFullName);

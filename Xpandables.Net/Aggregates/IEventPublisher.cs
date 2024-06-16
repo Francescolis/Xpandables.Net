@@ -20,24 +20,25 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Defines a method to automatically publish integraton events.
+/// Defines a method to automatically publish events to subscribers.
 /// </summary>
-public interface IEventIntegrationPublisher
+public interface IEventPublisher
 {
     /// <summary>
-    /// Publishes the specified integration evet to all registered subscribers.
+    /// Publishes the specified event to all registered subscribers.
     /// </summary>
-    /// <typeparam name="TEventIntegration">Type of integration event.</typeparam>
-    /// <param name="event">The integration event to be published.</param>
+    /// <typeparam name="TEvent">Type of event.</typeparam>
+    /// <param name="event">The event to be published.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents an asynchronous operation.</returns>
+    /// <returns>A value that represents an <see cref="IOperationResult"/>
+    /// .</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>
-    /// <returns>A value that represents an 
-    /// implementation of <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> PublishAsync<TEventIntegration>(
-        TEventIntegration @event,
+    /// <exception cref="InvalidOperationException">The 
+    /// operation failed. See inner exception.</exception>
+    ValueTask<IOperationResult> PublishAsync<TEvent>(
+        TEvent @event,
         CancellationToken cancellationToken = default)
-        where TEventIntegration : notnull, IEventIntegration;
+        where TEvent : notnull, IEvent;
 }

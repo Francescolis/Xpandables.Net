@@ -45,11 +45,11 @@ public sealed class EventEntityDomainFilter :
             x.AggregateId == eventFilter.AggregateId.Value);
         }
 
-        if (eventFilter.AggregateIdTypeName is not null)
+        if (eventFilter.AggregateName is not null)
         {
             expression = expression.And(x =>
-            x.AggregateIdTypeName.Contains(
-                    eventFilter.AggregateIdTypeName));
+            x.AggregateTypeName.Contains(
+                    eventFilter.AggregateName));
         }
 
         if (eventFilter.Id is not null)

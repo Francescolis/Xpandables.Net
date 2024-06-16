@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,30 +22,21 @@ namespace Xpandables.Net.Aggregates;
 /// Allows an application author to define a generic handler 
 /// for domain events in a Distributed Event Mapper.
 /// The domain event must implement 
-/// <see cref="IEventDomain{TAggregateId}"/> interface.
+/// <see cref="IEventDomain"/> interface.
 /// The implementation must be thread-safe when
 /// working in a multi-threaded environment.
 /// </summary>
-/// <typeparam name="TAggregateId">The type of  aggregate Id</typeparam>
-/// <typeparam name="TEventDomain">The domain event type.</typeparam>
-public interface IEventDomainHandler<in TEventDomain, in TAggregateId>
-    where TEventDomain : notnull, IEventDomain<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+/// <typeparam name="TEvent">The event type.</typeparam>
+public interface IEventHandler<TEvent>
+    where TEvent : notnull, IEvent
 {
     /// <summary>
-    ///  Asynchronously handles the domain event of specific type.
+    /// Handles the event.
     /// </summary>
-    /// <remarks>The result of the handler will be used 
-    /// by the control flow to determine
-    /// whether or not to continue the execution process.</remarks>
-    /// <param name="event">The domain event instance to act on.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while 
-    /// waiting for the task to complete.</param>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="event"/> is null.</exception>
-    /// <returns>A value that represents an <see cref="IOperationResult"/>.
-    /// </returns>
+    /// <param name="event">The event to handle.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation 
+    /// requests.</param>
     ValueTask<IOperationResult> HandleAsync(
-        TEventDomain @event,
+        TEvent @event,
         CancellationToken cancellationToken = default);
 }

@@ -26,7 +26,6 @@ public interface IEventDomainStore : IDisposable
     /// <summary>
     /// Asynchronously appends the specified domain event to the store.
     /// </summary>
-    /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
     /// <param name="event">The domain event to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
@@ -37,22 +36,20 @@ public interface IEventDomainStore : IDisposable
     /// See inner exception.</exception>
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
-    ValueTask AppendAsync<TAggregateId>(
-        IEventDomain<TAggregateId> @event,
-        CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>;
+    ValueTask AppendAsync(
+        IEventDomain @event,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously returns a collection of domain events matching 
     /// the aggregate identifier.
     /// if not found, returns an empty collection.
     /// </summary>
-    /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
     /// <param name="aggregateId">The aggregate identifier to search events 
     /// for.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <returns>An enumerator of <see cref="IEventDomain{TAggregateId}"/> 
+    /// <returns>An enumerator of <see cref="IEventDomain"/> 
     /// that can be asynchronously enumerated.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="aggregateId"/> is null.</exception>
@@ -61,21 +58,19 @@ public interface IEventDomainStore : IDisposable
     /// <exception cref="OperationCanceledException">The operation was
     /// canceled.</exception>
     /// <remarks>For performance, use the method with filters.</remarks>
-    IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
-        TAggregateId aggregateId,
-        CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>;
+    IAsyncEnumerable<IEventDomain> ReadAsync(
+        Guid aggregateId,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously returns a collection of results from 
     /// domain events matching the filter.
     /// if not found, returns an empty collection.
     /// </summary>
-    /// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
     /// <param name="eventFilter">The filter to search domain events for.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
-    /// <returns>An enumerator of <see cref="IEventDomain{TAggregateId}"/> 
+    /// <returns>An enumerator of <see cref="IEventDomain"/> 
     /// type that can be asynchronously enumerated.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="eventFilter"/> is null.</exception>
@@ -83,8 +78,7 @@ public interface IEventDomainStore : IDisposable
     /// See inner exception.</exception>
     /// <exception cref="OperationCanceledException">The operation was
     /// canceled.</exception>
-    IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
+    IAsyncEnumerable<IEventDomain> ReadAsync(
         IEventFilter eventFilter,
-        CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>;
+        CancellationToken cancellationToken = default);
 }

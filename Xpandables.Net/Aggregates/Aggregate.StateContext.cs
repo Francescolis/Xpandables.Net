@@ -28,14 +28,10 @@ namespace Xpandables.Net.Aggregates;
 /// <typeparam name="TAggregate">The target aggregate state context derived 
 /// type.</typeparam>
 /// <typeparam name="TAggregateState">The aggregate state.</typeparam>
-/// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
-public abstract class AggregateStateContext
-    <TAggregate, TAggregateState, TAggregateId>
-    : Aggregate<TAggregateId>, IStateContext<TAggregateState>
-    where TAggregate : AggregateStateContext
-        <TAggregate, TAggregateState, TAggregateId>
+public abstract class AggregateStateContext<TAggregate, TAggregateState>
+    : Aggregate, IStateContext<TAggregateState>
+    where TAggregate : AggregateStateContext<TAggregate, TAggregateState>
     where TAggregateState : State<TAggregate>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
 {
     ///<inheritdoc/>
     public TAggregateState CurrentState { get; private set; } = default!;

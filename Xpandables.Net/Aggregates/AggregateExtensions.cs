@@ -32,16 +32,13 @@ public static class AggregateExtensions
     /// The type must contains a parameterless constructor.
     /// </summary>
     /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
-    /// <typeparam name="TAggregateId">The type of aggregate id.</typeparam>
     /// <returns>An instance of aggregate of <typeparamref name="TAggregate"/> 
     /// type.</returns>
     /// <exception cref="InvalidOperationException">Unable to create the 
     /// instance.</exception>
     [DebuggerStepThrough]
-    public static TAggregate CreateEmptyAggregateInstance
-        <TAggregate, TAggregateId>()
-        where TAggregateId : struct, IAggregateId<TAggregateId>
-        where TAggregate : class, IAggregate<TAggregateId>
+    public static TAggregate CreateEmptyAggregateInstance<TAggregate>()
+        where TAggregate : class, IAggregate
     {
         try
         {

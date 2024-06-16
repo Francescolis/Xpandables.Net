@@ -19,39 +19,20 @@
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Defines a marker interface to be used to mark an object to act as 
-/// an integration event for a specific domain event.
-/// </summary>
-/// <typeparam name="TEventDomain">The type the target domain event.</typeparam>
-/// <typeparam name="TAggregateId">the aggregate Id type.</typeparam>
-public interface IEventIntegration<out TEventDomain, out TAggregateId>
-    : IEventIntegration
-    where TEventDomain : notnull, IEventDomain<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
-{
-    /// <summary>
-    /// Gets the domain event associated with the integration event.
-    /// </summary>
-    TEventDomain DomainEvent { get; }
-}
-
-/// <summary>
 /// Represents an Event Router helper class used to wrap a domain 
 /// event into an integration event.
 /// </summary>
 /// <typeparam name="TEventDomain">The type of domain event.</typeparam>
-/// <typeparam name="TAggregateId">the aggregate Id type.</typeparam>
-public sealed record EventIntegrationWrapper<TEventDomain, TAggregateId> :
-    EventIntegration, IEventIntegration<TEventDomain, TAggregateId>
-    where TEventDomain : notnull, IEventDomain<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+public sealed record EventIntegrationWrapper<TEventDomain> :
+    EventIntegration, IEventIntegration<TEventDomain>
+    where TEventDomain : notnull, IEventDomain
 {
     ///<inheritdoc/>
     public TEventDomain DomainEvent { get; }
 
     /// <summary>
     /// Defines a new instance of 
-    /// <see cref="EventIntegrationWrapper{TEventDomain, TAggregateId}"/> 
+    /// <see cref="EventIntegrationWrapper{TEventDomain}"/> 
     /// using the specified domain event.
     /// </summary>
     /// <param name="domainEvent">The domain event to be wrapped.</param>

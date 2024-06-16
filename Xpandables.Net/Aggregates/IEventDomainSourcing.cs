@@ -19,9 +19,7 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Event-sourcing pattern interface using domain event.
 /// </summary>
-/// <typeparam name="TAggregateId">The type of aggregate Id</typeparam>
-public interface IEventDomainSourcing<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+public interface IEventDomainSourcing
 {
     /// <summary>
     /// Marks all the domain events as committed.
@@ -32,7 +30,7 @@ public interface IEventDomainSourcing<TAggregateId>
     /// Returns a collection of uncommitted domain events.
     /// </summary>
     /// <returns>A list of uncommitted domain events.</returns>
-    IReadOnlyCollection<IEventDomain<TAggregateId>> GetUncommittedEvents();
+    IReadOnlyCollection<IEventDomain> GetUncommittedEvents();
 
     /// <summary>
     /// Initializes the underlying object with the 
@@ -45,7 +43,7 @@ public interface IEventDomainSourcing<TAggregateId>
     /// <paramref name="events"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    void LoadFromHistory(IEnumerable<IEventDomain<TAggregateId>> events);
+    void LoadFromHistory(IEnumerable<IEventDomain> events);
 
     /// <summary>
     /// Applies the history specified domain event to the underlying object.
@@ -57,7 +55,7 @@ public interface IEventDomainSourcing<TAggregateId>
     /// <paramref name="event"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    void LoadFromHistory(IEventDomain<TAggregateId> @event);
+    void LoadFromHistory(IEventDomain @event);
 
     /// <summary>
     /// Pushes the specified domain event to the aggregate instance.
@@ -67,5 +65,5 @@ public interface IEventDomainSourcing<TAggregateId>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>
     void PushEvent<TEventDomain>(TEventDomain @event)
-        where TEventDomain : notnull, IEventDomain<TAggregateId>;
+        where TEventDomain : notnull, IEventDomain;
 }

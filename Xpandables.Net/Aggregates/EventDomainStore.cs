@@ -37,10 +37,9 @@ public sealed class EventDomainStore<TEventEntity>(
     where TEventEntity : class, IEventEntityDomain
 {
     ///<inheritdoc/>
-    public async ValueTask AppendAsync<TAggregateId>(
-        IEventDomain<TAggregateId> @event,
+    public async ValueTask AppendAsync(
+        IEventDomain @event,
         CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(@event);
 
@@ -49,19 +48,16 @@ public sealed class EventDomainStore<TEventEntity>(
     }
 
     ///<inheritdoc/>
-    public async IAsyncEnumerable<IEventDomain<TAggregateId>>
-        ReadAsync<TAggregateId>(
-        TAggregateId aggregateId,
+    public async IAsyncEnumerable<IEventDomain>
+        ReadAsync(
+        Guid aggregateId,
          [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(aggregateId);
 
         EntityFilter<TEventEntity> filter = new()
         {
-            Criteria = x => x.AggregateId == aggregateId.Value
-            && x.AggregateIdTypeName == typeof(TAggregateId)
-                .GetNameWithoutGenericArity()
+            Criteria = x => x.AggregateId == aggregateId
         };
 
         EventConverter<TEventEntity> converter = Options
@@ -73,19 +69,18 @@ public sealed class EventDomainStore<TEventEntity>(
         {
             yield return converter
                 .ConvertFrom(entity, Options.SerializerOptions)
-                .AsRequired<IEventDomain<TAggregateId>>();
+                .AsRequired<IEventDomain>();
         }
     }
 
     ///<inheritdoc/>
-    public IAsyncEnumerable<IEventDomain<TAggregateId>> ReadAsync<TAggregateId>(
+    public IAsyncEnumerable<IEventDomain> ReadAsync(
        IEventFilter eventFilter,
        CancellationToken cancellationToken = default)
-        where TAggregateId : struct, IAggregateId<TAggregateId>
     {
         ArgumentNullException.ThrowIfNull(eventFilter);
 
-        return ReadEventAsync<IEventDomain<TAggregateId>>(
+        return ReadEventAsync<IEventDomain>(
             eventFilter,
             cancellationToken);
     }

@@ -70,12 +70,12 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
             ?? throw new InvalidOperationException(
                 $"Event {@event.GetType().Name} is not an event domain.");
 
-        Guid aggregateId = eventDomain.AggregateId.Value;
+        Guid aggregateId = eventDomain.AggregateId;
         ulong version = eventDomain.Version;
         string eventTypeName = eventDomain.GetTypeName();
         string eventTypeFullName = eventDomain.GetTypeFullName();
         JsonDocument data = eventDomain.ToJsonDocument(options);
-        string aggregateIdTypeName = eventDomain.AggregateId.GetTypeName();
+        string aggregateTypeName = eventDomain.GetTypeName();
 
         return new EventEntityDomain(
             eventDomain.Id,
@@ -84,7 +84,7 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
             version,
             data,
             aggregateId,
-            aggregateIdTypeName);
+            aggregateTypeName);
     }
 }
 
@@ -250,7 +250,7 @@ public sealed class AggregateEventConverter :
             {
                 Memento = memento,
                 Version = version,
-                ObjectId = entity.AggregateId.Value,
+                ObjectId = entity.AggregateId,
                 EntityTypeName = entityTypeName,
                 EntityTypeFullName = entityTypeFullName,
             };

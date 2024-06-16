@@ -14,48 +14,48 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.DependencyInjection;
+
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// A marker interface that defines a domain event that cannot be duplicated.
+/// A marker interface that defines an event that cannot be duplicated.
 /// </summary>
-public interface IEventDomainDuplicate
+public interface IEventDuplicate
 {
     /// <summary>
-    /// Gets the filter to check for duplicate domain events.
+    /// Gets the filter to check for duplicate events.
     /// </summary>
     IEventFilter? Filter { get; }
 
     /// <summary>
-    /// Gets the operation result to return when the domain event is duplicated.
+    /// Gets the operation result to return when the event is duplicated.
     /// </summary>
     IOperationResult OnFailure { get; }
 }
 
 /// <summary>
-/// Defines a domain event handler that checks for duplicate domain events.
+/// Defines an event handler that checks for duplicate events.
 /// </summary>
-/// <typeparam name="TEventDomain"></typeparam>
-/// <typeparam name="TAggragateId"></typeparam>
-/// <param name="eventStore"></param>
+/// <typeparam name="TEvent"></typeparam>
+/// <param name="serviceProvider"></param>
 /// <param name="decoratee"></param>
-public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
-    IEventDomainStore eventStore,
-    IEventDomainHandler<TEventDomain, TAggragateId> decoratee) :
-    IEventDomainHandler<TEventDomain, TAggragateId>, IDecorator
-    where TEventDomain : notnull, IEventDomain<TAggragateId>, IEventDomainDuplicate
-    where TAggragateId : struct, IAggregateId<TAggragateId>
+public sealed class EventDuplicateDecorator<TEvent>(
+    IServiceProvider serviceProvider,
+    IEventHandler<TEvent> decoratee) :
+    IEventHandler<TEvent>, IDecorator
+    where TEvent : notnull, IEvent, IEventDuplicate
 {
     /// <summary>
-    /// Checks for duplicate domain events before handling the domain event.
+    /// Checks for duplicate events before handling the event.
     /// </summary>
-    /// <param name="event">The domain event to handle.</param>
+    /// <param name="event">The event to handle.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     public async ValueTask<IOperationResult> HandleAsync(
-        TEventDomain @event,
+        TEvent @event,
         CancellationToken cancellationToken = default)
     {
         if (@event.Filter is null)
@@ -67,7 +67,7 @@ public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
 
         IEventFilter eventFilter = new EventFilter()
         {
-            AggregateIdTypeName = @event.Filter.AggregateIdTypeName,
+            AggregateName = @event.Filter.AggregateName,
             EventTypeName = @event.Filter.EventTypeName,
             Pagination = @event.Filter.Pagination ?? Pagination.With(0, 1),
             DataCriteria = @event.Filter.DataCriteria,
@@ -86,10 +86,21 @@ public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
 
         try
         {
-            return eventStore
-        .ReadAsync<TAggragateId>(eventFilter, cancellationToken)
-        .ToBlockingEnumerable(cancellationToken)
-        .Any() switch
+            IAsyncEnumerable<IEvent> events = @event switch
+            {
+                IEventDomain => serviceProvider
+                    .GetRequiredService<IEventDomainStore>()
+                    .ReadAsync(eventFilter, cancellationToken),
+                IEventIntegration => serviceProvider
+                    .GetRequiredService<IEventIntegrationStore>()
+                    .ReadAsync(eventFilter, cancellationToken),
+                _ => throw new InvalidOperationException(
+                    $"The event type {@event.GetType().Name} is not supported.")
+            };
+
+            return events
+            .ToBlockingEnumerable(cancellationToken)
+            .Any() switch
             {
                 true => @event.OnFailure,
                 _ => await decoratee
@@ -99,7 +110,7 @@ public sealed class EventDomainDuplicateDecorator<TEventDomain, TAggragateId>(
 
         }
         catch (Exception exception)
-        when (exception is not OperationResultException)
+            when (exception is not OperationResultException)
         {
             return OperationResults
                 .InternalError()

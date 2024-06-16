@@ -32,31 +32,5 @@ public interface IEventDomain : IEvent
     /// <summary>
     /// Gets the identifier of the associated aggregate.
     /// </summary>
-    IAggregateId AggregateId { get; }
-}
-
-/// <summary>
-/// Defines a marker interface to be used to mark an object to 
-/// act as a domain event for a specific aggregate.
-/// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate id.</typeparam>
-public interface IEventDomain<TAggregateId> : IEventDomain
-    where TAggregateId : struct, IAggregateId<TAggregateId>
-{
-    /// <summary>
-    /// Sets the version of the associated aggregate.
-    /// </summary>
-    /// <param name="version">The version.</param>
-    /// <returns>The same event with the new version.</returns>
-    new IEventDomain<TAggregateId> WithVersion(ulong version);
-
-    IEventDomain IEventDomain.WithVersion(ulong version)
-        => WithVersion(version);
-
-    /// <summary>
-    /// Gets the identifier of the associated aggregate.
-    /// </summary>
-    new TAggregateId AggregateId { get; }
-
-    IAggregateId IEventDomain.AggregateId => AggregateId;
+    Guid AggregateId { get; }
 }

@@ -14,29 +14,26 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
 /// Defines base properties for an aggregate that is identified by 
-/// <see cref="IAggregateId{TAggregateId}"/> type.
+/// <see cref="Guid"/> type.
 /// <para>Aggregate is a pattern in Domain-Driven Design.
 /// A DDD aggregate is a cluster of objects that can be treated 
 /// as a single unit.</para>
 /// </summary>
-public interface IAggregate
+public interface IAggregate : IEventDomainSourcing
 {
     /// <summary>
     /// Gets the unique aggregate identifier.
     /// </summary>
-    IAggregateId AggregateId { get; }
+    Guid AggregateId { get; }
 
     /// <summary>
     /// Gets the current version of the instance.
     /// </summary>
     ulong Version { get; }
-
 
     /// <summary>
     /// Determines whether or not the underlying instance is a empty one.
@@ -46,26 +43,5 @@ public interface IAggregate
     /// You can override it to customize its behavior.</remarks>
     /// <returns>Returns <see langword="true"/> if it is not empty, 
     /// otherwise <see langword="false"/>.</returns>
-    public virtual bool IsEmpty => AggregateId.IsNew();
-}
-
-/// <summary>
-/// Defines base properties for an aggregate that is identified by 
-/// <see cref="IAggregateId{TAggregateId}"/> type.
-/// <para>Aggregate is a pattern in Domain-Driven Design.
-/// A DDD aggregate is a cluster of objects that can be treated 
-/// as a single unit.</para>
-/// </summary>
-/// <typeparam name="TAggregateId">The type of aggregate Id</typeparam>
-public interface IAggregate<TAggregateId> :
-    IAggregate, IEventDomainSourcing<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
-{
-    /// <summary>
-    /// Gets the unique aggregate identifier.
-    /// </summary>
-    new TAggregateId AggregateId { get; }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    IAggregateId IAggregate.AggregateId => AggregateId;
+    public virtual bool IsEmpty => AggregateId == Guid.Empty;
 }

@@ -24,10 +24,9 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// <see cref="IAggregateStore{TAggregate, TAggregateId}"/> implementation.
+/// <see cref="IAggregateStore{TAggregate}"/> implementation.
 /// </summary>
 /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
-/// <typeparam name="TAggregateId">The type of aggregate Id.</typeparam>
 /// <remarks>
 /// Initializes the aggregate store.
 /// </remarks>
@@ -36,13 +35,12 @@ namespace Xpandables.Net.Aggregates;
 /// <param name="unitOfWork">The unit of work to use.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="eventPublisher"/> 
 /// or <paramref name="eventStore"/> is null.</exception>"
-public sealed class AggregateStore<TAggregate, TAggregateId>(
+public sealed class AggregateStore<TAggregate>(
     IEventDomainStore eventStore,
-    IEventDomainPublisher<TAggregateId> eventPublisher,
+    IEventPublisher eventPublisher,
     [FromKeyedServices(EventOptions.UnitOfWorkKey)] IUnitOfWork unitOfWork)
-    : IAggregateStore<TAggregate, TAggregateId>
-    where TAggregate : class, IAggregate<TAggregateId>
-    where TAggregateId : struct, IAggregateId<TAggregateId>
+    : IAggregateStore<TAggregate>
+    where TAggregate : class, IAggregate
 {
     ///<inheritdoc/>
     public async ValueTask<IOperationResult> AppendAsync(
@@ -53,7 +51,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
 
         try
         {
-            foreach (IEventDomain<TAggregateId> @event
+            foreach (IEventDomain @event
                 in aggregate.GetUncommittedEvents())
             {
                 await eventStore
@@ -96,7 +94,7 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
 
     ///<inheritdoc/>
     public async ValueTask<IOperationResult<TAggregate>> ReadAsync(
-        TAggregateId aggregateId,
+        Guid aggregateId,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(aggregateId);
@@ -104,9 +102,9 @@ public sealed class AggregateStore<TAggregate, TAggregateId>(
         try
         {
             TAggregate aggregate = AggregateExtensions
-                .CreateEmptyAggregateInstance<TAggregate, TAggregateId>();
+                .CreateEmptyAggregateInstance<TAggregate>();
 
-            await foreach (IEventDomain<TAggregateId> @event in eventStore
+            await foreach (IEventDomain @event in eventStore
                 .ReadAsync(aggregateId, cancellationToken))
             {
                 aggregate.LoadFromHistory(@event);
