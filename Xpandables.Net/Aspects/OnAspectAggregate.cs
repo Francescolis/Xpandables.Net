@@ -25,8 +25,8 @@ namespace Xpandables.Net.Aspects;
 /// </summary>
 /// <typeparam name="TAggregate"></typeparam>
 /// <typeparam name="TAggregateCommand"></typeparam>
-public sealed class OnAspectAggregateHandler<TAggregate, TAggregateCommand> :
-    OnAspect<AspectAggregateHandlerAttribute<TAggregate, TAggregateCommand>>
+public sealed class OnAspectAggregate<TAggregate, TAggregateCommand> :
+    OnAspect<AspectAggregateAttribute<TAggregate, TAggregateCommand>>
     where TAggregate : class, IAggregate
     where TAggregateCommand : notnull, IAggregateCommand
 {

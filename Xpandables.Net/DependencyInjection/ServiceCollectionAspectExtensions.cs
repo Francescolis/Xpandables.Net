@@ -36,7 +36,9 @@ public static partial class ServiceCollectionAspectExtensions
     /// <param name="services">The collection of services.</param>
     public static IServiceCollection AddXAspectValidator(
         this IServiceCollection services)
-        => services.AddScoped(typeof(IAspectValidator<>), typeof(AspectValidator<>));
+        => services
+            .AddScoped(typeof(IAspectValidator<>), typeof(AspectValidator<>))
+            .AddScoped(typeof(IAsyncAspectValidator<>), typeof(AsyncAspectValidator<>));
 
     /// <summary>
     /// Registers the <see cref="AspectFinalizer"/> as
@@ -159,7 +161,8 @@ public static partial class ServiceCollectionAspectExtensions
                      && type.IsClass
                      && type.GetBaseTypes()
                         .Any(b => b.IsGenericType
-                            && b.GetGenericTypeDefinition() == typeof(OnAspect<>)))
+                            && (b.GetGenericTypeDefinition() == typeof(OnAspect<>)
+                            || b.GetGenericTypeDefinition() == typeof(OnAsyncAspect<>))))
              .ForEach(type => services.AddScoped(type));
 
         return services;

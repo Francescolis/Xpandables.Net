@@ -27,3 +27,10 @@ public interface IAspect
     /// </summary>
     public virtual int Order => 0;
 }
+
+/// <summary>
+/// Base interface used to define an aspect.
+/// </summary>
+public interface IAsyncAspect : IAspect
+{
+}

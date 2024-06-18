@@ -24,7 +24,7 @@ namespace Xpandables.Net.Interceptions;
 /// <summary>
 /// Provides the implementation of the <see cref="IInvocation" /> interface.
 /// </summary>
-internal sealed record class Invocation : IInvocation
+internal record class Invocation : IInvocation
 {
     internal ExceptionDispatchInfo? _exceptionDispatchInfo;
     public MethodInfo Method { get; }
@@ -32,8 +32,9 @@ internal sealed record class Invocation : IInvocation
     public IParameterCollection Arguments { get; }
     public Exception? Exception => _exceptionDispatchInfo?.SourceException;
     public bool ReThrowException { get; set; }
-    public object? ReturnValue { get; private set; }
-    public TimeSpan ElapsedTime { get; private set; }
+    public Type ReturnType => Method.ReturnType;
+    public object? ReturnValue { get; internal set; }
+    public TimeSpan ElapsedTime { get; internal set; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="Invocation"/> with 
@@ -67,7 +68,7 @@ internal sealed record class Invocation : IInvocation
     {
         _exceptionDispatchInfo = null;
         ReturnValue = returnValue;
-        Type returnType = Method.ReturnType;
+        Type returnType = ReturnType;
 
         if (ReturnValue is not null)
         {
@@ -112,7 +113,7 @@ internal sealed record class Invocation : IInvocation
                 _exceptionDispatchInfo = ExceptionDispatchInfo.Capture(taskException.Exception);
             }
 
-            if (!ReThrowException)
+            if (ReThrowException)
             {
                 _exceptionDispatchInfo?.Throw();
             }

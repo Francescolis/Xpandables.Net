@@ -81,3 +81,26 @@ public sealed class AspectValidator<TArgument>
             .Build();
     }
 }
+
+/// <summary>
+/// Represents the default class implementation 
+/// of the <see cref="IAsyncAspectValidator{TArgument}"/>.
+/// It uses
+/// <see cref="AspectValidator{TArgument}"/>.
+/// </summary>
+/// <typeparam name="TArgument">Type of the argument.</typeparam>
+/// <remarks>
+/// Constructs a new instance of <see cref="AsyncAspectValidator{TArgument}"/> 
+/// with the service provider.
+/// </remarks>
+/// <param name="validator">The validator to be used.</param>
+public sealed class AsyncAspectValidator<TArgument>
+    (IAspectValidator<TArgument> validator) : IAsyncAspectValidator<TArgument>
+{
+    ///<inheritdoc/>
+    public ValueTask<IOperationResult> ValidateAsync(TArgument? argument)
+    {
+        IOperationResult operation = validator.Validate(argument);
+        return ValueTask.FromResult(operation);
+    }
+}

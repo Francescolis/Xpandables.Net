@@ -70,7 +70,7 @@ public interface IInvocation
     /// <summary>
     /// Gets the invocation method return type.
     /// </summary>
-    public sealed Type ReturnType => Method.ReturnType;
+    Type ReturnType { get; }
 
     /// <summary>
     /// Sets the exception value.

@@ -50,5 +50,5 @@ public sealed class AspectValidatorAttribute(Type interfaceType) :
 
     ///<inheritdoc/>
     public override IInterceptor Create(IServiceProvider serviceProvider)
-        => serviceProvider.GetRequiredService<OnAspectValidator>();
+        => serviceProvider.GetRequiredService<OnAsyncAspectValidator>();
 }

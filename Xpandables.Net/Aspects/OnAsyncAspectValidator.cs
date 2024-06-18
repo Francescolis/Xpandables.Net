@@ -25,11 +25,11 @@ namespace Xpandables.Net.Aspects;
 /// the interface decorated with <see cref="AspectValidatorAttribute"/>.
 /// </summary> 
 /// <param name="serviceProvider">The service provider.</param>
-public sealed class OnAspectValidator(IServiceProvider serviceProvider) :
-    OnAspect<AspectValidatorAttribute>
+public sealed class OnAsyncAspectValidator(IServiceProvider serviceProvider) :
+    OnAsyncAspect<AspectValidatorAttribute>
 {
     ///<inheritdoc/>
-    protected override void InterceptCore(IInvocation invocation)
+    protected override async Task InterceptCoreAsync(IInvocation invocation)
     {
         ElementCollection errors = [];
 
@@ -37,15 +37,20 @@ public sealed class OnAspectValidator(IServiceProvider serviceProvider) :
             .Where(p => p.PassingBy == Parameter.PassingState.In
                 && p.Type != typeof(CancellationToken)))
         {
-            Type type = typeof(IAspectValidator<>)
+            Type type = typeof(IAsyncAspectValidator<>)
                 .MakeGenericType(argument.Type);
 
-            IAspectValidator? validator = serviceProvider
-                .GetService(type) as IAspectValidator;
+
+            if (serviceProvider
+                .GetService(type) is not IAsyncAspectValidator validator)
+            {
+                continue;
+            }
 
             try
             {
-                if (validator?.Validate(argument.Value)
+                if (await validator.ValidateAsync(argument.Value)
+                    .ConfigureAwait(false)
                     is IOperationResult { IsFailure: true } failure)
                 {
                     errors.Merge(failure.Errors);

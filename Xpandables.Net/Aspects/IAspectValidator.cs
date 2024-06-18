@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel;
+
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aspects;
@@ -37,6 +39,35 @@ public interface IAspectValidator : IAspect
 }
 
 /// <summary>
+/// Represents a marker interface that allows the class implementation to be 
+/// recognized as an aspect validator.
+/// </summary>
+public interface IAsyncAspectValidator : IAspectValidator
+{
+    /// <summary>
+    /// Validates the argument and returns validation state with errors if 
+    /// necessary or throws an <see cref="OperationResultException"/>.
+    /// </summary>
+    /// <param name="argument">The target argument to be validated.</param>    
+    /// <returns>Returns a result state that contains validation information
+    /// .</returns>
+    /// <exception cref="OperationResultException">When the validation failed.
+    /// </exception>
+    ValueTask<IOperationResult> ValidateAsync(object? argument);
+
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    IOperationResult IAspectValidator.Validate(object? argument)
+#pragma warning restore CA1033 // Interface methods should be callable by child types
+    {
+        Task<IOperationResult> task = ValidateAsync(argument).AsTask();
+        task.Wait();
+        return task.Result;
+    }
+}
+
+
+/// <summary>
 /// Represents a marker interface that allows the class implementation to be
 /// recognized as an aspect validator.
 /// </summary>
@@ -56,4 +87,28 @@ public interface IAspectValidator<TArgument> : IAspectValidator
     IOperationResult Validate(TArgument? argument);
     IOperationResult IAspectValidator.Validate(object? argument)
         => Validate((TArgument?)argument);
+}
+
+/// <summary>
+/// Represents a marker interface that allows the class implementation to be
+/// recognized as an aspect validator.
+/// </summary>
+/// <typeparam name="TArgument">The type of the argument to be validated
+/// .</typeparam>
+public interface IAsyncAspectValidator<TArgument> : IAsyncAspectValidator
+{
+    /// <summary>
+    /// Validates the argument and returns validation state with errors if
+    /// necessary or throws an <see cref="OperationResultException"/>.
+    /// </summary>
+    /// <param name="argument">The target argument to be validated.</param>
+    /// <returns>Returns a result state that contains validation information
+    /// </returns>
+    /// <exception cref="OperationResultException">When the validation failed.
+    /// </exception>
+    ValueTask<IOperationResult> ValidateAsync(TArgument? argument);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    ValueTask<IOperationResult> IAsyncAspectValidator
+        .ValidateAsync(object? argument) => ValidateAsync((TArgument?)argument);
 }

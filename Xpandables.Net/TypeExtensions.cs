@@ -135,6 +135,27 @@ public static class TypeExtensions
     }
 
     /// <summary>
+    /// Determines whether the specified method is an async method.
+    /// </summary>
+    /// <param name="methodInfo">The method info to act on.</param>
+    /// <returns><see langword="true"/> if so, otherwise 
+    /// <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="methodInfo"/> is null.</exception>
+    public static bool IsMethodAsync(this MethodInfo methodInfo)
+    {
+        ArgumentNullException.ThrowIfNull(methodInfo);
+
+        // Check if the method returns Task, Task<T>, ValueTask, or ValueTask<T>
+        Type returnType = methodInfo.ReturnType;
+        return typeof(Task).IsAssignableFrom(returnType)
+            || typeof(ValueTask).IsAssignableFrom(returnType)
+            || (returnType.IsGenericType
+                && (returnType.GetGenericTypeDefinition() == typeof(Task<>)
+                || returnType.GetGenericTypeDefinition() == typeof(ValueTask<>)));
+    }
+
+    /// <summary>
     /// Determines whether the current type is a null-able type.
     /// </summary>
     /// <param name="type">The type to act on.</param>

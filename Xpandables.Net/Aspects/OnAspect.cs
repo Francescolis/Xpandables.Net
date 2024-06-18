@@ -35,28 +35,7 @@ public abstract class OnAspect<TAspectAttribute> : Interceptor
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
-        AspectAttribute = GetAspectAttribute(invocation);
-
-        if (AspectAttribute.IsRegisteredByDI is false)
-        {
-            Type target = GetRealInstance(invocation).GetType();
-            if (!target.IsAssignableFromInterface(AspectAttribute.InterfaceType))
-            {
-                throw new InvalidOperationException(
-                    $"{target.Name} must implement " +
-                    $"{AspectAttribute.InterfaceType.Name}.");
-            }
-
-            if ((target.IsGenericTypeDefinition
-                 && !AspectAttribute.InterfaceType.IsGenericTypeDefinition)
-                 || (!target.IsGenericTypeDefinition
-                       && AspectAttribute.InterfaceType.IsGenericTypeDefinition))
-            {
-                throw new InvalidOperationException(
-                    $"{target.Name} and {AspectAttribute.InterfaceType.Name} " +
-                    "must be both generic or non-generic.");
-            }
-        }
+        AspectAttribute = invocation.ValidateAttribute<TAspectAttribute>();
 
         return CanHandleInvocation(invocation);
     }
@@ -95,47 +74,65 @@ public abstract class OnAspect<TAspectAttribute> : Interceptor
     /// otherwise <see langword="false"/></returns>
     protected virtual bool CanHandleInvocation(IInvocation invocation)
         => invocation is not null;
+}
 
+/// <summary>
+/// Base class for aspect implementation interceptor.
+/// </summary>
+/// <typeparam name="TAspectAttribute">The type of the aspect attribute.</typeparam>
+public abstract class OnAsyncAspect<TAspectAttribute> : AsyncInterceptor
+    where TAspectAttribute : AspectAttribute
+{
     /// <summary>
-    /// Returns the aspect attribute applied on the method.
-    /// </summary>
-    /// <param name="invocation">The method argument to be called.</param>
-    /// <returns>The aspect attribute applied on the method.</returns>
-    protected static TAspectAttribute GetAspectAttribute(IInvocation invocation)
+    /// Gets the aspect attribute applied on the method.
+    /// </summary>  
+    protected TAspectAttribute AspectAttribute { get; private set; } = default!;
+
+    ///<inheritdoc/>
+    public sealed override bool CanHandle(IInvocation invocation)
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
-        Type target = GetRealInstance(invocation).GetType();
+        AspectAttribute = invocation.ValidateAttribute<TAspectAttribute>();
 
-        return target
-            .GetMethod(invocation.Method.Name)?
-            .GetCustomAttributes(true)
-            .OfType<TAspectAttribute>()
-            .FirstOrDefault()
-            ?? target
-            .GetCustomAttributes(true)
-            .OfType<TAspectAttribute>()
-            .First();
+        return CanHandleInvocation(invocation);
     }
 
-    /// <summary>
-    /// Returns the real instance of the invocation target.
-    /// </summary>
-    /// <param name="invocation">The method argument to be called.</param>
-    /// <returns>The real instance of the invocation target.</returns>
-    protected static object GetRealInstance(IInvocation invocation)
+    ///<inheritdoc/>
+    public sealed override async ValueTask InterceptAsync(
+        IInvocation invocation)
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
-        object target = invocation.Target;
-
-        while (target is InterceptorProxy proxy)
+        if (AspectAttribute.IsDisabled)
         {
-            target = proxy.Instance;
+            invocation.Proceed();
+            return;
         }
 
-        return target;
+        await InterceptCoreAsync(invocation).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// When implemented in a derived class, intercepts the method invocation.
+    /// </summary>
+    /// <param name="invocation">The method argument to be called.</param>
+    protected abstract Task InterceptCoreAsync(IInvocation invocation);
+
+    /// <summary>
+    /// Returns a flag indicating if this behavior will actually 
+    /// do anything when invoked.
+    /// This is used to optimize interception. If the behaviors 
+    /// won't actually do anything then the interception
+    /// mechanism can be skipped completely.
+    /// Returns <see langword="true"/> if so, otherwise <see langword="false"/>.
+    /// The default behavior returns <see langword="true"/>.
+    /// </summary>
+    /// <param name="invocation">The method argument to be called.</param>
+    /// <returns><see langword="true"/> if it can handle the argument, 
+    /// otherwise <see langword="false"/></returns>
+    protected virtual bool CanHandleInvocation(IInvocation invocation)
+        => invocation is not null;
 }
 
 /// <summary>
@@ -145,6 +142,18 @@ public abstract class OnAspect<TAspectAttribute> : Interceptor
 /// <typeparam name="TInterface">The type of the interface.</typeparam>
 public abstract class OnAspect<TAspectAttribute, TInterface> :
     OnAspect<TAspectAttribute>
+    where TAspectAttribute : AspectAttribute
+    where TInterface : class
+{
+}
+
+/// <summary>
+/// Base class for asynchronous aspect implementation.
+/// </summary>
+/// <typeparam name="TAspectAttribute">The type of the aspect attribute.</typeparam>
+/// <typeparam name="TInterface">The type of the interface.</typeparam>
+public abstract class OnAsyncAspect<TAspectAttribute, TInterface> :
+    OnAsyncAspect<TAspectAttribute>
     where TAspectAttribute : AspectAttribute
     where TInterface : class
 {

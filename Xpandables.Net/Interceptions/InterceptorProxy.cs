@@ -101,7 +101,7 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
     /// <returns></returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="targetMethod" /> is null.</exception>
-    protected override object? Invoke(
+    protected sealed override object? Invoke(
         MethodInfo? targetMethod,
         object?[]? args)
     {
@@ -110,9 +110,19 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
                 nameof(targetMethod),
                 "The parameter is missing.");
 
+        bool isInterceptoreAsync = Interceptor is IAsyncInterceptor;
         return ReferenceEquals(targetMethod, MethodBaseType)
             ? Bypass(targetMethod, args)
-            : DoInvoke(targetMethod, args);
+            : !isInterceptoreAsync
+                ? DoInvoke(targetMethod, args)
+                : GetTaskResult();
+
+        object? GetTaskResult()
+        {
+            Task task = DoInvokeAsync(targetMethod, args);
+            task.Wait();
+            return task.GetType().GetProperty("Result")?.GetValue(task);
+        }
     }
 
     private object? DoInvoke(MethodInfo method, params object?[]? args)
@@ -122,6 +132,36 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
         if (Interceptor.CanHandle(invocation))
         {
             Interceptor.Intercept(invocation);
+        }
+        else
+        {
+            invocation.Proceed();
+        }
+
+        if (invocation._exceptionDispatchInfo is not null
+            && invocation.ReThrowException)
+        {
+            invocation._exceptionDispatchInfo.Throw();
+        }
+
+        return invocation.ReturnValue;
+    }
+
+    private async Task<object?> DoInvokeAsync(MethodInfo method, params object?[]? args)
+    {
+        Invocation invocation = new(method, Instance, args);
+
+        if (Interceptor is not IAsyncInterceptor interceptor)
+        {
+            throw new InvalidOperationException(
+                "The interceptor must implement the IAsyncInterceptor interface.");
+        }
+
+        if (interceptor.CanHandle(invocation))
+        {
+            await interceptor
+                .InterceptAsync(invocation)
+                .ConfigureAwait(false);
         }
         else
         {
