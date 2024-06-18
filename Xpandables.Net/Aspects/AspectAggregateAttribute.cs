@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Interceptions;
@@ -45,5 +47,6 @@ public sealed class AspectAggregateAttribute<TAggregate, TAggregateCommand> :
     /// <inheritdoc/>
     public override IInterceptor Create(
         IServiceProvider serviceProvider)
-        => throw new NotImplementedException();
+        => serviceProvider
+        .GetRequiredService<OnAspectAggregate<TAggregate, TAggregateCommand>>();
 }

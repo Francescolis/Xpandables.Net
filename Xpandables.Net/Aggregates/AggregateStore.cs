@@ -111,7 +111,12 @@ public sealed class AggregateStore<TAggregate>(
             }
 
             return aggregate.IsEmpty
-                ? OperationResults.NotFound<TAggregate>().Build()
+                ? OperationResults
+                    .NotFound<TAggregate>()
+                    .WithError(
+                        nameof(aggregateId),
+                        I18nXpandables.HttpStatusCodeNotFound)
+                    .Build()
                 : OperationResults.Ok(aggregate).Build();
         }
         catch (Exception exception)

@@ -17,6 +17,7 @@
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Interceptions;
+using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aspects;
 
@@ -25,12 +26,57 @@ namespace Xpandables.Net.Aspects;
 /// </summary>
 /// <typeparam name="TAggregate"></typeparam>
 /// <typeparam name="TAggregateCommand"></typeparam>
-public sealed class OnAspectAggregate<TAggregate, TAggregateCommand> :
-    OnAspect<AspectAggregateAttribute<TAggregate, TAggregateCommand>>
+public sealed class OnAspectAggregate<TAggregate, TAggregateCommand>(
+    IAggregateStore<TAggregate> aggregateStore) :
+    OnAsyncAspect<AspectAggregateAttribute<TAggregate, TAggregateCommand>>
     where TAggregate : class, IAggregate
     where TAggregateCommand : notnull, IAggregateCommand
 {
     ///<inheritdoc/>
-    protected override void InterceptCore(
-        IInvocation invocation) => throw new NotImplementedException();
+    protected override async Task InterceptCoreAsync(
+        IInvocation invocation)
+    {
+        TAggregateCommand command = invocation
+            .Arguments
+            .Select(s => s.Value.As<TAggregateCommand>())
+            .OfType<TAggregateCommand>()
+            .First();
+
+        CancellationToken ct = invocation
+            .Arguments
+            .Select(s => s.Value.As<CancellationToken>())
+            .OfType<CancellationToken>()
+            .First();
+
+        IOperationResult<TAggregate> operationResult = await aggregateStore
+            .ReadAsync(command.AggregateId, ct)
+            .ConfigureAwait(false);
+
+        if (operationResult.IsFailure)
+        {
+            invocation.SetReturnValue(operationResult);
+            return;
+        }
+
+        _ = invocation
+            .Arguments
+            .First(f => f.Type == typeof(TAggregate))
+            .ChangeValueTo(operationResult.Result);
+
+        invocation.Proceed();
+
+        if (invocation.Exception is not null)
+        {
+            return;
+        }
+
+        IOperationResult appendResult = await aggregateStore.AppendAsync(
+            operationResult.Result, ct)
+            .ConfigureAwait(false);
+
+        if (appendResult.IsFailure)
+        {
+            invocation.SetReturnValue(appendResult);
+        }
+    }
 }
