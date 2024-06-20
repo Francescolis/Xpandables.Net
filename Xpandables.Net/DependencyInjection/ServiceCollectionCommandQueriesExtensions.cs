@@ -20,6 +20,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Commands.Decorators;
 using Xpandables.Net.Interceptions;
@@ -37,6 +38,10 @@ public static class ServiceCollectionCommandQueriesExtensions
     internal readonly static MethodInfo AddCommandHandlerMethod =
         typeof(ServiceCollectionCommandQueriesExtensions)
         .GetMethod(nameof(AddXCommandHandler))!;
+
+    internal readonly static MethodInfo AddAggregateCommandHandlerMethod =
+        typeof(ServiceCollectionCommandQueriesExtensions)
+        .GetMethod(nameof(AddXAggregateCommandHandler))!;
 
     internal readonly static MethodInfo AddQueryHandlerMethod =
         typeof(ServiceCollectionCommandQueriesExtensions)
@@ -78,6 +83,96 @@ public static class ServiceCollectionCommandQueriesExtensions
     public static IServiceCollection AddXDispatcher(
         this IServiceCollection services)
         => services.AddXDispatcher<Dispatcher>();
+
+    /// <summary>
+    /// Registers the <typeparamref name="TCommandHandler"/> to the services with 
+    /// scope life time using the factory if specified.
+    /// </summary>
+    /// <remarks>You can refer to the command handler using the 
+    /// <see cref="CommandHandler{TCommand, TAggregate}"/> delegate.</remarks>
+    /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
+    /// <typeparam name="TCommand">The type of the command.</typeparam>
+    /// <typeparam name="TCommandHandler">The type of the command 
+    /// handler.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="implementationHandlerFactory">The factory that 
+    /// creates the command handler.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXAggregateCommandHandler
+        <TCommand, TAggregate, TCommandHandler>(
+        this IServiceCollection services,
+        Func<IServiceProvider, TCommandHandler>? implementationHandlerFactory
+        = default)
+        where TAggregate : class, IAggregate
+        where TCommandHandler : class, ICommandHandler<TCommand, TAggregate>
+        where TCommand : notnull, ICommand<TAggregate>
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        _ = services.DoRegisterTypeServiceLifeTime
+            <ICommandHandler<TCommand, TAggregate>, TCommandHandler>(
+            implementationHandlerFactory);
+
+        _ = services.AddScoped<CommandHandler<TCommand, TAggregate>>(
+            provider => provider
+                .GetRequiredService<ICommandHandler<TCommand, TAggregate>>()
+                .HandleAsync);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers all <see cref="ICommandHandler{TCommand, TAggregate}"/> 
+    /// implementations found in 
+    /// the assemblies to the services with scope life time.
+    /// </summary>
+    /// <remarks>You can refer to the command handler using the 
+    /// <see cref="CommandHandler{TCommand}"/> delegate.</remarks>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="assemblies">The assemblies to scan for implemented types. 
+    /// If not set, the calling assembly will be used.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="services"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="assemblies"/> is null.</exception>
+    public static IServiceCollection AddXAggregateCommandHandlers(
+        this IServiceCollection services, params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
+
+        _ = services.AddXCommandHandlerWrapper();
+
+        return services.DoRegisterInterfaceWithMethodFromAssemblies(
+            typeof(ICommandHandler<,>),
+            AddAggregateCommandHandlerMethod,
+            assemblies);
+    }
+
+    /// <summary>
+    /// Registers the command handler wrapper necessary to resolve 
+    /// handlers using type inference.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="services"/> is null.</exception>
+    public static IServiceCollection AddXCommandHandlerWrapper(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddTransient(typeof(CommandHandlerWrapper<,>));
+        return services;
+    }
 
     /// <summary>
     /// Registers the <typeparamref name="TCommandHandler"/> to the services with 

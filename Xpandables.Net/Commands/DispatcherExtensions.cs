@@ -18,6 +18,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Commands;
@@ -27,6 +28,53 @@ namespace Xpandables.Net.Commands;
 /// </summary>
 public static class DispatcherExtensions
 {
+    /// <summary>
+    /// Asynchronously send the aggregate from the command using
+    /// the <see cref="ICommandHandler{TCommand, TAggregate}"/> implementation.
+    /// </summary>
+    /// <typeparam name="TAggregate">Type of the result.</typeparam>
+    /// <param name="dispatcher">The target dispatcher instance.</param>
+    /// <param name="command">The query to act on.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe while 
+    /// waiting for the task to complete.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="command"/> 
+    /// is null.</exception>
+    /// <returns>A task that represents an 
+    /// <see cref="IOperationResult{TValue}"/>.</returns>
+    public static async ValueTask<IOperationResult> SendAsync<TAggregate>(
+        this IDispatcher dispatcher,
+        ICommand<TAggregate> command,
+        CancellationToken cancellationToken = default)
+        where TAggregate : class, IAggregate
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(dispatcher);
+
+        try
+        {
+            Type commandWrapperType = typeof(CommandHandlerWrapper<,>)
+                .MakeGenericType(command.GetType(), typeof(TAggregate));
+
+            ICommandHandlerWrapper<TAggregate> handler =
+                (ICommandHandlerWrapper<TAggregate>)dispatcher
+                .GetRequiredService(commandWrapperType);
+
+            return await handler
+                .HandleAsync(command, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                            and not OperationResultException)
+        {
+            return OperationResults
+                .InternalError<TAggregate>()
+                .WithException(exception)
+                .Build();
+        }
+    }
+
+
     /// <summary>
     /// Asynchronously fetches the result from the query using
     /// the <see cref="IQueryHandler{TQuery, TResult}"/> implementation and 

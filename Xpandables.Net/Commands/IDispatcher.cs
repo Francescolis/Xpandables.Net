@@ -16,6 +16,7 @@
  *
 ********************************************************************************/
 
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Commands;
@@ -42,6 +43,24 @@ public interface IDispatcher : IServiceProvider
         TCommand command,
         CancellationToken cancellationToken = default)
         where TCommand : notnull, ICommand;
+
+    /// <summary>
+    /// Asynchronously send the command to the 
+    /// <see cref="ICommandHandler{TCommand, TAggregate}"/> 
+    /// implementation handler.
+    /// </summary>
+    /// <param name="command">The command to act on.</param>
+    /// <param name="cancellationToken">A CancellationToken to 
+    /// observe while waiting for the task to complete.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="command"/> is null.</exception>
+    /// <returns>A task that represents an <see cref="IOperationResult"/>
+    /// .</returns>
+    ValueTask<IOperationResult> SendAsync<TCommand, TAggregate>(
+        TCommand command,
+        CancellationToken cancellationToken = default)
+        where TAggregate : class, IAggregate
+        where TCommand : notnull, ICommand<TAggregate>;
 
     /// <summary>
     /// Asynchronously gets the result of the query using

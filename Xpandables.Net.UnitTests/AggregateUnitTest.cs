@@ -22,9 +22,11 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Aspects;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Optionals;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Primitives.Converters;
@@ -41,6 +43,7 @@ public sealed class AggregateUnitTest
         IServiceCollection serviceDescriptors = new ServiceCollection()
             .AddLogging()
             .Configure<EventOptions>(EventOptions.Default)
+            .AddXAggregateCommandHandlers()
             .AddXCommandQueryHandlers(options =>
                 options
                 .UsePersistence()
@@ -54,7 +57,9 @@ public sealed class AggregateUnitTest
             .AddXEventPublisher()
             .AddXEventDuplicateDecorator()
             .AddXEventDomainStore()
-            .AddXEventIntegrationStore();
+            .AddXEventIntegrationStore()
+            .AddXOnAspects(typeof(OnAspectAggregate<,>).Assembly)
+            .AddXAspectBehaviors();
 
         IServiceProvider serviceProvider = serviceDescriptors
             .BuildServiceProvider(
@@ -200,48 +205,64 @@ public sealed class CreatePersonRequestCommandHandler(
     }
 }
 
-public readonly record struct SendContactRequestCommand(
-    Guid SenderId, Guid ReceiverId) :
-    ICommand;
-
-public sealed class SendContactRequestCommandHandler
-    (IAggregateStore<Person> aggregateStore) :
-    ICommandHandler<SendContactRequestCommand>
+public record struct SendContactRequestCommand(
+    Guid AggregateId, Guid ReceiverId) :
+    ICommand<Person>
 {
-    public async ValueTask<IOperationResult> HandleAsync(
+    public Optional<Person> Aggregate { get; set; } = Optional.Empty<Person>();
+}
+
+[AspectAggregate<SendContactRequestCommand, Person>]
+public sealed class SendContactRequestAggregateCommandHandler :
+    ICommandHandler<SendContactRequestCommand, Person>
+{
+    public ValueTask<IOperationResult> HandleAsync(
         SendContactRequestCommand command,
         CancellationToken cancellationToken = default)
     {
-        PersonId personId = PersonId.Create(command.SenderId);
-
-        IOperationResult<Person> personResult = await aggregateStore
-            .ReadAsync(personId, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (!personResult.IsSuccess)
-        {
-            return OperationResults
-                 .NotFound()
-                 .WithError(nameof(PersonId), "Person not found")
-                 .Build();
-        }
-
         ContactId receivedId = new(command.ReceiverId);
-        IOperationResult operationContact = personResult.Result
-            .BeContact(receivedId);
-
-        if (operationContact.IsFailure)
-        {
-            return operationContact;
-        }
-
-        return await aggregateStore
-            .AppendAsync(personResult.Result, cancellationToken)
-            .ConfigureAwait(false) is { IsFailure: true } failureOperation
-            ? failureOperation
-            : OperationResults.Ok().Build();
+        return ValueTask.FromResult(command.Aggregate.Value.BeContact(receivedId));
     }
 }
+
+//public sealed class SendContactRequestCommandHandler
+//    (IAggregateStore<Person> aggregateStore) :
+//    ICommandHandler<SendContactRequestCommand>
+//{
+//    public async ValueTask<IOperationResult> HandleAsync(
+//        SendContactRequestCommand command,
+//        CancellationToken cancellationToken = default)
+//    {
+//        PersonId personId = PersonId.Create(command.SenderId);
+
+//        IOperationResult<Person> personResult = await aggregateStore
+//            .ReadAsync(personId, cancellationToken)
+//            .ConfigureAwait(false);
+
+//        if (!personResult.IsSuccess)
+//        {
+//            return OperationResults
+//                 .NotFound()
+//                 .WithError(nameof(PersonId), "Person not found")
+//                 .Build();
+//        }
+
+//        ContactId receivedId = new(command.ReceiverId);
+//        IOperationResult operationContact = personResult.Result
+//            .BeContact(receivedId);
+
+//        if (operationContact.IsFailure)
+//        {
+//            return operationContact;
+//        }
+
+//        return await aggregateStore
+//            .AppendAsync(personResult.Result, cancellationToken)
+//            .ConfigureAwait(false) is { IsFailure: true } failureOperation
+//            ? failureOperation
+//            : OperationResults.Ok().Build();
+//    }
+//}
 
 public sealed class ContactCreatedDomainEventHandler
     (IEventIntegrationStore eventIntegrationStore)

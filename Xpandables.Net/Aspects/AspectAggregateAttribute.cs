@@ -25,28 +25,35 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// Aspect aggregate handler attribute, when applied to a class that implements 
-/// the <see cref="IAggregateCommandHandler{TAggregate, TAggregateCommand}"/>, 
+/// the <see cref="ICommandHandler{TCommand, TAggregate}"/>, 
 /// specifies that the handler will get called before the method invocation 
 /// providing the expected parameters and apply the persistence process.
 /// </summary>
 /// <exception cref="ArgumentNullException">The interface type is null.
 /// </exception>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-public sealed class AspectAggregateAttribute<TAggregate, TAggregateCommand> :
+public sealed class AspectAggregateAttribute<TCommand, TAggregate> :
         AspectAttribute
     where TAggregate : class, IAggregate
-    where TAggregateCommand : notnull, IAggregateCommand
+    where TCommand : notnull, ICommand<TAggregate>
 {
+    /// <summary>
+    /// Determines whether the aspect should continue when the aggregate 
+    /// is not found.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.</remarks>
+    public bool ContinueWhenNotFound { get; set; }
+
     /// <summary>
     /// Constructs the aspect aggregate handler attribute.
     /// </summary>
     public AspectAggregateAttribute()
-        : base(typeof(IAggregateCommandHandler<TAggregate, TAggregateCommand>))
+        : base(typeof(ICommandHandler<TCommand, TAggregate>))
     { }
 
     /// <inheritdoc/>
     public override IInterceptor Create(
         IServiceProvider serviceProvider)
         => serviceProvider
-        .GetRequiredService<OnAspectAggregate<TAggregate, TAggregateCommand>>();
+        .GetRequiredService<OnAspectAggregate<TCommand, TAggregate>>();
 }

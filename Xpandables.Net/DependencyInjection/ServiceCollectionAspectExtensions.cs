@@ -30,8 +30,10 @@ namespace Xpandables.Net.DependencyInjection;
 public static partial class ServiceCollectionAspectExtensions
 {
     /// <summary>
-    /// Registers the <see cref="AspectValidator{TArgument}"/> as
-    /// <see cref="IAspectValidator{TArgument}"/>.
+    /// Registers the <see cref="AspectValidator{TArgument}"/>, the
+    /// <see cref="AsyncAspectValidator{TArgument}"/> as
+    /// <see cref="IAspectValidator{TArgument}"/> and
+    /// <see cref="IAsyncAspectValidator{TArgument}"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     public static IServiceCollection AddXAspectValidator(

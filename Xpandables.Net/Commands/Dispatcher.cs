@@ -17,6 +17,7 @@
 ********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Commands;
@@ -64,6 +65,34 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
             ICommandHandler<TCommand> handler =
         serviceProvider
         .GetRequiredService<ICommandHandler<TCommand>>();
+
+            return await handler
+                .HandleAsync(command, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException
+                and not OperationResultException)
+        {
+            return OperationResults
+                .InternalError()
+                .WithException(exception)
+                .Build();
+        }
+    }
+
+    /// <inheritdoc/>>
+    public async ValueTask<IOperationResult> SendAsync<TCommand, TAggregate>(
+        TCommand command,
+        CancellationToken cancellationToken = default)
+        where TAggregate : class, IAggregate
+        where TCommand : notnull, ICommand<TAggregate>
+    {
+        try
+        {
+            ICommandHandler<TCommand, TAggregate> handler =
+            serviceProvider
+                .GetRequiredService<ICommandHandler<TCommand, TAggregate>>();
 
             return await handler
                 .HandleAsync(command, cancellationToken)

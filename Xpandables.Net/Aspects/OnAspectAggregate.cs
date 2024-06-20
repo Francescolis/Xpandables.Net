@@ -18,35 +18,37 @@ using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Aspects;
 
 /// <summary>
-/// 
+/// This class represents an aspect that is used to intercept commands 
+/// targeting aggregates, by supplying the aggregate instance to the command.
 /// </summary>
-/// <typeparam name="TAggregate"></typeparam>
-/// <typeparam name="TAggregateCommand"></typeparam>
-public sealed class OnAspectAggregate<TAggregate, TAggregateCommand>(
+/// <typeparam name="TAggregate">The type of aggregate.</typeparam>
+/// <typeparam name="TCommand">The type of command.</typeparam>
+/// <param name="aggregateStore">The aggregate store</param>
+public sealed class OnAspectAggregate<TCommand, TAggregate>(
     IAggregateStore<TAggregate> aggregateStore) :
-    OnAsyncAspect<AspectAggregateAttribute<TAggregate, TAggregateCommand>>
+    OnAsyncAspect<AspectAggregateAttribute<TCommand, TAggregate>>
     where TAggregate : class, IAggregate
-    where TAggregateCommand : notnull, IAggregateCommand
+    where TCommand : notnull, ICommand<TAggregate>
 {
     ///<inheritdoc/>
     protected override async Task InterceptCoreAsync(
         IInvocation invocation)
     {
-        TAggregateCommand command = invocation
-            .Arguments
-            .Select(s => s.Value.As<TAggregateCommand>())
-            .OfType<TAggregateCommand>()
-            .First();
+        Optional<TAggregate> aggregate = Optional.Empty<TAggregate>();
+
+        TCommand command = invocation
+            .Arguments[0]
+            .Value!
+            .AsRequired<TCommand>();
 
         CancellationToken ct = invocation
-            .Arguments
-            .Select(s => s.Value.As<CancellationToken>())
-            .OfType<CancellationToken>()
-            .First();
+            .Arguments[1]
+            .Value.As<CancellationToken>();
 
         IOperationResult<TAggregate> operationResult = await aggregateStore
             .ReadAsync(command.AggregateId, ct)
@@ -54,14 +56,23 @@ public sealed class OnAspectAggregate<TAggregate, TAggregateCommand>(
 
         if (operationResult.IsFailure)
         {
-            invocation.SetReturnValue(operationResult);
-            return;
+            if (!AspectAttribute.ContinueWhenNotFound)
+            {
+                invocation.SetReturnValue(operationResult);
+                return;
+            }
         }
 
+        if (operationResult.IsSuccess)
+        {
+            aggregate = operationResult.Result;
+        }
+
+        command.Aggregate = aggregate;
+
         _ = invocation
-            .Arguments
-            .First(f => f.Type == typeof(TAggregate))
-            .ChangeValueTo(operationResult.Result);
+            .Arguments[0]
+            .ChangeValueTo(command);
 
         invocation.Proceed();
 
@@ -70,13 +81,16 @@ public sealed class OnAspectAggregate<TAggregate, TAggregateCommand>(
             return;
         }
 
-        IOperationResult appendResult = await aggregateStore.AppendAsync(
-            operationResult.Result, ct)
-            .ConfigureAwait(false);
-
-        if (appendResult.IsFailure)
+        if (command.Aggregate.IsNotEmpty)
         {
-            invocation.SetReturnValue(appendResult);
+            IOperationResult appendResult = await aggregateStore
+                .AppendAsync(command.Aggregate.Value, ct)
+                .ConfigureAwait(false);
+
+            if (appendResult.IsFailure)
+            {
+                invocation.SetReturnValue(appendResult);
+            }
         }
     }
 }
