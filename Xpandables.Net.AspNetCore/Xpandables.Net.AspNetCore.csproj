@@ -21,13 +21,13 @@
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-		<PackageReleaseNotes>Refactor aspect attributes to use Type parameter</PackageReleaseNotes>
+		<PackageReleaseNotes>Add Decider pattern to Aggregate</PackageReleaseNotes>
 		<PackageOutputPath>C:\Source\Nugets</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>8.0.7</Version>
-		<AssemblyVersion>8.0.7</AssemblyVersion>
-		<FileVersion>8.0.7</FileVersion>
-		<PackageVersion>8.0.7</PackageVersion>
+		<Version>8.0.8</Version>
+		<AssemblyVersion>8.0.8</AssemblyVersion>
+		<FileVersion>8.0.8</FileVersion>
+		<PackageVersion>8.0.8</PackageVersion>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
