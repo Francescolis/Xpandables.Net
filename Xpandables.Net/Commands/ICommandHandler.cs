@@ -31,7 +31,7 @@ public interface ICommand
     /// <summary>
     /// Gets the event identifier.
     /// </summary>
-    public Guid Id => Guid.NewGuid();
+    public Guid AggregateId => Guid.NewGuid();
 
     /// <summary>
     /// Gets When the event occurred.

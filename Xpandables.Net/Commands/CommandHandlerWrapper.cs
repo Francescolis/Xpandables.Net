@@ -24,7 +24,7 @@ internal sealed class CommandHandlerWrapper<TCommand, TAggregate>(
     ICommandHandler<TCommand, TAggregate> decoratee)
     : ICommandHandlerWrapper<TAggregate>
     where TAggregate : class, IAggregate
-    where TCommand : notnull, ICommand<TAggregate>
+    where TCommand : class, ICommand<TAggregate>
 {
     public async ValueTask<IOperationResult> HandleAsync(
         ICommand<TAggregate> command,

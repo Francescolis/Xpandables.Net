@@ -68,10 +68,10 @@ public interface ICommand<TAggregate>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="command"/> is null.</exception>
 public delegate ValueTask<IOperationResult> CommandHandler
-    <in TCommand, TAggregate>(
+    <TCommand, TAggregate>(
     TCommand command, CancellationToken cancellationToken = default)
     where TAggregate : class, IAggregate
-    where TCommand : notnull, ICommand<TAggregate>;
+    where TCommand : class, ICommand<TAggregate>;
 
 /// <summary>
 /// Provides with a method to handle commands that are associated with an 
@@ -82,9 +82,9 @@ public delegate ValueTask<IOperationResult> CommandHandler
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
 /// <typeparam name="TCommand">The type of the aggregate 
 /// command.</typeparam>
-public interface ICommandHandler<in TCommand, TAggregate>
+public interface ICommandHandler<TCommand, TAggregate>
     where TAggregate : class, IAggregate
-    where TCommand : notnull, ICommand<TAggregate>
+    where TCommand : class, ICommand<TAggregate>
 {
     /// <summary>
     /// Handles the specified command for the specified aggregate.

@@ -33,7 +33,7 @@ public sealed class OnAspectAggregate<TCommand, TAggregate>(
     IAggregateStore<TAggregate> aggregateStore) :
     OnAsyncAspect<AspectAggregateAttribute<TCommand, TAggregate>>
     where TAggregate : class, IAggregate
-    where TCommand : notnull, ICommand<TAggregate>
+    where TCommand : class, ICommand<TAggregate>
 {
     ///<inheritdoc/>
     protected override async Task InterceptCoreAsync(

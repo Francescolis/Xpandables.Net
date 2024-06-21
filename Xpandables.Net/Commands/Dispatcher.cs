@@ -86,7 +86,7 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
         TCommand command,
         CancellationToken cancellationToken = default)
         where TAggregate : class, IAggregate
-        where TCommand : notnull, ICommand<TAggregate>
+        where TCommand : class, ICommand<TAggregate>
     {
         try
         {

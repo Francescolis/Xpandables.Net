@@ -152,63 +152,50 @@ public sealed class AggregateUnitTest
     }
 }
 
-public readonly record struct CreatePersonRequestCommand(
-    Guid Id, string FirstName, string LastName)
-    : ICommand, IPersistenceDecorator, IOperationFinalizerDecorator;
-
-public sealed class CreatePersonRequestCommandHandler(
-    IAggregateStore<Person> aggregateStore,
-    IOperationFinalizer resultContext) :
-    ICommandHandler<CreatePersonRequestCommand>
+public sealed class CreatePersonRequestCommand(
+    Guid aggregateId,
+    string firstName,
+    string lastName)
+    : ICommand<Person>
 {
-    private readonly IAggregateStore<Person> _aggregateStore
-        = aggregateStore
-        ?? throw new ArgumentNullException(nameof(aggregateStore));
-    private readonly IOperationFinalizer _resultContext = resultContext
-        ?? throw new ArgumentNullException(nameof(resultContext));
+    public Guid AggregateId { get; init; } = aggregateId;
+    public string FirstName { get; init; } = firstName;
+    public string LastName { get; init; } = lastName;
+    public Optional<Person> Aggregate { get; set; } = Optional.Empty<Person>();
+}
 
-    public async ValueTask<IOperationResult> HandleAsync(
+[AspectAggregate<CreatePersonRequestCommand, Person>(ContinueWhenNotFound = true)]
+public sealed class CreatePersonRequestCommandHandler :
+    ICommandHandler<CreatePersonRequestCommand, Person>
+{
+    public ValueTask<IOperationResult> HandleAsync(
         CreatePersonRequestCommand command,
         CancellationToken cancellationToken = default)
     {
-        PersonId personId = PersonId.Create(command.Id);
-
-        IOperationResult<Person> testResult = await _aggregateStore
-            .ReadAsync(personId, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (testResult.IsSuccess)
+        if (command.Aggregate.IsNotEmpty)
         {
-            return OperationResults
+            return ValueTask.FromResult(OperationResults
                 .Conflict()
                 .WithError(nameof(PersonId), "Person already exist")
-                .Build();
+                .Build());
         }
 
-        Person person = Person
-            .Create(personId, command.FirstName, command.LastName);
+        command.Aggregate = Person
+            .Create(command.AggregateId, command.FirstName, command.LastName);
 
-        _resultContext.Finalizer = op => op.IsSuccess switch
-            {
-                true => OperationResults
-                 .Ok()
-                 .WithHeader(nameof(PersonId), personId)
-                 .Build(),
-                _ => op
-            };
-
-        return await _aggregateStore
-            .AppendAsync(person, cancellationToken)
-            .ConfigureAwait(false) is { IsFailure: true } failureOperation
-            ? failureOperation
-            : OperationResults.Ok().Build();
+        return ValueTask.FromResult(OperationResults
+            .Ok()
+            .WithHeader(nameof(PersonId), command.AggregateId.ToString())
+            .Build());
     }
 }
 
-public record struct SendContactRequestCommand(
-    Guid AggregateId, Guid ReceiverId) :
+public sealed class SendContactRequestCommand(
+    Guid aggregateId, Guid receiverId) :
     ICommand<Person>
 {
+    public Guid AggregateId { get; init; } = aggregateId;
+    public Guid ReceiverId { get; init; } = receiverId;
     public Optional<Person> Aggregate { get; set; } = Optional.Empty<Person>();
 }
 
@@ -220,49 +207,14 @@ public sealed class SendContactRequestAggregateCommandHandler :
         SendContactRequestCommand command,
         CancellationToken cancellationToken = default)
     {
+        Assert.True(command.Aggregate.IsNotEmpty);
+
         ContactId receivedId = new(command.ReceiverId);
-        return ValueTask.FromResult(command.Aggregate.Value.BeContact(receivedId));
+        IOperationResult result = command.Aggregate.Value.BeContact(receivedId);
+
+        return ValueTask.FromResult(result);
     }
 }
-
-//public sealed class SendContactRequestCommandHandler
-//    (IAggregateStore<Person> aggregateStore) :
-//    ICommandHandler<SendContactRequestCommand>
-//{
-//    public async ValueTask<IOperationResult> HandleAsync(
-//        SendContactRequestCommand command,
-//        CancellationToken cancellationToken = default)
-//    {
-//        PersonId personId = PersonId.Create(command.SenderId);
-
-//        IOperationResult<Person> personResult = await aggregateStore
-//            .ReadAsync(personId, cancellationToken)
-//            .ConfigureAwait(false);
-
-//        if (!personResult.IsSuccess)
-//        {
-//            return OperationResults
-//                 .NotFound()
-//                 .WithError(nameof(PersonId), "Person not found")
-//                 .Build();
-//        }
-
-//        ContactId receivedId = new(command.ReceiverId);
-//        IOperationResult operationContact = personResult.Result
-//            .BeContact(receivedId);
-
-//        if (operationContact.IsFailure)
-//        {
-//            return operationContact;
-//        }
-
-//        return await aggregateStore
-//            .AppendAsync(personResult.Result, cancellationToken)
-//            .ConfigureAwait(false) is { IsFailure: true } failureOperation
-//            ? failureOperation
-//            : OperationResults.Ok().Build();
-//    }
-//}
 
 public sealed class ContactCreatedDomainEventHandler
     (IEventIntegrationStore eventIntegrationStore)

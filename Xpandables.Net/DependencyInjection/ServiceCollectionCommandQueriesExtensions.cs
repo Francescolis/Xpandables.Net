@@ -107,7 +107,7 @@ public static class ServiceCollectionCommandQueriesExtensions
         = default)
         where TAggregate : class, IAggregate
         where TCommandHandler : class, ICommandHandler<TCommand, TAggregate>
-        where TCommand : notnull, ICommand<TAggregate>
+        where TCommand : class, ICommand<TAggregate>
     {
         ArgumentNullException.ThrowIfNull(services);
 
