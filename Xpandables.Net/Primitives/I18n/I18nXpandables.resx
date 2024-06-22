@@ -101,7 +101,7 @@
     <value>Echec de l'ajout de l'aggrégat.</value>
   </data>
   <data name="AggregateFailedToRead" xml:space="preserve">
-    <value>Echec d lecture de l'aggrégat.</value>
+    <value>Echec de lecture de l'instance.</value>
   </data>
   <data name="OutboxFailedToAppendEventIntegration" xml:space="preserve">
     <value>Echec de l'ajout de la notification.</value>

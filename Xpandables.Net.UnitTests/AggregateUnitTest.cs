@@ -158,7 +158,7 @@ public sealed class CreatePersonRequestCommand(
     string lastName)
     : ICommand<Person>
 {
-    public Guid AggregateId { get; init; } = aggregateId;
+    public Guid KeyId { get; init; } = aggregateId;
     public string FirstName { get; init; } = firstName;
     public string LastName { get; init; } = lastName;
     public Optional<Person> Aggregate { get; set; } = Optional.Empty<Person>();
@@ -181,11 +181,11 @@ public sealed class CreatePersonRequestCommandHandler :
         }
 
         command.Aggregate = Person
-            .Create(command.AggregateId, command.FirstName, command.LastName);
+            .Create(command.KeyId, command.FirstName, command.LastName);
 
         return ValueTask.FromResult(OperationResults
             .Ok()
-            .WithHeader(nameof(PersonId), command.AggregateId.ToString())
+            .WithHeader(nameof(PersonId), command.KeyId.ToString())
             .Build());
     }
 }
@@ -194,7 +194,7 @@ public sealed class SendContactRequestCommand(
     Guid aggregateId, Guid receiverId) :
     ICommand<Person>
 {
-    public Guid AggregateId { get; init; } = aggregateId;
+    public Guid KeyId { get; init; } = aggregateId;
     public Guid ReceiverId { get; init; } = receiverId;
     public Optional<Person> Aggregate { get; set; } = Optional.Empty<Person>();
 }

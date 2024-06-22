@@ -19,6 +19,7 @@ using Xpandables.Net.Commands;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
+using Xpandables.Net.Primitives.I18n;
 
 namespace Xpandables.Net.Aspects;
 
@@ -51,8 +52,20 @@ public sealed class OnAspectAggregate<TCommand, TAggregate>(
             .Value.As<CancellationToken>();
 
         IOperationResult<TAggregate> operationResult = await aggregateStore
-            .ReadAsync(command.AggregateId, ct)
+            .ReadAsync(command.KeyId, ct)
             .ConfigureAwait(false);
+
+        operationResult = operationResult.IsFailure switch
+        {
+            true when operationResult.StatusCode is System.Net.HttpStatusCode.NotFound
+                => OperationResults
+                    .NotFound<TAggregate>()
+                    .WithError(
+                        nameof(command.KeyId),
+                        I18nXpandables.AggregateFailedToRead)
+                    .Build(),
+            _ => operationResult
+        };
 
         if (operationResult.IsFailure)
         {

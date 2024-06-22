@@ -115,7 +115,7 @@ namespace Xpandables.Net.Primitives.I18n {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Echec d lecture de l&apos;aggrégat..
+        ///   Looks up a localized string similar to Echec de lecture de l&apos;instance..
         /// </summary>
         public static string AggregateFailedToRead {
             get {

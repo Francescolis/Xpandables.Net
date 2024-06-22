@@ -101,7 +101,7 @@
     <value>Failed to append aggregate.</value>
   </data>
   <data name="AggregateFailedToRead" xml:space="preserve">
-    <value>Failed to read aggregate.</value>
+    <value>Failed to read instance.</value>
   </data>
   <data name="OutboxFailedToAppendEventIntegration" xml:space="preserve">
     <value>Failed to append integration event.</value>

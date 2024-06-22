@@ -34,9 +34,9 @@ public interface ICommand<TAggregate>
     Optional<TAggregate> Aggregate { get; set; }
 
     /// <summary>
-    /// Gets the aggretate identitifer
+    /// Gets the key aggretate identitifer
     /// </summary>
-    Guid AggregateId { get; }
+    Guid KeyId { get; }
 
     /// <summary>
     /// Gets the event identifier.
