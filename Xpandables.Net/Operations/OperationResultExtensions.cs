@@ -248,6 +248,10 @@ public static class OperationResultExtensions
             await valueTask.ConfigureAwait(false);
             return OperationResults.Ok().Build();
         }
+        catch (ValidationException validationException)
+        {
+            return validationException.ToOperationResult();
+        }
         catch (OperationResultException operationResultException)
         {
             return operationResultException.Operation;
@@ -277,6 +281,10 @@ public static class OperationResultExtensions
             await task.ConfigureAwait(false);
             return OperationResults.Ok().Build();
         }
+        catch (ValidationException validationException)
+        {
+            return validationException.ToOperationResult();
+        }
         catch (OperationResultException operationResultException)
         {
             return operationResultException.Operation;
@@ -304,6 +312,10 @@ public static class OperationResultExtensions
         {
             action();
             return OperationResults.Ok().Build();
+        }
+        catch (ValidationException validationException)
+        {
+            return validationException.ToOperationResult();
         }
         catch (OperationResultException operationResultException)
         {
@@ -344,6 +356,12 @@ public static class OperationResultExtensions
                         typeof(TResult).Name,
                         I18nXpandables.OperationResultValueIsNull)
                     .Build();
+        }
+        catch (ValidationException validationException)
+        {
+            return validationException
+                .ToOperationResult()
+                .ToOperationResult<TResult>();
         }
         catch (OperationResultException operationResultException)
         {
@@ -386,6 +404,12 @@ public static class OperationResultExtensions
                         typeof(TResult).Name,
                         I18nXpandables.OperationResultValueIsNull)
                     .Build();
+        }
+        catch (ValidationException validationException)
+        {
+            return validationException
+                .ToOperationResult()
+                .ToOperationResult<TResult>();
         }
         catch (OperationResultException operationResultException)
         {
@@ -430,6 +454,12 @@ public static class OperationResultExtensions
                         typeof(TResult).Name,
                         I18nXpandables.OperationResultValueIsNull)
                     .Build();
+        }
+        catch (ValidationException validationException)
+        {
+            return validationException
+                .ToOperationResult()
+                .ToOperationResult<TResult>();
         }
         catch (OperationResultException operationResultException)
         {
