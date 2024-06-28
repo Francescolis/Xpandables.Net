@@ -767,14 +767,14 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
-    public static IServiceCollection AddXCommandHandlerAggregateDecorator(
+    public static IServiceCollection AddXAggregateCommandDecorator(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         _ = services.XTryDecorate(
                 typeof(ICommandHandler<,>),
-                typeof(CommandHandlerAggregateDecorator<,>),
+                typeof(AggregateCommandDecorator<,>),
                 typeof(ICommandAggregate));
 
         return services;

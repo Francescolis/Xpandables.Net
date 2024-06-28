@@ -43,7 +43,7 @@ public interface ICommandAggregate
 /// <typeparam name="TCommand">The type of command.</typeparam>
 /// <param name="decoratee">The command handler to decorate.</param>
 /// <param name="aggregateStore">The aggregate store</param>
-public sealed class CommandHandlerAggregateDecorator<TCommand, TAggregate>(
+public sealed class AggregateCommandDecorator<TCommand, TAggregate>(
     ICommandHandler<TCommand, TAggregate> decoratee,
     IAggregateStore<TAggregate> aggregateStore) :
     ICommandHandler<TCommand, TAggregate>

@@ -59,7 +59,7 @@ public sealed class AggregateUnitTest
             .AddXEventDuplicateDecorator()
             .AddXEventDomainStore()
             .AddXEventIntegrationStore()
-            .AddXOnAspects(typeof(CommandHandlerAggregateDecorator<,>).Assembly)
+            .AddXOnAspects(typeof(AggregateCommandDecorator<,>).Assembly)
             .AddXAspectBehaviors();
 
         IServiceProvider serviceProvider = serviceDescriptors
