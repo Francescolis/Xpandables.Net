@@ -37,7 +37,7 @@ public static class ServiceCollectionEventExtensions
     /// <summary>
     /// Registers the 
     /// <see cref="EventDuplicateDecorator{TEvent}"/>
-    /// decorator to handle duplicate domain events.
+    /// decorator to handle duplicate events.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
