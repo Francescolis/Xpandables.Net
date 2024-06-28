@@ -24,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aspects;
 using Xpandables.Net.Commands;
+using Xpandables.Net.Decorators;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
@@ -58,7 +59,7 @@ public sealed class AggregateUnitTest
             .AddXEventDuplicateDecorator()
             .AddXEventDomainStore()
             .AddXEventIntegrationStore()
-            .AddXOnAspects(typeof(OnAspectAggregate<,>).Assembly)
+            .AddXOnAspects(typeof(CommandHandlerAggregateDecorator<,>).Assembly)
             .AddXAspectBehaviors();
 
         IServiceProvider serviceProvider = serviceDescriptors

@@ -60,6 +60,18 @@ public static class OperationResultExtensions
         => !IsSuccessStatusCode(statusCode);
 
     /// <summary>
+    /// Determines whether the specified operation status is NotFound.
+    /// </summary>
+    /// <param name="operation">The operation to act on.</param>
+    /// <returns><see langword="true"/> if the status is failure, 
+    /// otherwise returns <see langword="false"/></returns>
+    public static bool IsNotFoundStatusCode(this IOperationResult operation)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        return operation.StatusCode == HttpStatusCode.NotFound;
+    }
+
+    /// <summary>
     /// Ensures that the specified status code is a success code.
     /// Throws an exception if the status code is not a success.
     /// </summary>

@@ -18,10 +18,11 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Aspects;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Interceptions;
 
-namespace Xpandables.Net.Aspects;
+namespace Xpandables.Net.Decorators;
 
 /// <summary>
 /// Aspect aggregate handler attribute, when applied to a class that implements 
@@ -61,5 +62,5 @@ public sealed class AspectAggregateAttribute<TCommand, TAggregate> :
     public override IInterceptor Create(
         IServiceProvider serviceProvider)
         => serviceProvider
-        .GetRequiredService<OnAspectAggregate<TCommand, TAggregate>>();
+        .GetRequiredService<CommandHandlerAggregateDecorator<TCommand, TAggregate>>();
 }
