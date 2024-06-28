@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Commands.Decorators;
+using Xpandables.Net.Decorators;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -753,6 +754,29 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped<IOperationFinalizer, OperationFinalizerInternal>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the <see cref="ICommandHandler{TCommand, TAggregate}"/> 
+    /// decorator that provide with the target aggregate instance using the
+    /// Decider pattern for command that are decorated with the
+    /// <see cref="ICommandAggregate"/> interface.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXCommandHandlerAggregateDecorator(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        _ = services.XTryDecorate(
+                typeof(ICommandHandler<,>),
+                typeof(CommandHandlerAggregateDecorator<,>),
+                typeof(ICommandAggregate));
+
         return services;
     }
 
