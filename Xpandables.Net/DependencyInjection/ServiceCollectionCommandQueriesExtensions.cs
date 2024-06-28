@@ -22,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
-using Xpandables.Net.Commands.Decorators;
 using Xpandables.Net.Decorators;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;

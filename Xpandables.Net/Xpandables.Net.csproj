@@ -90,4 +90,8 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Commands\Decorators\" />
+	</ItemGroup>
+
 </Project>

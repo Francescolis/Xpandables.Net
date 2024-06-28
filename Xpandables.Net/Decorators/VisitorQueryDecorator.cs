@@ -15,30 +15,30 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Runtime.CompilerServices;
-
+using Xpandables.Net.Commands;
+using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Visitors;
 
-namespace Xpandables.Net.Commands.Decorators;
+namespace Xpandables.Net.Decorators;
 
 /// <summary>
-/// This class allows the application author to add visitor support to 
-/// query control flow.
-/// The target query should implement the <see cref="IVisitable{TVisitable}"/> 
-/// interface in order to activate the behavior.
-/// The class decorates the target query handler with an implementation 
-/// of <see cref="ICompositeVisitor{TElement}"/>
-/// and applies all visitors found to the target query before the query 
-/// get handled. You should provide with implementation
+/// This class allows the application author to add visitor 
+/// support to query control flow.
+/// The target query should implement the 
+/// <see cref="IVisitable{TVisitable}"/> interface in order to activate the 
+/// behavior. The class decorates the target query handler 
+/// with an implementation of <see cref="ICompositeVisitor{TElement}"/>
+/// and applies all visitors found to the target query 
+/// before the query get handled. You should provide with implementation
 /// of <see cref="IVisitor{TElement}"/>.
 /// </summary>
 /// <typeparam name="TQuery">Type of query.</typeparam>
 /// <typeparam name="TResult">Type of result.</typeparam>
 /// <remarks>
 /// Initializes a new instance of the 
-/// <see cref="VisitorAsyncQueryDecorator{TQuery, TResult}"/> class with
-/// the query handler to be decorated and the composite visitor.
+/// <see cref="VisitorQueryDecorator{TQuery, TResult}"/> class with
+/// the handler to be decorated and the composite visitor.
 /// </remarks>
 /// <param name="decoratee">The query to be decorated.</param>
 /// <param name="visitor">The composite visitor to apply</param>
@@ -46,15 +46,15 @@ namespace Xpandables.Net.Commands.Decorators;
 /// <paramref name="decoratee"/> is null.</exception>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="visitor"/> is null.</exception>
-public sealed class VisitorAsyncQueryDecorator<TQuery, TResult>(
-    IAsyncQueryHandler<TQuery, TResult> decoratee,
+public sealed class VisitorQueryDecorator<TQuery, TResult>(
+    IQueryHandler<TQuery, TResult> decoratee,
     ICompositeVisitor<TQuery> visitor) :
-    IAsyncQueryHandler<TQuery, TResult>, IDecorator
-    where TQuery : notnull, IAsyncQuery<TResult>, IVisitable
+    IQueryHandler<TQuery, TResult>, IDecorator
+    where TQuery : notnull, IQuery<TResult>, IVisitable
 {
     /// <summary>
-    /// Asynchronously applies visitor before handling the query and 
-    /// returns an asynchronous result type.
+    /// Asynchronously applies visitor before handling 
+    /// the specified query and returns the task result.
     /// </summary>
     /// <param name="query">The query to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to 
@@ -63,24 +63,20 @@ public sealed class VisitorAsyncQueryDecorator<TQuery, TResult>(
     /// <paramref name="query"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    /// <returns>An enumerator of <typeparamref name="TResult"/> 
-    /// that can be asynchronously enumerable.</returns>
-    public async IAsyncEnumerable<TResult> HandleAsync(
+    /// <returns>A task that represents an object 
+    /// of <see cref="IOperationResult{TValue}"/>.</returns>
+    public async ValueTask<IOperationResult<TResult>> HandleAsync(
         TQuery query,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        CheckParameters();
+        ArgumentNullException.ThrowIfNull(query);
 
         await query
             .AcceptAsync(visitor)
             .ConfigureAwait(false);
 
-        await foreach (TResult result
-            in decoratee.HandleAsync(query, cancellationToken))
-        {
-            yield return result;
-        }
-
-        void CheckParameters() => ArgumentNullException.ThrowIfNull(query);
+        return await decoratee
+            .HandleAsync(query, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

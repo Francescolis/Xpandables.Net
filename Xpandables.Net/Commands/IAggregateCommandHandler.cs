@@ -77,8 +77,6 @@ public delegate ValueTask<IOperationResult> CommandHandler
 /// Provides with a method to handle commands that are associated with an 
 /// aggregate using the Decider asynchronous command pattern.
 /// </summary>
-/// <remarks>You need to decorate your implementation with  the attribute
-/// <see cref="Net.Decorators.AspectAggregateAttribute{TCommand, TAggregate}"/>.</remarks>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
 /// <typeparam name="TCommand">The type of the aggregate 
 /// command.</typeparam>

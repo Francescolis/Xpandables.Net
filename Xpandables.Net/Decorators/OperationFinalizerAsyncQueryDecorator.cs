@@ -17,10 +17,11 @@
 ********************************************************************************/
 using System.Runtime.CompilerServices;
 
+using Xpandables.Net.Commands;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.Commands.Decorators;
+namespace Xpandables.Net.Decorators;
 internal sealed class OperationFinalizerAsyncQueryDecorator<TQuery, TResult>(
     IAsyncQueryHandler<TQuery, TResult> decoratee,
     IOperationFinalizer operationResultFinalizer)

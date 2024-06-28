@@ -15,68 +15,67 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Commands;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Validators;
 
-namespace Xpandables.Net.Commands.Decorators;
+namespace Xpandables.Net.Decorators;
 
 /// <summary>
-/// This class allows the application author to add validation 
-/// support to command control flow.
-/// The target command should implement the <see cref="IValidateDecorator"/> 
-/// interface 
-/// in order to activate the behavior.
-/// The class decorates the target command handler with an implementation 
+/// This class allows the application author to add validation support 
+/// to query control flow.
+/// The target query should implement the <see cref="IValidateDecorator"/> 
+/// interface in order to activate the behavior.
+/// The class decorates the target query handler with an implementation 
 /// of <see cref="ICompositeValidator{TArgument}"/>
-/// and applies all validators found to the target command before the 
-/// command get handled if there is no error.
+/// and applies all validators found to the target query before 
+/// the command get handled.
 /// You should provide with implementation
-/// of <see cref="IValidator{TArgument}"/> for validation.
+/// of <see cref="IValidator{TArgument}"/>for validation.
 /// </summary>
-/// <typeparam name="TCommand">Type of the command.</typeparam>
+/// <typeparam name="TQuery">Type of query.</typeparam>
+/// <typeparam name="TResult">Type of result.</typeparam>
 /// <remarks>
-/// Initializes a new instance of the 
-/// <see cref="ValidatorCommandDecorator{TCommand}"/> class
-/// with the handler to be decorated and the composite validator.
+/// Initializes a new instance of the
+/// <see cref="ValidatorQueryDecorator{TQuery, TResult}"/> class with
+/// the handler to be decorated and the composite validator.
 /// </remarks>
-/// <param name="decoratee">The command handler to be decorated.</param>
+/// <param name="decoratee">The query handler to decorate.</param>
 /// <param name="validator">The validator instance.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="decoratee"/> is null.</exception>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="validator"/> is null.</exception>
-public sealed class ValidatorCommandDecorator<TCommand>(
-    ICommandHandler<TCommand> decoratee,
-    ICompositeValidator<TCommand> validator) :
-    ICommandHandler<TCommand>, IDecorator
-    where TCommand : notnull, ICommand, IValidateDecorator
+public sealed class ValidatorQueryDecorator<TQuery, TResult>(
+    IQueryHandler<TQuery, TResult> decoratee,
+    ICompositeValidator<TQuery> validator) :
+    IQueryHandler<TQuery, TResult>, IDecorator
+    where TQuery : notnull, IQuery<TResult>, IValidateDecorator
 {
     /// <summary>
-    /// Asynchronously validates the command before handling 
-    /// if there is no error.
+    /// Asynchronously validates the query before handling 
+    /// and returns the task result.
     /// </summary>
-    /// <param name="command">The command instance to act on.</param>
+    /// <param name="query">The query to act on.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="command" /> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. 
-    /// See inner exception.</exception>
-    /// <returns>A task that represents an <see cref="OperationResult"/>
-    /// .</returns>
-    public async ValueTask<IOperationResult> HandleAsync(
-        TCommand command,
+    /// <paramref name="query"/> is null.</exception>
+    /// <returns>A task that represents an object 
+    /// of <see cref="IOperationResult{TValue}"/>.</returns>
+    public async ValueTask<IOperationResult<TResult>> HandleAsync(
+        TQuery query,
         CancellationToken cancellationToken = default)
     {
         IOperationResult operation = await validator
-            .ValidateAsync(command)
+            .ValidateAsync(query)
             .ConfigureAwait(false);
 
         return operation.IsFailure
-            ? operation
+            ? operation.ToOperationResult<TResult>()
             : await decoratee
-                .HandleAsync(command, cancellationToken)
+                .HandleAsync(query, cancellationToken)
                 .ConfigureAwait(false);
     }
 }

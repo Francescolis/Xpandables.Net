@@ -59,8 +59,9 @@ public sealed class AggregateUnitTest
             .AddXEventDuplicateDecorator()
             .AddXEventDomainStore()
             .AddXEventIntegrationStore()
-            .AddXOnAspects(typeof(AggregateCommandDecorator<,>).Assembly)
-            .AddXAspectBehaviors();
+            .AddXOnAspects(typeof(OnAspect<,>).Assembly)
+            .AddXAspectBehaviors()
+            .AddXAggregateCommandDecorator();
 
         IServiceProvider serviceProvider = serviceDescriptors
             .BuildServiceProvider(
@@ -79,7 +80,7 @@ public sealed class AggregateUnitTest
 
         // create person
         CreatePersonRequestCommand createCommand =
-            new(personId, firstName, lastName);
+            new(personId, firstName, lastName) { ContinueWhenNotFound = true };
 
         IOperationResult createResult = await dispatcher
             .SendAsync(createCommand);
@@ -112,7 +113,7 @@ public sealed class AggregateUnitTest
 
         // request contact
         SendContactRequestCommand contactCommand =
-            new(guid, Guid.NewGuid());
+            new(guid, Guid.NewGuid()) { ContinueWhenNotFound = false };
 
         IOperationResult contactResult = await dispatcher
             .SendAsync(contactCommand);
@@ -157,15 +158,15 @@ public sealed class CreatePersonRequestCommand(
     Guid aggregateId,
     string firstName,
     string lastName)
-    : ICommand<Person>
+    : ICommand<Person>, ICommandAggregate
 {
     public Guid KeyId { get; init; } = aggregateId;
     public string FirstName { get; init; } = firstName;
     public string LastName { get; init; } = lastName;
+    public bool ContinueWhenNotFound { get; init; }
     public Optional<Person> Aggregate { get; set; } = Optional.Empty<Person>();
 }
 
-[AspectAggregate<CreatePersonRequestCommand, Person>(ContinueWhenNotFound = true)]
 public sealed class CreatePersonRequestCommandHandler :
     ICommandHandler<CreatePersonRequestCommand, Person>
 {
@@ -193,14 +194,14 @@ public sealed class CreatePersonRequestCommandHandler :
 
 public sealed class SendContactRequestCommand(
     Guid aggregateId, Guid receiverId) :
-    ICommand<Person>
+    ICommand<Person>, ICommandAggregate
 {
     public Guid KeyId { get; init; } = aggregateId;
     public Guid ReceiverId { get; init; } = receiverId;
+    public bool ContinueWhenNotFound { get; init; }
     public Optional<Person> Aggregate { get; set; } = Optional.Empty<Person>();
 }
 
-[AspectAggregate<SendContactRequestCommand, Person>]
 public sealed class SendContactRequestAggregateCommandHandler :
     ICommandHandler<SendContactRequestCommand, Person>
 {

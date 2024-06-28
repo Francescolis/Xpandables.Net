@@ -32,7 +32,7 @@ public interface ICommandAggregate
     /// <remarks>The default value is <see langword="false"/>.
     /// Usefull when you are creating
     /// a new aggregate.</remarks>
-    public bool ContinueWhenNotFound { get; set; }
+    bool ContinueWhenNotFound { get; }
 }
 
 /// <summary>

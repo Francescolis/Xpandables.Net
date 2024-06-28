@@ -15,10 +15,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Commands;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.Commands.Decorators;
+namespace Xpandables.Net.Decorators;
 internal sealed class OperationFinalizerCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
     IOperationFinalizer operationResultFinalizer)
