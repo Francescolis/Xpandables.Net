@@ -53,6 +53,11 @@ public sealed class OnAspectFinalizer(IAspectFinalizer aspectFinalizer) :
 
         void DoFinalize(object? value)
         {
+            if (invocation.ReturnType == typeof(void))
+            {
+                return;
+            }
+
             object result = aspectFinalizer.Finalizer.Invoke(value);
 
             if (result is Exception reThrow)
@@ -60,7 +65,6 @@ public sealed class OnAspectFinalizer(IAspectFinalizer aspectFinalizer) :
                 invocation.SetException(reThrow);
             }
             else
-                if (invocation.ReturnType != typeof(void))
             {
                 invocation.SetReturnValue(result);
             }

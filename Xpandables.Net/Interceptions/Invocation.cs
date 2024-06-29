@@ -71,7 +71,9 @@ internal record class Invocation : IInvocation
     public void SetReturnValue(object? returnValue)
     {
         _exceptionDispatchInfo = null;
+
         ReturnValue = returnValue;
+
         Type returnType = ReturnType;
 
         if (ReturnValue is not null)
@@ -114,7 +116,8 @@ internal record class Invocation : IInvocation
 
             if (ReturnValue is Task { Exception: { } } taskException)
             {
-                _exceptionDispatchInfo = ExceptionDispatchInfo.Capture(taskException.Exception);
+                _exceptionDispatchInfo = ExceptionDispatchInfo
+                    .Capture(taskException.Exception);
             }
 
             if (ReThrowException)
