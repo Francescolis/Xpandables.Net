@@ -163,8 +163,7 @@ public static partial class ServiceCollectionAspectExtensions
                      && type.IsClass
                      && type.GetBaseTypes()
                         .Any(b => b.IsGenericType
-                            && (b.GetGenericTypeDefinition() == typeof(OnAspect<>)
-                            || b.GetGenericTypeDefinition() == typeof(OnAsyncAspect<>))))
+                            && b.GetGenericTypeDefinition() == typeof(OnAspect<>)))
              .ForEach(type => services.AddScoped(type));
 
         return services;

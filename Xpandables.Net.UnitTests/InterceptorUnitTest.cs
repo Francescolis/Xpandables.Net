@@ -221,7 +221,7 @@ public sealed class InterceptorTests
     public sealed record Args1(int Value) : IQuery<int>, IInterceptorDecorator;
     public sealed record Args2(int Value) : IQuery<int>, IInterceptorDecorator;
 
-    [AspectAsyncValidator(typeof(IQueryHandler<Args, int>),
+    [AspectValidator(typeof(IQueryHandler<Args, int>),
         ThrowException = false, Order = 1)]
     [AspectVisitor(typeof(IQueryHandler<Args, int>), Order = 0)]
     public sealed class HandleArgs : IQueryHandler<Args, int>

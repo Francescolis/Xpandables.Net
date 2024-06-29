@@ -107,23 +107,40 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
         MethodInfo? targetMethod,
         object?[]? args)
     {
-        _ = targetMethod
-            ?? throw new ArgumentNullException(
-                nameof(targetMethod),
-                "The parameter is missing.");
+        ArgumentNullException.ThrowIfNull(targetMethod);
 
-        bool isInterceptoreAsync = Interceptor is IAsyncInterceptor;
-        return ReferenceEquals(targetMethod, MethodBaseType)
-            ? Bypass(targetMethod, args)
-            : !isInterceptoreAsync
-                ? DoInvoke(targetMethod, args)
-                : GetTaskResult();
-
-        object? GetTaskResult()
+        try
         {
-            Task task = DoInvokeAsync(targetMethod, args);
-            task.Wait();
-            return task.GetType().GetProperty("Result")?.GetValue(task);
+            Type returnType = targetMethod.ReturnType;
+            MethodInfo methodInfo = Interceptor
+                .GetType()
+                .GetMethod(
+                    "InterceptCoreAsync",
+                    BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+            bool isAsync = methodInfo.IsOverridden();
+
+            return ReferenceEquals(targetMethod, MethodBaseType)
+                ? Bypass(targetMethod, args)
+                : isAsync
+                    ? GetTaskResult(targetMethod, args)
+                    : DoInvoke(targetMethod, args);
+
+            object? GetTaskResult(MethodInfo methodInfo, object?[]? args)
+            {
+                Task task = DoInvokeAsync(methodInfo, args);
+                task.Wait();
+                return task.GetType().GetProperty("Result")?.GetValue(task);
+            }
+        }
+        catch (TargetInvocationException exception)
+        {
+            if (exception.InnerException is not null)
+            {
+                throw exception.InnerException;
+            }
+
+            throw;
         }
     }
 
@@ -149,19 +166,15 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
         return invocation.ReturnValue;
     }
 
-    private async Task<object?> DoInvokeAsync(MethodInfo method, params object?[]? args)
+    private async Task<object?> DoInvokeAsync(
+        MethodInfo method,
+        object?[]? args)
     {
         Invocation invocation = new(method, Instance, InterfaceType, args);
 
-        if (Interceptor is not IAsyncInterceptor interceptor)
+        if (Interceptor.CanHandle(invocation))
         {
-            throw new InvalidOperationException(
-                "The interceptor must implement the IAsyncInterceptor interface.");
-        }
-
-        if (interceptor.CanHandle(invocation))
-        {
-            await interceptor
+            await Interceptor
                 .InterceptAsync(invocation)
                 .ConfigureAwait(false);
         }

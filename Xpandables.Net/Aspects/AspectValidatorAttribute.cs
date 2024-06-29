@@ -35,7 +35,7 @@ namespace Xpandables.Net.Aspects;
 /// <inheritdoc/>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
     AllowMultiple = true)]
-public sealed class AspectAsyncValidatorAttribute(Type interfaceType) :
+public sealed class AspectValidatorAttribute(Type interfaceType) :
     AspectAttribute(interfaceType)
 {
     /// <summary>
@@ -51,5 +51,5 @@ public sealed class AspectAsyncValidatorAttribute(Type interfaceType) :
     ///<inheritdoc/>
     public override IInterceptor Create(IServiceProvider serviceProvider)
         => serviceProvider
-        .GetRequiredService<OnAsyncAspectValidator>();
+        .GetRequiredService<OnAspectValidator>();
 }

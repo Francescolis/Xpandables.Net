@@ -103,8 +103,8 @@ public static class TypeExtensions
             ?.Description ?? $"{value}";
 
     /// <summary>
-    /// Determines whether the specified method is overridden i
-    /// n its current implementation.
+    /// Determines whether the specified method is overridden in its current 
+    /// implementation.
     /// The method info should come from the <see cref="object.GetType()"/>.
     /// </summary>
     /// <param name="methodInfo">The method info to act on.</param>

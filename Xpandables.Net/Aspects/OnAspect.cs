@@ -54,53 +54,8 @@ public abstract class OnAspect<TAspectAttribute> : Interceptor
         InterceptCore(invocation);
     }
 
-    /// <summary>
-    /// When implemented in a derived class, intercepts the method invocation.
-    /// </summary>
-    /// <param name="invocation">The method argument to be called.</param>
-    protected abstract void InterceptCore(IInvocation invocation);
-
-    /// <summary>
-    /// Returns a flag indicating if this behavior will actually 
-    /// do anything when invoked.
-    /// This is used to optimize interception. If the behaviors 
-    /// won't actually do anything then the interception
-    /// mechanism can be skipped completely.
-    /// Returns <see langword="true"/> if so, otherwise <see langword="false"/>.
-    /// The default behavior returns <see langword="true"/>.
-    /// </summary>
-    /// <param name="invocation">The method argument to be called.</param>
-    /// <returns><see langword="true"/> if it can handle the argument, 
-    /// otherwise <see langword="false"/></returns>
-    protected virtual bool CanHandleInvocation(IInvocation invocation)
-        => invocation is not null;
-}
-
-/// <summary>
-/// Base class for aspect implementation interceptor.
-/// </summary>
-/// <typeparam name="TAspectAttribute">The type of the aspect attribute.</typeparam>
-public abstract class OnAsyncAspect<TAspectAttribute> : AsyncInterceptor
-    where TAspectAttribute : AspectAttribute
-{
-    /// <summary>
-    /// Gets the aspect attribute applied on the method.
-    /// </summary>  
-    protected TAspectAttribute AspectAttribute { get; private set; } = default!;
-
     ///<inheritdoc/>
-    public sealed override bool CanHandle(IInvocation invocation)
-    {
-        ArgumentNullException.ThrowIfNull(invocation);
-
-        AspectAttribute = invocation.ValidateAttribute<TAspectAttribute>();
-
-        return CanHandleInvocation(invocation);
-    }
-
-    ///<inheritdoc/>
-    public sealed override async ValueTask InterceptAsync(
-        IInvocation invocation)
+    public sealed override async Task InterceptAsync(IInvocation invocation)
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
@@ -117,7 +72,18 @@ public abstract class OnAsyncAspect<TAspectAttribute> : AsyncInterceptor
     /// When implemented in a derived class, intercepts the method invocation.
     /// </summary>
     /// <param name="invocation">The method argument to be called.</param>
-    protected abstract Task InterceptCoreAsync(IInvocation invocation);
+    protected virtual Task InterceptCoreAsync(IInvocation invocation)
+    {
+        InterceptCore(invocation);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// When implemented in a derived class, intercepts the method invocation.
+    /// </summary>
+    /// <param name="invocation">The method argument to be called.</param>
+    protected virtual void InterceptCore(IInvocation invocation)
+        => base.Intercept(invocation);
 
     /// <summary>
     /// Returns a flag indicating if this behavior will actually 
@@ -142,18 +108,6 @@ public abstract class OnAsyncAspect<TAspectAttribute> : AsyncInterceptor
 /// <typeparam name="TInterface">The type of the interface.</typeparam>
 public abstract class OnAspect<TAspectAttribute, TInterface> :
     OnAspect<TAspectAttribute>
-    where TAspectAttribute : AspectAttribute
-    where TInterface : class
-{
-}
-
-/// <summary>
-/// Base class for asynchronous aspect implementation.
-/// </summary>
-/// <typeparam name="TAspectAttribute">The type of the aspect attribute.</typeparam>
-/// <typeparam name="TInterface">The type of the interface.</typeparam>
-public abstract class OnAsyncAspect<TAspectAttribute, TInterface> :
-    OnAsyncAspect<TAspectAttribute>
     where TAspectAttribute : AspectAttribute
     where TInterface : class
 {

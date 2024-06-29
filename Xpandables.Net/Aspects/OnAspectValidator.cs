@@ -22,11 +22,11 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// This class adds validation to the method arguments of implementation of
-/// the interface decorated with <see cref="AspectAsyncValidatorAttribute"/>.
+/// the interface decorated with <see cref="AspectValidatorAttribute"/>.
 /// </summary> 
 /// <param name="serviceProvider">The service provider.</param>
-public sealed class OnAsyncAspectValidator(IServiceProvider serviceProvider) :
-    OnAsyncAspect<AspectAsyncValidatorAttribute>
+public sealed class OnAspectValidator(IServiceProvider serviceProvider) :
+    OnAspect<AspectValidatorAttribute>
 {
     ///<inheritdoc/>
     protected override async Task InterceptCoreAsync(IInvocation invocation)

@@ -46,16 +46,7 @@ public interface IInterceptor
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="invocation"/> is null.</exception>
     void Intercept(IInvocation invocation);
-}
 
-/// <summary>
-/// Base interface for types and instances for asynchronous interception.
-/// Interceptors implementing this interface are called for 
-/// each invocation of the pipelines that they're included in.
-/// We advise the use of decorator instead of interceptor.
-/// </summary>
-public interface IAsyncInterceptor : IInterceptor
-{
     /// <summary>
     /// Method used to asynchronously intercept the parameter method call.
     /// You have to call the <see cref="IInvocation.Proceed"/> 
@@ -64,9 +55,8 @@ public interface IAsyncInterceptor : IInterceptor
     /// <param name="invocation">The method argument to be called.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="invocation"/> is null.</exception>
-    ValueTask InterceptAsync(IInvocation invocation);
+    Task InterceptAsync(IInvocation invocation);
 }
-
 
 /// <summary>
 /// This helper class allows the application author to 
@@ -85,22 +75,14 @@ public abstract class Interceptor : IInterceptor
 
         invocation.Proceed();
     }
-}
 
-/// <summary>
-/// This helper class allows the application author to 
-/// implement the <see cref="IInterceptor"/> interface.
-/// You must derive from this class in order to customize its behaviors.
-/// </summary>
-public abstract class AsyncInterceptor : Interceptor, IAsyncInterceptor
-{
     /// <inheritdoc/>>
-    public virtual async ValueTask InterceptAsync(IInvocation invocation)
+    public virtual Task InterceptAsync(IInvocation invocation)
     {
         ArgumentNullException.ThrowIfNull(invocation);
 
-        invocation.Proceed();
+        Intercept(invocation);
 
-        await Task.CompletedTask.ConfigureAwait(false);
+        return Task.CompletedTask;
     }
 }

@@ -30,7 +30,7 @@ namespace Xpandables.Net.Aspects;
 /// <param name="aggregateStore">The aggregate store</param>
 public sealed class OnAspectAggregate<TCommand, TAggregate>(
     IAggregateStore<TAggregate> aggregateStore) :
-    OnAsyncAspect<AspectAggregateAttribute<TCommand, TAggregate>>
+    OnAspect<AspectAggregateAttribute<TCommand, TAggregate>>
     where TAggregate : class, IAggregate
     where TCommand : class, ICommand<TAggregate>
 {
