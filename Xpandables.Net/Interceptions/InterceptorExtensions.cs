@@ -102,8 +102,9 @@ public static class InterceptorExtensions
 
         if (isAsync)
         {
-            awaitable.Wait();
-            return awaitable.GetAwaitable().GetResult();
+            Task task = awaitable;
+            task.Wait();
+            return task.GetType().GetProperty("Result")?.GetValue(task);
         }
 
         return awaitable;
