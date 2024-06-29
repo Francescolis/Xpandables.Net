@@ -51,7 +51,7 @@ public sealed class AggregateUnitTest
                 .UseOperationFinalizer())
             .AddXEventHandlers()
             .AddXDispatcher()
-            .AddXPersistenceCommandHandler()
+            .AddXPersistenceCommandDelegate()
             .AddXAggregateStore()
             .AddXUnitOfWorkAggregate<PersonUnitOfWork>()
             .AddXOperationResultFinalizer()

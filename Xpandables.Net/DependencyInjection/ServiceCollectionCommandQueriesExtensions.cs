@@ -515,7 +515,7 @@ public static class ServiceCollectionCommandQueriesExtensions
 
         if (definedOptions.IsTransactionEnabled)
         {
-            _ = services.AddXTransactionCommandDecorator();
+            _ = services.AddXTransactionalCommandDecorator();
         }
 
         if (definedOptions.IsValidatorEnabled)
@@ -559,22 +559,24 @@ public static class ServiceCollectionCommandQueriesExtensions
     }
 
     /// <summary>
-    /// Registers transactional scope behavior to the serviceswith scope 
+    /// Registers transactional command behavior to the services with scope 
     /// life time.
     /// </summary>
+    /// <typeparam name="TCommandTransactional">The type of the transactional
+    /// instance.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXTransactionStoreCommand
-        <TTransactionStoreCommand>(
+    public static IServiceCollection AddXTransactionalCommandBehavior
+        <TCommandTransactional>(
         this IServiceCollection services)
-        where TTransactionStoreCommand : class, ICommandTransactional
+        where TCommandTransactional : class, ICommandTransactional
     {
         ArgumentNullException.ThrowIfNull(services);
 
         return services
-            .AddScoped<ICommandTransactional, TTransactionStoreCommand>();
+            .AddScoped<ICommandTransactional, TCommandTransactional>();
     }
 
     /// <summary>
@@ -586,7 +588,7 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
-    public static IServiceCollection AddXTransactionCommandDecorator(
+    public static IServiceCollection AddXTransactionalCommandDecorator(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -611,7 +613,7 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// .</exception>
     /// <remarks>To be used when persistence is managed differently.</remarks>
-    public static IServiceCollection AddXPersistenceCommandHandler(
+    public static IServiceCollection AddXPersistenceCommandDelegate(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -630,19 +632,19 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// <see cref="PersistenceCommandDecorator{TCommand}"/>.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <param name="persistenceHandlerBuilder">The persistence command handler 
+    /// <param name="persistenceDelegateBuilder">The persistence command handler 
     /// factory.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// or <paramref name="persistenceHandlerBuilder"/> is null.</exception>
-    public static IServiceCollection AddXPersistenceCommandHandler(
+    /// or <paramref name="persistenceDelegateBuilder"/> is null.</exception>
+    public static IServiceCollection AddXPersistenceCommandDelegate(
         this IServiceCollection services,
-        Func<IServiceProvider, PersistenceCommandDelegate> persistenceHandlerBuilder)
+        Func<IServiceProvider, PersistenceCommandDelegate> persistenceDelegateBuilder)
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(persistenceHandlerBuilder);
+        ArgumentNullException.ThrowIfNull(persistenceDelegateBuilder);
 
-        services.TryAddScoped(persistenceHandlerBuilder);
+        services.TryAddScoped(persistenceDelegateBuilder);
 
         return services;
     }
