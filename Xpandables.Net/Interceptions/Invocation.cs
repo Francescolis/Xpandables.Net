@@ -29,6 +29,7 @@ internal record class Invocation : IInvocation
     internal ExceptionDispatchInfo? _exceptionDispatchInfo;
     public MethodInfo Method { get; }
     public object Target { get; }
+    public Type InterfaceType { get; }
     public IParameterCollection Arguments { get; }
     public Exception? Exception => _exceptionDispatchInfo?.SourceException;
     public bool ReThrowException { get; set; }
@@ -42,6 +43,7 @@ internal record class Invocation : IInvocation
     /// </summary>
     /// <param name="targetMethod">The target method.</param>
     /// <param name="targetInstance">The target instance being called.</param>
+    /// <param name="interfaceType">The interface type.</param>
     /// <param name="argsValue">Arguments for the method, if necessary.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="targetMethod"/> is null.</exception>
@@ -50,12 +52,14 @@ internal record class Invocation : IInvocation
     internal Invocation(
         MethodInfo targetMethod,
         object targetInstance,
+        Type interfaceType,
         params object?[]? argsValue)
     {
         Method = targetMethod
             ?? throw new ArgumentNullException(nameof(targetMethod));
         Target = targetInstance
             ?? throw new ArgumentNullException(nameof(targetInstance));
+        InterfaceType = interfaceType;
         Arguments = new ParameterCollection(targetMethod, argsValue);
     }
 

@@ -25,6 +25,7 @@ namespace Xpandables.Net.Interceptions;
 /// </summary>
 public abstract class InterceptorProxy : DispatchProxy
 {
+    internal Type InterfaceType { get; set; } = default!;
     internal object Instance { get; set; } = default!;
     internal IInterceptor Interceptor { get; set; } = default!;
 
@@ -90,6 +91,7 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
             ?? throw new ArgumentNullException(nameof(instance));
         Interceptor = interceptor
             ?? throw new ArgumentNullException(nameof(interceptor));
+        InterfaceType = typeof(TInterface);
     }
 
     /// <summary>
@@ -127,7 +129,7 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
 
     private object? DoInvoke(MethodInfo method, params object?[]? args)
     {
-        Invocation invocation = new(method, Instance, args);
+        Invocation invocation = new(method, Instance, InterfaceType, args);
 
         if (Interceptor.CanHandle(invocation))
         {
@@ -149,7 +151,7 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
 
     private async Task<object?> DoInvokeAsync(MethodInfo method, params object?[]? args)
     {
-        Invocation invocation = new(method, Instance, args);
+        Invocation invocation = new(method, Instance, InterfaceType, args);
 
         if (Interceptor is not IAsyncInterceptor interceptor)
         {

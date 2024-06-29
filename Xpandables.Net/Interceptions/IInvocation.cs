@@ -35,6 +35,11 @@ public interface IInvocation
     object Target { get; }
 
     /// <summary>
+    /// Contains the implemented interface type.
+    /// </summary>
+    Type InterfaceType { get; }
+
+    /// <summary>
     /// Contains the arguments (position in signature, names and 
     /// values) with which the method has been invoked.
     /// This argument is provided only for target element with parameters.
