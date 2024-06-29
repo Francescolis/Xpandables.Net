@@ -21,7 +21,7 @@ namespace Xpandables.Net.Transactions;
 /// <summary>
 /// Describe a contract used to define a transactional context.
 /// </summary>
-/// <remarks>Implement this interface to provide a transactional 
+/// <remarks>Implement this interface for example to provide a transactional 
 /// context for persistence.
 /// You may derive from <see cref="Transactional"/> class to
 /// implement a custom behavior.</remarks>

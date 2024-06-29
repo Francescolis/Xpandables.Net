@@ -616,7 +616,7 @@ public static class ServiceCollectionCommandQueriesExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddScoped<PersistenceCommandHandler>(
+        services.TryAddScoped<PersistenceCommandDelegate>(
             _ => ct => ValueTask.FromResult(OperationResults.Ok().Build()));
 
         return services;
@@ -637,7 +637,7 @@ public static class ServiceCollectionCommandQueriesExtensions
     /// or <paramref name="persistenceHandlerBuilder"/> is null.</exception>
     public static IServiceCollection AddXPersistenceCommandHandler(
         this IServiceCollection services,
-        Func<IServiceProvider, PersistenceCommandHandler> persistenceHandlerBuilder)
+        Func<IServiceProvider, PersistenceCommandDelegate> persistenceHandlerBuilder)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(persistenceHandlerBuilder);
@@ -725,15 +725,15 @@ public static class ServiceCollectionCommandQueriesExtensions
 
         _ = services.XTryDecorate(
                 typeof(ICommandHandler<>),
-                typeof(OperationFinalizerCommandDecorator<>),
+                typeof(FinalizerCommandDecorator<>),
                 typeof(IOperationFinalizerDecorator));
         _ = services.XTryDecorate(
                 typeof(IAsyncQueryHandler<,>),
-                typeof(OperationFinalizerAsyncQueryDecorator<,>),
+                typeof(FinalizerAsyncQueryDecorator<,>),
                 typeof(IOperationFinalizerDecorator));
         _ = services.XTryDecorate(
                 typeof(IQueryHandler<,>),
-                typeof(OperationFinalizerQueryDecorator<,>),
+                typeof(FinalizerQueryDecorator<,>),
                 typeof(IOperationFinalizerDecorator));
 
         return services;

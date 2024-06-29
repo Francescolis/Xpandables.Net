@@ -22,7 +22,7 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Decorators;
-internal sealed class OperationFinalizerAsyncQueryDecorator<TQuery, TResult>(
+internal sealed class FinalizerAsyncQueryDecorator<TQuery, TResult>(
     IAsyncQueryHandler<TQuery, TResult> decoratee,
     IOperationFinalizer operationResultFinalizer)
     : IAsyncQueryHandler<TQuery, TResult>, IDecorator

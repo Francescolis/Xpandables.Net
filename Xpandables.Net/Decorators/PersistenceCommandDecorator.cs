@@ -32,7 +32,7 @@ namespace Xpandables.Net.Decorators;
 /// <returns>A task that represents an <see cref="IOperationResult"/>.</returns>
 /// <exception cref="InvalidOperationException">The persistence operation
 /// failed to execute.</exception>
-public delegate ValueTask<IOperationResult> PersistenceCommandHandler(
+public delegate ValueTask<IOperationResult> PersistenceCommandDelegate(
     CancellationToken cancellationToken);
 
 /// <summary>
@@ -41,7 +41,7 @@ public delegate ValueTask<IOperationResult> PersistenceCommandHandler(
 /// The target command should implement the <see cref="IPersistenceDecorator"/>
 /// interface in order to activate the behavior.
 /// The class decorates the target command handler with an definition 
-/// of <see cref="PersistenceCommandHandler"/> 
+/// of <see cref="PersistenceCommandDelegate"/> 
 /// that get called after the main one in the same control flow only.
 /// </summary>
 /// <typeparam name="TCommand">Type of command.</typeparam>
@@ -50,15 +50,15 @@ public delegate ValueTask<IOperationResult> PersistenceCommandHandler(
 /// <see cref="PersistenceCommandDecorator{TCommand}"/> class with
 /// the decorated handler and the unit of work to act on.
 /// </remarks>
-/// <param name="persistenceCommandHandler">The persistence delegate 
+/// <param name="persistenceCommandDelegate">The persistence delegate 
 /// to apply persistence.</param>
 /// <param name="decoratee">The decorated command handler.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="decoratee"/> 
-/// or <paramref name="persistenceCommandHandler"/>
+/// or <paramref name="persistenceCommandDelegate"/>
 /// is null.</exception>
 public sealed class PersistenceCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
-    PersistenceCommandHandler persistenceCommandHandler)
+    PersistenceCommandDelegate persistenceCommandDelegate)
     : ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, IPersistenceDecorator
 {
@@ -87,7 +87,7 @@ public sealed class PersistenceCommandDecorator<TCommand>(
 
             return commandResult.IsFailure
                 ? commandResult
-                : await persistenceCommandHandler(cancellationToken)
+                : await persistenceCommandDelegate(cancellationToken)
                 .ConfigureAwait(false)
                     is { IsFailure: true } persistenceResult
                 ? persistenceResult

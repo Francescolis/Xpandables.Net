@@ -20,6 +20,7 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
+using Xpandables.Net.Transactions;
 
 namespace Xpandables.Net.Decorators;
 
@@ -36,14 +37,14 @@ namespace Xpandables.Net.Decorators;
 /// with the handler to be decorated and the transaction scope provider.
 /// </remarks>
 /// <param name="decoratee">The decorated command handler.</param>
-/// <param name="transactionStore">The transaction store to use.</param>
+/// <param name="transactional">The transaction process to use.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="decoratee"/> is null.</exception>
 /// <exception cref="ArgumentNullException">The 
-/// <paramref name="transactionStore"/> is null.</exception>
+/// <paramref name="transactional"/> is null.</exception>
 public sealed class TransactionCommandDecorator<TCommand>(
     ICommandHandler<TCommand> decoratee,
-    ICommandTransactional transactionStore) :
+    ICommandTransactional transactional) :
     ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, ITransactionDecorator
 {
@@ -56,7 +57,7 @@ public sealed class TransactionCommandDecorator<TCommand>(
     /// to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="command" /> is null.</exception>
-    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// <exception cref="OperationResultException">The operation failed. 
     /// See inner exception.</exception>
     /// <returns>A task that represents an object 
     /// of <see cref="IOperationResult"/>.</returns>
@@ -66,18 +67,35 @@ public sealed class TransactionCommandDecorator<TCommand>(
     {
         try
         {
-            await using (await transactionStore
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+            await using ITransactional disposable = await transactional
                 .TransactionAsync(cancellationToken)
-                .ConfigureAwait(false))
+                .ConfigureAwait(false);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
+            try
             {
-                return await decoratee
+                disposable.Result = await decoratee
                     .HandleAsync(command, cancellationToken)
                     .ConfigureAwait(false);
+
+                return disposable.Result;
             }
-        }
-        catch (OperationResultException resultException)
-        {
-            return resultException.Operation;
+            catch (OperationResultException decorateeResultException)
+            {
+                disposable.Result = decorateeResultException.Operation;
+                return disposable.Result;
+            }
+            catch (Exception decorateeException)
+                when (decorateeException is not ArgumentNullException)
+            {
+                disposable.Result = OperationResults
+                    .BadRequest()
+                    .WithException(decorateeException)
+                    .Build();
+
+                return disposable.Result;
+            }
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)

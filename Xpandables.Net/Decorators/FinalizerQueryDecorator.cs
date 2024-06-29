@@ -20,44 +20,47 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Decorators;
-internal sealed class OperationFinalizerCommandDecorator<TCommand>(
-    ICommandHandler<TCommand> decoratee,
+internal sealed class FinalizerQueryDecorator<TQuery, TResult>(
+    IQueryHandler<TQuery, TResult> decoratee,
     IOperationFinalizer operationResultFinalizer)
-    : ICommandHandler<TCommand>, IDecorator
-    where TCommand : notnull, ICommand, IOperationFinalizerDecorator
+    : IQueryHandler<TQuery, TResult>, IDecorator
+    where TQuery : notnull, IQuery<TResult>, IOperationFinalizerDecorator
 {
-    public async ValueTask<IOperationResult> HandleAsync(
-        TCommand command,
+    public async ValueTask<IOperationResult<TResult>> HandleAsync(
+        TQuery query,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            IOperationResult result = await decoratee
-                .HandleAsync(command, cancellationToken)
+            IOperationResult<TResult> result = await decoratee
+                .HandleAsync(query, cancellationToken)
                 .ConfigureAwait(false);
 
             return operationResultFinalizer.Finalizer is not null
-                ? operationResultFinalizer.Finalizer.Invoke(result)
+                ? operationResultFinalizer.Finalizer
+                    .Invoke(result)
+                    .ToOperationResult<TResult>()
                 : result;
         }
         catch (OperationResultException resultException)
         {
             return operationResultFinalizer.CallFinalizerOnException
                 ? operationResultFinalizer
-                    .Finalizer
-                    .Invoke(resultException.Operation)
-                : resultException.Operation;
+                    .Finalizer.Invoke(resultException.Operation)
+                    .ToOperationResult<TResult>()
+                : resultException.Operation
+                .ToOperationResult<TResult>();
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)
         {
             return operationResultFinalizer.CallFinalizerOnException
                 ? operationResultFinalizer
-                    .Finalizer
-                    .Invoke(exception.ToOperationResult())
+                    .Finalizer.Invoke(exception.ToOperationResult())
+                    .ToOperationResult<TResult>()
                 : OperationResults
-                .InternalError()
-                .WithTitle("OperationFinalizerCommandDecorator")
+                .InternalError<TResult>()
+                .WithTitle("OperationFinalizerQueryDecorator")
                 .WithException(exception)
                 .Build();
         }
