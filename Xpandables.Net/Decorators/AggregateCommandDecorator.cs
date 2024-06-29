@@ -61,9 +61,10 @@ public sealed class AggregateCommandDecorator<TCommand, TAggregate>(
             .ReadAsync(command.KeyId, cancellationToken)
             .ConfigureAwait(false);
 
-        if ((aggregateOperation.IsNotFoundStatusCode()
-            && !command.ContinueWhenNotFound)
-            || aggregateOperation.IsFailure)
+        if ((aggregateOperation.IsFailure
+               && !aggregateOperation.IsNotFoundStatusCode())
+               || (aggregateOperation.IsNotFoundStatusCode()
+                   && !command.ContinueWhenNotFound))
         {
             return aggregateOperation;
         }

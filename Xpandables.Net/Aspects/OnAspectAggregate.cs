@@ -51,9 +51,10 @@ public sealed class OnAspectAggregate<TCommand, TAggregate>(
             .ReadAsync(command.KeyId, ct)
             .ConfigureAwait(false);
 
-        if ((aggregateOperation.IsNotFoundStatusCode()
-            && !AspectAttribute.ContinueWhenNotFound)
-            || aggregateOperation.IsFailure)
+        if ((aggregateOperation.IsFailure
+            && !aggregateOperation.IsNotFoundStatusCode())
+            || (aggregateOperation.IsNotFoundStatusCode()
+                && !AspectAttribute.ContinueWhenNotFound))
         {
             invocation.SetReturnValue(aggregateOperation);
             return;
