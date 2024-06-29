@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
+using Xpandables.Net.Decorators;
 using Xpandables.Net.Interceptions;
 
 namespace Xpandables.Net.Aspects;
@@ -37,7 +38,7 @@ namespace Xpandables.Net.Aspects;
 /// </exception>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public sealed class AspectAggregateAttribute<TCommand, TAggregate> :
-        AspectAttribute
+    AspectAttribute, ICommandAggregate
     where TAggregate : class, IAggregate
     where TCommand : class, ICommand<TAggregate>
 {
