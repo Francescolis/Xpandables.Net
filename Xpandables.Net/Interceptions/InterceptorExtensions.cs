@@ -81,6 +81,53 @@ public static class InterceptorExtensions
     }
 
     /// <summary>
+    /// Gets the real return value of the invocation.
+    /// </summary>
+    /// <param name="invocation">The method argument to be called.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="invocation"/>
+    /// is null.</exception>
+    /// <returns>The real return value of the invocation.</returns>
+    public static object? GetRealReturnValue(this IInvocation invocation)
+    {
+        ArgumentNullException.ThrowIfNull(invocation);
+
+        dynamic? awaitable = invocation.ReturnValue;
+        if (awaitable is null)
+        {
+            return null;
+        }
+
+        Type returnType = invocation.Method.ReturnType;
+        bool isAsync = returnType.IsTaskType();
+
+        if (isAsync)
+        {
+            awaitable.Wait();
+            return awaitable.GetAwaitable().GetResult();
+        }
+
+        return awaitable;
+    }
+
+    /// <summary>
+    /// Determines whether the type is a task type.
+    /// </summary>
+    /// <param name="type">The type to act on.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="type"/> 
+    /// is null.</exception>
+    /// <returns><see langword="true"/> if the type is a task type; 
+    /// otherwise, <see langword="false"/>.</returns>
+    public static bool IsTaskType(this Type type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+
+        return type == typeof(Task) || type == typeof(ValueTask)
+                || (type.IsGenericType
+                    && (type.GetGenericTypeDefinition() == typeof(Task<>)
+                   || type.GetGenericTypeDefinition() == typeof(ValueTask<>)));
+    }
+
+    /// <summary>
     /// Returns the aspect attribute applied on the method.
     /// </summary>
     /// <param name="invocation">The method argument to be called.</param>

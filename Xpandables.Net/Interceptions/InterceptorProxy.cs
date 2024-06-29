@@ -118,7 +118,7 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
                     "InterceptCoreAsync",
                     BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-            bool isAsync = methodInfo.IsOverridden();
+            bool isAsync = methodInfo?.IsOverridden() ?? false;
 
             return ReferenceEquals(targetMethod, MethodBaseType)
                 ? Bypass(targetMethod, args)
