@@ -23,6 +23,6 @@ namespace Xpandables.Net.Aspects;
 public sealed class AspectFinalizer : IAspectFinalizer
 {
     /// <inheritdoc/>
-    public Func<object?, object> Finalizer { get; set; }
+    public Func<object?, object?> Finalize { get; set; }
         = _ => throw new InvalidOperationException("The finalizer is not set.");
 }

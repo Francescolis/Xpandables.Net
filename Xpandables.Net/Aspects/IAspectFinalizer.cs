@@ -23,11 +23,12 @@ namespace Xpandables.Net.Aspects;
 public interface IAspectFinalizer : IAspect
 {
     /// <summary>
-    /// Gets or sets the finalizer function that will be called after the 
+    /// Gets or sets the function that will be called after the 
     /// method invocation.
     /// </summary>
     /// <remarks>In case of exception, the finilizer will receive the handled
     /// exception, otherwise, it will receive the method result when it's not
-    /// a void method.</remarks>
-    Func<object?, object> Finalizer { get; set; }
+    /// a <see cref="void"/>, <see cref="Task"/> or <see cref="ValueTask"/> 
+    /// method.</remarks>
+    Func<object?, object?> Finalize { get; set; }
 }

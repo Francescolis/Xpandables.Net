@@ -53,7 +53,9 @@ public sealed class OnAspectFinalizer(IAspectFinalizer aspectFinalizer) :
 
         void DoFinalize(object? value)
         {
-            if (invocation.ReturnType == typeof(void))
+            if (invocation.ReturnType == typeof(void)
+                || invocation.ReturnType == typeof(Task)
+                || invocation.ReturnType == typeof(ValueTask))
             {
                 return;
             }
@@ -63,11 +65,11 @@ public sealed class OnAspectFinalizer(IAspectFinalizer aspectFinalizer) :
                 value = invocation.GetRealReturnValue();
             }
 
-            object result = aspectFinalizer.Finalizer.Invoke(value);
+            object? result = aspectFinalizer.Finalize.Invoke(value);
 
-            if (result is Exception reThrow)
+            if (result is Exception rethrownException)
             {
-                invocation.SetException(reThrow);
+                invocation.SetException(rethrownException);
             }
             else
             {

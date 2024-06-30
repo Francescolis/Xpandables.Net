@@ -255,10 +255,10 @@ public sealed class InterceptorTests
         public Task<IOperationResult<int>> HandleAsync(
             Args2 query, CancellationToken cancellationToken = default)
         {
-            aspectFinalizer.Finalizer = obj => obj switch
+            aspectFinalizer.Finalize = obj => obj switch
             {
                 Exception _ => OperationResults.Ok(query.Value).Build(),
-                _ => obj!
+                _ => obj
             };
 
             throw new InvalidOperationException("Invalid operation exception");
