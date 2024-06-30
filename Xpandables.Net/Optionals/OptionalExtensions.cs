@@ -36,9 +36,9 @@ public static class OptionalExtensions
     /// has been applied if the instance contains a value.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="optional"/>
     /// or <paramref name="some"/> is null.</exception>
-    public static async ValueTask<Optional<T>> MapAsync<T>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask<T>> some)
+    public static async Task<Optional<T>> MapAsync<T>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<T>> some)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(some);
@@ -60,9 +60,9 @@ public static class OptionalExtensions
     /// has been applied if the instance contains a value.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
     /// or <paramref name="some"/> is null.</exception>
-    public static async ValueTask<Optional<T>> MapAsync<T>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask> some)
+    public static async Task<Optional<T>> MapAsync<T>(
+        this Task<Optional<T>> optional,
+        Func<T, Task> some)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(some);
@@ -82,9 +82,9 @@ public static class OptionalExtensions
     /// <returns>A new optional that contains a value or not.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
     /// or <paramref name="binder"/> is null.</exception>
-    public static async ValueTask<Optional<TU>> BindAsync<T, TU>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask<Optional<TU>>> binder)
+    public static async Task<Optional<TU>> BindAsync<T, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<Optional<TU>>> binder)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(binder);
@@ -106,10 +106,11 @@ public static class OptionalExtensions
     /// <returns>A new optional that could contain a value or not.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="binder"/> is null.</exception>
-    public static async ValueTask<Optional<TU>> BindAsync<T, TU>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask<TU>> binder)
+    public static async Task<Optional<TU>> BindAsync<T, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<TU>> binder)
     {
+        ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(binder);
 
         Optional<T> value = await optional.ConfigureAwait(false);
@@ -130,9 +131,9 @@ public static class OptionalExtensions
     /// has been applied if the instance is empty.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
     /// or <paramref name="empty"/> is null.</exception>
-    public static async ValueTask<Optional<T>> EmptyAsync<T>(
-        this ValueTask<Optional<T>> optional,
-        Func<ValueTask<T>> empty)
+    public static async Task<Optional<T>> EmptyAsync<T>(
+        this Task<Optional<T>> optional,
+        Func<Task<T>> empty)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(empty);
@@ -153,9 +154,9 @@ public static class OptionalExtensions
     /// has been applied if the instance is empty.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
     /// or <paramref name="empty"/> is null.</exception>
-    public static async ValueTask EmptyAsync<T>(
-        this ValueTask<Optional<T>> optional,
-        Func<ValueTask> empty)
+    public static async Task EmptyAsync<T>(
+        this Task<Optional<T>> optional,
+        Func<Task> empty)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(empty);
@@ -176,9 +177,9 @@ public static class OptionalExtensions
     /// or the <paramref name="defaultValue"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
     /// or <paramref name="defaultValue"/> is null.</exception>
-    public static async ValueTask<T> ValueOrDefaultAsync<T>(
-        this ValueTask<Optional<T>> optional,
-        ValueTask<T> defaultValue)
+    public static async Task<T> ValueOrDefaultAsync<T>(
+        this Task<Optional<T>> optional,
+        Task<T> defaultValue)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(defaultValue);
@@ -203,9 +204,9 @@ public static class OptionalExtensions
     /// or the <paramref name="defaultValue"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="optional"/> 
     /// or <paramref name="defaultValue"/> is null.</exception>
-    public static async ValueTask<T> ValueOrDefaultAsync<T>(
-        this ValueTask<Optional<T>> optional,
-        Func<ValueTask<T>> defaultValue)
+    public static async Task<T> ValueOrDefaultAsync<T>(
+        this Task<Optional<T>> optional,
+        Func<Task<T>> defaultValue)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(defaultValue);
@@ -297,10 +298,10 @@ public static class OptionalExtensions
     /// otherwise, the result of the <paramref name="empty"/> method.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="some"/> 
     /// or <paramref name="empty"/> is null.</exception>
-    public static async ValueTask<TU> MatchAsync<T, TU>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask<TU>> some,
-        Func<ValueTask<TU>> empty)
+    public static async Task<TU> MatchAsync<T, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<TU>> some,
+        Func<Task<TU>> empty)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(some);
@@ -325,10 +326,10 @@ public static class OptionalExtensions
     /// when the instance is empty.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="some"/> 
     /// or <paramref name="empty"/> is null.</exception>
-    public static async ValueTask MatchAsync<T>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask> some,
-        Func<ValueTask> empty)
+    public static async Task MatchAsync<T>(
+        this Task<Optional<T>> optional,
+        Func<T, Task> some,
+        Func<Task> empty)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(some);
@@ -379,7 +380,7 @@ public static class OptionalExtensions
         "Reliability",
         "CA2007:Consider calling ConfigureAwait on the awaited task",
         Justification = "<Pending>")]
-    public static async ValueTask<Optional<T>> FirstOrEmptyAsync<T>(
+    public static async Task<Optional<T>> FirstOrEmptyAsync<T>(
         this IAsyncEnumerable<T> source)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -432,9 +433,9 @@ public static class OptionalExtensions
         "Reliability",
         "CA2007:Consider calling ConfigureAwait on the awaited task",
         Justification = "<Pending>")]
-    public static async ValueTask<Optional<T>> FirstOrEmptyAsync<T>(
+    public static async Task<Optional<T>> FirstOrEmptyAsync<T>(
         this IAsyncEnumerable<T> source,
-        Func<T, ValueTask<bool>> predicate)
+        Func<T, Task<bool>> predicate)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(predicate);
@@ -562,9 +563,9 @@ public static class OptionalExtensions
     /// <paramref name="selector"/> has been applied.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="selector"/> is null.</exception>
-    public static async ValueTask<Optional<TU>> SelectAsync<T, TU>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask<TU>> selector)
+    public static async Task<Optional<TU>> SelectAsync<T, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<TU>> selector)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(selector);
@@ -589,9 +590,9 @@ public static class OptionalExtensions
     /// <paramref name="selector"/> has been applied.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="selector"/></exception>"
-    public static async ValueTask<Optional<TU>> SelectManyAsync<T, TU>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask<Optional<TU>>> selector)
+    public static async Task<Optional<TU>> SelectManyAsync<T, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<Optional<TU>>> selector)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(selector);
@@ -617,10 +618,10 @@ public static class OptionalExtensions
     /// and <paramref name="resultSelector"/> has been applied.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="selector"/> 
     /// or <paramref name="resultSelector"/> is null.</exception>"
-    public static async ValueTask<Optional<TU>> SelectManyAsync<T, TR, TU>(
-        this ValueTask<Optional<T>> optional,
-        Func<T, ValueTask<Optional<TR>>> selector,
-        Func<T, TR, ValueTask<TU>> resultSelector)
+    public static async Task<Optional<TU>> SelectManyAsync<T, TR, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<Optional<TR>>> selector,
+        Func<T, TR, Task<TU>> resultSelector)
     {
         ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(selector);

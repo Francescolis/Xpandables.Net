@@ -107,7 +107,7 @@ public static class HttpClientDispatcherExtensions
     /// <see cref="HttpClientResponse{TResult}"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+    public static Task<HttpClientResponse<IAsyncEnumerable<TResult>>>
         SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientAsyncRequest<TResult> request,
@@ -132,7 +132,7 @@ public static class HttpClientDispatcherExtensions
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+    public static Task<HttpClientResponse<IAsyncEnumerable<TResult>>>
         SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientAsyncRequest<TResult> request,
@@ -158,7 +158,7 @@ public static class HttpClientDispatcherExtensions
     /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse> SendAsync(
+    public static Task<HttpClientResponse> SendAsync(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientRequest request,
         CancellationToken cancellationToken)
@@ -180,7 +180,7 @@ public static class HttpClientDispatcherExtensions
     /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse> SendAsync(
+    public static Task<HttpClientResponse> SendAsync(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientRequest request)
     {
@@ -206,7 +206,7 @@ public static class HttpClientDispatcherExtensions
     /// .</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
+    public static Task<HttpClientResponse<TResult>> SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientRequest<TResult> request,
         CancellationToken cancellationToken)
@@ -230,7 +230,7 @@ public static class HttpClientDispatcherExtensions
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
-    public static ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
+    public static Task<HttpClientResponse<TResult>> SendAsync<TResult>(
         this IHttpClientDispatcher httpRestClientHandler,
         IHttpClientRequest<TResult> request)
     {
@@ -495,7 +495,7 @@ public static class HttpClientDispatcherExtensions
         JsonSerializerOptions? options = default)
          => JsonSerializer.Deserialize<T>(json, options);
 
-    internal static async ValueTask<HttpClientException?>
+    internal static async Task<HttpClientException?>
         BuildExceptionAsync(this HttpResponseMessage httpResponse)
         => await httpResponse.Content.ReadAsStringAsync()
             .ConfigureAwait(false) switch

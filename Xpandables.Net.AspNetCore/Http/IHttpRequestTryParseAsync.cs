@@ -48,7 +48,7 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <param name="parameter">The <see cref="ParameterInfo"/> 
         /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public static ValueTask<TRequest?> BindAsync(
+        public static Task<TRequest?> BindAsync(
             HttpContext context,
             ParameterInfo parameter)
         {
@@ -78,7 +78,7 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <param name="parameter">The <see cref="ParameterInfo"/> 
         /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public static ValueTask<TRequest?> BindAsync(
+        public static Task<TRequest?> BindAsync(
             HttpContext context,
             ParameterInfo parameter)
         {
@@ -108,7 +108,7 @@ public interface IHttpRequestTryParseAsync<TRequest>
         /// <param name="parameter">The <see cref="ParameterInfo"/> 
         /// for the parameter being bound to.</param>
         /// <returns>The value to assign to the parameter.</returns>
-        public static ValueTask<TRequest?> BindAsync(
+        public static Task<TRequest?> BindAsync(
             HttpContext context,
             ParameterInfo parameter)
         {
@@ -131,11 +131,11 @@ public interface IHttpRequestTryParseAsync<TRequest>
     /// <param name="parameter">The <see cref="ParameterInfo"/> 
     /// for the parameter being bound to.</param>
     /// <returns>The value to assign to the parameter.</returns>
-    static abstract ValueTask<TRequest?> BindAsync(
+    static abstract Task<TRequest?> BindAsync(
         HttpContext context,
         ParameterInfo parameter);
 
-    internal static ValueTask<TRequest?> DoBindAsync(IDictionary dictionary)
+    internal static Task<TRequest?> DoBindAsync(IDictionary dictionary)
     {
         string jsonString = JsonSerializer
             .Serialize(
@@ -147,6 +147,6 @@ public interface IHttpRequestTryParseAsync<TRequest>
                 jsonString,
                 JsonSerializerDefaultOptions.OptionDefaultWeb);
 
-        return ValueTask.FromResult(request);
+        return Task.FromResult(request);
     }
 }

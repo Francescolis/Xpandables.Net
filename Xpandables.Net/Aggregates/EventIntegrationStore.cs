@@ -36,7 +36,7 @@ public sealed class EventIntegrationStore<TEventEntity>(
     where TEventEntity : class, IEventEntityIntegration
 {
     ///<inheritdoc/>
-    public async ValueTask AppendAsync(
+    public async Task AppendAsync(
         IEventIntegration @event,
         CancellationToken cancellationToken = default)
     {
@@ -47,7 +47,7 @@ public sealed class EventIntegrationStore<TEventEntity>(
     }
 
     ///<inheritdoc/>
-    public async ValueTask AppendPersistAsync(
+    public async Task AppendPersistAsync(
         IEventIntegration @event,
         CancellationToken cancellationToken = default)
     {
@@ -71,7 +71,7 @@ public sealed class EventIntegrationStore<TEventEntity>(
 
 
     ///<inheritdoc/>
-    public async ValueTask UpdateAsync(
+    public async Task UpdateAsync(
         Guid eventId,
         Exception? exception = default,
         CancellationToken cancellationToken = default)

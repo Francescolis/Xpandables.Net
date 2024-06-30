@@ -63,7 +63,7 @@ public sealed class VisitorCommandDecorator<TCommand>(
     /// The operation failed. See inner exception.</exception>
     /// <returns>A task that represents an object 
     /// of <see cref="IOperationResult"/>.</returns>
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {

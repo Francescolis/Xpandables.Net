@@ -54,7 +54,7 @@ public sealed class EventDuplicateDecorator<TEvent>(
     /// </summary>
     /// <param name="event">The event to handle.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         TEvent @event,
         CancellationToken cancellationToken = default)
     {

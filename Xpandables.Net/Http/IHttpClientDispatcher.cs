@@ -56,7 +56,7 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// <paramref name="request"/> is null.</exception>
     /// <exception cref="InvalidOperationException">
     /// The operation failed. See inner exception.</exception>
-    ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
+    Task<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
         IHttpClientAsyncRequest<TResult> request,
         CancellationToken cancellationToken = default);
 
@@ -75,7 +75,7 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// <paramref name="request"/> is null.</exception>
     /// <exception cref="InvalidOperationException">
     /// The operation failed. See inner exception.</exception>
-    ValueTask<HttpClientResponse> SendAsync(
+    Task<HttpClientResponse> SendAsync(
         IHttpClientRequest request,
         CancellationToken cancellationToken = default);
 
@@ -97,7 +97,7 @@ public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
     /// <paramref name="request"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
+    Task<HttpClientResponse<TResult>> SendAsync<TResult>(
         IHttpClientRequest<TResult> request,
         CancellationToken cancellationToken = default);
 }

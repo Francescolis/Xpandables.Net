@@ -28,7 +28,7 @@ public partial record struct Optional<T>
     /// has been applied if the instance contains a value.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="some"/> is null.</exception>
-    public async ValueTask<Optional<T>> MapAsync(Func<T, ValueTask<T>> some)
+    public async Task<Optional<T>> MapAsync(Func<T, Task<T>> some)
     {
         ArgumentNullException.ThrowIfNull(some);
 
@@ -51,7 +51,7 @@ public partial record struct Optional<T>
     /// as been applied if the instance contains a value.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="some"/> is null.</exception>
-    public async ValueTask<Optional<T>> MapAsync(Func<T, ValueTask> some)
+    public async Task<Optional<T>> MapAsync(Func<T, Task> some)
     {
         ArgumentNullException.ThrowIfNull(some);
 
@@ -75,8 +75,8 @@ public partial record struct Optional<T>
     /// <returns>A new optional that could contain a value or not.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="binder"/> is null.</exception>
-    public async readonly ValueTask<Optional<TU>> BindAsync<TU>(
-        Func<T?, ValueTask<Optional<TU>>> binder)
+    public async readonly Task<Optional<TU>> BindAsync<TU>(
+        Func<T?, Task<Optional<TU>>> binder)
     {
         ArgumentNullException.ThrowIfNull(binder);
 
@@ -94,7 +94,7 @@ public partial record struct Optional<T>
     /// <paramref name="empty"/> is null.</exception>
     /// <returns>The current instance where the <paramref name="empty"/> 
     /// has been applied if the instance is empty.</returns>
-    public async ValueTask<Optional<T>> EmptyAsync(Func<ValueTask<T>> empty)
+    public async Task<Optional<T>> EmptyAsync(Func<Task<T>> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
 
@@ -116,8 +116,8 @@ public partial record struct Optional<T>
     /// <paramref name="empty"/> is null.</exception>
     /// <returns>The current instance where the <paramref name="empty"/> 
     /// has been applied if the instance is empty.</returns>
-    public async readonly ValueTask<Optional<T>> EmptyAsync(
-        Func<ValueTask> empty)
+    public async readonly Task<Optional<T>> EmptyAsync(
+        Func<Task> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);
 

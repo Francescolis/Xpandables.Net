@@ -31,7 +31,7 @@ internal sealed class AggregateStoreSnapshot<TAggregate>(
     : IAggregateStoreSnapshot<TAggregate>
     where TAggregate : class, IAggregate, IOriginator
 {
-    public async ValueTask<IOperationResult> AppendAsync(
+    public async Task<IOperationResult> AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
@@ -76,7 +76,7 @@ internal sealed class AggregateStoreSnapshot<TAggregate>(
         }
     }
 
-    public async ValueTask<IOperationResult<TAggregate>> ReadAsync(
+    public async Task<IOperationResult<TAggregate>> ReadAsync(
          Guid aggregateId,
          CancellationToken cancellationToken = default)
     {

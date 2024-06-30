@@ -62,7 +62,7 @@ public interface IQuery<out TResult>
 /// an <see cref="IOperationResult{TValue}"/>.</returns>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="query"/> is null.</exception>
-public delegate ValueTask<IOperationResult<TResult>> QueryHandler
+public delegate Task<IOperationResult<TResult>> QueryHandler
     <in TQuery, TResult>(
     TQuery query, CancellationToken cancellationToken = default)
     where TQuery : notnull, IQuery<TResult>;
@@ -90,7 +90,7 @@ public interface IQueryHandler<in TQuery, TResult>
     /// <paramref name="query"/> is null.</exception>
     /// <returns>A task that represents a
     /// n <see cref="IOperationResult{TValue}"/>.</returns>
-    ValueTask<IOperationResult<TResult>> HandleAsync(
+    Task<IOperationResult<TResult>> HandleAsync(
         TQuery query,
         CancellationToken cancellationToken = default);
 }
@@ -113,7 +113,7 @@ public interface IQueryHandlerWrapper<TResult>
     /// <paramref name="query"/> is null.</exception>
     /// <returns>A task that represents an 
     /// object of <see cref="IOperationResult{TValue}"/>.</returns>
-    ValueTask<IOperationResult<TResult>> HandleAsync(
+    Task<IOperationResult<TResult>> HandleAsync(
         IQuery<TResult> query,
         CancellationToken cancellationToken = default);
 }

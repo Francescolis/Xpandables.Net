@@ -39,7 +39,7 @@ public interface IVisitor
     /// The <paramref name="element"/> is null.</exception>
     /// <exception cref="ArgumentException">The <paramref name="element"/> 
     /// must implement <see cref="IVisitable"/>.</exception>
-    ValueTask VisitAsync(object element);
+    Task VisitAsync(object element);
 }
 
 /// <summary>
@@ -59,14 +59,14 @@ public interface IVisitor<in TElement> : IVisitor
     /// <param name="element">Element to be visited.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="element"/> is null.</exception>
-    ValueTask VisitAsync(TElement element);
+    Task VisitAsync(TElement element);
 
-    ValueTask IVisitor.VisitAsync(object element)
+    Task IVisitor.VisitAsync(object element)
     {
         ArgumentNullException.ThrowIfNull(element);
         if (element is not TElement visitable)
         {
-            return ValueTask.CompletedTask;
+            return Task.CompletedTask;
         }
 
         return VisitAsync(visitable);

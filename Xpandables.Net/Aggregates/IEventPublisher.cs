@@ -37,7 +37,7 @@ public interface IEventPublisher
     /// <paramref name="event"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The 
     /// operation failed. See inner exception.</exception>
-    ValueTask<IOperationResult> PublishAsync<TEvent>(
+    Task<IOperationResult> PublishAsync<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent;

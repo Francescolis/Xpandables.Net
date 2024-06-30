@@ -56,7 +56,7 @@ public interface ICommand
 /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="command"/> is null.</exception>
-public delegate ValueTask<IOperationResult> CommandHandler<in TCommand>(
+public delegate Task<IOperationResult> CommandHandler<in TCommand>(
     TCommand command, CancellationToken cancellationToken = default)
     where TCommand : notnull, ICommand;
 
@@ -79,7 +79,7 @@ public interface ICommandHandler<in TCommand>
     /// <paramref name="command"/> is null.</exception>
     /// <returns>A value that represents an 
     /// <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> HandleAsync(
+    Task<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default);
 }

@@ -36,7 +36,7 @@ public sealed class HttpClientDispatcherFactory
     public HttpClientOptions Options => options.Value;
 
     ///<inheritdoc/>
-    public ValueTask<HttpRequestMessage> BuildRequestAsync<TRequest>(
+    public Task<HttpRequestMessage> BuildRequestAsync<TRequest>(
         TRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -45,14 +45,11 @@ public sealed class HttpClientDispatcherFactory
         HttpClientAttribute attribute = ResolveAttribute(request);
 
         attribute.Path ??= "/";
-#pragma warning disable CA2000 // Dispose objects before losing scope
         HttpRequestMessage requestMessage = new()
         {
             Method = new(attribute.Method.ToString()),
             RequestUri = new(attribute.Path, UriKind.Relative)
         };
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
         requestMessage.Headers.Accept
             .Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
         requestMessage.Headers.AcceptLanguage
@@ -179,7 +176,7 @@ public sealed class HttpClientDispatcherFactory
                     attribute.IsSecured);
         }
 
-        return ValueTask.FromResult(requestMessage);
+        return Task.FromResult(requestMessage);
 
         HttpClientAttribute ResolveAttribute(TRequest request)
         {
@@ -200,7 +197,7 @@ public sealed class HttpClientDispatcherFactory
     }
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse> BuildResponseAsync(
+    public async Task<HttpClientResponse> BuildResponseAsync(
         HttpResponseMessage response,
         CancellationToken cancellationToken = default)
     {
@@ -219,7 +216,7 @@ public sealed class HttpClientDispatcherFactory
     }
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse<TResult>>
+    public async Task<HttpClientResponse<TResult>>
         BuildResponseAsync<TResult>(
         HttpResponseMessage response,
         CancellationToken cancellationToken = default)
@@ -241,7 +238,7 @@ public sealed class HttpClientDispatcherFactory
     }
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+    public async Task<HttpClientResponse<IAsyncEnumerable<TResult>>>
         BuildResponseResultAsync<TResult>(
         HttpResponseMessage response,
         CancellationToken cancellationToken = default)

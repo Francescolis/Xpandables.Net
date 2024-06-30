@@ -36,7 +36,7 @@ public interface IEventHandler<TEvent>
     /// <param name="event">The event to handle.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation 
     /// requests.</param>
-    ValueTask<IOperationResult> HandleAsync(
+    Task<IOperationResult> HandleAsync(
         TEvent @event,
         CancellationToken cancellationToken = default);
 }

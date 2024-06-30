@@ -91,10 +91,10 @@ public sealed class ValidatorUnitTest
 
     public sealed class HandleLogin : ICommandHandler<Login>
     {
-        public ValueTask<IOperationResult> HandleAsync(
+        public Task<IOperationResult> HandleAsync(
             Login command,
             CancellationToken cancellationToken = default)
-            => new(
+            => Task.FromResult(
                 OperationResults
                 .Ok()
                 .WithHeader(nameof(Login.UserLogin), command.UserLogin)

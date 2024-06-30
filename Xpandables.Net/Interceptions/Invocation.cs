@@ -85,16 +85,25 @@ internal record class Invocation : IInvocation
 
             if (returnType.IsGenericType)
             {
+                Type argumentType = returnType.GetGenericArguments()[0];
                 if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
-                    ReturnValue = Activator
-                        .CreateInstance(returnType, () => ReturnValue);
+                    MethodInfo fromResultMethod = typeof(Task)
+                        .GetMethod(nameof(Task.FromResult))!
+                        .MakeGenericMethod(argumentType);
+
+                    ReturnValue = fromResultMethod.Invoke(null, [ReturnValue]);
                 }
 
                 if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
                 {
-                    ReturnValue = Activator
-                        .CreateInstance(returnType, ReturnValue);
+                    Type genericValueTaskType = typeof(ValueTask<>)
+                        .MakeGenericType(argumentType);
+
+                    ConstructorInfo constructorInfo = genericValueTaskType
+                        .GetConstructor([argumentType])!;
+
+                    ReturnValue = constructorInfo.Invoke([ReturnValue]);
                 }
             }
         }

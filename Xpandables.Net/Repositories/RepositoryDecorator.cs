@@ -31,21 +31,21 @@ public class RepositoryDecorator<TEntity>
     where TEntity : class
 {
     /// <inheritdoc/>
-    public ValueTask<int> CountAsync(
+    public Task<int> CountAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
         => decoratee.CountAsync(filter, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask DeleteAsync(
+    public Task DeleteAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
         => decoratee.DeleteAsync(filter, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask DeleteAsync(
+    public Task DeleteAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => decoratee.DeleteAsync(entity, cancellationToken)
@@ -100,28 +100,28 @@ public class RepositoryDecorator<TEntity>
     }
 
     /// <inheritdoc/>
-    public ValueTask InsertAsync(
+    public Task InsertAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => decoratee.InsertAsync(entity, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask InsertManyAsync(
+    public Task InsertManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         => decoratee.InsertManyAsync(entities, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask<Optional<TResult>> TryFindAsync<TResult>(
+    public Task<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
         => decoratee.TryFindAsync(filter, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
+    public Task<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable
@@ -129,21 +129,21 @@ public class RepositoryDecorator<TEntity>
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask UpdateAsync(
+    public Task UpdateAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => decoratee.UpdateAsync(entity, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask UpdateManyAsync(
+    public Task UpdateManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         => decoratee.UpdateManyAsync(entities, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask UpdateManyAsync(
+    public Task UpdateManyAsync(
         IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, object>> updater,
         CancellationToken cancellationToken = default)

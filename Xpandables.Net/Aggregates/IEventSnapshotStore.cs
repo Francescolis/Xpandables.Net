@@ -31,7 +31,7 @@ public interface IEventSnapshotStore
     /// <paramref name="event"/> is null.</exception>
     /// <returns>A value that represents an asynchronous 
     /// operation.</returns>
-    ValueTask AppendAsync(
+    Task AppendAsync(
        IEventSnapshot @event,
        CancellationToken cancellationToken = default);
 
@@ -45,7 +45,7 @@ public interface IEventSnapshotStore
     /// while waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation
     /// that returns the snapshot.</returns>
-    ValueTask<IEventSnapshot?> ReadAsync(
+    Task<IEventSnapshot?> ReadAsync(
         Guid objectId,
         CancellationToken cancellationToken = default);
 }

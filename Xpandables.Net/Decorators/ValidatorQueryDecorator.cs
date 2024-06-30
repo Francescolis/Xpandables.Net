@@ -64,7 +64,7 @@ public sealed class ValidatorQueryDecorator<TQuery, TResult>(
     /// <paramref name="query"/> is null.</exception>
     /// <returns>A task that represents an object 
     /// of <see cref="IOperationResult{TValue}"/>.</returns>
-    public async ValueTask<IOperationResult<TResult>> HandleAsync(
+    public async Task<IOperationResult<TResult>> HandleAsync(
         TQuery query,
         CancellationToken cancellationToken = default)
     {

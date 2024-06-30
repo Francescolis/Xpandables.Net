@@ -46,6 +46,6 @@ public interface IEventSubscriber : IDisposable
     /// <paramref name="subscriber"/> is null</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
-    void Subscribe<TEvent>(Func<TEvent, ValueTask> subscriber)
+    void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
         where TEvent : notnull, IEvent;
 }

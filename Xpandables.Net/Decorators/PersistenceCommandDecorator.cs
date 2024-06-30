@@ -32,7 +32,7 @@ namespace Xpandables.Net.Decorators;
 /// <returns>A task that represents an <see cref="IOperationResult"/>.</returns>
 /// <exception cref="InvalidOperationException">The persistence operation
 /// failed to execute.</exception>
-public delegate ValueTask<IOperationResult> PersistenceCommandDelegate(
+public delegate Task<IOperationResult> PersistenceCommandDelegate(
     CancellationToken cancellationToken);
 
 /// <summary>
@@ -75,7 +75,7 @@ public sealed class PersistenceCommandDecorator<TCommand>(
     /// See inner exception.</exception>
     /// <returns>A task that represents an 
     /// object of <see cref="IOperationResult"/>.</returns>
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {

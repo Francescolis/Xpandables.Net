@@ -44,14 +44,14 @@ public class Repository<TEntity>(
     where TEntity : class
 {
     ///<inheritdoc/>
-    public virtual ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
+    public virtual Task<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable
         => repositoryRead.TryFindByKeyAsync(key, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask<Optional<TResult>> TryFindAsync<TResult>(
+    public virtual Task<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
         => repositoryRead.TryFindAsync(filter, cancellationToken);
@@ -63,50 +63,50 @@ public class Repository<TEntity>(
         => repositoryRead.FetchAsync(filter, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask<int> CountAsync(
+    public virtual Task<int> CountAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
         => repositoryRead.CountAsync(filter, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask InsertAsync(
+    public virtual Task InsertAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => repositoryWrite.InsertAsync(entity, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask UpdateAsync(
+    public virtual Task UpdateAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => repositoryWrite.UpdateAsync(entity, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask DeleteAsync(
+    public virtual Task DeleteAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
         => repositoryWrite.DeleteAsync(filter, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask InsertManyAsync(
+    public virtual Task InsertManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         => repositoryWrite.InsertManyAsync(entities, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask UpdateManyAsync(
+    public virtual Task UpdateManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         => repositoryWrite.UpdateManyAsync(entities, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask UpdateManyAsync(
+    public virtual Task UpdateManyAsync(
         IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, object>> updater,
         CancellationToken cancellationToken = default)
         => repositoryWrite.UpdateManyAsync(filter, updater, cancellationToken);
 
     ///<inheritdoc/>
-    public virtual ValueTask DeleteAsync(
+    public virtual Task DeleteAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => repositoryWrite.DeleteAsync(entity, cancellationToken);

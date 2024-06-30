@@ -170,13 +170,13 @@ public sealed class CreatePersonRequestCommand(
 public sealed class CreatePersonRequestCommandHandler :
     ICommandHandler<CreatePersonRequestCommand, Person>
 {
-    public ValueTask<IOperationResult> HandleAsync(
+    public Task<IOperationResult> HandleAsync(
         CreatePersonRequestCommand command,
         CancellationToken cancellationToken = default)
     {
         if (command.Aggregate.IsNotEmpty)
         {
-            return ValueTask.FromResult(OperationResults
+            return Task.FromResult(OperationResults
                 .Conflict()
                 .WithError(nameof(PersonId), "Person already exist")
                 .Build());
@@ -185,7 +185,7 @@ public sealed class CreatePersonRequestCommandHandler :
         command.Aggregate = Person
             .Create(command.KeyId, command.FirstName, command.LastName);
 
-        return ValueTask.FromResult(OperationResults
+        return Task.FromResult(OperationResults
             .Ok()
             .WithHeader(nameof(PersonId), command.KeyId.ToString())
             .Build());
@@ -205,7 +205,7 @@ public sealed class SendContactRequestCommand(
 public sealed class SendContactRequestAggregateCommandHandler :
     ICommandHandler<SendContactRequestCommand, Person>
 {
-    public ValueTask<IOperationResult> HandleAsync(
+    public Task<IOperationResult> HandleAsync(
         SendContactRequestCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -214,7 +214,7 @@ public sealed class SendContactRequestAggregateCommandHandler :
         ContactId receivedId = new(command.ReceiverId);
         IOperationResult result = command.Aggregate.Value.BeContact(receivedId);
 
-        return ValueTask.FromResult(result);
+        return Task.FromResult(result);
     }
 }
 
@@ -222,7 +222,7 @@ public sealed class ContactCreatedDomainEventHandler
     (IEventIntegrationStore eventIntegrationStore)
     : IEventHandler<PersonCreatedDomainEvent>
 {
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         PersonCreatedDomainEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -238,7 +238,7 @@ public sealed class ContactRequestSentDomainEventHandler
     (IEventIntegrationStore eventIntegrationStore)
     : IEventHandler<ContactRequestSentDomainEvent>
 {
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         ContactRequestSentDomainEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -426,7 +426,7 @@ public sealed class PersonUnitOfWork : Disposable, IUnitOfWork
         where TEntity : class
         => new RepositoryPerson<TEntity>(_events);
 
-    public async ValueTask PersistAsync(
+    public async Task PersistAsync(
         CancellationToken cancellationToken = default)
     {
         int count = _events.Count;
@@ -436,7 +436,7 @@ public sealed class PersonUnitOfWork : Disposable, IUnitOfWork
             _events.Clear();
         }
 
-        await ValueTask.CompletedTask;
+        await Task.CompletedTask;
     }
 }
 
@@ -446,12 +446,12 @@ public sealed class RepositoryPerson<TEvent>(HashSet<IEventEntity> events) :
 {
     private readonly HashSet<IEventEntity> _events = events;
 
-    public override ValueTask InsertAsync(
+    public override Task InsertAsync(
         TEvent entity,
         CancellationToken cancellationToken = default)
     {
         _events.Add((IEventEntity)entity);
-        return ValueTask.CompletedTask;
+        return Task.CompletedTask;
     }
 
     public override IAsyncEnumerable<TResult> FetchAsync<TResult>(

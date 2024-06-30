@@ -98,9 +98,9 @@ public sealed class AsyncAspectValidator<TArgument>
     (IAspectValidator<TArgument> validator) : IAsyncAspectValidator<TArgument>
 {
     ///<inheritdoc/>
-    public ValueTask<IOperationResult> ValidateAsync(TArgument? argument)
+    public Task<IOperationResult> ValidateAsync(TArgument? argument)
     {
         IOperationResult operation = validator.Validate(argument);
-        return ValueTask.FromResult(operation);
+        return Task.FromResult(operation);
     }
 }

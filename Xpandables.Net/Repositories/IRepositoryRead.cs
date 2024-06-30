@@ -44,7 +44,7 @@ public interface IRepositoryRead<TEntity>
     /// If the <see cref="CancellationToken" /> is canceled.</exception>
     /// <exception cref="InvalidOperationException"> The operation failed.
     /// See inner exception.</exception>
-    ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
+    Task<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable;
@@ -68,7 +68,7 @@ public interface IRepositoryRead<TEntity>
     /// >If the <see cref="CancellationToken" /> is canceled.</exception>
     /// <exception cref="InvalidOperationException"> The operation failed.
     /// See inner exception.</exception>
-    ValueTask<Optional<TResult>> TryFindAsync<TResult>(
+    Task<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default);
 
@@ -111,7 +111,7 @@ public interface IRepositoryRead<TEntity>
     /// the <see cref="CancellationToken" /> is canceled.</exception>
     /// <exception cref="InvalidOperationException"> The operation failed.
     /// See inner exception.</exception>
-    ValueTask<int> CountAsync(
+    Task<int> CountAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default);
 }

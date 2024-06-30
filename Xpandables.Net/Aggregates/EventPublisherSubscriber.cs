@@ -36,7 +36,7 @@ public sealed class EventPublisherSubscriber(IServiceProvider serviceProvider)
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     /// <inheritdoc/>
-    public async ValueTask<IOperationResult> PublishAsync<TEvent>(
+    public async Task<IOperationResult> PublishAsync<TEvent>(
         TEvent @event, CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent
     {
@@ -51,7 +51,7 @@ public sealed class EventPublisherSubscriber(IServiceProvider serviceProvider)
                     case Action<TEvent> action:
                         action(@event);
                         break;
-                    case Func<TEvent, ValueTask> action:
+                    case Func<TEvent, Task> action:
                         await action(@event).ConfigureAwait(false);
                         break;
                     case IEventHandler<TEvent> handler:
@@ -82,7 +82,7 @@ public sealed class EventPublisherSubscriber(IServiceProvider serviceProvider)
        => GetHandlersOf<TEvent>().Add(subscriber);
 
     /// <inheritdoc/>
-    public void Subscribe<TEvent>(Func<TEvent, ValueTask> subscriber)
+    public void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
         where TEvent : notnull, IEvent
         => GetHandlersOf<TEvent>().Add(subscriber);
 

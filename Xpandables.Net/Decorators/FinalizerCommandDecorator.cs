@@ -26,7 +26,7 @@ internal sealed class FinalizerCommandDecorator<TCommand>(
     : ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, IOperationFinalizerDecorator
 {
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {

@@ -41,7 +41,7 @@ public static class DispatcherExtensions
     /// is null.</exception>
     /// <returns>A task that represents an 
     /// <see cref="IOperationResult{TValue}"/>.</returns>
-    public static async ValueTask<IOperationResult> SendAsync<TAggregate>(
+    public static async Task<IOperationResult> SendAsync<TAggregate>(
         this IDispatcher dispatcher,
         ICommand<TAggregate> command,
         CancellationToken cancellationToken = default)
@@ -89,7 +89,7 @@ public static class DispatcherExtensions
     /// is null.</exception>
     /// <returns>A task that represents an 
     /// <see cref="IOperationResult{TValue}"/>.</returns>
-    public static async ValueTask<IOperationResult<TResult>> GetAsync<TResult>(
+    public static async Task<IOperationResult<TResult>> GetAsync<TResult>(
         this IDispatcher dispatcher,
         IQuery<TResult> query, CancellationToken cancellationToken = default)
     {

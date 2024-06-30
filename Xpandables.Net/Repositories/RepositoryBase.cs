@@ -28,22 +28,22 @@ public abstract class RepositoryBase<TEntity> : IRepository<TEntity>
     where TEntity : class
 {
     /// <inheritdoc/>
-    public virtual ValueTask<int> CountAsync(
+    public virtual Task<int> CountAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
-        => default;
+        => Task.FromResult(-1);
 
     /// <inheritdoc/>
-    public virtual ValueTask DeleteAsync(
+    public virtual Task DeleteAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
-        => ValueTask.CompletedTask;
+        => Task.CompletedTask;
 
     /// <inheritdoc/>
-    public virtual ValueTask DeleteAsync(
+    public virtual Task DeleteAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
-        => ValueTask.CompletedTask;
+        => Task.CompletedTask;
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TResult> FetchAsync<TResult>(
@@ -52,46 +52,46 @@ public abstract class RepositoryBase<TEntity> : IRepository<TEntity>
         => AsyncEnumerable.EmptyAsync<TResult>();
 
     /// <inheritdoc/>
-    public virtual ValueTask InsertAsync(
+    public virtual Task InsertAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
-        => ValueTask.CompletedTask;
+        => Task.CompletedTask;
 
     /// <inheritdoc/>
-    public virtual ValueTask InsertManyAsync(
+    public virtual Task InsertManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-        => ValueTask.CompletedTask;
+        => Task.CompletedTask;
 
     /// <inheritdoc/>
-    public virtual ValueTask<Optional<TResult>> TryFindAsync<TResult>(
+    public virtual Task<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
-        => ValueTask.FromResult(Optional.Empty<TResult>());
+        => Task.FromResult(Optional.Empty<TResult>());
 
     /// <inheritdoc/>
-    public virtual ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
+    public virtual Task<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable
-        => ValueTask.FromResult(Optional.Empty<TEntity>());
+        => Task.FromResult(Optional.Empty<TEntity>());
 
     /// <inheritdoc/>
-    public virtual ValueTask UpdateAsync(
+    public virtual Task UpdateAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
-        => ValueTask.CompletedTask;
+        => Task.CompletedTask;
 
     /// <inheritdoc/>
-    public virtual ValueTask UpdateManyAsync(
+    public virtual Task UpdateManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-        => ValueTask.CompletedTask;
+        => Task.CompletedTask;
 
     /// <inheritdoc/>
-    public virtual ValueTask UpdateManyAsync(
+    public virtual Task UpdateManyAsync(
         IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, object>> updater,
         CancellationToken cancellationToken = default)
-        => ValueTask.CompletedTask;
+        => Task.CompletedTask;
 }

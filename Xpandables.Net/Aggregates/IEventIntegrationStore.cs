@@ -35,7 +35,7 @@ public interface IEventIntegrationStore : IDisposable
     /// See inner exception.</exception>
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
-    ValueTask AppendAsync(
+    Task AppendAsync(
         IEventIntegration @event,
         CancellationToken cancellationToken = default);
 
@@ -53,7 +53,7 @@ public interface IEventIntegrationStore : IDisposable
     /// See inner exception.</exception>
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
-    ValueTask AppendPersistAsync(
+    Task AppendPersistAsync(
         IEventIntegration @event,
         CancellationToken cancellationToken = default);
 
@@ -72,7 +72,7 @@ public interface IEventIntegrationStore : IDisposable
     /// See inner exception.</exception>
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
-    ValueTask UpdateAsync(
+    Task UpdateAsync(
         Guid eventId,
         Exception? exception = default,
         CancellationToken cancellationToken = default);

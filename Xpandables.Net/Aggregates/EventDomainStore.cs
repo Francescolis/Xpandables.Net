@@ -37,7 +37,7 @@ public sealed class EventDomainStore<TEventEntity>(
     where TEventEntity : class, IEventEntityDomain
 {
     ///<inheritdoc/>
-    public async ValueTask AppendAsync(
+    public async Task AppendAsync(
         IEventDomain @event,
         CancellationToken cancellationToken = default)
     {

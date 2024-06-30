@@ -115,12 +115,14 @@ public static class StringExtensions
     /// members.</exception>
     /// <exception cref="ArgumentNullException">The <paramref name="stream"/> 
     /// is null.</exception>
-    public static ValueTask<T?> DeserializeAnonymousTypeAsync<T>(
+    public static Task<T?> DeserializeAnonymousTypeAsync<T>(
         this Stream stream,
         T _,
         JsonSerializerOptions? options = default,
         CancellationToken cancellationToken = default)
-        => JsonSerializer.DeserializeAsync<T>(stream, options, cancellationToken);
+        => JsonSerializer
+            .DeserializeAsync<T>(stream, options, cancellationToken)
+            .AsTask();
 
     /// <summary>
     /// Serializes the current instance to JSON string using 

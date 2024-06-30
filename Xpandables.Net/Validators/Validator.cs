@@ -91,10 +91,10 @@ public class Validator<TArgument>(IServiceProvider serviceProvider)
     }
 
     ///<inheritdoc/>
-    public virtual ValueTask<IOperationResult> ValidateAsync(
+    public virtual Task<IOperationResult> ValidateAsync(
         TArgument argument)
     {
         IOperationResult result = Validate(argument);
-        return ValueTask.FromResult(result);
+        return Task.FromResult(result);
     }
 }

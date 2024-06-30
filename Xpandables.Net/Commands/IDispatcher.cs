@@ -39,7 +39,7 @@ public interface IDispatcher : IServiceProvider
     /// <paramref name="command"/> is null.</exception>
     /// <returns>A task that represents an <see cref="IOperationResult"/>
     /// .</returns>
-    ValueTask<IOperationResult> SendAsync<TCommand>(
+    Task<IOperationResult> SendAsync<TCommand>(
         TCommand command,
         CancellationToken cancellationToken = default)
         where TCommand : notnull, ICommand;
@@ -56,7 +56,7 @@ public interface IDispatcher : IServiceProvider
     /// <paramref name="command"/> is null.</exception>
     /// <returns>A task that represents an <see cref="IOperationResult"/>
     /// .</returns>
-    ValueTask<IOperationResult> SendAsync<TCommand, TAggregate>(
+    Task<IOperationResult> SendAsync<TCommand, TAggregate>(
         TCommand command,
         CancellationToken cancellationToken = default)
         where TAggregate : class, IAggregate
@@ -76,7 +76,7 @@ public interface IDispatcher : IServiceProvider
     /// <paramref name="query"/> is null.</exception>
     /// <returns>A task that represents an 
     /// <see cref="IOperationResult{TValue}"/>.</returns>
-    ValueTask<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
+    Task<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
         TQuery query,
         CancellationToken cancellationToken = default)
         where TQuery : notnull, IQuery<TResult>;

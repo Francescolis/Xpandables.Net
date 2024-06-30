@@ -226,7 +226,7 @@ public static partial class OperationResultExtensions
     /// <see cref="IOperationResult"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
     /// or <paramref name="operation"/> is null.</exception>
-    public static async ValueTask BuildFileResponseAsync(
+    public static async Task BuildFileResponseAsync(
         this HttpContext context,
         IOperationResult operation)
     {
@@ -255,7 +255,7 @@ public static partial class OperationResultExtensions
     /// <see cref="IOperationResult"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
     /// or <paramref name="operation"/> is null.</exception>
-    public static async ValueTask BuildCreatedResponseAsync(
+    public static async Task BuildCreatedResponseAsync(
         this HttpContext context,
         IOperationResult operation)
     {
@@ -286,11 +286,11 @@ public static partial class OperationResultExtensions
     /// <param name="context">The current <see cref="HttpContext"/> to act 
     /// on.</param>
     /// <param name="operation">The operation to act on.</param>
-    /// <returns>A <see cref="ValueTask"/> representing the asynchronous 
+    /// <returns>A <see cref="Task"/> representing the asynchronous 
     /// operation.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
     /// or <paramref name="operation"/> is null.</exception>
-    public static async ValueTask BuildMetaDataContextAsync(
+    public static async Task BuildMetaDataContextAsync(
         this HttpContext context,
         IOperationResult operation)
     {
@@ -420,7 +420,7 @@ public static partial class OperationResultExtensions
     /// <param name="context">The current <see cref="HttpContext"/> to act 
     /// on.</param>
     /// <param name="exception">The exception to act on.</param>
-    public static async ValueTask GetProblemDetailsAsync(
+    public static async Task GetProblemDetailsAsync(
         this HttpContext context,
         Exception exception)
     {
@@ -472,7 +472,7 @@ public static partial class OperationResultExtensions
     /// <param name="operation">The operation to act on.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="context"/> 
     /// or <paramref name="operation"/> is null.</exception>
-    public static async ValueTask GetProblemDetailsAsync(
+    public static async Task GetProblemDetailsAsync(
         this HttpContext context,
         IOperationResult operation)
     {

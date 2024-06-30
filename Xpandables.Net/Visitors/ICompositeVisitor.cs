@@ -41,5 +41,5 @@ public interface ICompositeVisitor<in TElement>
     /// <param name="element">The element to be visited.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="element"/> is null.</exception>
-    new ValueTask VisitAsync(TElement element);
+    new Task VisitAsync(TElement element);
 }

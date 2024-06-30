@@ -36,7 +36,7 @@ public interface IAggregateStore<TAggregate>
     /// is null.</exception>
     /// <returns>A task that represents an <see cref="IOperationResult"/>
     /// .</returns>
-    ValueTask<IOperationResult> AppendAsync(
+    Task<IOperationResult> AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default);
 
@@ -53,7 +53,7 @@ public interface IAggregateStore<TAggregate>
     /// is null.</exception>
     /// <remarks>You can also apply snapshot pattern for performance
     /// using the <see cref="IEventSnapshotStore"/>.</remarks>
-    ValueTask<IOperationResult<TAggregate>> ReadAsync(
+    Task<IOperationResult<TAggregate>> ReadAsync(
         Guid aggregateId,
         CancellationToken cancellationToken = default);
 }

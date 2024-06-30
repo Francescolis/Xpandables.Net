@@ -53,14 +53,14 @@ public interface IAsyncAspectValidator : IAspectValidator
     /// .</returns>
     /// <exception cref="OperationResultException">When the validation failed.
     /// </exception>
-    ValueTask<IOperationResult> ValidateAsync(object? argument);
+    Task<IOperationResult> ValidateAsync(object? argument);
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
     [EditorBrowsable(EditorBrowsableState.Never)]
     IOperationResult IAspectValidator.Validate(object? argument)
 #pragma warning restore CA1033 // Interface methods should be callable by child types
     {
-        Task<IOperationResult> task = ValidateAsync(argument).AsTask();
+        Task<IOperationResult> task = ValidateAsync(argument);
         task.Wait();
         return task.Result;
     }
@@ -106,9 +106,9 @@ public interface IAsyncAspectValidator<TArgument> : IAsyncAspectValidator
     /// </returns>
     /// <exception cref="OperationResultException">When the validation failed.
     /// </exception>
-    ValueTask<IOperationResult> ValidateAsync(TArgument? argument);
+    Task<IOperationResult> ValidateAsync(TArgument? argument);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    ValueTask<IOperationResult> IAsyncAspectValidator
+    Task<IOperationResult> IAsyncAspectValidator
         .ValidateAsync(object? argument) => ValidateAsync((TArgument?)argument);
 }

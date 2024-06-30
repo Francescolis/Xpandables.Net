@@ -243,39 +243,6 @@ public static class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="ValueTask"/> 
-    /// to a <see cref="IOperationResult"/>.
-    /// </summary>
-    /// <param name="valueTask">The task to act on.</param>
-    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="valueTask"/> is null.</exception>
-    public static async ValueTask<IOperationResult> ToOperationResultAsync(
-        this ValueTask valueTask)
-    {
-        ArgumentNullException.ThrowIfNull(valueTask);
-
-        try
-        {
-            await valueTask.ConfigureAwait(false);
-            return OperationResults.Ok().Build();
-        }
-        catch (ValidationException validationException)
-        {
-            return validationException.ToOperationResult();
-        }
-        catch (OperationResultException operationResultException)
-        {
-            return operationResultException.Operation;
-        }
-        catch (Exception exception)
-            when (exception is not OperationResultException)
-        {
-            return exception.ToOperationResult();
-        }
-    }
-
-    /// <summary>
     /// Converts the current <see cref="Task"/> 
     /// to a <see cref="IOperationResult"/>.
     /// </summary>
@@ -283,7 +250,7 @@ public static class OperationResultExtensions
     /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="task"/> is null.</exception>
-    public static async ValueTask<IOperationResult> ToOperationResultAsync(
+    public static async Task<IOperationResult> ToOperationResultAsync(
         this Task task)
     {
         ArgumentNullException.ThrowIfNull(task);
@@ -341,7 +308,7 @@ public static class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current <see cref="ValueTask{TResult}"/> 
+    /// Converts the current <see cref="Task{TResult}"/> 
     /// to a <see cref="IOperationResult{TResult}"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -349,9 +316,9 @@ public static class OperationResultExtensions
     /// <returns>An instance of <see cref="IOperationResult{TResult}"/>.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="valueTask"/> is null.</exception>
-    public static async ValueTask<IOperationResult<TResult>>
+    public static async Task<IOperationResult<TResult>>
         ToOperationResultAsync<TResult>(
-        this ValueTask<TResult> valueTask)
+        this Task<TResult> valueTask)
     {
         ArgumentNullException.ThrowIfNull(valueTask);
 
@@ -406,56 +373,6 @@ public static class OperationResultExtensions
         try
         {
             TResult result = func();
-            return result is { }
-                ? OperationResults
-                    .Ok(result)
-                    .Build()
-                : OperationResults
-                    .BadRequest<TResult>()
-                    .WithError(
-                        typeof(TResult).Name,
-                        I18nXpandables.OperationResultValueIsNull)
-                    .Build();
-        }
-        catch (ValidationException validationException)
-        {
-            return validationException
-                .ToOperationResult()
-                .ToOperationResult<TResult>();
-        }
-        catch (OperationResultException operationResultException)
-        {
-            return operationResultException.Operation
-                .ToOperationResult<TResult>();
-        }
-        catch (Exception exception)
-            when (exception is not OperationResultException)
-        {
-            return exception
-                .ToOperationResult()
-                .ToOperationResult<TResult>();
-        }
-    }
-
-    /// <summary>
-    /// Converts the current <see cref="Task{TResult}"/> 
-    /// to a <see cref="IOperationResult{TResult}"/>.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="task">The task to act on.</param>
-    /// <returns>An instance of <see cref="IOperationResult{TResult}"/>
-    /// .</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="task"/> 
-    /// is null.</exception>
-    public static async ValueTask<IOperationResult<TResult>>
-        ToOperationResultAsync<TResult>(
-        this Task<TResult> task)
-    {
-        ArgumentNullException.ThrowIfNull(task);
-
-        try
-        {
-            TResult result = await task.ConfigureAwait(false);
             return result is { }
                 ? OperationResults
                     .Ok(result)

@@ -38,7 +38,7 @@ public class UnitOfWork(DataContext context) : Disposable, IUnitOfWork
     protected DataContext Context { get; } = context;
 
     ///<inheritdoc/>
-    public async ValueTask PersistAsync(
+    public async Task PersistAsync(
         CancellationToken cancellationToken = default)
     {
         try

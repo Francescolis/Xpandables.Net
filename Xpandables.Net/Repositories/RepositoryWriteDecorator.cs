@@ -29,49 +29,49 @@ public class RepositoryWriteDecorator<TEntity>
     where TEntity : class
 {
     /// <inheritdoc/>
-    public ValueTask DeleteAsync(
+    public Task DeleteAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
         => decoratee.DeleteAsync(filter, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask DeleteAsync(
+    public Task DeleteAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => decoratee.DeleteAsync(entity, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask InsertAsync(
+    public Task InsertAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => decoratee.InsertAsync(entity, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask InsertManyAsync(
+    public Task InsertManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         => decoratee.InsertManyAsync(entities, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask UpdateAsync(
+    public Task UpdateAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => decoratee.UpdateAsync(entity, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask UpdateManyAsync(
+    public Task UpdateManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         => decoratee.UpdateManyAsync(entities, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask UpdateManyAsync(
+    public Task UpdateManyAsync(
         IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, object>> updater,
         CancellationToken cancellationToken = default)

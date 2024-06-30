@@ -50,7 +50,7 @@ public class RepositoryWrite<TEntity>(DataContext context)
         ?? throw new ArgumentNullException(nameof(context));
 
     ///<inheritdoc/>
-    public virtual async ValueTask InsertAsync(
+    public virtual async Task InsertAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
         => _ = await Context.Set<TEntity>()
@@ -58,17 +58,17 @@ public class RepositoryWrite<TEntity>(DataContext context)
             .ConfigureAwait(false);
 
     ///<inheritdoc/>
-    public virtual async ValueTask UpdateAsync(
+    public virtual async Task UpdateAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
     {
         _ = Context.Set<TEntity>().Update(entity);
-        await ValueTask.CompletedTask
+        await Task.CompletedTask
             .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask DeleteAsync(
+    public virtual async Task DeleteAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
     {
@@ -83,12 +83,12 @@ public class RepositoryWrite<TEntity>(DataContext context)
             Context.RemoveRange(deleteTableResult);
         }
 
-        await ValueTask.CompletedTask
+        await Task.CompletedTask
             .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask InsertManyAsync(
+    public virtual async Task InsertManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
     {
@@ -100,7 +100,7 @@ public class RepositoryWrite<TEntity>(DataContext context)
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask UpdateManyAsync(
+    public virtual async Task UpdateManyAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
     {
@@ -108,12 +108,12 @@ public class RepositoryWrite<TEntity>(DataContext context)
 
         Context.UpdateRange(entities);
 
-        await ValueTask.CompletedTask
+        await Task.CompletedTask
             .ConfigureAwait(false);
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask UpdateManyAsync(
+    public virtual async Task UpdateManyAsync(
         IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, object>> updater,
         CancellationToken cancellationToken = default)
@@ -134,7 +134,7 @@ public class RepositoryWrite<TEntity>(DataContext context)
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask DeleteAsync(
+    public virtual async Task DeleteAsync(
         TEntity entity,
         CancellationToken cancellationToken = default)
     {
@@ -142,7 +142,7 @@ public class RepositoryWrite<TEntity>(DataContext context)
 
         _ = Context.Remove(entity);
 
-        await ValueTask.CompletedTask
+        await Task.CompletedTask
             .ConfigureAwait(false);
     }
 }

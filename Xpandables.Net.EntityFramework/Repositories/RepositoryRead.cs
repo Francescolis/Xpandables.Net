@@ -49,7 +49,7 @@ public class RepositoryRead<TEntity>(DataContext context)
         ?? throw new ArgumentNullException(nameof(context));
 
     ///<inheritdoc/>
-    public virtual async ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
+    public virtual async Task<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable
@@ -59,7 +59,7 @@ public class RepositoryRead<TEntity>(DataContext context)
             .ConfigureAwait(false);
 
     ///<inheritdoc/>
-    public virtual async ValueTask<Optional<TResult>> TryFindAsync<TResult>(
+    public virtual async Task<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
     {
@@ -93,7 +93,7 @@ public class RepositoryRead<TEntity>(DataContext context)
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask<int> CountAsync(
+    public virtual async Task<int> CountAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
     {

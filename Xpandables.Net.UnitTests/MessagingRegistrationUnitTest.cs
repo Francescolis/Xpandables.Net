@@ -39,7 +39,7 @@ public sealed record class ProductAddedIntegrationEvent : EventIntegration;
 public sealed class AddProductCommandHandler :
     ICommandHandler<AddProductCommand>
 {
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         AddProductCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -53,7 +53,7 @@ public sealed class AddProductCommandHandler :
 public sealed class GetProductQueryHandler :
     IQueryHandler<GetProductQuery, string>
 {
-    public async ValueTask<IOperationResult<string>> HandleAsync(
+    public async Task<IOperationResult<string>> HandleAsync(
         GetProductQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -75,7 +75,7 @@ public sealed class GetProductAsyncQueryHandler :
 
 public sealed class ProductAddedEventHandler : IEventHandler<ProductAddedEvent>
 {
-    public ValueTask<IOperationResult> HandleAsync(
+    public Task<IOperationResult> HandleAsync(
         ProductAddedEvent @event,
         CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
@@ -84,7 +84,7 @@ public sealed class ProductAddedEventHandler : IEventHandler<ProductAddedEvent>
 public sealed class ProductAddedIntegrationEventHandler :
     IEventHandler<ProductAddedIntegrationEvent>
 {
-    public ValueTask<IOperationResult> HandleAsync(
+    public Task<IOperationResult> HandleAsync(
         ProductAddedIntegrationEvent @event,
         CancellationToken cancellationToken = default)
         => throw new NotImplementedException();

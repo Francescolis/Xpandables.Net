@@ -31,7 +31,7 @@ public class RepositoryReadDecorator<TEntity>
     where TEntity : class
 {
     /// <inheritdoc/>
-    public ValueTask<int> CountAsync(
+    public Task<int> CountAsync(
         IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
         => decoratee.CountAsync(filter, cancellationToken)
@@ -86,14 +86,14 @@ public class RepositoryReadDecorator<TEntity>
     }
 
     /// <inheritdoc/>
-    public ValueTask<Optional<TResult>> TryFindAsync<TResult>(
+    public Task<Optional<TResult>> TryFindAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
         => decoratee.TryFindAsync(filter, cancellationToken)
             .ThrowInvalidOperationException();
 
     /// <inheritdoc/>
-    public ValueTask<Optional<TEntity>> TryFindByKeyAsync<TKey>(
+    public Task<Optional<TEntity>> TryFindByKeyAsync<TKey>(
         TKey key,
         CancellationToken cancellationToken = default)
         where TKey : notnull, IComparable

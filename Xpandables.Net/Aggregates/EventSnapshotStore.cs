@@ -38,7 +38,7 @@ public sealed class EventSnapshotStore<TEventEntity>(
     where TEventEntity : class, IEventEntitySnapshot
 {
     ///<inheritdoc/>
-    public async ValueTask AppendAsync(
+    public async Task AppendAsync(
         IEventSnapshot @event,
         CancellationToken cancellationToken = default)
     {
@@ -49,7 +49,7 @@ public sealed class EventSnapshotStore<TEventEntity>(
     }
 
     ///<inheritdoc/>
-    public async ValueTask<IEventSnapshot?> ReadAsync(
+    public async Task<IEventSnapshot?> ReadAsync(
         Guid objectId,
         CancellationToken cancellationToken = default)
     {

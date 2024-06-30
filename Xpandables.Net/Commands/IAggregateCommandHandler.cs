@@ -67,7 +67,7 @@ public interface ICommand<TAggregate>
 /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="command"/> is null.</exception>
-public delegate ValueTask<IOperationResult> CommandHandler
+public delegate Task<IOperationResult> CommandHandler
     <TCommand, TAggregate>(
     TCommand command, CancellationToken cancellationToken = default)
     where TAggregate : class, IAggregate
@@ -91,7 +91,7 @@ public interface ICommandHandler<TCommand, TAggregate>
     /// <param name="command">The command instance.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
-    ValueTask<IOperationResult> HandleAsync(
+    Task<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default);
 }
@@ -115,7 +115,7 @@ public interface ICommandHandlerWrapper<TAggregate>
     /// <paramref name="command"/> is null.</exception>
     /// <returns>A task that represents an 
     /// object of <see cref="IOperationResult"/>.</returns>
-    ValueTask<IOperationResult> HandleAsync(
+    Task<IOperationResult> HandleAsync(
         ICommand<TAggregate> command,
         CancellationToken cancellationToken = default);
 }

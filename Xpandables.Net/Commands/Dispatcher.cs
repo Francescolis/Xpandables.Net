@@ -25,7 +25,7 @@ namespace Xpandables.Net.Commands;
 internal sealed class Dispatcher(IServiceProvider serviceProvider)
     : IDispatcher
 {
-    public async ValueTask<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
+    public async Task<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
         TQuery query,
         CancellationToken cancellationToken = default)
         where TQuery : notnull, IQuery<TResult>
@@ -53,7 +53,7 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
         }
     }
 
-    public async ValueTask<IOperationResult> SendAsync<TCommand>(
+    public async Task<IOperationResult> SendAsync<TCommand>(
         TCommand command,
         CancellationToken cancellationToken = default)
         where TCommand : notnull, ICommand
@@ -82,7 +82,7 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
     }
 
     /// <inheritdoc/>>
-    public async ValueTask<IOperationResult> SendAsync<TCommand, TAggregate>(
+    public async Task<IOperationResult> SendAsync<TCommand, TAggregate>(
         TCommand command,
         CancellationToken cancellationToken = default)
         where TAggregate : class, IAggregate

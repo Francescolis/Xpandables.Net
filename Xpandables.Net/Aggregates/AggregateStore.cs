@@ -43,7 +43,7 @@ public sealed class AggregateStore<TAggregate>(
     where TAggregate : class, IAggregate
 {
     ///<inheritdoc/>
-    public async ValueTask<IOperationResult> AppendAsync(
+    public async Task<IOperationResult> AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
@@ -93,7 +93,7 @@ public sealed class AggregateStore<TAggregate>(
     }
 
     ///<inheritdoc/>
-    public async ValueTask<IOperationResult<TAggregate>> ReadAsync(
+    public async Task<IOperationResult<TAggregate>> ReadAsync(
         Guid aggregateId,
         CancellationToken cancellationToken = default)
     {

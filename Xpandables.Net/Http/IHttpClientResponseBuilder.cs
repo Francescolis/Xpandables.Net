@@ -54,7 +54,7 @@ public interface IHttpClientResponseBuilder : IHttpClientResponseBuilderBase
     /// <param name="options">The serialization options to use.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The built response.</returns>
-    ValueTask<HttpClientResponse> BuildAsync(
+    Task<HttpClientResponse> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default);
@@ -75,7 +75,7 @@ public interface IHttpClientResponseResultBuilder<TResult> :
     /// <param name="options">The serialization options to use.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The built response.</returns>
-    ValueTask<HttpClientResponse<TResult>> BuildAsync(
+    Task<HttpClientResponse<TResult>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default);
@@ -96,7 +96,7 @@ public interface IHttpClientResponseIAsyncResultBuilder<TResult> :
     /// <param name="options">The serialization options to use.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The built response.</returns>
-    ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>> BuildAsync(
+    Task<HttpClientResponse<IAsyncEnumerable<TResult>>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default);

@@ -25,7 +25,7 @@ internal sealed class QueryHandlerWrapper<TQuery, TResult>(
     : IQueryHandlerWrapper<TResult>
     where TQuery : notnull, IQuery<TResult>
 {
-    public async ValueTask<IOperationResult<TResult>> HandleAsync(
+    public async Task<IOperationResult<TResult>> HandleAsync(
         IQuery<TResult> query,
         CancellationToken cancellationToken = default)
         => await decoratee.HandleAsync(

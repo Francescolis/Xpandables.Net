@@ -51,7 +51,7 @@ public abstract class EventStore<TEventEntity>(
     protected EventOptions Options => options.Value;
 
     ///<inheritdoc/>
-    protected async ValueTask AppendEventAsync<TEvent>(
+    protected async Task AppendEventAsync<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
         where TEvent : class, IEvent

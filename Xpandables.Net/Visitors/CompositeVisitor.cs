@@ -41,7 +41,7 @@ public sealed class CompositeVisitor<TElement>(
     /// <param name="element">The element to be visited.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="element"/> is null.</exception>
-    public async ValueTask VisitAsync(TElement element)
+    public async Task VisitAsync(TElement element)
     {
         ArgumentNullException.ThrowIfNull(element);
 

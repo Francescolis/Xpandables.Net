@@ -202,12 +202,12 @@ public sealed class InterceptorTests
     [CalculatorInterceptor]
     public interface ICalculator
     {
-        ValueTask<int> CalculateAsync(int args);
+        Task<int> CalculateAsync(int args);
     }
 
     public class Calculator : ICalculator
     {
-        ValueTask<int> ICalculator.CalculateAsync(int args) => new(args);
+        Task<int> ICalculator.CalculateAsync(int args) => Task.FromResult(args);
     }
 
     public sealed record Args : IQuery<int>, IInterceptorDecorator, IAspectVisitable
@@ -226,16 +226,16 @@ public sealed class InterceptorTests
     [AspectVisitor(typeof(IQueryHandler<Args, int>), Order = 0)]
     public sealed class HandleArgs : IQueryHandler<Args, int>
     {
-        public ValueTask<IOperationResult<int>> HandleAsync(
+        public Task<IOperationResult<int>> HandleAsync(
             Args query, CancellationToken cancellationToken = default)
-            => new(OperationResults.Ok(query.Value).Build());
+            => Task.FromResult(OperationResults.Ok(query.Value).Build());
     }
 
     [AspectRetry(typeof(IQueryHandler<Args1, int>))]
     public sealed class HandleExceptionArgs : IQueryHandler<Args1, int>
     {
         int attemtp = 0;
-        public ValueTask<IOperationResult<int>> HandleAsync(
+        public Task<IOperationResult<int>> HandleAsync(
             Args1 query, CancellationToken cancellationToken = default)
         {
             if (attemtp++ < 2)
@@ -243,8 +243,7 @@ public sealed class InterceptorTests
                 throw new InvalidOperationException("Invalid operation exception");
             }
 
-            return new ValueTask<IOperationResult<int>>(
-                OperationResults.Ok(query.Value).Build());
+            return Task.FromResult(OperationResults.Ok(query.Value).Build());
         }
     }
 
@@ -253,7 +252,7 @@ public sealed class InterceptorTests
     public sealed class HandleFinalizeArgs(
         IAspectFinalizer aspectFinalizer) : IQueryHandler<Args2, int>
     {
-        public ValueTask<IOperationResult<int>> HandleAsync(
+        public Task<IOperationResult<int>> HandleAsync(
             Args2 query, CancellationToken cancellationToken = default)
         {
             aspectFinalizer.Finalizer = obj => obj switch

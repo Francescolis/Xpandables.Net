@@ -38,7 +38,7 @@ public sealed class SuccessHttpClientResponseBuilder :
         => targetStatusCode.IsSuccessStatusCode();
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse> BuildAsync(
+    public async Task<HttpClientResponse> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default)
@@ -103,7 +103,7 @@ public sealed class FailureHttpClientResponseBuilder :
         => targetStatusCode.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse> BuildAsync(
+    public async Task<HttpClientResponse> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default)
@@ -138,7 +138,7 @@ public sealed class SuccessHttpClientResponseResultBuilder<TResult>
         => targetStatusCode.IsSuccessStatusCode();
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse<TResult>> BuildAsync(
+    public async Task<HttpClientResponse<TResult>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
         CancellationToken cancellationToken = default)
@@ -194,7 +194,7 @@ public sealed class FailureHttpClientResponseResultBuilder<TResult>
         => targetStatusCode.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse
+    public async Task<HttpClientResponse
         <TResult>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
@@ -229,7 +229,7 @@ public sealed class SuccessHttpClientResponseAsyncResultBuilder<TResult>
         => targetStatusCode.IsSuccessStatusCode();
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse
+    public async Task<HttpClientResponse
         <IAsyncEnumerable<TResult>>> BuildAsync(
         HttpResponseMessage httpResponse,
         JsonSerializerOptions options,
@@ -336,7 +336,7 @@ public sealed class FailureHttpClientResponseAsyncResultBuilder<TResult>
         => targetStatusCode.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public async ValueTask<HttpClientResponse
+    public async Task<HttpClientResponse
         <IAsyncEnumerable<TResult>>>
         BuildAsync(HttpResponseMessage httpResponse,
         JsonSerializerOptions options,

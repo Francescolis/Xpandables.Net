@@ -78,7 +78,7 @@ public static class TypeExtensions
         {
             Type genericType = returnType.GetGenericTypeDefinition();
             if (genericType == typeof(Task<>)
-                || genericType == typeof(ValueTask<>))
+                || genericType == typeof(Task<>))
             {
                 return returnType.GetGenericArguments()[0];
             }
@@ -146,13 +146,13 @@ public static class TypeExtensions
     {
         ArgumentNullException.ThrowIfNull(methodInfo);
 
-        // Check if the method returns Task, Task<T>, ValueTask, or ValueTask<T>
+        // Check if the method returns Task, Task<T>, Task, or Task<T>
         Type returnType = methodInfo.ReturnType;
         return typeof(Task).IsAssignableFrom(returnType)
-            || typeof(ValueTask).IsAssignableFrom(returnType)
+            || typeof(Task).IsAssignableFrom(returnType)
             || (returnType.IsGenericType
                 && (returnType.GetGenericTypeDefinition() == typeof(Task<>)
-                || returnType.GetGenericTypeDefinition() == typeof(ValueTask<>)));
+                || returnType.GetGenericTypeDefinition() == typeof(Task<>)));
     }
 
     /// <summary>

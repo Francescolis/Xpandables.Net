@@ -31,7 +31,7 @@ public abstract class Transactional : Disposable, ITransactional
     public required IOperationResult Result { get; set; }
 
     ///<inheritdoc/>
-    public async ValueTask<ITransactional> TransactionAsync(
+    public async Task<ITransactional> TransactionAsync(
         CancellationToken cancellationToken = default)
     {
         _cancellationToken = cancellationToken;
@@ -64,7 +64,7 @@ public abstract class Transactional : Disposable, ITransactional
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    protected abstract ValueTask BeginTransactionAsync(
+    protected abstract Task BeginTransactionAsync(
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -72,7 +72,7 @@ public abstract class Transactional : Disposable, ITransactional
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    protected abstract ValueTask CompleteTransactionAsync(
+    protected abstract Task CompleteTransactionAsync(
         CancellationToken cancellationToken = default);
 
     private void Transaction_FirstChanceExceptionHanlder(

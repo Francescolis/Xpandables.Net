@@ -54,7 +54,7 @@ public abstract class HttpClientDispatcher(
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+    public virtual async Task<HttpClientResponse<IAsyncEnumerable<TResult>>>
         SendAsync<TResult>(
         IHttpClientAsyncRequest<TResult> request,
         CancellationToken cancellationToken = default)
@@ -96,7 +96,7 @@ public abstract class HttpClientDispatcher(
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask<HttpClientResponse> SendAsync(
+    public virtual async Task<HttpClientResponse> SendAsync(
         IHttpClientRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -129,7 +129,7 @@ public abstract class HttpClientDispatcher(
     }
 
     ///<inheritdoc/>
-    public virtual async ValueTask<HttpClientResponse<TResult>> SendAsync<TResult>(
+    public virtual async Task<HttpClientResponse<TResult>> SendAsync<TResult>(
         IHttpClientRequest<TResult> request,
         CancellationToken cancellationToken = default)
     {

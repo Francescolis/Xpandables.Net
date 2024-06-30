@@ -39,6 +39,6 @@ public interface ITransactional : IAsyncDisposable
     ///waiting for the task to complete.</param>
     ///<remarks>The method must be used with a <see langword="using"/> 
     ///context.</remarks>
-    ValueTask<ITransactional> TransactionAsync(
+    Task<ITransactional> TransactionAsync(
         CancellationToken cancellationToken = default);
 }

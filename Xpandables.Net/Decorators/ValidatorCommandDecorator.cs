@@ -66,7 +66,7 @@ public sealed class ValidatorCommandDecorator<TCommand>(
     /// See inner exception.</exception>
     /// <returns>A task that represents an <see cref="OperationResult"/>
     /// .</returns>
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {

@@ -619,7 +619,7 @@ public static class ServiceCollectionCommandQueriesExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped<PersistenceCommandDelegate>(
-            _ => ct => ValueTask.FromResult(OperationResults.Ok().Build()));
+            _ => ct => Task.FromResult(OperationResults.Ok().Build()));
 
         return services;
     }

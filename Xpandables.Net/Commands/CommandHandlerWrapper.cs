@@ -26,7 +26,7 @@ internal sealed class CommandHandlerWrapper<TCommand, TAggregate>(
     where TAggregate : class, IAggregate
     where TCommand : class, ICommand<TAggregate>
 {
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         ICommand<TAggregate> command,
         CancellationToken cancellationToken = default)
         => await decoratee.HandleAsync(

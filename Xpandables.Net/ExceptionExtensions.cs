@@ -71,8 +71,8 @@ public static class ExceptionExtensions
     /// is null.</exception>"
     /// <exception cref="OperationCanceledException">The operation 
     /// was canceled.</exception>"
-    public static async ValueTask<T> ThrowInvalidOperationException<T>(
-        this ValueTask<T> func)
+    public static async Task<T> ThrowInvalidOperationException<T>(
+        this Task<T> func)
     {
         ArgumentNullException.ThrowIfNull(func);
 
@@ -105,8 +105,8 @@ public static class ExceptionExtensions
     /// is null.</exception>"
     /// <exception cref="OperationCanceledException">The operation 
     /// was canceled.</exception>"
-    public static async ValueTask ThrowInvalidOperationException(
-        this ValueTask func)
+    public static async Task ThrowInvalidOperationException(
+        this Task func)
     {
         ArgumentNullException.ThrowIfNull(func);
 

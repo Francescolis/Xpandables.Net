@@ -27,6 +27,6 @@ public sealed class NullVisitor<TElement> : IVisitor<TElement>
     /// <summary>
     /// Does nothing.
     /// </summary>
-    public async ValueTask VisitAsync(TElement element)
-        => await ValueTask.CompletedTask.ConfigureAwait(false);
+    public async Task VisitAsync(TElement element)
+        => await Task.CompletedTask.ConfigureAwait(false);
 }

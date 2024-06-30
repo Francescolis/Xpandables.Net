@@ -33,7 +33,7 @@ public interface IHttpClientDispatcherFactory
     /// <typeparam name="TRequest">The type of the request data.</typeparam>
     /// <param name="request">The request object.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask<HttpRequestMessage> BuildRequestAsync<TRequest>(
+    Task<HttpRequestMessage> BuildRequestAsync<TRequest>(
         TRequest request,
         CancellationToken cancellationToken = default);
 
@@ -43,7 +43,7 @@ public interface IHttpClientDispatcherFactory
     /// </summary>
     /// <param name="response">The response message.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask<HttpClientResponse> BuildResponseAsync(
+    Task<HttpClientResponse> BuildResponseAsync(
         HttpResponseMessage response,
         CancellationToken cancellationToken = default);
 
@@ -54,7 +54,7 @@ public interface IHttpClientDispatcherFactory
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="response">The response message.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask<HttpClientResponse<TResult>> BuildResponseAsync<TResult>(
+    Task<HttpClientResponse<TResult>> BuildResponseAsync<TResult>(
         HttpResponseMessage response,
                CancellationToken cancellationToken = default);
 
@@ -65,7 +65,7 @@ public interface IHttpClientDispatcherFactory
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="response">The response message.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask<HttpClientResponse<IAsyncEnumerable<TResult>>>
+    Task<HttpClientResponse<IAsyncEnumerable<TResult>>>
         BuildResponseResultAsync<TResult>(
         HttpResponseMessage response,
                CancellationToken cancellationToken = default);

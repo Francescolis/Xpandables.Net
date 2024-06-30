@@ -31,7 +31,7 @@ public interface ITextMessenger
     /// <returns>A task that represents an asynchronous operation.</returns>
     /// <exception cref="InvalidOperationException">Unable to send the 
     /// message. See inner exception.</exception>
-    ValueTask SendAsync(
+    Task SendAsync(
         object message,
         CancellationToken cancellationToken = default);
 }
@@ -52,11 +52,11 @@ public interface ITextMessenger<in TMessage> : ITextMessenger
     /// <returns>A task that represents an asynchronous operation.</returns>
     /// <exception cref="InvalidOperationException">Unable to send the 
     /// message. See inner exception.</exception>
-    ValueTask SendAsync(
+    Task SendAsync(
         TMessage message,
         CancellationToken cancellationToken = default);
 
-    ValueTask ITextMessenger.SendAsync(
+    Task ITextMessenger.SendAsync(
         object message,
         CancellationToken cancellationToken)
         => SendAsync((TMessage)message, cancellationToken);

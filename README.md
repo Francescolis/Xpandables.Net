@@ -233,7 +233,7 @@ public sealed record AddPersonCommand : ICommand;
 
 public sealed class AddPersonCommandHandler : ICommandHandler<AddPersonCommand>
 {
-    public ValueTask<IOperationResult> HandleAsync(
+    public Task<IOperationResult> HandleAsync(
         AddPersonCommand command, 
         CancellationToken cancellationToken = default)
     {
@@ -259,7 +259,7 @@ public sealed class AddPersonCommandHandlerLoggingDecorator :
         ICommandHandler<AddPersonCommand> decoratee)
         => (_logger, _decoratee) = (logger, decoratee);
 
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         AddPersonCommand command, 
         CancellationToken cancellationToken = default)
     {
@@ -303,7 +303,7 @@ public sealed class CommandLoggingDecorator<TCommand> : ICommandHandler<TCommand
         ICommandHandler<TCommand> decoratee)
         => (_logger, _ decoratee) = (logger, decoratee);
 
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
          TCommand command, 
          CancellationToken cancellationToken = default)
     {
@@ -340,7 +340,7 @@ public interface ICommand {}
 public interface IQueryHandler<TQuery, TResult>
     where TQuery : notnull, IQuery<TResult> 
 {
-    ValueTask<IOperationResult<TResult>> HandleAsync(
+    Task<IOperationResult<TResult>> HandleAsync(
         TQuery query, 
         CancellationToken cancellationToken = default);
 }
@@ -355,7 +355,7 @@ public interface IAsyncQueryHandler<TQuery, TResult>
 public interface ICommandHandler<TCommand>
     where TCommand : notnull, ICommand
 {
-    ValueTask<IOperationResult> HandleAsync(
+    Task<IOperationResult> HandleAsync(
         TCommand command, 
         CancellationToken cancellationToken = default);
 }
@@ -379,7 +379,7 @@ public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand
     private readonly ProductContext _uow;
     public AddProductCommandHandler(ProductContext uow) => _uow = uow;
 
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         AddProductCommand command, 
         CancellationToken cancellationToken)
     {
@@ -413,7 +413,7 @@ public sealed class AddProductCommandValidator<AddProductCommand> :
     public AddProductCommandValidator(ProductContext uow, IServiceProvider sp)
         :base(sp) => _uow = uow;
 
-     public async ValueTask<IOperationResult> ValidateAsync(AddProductCommand argument)
+     public async Task<IOperationResult> ValidateAsync(AddProductCommand argument)
     {
         // validate the command using attributes
        if(Validate(command) is { isFailure : true } failure)
@@ -466,7 +466,7 @@ public sealed class GetProductQueryHandler :
 
     public GetProductQueryHandler(ProductContext uow) => _uow = uow;
 
-    public async ValueTask<IOperationResult<ProductDTO?>> HandleAsync(
+    public async Task<IOperationResult<ProductDTO?>> HandleAsync(
         GetProductQuery query, 
         CancellationToken cancellationToken = default)
     {

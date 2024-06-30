@@ -36,7 +36,7 @@ public interface IEventDomainStore : IDisposable
     /// See inner exception.</exception>
     /// <exception cref="OperationCanceledException">The operation was 
     /// canceled.</exception>
-    ValueTask AppendAsync(
+    Task AppendAsync(
         IEventDomain @event,
         CancellationToken cancellationToken = default);
 

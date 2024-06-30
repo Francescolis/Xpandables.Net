@@ -51,7 +51,7 @@ public sealed class AggregateCommandDecorator<TCommand, TAggregate>(
     where TCommand : class, ICommand<TAggregate>, ICommandAggregate
 {
     ///<inheritdoc/>
-    public async ValueTask<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default)
     {

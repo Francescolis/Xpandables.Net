@@ -26,7 +26,7 @@ internal sealed class FinalizerQueryDecorator<TQuery, TResult>(
     : IQueryHandler<TQuery, TResult>, IDecorator
     where TQuery : notnull, IQuery<TResult>, IOperationFinalizerDecorator
 {
-    public async ValueTask<IOperationResult<TResult>> HandleAsync(
+    public async Task<IOperationResult<TResult>> HandleAsync(
         TQuery query,
         CancellationToken cancellationToken = default)
     {

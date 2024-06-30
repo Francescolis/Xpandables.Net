@@ -34,7 +34,7 @@ public interface IVisitable
     /// <param name="visitor">The visitor to be applied on.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="visitor"/> is null.</exception>
-    public virtual async ValueTask AcceptAsync(IVisitor visitor)
+    public virtual async Task AcceptAsync(IVisitor visitor)
     {
         ArgumentNullException.ThrowIfNull(visitor);
 
@@ -49,7 +49,7 @@ public interface IVisitable
     /// to be applied on.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="visitor"/> is null.</exception>
-    public sealed async ValueTask AcceptAsync(ICompositeVisitor visitor)
+    public sealed async Task AcceptAsync(ICompositeVisitor visitor)
     {
         ArgumentNullException.ThrowIfNull(visitor);
 
@@ -79,7 +79,7 @@ public interface IVisitable<out TVisitable> : IVisitable
     /// <param name="visitor">The visitor to be applied on.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="visitor"/> is null.</exception>
-    public virtual async ValueTask AcceptAsync(IVisitor<TVisitable> visitor)
+    public virtual async Task AcceptAsync(IVisitor<TVisitable> visitor)
     {
         ArgumentNullException.ThrowIfNull(visitor);
 
@@ -95,7 +95,7 @@ public interface IVisitable<out TVisitable> : IVisitable
     /// to be applied on.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="visitor"/> is null.</exception>
-    public sealed async ValueTask AcceptAsync(
+    public sealed async Task AcceptAsync(
         ICompositeVisitor<TVisitable> visitor)
     {
         ArgumentNullException.ThrowIfNull(visitor);

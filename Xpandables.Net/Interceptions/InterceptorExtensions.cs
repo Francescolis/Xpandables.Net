@@ -122,10 +122,9 @@ public static class InterceptorExtensions
     {
         ArgumentNullException.ThrowIfNull(type);
 
-        return type == typeof(Task) || type == typeof(ValueTask)
-                || (type.IsGenericType
-                    && (type.GetGenericTypeDefinition() == typeof(Task<>)
-                   || type.GetGenericTypeDefinition() == typeof(ValueTask<>)));
+        return type == typeof(Task)
+            || (type.IsGenericType
+                && type.GetGenericTypeDefinition() == typeof(Task<>));
     }
 
     /// <summary>
