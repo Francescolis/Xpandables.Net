@@ -23,7 +23,7 @@ namespace Xpandables.Net.Aspects;
 /// the interface decorated with <see cref="AspectLoggingAttribute"/>.  
 /// </summary>
 /// <param name="aspectLogging">The aspect logging.</param>
-public sealed class OnAspectLogging(IAspectLogger aspectLogging) :
+public sealed class OnAspectLogging(IAspectLogger? aspectLogging = default) :
     OnAspect<AspectLoggingAttribute>
 {
     ///<inheritdoc/>
@@ -36,7 +36,7 @@ public sealed class OnAspectLogging(IAspectLogger aspectLogging) :
             Arguments = invocation.Arguments
         };
 
-        aspectLogging.OnEntry(entry);
+        aspectLogging?.OnEntry(entry);
 
 #pragma warning disable CA1031 // Do not catch general exception types
         try
@@ -53,7 +53,7 @@ public sealed class OnAspectLogging(IAspectLogger aspectLogging) :
                     Exception = invocation.Exception
                 };
 
-                aspectLogging.OnFailure(failure);
+                aspectLogging?.OnFailure(failure);
             }
             else
             {
@@ -65,7 +65,7 @@ public sealed class OnAspectLogging(IAspectLogger aspectLogging) :
                     ReturnValue = invocation.ReturnValue
                 };
 
-                aspectLogging.OnSuccess(success);
+                aspectLogging?.OnSuccess(success);
             }
         }
         catch (Exception exception)
@@ -78,7 +78,7 @@ public sealed class OnAspectLogging(IAspectLogger aspectLogging) :
                 Exception = exception.InnerException ?? exception
             };
 
-            aspectLogging.OnFailure(failure);
+            aspectLogging?.OnFailure(failure);
             invocation.SetException(exception.InnerException ?? exception);
         }
         finally
@@ -93,7 +93,7 @@ public sealed class OnAspectLogging(IAspectLogger aspectLogging) :
                 ElapsedTime = invocation.ElapsedTime
             };
 
-            aspectLogging.OnExit(exit);
+            aspectLogging?.OnExit(exit);
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }
