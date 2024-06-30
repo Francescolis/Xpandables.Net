@@ -56,7 +56,17 @@ public sealed class OnAspectRetry(IAspectRetry? aspectRetry = default) :
             catch (Exception exception)
                 when (attempt < MaxRetries - 1)
             {
-                aspectRetry?.OnException(exception, attempt);
+                aspectRetry?.OnRetry(new RetryState
+                {
+                    ClassName = invocation.Target.GetTypeName(),
+                    MethodName = invocation.Method.Name,
+                    Arguments = invocation.Arguments,
+                    Exception = exception,
+                    MaxRetries = MaxRetries,
+                    Delay = Delay,
+                    Attempt = attempt
+                });
+
                 Thread.Sleep(Delay);
             }
         }

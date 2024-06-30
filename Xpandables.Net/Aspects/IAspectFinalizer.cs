@@ -18,7 +18,8 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// Represents a marker interface that allows the class implementation to be
-/// recognized as an aspect finalizer.
+/// recognized as an aspect finalizer that will be called after the method 
+/// invocation.
 /// </summary>
 public interface IAspectFinalizer : IAspect
 {

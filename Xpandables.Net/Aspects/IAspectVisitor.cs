@@ -19,7 +19,8 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// Represents a marker interface that allows the class implementation to be 
-/// recognized as an aspect visitor.
+/// recognized as an aspect visitor that will be called before the method
+/// execution.
 /// </summary>
 public interface IAspectVisitor : IAspect
 {

@@ -22,7 +22,8 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// Represents a marker interface that allows the class implementation to be 
-/// recognized as an aspect validator.
+/// recognized as an aspect validator that will be called before the method
+/// execution.
 /// </summary>
 public interface IAspectValidator : IAspect
 {
