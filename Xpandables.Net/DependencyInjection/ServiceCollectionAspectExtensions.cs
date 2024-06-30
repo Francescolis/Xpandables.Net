@@ -52,6 +52,17 @@ public static partial class ServiceCollectionAspectExtensions
         => services.AddScoped<IAspectFinalizer, AspectFinalizer>();
 
     /// <summary>
+    /// Registers the <typeparamref name="TAspectLogger"/> as
+    /// <see cref="IAspectLogger"/>.
+    /// </summary>
+    /// <typeparam name="TAspectLogger">The aspect logger type.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    public static IServiceCollection AddXAspectLogger<TAspectLogger>(
+        this IServiceCollection services)
+        where TAspectLogger : class, IAspectLogger
+        => services.AddScoped<IAspectLogger, TAspectLogger>();
+
+    /// <summary>
     /// Ensures that all classes decorated with derived 
     /// <see cref="AspectAttribute"/> class will be decorated with the
     /// expected <see cref="OnAspect{TAspectAttribute}"/> implementation, 

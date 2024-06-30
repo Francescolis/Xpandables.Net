@@ -16,6 +16,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -89,6 +90,7 @@ public sealed class InterceptorTests
             .AddXAspectValidator()
             .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
             .AddXAspectBehaviors()
+            .AddXAspectLogger<AspectLogger>()
             .BuildServiceProvider();
 
         IQueryHandler<Args, int> handler = serviceProvider
@@ -107,6 +109,7 @@ public sealed class InterceptorTests
             .AddXQueryHandlers(typeof(Calculator).Assembly)
             .AddXOnAspects(typeof(AspectValidator<>).Assembly)
             .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
+            .AddXAspectLogger<AspectLogger>()
             .AddXAspectBehaviors()
             .BuildServiceProvider();
 
@@ -125,6 +128,7 @@ public sealed class InterceptorTests
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddXQueryHandlers(typeof(Calculator).Assembly)
             .AddXOnAspects(typeof(AspectValidator<>).Assembly)
+            .AddXAspectLogger<AspectLogger>()
             .AddXAspectBehaviors()
             .BuildServiceProvider();
 
@@ -155,6 +159,28 @@ public sealed class InterceptorTests
 
         Assert.Equal(expected, result.Result);
     }
+
+    [Theory]
+    [InlineData(10, 10)]
+    public async Task AspectLoggerDependencyAttributeMethod(
+         int value, int expected)
+    {
+        ServiceProvider serviceProvider = new ServiceCollection()
+            .AddScoped<ICalculator, Calculator>()
+            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
+            .AddXAspectLogger<AspectLogger>()
+            .AddXAspectBehaviors()
+            .BuildServiceProvider();
+
+        ICalculator handler = serviceProvider
+                 .GetRequiredService<ICalculator>();
+
+        int result = await handler.CalculateAsync(value);
+
+        Assert.Equal(expected, result);
+    }
+
 
     [Theory]
     [InlineData(10, ExpectedValue)]
@@ -205,9 +231,10 @@ public sealed class InterceptorTests
         Task<int> CalculateAsync(int args);
     }
 
-    public class Calculator : ICalculator
+    [AspectLogging(typeof(ICalculator))]
+    public sealed class Calculator : ICalculator
     {
-        Task<int> ICalculator.CalculateAsync(int args) => Task.FromResult(args);
+        public Task<int> CalculateAsync(int args) => Task.FromResult(args);
     }
 
     public sealed record Args : IQuery<int>, IInterceptorDecorator, IAspectVisitable
@@ -222,8 +249,9 @@ public sealed class InterceptorTests
     public sealed record Args2(int Value) : IQuery<int>, IInterceptorDecorator;
 
     [AspectValidator(typeof(IQueryHandler<Args, int>),
-        ThrowException = false, Order = 1)]
-    [AspectVisitor(typeof(IQueryHandler<Args, int>), Order = 0)]
+        ThrowException = false, Order = 2)]
+    [AspectVisitor(typeof(IQueryHandler<Args, int>), Order = 1)]
+    [AspectLogging(typeof(IQueryHandler<Args, int>), Order = 0)]
     public sealed class HandleArgs : IQueryHandler<Args, int>
     {
         public Task<IOperationResult<int>> HandleAsync(
@@ -231,7 +259,8 @@ public sealed class InterceptorTests
             => Task.FromResult(OperationResults.Ok(query.Value).Build());
     }
 
-    [AspectRetry(typeof(IQueryHandler<Args1, int>))]
+    [AspectRetry(typeof(IQueryHandler<Args1, int>), Order = 1)]
+    [AspectLogging(typeof(IQueryHandler<Args1, int>), Order = 0)]
     public sealed class HandleExceptionArgs : IQueryHandler<Args1, int>
     {
         int attemtp = 0;
@@ -268,5 +297,17 @@ public sealed class InterceptorTests
     public sealed class AspectVisitor : IAspectVisitor<Args>
     {
         public void Visit(Args element) => element.Value = ExpectedValue;
+    }
+
+    public sealed class AspectLogger : IAspectLogger
+    {
+        public void OnEntry(LoggingStateEntry entry)
+            => Debug.WriteLine("OnEntry");
+        public void OnExit(LoggingStateExit exit)
+            => Console.WriteLine("OnExit");
+        public void OnFailure(LoggingStateFailure failure)
+            => Console.WriteLine("OnFailure");
+        public void OnSuccess(LoggingStateSuccess success)
+            => Debug.WriteLine("OnSuccess");
     }
 }
