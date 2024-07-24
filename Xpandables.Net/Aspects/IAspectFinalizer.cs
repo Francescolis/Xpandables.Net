@@ -31,5 +31,5 @@ public interface IAspectFinalizer : IAspect
     /// exception, otherwise, it will receive the method result when it's not
     /// a <see cref="void"/>, <see cref="Task"/> or <see cref="ValueTask"/> 
     /// method.</remarks>
-    Func<object?, object?> Finalize { get; set; }
+    Func<object?, object?>? Finalize { get; set; }
 }

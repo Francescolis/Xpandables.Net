@@ -65,15 +65,18 @@ public sealed class OnAspectFinalizer(IAspectFinalizer aspectFinalizer) :
                 value = invocation.GetRealReturnValue();
             }
 
-            object? result = aspectFinalizer.Finalize.Invoke(value);
+            if (aspectFinalizer.Finalize is not null)
+            {
+                object? result = aspectFinalizer.Finalize.Invoke(value);
 
-            if (result is Exception rethrownException)
-            {
-                invocation.SetException(rethrownException);
-            }
-            else
-            {
-                invocation.SetReturnValue(result);
+                if (result is Exception rethrownException)
+                {
+                    invocation.SetException(rethrownException);
+                }
+                else
+                {
+                    invocation.SetReturnValue(result);
+                }
             }
         }
     }

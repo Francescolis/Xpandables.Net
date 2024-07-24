@@ -43,9 +43,10 @@ public sealed class EventPublisherSubscriber(IServiceProvider serviceProvider)
         try
         {
             IOperationResult result = OperationResults.Ok().Build();
-
+            int count = 0;
             foreach (object subscriber in GetHandlersOf<TEvent>())
             {
+                count++;
                 switch (subscriber)
                 {
                     case Action<TEvent> action:
@@ -63,7 +64,13 @@ public sealed class EventPublisherSubscriber(IServiceProvider serviceProvider)
                 }
             }
 
-            return result;
+            return count == 0
+                ? OperationResults
+                    .NotFound()
+                    .WithDetail("No subscriber found for the event !")
+                    .WithError(nameof(Event), @event.GetTypeName())
+                    .Build()
+                : result;
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)
