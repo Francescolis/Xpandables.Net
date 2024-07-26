@@ -32,6 +32,6 @@ public interface IUseServiceExport
     /// <summary>
     /// When implemented, this method should configure application.
     /// </summary>
-    /// <param name="application">The application builder to act on.</param>
-    void UseServices(IApplicationBuilder application);
+    /// <param name="application">The application to act on.</param>
+    void UseServices(WebApplication application);
 }
