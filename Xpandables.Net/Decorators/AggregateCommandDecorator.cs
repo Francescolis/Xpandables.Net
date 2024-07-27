@@ -17,6 +17,7 @@
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Decorators;
 
@@ -46,7 +47,7 @@ public interface ICommandAggregate
 public sealed class AggregateCommandDecorator<TCommand, TAggregate>(
     ICommandHandler<TCommand, TAggregate> decoratee,
     IAggregateStore<TAggregate> aggregateStore) :
-    ICommandHandler<TCommand, TAggregate>
+    ICommandHandler<TCommand, TAggregate>, IDecorator
     where TAggregate : class, IAggregate
     where TCommand : class, ICommand<TAggregate>, ICommandAggregate
 {

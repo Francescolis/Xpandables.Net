@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Commands;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -25,6 +26,51 @@ internal sealed class FinalizerCommandDecorator<TCommand>(
     IOperationFinalizer operationResultFinalizer)
     : ICommandHandler<TCommand>, IDecorator
     where TCommand : notnull, ICommand, IOperationFinalizerDecorator
+{
+    public async Task<IOperationResult> HandleAsync(
+        TCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            IOperationResult result = await decoratee
+                .HandleAsync(command, cancellationToken)
+                .ConfigureAwait(false);
+
+            return operationResultFinalizer.Finalizer is not null
+                ? operationResultFinalizer.Finalizer.Invoke(result)
+                : result;
+        }
+        catch (OperationResultException resultException)
+        {
+            return operationResultFinalizer.CallFinalizerOnException
+                ? operationResultFinalizer
+                    .Finalizer
+                    .Invoke(resultException.Operation)
+                : resultException.Operation;
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
+        {
+            return operationResultFinalizer.CallFinalizerOnException
+                ? operationResultFinalizer
+                    .Finalizer
+                    .Invoke(exception.ToOperationResult())
+                : OperationResults
+                .InternalError()
+                .WithTitle("OperationFinalizerCommandDecorator")
+                .WithException(exception)
+                .Build();
+        }
+    }
+}
+
+internal sealed class FinalizerCommandDecorator<TCommand, TAggregate>(
+    ICommandHandler<TCommand, TAggregate> decoratee,
+    IOperationFinalizer operationResultFinalizer)
+    : ICommandHandler<TCommand, TAggregate>, IDecorator
+    where TCommand : class, ICommand<TAggregate>, IOperationFinalizerDecorator
+    where TAggregate : class, IAggregate
 {
     public async Task<IOperationResult> HandleAsync(
         TCommand command,

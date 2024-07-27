@@ -730,6 +730,10 @@ public static class ServiceCollectionCommandQueriesExtensions
                 typeof(FinalizerCommandDecorator<>),
                 typeof(IOperationFinalizerDecorator));
         _ = services.XTryDecorate(
+                typeof(ICommandHandler<,>),
+                typeof(FinalizerCommandDecorator<,>),
+                typeof(IOperationFinalizerDecorator));
+        _ = services.XTryDecorate(
                 typeof(IAsyncQueryHandler<,>),
                 typeof(FinalizerAsyncQueryDecorator<,>),
                 typeof(IOperationFinalizerDecorator));
