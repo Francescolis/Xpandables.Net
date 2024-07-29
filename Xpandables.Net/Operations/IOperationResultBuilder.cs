@@ -65,7 +65,7 @@ public partial interface IOperationResult
     { }
 
     /// <summary>
-    /// Provides with commands to build a success 
+    /// Provides with commands to build a failure 
     /// <see cref="IOperationResult{TResult}"/> in a fluent design.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -112,7 +112,7 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Provides with command to add status code to 
-    /// the <see cref="IStatusBuilder{TBuilder}"/> builder.
+    /// the <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IStatusBuilder<out TBuilder>
@@ -128,7 +128,7 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Provides with command to add title and/or detail to the 
-    /// <see cref="IDescriptionBuilder{TBuilder}"/> builder.
+    /// <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IDescriptionBuilder<out TBuilder>
@@ -157,7 +157,7 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Provides with command to add URL to the 
-    /// <see cref="IBuilder{TResult}"/> builder.
+    /// <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IUrlBuilder<out TBuilder>
@@ -188,7 +188,7 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Provides with command to add a result of <typeparamref name="TResult"/> 
-    /// type to the <see cref="IBuilder{TResult}"/> builder.
+    /// type to the <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     /// <typeparam name="TResult">The type of the target result.</typeparam>
@@ -207,7 +207,7 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Provides with command to add header to the 
-    /// <see cref="IBuilder{TResult}"/> builder.
+    /// <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IHeaderBuilder<out TBuilder>
@@ -257,7 +257,7 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Provides with commands to add errors to the 
-    /// <see cref="IBuilder{TResult}"/> builder.
+    /// <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IErrorBuilder<out TBuilder>
@@ -319,7 +319,7 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Provides with commands to add extensions to the 
-    /// <see cref="IBuilder{TResult}"/> builder.
+    /// <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IExtensionBuilder<out TBuilder>

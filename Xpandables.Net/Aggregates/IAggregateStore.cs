@@ -44,16 +44,16 @@ public interface IAggregateStore<TAggregate>
     /// Asynchronously returns the <typeparamref name="TAggregate"/>
     /// aggregate that matches the specified aggregate identifier.
     /// </summary>
-    /// <param name="aggregateId">The aggregate identifier to search for.</param>
+    /// <param name="keyId">The aggregate identifier to search for.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>A task that represents an <see cref="IOperationResult{TResult}"/>>
     /// where the result is <typeparamref name="TAggregate"/>.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="aggregateId"/> 
+    /// <exception cref="ArgumentNullException">The <paramref name="keyId"/> 
     /// is null.</exception>
     /// <remarks>You can also apply snapshot pattern for performance
     /// using the <see cref="IEventSnapshotStore"/>.</remarks>
     Task<IOperationResult<TAggregate>> ReadAsync(
-        Guid aggregateId,
+        Guid keyId,
         CancellationToken cancellationToken = default);
 }

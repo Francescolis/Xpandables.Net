@@ -94,10 +94,10 @@ public sealed class AggregateStore<TAggregate>(
 
     ///<inheritdoc/>
     public async Task<IOperationResult<TAggregate>> ReadAsync(
-        Guid aggregateId,
+        Guid keyId,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(aggregateId);
+        ArgumentNullException.ThrowIfNull(keyId);
 
         try
         {
@@ -105,7 +105,7 @@ public sealed class AggregateStore<TAggregate>(
                 .CreateEmptyAggregateInstance<TAggregate>();
 
             await foreach (IEventDomain @event in eventStore
-                .ReadAsync(aggregateId, cancellationToken))
+                .ReadAsync(keyId, cancellationToken))
             {
                 aggregate.LoadFromHistory(@event);
             }
@@ -114,7 +114,7 @@ public sealed class AggregateStore<TAggregate>(
                 ? OperationResults
                     .NotFound<TAggregate>()
                     .WithError(
-                        nameof(aggregateId),
+                        nameof(keyId),
                         I18nXpandables.HttpStatusCodeNotFound)
                     .Build()
                 : OperationResults.Ok(aggregate).Build();
