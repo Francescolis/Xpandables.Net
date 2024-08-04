@@ -32,7 +32,7 @@ public static class OperationResultExtensions
     private const int _minSuccessStatusCode = 200;
     private const int _maxSuccessStatusCode = 299;
 
-    private readonly static MethodInfo ToOperationResultMethod =
+    private static readonly MethodInfo ToOperationResultMethod =
         typeof(IOperationResult).GetMethod(nameof(ToOperationResult))!;
 
     /// <summary>

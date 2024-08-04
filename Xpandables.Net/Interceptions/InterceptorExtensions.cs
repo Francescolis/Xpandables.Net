@@ -37,7 +37,7 @@ public static class InterceptorExtensions
         TAspectAttribute attribute =
             GetAspectAttribute<TAspectAttribute>(invocation);
 
-        if (attribute.IsRegisteredByDI is false)
+        if (!attribute.IsRegisteredByDI)
         {
             Type target = GetRealInstance(invocation).GetType();
             if (!target.IsAssignableFromInterface(attribute.InterfaceType))
@@ -162,7 +162,7 @@ public static class InterceptorExtensions
                 return aspectAttribute;
             }
 
-            // the currentTarger is a decorator or a wrapper.
+            // the current Target is a decorator or a wrapper.
             // Attempt to find a field or property in the current instance
             // that holds an interface type instance.
 

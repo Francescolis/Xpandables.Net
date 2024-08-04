@@ -146,7 +146,7 @@ public partial record struct Optional<T> :
         => HasValue && other is { };
 
     ///<inheritdoc/>
-    public readonly override int GetHashCode()
+    public override readonly int GetHashCode()
     {
         const int hash = 17;
         if (HasValue)
@@ -185,7 +185,7 @@ public partial record struct Optional<T> :
     /// if not returns <see cref="string.Empty"/> .
     /// </summary>
     /// <returns>The string representation of the value.</returns>
-    public readonly override string ToString()
+    public override readonly string ToString()
         => HasValue ? $"{Value}" : string.Empty;
 
     /// <summary>

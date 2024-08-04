@@ -30,7 +30,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionEventExtensions
 {
-    internal readonly static MethodInfo AddEventHandlerMethod =
+    internal static readonly MethodInfo AddEventHandlerMethod =
         typeof(ServiceCollectionEventExtensions)
         .GetMethod(nameof(AddXEventHandler))!;
 

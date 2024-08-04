@@ -17,8 +17,6 @@
 ********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 
-using Xpandables.Net.EntityFramework.Repositories;
-
 namespace Xpandables.Net.Repositories;
 
 /// <summary>

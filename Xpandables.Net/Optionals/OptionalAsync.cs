@@ -75,7 +75,7 @@ public partial record struct Optional<T>
     /// <returns>A new optional that could contain a value or not.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="binder"/> is null.</exception>
-    public async readonly Task<Optional<TU>> BindAsync<TU>(
+    public readonly async Task<Optional<TU>> BindAsync<TU>(
         Func<T?, Task<Optional<TU>>> binder)
     {
         ArgumentNullException.ThrowIfNull(binder);
@@ -116,7 +116,7 @@ public partial record struct Optional<T>
     /// <paramref name="empty"/> is null.</exception>
     /// <returns>The current instance where the <paramref name="empty"/> 
     /// has been applied if the instance is empty.</returns>
-    public async readonly Task<Optional<T>> EmptyAsync(
+    public readonly async Task<Optional<T>> EmptyAsync(
         Func<Task> empty)
     {
         ArgumentNullException.ThrowIfNull(empty);

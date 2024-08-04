@@ -35,11 +35,11 @@ public abstract class AspectAttribute : InterceptorAttribute
     {
         ArgumentNullException.ThrowIfNull(interfaceType);
 
-        InterfaceType = interfaceType
-            .IsInterface is false
+        InterfaceType = !interfaceType
+            .IsInterface
             ? throw new InvalidOperationException(
                 $"{interfaceType.Name} must be an interface.")
-        : interfaceType;
+            : interfaceType;
     }
 
     /// <summary>

@@ -30,7 +30,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionValidatorExtensions
 {
-    internal readonly static MethodInfo AddValidatorMethod =
+    internal static readonly MethodInfo AddValidatorMethod =
         typeof(ServiceCollectionValidatorExtensions)
         .GetMethod(nameof(AddXValidator))!;
 

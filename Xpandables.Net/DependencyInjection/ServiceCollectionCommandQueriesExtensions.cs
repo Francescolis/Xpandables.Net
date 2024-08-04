@@ -35,19 +35,19 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionCommandQueriesExtensions
 {
-    internal readonly static MethodInfo AddCommandHandlerMethod =
+    internal static readonly MethodInfo AddCommandHandlerMethod =
         typeof(ServiceCollectionCommandQueriesExtensions)
         .GetMethod(nameof(AddXCommandHandler))!;
 
-    internal readonly static MethodInfo AddAggregateCommandHandlerMethod =
+    internal static readonly MethodInfo AddAggregateCommandHandlerMethod =
         typeof(ServiceCollectionCommandQueriesExtensions)
         .GetMethod(nameof(AddXAggregateCommandHandler))!;
 
-    internal readonly static MethodInfo AddQueryHandlerMethod =
+    internal static readonly MethodInfo AddQueryHandlerMethod =
         typeof(ServiceCollectionCommandQueriesExtensions)
         .GetMethod(nameof(AddXQueryHandler))!;
 
-    internal readonly static MethodInfo AddAsyncQueryHandlerMethod =
+    internal static readonly MethodInfo AddAsyncQueryHandlerMethod =
         typeof(ServiceCollectionCommandQueriesExtensions)
         .GetMethod(nameof(AddXAsyncQueryHandler))!;
 

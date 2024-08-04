@@ -18,9 +18,8 @@
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Optionals;
-using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.EntityFramework.Repositories;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// An implementation of <see cref="IRepositoryRead{TEntity}"/> for EFCore.

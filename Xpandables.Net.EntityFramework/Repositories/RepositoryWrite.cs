@@ -19,9 +19,7 @@ using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.EntityFramework.Repositories;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// An implementation of <see cref="IRepositoryWrite{TEntity}"/> for EFCore.

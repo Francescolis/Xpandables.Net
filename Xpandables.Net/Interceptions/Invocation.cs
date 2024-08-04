@@ -135,7 +135,7 @@ internal record class Invocation : IInvocation
             }
         }
         catch (Exception exception)
-            when (ReThrowException is true)
+            when (ReThrowException)
         {
             _exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
         }

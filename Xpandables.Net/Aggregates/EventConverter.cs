@@ -56,7 +56,7 @@ public abstract class EventConverter<TEventEntity> : EventConverter
     /// <param name="event">The event to convert.</param>
     /// <param name="options">The serialization options to use.</param>
     /// <returns>The entity converted from the event.</returns>
-    /// <exception cref="InvalidOperationException">Unbale to convert to
+    /// <exception cref="InvalidOperationException">Unable to convert to
     /// <typeparamref name="TEventEntity"/> type.</exception>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>"
@@ -70,7 +70,7 @@ public abstract class EventConverter<TEventEntity> : EventConverter
     /// <param name="entity">The entity to convert.</param>
     /// <param name="options">The serialization options to use.</param>
     /// <returns>The event converted from the entity.</returns>
-    /// <exception cref="InvalidOperationException">Unbale to convert to
+    /// <exception cref="InvalidOperationException">Unable to convert to
     /// event type.</exception>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="entity"/> is null.</exception>

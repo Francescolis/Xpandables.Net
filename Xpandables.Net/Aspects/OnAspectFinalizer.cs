@@ -46,7 +46,7 @@ public sealed class OnAspectFinalizer(IAspectFinalizer aspectFinalizer) :
             }
         }
         catch (Exception exception)
-            when (AspectAttribute.CallFinalizerOnException is true)
+            when (AspectAttribute.CallFinalizerOnException)
         {
             DoFinalize(exception);
         }

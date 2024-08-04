@@ -113,7 +113,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         // create properties
         Dictionary<string, object?> propertyValues =
             CreateProperties(bindingContext, modelProperties);
-        if (bindingContext.ModelState.IsValid is false)
+        if (!bindingContext.ModelState.IsValid)
         {
             return;
         }

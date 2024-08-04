@@ -30,7 +30,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionVisitorExtensions
 {
-    internal readonly static MethodInfo AddVisitorMethod =
+    internal static readonly MethodInfo AddVisitorMethod =
         typeof(ServiceCollectionVisitorExtensions)
         .GetMethod(nameof(AddXVisitor))!;
 

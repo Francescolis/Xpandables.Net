@@ -28,7 +28,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionSpecificationExtensions
 {
-    internal readonly static MethodInfo AddSpecificationMethod =
+    internal static readonly MethodInfo AddSpecificationMethod =
         typeof(ServiceCollectionSpecificationExtensions)
         .GetMethod(nameof(AddXSpecification))!;
 

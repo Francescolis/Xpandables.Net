@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
+		<RootNamespace>Xpandables.Net</RootNamespace>
 		<NeutralLanguage>fr-FR</NeutralLanguage>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>C:\Source\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
