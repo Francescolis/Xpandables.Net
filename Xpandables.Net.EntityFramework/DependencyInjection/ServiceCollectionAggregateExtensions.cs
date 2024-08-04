@@ -33,14 +33,14 @@ public static class ServiceCollectionAggregateExtensions
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXEventUnitOfWork(
+    public static IServiceCollection AddXUnitOfWorkEvent(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
         return services
             .AddXUnitOfWorkKeyed
-                <EventDataContext>(EventOptions.UnitOfWorkKey);
+                <DataContextEvent>(EventOptions.UnitOfWorkKey);
     }
 
     /// <summary>
@@ -51,7 +51,7 @@ public static class ServiceCollectionAggregateExtensions
     /// from <see cref="DataContext"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXEventUnitOfWork<TDataContext>(
+    public static IServiceCollection AddXUnitOfWorkEvent<TDataContext>(
         this IServiceCollection services)
         where TDataContext : DataContext
     {
@@ -62,7 +62,7 @@ public static class ServiceCollectionAggregateExtensions
     }
 
     /// <summary>
-    /// Registers the <see cref="EventDataContext"/> type class to the 
+    /// Registers the <see cref="DataContextEvent"/> type class to the 
     /// services with scoped life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -75,7 +75,7 @@ public static class ServiceCollectionAggregateExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXEventDataContext(
+    public static IServiceCollection AddXDataContextEvent(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder>? optionsAction = null,
         ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
@@ -83,7 +83,7 @@ public static class ServiceCollectionAggregateExtensions
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        return services.AddDbContext<EventDataContext>(
+        return services.AddDbContext<DataContextEvent>(
             optionsAction, contextLifetime, optionsLifetime);
     }
 }

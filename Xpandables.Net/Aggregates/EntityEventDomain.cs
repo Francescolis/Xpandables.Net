@@ -22,7 +22,7 @@ namespace Xpandables.Net.Aggregates;
 /// Represents a domain event entity.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="EventEntityDomain"/> with 
+/// Initializes a new instance of <see cref="EntityEventDomain"/> with 
 /// the specified values.
 /// </remarks>
 /// <param name="id">The identifier of the event.</param>
@@ -32,7 +32,7 @@ namespace Xpandables.Net.Aggregates;
 /// <param name="data">The data of the event.</param>
 /// <param name="eventTypeFullName">The full name of the event type.</param>
 /// <param name="eventTypeName">The name of the event type.</param>
-public sealed class EventEntityDomain(
+public sealed class EntityEventDomain(
     Guid id,
     string eventTypeName,
     string eventTypeFullName,

@@ -14,35 +14,33 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents a snapshot event entity.
+/// Represents an integration event entity.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="EventEntitySnapshot"/> with
+/// Initializes a new instance of <see cref="EntityEventIntegration"/> with
 /// the specified values.
 /// </remarks>
 /// <param name="id">The identifier of the event.</param>
 /// <param name="eventTypeName">The name of the event type.</param>
 /// <param name="eventTypeFullName">The full name of the event type.</param>
-/// <param name="data">The data of the event.</param>
-/// <param name="objectId">The object identifier.</param>
 /// <param name="version">The version of the event.</param>
-public sealed class EventEntitySnapshot(
+/// <param name="data">The data of the event.</param>
+/// <param name="errorMessage">The error message of the event.</param>
+public sealed class EntityEventIntegration(
     Guid id,
     string eventTypeName,
     string eventTypeFullName,
     ulong version,
     JsonDocument data,
-    Guid objectId) :
-    EventEntity(id, eventTypeName, eventTypeFullName, version, data), IEventEntitySnapshot
+    string? errorMessage = default) :
+    EventEntity(id, eventTypeName, eventTypeFullName, version, data),
+    IEventEntityIntegration
 {
-
     ///<inheritdoc/>
-    [Key]
-    public Guid ObjectId { get; } = objectId;
+    public string? ErrorMessage { get; set; } = errorMessage;
 }

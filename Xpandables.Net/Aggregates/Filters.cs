@@ -23,21 +23,21 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents the filter for <see cref="EventEntityDomain"/>.
+/// Represents the filter for <see cref="EntityEventDomain"/>.
 /// </summary>
 public sealed class EventEntityDomainFilter :
-    EventEntityFilter<EventEntityDomain>
+    EventEntityFilter<EntityEventDomain>
 {
     ///<inheritdoc/>
     public override bool CanFilter(Type typeToFilter)
-        => typeToFilter == typeof(EventEntityDomain);
+        => typeToFilter == typeof(EntityEventDomain);
 
     ///<inheritdoc/>
-    public override Expression<Func<EventEntityDomain, bool>> Filter(
+    public override Expression<Func<EntityEventDomain, bool>> Filter(
         IEventFilter eventFilter)
     {
-        QueryExpression<EventEntityDomain> expression
-            = QueryExpressionFactory.Create<EventEntityDomain>();
+        QueryExpression<EntityEventDomain> expression
+            = QueryExpressionFactory.Create<EntityEventDomain>();
 
         if (eventFilter.AggregateId is not null)
         {
@@ -91,7 +91,7 @@ public sealed class EventEntityDomainFilter :
         {
             expression = expression.And(
                 RepositoryExtensions
-                .Compose<EventEntityDomain, JsonDocument, bool>(
+                .Compose<EntityEventDomain, JsonDocument, bool>(
                     x => x.Data,
                     eventFilter.DataCriteria));
         }
@@ -101,21 +101,21 @@ public sealed class EventEntityDomainFilter :
 }
 
 /// <summary>
-/// Represents the filter for <see cref="EventEntityIntegration"/>.
+/// Represents the filter for <see cref="EntityEventIntegration"/>.
 /// </summary>
 public sealed class EventEntityIntegrationFilter :
-    EventEntityFilter<EventEntityIntegration>
+    EventEntityFilter<EntityEventIntegration>
 {
     ///<inheritdoc/>
     public override bool CanFilter(Type typeToFilter)
-        => typeToFilter == typeof(EventEntityIntegration);
+        => typeToFilter == typeof(EntityEventIntegration);
 
     ///<inheritdoc/>
-    public override Expression<Func<EventEntityIntegration, bool>> Filter(
+    public override Expression<Func<EntityEventIntegration, bool>> Filter(
         IEventFilter eventFilter)
     {
-        QueryExpression<EventEntityIntegration> expression
-            = QueryExpressionFactory.Create<EventEntityIntegration>();
+        QueryExpression<EntityEventIntegration> expression
+            = QueryExpressionFactory.Create<EntityEventIntegration>();
 
         if (eventFilter.Id is not null)
         {
@@ -162,7 +162,7 @@ public sealed class EventEntityIntegrationFilter :
         {
             expression = expression.And(
                 RepositoryExtensions
-                .Compose<EventEntityIntegration, JsonDocument, bool>(
+                .Compose<EntityEventIntegration, JsonDocument, bool>(
                     x => x.Data,
                     eventFilter.DataCriteria));
         }

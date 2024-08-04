@@ -23,27 +23,24 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Aggregates.Configurations;
 
 /// <summary>
-/// Defines the base <see cref="EventEntityDomain"/> configuration.
+/// Defines the <see cref="EntityEventSnapshot"/> configuration.
 /// </summary>
-public sealed class EventEntityDomainTypeConfiguration
-    : IEntityTypeConfiguration<EventEntityDomain>
+public sealed class EntityEventSnapShotTypeConfiguration
+    : IEntityTypeConfiguration<EntityEventSnapshot>
 {
     ///<inheritdoc/>
-    public void Configure(EntityTypeBuilder<EventEntityDomain> builder)
+    public void Configure(EntityTypeBuilder<EntityEventSnapshot> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         _ = builder.Property(p => p.Id).IsRequired();
         _ = builder.HasKey(p => p.Id);
-        _ = builder.HasIndex(p =>
-        new { p.Id, p.EventTypeName, p.Version }).IsUnique();
+        _ = builder.HasIndex(p => p.Id).IsUnique();
 
-        _ = builder.Property(p => p.Id);
-        _ = builder.Property(p => p.AggregateTypeName);
-        _ = builder.Property(p => p.AggregateId);
-        _ = builder.Property(p => p.Data);
-        _ = builder.Property(p => p.EventTypeFullName);
+        _ = builder.Property(p => p.ObjectId);
         _ = builder.Property(p => p.EventTypeName);
+        _ = builder.Property(p => p.EventTypeFullName);
+        _ = builder.Property(p => p.Data);
         _ = builder.Property(p => p.Version);
 
         _ = builder.HasQueryFilter(f => f.Status == EntityStatus.ACTIVE);

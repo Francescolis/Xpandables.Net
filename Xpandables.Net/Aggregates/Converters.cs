@@ -22,17 +22,17 @@ using Xpandables.Net.Primitives.Text;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Represents the <see cref="EventEntityDomain"/> converter.
+/// Represents the <see cref="EntityEventDomain"/> converter.
 /// </summary>
-public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomain>
+public sealed class EventEntityDomainConverter : EventConverter<EntityEventDomain>
 {
     ///<inheritdoc/>
     public override bool CanConvert(Type typeToConvert)
-        => typeToConvert == typeof(EventEntityDomain);
+        => typeToConvert == typeof(EntityEventDomain);
 
     ///<inheritdoc/>
     public override IEvent ConvertFrom(
-        EventEntityDomain entity,
+        EntityEventDomain entity,
         JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -60,7 +60,7 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
     }
 
     ///<inheritdoc/>
-    public override EventEntityDomain ConvertTo(
+    public override EntityEventDomain ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = null)
     {
@@ -77,7 +77,7 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
         JsonDocument data = eventDomain.ToJsonDocument(options);
         string aggregateTypeName = eventDomain.GetTypeName();
 
-        return new EventEntityDomain(
+        return new EntityEventDomain(
             eventDomain.Id,
             eventTypeName,
             eventTypeFullName,
@@ -89,18 +89,18 @@ public sealed class EventEntityDomainConverter : EventConverter<EventEntityDomai
 }
 
 /// <summary>
-/// Represents the <see cref="EventEntityIntegration"/> converter.
+/// Represents the <see cref="EntityEventIntegration"/> converter.
 /// </summary>
 public sealed class EventEntityIntegrationConverter :
-    EventConverter<EventEntityIntegration>
+    EventConverter<EntityEventIntegration>
 {
     ///<inheritdoc/>
     public override bool CanConvert(Type typeToConvert)
-        => typeToConvert == typeof(EventEntityIntegration);
+        => typeToConvert == typeof(EntityEventIntegration);
 
     ///<inheritdoc/>
     public override IEvent ConvertFrom(
-        EventEntityIntegration entity,
+        EntityEventIntegration entity,
         JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -128,7 +128,7 @@ public sealed class EventEntityIntegrationConverter :
     }
 
     ///<inheritdoc/>
-    public override EventEntityIntegration ConvertTo(IEvent @event, JsonSerializerOptions? options = null)
+    public override EntityEventIntegration ConvertTo(IEvent @event, JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
@@ -141,7 +141,7 @@ public sealed class EventEntityIntegrationConverter :
         JsonDocument data = eventIntegration.ToJsonDocument(options);
         ulong version = eventIntegration.Version;
 
-        return new EventEntityIntegration(
+        return new EntityEventIntegration(
             eventIntegration.Id,
             eventTypeName,
             eventTypeFullName,
@@ -151,18 +151,18 @@ public sealed class EventEntityIntegrationConverter :
 }
 
 /// <summary>
-/// Represents the <see cref="EventEntitySnapshot"/> converter.
+/// Represents the <see cref="EntityEventSnapshot"/> converter.
 /// </summary>
 public sealed class EventEntitySnapshotConverter :
-    EventConverter<EventEntitySnapshot>
+    EventConverter<EntityEventSnapshot>
 {
     ///<inheritdoc/>
     public override bool CanConvert(Type typeToConvert)
-        => typeToConvert == typeof(EventEntitySnapshot);
+        => typeToConvert == typeof(EntityEventSnapshot);
 
     ///<inheritdoc/>
     public override IEvent ConvertFrom(
-        EventEntitySnapshot entity,
+        EntityEventSnapshot entity,
         JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -190,7 +190,7 @@ public sealed class EventEntitySnapshotConverter :
     }
 
     ///<inheritdoc/>
-    public override EventEntitySnapshot ConvertTo(
+    public override EntityEventSnapshot ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = null)
     {
@@ -205,7 +205,7 @@ public sealed class EventEntitySnapshotConverter :
         JsonDocument data = eventSnapshop.ToJsonDocument(options);
         ulong version = eventSnapshop.Version;
 
-        return new EventEntitySnapshot(
+        return new EntityEventSnapshot(
             eventSnapshop.Id,
             eventTypeName,
             eventTypeFullName,

@@ -92,7 +92,7 @@ public static class ServiceCollectionEventExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         return services.AddXEventDomainStore
-            <EventDomainStore<EventEntityDomain>>();
+            <EventDomainStore<EntityEventDomain>>();
     }
 
     /// <summary>
@@ -134,7 +134,7 @@ public static class ServiceCollectionEventExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         return services.AddXEventIntegrationStore
-            <EventIntegrationStore<EventEntityIntegration>>();
+            <EventIntegrationStore<EntityEventIntegration>>();
     }
 
     /// <summary>

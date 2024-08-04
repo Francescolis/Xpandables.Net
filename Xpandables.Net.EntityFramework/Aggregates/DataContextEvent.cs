@@ -26,14 +26,14 @@ namespace Xpandables.Net.Aggregates;
 /// Provides the base events db context.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of <see cref="EventDataContext"/> 
+/// Initializes a new instance of <see cref="DataContextEvent"/> 
 /// with the specified configuration.
 /// </remarks>
 /// <param name="contextOptions">The configuration to be applied.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="contextOptions"/> is null.</exception>
-public sealed class EventDataContext(
-    DbContextOptions<EventDataContext> contextOptions)
+public sealed class DataContextEvent(
+    DbContextOptions<DataContextEvent> contextOptions)
     : DataContext(contextOptions)
 {
     ///<inheritdoc/>
@@ -42,27 +42,27 @@ public sealed class EventDataContext(
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
         _ = modelBuilder
-            .ApplyConfiguration(new EventEntityDomainTypeConfiguration());
+            .ApplyConfiguration(new EntityEventDomainTypeConfiguration());
         _ = modelBuilder
-            .ApplyConfiguration(new EventEntityIntegrationTypeConfiguration());
+            .ApplyConfiguration(new EntityEventIntegrationTypeConfiguration());
         _ = modelBuilder
-            .ApplyConfiguration(new EventEntitySnapShotTypeConfiguration());
+            .ApplyConfiguration(new EntityEventSnapShotTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }
 
     /// <summary>
-    /// A collection of <see cref="EventEntityDomain"/> entities.
+    /// A collection of <see cref="EntityEventDomain"/> entities.
     /// </summary>
-    public DbSet<EventEntityDomain> Domains { get; set; }
+    public DbSet<EntityEventDomain> Domains { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="EventEntityIntegration"/> entities.
+    /// A collection of <see cref="EntityEventIntegration"/> entities.
     /// </summary>
-    public DbSet<EventEntityIntegration> Integrations { get; set; }
+    public DbSet<EntityEventIntegration> Integrations { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="EventEntitySnapshot"/> entities.
+    /// A collection of <see cref="EntityEventSnapshot"/> entities.
     /// </summary>
-    public DbSet<EventEntitySnapshot> Snapshots { get; set; }
+    public DbSet<EntityEventSnapshot> Snapshots { get; set; }
 }

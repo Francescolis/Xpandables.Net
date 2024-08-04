@@ -63,7 +63,7 @@ public static class ServiceCollectionSnapshotExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         return services
-            .AddXEventSnapshotStore<EventSnapshotStore<EventEntitySnapshot>>();
+            .AddXEventSnapshotStore<EventSnapshotStore<EntityEventSnapshot>>();
     }
 
 }
