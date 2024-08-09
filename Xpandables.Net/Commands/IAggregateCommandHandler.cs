@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Decorators;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Optionals;
 
@@ -24,7 +25,7 @@ namespace Xpandables.Net.Commands;
 /// This interface is used as a marker for commands targeting aggregate. 
 /// It's used for implementing the Decider pattern. 
 /// </summary>
-public interface ICommand<TAggregate>
+public interface ICommand<TAggregate> : ICommandAggregate
     where TAggregate : IAggregate
 {
     /// <summary>
@@ -53,6 +54,35 @@ public interface ICommand<TAggregate>
     /// The default value is associated with the current thread.
     /// </summary>
     public string CreatedBy => Environment.UserName;
+}
+
+/// <summary>
+/// Represents a command that targets an aggregate.
+/// </summary>
+/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
+public abstract record Command<TAggregate> : ICommand<TAggregate>
+    where TAggregate : class, IAggregate
+{
+    /// <summary>
+    /// Constructs a new instance of <see cref="Command{TAggregate}"/>.
+    /// </summary>
+    protected Command()
+    {
+    }
+
+    /// <summary>
+    /// Constructs a new instance of <see cref="Command{TAggregate}"/>.
+    /// </summary>
+    protected Command(Guid keyId) => KeyId = keyId;
+
+    ///<inheritdoc/>
+    public Optional<TAggregate> Aggregate { get; set; } = Optional.Empty<TAggregate>();
+
+    ///<inheritdoc/>
+    public Guid KeyId { get; init; }
+
+    ///<inheritdoc/>
+    public virtual bool ContinueWhenNotFound => false;
 }
 
 /// <summary>

@@ -18,7 +18,7 @@
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents the the repository for events.
+/// Represents the repository for events.
 /// </summary>
 public interface IRepositoryEvent
 {
