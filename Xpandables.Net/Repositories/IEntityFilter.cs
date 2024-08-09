@@ -25,6 +25,32 @@ namespace Xpandables.Net.Repositories;
 /// Represents the base criteria to search for entities.
 /// </summary>
 /// <remarks>To be applied, just call the instance method like this :
+/// <code><list type="table"><item>IEntityFilter filter 
+/// = new EntityFilter ...;
+/// </item><item>filter.Apply(queryable);</item></list></code>
+/// where queryable is the data source that implement 
+/// <see cref="IQueryable"/>.</remarks>
+public interface IEntityFilter
+{
+    /// <summary>
+    /// Used to define the pagination of the query result.
+    /// </summary>
+    /// <remarks>Example : <code>Paging = Paging.With(1,20); </code></remarks>
+    Pagination? Paging { get; set; }
+
+    /// <summary>
+    /// Applies the filters to the specified queryable.
+    /// </summary>
+    /// <param name="queryable">The queryable to act on.</param>
+    /// <returns>The queryable instance where 
+    /// the filters have been applied.</returns>
+    IQueryable Apply(IQueryable queryable);
+}
+
+/// <summary>
+/// Represents the base criteria to search for entities.
+/// </summary>
+/// <remarks>To be applied, just call the instance method like this :
 /// <code><list type="table"><item>IEntityFilter{TEntity} filter 
 /// = new EntityFilter{TEntity} ...;
 /// </item><item>filter.GetQueryable(queryable);</item></list></code>
@@ -32,7 +58,7 @@ namespace Xpandables.Net.Repositories;
 /// <see cref="IQueryable{T}"/> with T as <typeparamref name="TEntity"/>.</remarks>
 /// <typeparam name="TEntity">The type of the target entity.</typeparam>
 /// <typeparam name="TResult">The type of result.</typeparam>
-public interface IEntityFilter<TEntity, TResult>
+public interface IEntityFilter<TEntity, TResult> : IEntityFilter
     where TEntity : class
 {
     /// <summary>
@@ -58,18 +84,35 @@ public interface IEntityFilter<TEntity, TResult>
     Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? OrderBy { get; }
 
     /// <summary>
-    /// Used to define the pagination of the query result.
-    /// </summary>
-    /// <remarks>Example : <code>Paging = Paging.With(1,20); </code></remarks>
-    Pagination? Paging { get; }
-
-    /// <summary>
     /// Applies the filters to the specified queryable.
     /// </summary>
     /// <param name="queryable">The queryable to act on.</param>
     /// <returns>The queryable instance where 
     /// the filters have been applied.</returns>
-    IQueryable<TResult> GetQueryableFiltered(IQueryable<TEntity> queryable);
+    public IQueryable<TResult> Apply(IQueryable<TEntity> queryable)
+    {
+        if (Criteria is not null)
+        {
+            queryable = queryable.Where(Criteria);
+        }
+
+        if (OrderBy is not null)
+        {
+            queryable = OrderBy(queryable);
+        }
+
+        if (Paging is not null)
+        {
+            queryable = queryable
+                .Skip(Paging.Value.Index * Paging.Value.Size)
+                .Take(Paging.Value.Size);
+        }
+
+        return queryable.Select(Selector);
+    }
+
+    IQueryable IEntityFilter.Apply(IQueryable queryable)
+        => Apply((IQueryable<TEntity>)queryable);
 }
 
 /// <summary>

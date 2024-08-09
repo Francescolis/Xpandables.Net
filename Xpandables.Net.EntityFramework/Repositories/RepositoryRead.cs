@@ -66,8 +66,8 @@ public class RepositoryRead<TEntity>(DataContext context)
 
         IQueryable<TResult> queryableResult = typeof(IEntity)
             .IsAssignableFrom(typeof(TResult))
-                ? filter.GetQueryableFiltered(Context.Set<TEntity>())
-                : filter.GetQueryableFiltered(Context.Set<TEntity>()
+                ? filter.Apply(Context.Set<TEntity>())
+                : filter.Apply(Context.Set<TEntity>()
                     .AsNoTracking());
 
         return await queryableResult
@@ -84,8 +84,8 @@ public class RepositoryRead<TEntity>(DataContext context)
 
         IQueryable<TResult> queryableResult = typeof(IEntity)
             .IsAssignableFrom(typeof(TResult))
-                ? filter.GetQueryableFiltered(Context.Set<TEntity>())
-                : filter.GetQueryableFiltered(Context.Set<TEntity>()
+                ? filter.Apply(Context.Set<TEntity>())
+                : filter.Apply(Context.Set<TEntity>()
                     .AsNoTracking());
 
         return queryableResult.AsAsyncEnumerable();
@@ -99,7 +99,7 @@ public class RepositoryRead<TEntity>(DataContext context)
         ArgumentNullException.ThrowIfNull(filter);
 
         return await filter
-            .GetQueryableFiltered(Context.Set<TEntity>().AsNoTracking())
+            .Apply(Context.Set<TEntity>().AsNoTracking())
                 .CountAsync(cancellationToken)
                 .ConfigureAwait(false);
     }

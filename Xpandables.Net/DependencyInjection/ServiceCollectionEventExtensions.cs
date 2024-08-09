@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Events;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -36,7 +37,7 @@ public static class ServiceCollectionEventExtensions
 
     /// <summary>
     /// Registers the 
-    /// <see cref="EventDuplicateDecorator{TEvent}"/>
+    /// <see cref="EventHandlerDuplicateDecorator{TEvent}"/>
     /// decorator to handle duplicate events.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -49,92 +50,74 @@ public static class ServiceCollectionEventExtensions
         return services
             .XTryDecorate(
                 typeof(IEventHandler<>),
-                typeof(EventDuplicateDecorator<>),
+                typeof(EventHandlerDuplicateDecorator<>),
                 typeof(IEventDuplicate));
     }
 
     /// <summary>
-    /// Registers the implementation as <see cref="IEventDomainStore"/> 
+    /// Registers the implementation as <see cref="IEventStore"/> 
     /// to the services with scope life time.
     /// </summary>
-    /// <typeparam name="TDomainEventStore">The type of that 
-    /// implements <see cref="IEventDomainStore"/>.</typeparam>
+    /// <typeparam name="TEventStore">The type of that 
+    /// implements <see cref="IEventStore"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXEventDomainStore
-        <TDomainEventStore>(this IServiceCollection services)
-        where TDomainEventStore : class, IEventDomainStore
+    public static IServiceCollection AddXEventStore
+        <TEventStore>(this IServiceCollection services)
+        where TEventStore : class, IEventStore
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IEventDomainStore),
-                typeof(TDomainEventStore),
+                typeof(IEventStore),
+                typeof(TEventStore),
                 ServiceLifetime.Scoped));
 
         return services;
     }
 
     /// <summary>
-    /// Registers the default implementation as <see cref="IEventDomainStore"/>
+    /// Registers the default implementation as <see cref="IEventStore"/>
     /// to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXEventDomainStore(
+    public static IServiceCollection AddXEventStore(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddXEventDomainStore
-            <EventDomainStore<EntityEventDomain>>();
+        return services.AddXEventStore<EventStore>();
     }
 
     /// <summary>
-    /// Registers the implementation as <see cref="IEventIntegrationStore"/> to 
-    /// the services with scope life time.
+    /// Registers the implementation as <see cref="IRepositoryEvent"/> 
+    /// to the services with scope life time.
     /// </summary>
-    /// <typeparam name="TEventIntegrationStore">The type of that implements 
-    /// <see cref="IEventIntegrationStore"/>.</typeparam>
+    /// <typeparam name="TRepositoryEvent">The type of that 
+    /// implements <see cref="IRepositoryEvent"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXEventIntegrationStore
-        <TEventIntegrationStore>(this IServiceCollection services)
-        where TEventIntegrationStore : class, IEventIntegrationStore
+    public static IServiceCollection AddXRepositoryEvent
+        <TRepositoryEvent>(this IServiceCollection services)
+        where TRepositoryEvent : class, IRepositoryEvent
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IEventIntegrationStore),
-                typeof(TEventIntegrationStore),
+                typeof(IRepositoryEvent),
+                typeof(TRepositoryEvent),
                 ServiceLifetime.Scoped));
 
         return services;
-    }
-
-    /// <summary>
-    /// Registers the default implementation as <see cref="IEventIntegrationStore"/>
-    /// to the services with scope life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
-    /// is null.</exception>
-    public static IServiceCollection AddXEventIntegrationStore(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.AddXEventIntegrationStore
-            <EventIntegrationStore<EntityEventIntegration>>();
     }
 
     /// <summary>

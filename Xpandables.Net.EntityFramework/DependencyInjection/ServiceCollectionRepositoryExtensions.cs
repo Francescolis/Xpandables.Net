@@ -17,7 +17,9 @@
 ********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -106,4 +108,26 @@ public static class ServiceCollectionRepositoryExtensions
     public static IServiceCollection AddXUnitOfWorks(
         this IServiceCollection services)
         => services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+
+    /// <summary>
+    /// Registers the default implementation as <see cref="IRepositoryEvent"/> 
+    /// to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
+    /// is null.</exception>
+    public static IServiceCollection AddXRepositoryEvent
+        (this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IRepositoryEvent),
+                typeof(RepositoryEvent),
+                ServiceLifetime.Scoped));
+
+        return services;
+    }
 }

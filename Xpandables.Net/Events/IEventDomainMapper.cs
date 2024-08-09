@@ -19,31 +19,28 @@ using Xpandables.Net.Events;
 namespace Xpandables.Net.Aggregates;
 
 /// <summary>
-/// Defines base properties for an aggregate that is identified by 
-/// <see cref="Guid"/> type.
-/// <para>Aggregate is a pattern in Domain-Driven Design.
-/// A DDD aggregate is a cluster of objects that can be treated 
-/// as a single unit.</para>
+/// Allows application author to map domain event to integration event 
+/// in a Centralized Event Mapper.
 /// </summary>
-public interface IAggregate : IEventSourcing
+/// <remarks>The implementation should be a singleton class or 
+/// a class with singleton lifetime.</remarks>
+public interface IEventDomainMapper
 {
     /// <summary>
-    /// Gets the unique aggregate identifier.
+    /// Maps the specified domain event to an integration event.
     /// </summary>
-    Guid AggregateId { get; }
+    /// <param name="event">The domain event to be mapped.</param>
+    /// <returns>An integration event from the domain event mapped.</returns>
+    IEventIntegration Map(IEventDomain @event);
 
     /// <summary>
-    /// Gets the current version of the instance.
+    /// Maps the specified domain events to integration events.
     /// </summary>
-    ulong Version { get; }
-
-    /// <summary>
-    /// Determines whether or not the underlying instance is a empty one.
-    /// </summary>
-    /// <remarks>This property is used when creating aggregate from history 
-    /// to determine if the id has been set or not.
-    /// You can override it to customize its behavior.</remarks>
-    /// <returns>Returns <see langword="true"/> if it is not empty, 
-    /// otherwise <see langword="false"/>.</returns>
-    public virtual bool IsEmpty => AggregateId == Guid.Empty;
+    /// <param name="events">The collection of domain events to be  
+    /// mapped.</param>
+    /// <returns>A collection of integration events from the domain events mapped
+    /// .</returns>
+    public IEnumerable<IEventIntegration> MapAll(
+        IEnumerable<IEventDomain> events)
+        => events.Select(Map);
 }

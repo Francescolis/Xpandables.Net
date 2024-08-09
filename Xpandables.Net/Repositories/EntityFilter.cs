@@ -82,14 +82,14 @@ public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
     { get; init; }
 
     ///<inheritdoc/>
-    public virtual Pagination? Paging { get; init; }
+    public virtual Pagination? Paging { get; set; }
 
     /// <summary>
     /// Applies the filters to the specified queryable.
     /// </summary>
     /// <param name="queryable">The queryable to act on.</param>
     /// <returns>The queryable instance where the filters have been applied.</returns>
-    public IQueryable<TResult> GetQueryableFiltered(
+    public IQueryable<TResult> Apply(
         IQueryable<TEntity> queryable)
     {
         if (Criteria is not null)

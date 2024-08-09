@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Events;
 using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
@@ -32,7 +33,7 @@ namespace Xpandables.Net.Aggregates;
 /// You may use the <see cref="PushEvent{TEvent}(TEvent)"/> method to push 
 /// the specified event to the aggregate.
 /// </summary>
-public abstract class Aggregate : IAggregate, IEventDomainSourcing
+public abstract class Aggregate : IAggregate, IEventSourcing
 {
     private readonly Queue<IEventDomain> _events = new();
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
@@ -62,11 +63,11 @@ public abstract class Aggregate : IAggregate, IEventDomainSourcing
 
         foreach (IEventDomain @event in events)
         {
-            (this as IEventDomainSourcing).LoadFromHistory(@event);
+            (this as IEventSourcing).LoadFromHistory(@event);
         }
     }
 
-    void IEventDomainSourcing.LoadFromHistory(IEventDomain @event)
+    void IEventSourcing.LoadFromHistory(IEventDomain @event)
     {
         Mutate(@event);
         Version = @event.Version;

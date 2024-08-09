@@ -101,4 +101,22 @@ public static class ExpressionExtensions
             throw new ArgumentException("A member expression is expected.");
     }
 
+    /// <summary>
+    /// Converts the delegate to an expression.
+    /// </summary>
+    /// <param name="delegate">The delegate to convert.</param>
+    /// <returns>The expression representing the delegate.</returns>
+    public static Expression<Func<T, TProperty>> ConvertToExpression<T, TProperty>(
+        this Delegate @delegate)
+        where T : class
+    {
+        ParameterExpression parameter = Expression
+            .Parameter(typeof(T), "x");
+
+        InvocationExpression body = Expression
+            .Invoke(Expression.Constant(@delegate), parameter);
+
+        return Expression
+            .Lambda<Func<T, TProperty>>(body, parameter);
+    }
 }

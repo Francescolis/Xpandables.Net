@@ -27,9 +27,9 @@ namespace Xpandables.Net.Aspects;
 /// </summary>
 /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
 /// <typeparam name="TCommand">The type of command.</typeparam>
-/// <param name="aggregateStore">The aggregate store</param>
+/// <param name="accessor">The aggregate store</param>
 public sealed class OnAspectAggregate<TCommand, TAggregate>(
-    IAggregateStore<TAggregate> aggregateStore) :
+    IAggregateAccessor<TAggregate> accessor) :
     OnAspect<AspectAggregateAttribute<TCommand, TAggregate>>
     where TAggregate : class, IAggregate
     where TCommand : class, ICommand<TAggregate>
@@ -47,8 +47,8 @@ public sealed class OnAspectAggregate<TCommand, TAggregate>(
             .Arguments[1]
             .Value.As<CancellationToken>();
 
-        IOperationResult<TAggregate> aggregateOperation = await aggregateStore
-            .ReadAsync(command.KeyId, ct)
+        IOperationResult<TAggregate> aggregateOperation = await accessor
+            .PeekAsync(command.KeyId, ct)
             .ConfigureAwait(false);
 
         if ((aggregateOperation.IsFailure
@@ -73,7 +73,7 @@ public sealed class OnAspectAggregate<TCommand, TAggregate>(
 
         if (command.Aggregate.IsNotEmpty)
         {
-            if ((await aggregateStore
+            if ((await accessor
                 .AppendAsync(command.Aggregate.Value, ct)
                 .ConfigureAwait(false)) is { IsFailure: true } appendOperation)
             {

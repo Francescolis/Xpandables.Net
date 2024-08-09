@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;

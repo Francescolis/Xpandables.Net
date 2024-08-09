@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -29,6 +30,24 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionAggregateExtensions
 {
+    /// <summary>
+    /// Registers the default generic 
+    /// <see cref="IAggregateAccessor{TAggregate}"/> type 
+    /// implementations 
+    /// to the services with scope life time.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
+    /// is null.</exception>
+    public static IServiceCollection AddXAggregateAccessor(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return services.AddXAggregateAccessor(typeof(AggregateAccessor<>));
+    }
+
     /// <summary>
     /// Configures the <see cref="EventOptions"/> with the default values.
     /// </summary>
@@ -80,7 +99,7 @@ public static class ServiceCollectionAggregateExtensions
 
     /// <summary>
     /// Registers the specified generic 
-    /// <see cref="IAggregateStore{TAggregate}"/> type 
+    /// <see cref="IAggregateAccessor{TAggregate}"/> type 
     /// implementations 
     /// to the services with scope life time.
     /// </summary>
@@ -89,7 +108,7 @@ public static class ServiceCollectionAggregateExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXAggregateStore(
+    public static IServiceCollection AddXAggregateAccessor(
         this IServiceCollection services,
         Type aggregateStoreType)
     {
@@ -97,71 +116,10 @@ public static class ServiceCollectionAggregateExtensions
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IAggregateStore<>),
+                typeof(IAggregateAccessor<>),
                 aggregateStoreType,
                 ServiceLifetime.Scoped));
 
         return services;
-    }
-
-    /// <summary>
-    /// Registers the default generic 
-    /// <see cref="IAggregateStore{TAggregate}"/> type 
-    /// implementations 
-    /// to the services with scope life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/>
-    /// is null.</exception>
-    public static IServiceCollection AddXAggregateStore(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.AddXAggregateStore(typeof(AggregateStore<>));
-    }
-
-    /// <summary>
-    /// Registers the default snapShot to the 
-    /// <see cref="IAggregateStore{TAggregate}"/> 
-    /// type implementation, that adds snapShot behavior to aggregate store. 
-    /// You may need to define the <see cref="SnapshotOptions"/> 
-    /// in the configuration file.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXAggregateStoreSnapshot(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services
-            .AddXAggregateStoreSnapshot(
-                typeof(AggregateStoreSnapshot<>));
-    }
-
-    /// <summary>
-    /// Registers the specified snapShot to the 
-    /// <see cref="IAggregateStore{TAggregate}"/> 
-    /// type implementation, that adds snapShot behavior to aggregate store. 
-    /// You may need to define the <see cref="SnapshotOptions"/> 
-    /// in the configuration file.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <param name="snapshotType">The snapshot type.
-    /// Must be generic.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXAggregateStoreSnapshot(
-        this IServiceCollection services, Type snapshotType)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services
-            .AddScoped(typeof(IAggregateStoreSnapshot<>), snapshotType);
     }
 }

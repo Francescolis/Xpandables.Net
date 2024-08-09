@@ -46,7 +46,7 @@ public interface ICommandAggregate
 /// <param name="aggregateStore">The aggregate store</param>
 public sealed class AggregateCommandDecorator<TCommand, TAggregate>(
     ICommandHandler<TCommand, TAggregate> decoratee,
-    IAggregateStore<TAggregate> aggregateStore) :
+    IAggregateAccessor<TAggregate> aggregateStore) :
     ICommandHandler<TCommand, TAggregate>, IDecorator
     where TAggregate : class, IAggregate
     where TCommand : class, ICommand<TAggregate>, ICommandAggregate
@@ -59,7 +59,7 @@ public sealed class AggregateCommandDecorator<TCommand, TAggregate>(
         ArgumentNullException.ThrowIfNull(command);
 
         IOperationResult<TAggregate> aggregateOperation = await aggregateStore
-            .ReadAsync(command.KeyId, cancellationToken)
+            .PeekAsync(command.KeyId, cancellationToken)
             .ConfigureAwait(false);
 
         if ((aggregateOperation.IsFailure

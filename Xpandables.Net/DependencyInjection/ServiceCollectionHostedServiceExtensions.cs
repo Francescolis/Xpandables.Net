@@ -20,7 +20,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Aggregates;
+using Xpandables.Net.Events;
 using Xpandables.Net.HostedServices;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -83,11 +83,11 @@ public static class ServiceCollectionHostedServiceExtensions
 
     /// <summary>
     /// Adds the specified background service implementation 
-    /// event scheduler of <see cref="IEventIntegrationScheduler"/>
+    /// event scheduler of <see cref="IEventScheduler"/>
     /// to manage integration event publishing.
     /// </summary>
     /// <typeparam name="TEventIntegrationScheduler">The type that implements 
-    /// <see cref="IEventIntegrationScheduler"/>.</typeparam>
+    /// <see cref="IEventScheduler"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
@@ -95,19 +95,19 @@ public static class ServiceCollectionHostedServiceExtensions
     public static IServiceCollection AddXEventIntegrationScheduler
         <TEventIntegrationScheduler>(this IServiceCollection services)
         where TEventIntegrationScheduler :
-        BackgroundServiceBase<TEventIntegrationScheduler>, IEventIntegrationScheduler
+        BackgroundServiceBase<TEventIntegrationScheduler>, IEventScheduler
     {
         ArgumentNullException.ThrowIfNull(services);
 
         _ = services.AddXBackgroundService
-            <IEventIntegrationScheduler, TEventIntegrationScheduler>();
+            <IEventScheduler, TEventIntegrationScheduler>();
 
         return services;
     }
 
     /// <summary>
     /// Adds the default background service implementation integration e
-    /// vent scheduler of <see cref="IEventIntegrationScheduler"/>
+    /// vent scheduler of <see cref="IEventScheduler"/>
     /// type to manage integration event publishing.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -116,5 +116,5 @@ public static class ServiceCollectionHostedServiceExtensions
     /// is null.</exception>
     public static IServiceCollection AddXEventIntegrationScheduler(
         this IServiceCollection services)
-        => services.AddXEventIntegrationScheduler<EventIntegrationSchedulerInternal>();
+        => services.AddXEventIntegrationScheduler<EventSchedulerInternal>();
 }

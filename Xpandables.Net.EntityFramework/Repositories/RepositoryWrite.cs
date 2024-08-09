@@ -73,7 +73,7 @@ public class RepositoryWrite<TEntity>(DataContext context)
         ArgumentNullException.ThrowIfNull(filter);
 
         IEnumerable<TEntity> deleteTableResult = filter
-            .GetQueryableFiltered(Context.Set<TEntity>())
+            .Apply(Context.Set<TEntity>())
             .AsEnumerable();
 
         if (deleteTableResult.Any())
@@ -122,7 +122,7 @@ public class RepositoryWrite<TEntity>(DataContext context)
         Func<TEntity, object> compiledUpdated = updater.Compile();
 
         await foreach (TEntity entity
-            in filter.GetQueryableFiltered(Context.Set<TEntity>())
+            in filter.Apply(Context.Set<TEntity>())
             .AsAsyncEnumerable()
             .ConfigureAwait(false))
         {
