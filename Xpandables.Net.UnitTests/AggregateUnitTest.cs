@@ -394,10 +394,11 @@ public sealed class RepositoryPerson : IRepositoryEvent
 
     public IAsyncEnumerable<IEntityEvent> FetchAsync(
         IEventFilter eventFilter,
-        CancellationToken cancellationToken = default) => eventFilter
-            .Apply(_store.AsQueryable())
-            .OfType<IEntityEvent>()
-            .ToAsyncEnumerable();
+        CancellationToken cancellationToken = default)
+    {
+        return eventFilter
+            .ApplyQueryable(_store.AsQueryable());
+    }
 
     public Task MarkEventsAsPublishedAsync(
         Guid eventId,
