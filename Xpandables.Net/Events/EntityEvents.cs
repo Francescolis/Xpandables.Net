@@ -88,7 +88,7 @@ public sealed class EntityEventIntegration(
 /// <param name="eventTypeName">The name of the event type.</param>
 /// <param name="eventTypeFullName">The full name of the event type.</param>
 /// <param name="data">The data of the event.</param>
-/// <param name="objectId">The object identifier.</param>
+/// <param name="keyId">The object identifier.</param>
 /// <param name="version">The version of the event.</param>
 public sealed class EntityEventSnapshot(
     Guid id,
@@ -96,12 +96,12 @@ public sealed class EntityEventSnapshot(
     string eventTypeFullName,
     ulong version,
     JsonDocument data,
-    Guid objectId) :
+    Guid keyId) :
     EntityEvent(id, eventTypeName, eventTypeFullName, version, data),
     IEntityEventSnapshot
 {
 
     ///<inheritdoc/>
     [Key]
-    public Guid KeyId { get; } = objectId;
+    public Guid KeyId { get; } = keyId;
 }
