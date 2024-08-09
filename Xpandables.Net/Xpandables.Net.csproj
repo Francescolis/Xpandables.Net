@@ -48,8 +48,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Commands\Decorators\**" />
 	  <Compile Remove="Properties\**" />
+	  <EmbeddedResource Remove="Commands\Decorators\**" />
 	  <EmbeddedResource Remove="Properties\**" />
+	  <None Remove="Commands\Decorators\**" />
 	  <None Remove="Properties\**" />
 	</ItemGroup>
 
@@ -88,10 +91,6 @@
 			<LastGenOutput>I18nXpandables.Designer.cs</LastGenOutput>
 			<Generator>PublicResXFileCodeGenerator</Generator>
 		</EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Commands\Decorators\" />
 	</ItemGroup>
 
 </Project>

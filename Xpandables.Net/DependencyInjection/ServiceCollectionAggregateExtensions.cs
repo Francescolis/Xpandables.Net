@@ -20,7 +20,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Events;
-using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -79,22 +78,6 @@ public static class ServiceCollectionAggregateExtensions
 
         return services
             .Configure(configureOptions);
-    }
-
-    /// <summary>
-    /// Registers the <typeparamref name="TUnitOfWork"/> type class reference
-    /// as <see cref="IUnitOfWork"/> for aggregate.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXUnitOfWorkAggregate<TUnitOfWork>(
-        this IServiceCollection services)
-        where TUnitOfWork : class, IUnitOfWork
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services
-            .AddXUnitOfWorkKeyed<TUnitOfWork>(EventOptions.UnitOfWorkKey);
     }
 
     /// <summary>

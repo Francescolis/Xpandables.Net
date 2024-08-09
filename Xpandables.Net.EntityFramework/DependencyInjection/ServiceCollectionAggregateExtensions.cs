@@ -19,8 +19,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Events;
-using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -29,39 +27,6 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionAggregateExtensions
 {
-    /// <summary>
-    /// Registers the default <see cref="IUnitOfWork"/> for events.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXUnitOfWorkEvent(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services
-            .AddXUnitOfWorkKeyed
-                <DataContextEvent>(EventOptions.UnitOfWorkKey);
-    }
-
-    /// <summary>
-    /// Registers the <typeparamref name="TDataContext"/> type class reference
-    /// as <see cref="IUnitOfWork"/> for events.
-    /// </summary>
-    /// <typeparam name="TDataContext">The type of the data context that derives
-    /// from <see cref="DataContext"/>.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXUnitOfWorkEvent<TDataContext>(
-        this IServiceCollection services)
-        where TDataContext : DataContext
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services
-            .AddXUnitOfWorkKeyed<TDataContext>(EventOptions.UnitOfWorkKey);
-    }
-
     /// <summary>
     /// Registers the <see cref="DataContextEvent"/> type class to the 
     /// services with scoped life time.

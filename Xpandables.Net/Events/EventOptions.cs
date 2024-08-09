@@ -17,7 +17,6 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Aggregates;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 
@@ -28,12 +27,6 @@ namespace Xpandables.Net.Events;
 /// </summary>
 public sealed record EventOptions
 {
-    /// <summary>
-    /// Gets the key to use to store events unit of work in the
-    /// service collection.
-    /// </summary>
-    public const string UnitOfWorkKey = nameof(IAggregate);
-
     /// <summary>
     /// Gets the list of user-defined converters that were registered.
     /// </summary>
