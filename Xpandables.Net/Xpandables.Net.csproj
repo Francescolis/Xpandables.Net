@@ -7,7 +7,7 @@
 		<Platforms>x64</Platforms>
 		<NeutralLanguage>fr-FR</NeutralLanguage>
 		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>C:\Source\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>D:\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<AnalysisLevel>preview-all</AnalysisLevel>
@@ -22,7 +22,7 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<PackageReleaseNotes>Add Decider pattern to Aggregate</PackageReleaseNotes>
-		<PackageOutputPath>C:\Source\Nugets</PackageOutputPath>
+		<PackageOutputPath>D:\Nugets</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
 		<Version>8.1.0</Version>
 		<AssemblyVersion>8.1.0</AssemblyVersion>
