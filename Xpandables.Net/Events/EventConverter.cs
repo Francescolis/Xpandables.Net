@@ -22,46 +22,20 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Converts an event to or from entity.
 /// </summary>
-public abstract class EventConverter
+public abstract class EventConverter : IEventConverter
 {
-    /// <summary>
-    /// Gets the event type being converted by the current converter instance.
-    /// </summary>
+    /// <inheritdoc/>
     public abstract Type Type { get; }
 
-    /// <summary>
-    /// When overridden in a derived class, determines whether the converter 
-    /// instance can convert the specified object type.
-    /// </summary>
-    /// <param name="typeToConvert">The type of the object to convert.</param>
-    /// <returns><see langword="true"/> if the instance can convert the 
-    /// specified object type; otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="typeToConvert"/> is null.</exception>"
+    /// <inheritdoc/>
     public abstract bool CanConvert(Type typeToConvert);
 
-    ///<summary>
-    /// Converts the specified event to an entity.
-    /// </summary>
-    /// <param name="event">The event to convert.</param>
-    /// <param name="options">The serialization options to use.</param>
-    /// <returns>The entity converted from the event.</returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <inheritdoc/>
     public abstract IEntityEvent ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = default);
 
-    /// <summary>
-    /// Converts the specified entity to an event.
-    /// </summary>
-    /// <param name="entity">The entity to convert.</param>
-    /// <param name="options">The serialization options to use.</param>
-    /// <returns>The event converted from the entity.</returns>
-    /// <exception cref="InvalidOperationException">Unable to convert to
-    /// event type.</exception>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="entity"/> is null.</exception>
+    /// <inheritdoc/>
     public abstract IEvent ConvertFrom(
         IEntityEvent entity,
         JsonSerializerOptions? options = default);

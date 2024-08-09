@@ -24,7 +24,7 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents an event entity.
+/// Represents an entity for an event.
 /// </summary>
 public interface IEntityEvent : IEntity<Guid>, IDisposable
 {

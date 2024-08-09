@@ -97,10 +97,11 @@ public sealed class EntityEventSnapshot(
     ulong version,
     JsonDocument data,
     Guid objectId) :
-    EntityEvent(id, eventTypeName, eventTypeFullName, version, data), IEntityEventSnapshot
+    EntityEvent(id, eventTypeName, eventTypeFullName, version, data),
+    IEntityEventSnapshot
 {
 
     ///<inheritdoc/>
     [Key]
-    public Guid ObjectId { get; } = objectId;
+    public Guid KeyId { get; } = objectId;
 }

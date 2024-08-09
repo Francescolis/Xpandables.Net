@@ -27,5 +27,5 @@ public interface IEntityEventSnapshot : IEntityEvent
     /// Gets the object identifier.
     /// </summary>
     [Key]
-    Guid ObjectId { get; }
+    Guid KeyId { get; }
 }

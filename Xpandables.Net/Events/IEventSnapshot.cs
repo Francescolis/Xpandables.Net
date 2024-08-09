@@ -33,16 +33,16 @@ public interface IEventSnapshot : IEvent
     /// Gets the object identifier.
     /// </summary>
     [Key]
-    Guid ObjectId { get; }
+    Guid KeyId { get; }
 
-    /// <summary>
-    /// Contains the string representation of the .Net entity type name.
-    /// </summary>
-    string EntityTypeName { get; }
+    ///// <summary>
+    ///// Contains the string representation of the .Net entity type name.
+    ///// </summary>
+    //string EntityTypeName { get; }
 
-    /// <summary>
-    /// Contains the string representation of the .Net entity 
-    /// full assembly qualified type name.
-    /// </summary>
-    string EntityTypeFullName { get; }
+    ///// <summary>
+    ///// Contains the string representation of the .Net entity 
+    ///// full assembly qualified type name.
+    ///// </summary>
+    //string EntityTypeFullName { get; }
 }

@@ -18,7 +18,7 @@
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents a snapshot.
+/// Represents a snapshot event.
 /// </summary>
 public sealed record EventSnapshot : Event, IEventSnapshot
 {
@@ -26,11 +26,11 @@ public sealed record EventSnapshot : Event, IEventSnapshot
     public IMemento Memento { get; init; } = default!;
 
     ///<inheritdoc/>
-    public Guid ObjectId { get; init; }
+    public Guid KeyId { get; init; }
 
-    ///<inheritdoc/>
-    public string EntityTypeName { get; init; } = default!;
+    /////<inheritdoc/>
+    //public string EntityTypeName { get; init; } = default!;
 
-    ///<inheritdoc/>
-    public string EntityTypeFullName { get; init; } = default!;
+    /////<inheritdoc/>
+    //public string EntityTypeFullName { get; init; } = default!;
 }

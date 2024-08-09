@@ -16,130 +16,10 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Aggregates;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Events;
-/// <summary>
-/// Represents the <see cref="IAggregate"/> converter.
-/// </summary>
-public sealed class EventAggregateConverter : EventConverter
-{
-    /// <inheritdoc/>
-    public override Type Type => typeof(IAggregate);
-
-    ///<inheritdoc/>
-    public override bool CanConvert(Type typeToConvert)
-        => Type.IsAssignableFrom(typeToConvert);
-
-    ///<inheritdoc/>
-    public override IEvent ConvertFrom(
-        IEntityEvent entity,
-        JsonSerializerOptions? options = null)
-        => throw new NotImplementedException();
-
-    ///<inheritdoc/>
-    public override IEntityEvent ConvertTo(
-        IEvent @event,
-        JsonSerializerOptions? options = null)
-        => throw new NotImplementedException();
-
-    /// <summary>
-    /// Converts the specified aggregate to an event.
-    /// </summary>
-    /// <param name="aggregate">The aggregate to convert.</param>
-    /// <param name="options">The serialization options to use.</param>
-    /// <returns>The event converted from the aggregate.</returns>
-    /// <exception cref="InvalidOperationException">Unable to convert to
-    /// event type.</exception>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="aggregate"/> is null.</exception>
-    public IEvent ConvertFromAggregate(
-        IAggregate aggregate,
-        JsonSerializerOptions? options = null)
-    {
-        ArgumentNullException.ThrowIfNull(aggregate);
-
-        IOriginator originator = aggregate.As<IOriginator>()
-            ?? throw new InvalidOperationException(
-                $"Event {aggregate.GetTypeName()} is must " +
-                $"implement '{nameof(IOriginator)}'.");
-        try
-        {
-            string entityTypeName = aggregate.GetTypeName();
-            string entityTypeFullName = aggregate.GetTypeFullName();
-            IMemento memento = originator.CreateMemento();
-            JsonDocument data = memento
-                .ToJsonDocument(options);
-            ulong version = aggregate.Version;
-
-            return new EventSnapshot()
-            {
-                Memento = memento,
-                Version = version,
-                ObjectId = aggregate.AggregateId,
-                EntityTypeName = entityTypeName,
-                EntityTypeFullName = entityTypeFullName,
-            };
-        }
-        catch (Exception exception)
-            when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                I18nXpandables.EventConverterFailedToDeserialize
-                    .StringFormat(aggregate.GetTypeName()), exception);
-        }
-    }
-
-    ///<summary>
-    /// Converts the specified event to an aggregate.
-    /// </summary>
-    /// <param name="event">The event to convert.</param>
-    /// <param name="options">The serialization options to use.</param>
-    /// <returns>The entity converted from the event.</returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentNullException"></exception>
-    public IAggregate ConvertToAggregate(
-        IEvent @event,
-        JsonSerializerOptions? options = null)
-    {
-        ArgumentNullException.ThrowIfNull(@event);
-
-        IEventSnapshot eventSnapshop = @event.As<IEventSnapshot>()
-            ?? throw new InvalidOperationException(
-                $"Event {@event.GetType().Name} is not a snapshot.");
-
-        try
-        {
-            Type type = Type.GetType(eventSnapshop.EntityTypeFullName, true)
-           ?? throw new InvalidOperationException(
-               $"Type '{eventSnapshop.EntityTypeName}' not found.");
-
-            IOriginator instance = Activator
-                .CreateInstance(type, true)
-                .As<IOriginator>()
-                ?? throw new InvalidOperationException(
-                    I18nXpandables.AggregateFailedToCreateInstance
-                        .StringFormat(type.GetNameWithoutGenericArity()));
-
-            instance.SetMemento(eventSnapshop.Memento);
-
-            return instance as IAggregate
-                ?? throw new InvalidOperationException(
-                        I18nXpandables.AggregateFailedToCreateInstance
-                            .StringFormat(type.GetNameWithoutGenericArity()));
-        }
-        catch (Exception exception)
-             when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                I18nXpandables.EventConverterFailedToDeserialize
-                    .StringFormat(eventSnapshop.EntityTypeName), exception);
-        }
-
-    }
-}
 
 /// <summary>
 /// Represents the <see cref="EntityEventDomain"/> converter.
@@ -340,6 +220,6 @@ public sealed class EventSnapshotConverter : EventConverter
             eventTypeFullName,
             version,
             data,
-            eventSnapshop.ObjectId);
+            eventSnapshop.KeyId);
     }
 }

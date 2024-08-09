@@ -37,7 +37,7 @@ public sealed record EventOptions
     /// <summary>
     /// Gets the list of user-defined converters that were registered.
     /// </summary>
-    public IList<EventConverter> Converters { get; }
+    public IList<IEventConverter> Converters { get; }
         = [];
     /// <summary>
     /// Gets the list of user-defined filters that were registered.
@@ -71,13 +71,13 @@ public sealed record EventOptions
     public bool ConsiderNoEventIntegrationHandlerAsError { get; set; }
 
     /// <summary>
-    /// Returns the <see cref="EventConverter"/> instance for the specified type.
+    /// Returns the <see cref="IEventConverter"/> instance for the specified type.
     /// </summary>
     /// <param name="event">The event to convert.</param>
-    /// <returns>The <see cref="EventConverter"/> instance.</returns>
+    /// <returns>The <see cref="IEventConverter"/> instance.</returns>
     /// <exception cref="InvalidOperationException">The converter was not 
     /// found.</exception>"
-    public EventConverter GetEventConverterFor(
+    public IEventConverter GetEventConverterFor(
         IEvent @event)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -86,13 +86,24 @@ public sealed record EventOptions
     }
 
     /// <summary>
+    /// Returns the <see cref="IEventConverter"/> instance for the specified type.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of event.</typeparam>
+    /// <returns>The <see cref="IEventConverter"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">The converter was not 
+    /// found.</exception>"
+    public IEventConverter GetEventConverterFor<TEvent>()
+        where TEvent : class, IEvent
+        => GetEventConverterFor(typeof(TEvent));
+
+    /// <summary>
     /// Returns the <see cref="EventConverter"/> instance for the specified type.
     /// </summary>
     /// <param name="type">The type of event.</param>
     /// <returns>The <see cref="EventConverter"/> instance.</returns>
     /// <exception cref="InvalidOperationException">The converter was not 
     /// found.</exception>"
-    public EventConverter GetEventConverterFor(
+    public IEventConverter GetEventConverterFor(
         Type type)
         => Converters
             .FirstOrDefault(x => x.CanConvert(type))
@@ -141,7 +152,6 @@ public sealed record EventOptions
         options.Converters.Add(new EventDomainConverter());
         options.Converters.Add(new EventIntegrationConverter());
         options.Converters.Add(new EventSnapshotConverter());
-        options.Converters.Add(new EventAggregateConverter());
 
         options.Filters.Add(new EntityEventDomainFilter());
         options.Filters.Add(new EntityEventIntegrationFilter());

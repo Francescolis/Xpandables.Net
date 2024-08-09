@@ -19,8 +19,11 @@ using Microsoft.Extensions.Options;
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
+using Xpandables.Net.Primitives.I18n;
+using Xpandables.Net.Primitives.Text;
 
 namespace Xpandables.Net.Aggregates;
+
 internal sealed class AggregateAccessorSnapshot<TAggregate>(
     IAggregateAccessor<TAggregate> decoratee,
     IEventStore eventStore,
@@ -37,15 +40,13 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
         {
             if (IsSnapshopOptionsActive(aggregate))
             {
-                EventAggregateConverter converter = options
-                    .Value
-                    .GetEventConverterFor(typeof(IAggregate))
-                    .AsRequired<EventAggregateConverter>();
-
-                IEvent @event = converter
-                    .ConvertFromAggregate(
-                        aggregate,
-                        options.Value.SerializerOptions);
+                EventSnapshot @event = new()
+                {
+                    Id = Guid.NewGuid(),
+                    KeyId = aggregate.AggregateId,
+                    Memento = aggregate.CreateMemento(),
+                    Version = aggregate.Version
+                };
 
                 await eventStore
                     .AppendAsync(@event, cancellationToken)
@@ -92,23 +93,22 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
         filter.KeyId = keyId;
         filter.Paging = Pagination.With(1, 1);
 
-        IEvent? eventSnapshot = eventStore
+        IEventSnapshot? @event = eventStore
             .FetchAsync(filter, cancellationToken)
             .ToBlockingEnumerable(cancellationToken)
-            .FirstOrDefault();
+            .FirstOrDefault()
+            .As<IEventSnapshot>();
 
-        if (eventSnapshot is not null)
+        if (@event is not null)
         {
-            EventAggregateConverter converter = options
-                .Value
-                .GetEventConverterFor(typeof(IAggregate))
-                .AsRequired<EventAggregateConverter>();
+            aggregate = Activator
+                .CreateInstance(typeof(TAggregate), true)
+                .As<TAggregate>()
+                ?? throw new InvalidOperationException(
+                    I18nXpandables.AggregateFailedToCreateInstance
+                        .StringFormat(typeof(TAggregate).GetNameWithoutGenericArity()));
 
-            aggregate = converter
-                .ConvertToAggregate(
-                    eventSnapshot,
-                    options.Value.SerializerOptions)
-                .AsRequired<TAggregate>();
+            aggregate.SetMemento(@event.Memento);
         }
 
         if (aggregate is null)
@@ -129,11 +129,11 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
 
         try
         {
-            await foreach (IEvent @event in eventStore
+            await foreach (IEvent found in eventStore
                 .FetchAsync(eventFilter, cancellationToken)
                 .ConfigureAwait(false))
             {
-                if (@event is IEventDomain eventDomain)
+                if (found is IEventDomain eventDomain)
                 {
                     aggregate.LoadFromHistory(eventDomain);
                 }

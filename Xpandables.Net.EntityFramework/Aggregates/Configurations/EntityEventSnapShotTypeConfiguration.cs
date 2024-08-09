@@ -38,7 +38,7 @@ public sealed class EntityEventSnapShotTypeConfiguration
         _ = builder.HasKey(p => p.Id);
         _ = builder.HasIndex(p => p.Id).IsUnique();
 
-        _ = builder.Property(p => p.ObjectId);
+        _ = builder.Property(p => p.KeyId);
         _ = builder.Property(p => p.EventTypeName);
         _ = builder.Property(p => p.EventTypeFullName);
         _ = builder.Property(p => p.Data);

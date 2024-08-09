@@ -18,8 +18,8 @@
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// This interface is used for the Memento pattern to store and restore t
-/// he internal state using a snapshot.
+/// This interface is used for the Memento pattern to store and restore 
+/// the internal state using a snapshot.
 /// </summary>
 public interface IOriginator
 {
