@@ -37,7 +37,7 @@ public sealed class EventStore(
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        EventConverter converter = options
+        IEventConverter converter = options
             .Value
             .GetEventConverterFor(@event);
 
@@ -59,7 +59,7 @@ public sealed class EventStore(
     {
         ArgumentNullException.ThrowIfNull(eventFilter);
 
-        EventConverter converter = options
+        IEventConverter converter = options
             .Value
             .GetEventConverterFor(eventFilter.Type);
 
