@@ -24,7 +24,7 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents an event entity.
 /// </summary>
-public abstract class EventEntity : Entity<Guid>, IEntityEvent
+public abstract class EntityEvent : Entity<Guid>, IEntityEvent
 {
     ///<inheritdoc/>
     public string EventTypeName { get; }
@@ -40,7 +40,7 @@ public abstract class EventEntity : Entity<Guid>, IEntityEvent
     public JsonDocument Data { get; }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="EventEntity"/> with the 
+    /// Initializes a new instance of <see cref="EntityEvent"/> with the 
     /// specified values.
     /// </summary>
     /// <param name="id">The identifier of the event.</param>
@@ -48,7 +48,7 @@ public abstract class EventEntity : Entity<Guid>, IEntityEvent
     /// <param name="eventTypeName">The name of the event type.</param>
     /// <param name="eventTypeFullName">The full name of the event type.</param>
     /// <param name="data">The data of the event.</param>
-    protected EventEntity(
+    protected EntityEvent(
         Guid id,
         string eventTypeName,
         string eventTypeFullName,

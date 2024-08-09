@@ -40,7 +40,7 @@ public sealed class EntityEventDomain(
     JsonDocument data,
     Guid aggregateId,
     string aggregateTypeName) :
-    EventEntity(id, eventTypeName, eventTypeFullName, version, data), IEntityEventDomain
+    EntityEvent(id, eventTypeName, eventTypeFullName, version, data), IEntityEventDomain
 {
 
     ///<inheritdoc/>
@@ -70,7 +70,7 @@ public sealed class EntityEventIntegration(
     ulong version,
     JsonDocument data,
     string? errorMessage = default) :
-    EventEntity(id, eventTypeName, eventTypeFullName, version, data),
+    EntityEvent(id, eventTypeName, eventTypeFullName, version, data),
     IEntityEventIntegration
 {
     ///<inheritdoc/>
@@ -97,7 +97,7 @@ public sealed class EntityEventSnapshot(
     ulong version,
     JsonDocument data,
     Guid objectId) :
-    EventEntity(id, eventTypeName, eventTypeFullName, version, data), IEntityEventSnapshot
+    EntityEvent(id, eventTypeName, eventTypeFullName, version, data), IEntityEventSnapshot
 {
 
     ///<inheritdoc/>
