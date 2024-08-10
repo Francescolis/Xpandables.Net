@@ -107,8 +107,9 @@ by using some extensions that can automatically convert an *OperationResult* to 
 The non generic type has the following properties :
 
 - An optional *object* **Result**, a property that qualifies or contains information about an operation return if available. 
-- An optiona *string* **LocationUrl**, a property that contains the URL mostly used with the status code **Created** in the web environment. 
+- An optional *Uri* **LocationUrl**, a property that contains the URL mostly used with the status code **Created** in the web environment. 
 - An *ElementCollection* **Headers** property that contains a collection of headers if available. *ElementCollection* is a predefined record struct that contains a collection of *ElementEntry* with useful methods.
+- An *ElementCollection* **Extensions** property that contains a collection of extensions if available, that will be returned with the response.
 - An *ElementCollection* **Errors** property that stores errors. Each error is a predefined *ElementEntry* struct which contains the error key and the error message and/or exceptions.
 - A *HttpStatusCode* **StatusCode** property that contains the status code of the execution. The status code from the ***System.Net.HttpStatusCode***.
 - A *boolean* **IsGeneric** to determine whether or not the current instance is generic.
@@ -159,7 +160,8 @@ It also provides with a middleware that will automatically convert a failure *Op
 
 builder.Services
     .AddXOperationResultMiddleware()
-    .AddXOperationResultResponseBuilder();
+    .AddXOperationResultResponseBuilder()
+    .AddXOperationResultSerializationConfigureOptions();
 ...
 app.UseXOperationResultMiddleware();
 
@@ -182,6 +184,7 @@ app.MapGet("/api/users", (string name) =>
 // and allows you to use custom validation implementation using **IValidator** interface.
 // WithXOperationResultFilter is an extension method that allows to use the operation result filter
 // to automatically convert the result to a specific response according to the status code.
+// You can implement the **IOperationResultResponseBuilder** interface to create a custom response.
 
 ```
 
@@ -517,7 +520,7 @@ var serviceProvider = new ServiceCollection()
 
     // Add a product
     var dispatcher = serviceProvider.GetRequiredService<IDispatcher>();
-    var addProduct = new AddProductCommand("Kamersoft 8", "Kamersoft.Net Library");
+    var addProduct = new AddProductCommand("Xpandables 8", "Xpandables.Net Library");
     IOperationResult result = await dispatcher
         .SendAsync(addProduct)
         .ConfigureAwait(false);
