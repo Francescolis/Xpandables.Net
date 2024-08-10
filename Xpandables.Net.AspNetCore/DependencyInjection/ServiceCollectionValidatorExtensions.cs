@@ -20,6 +20,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Operations;
+using Xpandables.Net.Primitives;
+using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -68,6 +70,10 @@ public static class ServiceCollectionValidatorExtensions
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to 
     /// add the filter to.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
+    /// <remarks>The request must implement the <see cref="IValidateDecorator"/>.
+    /// And you can implement the <see cref="IValidator{TArgument}"/> specific
+    /// your request, otherwise you can use the built in one : Register the
+    /// generic validator using <see langword="AddXValidatorGenerics"/> method.</remarks>
     public static TBuilder WithXValidatorFilterFactory<TBuilder>(
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder
@@ -88,6 +94,10 @@ public static class ServiceCollectionValidatorExtensions
     /// <param name="predicate">The predicate that a request must match in order 
     /// to be validated.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> instance.</returns>
+    /// <remarks>The request must implement the <see cref="IValidateDecorator"/>.
+    /// And you can implement the <see cref="IValidator{TArgument}"/> specific
+    /// your request, otherwise you can use the built in one : Register the
+    /// generic validator using <see langword="AddXValidatorGenerics"/> method.</remarks>
     public static TBuilder WithXValidatorFilterFactory<TBuilder>(
         this TBuilder builder,
         Predicate<Type> predicate)

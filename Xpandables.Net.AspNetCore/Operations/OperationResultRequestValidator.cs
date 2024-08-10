@@ -106,10 +106,25 @@ internal sealed class OperationResultRequestValidator :
                     continue;
                 }
 
-                IEnumerable<IValidator> validators = context
+                IList<IValidator> validators = context
                     .HttpContext
                     .RequestServices
-                    .GetServices(validatorType).OfType<IValidator>();
+                    .GetServices(validatorType)
+                    .OfType<IValidator>()
+                    .ToList();
+
+                // remove the built-in validator if a specific validator
+                // is registered.
+
+                if (validators.Count > 1)
+                {
+                    Type builtinType = typeof(Validator<>)
+                        .MakeGenericType(item.ParameterType!);
+
+                    validators = validators
+                        .Where(validator => validator.GetType() != builtinType)
+                        .ToList();
+                }
 
                 foreach (IValidator validator in validators)
                 {
