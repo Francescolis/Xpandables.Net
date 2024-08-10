@@ -81,13 +81,15 @@ public sealed class RepositoryEvent(
                 .Integrations
                 .Where(x => x.Id == eventId)
                 .ExecuteUpdateAsync(setters =>
-                    setters.SetProperty(p => p.Status, EntityStatus.DELETED)
-                           .SetProperty(
-                                p => p.ErrorMessage,
-                                exception != null
-                                    ? exception.ToString()
-                                    : null),
-                                    cancellationToken)
+                    setters
+                        .SetProperty(p => p.Status, EntityStatus.DELETED)
+                        .SetProperty(p => p.UpdatedOn, DateTime.UtcNow)
+                        .SetProperty(
+                            p => p.ErrorMessage,
+                            exception != null
+                                ? exception.ToString()
+                                : null),
+                                cancellationToken)
                 .ConfigureAwait(false);
 
     ///<inheritdoc/>
