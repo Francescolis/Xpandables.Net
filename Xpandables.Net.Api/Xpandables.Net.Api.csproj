@@ -9,4 +9,8 @@
     <Platforms>x64</Platforms>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Register\" />
+  </ItemGroup>
+
 </Project>
