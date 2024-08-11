@@ -33,12 +33,12 @@ namespace Xpandables.Net.Commands;
 public interface IAsyncQuery<out TResult>
 {
     /// <summary>
-    /// Gets the event identifier.
+    /// Gets the query identifier.
     /// </summary>
     public Guid Id => Guid.NewGuid();
 
     /// <summary>
-    /// Gets When the event occurred.
+    /// Gets When the query occurred.
     /// </summary>
     public DateTimeOffset OccurredOn => DateTimeOffset.UtcNow;
 

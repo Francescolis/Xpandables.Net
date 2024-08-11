@@ -32,17 +32,17 @@ namespace Xpandables.Net.Commands;
 public interface IQuery<out TResult>
 {
     /// <summary>
-    /// Gets the event identifier.
+    /// Gets the query identifier.
     /// </summary>
     public Guid Id => Guid.NewGuid();
 
     /// <summary>
-    /// Gets When the event occurred.
+    /// Gets When the query occurred.
     /// </summary>
     public DateTimeOffset OccurredOn => DateTimeOffset.UtcNow;
 
     /// <summary>
-    /// Gets the name of the user running associated with the current event.
+    /// Gets the name of the user running associated with the current query.
     /// The default value is associated with the current thread.
     /// </summary>
     public string CreatedBy => Environment.UserName;

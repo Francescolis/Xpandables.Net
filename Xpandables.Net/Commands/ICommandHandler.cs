@@ -29,17 +29,17 @@ namespace Xpandables.Net.Commands;
 public interface ICommand
 {
     /// <summary>
-    /// Gets the event identifier.
+    /// Gets the command identifier.
     /// </summary>
     public Guid AggregateId => Guid.NewGuid();
 
     /// <summary>
-    /// Gets When the event occurred.
+    /// Gets When the command occurred.
     /// </summary>
     public DateTimeOffset OccurredOn => DateTimeOffset.UtcNow;
 
     /// <summary>
-    /// Gets the name of the user running associated with the current event.
+    /// Gets the name of the user running associated with the current command.
     /// The default value is associated with the current thread.
     /// </summary>
     public string CreatedBy => Environment.UserName;
