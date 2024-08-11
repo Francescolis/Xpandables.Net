@@ -18,7 +18,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.Http;
+using Xpandables.Net.Http.Requests;
 
 namespace Xpandables.Net.Operations;
 

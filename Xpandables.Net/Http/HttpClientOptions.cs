@@ -17,32 +17,28 @@
 using System.Net;
 using System.Text.Json;
 
-using Microsoft.Extensions.DependencyInjection;
+using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Requests;
+using Xpandables.Net.Http.ResponseBuilders;
 
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Defines the <see cref="IHttpClientDispatcher"/>> configuration options.
+/// Defines the <see cref="IHttpClientDistributor"/>> configuration options.
 /// </summary>
 public sealed record HttpClientOptions
 {
     /// <summary>
     /// Gets the list of user-defined response builders that were registered.
     /// </summary>
-    public IDictionary<Type, List<Type>> ResponseBuilders { get; }
-        = new Dictionary<Type, List<Type>>();
+    public HashSet<Delegate> ResponseBuilders { get; }
+        = [];
 
     /// <summary>
     /// Gets the list of user-defined request builders that were registered.
     /// </summary>
-    public IList<HttpClientRequestBuilder> RequestBuilders { get; }
+    public HashSet<IHttpClientRequestBuilder> RequestBuilders { get; }
         = [];
-
-    /// <summary>
-    /// Gets or sets the attribute builder to be used.
-    /// </summary>
-    public HttpClientRequestAttributeBuilder RequestAttributeBuilder { get; set; }
-        = new HttpClientAttributeBuilder();
 
     /// <summary>
     /// Gets or sets the <see cref="JsonSerializerOptions"/> to be used.
@@ -70,22 +66,41 @@ public sealed record HttpClientOptions
     /// <summary>
     /// Resolves the response builder for the specified type.
     /// </summary>
-    /// <typeparam name="TBuilder">The type of the builder to resolve
+    /// <typeparam name="TResult">The type of the builder to resolve
     /// .</typeparam>
+    /// <param name="targetType">The type of the response.</param>
     /// <param name="targetStatusCode">The status code of the response.</param>
     /// <exception cref="InvalidOperationException">No response builder found for
     /// the specified type.</exception>
-    public TBuilder GetResponseBuilderFor<TBuilder>(
+    public IHttpClientResponseBuilder GetResponseBuilderFor<TResult>(
+        Type targetType,
         HttpStatusCode targetStatusCode)
-        where TBuilder : IHttpClientResponseBuilderBase
     {
-        CheckBuilderTypeIsRegistered<TBuilder>();
+        ArgumentNullException.ThrowIfNull(targetType);
 
-        return ServiceProvider
-            .GetServices<TBuilder>()
-            .FirstOrDefault(builder => builder.CanBuild(targetStatusCode))
+        return ResponseBuilders
+            .Select(builder
+                => builder.DynamicInvoke(typeof(TResult))
+                .As<IHttpClientResponseBuilder>())
+            .OfType<IHttpClientResponseBuilder>()
+            .FirstOrDefault(builder => builder.CanBuild(targetType, targetStatusCode))
             ?? throw new InvalidOperationException(
-                $"No response builder found for {typeof(TBuilder).Name}.");
+                $"No response builder found for {targetType.Name}.");
+    }
+
+    /// <summary>
+    /// Resolves the request builder for the specified type.
+    /// </summary>
+    /// <param name="interfaceType">The type of the interface implemented.</param>
+    public IHttpClientRequestBuilder GetRequestBuilderFor(Type interfaceType)
+    {
+        ArgumentNullException.ThrowIfNull(interfaceType);
+
+        return RequestBuilders
+            .FirstOrDefault(x => x.CanBuild(interfaceType))
+            ?? throw new InvalidOperationException(
+                $"No request builder registered for {interfaceType.Name}" +
+                $"in the '{nameof(RequestBuilders)}'.");
     }
 
     /// <summary>
@@ -93,15 +108,9 @@ public sealed record HttpClientOptions
     /// </summary>
     /// <typeparam name="TInterface">The type of the interface 
     /// implemented.</typeparam>
-    public IHttpClientRequestBuilder<TInterface>
-        GetRequestBuilderFor<TInterface>()
-        where TInterface : class
-        => RequestBuilders
-            .FirstOrDefault(x => x.CanBuild(typeof(TInterface)))
-            .As<IHttpClientRequestBuilder<TInterface>>()
-            ?? throw new InvalidOperationException(
-                $"No request builder registered for {typeof(TInterface).Name}" +
-                $"in the '{nameof(RequestBuilders)}'.");
+    public IHttpClientRequestBuilder GetRequestBuilderFor<TInterface>()
+        where TInterface : class, IHttpRequest
+        => GetRequestBuilderFor(typeof(TInterface));
 
     /// <summary>
     /// Builds the default <see cref="HttpClientOptions"/> instance.
@@ -112,48 +121,79 @@ public sealed record HttpClientOptions
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        List<Type> emptyResponses =
-            [
-                typeof(SuccessHttpClientResponseBuilder),
-                typeof(FailureHttpClientResponseBuilder)
-            ];
+        _ = options.ResponseBuilders
+                .Add((Type _)
+                    => new HttpClientResponseSuccessBuilder());
 
-        options
-            .ResponseBuilders
-            .Add(typeof(IHttpClientResponseBuilder), emptyResponses);
+        _ = options.ResponseBuilders
+            .Add((Type _)
+                => new HttpClientResponseFailureBuilder());
 
-        List<Type> resultResponses =
-            [
-                typeof(SuccessHttpClientResponseResultBuilder<>),
-                typeof(FailureHttpClientResponseResultBuilder<>)
-            ];
+        _ = options.ResponseBuilders
+            .Add((Type resultType)
+                =>
+            {
+                if (typeof(HttpClientResponseResultSuccessBuilder<>)
+                       .TryMakeGenericType(out Type? builder, out _, resultType))
+                {
+                    return Activator.CreateInstance(builder);
+                }
 
-        options
-            .ResponseBuilders
-            .Add(typeof(IHttpClientResponseResultBuilder<>), resultResponses);
+                return null;
+            });
 
-        List<Type> iasyncResultResponses =
-            [
-                typeof(SuccessHttpClientResponseAsyncResultBuilder<>),
-                typeof(FailureHttpClientResponseAsyncResultBuilder<>)
-            ];
+        _ = options.ResponseBuilders
+            .Add((Type resultType)
+                =>
+            {
+                if (typeof(HttpClientResponseResultFailureBuilder<>)
+                       .TryMakeGenericType(out Type? builder, out _, resultType))
+                {
+                    return Activator.CreateInstance(builder);
+                }
 
-        options
-            .ResponseBuilders
-            .Add(typeof(IHttpClientResponseIAsyncResultBuilder<>), iasyncResultResponses);
+                return null;
+            });
 
+        _ = options.ResponseBuilders
+            .Add((Type resultType)
+                =>
+            {
+                if (typeof(HttpClientResponseAsyncResultSuccessBuilder<>)
+                       .TryMakeGenericType(out Type? builder, out _, resultType))
+                {
+                    return Activator.CreateInstance(builder);
+                }
 
-        options.RequestBuilders.Add(new HttpClientRequestPathBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestQueryStringBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestCookieBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestHeaderBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestBasicAuthBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestByteArrayBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestFormUrlEncodedBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestMultipartBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestStreamBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestStringBuilder());
-        options.RequestBuilders.Add(new HttpClientRequestPatchBuilder());
+                return null;
+            });
+
+        _ = options.ResponseBuilders
+            .Add((Type resultType)
+                =>
+            {
+                if (typeof(HttpClientResponseAsyncResultFailureBuilder<>)
+                       .TryMakeGenericType(out Type? builder, out _, resultType))
+                {
+                    return Activator.CreateInstance(builder);
+                }
+
+                return null;
+            });
+
+        _ = options.RequestBuilders.Add(new HttpClientRequestPathBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestQueryStringBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestCookieBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestHeaderBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestBasicAuthBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestByteArrayBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestFormUrlEncodedBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestMultipartBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestStreamBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestStringBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestPatchBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestStartBuilder());
+        _ = options.RequestBuilders.Add(new HttpClientRequestCompleteBuilder());
 
         options.SerializerOptions ??= new(JsonSerializerDefaults.Web)
         {
@@ -161,20 +201,5 @@ public sealed record HttpClientOptions
             PropertyNamingPolicy = null,
             WriteIndented = true
         };
-    }
-
-    private void CheckBuilderTypeIsRegistered<TBuilder>()
-        where TBuilder : IHttpClientResponseBuilderBase
-    {
-        Type builderType = typeof(TBuilder).IsGenericType
-            ? typeof(TBuilder).GetGenericTypeDefinition()
-            : typeof(TBuilder);
-
-        _ = ResponseBuilders
-            .Keys
-            .FirstOrDefault(t => t == builderType)
-            ?? throw new InvalidOperationException(
-                $"No response builder found for {typeof(TBuilder).Name}" +
-                $"in the {nameof(ResponseBuilders)}.");
     }
 }

@@ -16,14 +16,13 @@
  *
 ********************************************************************************/
 using System.Collections.Immutable;
-using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// Provides with <see cref="HttpClientAttribute"/> parameters definition.
 /// </summary>
-public sealed class HttpClientParameters
+public static class HttpClientParameters
 {
     /// <summary>
     /// The HTTP verbs.
@@ -457,61 +456,6 @@ public sealed class HttpClientParameters
     public static class Patch
 #pragma warning restore CA1034 // Nested types should not be visible
     {
-
-#pragma warning disable CA1034 // Nested types should not be visible
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-        public sealed record PatchOperation : IPatchOperation
-#pragma warning restore CA1034 // Nested types should not be visible
-        {
-            [JsonPropertyName("op")]
-            public string Op { get; init; } = default!;
-
-            [JsonPropertyName("from"),
-                JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-            public string? From { get; init; }
-
-            [JsonPropertyName("path")]
-            public string Path { get; init; }
-
-            [JsonPropertyName("value"),
-                JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-            public object? Value { get; init; }
-
-            public PatchOperation(string op, string path)
-            {
-                Op = op;
-                Path = path;
-            }
-            public PatchOperation(string op, string path, object value)
-            {
-                Op = op;
-                Path = path;
-                Value = value;
-            }
-            public PatchOperation(string op, string from, string path)
-            {
-                Op = op;
-                From = from;
-                Path = path;
-            }
-
-            public PatchOperation(
-                string op,
-                string from,
-                string path,
-                object? value)
-            {
-                Op = op;
-                From = from;
-                Path = path;
-                Value = value;
-            }
-
-            PatchOperation IPatchOperation.GetOperation() => this;
-        }
-
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-
         /// <summary>
         /// The <see cref="Add"/> operation performs one of the following 
         /// functions, depending upon what the target location references:
@@ -540,8 +484,8 @@ public sealed class HttpClientParameters
         /// .</returns>
         /// <exception cref="ArgumentNullException">The <paramref name="path"/> 
         /// or <paramref name="value"/> is null.</exception>
-        public static PatchOperation Add(string path, object value)
-            => new(Operation.Add, path, value);
+        public static IPatchOperation Add(string path, object value)
+            => new PatchOperation(Operation.Add, path, value);
 
         /// <summary>
         /// The <see cref="Remove"/> operation removes the value at the target 
@@ -572,8 +516,8 @@ public sealed class HttpClientParameters
         /// <returns>The "Remove" operation with the specified path.</returns>
         /// <exception cref="ArgumentNullException">The <paramref name="path"/> 
         /// is null.</exception>
-        public static PatchOperation Remove(string path)
-            => new(Operation.Remove, path);
+        public static IPatchOperation Remove(string path)
+            => new PatchOperation(Operation.Remove, path);
 
         /// <summary>
         /// The <see cref="Replace"/> operation replaces the value at the target 
@@ -595,8 +539,8 @@ public sealed class HttpClientParameters
         /// value.</returns>
         /// <exception cref="ArgumentNullException">The <paramref name="path"/> 
         /// or <paramref name="value"/> is null.</exception>
-        public static PatchOperation Replace(string path, object value)
-            => new(Operation.Remove, path, value);
+        public static IPatchOperation Replace(string path, object value)
+            => new PatchOperation(Operation.Remove, path, value);
 
         /// <summary>
         /// The <see cref="Move"/> operation removes the value at a specified 
@@ -631,8 +575,8 @@ public sealed class HttpClientParameters
         /// the 'from' location.</param>
         /// <returns>The "Move" operation with the specified from and path 
         /// values.</returns>
-        public static PatchOperation Move(string from, string path)
-            => new(Operation.Move, from, path);
+        public static IPatchOperation Move(string from, string path)
+            => new PatchOperation(Operation.Move, from, path);
 
         /// <summary>
         /// The <see cref="Copy"/> operation copies the value at a specified 
@@ -655,8 +599,8 @@ public sealed class HttpClientParameters
         /// the 'from' location.</param>
         /// <returns>The "Copy" operation with the specified from and path 
         /// values.</returns>
-        public static PatchOperation Copy(string from, string path)
-            => new(Operation.Copy, from, path);
+        public static IPatchOperation Copy(string from, string path)
+            => new PatchOperation(Operation.Copy, from, path);
 
         /// <summary>
         ///  The <see cref="Test"/> operation tests that a value at the target 
@@ -679,7 +623,7 @@ public sealed class HttpClientParameters
         /// .</param>
         /// <returns>The "test" operation with the specified path and value
         /// .</returns>
-        public static PatchOperation Test(string path, object value)
-            => new(Operation.Copy, path, value);
+        public static IPatchOperation Test(string path, object value)
+            => new PatchOperation(Operation.Copy, path, value);
     }
 }

@@ -15,28 +15,29 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Api.Primitives;
-using Xpandables.Net.Http;
 using Xpandables.Net.Http.Requests;
-using Xpandables.Net.Primitives;
 
 using static Xpandables.Net.Http.Requests.HttpClientParameters;
 
-namespace Xpandables.Net.Api.Features.RegisterPerson;
+namespace Xpandables.Net.Http.RequestBuilders;
 
-[HttpClient(Path = ContractEndpoint.PersonRegisterEndpoint,
-    IsNullable = false,
-    IsSecured = false,
-    Location = Location.Body,
-    Method = Method.POST)]
-public sealed record RegisterPersonRequest :
-    IHttpClientRequest, IHttpRequestString, IValidateDecorator
+/// <summary>
+/// Build the form url encoded content for a request.
+/// </summary>
+public sealed class HttpClientRequestMultipartBuilder :
+    HttpClientRequestBuilder<IHttpRequestMultipart>
 {
-    public required Guid KeyId { get; init; }
-    [FirstNameFormat]
-    public required string FirstName { get; init; }
-    [LastNameFormat]
-    public required string LastName { get; init; }
-
-    object IHttpRequestString.GetStringContent() => new { FirstName, LastName };
+    /// <inheritdoc/>
+    public override int Order => 8;
+    ///<inheritdoc/>
+    public override void Build(HttpClientRequestContext context)
+    {
+        if (!context.Attribute.IsNullable
+            && (context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.Multipart)
+        {
+            MultipartFormDataContent multipartContent = [];
+            context.RequestMessage.Content = multipartContent;
+        }
+    }
 }

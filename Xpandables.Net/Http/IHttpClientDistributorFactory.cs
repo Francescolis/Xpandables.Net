@@ -14,27 +14,29 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Http.Requests;
+
 namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Represents a factory that creates <see cref="HttpRequestMessage"/> 
-/// and <see cref="HttpClientResponse"/> instances.
+/// and <see cref="HttpClientResponse"/> instances for 
+/// <see cref="IHttpClientDistributor"/>.
 /// </summary>
-public interface IHttpClientDispatcherFactory
+public interface IHttpClientDistributorFactory
 {
     /// <summary>
-    /// Gets the options of the <see cref="IHttpClientDispatcher"/>.
+    /// Gets the options of the <see cref="IHttpClientDistributorFactory"/>.
     /// </summary>
     HttpClientOptions Options { get; }
 
     /// <summary>
     /// Builds a request message from the specified request object.
     /// </summary>
-    /// <typeparam name="TRequest">The type of the request data.</typeparam>
     /// <param name="request">The request object.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    Task<HttpRequestMessage> BuildRequestAsync<TRequest>(
-        TRequest request,
+    Task<HttpRequestMessage> BuildRequestAsync(
+        IHttpClientRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -67,6 +69,6 @@ public interface IHttpClientDispatcherFactory
     /// <param name="cancellationToken">The cancellation token.</param>
     Task<HttpClientResponse<IAsyncEnumerable<TResult>>>
         BuildResponseResultAsync<TResult>(
-        HttpResponseMessage response,
+            HttpResponseMessage response,
                CancellationToken cancellationToken = default);
 }

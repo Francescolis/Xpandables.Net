@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// This interface is used as a marker for request without result.
@@ -41,7 +40,7 @@ public interface IHttpClientRequest { }
 /// <see cref="IHttpRequestQueryString"/>, <see cref="IHttpRequestStream"/> 
 /// or <see cref="IHttpRequestString"/>.</remarks>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IHttpClientRequest<out TResponse> { }
+public interface IHttpClientRequest<out TResponse> : IHttpClientRequest { }
 
 /// <summary>
 /// This interface is used as a marker for request when using the asynchronous 
@@ -55,5 +54,5 @@ public interface IHttpClientRequest<out TResponse> { }
 /// <see cref="IHttpRequestPatch"/>, <see cref="IHttpRequestPathString"/>, 
 /// <see cref="IHttpRequestQueryString"/>, <see cref="IHttpRequestStream"/> 
 /// or <see cref="IHttpRequestString"/>.</remarks>
-public interface IHttpClientAsyncRequest<out TResponse> { }
+public interface IHttpClientAsyncRequest<out TResponse> : IHttpClientRequest { }
 #pragma warning restore CA1040 // Avoid empty interfaces

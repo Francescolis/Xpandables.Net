@@ -15,28 +15,36 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Api.Primitives;
-using Xpandables.Net.Http;
 using Xpandables.Net.Http.Requests;
-using Xpandables.Net.Primitives;
 
 using static Xpandables.Net.Http.Requests.HttpClientParameters;
 
-namespace Xpandables.Net.Api.Features.RegisterPerson;
+namespace Xpandables.Net.Http.RequestBuilders;
 
-[HttpClient(Path = ContractEndpoint.PersonRegisterEndpoint,
-    IsNullable = false,
-    IsSecured = false,
-    Location = Location.Body,
-    Method = Method.POST)]
-public sealed record RegisterPersonRequest :
-    IHttpClientRequest, IHttpRequestString, IValidateDecorator
+/// <summary>
+/// Build the byte content for a request.
+/// </summary>
+public sealed class HttpClientRequestByteArrayBuilder :
+    HttpClientRequestBuilder<IHttpRequestByteArray>
 {
-    public required Guid KeyId { get; init; }
-    [FirstNameFormat]
-    public required string FirstName { get; init; }
-    [LastNameFormat]
-    public required string LastName { get; init; }
+    /// <inheritdoc/>
+    public override int Order => 6;
 
-    object IHttpRequestString.GetStringContent() => new { FirstName, LastName };
+    ///<inheritdoc/>
+    public override void Build(HttpClientRequestContext context)
+    {
+        if (!context.Attribute.IsNullable
+            && (context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.ByteArray)
+        {
+            IHttpRequestByteArray request = context
+                .Request
+                .AsRequired<IHttpRequestByteArray>();
+
+            if (request.GetByteContent() is { } byteArray)
+            {
+                context.RequestMessage.Content = byteArray;
+            }
+        }
+    }
 }

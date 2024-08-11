@@ -17,17 +17,25 @@
 ********************************************************************************/
 using System.Net;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.ResponseBuilders;
 
 /// <summary>
-/// Builds the response from the <see cref="HttpRequestMessage"/>.
+/// Bas class to build the response from the <see cref="HttpResponseMessage"/>.
 /// </summary>
-public abstract class HttpClientResponseBuilderBase :
-    IHttpClientResponseBuilderBase
+public abstract class HttpClientResponseBuilder<TResponse> :
+    IHttpClientResponseBuilder<TResponse>
+    where TResponse : HttpClientResponse
 {
     /// <inheritdoc/>
-    public abstract Type? Type { get; }
+    public abstract Type Type { get; }
 
     /// <inheritdoc/>
-    public abstract bool CanBuild(HttpStatusCode targetStatusCode);
+    public abstract Task<TResponse> BuildAsync(
+        HttpClientResponseContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <inheritdoc/>
+    public abstract bool CanBuild(
+        Type targetType,
+        HttpStatusCode targetStatusCode);
 }

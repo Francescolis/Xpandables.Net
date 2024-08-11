@@ -15,28 +15,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Api.Primitives;
-using Xpandables.Net.Http;
-using Xpandables.Net.Http.Requests;
-using Xpandables.Net.Primitives;
+
+// Ignore Spelling: Multipart
 
 using static Xpandables.Net.Http.Requests.HttpClientParameters;
 
-namespace Xpandables.Net.Api.Features.RegisterPerson;
+namespace Xpandables.Net.Http.Requests;
 
-[HttpClient(Path = ContractEndpoint.PersonRegisterEndpoint,
-    IsNullable = false,
-    IsSecured = false,
-    Location = Location.Body,
-    Method = Method.POST)]
-public sealed record RegisterPersonRequest :
-    IHttpClientRequest, IHttpRequestString, IValidateDecorator
+/// <summary>
+/// Provides with a method to retrieve the request content 
+/// for <see cref="BodyFormat.Stream"/> or <see cref="BodyFormat.Multipart"/> type.
+/// </summary>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+public interface IHttpRequestStream : IHttpRequest
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    public required Guid KeyId { get; init; }
-    [FirstNameFormat]
-    public required string FirstName { get; init; }
-    [LastNameFormat]
-    public required string LastName { get; init; }
-
-    object IHttpRequestString.GetStringContent() => new { FirstName, LastName };
+    /// <summary>
+    /// Returns the body content.
+    /// </summary>
+    StreamContent GetStreamContent();
 }

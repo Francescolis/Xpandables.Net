@@ -15,28 +15,27 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Api.Primitives;
-using Xpandables.Net.Http;
-using Xpandables.Net.Http.Requests;
-using Xpandables.Net.Primitives;
+
+// Ignore Spelling: Multipart
 
 using static Xpandables.Net.Http.Requests.HttpClientParameters;
 
-namespace Xpandables.Net.Api.Features.RegisterPerson;
+namespace Xpandables.Net.Http.Requests;
 
-[HttpClient(Path = ContractEndpoint.PersonRegisterEndpoint,
-    IsNullable = false,
-    IsSecured = false,
-    Location = Location.Body,
-    Method = Method.POST)]
-public sealed record RegisterPersonRequest :
-    IHttpClientRequest, IHttpRequestString, IValidateDecorator
+/// <summary>
+/// Provides with a method to retrieve the request content 
+/// for <see cref="BodyFormat.Multipart"/> type.
+/// </summary>
+public interface IHttpRequestMultipart : IHttpRequest, IHttpRequestStream, IHttpRequestString
 {
-    public required Guid KeyId { get; init; }
-    [FirstNameFormat]
-    public required string FirstName { get; init; }
-    [LastNameFormat]
-    public required string LastName { get; init; }
+    /// <summary>
+    /// Returns the file name of the HTTP content to add.
+    /// </summary>
+    string GetFileName();
 
-    object IHttpRequestString.GetStringContent() => new { FirstName, LastName };
+    /// <summary>
+    /// Returns the name of the HTTP content to add.
+    /// </summary>
+    /// <remarks>The default value is 'file'.</remarks>
+    public string GetName() => "file";
 }

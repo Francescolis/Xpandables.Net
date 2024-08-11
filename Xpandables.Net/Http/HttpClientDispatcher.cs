@@ -17,27 +17,29 @@
 ********************************************************************************/
 using System.Net;
 
+using Xpandables.Net.Http.Requests;
+
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Default implementation of the <see cref="IHttpClientDispatcher"/> interface.
+/// Default implementation of the <see cref="IHttpClientDistributor"/> interface.
 /// </summary>
 public sealed class HttpClientDispatcherDefault(
     HttpClient httpClient,
-    IHttpClientDispatcherFactory dispatcherFactory)
+    IHttpClientDistributorFactory dispatcherFactory)
     : HttpClientDispatcher(httpClient, dispatcherFactory)
 {
 }
 
 /// <summary>
 /// This helper class allows the application 
-/// author to implement the <see cref="IHttpClientDispatcher"/> interface.
+/// author to implement the <see cref="IHttpClientDistributor"/> interface.
 /// </summary>
 ///<inheritdoc/>
 public abstract class HttpClientDispatcher(
     HttpClient httpClient,
-    IHttpClientDispatcherFactory dispatcherFactory)
-    : Disposable, IHttpClientDispatcher
+    IHttpClientDistributorFactory dispatcherFactory)
+    : Disposable, IHttpClientDistributor
 {
     ///<inheritdoc/>
     public HttpClient HttpClient => httpClient;

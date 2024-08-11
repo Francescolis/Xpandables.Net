@@ -14,39 +14,37 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Http;
+using Xpandables.Net.Http.Requests;
+
+namespace Xpandables.Net.Http.RequestBuilders;
 
 /// <summary>
-/// Builds the request for <see cref="IHttpClientDispatcher"/>.
+/// Build the request for the <see cref="HttpClient"/>.
 /// </summary>
 /// <typeparam name="TInterfaceRequest">The type of the interface
 /// implemented by the request source.</typeparam>
-public interface IHttpClientRequestBuilder<TInterfaceRequest>
+public abstract class HttpClientRequestBuilder<TInterfaceRequest> :
+    IHttpClientRequestBuilder<TInterfaceRequest>
+    where TInterfaceRequest : class, IHttpRequest
 {
-    /// <summary>
-    /// Gets the request type being built by the current builder instance.
-    /// </summary>
-    Type? Type { get; }
+    ///<inheritdoc/>
+    public Type Type => typeof(TInterfaceRequest);
+
+    /// <inheritdoc/>
+    public virtual int Order => 0;
 
     /// <summary>
     /// When overridden in a derived class, determines whether the builder
     /// instance can build the specified request implementing the
-    /// <typeparamref name="TInterfaceRequest"/> type.
+    /// specific interface type.
     /// </summary>
     /// <param name="targetType">The type of the target interface.</param>
     /// <returns><see langword="true"/> if the instance can build the
     /// specified request; otherwise, <see langword="false"/>.</returns>
-    bool CanBuild(Type targetType);
+    ///<inheritdoc/>
+    public virtual bool CanBuild(Type targetType)
+        => Type.IsAssignableFrom(targetType);
 
-    /// <summary>
-    /// Builds the request for the <see cref="HttpClient"/>.
-    /// </summary>
-    /// <param name="attribute">The attribute to act with.</param>
-    /// <param name="request">The request data source to use.</param>
-    /// <param name="requestMessage">The request message to act on.</param>
-    /// <returns>The built request.</returns>
-    HttpRequestMessage Build(
-        HttpClientAttribute attribute,
-        TInterfaceRequest request,
-        HttpRequestMessage requestMessage);
+    /// <inheritdoc/>
+    public abstract void Build(HttpClientRequestContext context);
 }

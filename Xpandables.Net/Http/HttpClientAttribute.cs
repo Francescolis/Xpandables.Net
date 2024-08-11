@@ -22,18 +22,20 @@ using System.Net.Http.Headers;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using Xpandables.Net.Http.Requests;
+
+using static Xpandables.Net.Http.Requests.HttpClientParameters;
 
 namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Describes the parameters for a request used with 
-/// <see cref="IHttpClientDispatcher"/>.
+/// <see cref="IHttpClientDistributor"/>.
 /// The attribute should decorate implementations of 
 /// <see cref="IHttpClientRequest"/>,
 /// <see cref="IHttpClientAsyncRequest{TResponse}"/> 
 /// or <see cref="IHttpClientRequest{TResponse}"/>
-/// in order to be used with <see cref="IHttpClientDispatcher"/>.
+/// in order to be used with <see cref="IHttpClientDistributor"/>.
 /// Your class can implement the <see cref="IHttpClientAttributeProvider"/>
 /// to dynamically return a <see cref="HttpClientAttribute"/>.
 /// </summary>
@@ -94,7 +96,7 @@ public sealed class HttpClientAttribute : Attribute
     /// In this case, an <see cref="AuthenticationHeaderValue"/>
     /// with the <see cref="Scheme"/> value will be initialized and filled
     /// with an implementation of <see cref="HttpClientAuthorizationHandler"/>.
-    /// You need to configure the <see cref="IHttpClientDispatcher"/> 
+    /// You need to configure the <see cref="IHttpClientDistributor"/> 
     /// registration with on of the extension methods like
     /// <see cref="HttpClientBuilderExtensions
     /// .ConfigurePrimaryHttpMessageHandler{THandler}(IHttpClientBuilder)"/>    

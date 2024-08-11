@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Http.Requests;
+
 namespace Xpandables.Net.Http;
 
 /// <summary>
@@ -31,7 +33,7 @@ namespace Xpandables.Net.Http;
 /// with <see cref="HttpClientAttribute"/> 
 /// or implement <see cref="IHttpClientAttributeProvider"/>.
 /// </summary>
-public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
+public interface IHttpClientDistributor : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Contains the <see cref="System.Net.Http.HttpClient"/> 

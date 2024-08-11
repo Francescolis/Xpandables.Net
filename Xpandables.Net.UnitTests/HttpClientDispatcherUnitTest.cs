@@ -23,23 +23,23 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Requests;
 
-using static Xpandables.Net.Http.HttpClientParameters.Patch;
+using static Xpandables.Net.Http.Requests.HttpClientParameters.Patch;
 
 namespace Xpandables.Net.UnitTests;
 public sealed class HttpClientDispatcherUnitTest
 {
     private readonly IHttpMonkeyDispatcher _dispatcher;
-    private readonly IHttpClientDispatcherFactory _httpClientDispatcherFactory;
+    private readonly IHttpClientDistributorFactory _httpClientDispatcherFactory;
     public HttpClientDispatcherUnitTest()
     {
         ServiceCollection services = new();
 
         services
             .Configure<HttpClientOptions>(HttpClientOptions.Default)
-            .AddXHttpClientDispatcherBuilders()
             .AddXHttpClientOptions()
-            .AddXHttpClientDispatcherFactory()
+            .AddXHttpClientDistributorFactory()
             .AddXHttpClientDispatcher<IHttpMonkeyDispatcher, HttpMonkeyDispatcher>(
             (_, httpClient) =>
             {
@@ -57,7 +57,7 @@ public sealed class HttpClientDispatcherUnitTest
 
         _dispatcher = provider.GetRequiredService<IHttpMonkeyDispatcher>();
         _httpClientDispatcherFactory = provider
-            .GetRequiredService<IHttpClientDispatcherFactory>();
+            .GetRequiredService<IHttpClientDistributorFactory>();
     }
 
     [Fact]
@@ -117,18 +117,18 @@ readonly record struct Monkey(
     string Name, string Location, string Details, string Image,
     int Population, double Latitude, double Longitude);
 
-[HttpClient(Path = "monkeys.json", IsSecured = true, IsNullable = true,
+[HttpClient(Path = "monkeys.json", IsSecured = false, IsNullable = true,
     Method = HttpClientParameters.Method.GET,
     Location = HttpClientParameters.Location.Body)]
 sealed record Query : IHttpClientAsyncRequest<Monkey>;
-interface IHttpMonkeyDispatcher : IHttpClientDispatcher
+interface IHttpMonkeyDispatcher : IHttpClientDistributor
 {
     IAsyncEnumerable<Monkey> GetMonkeyAsync();
 }
 
 sealed class HttpMonkeyDispatcher(
     HttpClient httpClient,
-    IHttpClientDispatcherFactory dispatcherFactory)
+    IHttpClientDistributorFactory dispatcherFactory)
     : HttpClientDispatcher(
         httpClient,
         dispatcherFactory), IHttpMonkeyDispatcher
