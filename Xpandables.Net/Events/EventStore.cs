@@ -44,8 +44,13 @@ public sealed class EventStore(
         IEntityEvent entity = converter
             .ConvertTo(@event, options.Value.SerializerOptions);
 
-        Array.Resize(ref _disposables, _disposables.Length + 1);
-        _disposables[^1] = entity;
+        if (options
+            .Value
+            .DisposeEventEntityAfterPersistence)
+        {
+            Array.Resize(ref _disposables, _disposables.Length + 1);
+            _disposables[^1] = entity;
+        }
 
         await repository
             .InsertAsync(entity, cancellationToken)
@@ -92,9 +97,14 @@ public sealed class EventStore(
             return;
         }
 
-        foreach (IDisposable disposable in _disposables)
+        if (options
+            .Value
+            .DisposeEventEntityAfterPersistence)
         {
-            disposable?.Dispose();
+            foreach (IDisposable disposable in _disposables)
+            {
+                disposable?.Dispose();
+            }
         }
 
         await base.DisposeAsync(disposing)

@@ -1,35 +1,135 @@
-using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateSlimBuilder(args);
+using Swashbuckle.AspNetCore.SwaggerUI;
 
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-});
+using Xpandables.Net.Api;
+using Xpandables.Net.Api.I18n;
+using Xpandables.Net.Api.Persistence;
+using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Events;
+using Xpandables.Net.Operations;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services
+    .AddLogging()
+    .Configure<EventOptions>(options =>
+    {
+        EventOptions.Default(options);
+        options.DisposeEventEntityAfterPersistence = false;
+    })
+    .AddXAggregateCommandHandlers()
+    .AddXCommandQueryHandlers(options =>
+        options
+        .UseOperationFinalizer()
+        .UseValidator())
+    .AddXEventHandlers()
+    .AddXDispatcher()
+    .AddXValidatorGenerics()
+    .AddXValidators()
+    .AddXAggregateAccessor()
+    .AddXRepositoryEvent<RepositoryPerson>()
+    .AddXEventPublisher()
+    .AddXEventDuplicateDecorator()
+    .AddXEventStore()
+    .AddXAggregateCommandDecorator()
+    .AddXEndpointRoutes()
+    .AddXOperationResultFinalizer()
+    .AddXOperationResultSerializationConfigureOptions()
+    .AddXOperationResultRequestValidator()
+    .AddXOperationResultResponseBuilder()
+    .AddXOperationResultMiddleware()
+    .AddHttpContextAccessor()
+    .AddRouting(options =>
+    {
+        options.ConstraintMap.Add("string", typeof(StringConstraintMap));
+        options.LowercaseQueryStrings = true;
+        options.LowercaseUrls = true;
+    })
+    .AddSingleton(provider
+        => provider.GetRequiredService<IOptions<JsonOptions>>()
+            .Value
+            .SerializerOptions)
+    .AddLocalization()
+    .AddRequestLocalization(options =>
+    {
+        IEnumerable<System.Globalization.CultureInfo> cultures =
+        ICultureResourcesProvider.GetCultures();
+
+        System.Globalization.CultureInfo defaultCulture = cultures.
+        First(c => c.Name == ICultureResourcesProvider.DefaultCulture);
+        string[] namedCultures = cultures.Select(c => c.Name).ToArray();
+
+        options.SetDefaultCulture(defaultCulture.Name);
+        options.ApplyCurrentCultureToResponseHeaders = true;
+        options.AddSupportedCultures(namedCultures);
+        options.AddSupportedUICultures(namedCultures);
+        options.RequestCultureProviders =
+        [
+            new QueryStringRequestCultureProvider(),
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider()
+        ];
+    })
+    .AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc(builder.Configuration["SwaggerOptions:Version"], new()
+        {
+            Title = builder.Configuration["SwaggerOptions:Name"],
+            Version = builder.Configuration["SwaggerOptions:Version"],
+            Description = builder.Configuration["SwaggerOptions:Description"],
+            Contact = builder.Configuration.GetSection("SwaggerOptions:Contact")
+                .Get<OpenApiContact>(),
+            License = builder.Configuration.GetSection("SwaggerOptions:License")
+                .Get<OpenApiLicense>(),
+            TermsOfService = new(builder.Configuration["SwaggerOptions:TermsOfService"]!)
+        });
+
+        options.MapType<DateOnly>(() => new OpenApiSchema
+        {
+            Type = "string",
+            Format = "date"
+        });
+
+        options.MapType<TimeOnly>(() => new OpenApiSchema
+        {
+            Type = "string",
+            Format = "time"
+        });
+
+        options.EnableAnnotations();
+        options.SchemaFilter<EnumSchemaFilter>();
+    });
 
 var app = builder.Build();
 
-var sampleTodos = new Todo[] {
-    new(1, "Walk the dog"),
-    new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
-    new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
-    new(4, "Clean the bathroom"),
-    new(5, "Clean the car", DateOnly.FromDateTime(DateTime.Now.AddDays(2)))
-};
+app.UseXOperationResultMiddleware()
+    .UseSwagger()
+    .UseSwaggerUI(options =>
+    {
+        string? routePrefix = builder.Configuration["SwaggerOptions:RoutePrefix"];
+        string? prefix = builder.Configuration["SwaggerOptions:Prefix"];
 
-var todosApi = app.MapGroup("/todos");
-todosApi.MapGet("/", () => sampleTodos);
-todosApi.MapGet("/{id}", (int id) =>
-    sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-        ? Results.Ok(todo)
-        : Results.NotFound());
+        options.SwaggerEndpoint(
+            $"{prefix}/swagger/{builder.Configuration["SwaggerOptions:Version"]}/swagger.json",
+            builder.Configuration["SwaggerOptions:Description"]);
+        options.DocExpansion(DocExpansion.None);
+        options.RoutePrefix = routePrefix;
+    })
+    .UseStaticFiles()
+    .UseRequestLocalization();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+app.UseRouting();
+app.UseXEndpointRoutes();
 
 app.Run();
-
-public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
-
-[JsonSerializable(typeof(Todo[]))]
-internal partial class AppJsonSerializerContext : JsonSerializerContext
-{
-
-}

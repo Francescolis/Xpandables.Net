@@ -31,7 +31,7 @@ public interface ICommand<TAggregate> : ICommandAggregate
     /// <summary>
     /// Gets or sets the aggregate instance.
     /// </summary>
-    /// <remarks>This get populated by the aspect.</remarks>
+    /// <remarks>This get populated by the aspect/decorator.</remarks>
     Optional<TAggregate> Aggregate { get; set; }
 
     /// <summary>

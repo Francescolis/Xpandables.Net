@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using FluentAssertions;
@@ -237,6 +238,7 @@ public sealed record PersonCreatedDomainEvent :
 {
     [JsonConstructor]
     private PersonCreatedDomainEvent() { }
+    [SetsRequiredMembers]
     public PersonCreatedDomainEvent(
         Person person, string firstName, string lastName)
         : base(person)
@@ -248,7 +250,7 @@ public sealed record PersonCreatedDomainEvent :
     public string FirstName { get; init; } = default!;
     public string LastName { get; init; } = default!;
 
-    public IEventFilter? Filter() => new EntityEventDomainFilter
+    public IEventFilter Filter() => new EntityEventDomainFilter
     {
         EventTypeName = nameof(PersonCreatedDomainEvent),
         Paging = Pagination.With(0, 1),
@@ -273,7 +275,7 @@ public sealed record ContactRequestSentDomainEvent :
 {
     [JsonConstructor]
     private ContactRequestSentDomainEvent() { }
-
+    [SetsRequiredMembers]
     public ContactRequestSentDomainEvent(
         Person person, ContactId contactId) : base(person)
     {
@@ -284,7 +286,7 @@ public sealed record ContactRequestSentDomainEvent :
     public string FullName { get; init; } = default!;
     public ContactId ContactId { get; init; } = default!;
 
-    public IEventFilter? Filter() => new EntityEventDomainFilter
+    public IEventFilter Filter() => new EntityEventDomainFilter
     {
         EventTypeName = nameof(ContactRequestSentDomainEvent),
         Paging = Pagination.With(0, 1),

@@ -29,7 +29,7 @@ public interface IEventDuplicate
     /// <summary>
     /// Returns the filter to check for duplicate events.
     /// </summary>
-    IEventFilter? Filter();
+    IEventFilter Filter();
 
     /// <summary>
     /// Returns the operation result to return when the event is duplicated.
@@ -58,13 +58,7 @@ public sealed class EventHandlerDuplicateDecorator<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
     {
-        IEventFilter? filter = @event.Filter();
-        if (filter is null)
-        {
-            return await decoratee
-                .HandleAsync(@event, cancellationToken)
-                .ConfigureAwait(false);
-        }
+        IEventFilter filter = @event.Filter();
 
         try
         {

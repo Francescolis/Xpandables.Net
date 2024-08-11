@@ -49,7 +49,7 @@ public static partial class ServiceCollectionExtensions
     /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="builder"/> is null.</exception>
-    public static WebApplication MapXEndpointRoutes(
+    public static WebApplication UseXEndpointRoutes(
         this WebApplication builder,
         params Assembly[] assemblies)
     {

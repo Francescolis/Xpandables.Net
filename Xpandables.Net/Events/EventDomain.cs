@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Xpandables.Net.Aggregates;
@@ -27,7 +28,7 @@ namespace Xpandables.Net.Events;
 public abstract record class EventDomain : Event, IEventDomain
 {
     /// <inheritdoc/>
-    public Guid AggregateId { get; init; } = default!;
+    public required Guid AggregateId { get; init; }
 
     /// <inheritdoc/>
     public virtual IEventDomain WithVersion(ulong version)
@@ -58,6 +59,7 @@ public abstract record EventDomain<TAggregate> : EventDomain
     /// <param name="aggregate">The target aggregate instance.</param>
     /// <exception cref="ArgumentNullException">
     /// The <paramref name="aggregate"/> is null.</exception>
+    [SetsRequiredMembers]
     protected EventDomain(TAggregate aggregate)
     {
         ArgumentNullException.ThrowIfNull(aggregate);

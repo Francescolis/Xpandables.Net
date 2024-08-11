@@ -64,6 +64,12 @@ public sealed record EventOptions
     public bool ConsiderNoEventIntegrationHandlerAsError { get; set; }
 
     /// <summary>
+    /// Determines whether to dispose entity event after persistence.
+    /// </summary>
+    /// <remarks>The default value is <see langword="true"/>.</remarks>
+    public bool DisposeEventEntityAfterPersistence { get; set; }
+
+    /// <summary>
     /// Returns the <see cref="IEventConverter"/> instance for the specified type.
     /// </summary>
     /// <param name="event">The event to convert.</param>
@@ -149,6 +155,8 @@ public sealed record EventOptions
         options.Filters.Add(new EntityEventDomainFilter());
         options.Filters.Add(new EntityEventIntegrationFilter());
         options.Filters.Add(new EntityEventSnapshotFilter());
+
+        options.DisposeEventEntityAfterPersistence = true;
 
         options.SerializerOptions ??= new JsonSerializerOptions(
             JsonSerializerDefaults.Web)
