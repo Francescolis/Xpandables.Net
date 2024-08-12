@@ -17,9 +17,10 @@
 ********************************************************************************/
 using System.Text.Json;
 
+using Xpandables.Net.Http;
 using Xpandables.Net.Primitives.Converters;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// For route, query and header binding sources in minimal Api, 

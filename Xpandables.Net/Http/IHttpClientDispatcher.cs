@@ -33,7 +33,7 @@ namespace Xpandables.Net.Http;
 /// with <see cref="HttpClientAttribute"/> 
 /// or implement <see cref="IHttpClientAttributeProvider"/>.
 /// </summary>
-public interface IHttpClientDistributor : IDisposable, IAsyncDisposable
+public interface IHttpClientDispatcher : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Contains the <see cref="System.Net.Http.HttpClient"/> 

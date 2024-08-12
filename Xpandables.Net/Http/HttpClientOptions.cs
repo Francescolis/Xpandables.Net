@@ -24,7 +24,7 @@ using Xpandables.Net.Http.ResponseBuilders;
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Defines the <see cref="IHttpClientDistributor"/>> configuration options.
+/// Defines the <see cref="IHttpClientDispatcher"/>> configuration options.
 /// </summary>
 public sealed record HttpClientOptions
 {

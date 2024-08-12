@@ -17,7 +17,7 @@
 ********************************************************************************/
 using System.Collections.Frozen;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// Provides with a method to retrieve the MIME type of a file path.

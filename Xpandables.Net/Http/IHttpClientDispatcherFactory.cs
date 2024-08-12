@@ -21,12 +21,12 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Represents a factory that creates <see cref="HttpRequestMessage"/> 
 /// and <see cref="HttpClientResponse"/> instances for 
-/// <see cref="IHttpClientDistributor"/>.
+/// <see cref="IHttpClientDispatcher"/>.
 /// </summary>
-public interface IHttpClientDistributorFactory
+public interface IHttpClientDispatcherFactory
 {
     /// <summary>
-    /// Gets the options of the <see cref="IHttpClientDistributorFactory"/>.
+    /// Gets the options of the <see cref="IHttpClientDispatcherFactory"/>.
     /// </summary>
     HttpClientOptions Options { get; }
 

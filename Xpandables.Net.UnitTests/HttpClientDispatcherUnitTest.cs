@@ -31,7 +31,7 @@ namespace Xpandables.Net.UnitTests;
 public sealed class HttpClientDispatcherUnitTest
 {
     private readonly IHttpMonkeyDispatcher _dispatcher;
-    private readonly IHttpClientDistributorFactory _httpClientDispatcherFactory;
+    private readonly IHttpClientDispatcherFactory _httpClientDispatcherFactory;
     public HttpClientDispatcherUnitTest()
     {
         ServiceCollection services = new();
@@ -57,7 +57,7 @@ public sealed class HttpClientDispatcherUnitTest
 
         _dispatcher = provider.GetRequiredService<IHttpMonkeyDispatcher>();
         _httpClientDispatcherFactory = provider
-            .GetRequiredService<IHttpClientDistributorFactory>();
+            .GetRequiredService<IHttpClientDispatcherFactory>();
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public sealed class HttpClientDispatcherUnitTest
 
         string expectedResult = JsonSerializer.Serialize(
             request.PatchOperations,
-        _httpClientDispatcherFactory.Options.SerializerOptions); ;
+        _httpClientDispatcherFactory.Options.SerializerOptions);
 
         HttpRequestMessage message = await _httpClientDispatcherFactory
             .BuildRequestAsync(
@@ -121,14 +121,14 @@ readonly record struct Monkey(
     Method = HttpClientParameters.Method.GET,
     Location = HttpClientParameters.Location.Body)]
 sealed record Query : IHttpClientAsyncRequest<Monkey>;
-interface IHttpMonkeyDispatcher : IHttpClientDistributor
+interface IHttpMonkeyDispatcher : IHttpClientDispatcher
 {
     IAsyncEnumerable<Monkey> GetMonkeyAsync();
 }
 
 sealed class HttpMonkeyDispatcher(
     HttpClient httpClient,
-    IHttpClientDistributorFactory dispatcherFactory)
+    IHttpClientDispatcherFactory dispatcherFactory)
     : HttpClientDispatcher(
         httpClient,
         dispatcherFactory), IHttpMonkeyDispatcher

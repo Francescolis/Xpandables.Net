@@ -22,24 +22,24 @@ using Xpandables.Net.Http.Requests;
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Default implementation of the <see cref="IHttpClientDistributor"/> interface.
+/// Default implementation of the <see cref="IHttpClientDispatcher"/> interface.
 /// </summary>
 public sealed class HttpClientDispatcherDefault(
     HttpClient httpClient,
-    IHttpClientDistributorFactory dispatcherFactory)
+    IHttpClientDispatcherFactory dispatcherFactory)
     : HttpClientDispatcher(httpClient, dispatcherFactory)
 {
 }
 
 /// <summary>
 /// This helper class allows the application 
-/// author to implement the <see cref="IHttpClientDistributor"/> interface.
+/// author to implement the <see cref="IHttpClientDispatcher"/> interface.
 /// </summary>
 ///<inheritdoc/>
 public abstract class HttpClientDispatcher(
     HttpClient httpClient,
-    IHttpClientDistributorFactory dispatcherFactory)
-    : Disposable, IHttpClientDistributor
+    IHttpClientDispatcherFactory dispatcherFactory)
+    : Disposable, IHttpClientDispatcher
 {
     ///<inheritdoc/>
     public HttpClient HttpClient => httpClient;

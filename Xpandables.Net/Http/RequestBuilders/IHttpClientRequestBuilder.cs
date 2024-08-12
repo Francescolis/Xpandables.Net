@@ -19,7 +19,7 @@ using Xpandables.Net.Http.Requests;
 namespace Xpandables.Net.Http.RequestBuilders;
 
 /// <summary>
-/// Builds the request for <see cref="IHttpClientDistributor"/>.
+/// Builds the request for <see cref="IHttpClientDispatcher"/>.
 /// </summary>
 public interface IHttpClientRequestBuilder
 {
@@ -51,7 +51,7 @@ public interface IHttpClientRequestBuilder
 
 
 /// <summary>
-/// Builds the request for <see cref="IHttpClientDistributor"/>.
+/// Builds the request for <see cref="IHttpClientDispatcher"/>.
 /// </summary>
 /// <typeparam name="TInterfaceRequest">The type of the interface
 /// implemented by the request source.</typeparam>

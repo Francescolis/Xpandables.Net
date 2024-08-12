@@ -27,11 +27,11 @@ namespace Xpandables.Net.Http;
 
 /// <summary>
 /// The default implementation of the 
-/// <see cref="IHttpClientDistributorFactory"/> interface.
+/// <see cref="IHttpClientDispatcherFactory"/> interface.
 /// </summary>
-public sealed class HttpClientDisributorFactory
+public sealed class HttpClientDispatcherFactory
     (IOptions<HttpClientOptions> options) :
-    IHttpClientDistributorFactory
+    IHttpClientDispatcherFactory
 {
     ///<inheritdoc/>
     public HttpClientOptions Options => options.Value;

@@ -41,7 +41,7 @@ public static class ServiceCollectionHttpExtensions
                 HttpClientOptionsConfiguration>();
 
     /// <summary>
-    /// Registers the <see cref="HttpClientDisributorFactory"/> default 
+    /// Registers the <see cref="HttpClientDispatcherFactory"/> default 
     /// implementation to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -54,7 +54,7 @@ public static class ServiceCollectionHttpExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped
-            <IHttpClientDistributorFactory, HttpClientDisributorFactory>();
+            <IHttpClientDispatcherFactory, HttpClientDispatcherFactory>();
         return services;
     }
 
@@ -70,18 +70,18 @@ public static class ServiceCollectionHttpExtensions
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
     public static IServiceCollection AddXHttpClientDistributorFactory
         <THttpClientDispatcherFactory>(this IServiceCollection services)
-        where THttpClientDispatcherFactory : class, IHttpClientDistributorFactory
+        where THttpClientDispatcherFactory : class, IHttpClientDispatcherFactory
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped
-            <IHttpClientDistributorFactory, THttpClientDispatcherFactory>();
+            <IHttpClientDispatcherFactory, THttpClientDispatcherFactory>();
         return services;
     }
 
     /// <summary>
     ///  Registers the default implementation of 
-    ///  <see cref="IHttpClientDistributor"/> type and configures a 
+    ///  <see cref="IHttpClientDispatcher"/> type and configures a 
     ///  binding with a named <see cref="HttpClient"/>. 
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -98,12 +98,12 @@ public static class ServiceCollectionHttpExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         return services.AddHttpClient
-            <IHttpClientDistributor, HttpClientDispatcherDefault>(configureClient);
+            <IHttpClientDispatcher, HttpClientDispatcherDefault>(configureClient);
     }
 
     /// <summary>
     ///  Registers the default implementation of 
-    ///  <see cref="IHttpClientDistributor"/> type and configures a 
+    ///  <see cref="IHttpClientDispatcher"/> type and configures a 
     ///  binding with a named <see cref="HttpClient"/> and security header 
     ///  value provider for authorization. 
     /// </summary>
@@ -128,17 +128,17 @@ public static class ServiceCollectionHttpExtensions
         return services
             .AddScoped<THttpClientAuthorizationHandler>()
             .AddHttpClient
-            <IHttpClientDistributor, HttpClientDispatcherDefault>(configureClient)
+            <IHttpClientDispatcher, HttpClientDispatcherDefault>(configureClient)
             .ConfigurePrimaryHttpMessageHandler<THttpClientAuthorizationHandler>();
     }
 
     /// <summary>
     /// Registers the <typeparamref name="THttpClientDispatcherImpl"/> type as 
     /// <typeparamref name="THttpClientDispatcherInterface"/>
-    /// to be used as <see cref="IHttpClientDistributor"/>.
+    /// to be used as <see cref="IHttpClientDispatcher"/>.
     /// </summary>
     /// <typeparam name="THttpClientDispatcherInterface">The interface type 
-    /// that inherits from <see cref="IHttpClientDistributor"/>.</typeparam>
+    /// that inherits from <see cref="IHttpClientDispatcher"/>.</typeparam>
     /// <typeparam name="THttpClientDispatcherImpl">The type that implements 
     /// <typeparamref name="THttpClientDispatcherInterface"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
@@ -148,7 +148,7 @@ public static class ServiceCollectionHttpExtensions
     public static IHttpClientBuilder AddXHttpClientDispatcher
         <THttpClientDispatcherInterface, THttpClientDispatcherImpl>(
         this IServiceCollection services)
-        where THttpClientDispatcherInterface : class, IHttpClientDistributor
+        where THttpClientDispatcherInterface : class, IHttpClientDispatcher
         where THttpClientDispatcherImpl : class, THttpClientDispatcherInterface
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -159,10 +159,10 @@ public static class ServiceCollectionHttpExtensions
     /// <summary>
     /// Registers the <typeparamref name="THttpClientDispatcherImpl"/> type as 
     /// <typeparamref name="THttpClientDispatcherInterface"/>
-    /// to be used as <see cref="IHttpClientDistributor"/>.
+    /// to be used as <see cref="IHttpClientDispatcher"/>.
     /// </summary>
     /// <typeparam name="THttpClientDispatcherInterface">The interface type 
-    /// that inherits from <see cref="IHttpClientDistributor"/>.</typeparam>
+    /// that inherits from <see cref="IHttpClientDispatcher"/>.</typeparam>
     /// <typeparam name="THttpClientDispatcherImpl">The type that implements 
     /// <typeparamref name="THttpClientDispatcherInterface"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
@@ -175,7 +175,7 @@ public static class ServiceCollectionHttpExtensions
         <THttpClientDispatcherInterface, THttpClientDispatcherImpl>(
         this IServiceCollection services,
         Action<IServiceProvider, HttpClient> configureClient)
-        where THttpClientDispatcherInterface : class, IHttpClientDistributor
+        where THttpClientDispatcherInterface : class, IHttpClientDispatcher
         where THttpClientDispatcherImpl : class, THttpClientDispatcherInterface
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -187,11 +187,11 @@ public static class ServiceCollectionHttpExtensions
     /// <summary>
     /// Registers the <typeparamref name="THttpClientDispatcherImpl"/> type as 
     /// <typeparamref name="THttpClientDispatcherInterface"/>
-    /// to be used as <see cref="IHttpClientDistributor"/> and a security header 
+    /// to be used as <see cref="IHttpClientDispatcher"/> and a security header 
     /// value provider for authorization.
     /// </summary>
     /// <typeparam name="THttpClientDispatcherInterface">The interface type that 
-    /// inherits from <see cref="IHttpClientDistributor"/>.</typeparam>
+    /// inherits from <see cref="IHttpClientDispatcher"/>.</typeparam>
     /// <typeparam name="THttpClientDispatcherImpl">The type that implements 
     /// <typeparamref name="THttpClientDispatcherInterface"/>.</typeparam>
     /// <typeparam name="THttpClientAuthorizationHandler">The type that will be
@@ -204,7 +204,7 @@ public static class ServiceCollectionHttpExtensions
         <THttpClientDispatcherInterface, THttpClientDispatcherImpl,
         THttpClientAuthorizationHandler>(
         this IServiceCollection services)
-        where THttpClientDispatcherInterface : class, IHttpClientDistributor
+        where THttpClientDispatcherInterface : class, IHttpClientDispatcher
         where THttpClientDispatcherImpl : class, THttpClientDispatcherInterface
         where THttpClientAuthorizationHandler : HttpClientAuthorizationHandler
     {
