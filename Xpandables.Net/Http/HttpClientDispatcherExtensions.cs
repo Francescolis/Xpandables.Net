@@ -18,10 +18,12 @@
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
+using Xpandables.Net.Http.RequestBuilders;
 using Xpandables.Net.Http.Requests;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -91,6 +93,74 @@ public static class HttpClientDispatcherExtensions
                 },
                 resultSelector: nvc => nvc
                 );
+
+    /// <summary>
+    /// Resolves the <see cref="HttpClientAttribute"/> from the request.
+    /// </summary>
+    /// <param name="options">The options to act on.</param>
+    /// <param name="request">The request to act on.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="request"/> 
+    /// is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="options"/>
+    /// is null.</exception>
+    /// <exception cref="InvalidOperationException">The request must be decorated
+    /// with <see cref="HttpClientAttribute"/> attribute or implement
+    /// the <see cref="IHttpClientAttributeProvider"/> interface.</exception>
+    /// <returns>An instance of <see cref="HttpClientAttribute"/>.</returns>
+    public static HttpClientAttribute ResolveHttpClientAttribute(
+        this HttpClientOptions options,
+        IHttpClientRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (request is IHttpClientAttributeProvider attributeProvider)
+        {
+            return attributeProvider.Build(options.ServiceProvider);
+        }
+
+        return request
+            .GetType()
+            .GetCustomAttribute<HttpClientAttribute>()
+            ?? throw new ArgumentNullException(
+                $"{request.GetType().Name} must be decorated " +
+                $"with {nameof(HttpClientAttribute)} " +
+                $"attribute or implement " +
+                $"{nameof(IHttpClientAttributeProvider)} interface.");
+    }
+
+    /// <summary>
+    /// Resolves the request builders for the request.
+    /// </summary>
+    /// <param name="options">The options to act on.</param>
+    /// <param name="request">The request to act on.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="request"/>
+    /// is null.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="options"/>
+    /// is null.</exception>
+    /// <exception cref="InvalidOperationException">No request builder found for
+    /// the request.</exception>
+    /// <returns>A list of <see cref="IHttpClientRequestBuilder"/>.</returns>
+    public static IReadOnlyList<IHttpClientRequestBuilder> ResolveRequestBuilders(
+        this HttpClientOptions options,
+        IHttpClientRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(options);
+
+        List<IHttpClientRequestBuilder> types = options
+            .RequestBuilders
+            .Where(x => x.CanBuild(request.GetType()))
+            .ToList();
+
+        if (types.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"No request builder found for {request.GetTypeName()}.");
+        }
+
+        return types;
+    }
 
     /// <summary>
     /// Sends the request that returns a collection that can be async-enumerated.

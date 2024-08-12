@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Reflection;
-
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Http.RequestBuilders;
@@ -43,8 +41,12 @@ public sealed class HttpClientDispatcherFactory
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        HttpClientAttribute attribute = ResolveAttribute(request);
-        List<IHttpClientRequestBuilder> builders = ResolveRequestBuilders(request);
+        HttpClientAttribute attribute = Options
+            .ResolveHttpClientAttribute(request);
+
+        IReadOnlyList<IHttpClientRequestBuilder> builders = Options
+            .ResolveRequestBuilders(request);
+
         HttpClientRequestContext context = new(
             attribute,
             request,
@@ -54,47 +56,10 @@ public sealed class HttpClientDispatcherFactory
         foreach (IHttpClientRequestBuilder builder in builders
             .OrderBy(o => o.Order))
         {
-            if (builder.CanBuild(request.GetType()))
-            {
-                builder.Build(context);
-            }
+            builder.Build(context);
         }
 
         return Task.FromResult(context.RequestMessage);
-
-        HttpClientAttribute ResolveAttribute(IHttpClientRequest request)
-        {
-            if (request is IHttpClientAttributeProvider attributeProvider)
-            {
-                return attributeProvider.Build(Options.ServiceProvider);
-            }
-
-            return request!
-                .GetType()
-                .GetCustomAttribute<HttpClientAttribute>()
-               ?? throw new ArgumentNullException(
-                   $"{request.GetType().Name} must be decorated " +
-                   $"with {nameof(HttpClientAttribute)} " +
-                   $"attribute or implement " +
-                   $"{nameof(IHttpClientAttributeProvider)} interface.");
-        }
-
-        List<IHttpClientRequestBuilder> ResolveRequestBuilders(
-            IHttpClientRequest request)
-        {
-            List<IHttpClientRequestBuilder> types = Options
-                .RequestBuilders
-                .Where(x => x.CanBuild(request.GetType()))
-                .ToList();
-
-            //// add the HttpRequestMessage start builder
-            //types.Add(Options.GetRequestBuilderFor<IHttpRequest>());
-
-            //// add the HttpRequestMessage complete builder
-            //types.Add(Options.GetRequestBuilderFor<IHttpRequestComplete>());
-
-            return types;
-        }
     }
 
     ///<inheritdoc/>
