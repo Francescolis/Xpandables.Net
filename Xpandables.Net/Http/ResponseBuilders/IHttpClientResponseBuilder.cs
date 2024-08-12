@@ -19,8 +19,7 @@ using System.Net;
 namespace Xpandables.Net.Http.ResponseBuilders;
 
 /// <summary>
-/// Defines the base contract for building the <see cref="HttpClientResponse"/> 
-/// response from the <see cref="HttpResponseMessage"/>.
+/// Defines the base contract for building the <see cref="HttpClientResponse"/>. 
 /// </summary>
 public interface IHttpClientResponseBuilder
 {
@@ -39,25 +38,13 @@ public interface IHttpClientResponseBuilder
     /// specified request; otherwise, <see langword="false"/>.</returns>
     /// <param name="targetStatusCode">The status code of the response.</param>
     bool CanBuild(Type targetType, HttpStatusCode targetStatusCode);
-
-    /// <summary>
-    /// Builds a response of <see cref="HttpClientResponse"/> type.
-    /// </summary>
-    /// <param name="context">The response context to act on.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The built response.</returns>
-    Task<object> BuildAsync(
-        HttpClientResponseContext context,
-        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
 /// Defines the base contract for building the <see cref="HttpClientResponse"/> 
 /// response from the <see cref="HttpResponseMessage"/>.
 /// </summary>
-public interface IHttpClientResponseBuilder<TResponse> :
-    IHttpClientResponseBuilder
-    where TResponse : HttpClientResponse
+public interface IHttpClientResponseResponseBuilder : IHttpClientResponseBuilder
 {
     /// <summary>
     /// Builds a response of <see cref="HttpClientResponse"/> type.
@@ -65,17 +52,45 @@ public interface IHttpClientResponseBuilder<TResponse> :
     /// <param name="context">The response context to act on.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The built response.</returns>
-    new Task<TResponse> BuildAsync(
+    Task<HttpClientResponse> BuildAsync(
         HttpClientResponseContext context,
         CancellationToken cancellationToken = default);
+}
 
-    async Task<object> IHttpClientResponseBuilder.BuildAsync(
+/// <summary>
+/// Defines the base contract for building the 
+/// <see cref="HttpClientResponse{TResult}"/> response from the 
+/// <see cref="HttpResponseMessage"/>.
+/// </summary>
+public interface IHttpClientResponseResultBuilder : IHttpClientResponseBuilder
+{
+    /// <summary>
+    /// Builds a response of <see cref="HttpClientResponse"/> type.
+    /// </summary>
+    /// <param name="context">The response context to act on.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The built response.</returns>
+    Task<HttpClientResponse<TResult>> BuildAsync<TResult>(
+
         HttpClientResponseContext context,
-        CancellationToken cancellationToken)
-    {
-        TResponse response = await BuildAsync(context, cancellationToken)
-            .ConfigureAwait(false);
+        CancellationToken cancellationToken = default);
+}
 
-        return response;
-    }
+///<summary>
+/// Defines the base contract for building the 
+/// <see cref="HttpClientResponse{IAsyncEnumerable}"/> response from the 
+/// <see cref="HttpResponseMessage"/> where TResponse is 
+/// <see cref="IAsyncEnumerable{T}"/>.
+/// </summary>
+public interface IHttpClientResponseAsyncResultBuilder : IHttpClientResponseBuilder
+{
+    /// <summary>
+    /// Builds a response of <see cref="HttpClientResponse"/> type.
+    /// </summary>
+    /// <param name="context">The response context to act on.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The built response.</returns>
+    Task<HttpClientResponse<IAsyncEnumerable<TResult>>> BuildAsync<TResult>(
+        HttpClientResponseContext context,
+        CancellationToken cancellationToken = default);
 }

@@ -24,23 +24,23 @@ namespace Xpandables.Net.Http.ResponseBuilders;
 /// Builds the failure response from the <see cref="HttpRequestMessage"/>
 /// of an <see cref="IAsyncEnumerable{T}"/> of specific type.
 /// </summary>
-/// <typeparam name="TResult">Type of the result.</typeparam>
-public sealed class HttpClientResponseAsyncResultFailureBuilder<TResult>
-     : HttpClientResponseBuilder<HttpClientResponse<IAsyncEnumerable<TResult>>>
+public sealed class HttpClientResponseAsyncResultFailureBuilder
+     : HttpClientResponseBuilder, IHttpClientResponseAsyncResultBuilder
 {
     ///<inheritdoc/>
     public override Type Type
-        => typeof(HttpClientResponse<IAsyncEnumerable<TResult>>);
+        => typeof(IAsyncEnumerable<>);
 
     ///<inheritdoc/>
     public override bool CanBuild(
         Type targetType,
         HttpStatusCode targetStatusCode)
-        => Type == targetType
+        => targetType.IsGenericType
+            && Type == targetType.GetGenericTypeDefinition()
             && targetStatusCode.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public override async Task<HttpClientResponse<IAsyncEnumerable<TResult>>> BuildAsync(
+    public async Task<HttpClientResponse<IAsyncEnumerable<TResult>>> BuildAsync<TResult>(
         HttpClientResponseContext context,
         CancellationToken cancellationToken = default)
     {

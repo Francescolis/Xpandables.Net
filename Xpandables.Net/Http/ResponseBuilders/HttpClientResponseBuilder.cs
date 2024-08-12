@@ -22,17 +22,10 @@ namespace Xpandables.Net.Http.ResponseBuilders;
 /// <summary>
 /// Bas class to build the response from the <see cref="HttpResponseMessage"/>.
 /// </summary>
-public abstract class HttpClientResponseBuilder<TResponse> :
-    IHttpClientResponseBuilder<TResponse>
-    where TResponse : HttpClientResponse
+public abstract class HttpClientResponseBuilder : IHttpClientResponseBuilder
 {
     /// <inheritdoc/>
     public abstract Type Type { get; }
-
-    /// <inheritdoc/>
-    public abstract Task<TResponse> BuildAsync(
-        HttpClientResponseContext context,
-        CancellationToken cancellationToken = default);
 
     /// <inheritdoc/>
     public abstract bool CanBuild(

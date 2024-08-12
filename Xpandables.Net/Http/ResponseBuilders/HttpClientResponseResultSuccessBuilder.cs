@@ -26,23 +26,22 @@ namespace Xpandables.Net.Http.ResponseBuilders;
 /// Builds the success response of <see cref="HttpClientResponse{TResult}"/>
 /// type with a specific type result.
 /// </summary>
-/// <typeparam name="TResult">Type of the result.</typeparam>
-public sealed class HttpClientResponseResultSuccessBuilder<TResult>
-    : HttpClientResponseBuilder<HttpClientResponse<TResult>>
-    where TResult : notnull
+public sealed class HttpClientResponseResultSuccessBuilder
+    : HttpClientResponseBuilder, IHttpClientResponseResultBuilder
 {
     ///<inheritdoc/>
-    public override Type Type => typeof(HttpClientResponse<TResult>);
+    public override Type Type => typeof(HttpClientResponse<>);
 
     ///<inheritdoc/>
     public override bool CanBuild(
         Type targetType,
         HttpStatusCode targetStatusCode)
-        => Type == targetType
+        => targetType.IsGenericType
+            && Type == targetType.GetGenericTypeDefinition()
             && targetStatusCode.IsSuccessStatusCode();
 
     ///<inheritdoc/>
-    public override async Task<HttpClientResponse<TResult>> BuildAsync(
+    public async Task<HttpClientResponse<TResult>> BuildAsync<TResult>(
         HttpClientResponseContext context,
         CancellationToken cancellationToken = default)
     {

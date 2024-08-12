@@ -231,10 +231,14 @@ public static class TypeExtensions
         ArgumentNullException.ThrowIfNull(interfaceType);
 
         return interfaceType.IsGenericType
-            ? type.GetInterfaces()
-            .Any(i => i.IsGenericType
-                && i.GetGenericTypeDefinition()
-                    == interfaceType.GetGenericTypeDefinition())
+            ? !type.IsInterface
+               ? type.GetInterfaces()
+                .Any(i => i.IsGenericType
+                    && i.GetGenericTypeDefinition()
+                        == interfaceType.GetGenericTypeDefinition())
+                : type.IsGenericType
+                    && type.GetGenericTypeDefinition()
+                        == interfaceType.GetGenericTypeDefinition()
             : interfaceType.IsAssignableFrom(type);
     }
 

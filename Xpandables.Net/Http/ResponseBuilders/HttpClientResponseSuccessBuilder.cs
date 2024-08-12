@@ -25,7 +25,7 @@ namespace Xpandables.Net.Http.ResponseBuilders;
 /// Builds the success response of <see cref="HttpClientResponse"/> type.
 /// </summary>
 public sealed class HttpClientResponseSuccessBuilder :
-    HttpClientResponseBuilder<HttpClientResponse>
+    HttpClientResponseBuilder, IHttpClientResponseResponseBuilder
 {
     ///<inheritdoc/>
     public override Type Type => typeof(HttpClientResponse);
@@ -38,7 +38,7 @@ public sealed class HttpClientResponseSuccessBuilder :
             && targetStatusCode.IsSuccessStatusCode();
 
     ///<inheritdoc/>
-    public async override Task<HttpClientResponse> BuildAsync(
+    public async Task<HttpClientResponse> BuildAsync(
         HttpClientResponseContext context,
         CancellationToken cancellationToken = default)
     {

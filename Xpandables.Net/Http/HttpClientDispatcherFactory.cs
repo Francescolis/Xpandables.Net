@@ -69,11 +69,11 @@ public sealed class HttpClientDispatcherFactory
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        IHttpClientResponseBuilder<HttpClientResponse> builder
-            = Options.GetResponseBuilderFor<HttpClientResponse>(
-                typeof(HttpClientResponse),
+        IHttpClientResponseResponseBuilder builder
+            = Options
+                .GetResponseBuilderFor<HttpClientResponse>(
                 response.StatusCode)
-            .AsRequired<IHttpClientResponseBuilder<HttpClientResponse>>();
+            .AsRequired<IHttpClientResponseResponseBuilder>();
 
         HttpClientResponseContext context = new(
             response,
@@ -92,18 +92,19 @@ public sealed class HttpClientDispatcherFactory
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        IHttpClientResponseBuilder<HttpClientResponse<TResult>> builder
-            = Options.GetResponseBuilderFor<TResult>(
-                typeof(HttpClientResponse<TResult>),
-                response.StatusCode)
-            .AsRequired<IHttpClientResponseBuilder<HttpClientResponse<TResult>>>();
+        IHttpClientResponseResultBuilder builder
+            = Options
+                .GetResponseBuilderFor(
+                    typeof(HttpClientResponse<>),
+                    response.StatusCode)
+                .AsRequired<IHttpClientResponseResultBuilder>();
 
         HttpClientResponseContext context = new(
             response,
             options.Value.SerializerOptions);
 
         return await builder
-            .BuildAsync(context, cancellationToken)
+            .BuildAsync<TResult>(context, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -115,18 +116,19 @@ public sealed class HttpClientDispatcherFactory
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        IHttpClientResponseBuilder<HttpClientResponse<IAsyncEnumerable<TResult>>> builder
-             = Options.GetResponseBuilderFor<TResult>(
-                 typeof(HttpClientResponse<IAsyncEnumerable<TResult>>),
+        IHttpClientResponseAsyncResultBuilder builder
+             = Options
+                .GetResponseBuilderFor(
+                 typeof(IAsyncEnumerable<>),
                  response.StatusCode)
-             .AsRequired<IHttpClientResponseBuilder<HttpClientResponse<IAsyncEnumerable<TResult>>>>();
+             .AsRequired<IHttpClientResponseAsyncResultBuilder>();
 
         HttpClientResponseContext context = new(
             response,
             options.Value.SerializerOptions);
 
         return await builder
-            .BuildAsync(context, cancellationToken)
+            .BuildAsync<TResult>(context, cancellationToken)
             .ConfigureAwait(false);
     }
 }
