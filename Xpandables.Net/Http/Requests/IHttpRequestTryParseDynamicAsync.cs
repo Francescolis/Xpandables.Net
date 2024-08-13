@@ -27,7 +27,7 @@ using Xpandables.Net.Primitives.Converters;
 namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// For route, query and header custom binding sources 
+/// For route, request and header custom binding sources 
 /// in minimal Api for asynchronous processes, with a dynamic context.
 /// </summary>
 /// <typeparam name="TRequest">The type of the custom binding parameter
@@ -97,7 +97,7 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
     }
 
     /// <summary>
-    /// For query binding sources in minimal Api for asynchronous processes, 
+    /// For request binding sources in minimal Api for asynchronous processes, 
     /// </summary>
 #pragma warning disable CA1034 // Nested types should not be visible
     public interface IQueryRequest
@@ -106,7 +106,7 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
         /// <summary>
         /// The method discovered by 
         /// <see langword="RequestDelegateFactory"/> on types used 
-        /// as parameters of query handler delegates to support custom binding.
+        /// as parameters of request handler delegates to support custom binding.
         /// </summary>
         /// <param name="context">The <see langword="HttpContext"/> 
         /// instance.</param>

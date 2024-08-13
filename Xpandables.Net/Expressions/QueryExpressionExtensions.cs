@@ -26,7 +26,7 @@ namespace Xpandables.Net.Expressions;
 public static class QueryExpressionExtensions
 {
     /// <summary>
-    /// Applies the AND operator to both query expressions and returns a new one.
+    /// Applies the AND operator to both request expressions and returns a new one.
     /// </summary>
     /// <param name="left">The expression left side.</param>
     /// <param name="right">The expression right side.</param>
@@ -41,7 +41,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionAnd<TSource, TResult>(left, right);
 
     /// <summary>
-    /// Applies the AND operator to both query expressions and returns a new one.
+    /// Applies the AND operator to both request expressions and returns a new one.
     /// </summary>
     /// <param name="left">The expression left side.</param>
     /// <param name="right">The expression right side.</param>
@@ -56,7 +56,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionAnd<TSource, TResult>(left, right);
 
     /// <summary>
-    /// Applies the OR operator to both query expressions and returns a new one.
+    /// Applies the OR operator to both request expressions and returns a new one.
     /// </summary>
     /// <param name="left">The expression left side.</param>
     /// <param name="right">The expression right side.</param>
@@ -71,7 +71,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionOr<TSource, TResult>(left, right);
 
     /// <summary>
-    /// Applies the OR operator to both query expressions and returns a new one.
+    /// Applies the OR operator to both request expressions and returns a new one.
     /// </summary>
     /// <param name="left">The expression left side.</param>
     /// <param name="right">The expression right side.</param>
@@ -86,7 +86,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionOr<TSource, TResult>(left, right);
 
     /// <summary>
-    /// Applies the NOT operator to the query expression and returns a new one.
+    /// Applies the NOT operator to the request expression and returns a new one.
     /// </summary>
     /// <param name="queryExpression">The expression left side.</param>
     /// <returns><see cref="QueryExpression{TSource, TResult}"/> object</returns>
@@ -96,7 +96,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionNot<TSource, TResult>(queryExpression);
 
     /// <summary>
-    /// Applies the NOT operator to the query expression and returns a new one.
+    /// Applies the NOT operator to the request expression and returns a new one.
     /// </summary>
     /// <param name="queryExpression">The expression left side.</param>
     /// <returns><see cref="QueryExpression{TSource, TResult}"/> object</returns>
@@ -106,7 +106,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionNot<TSource, TResult>(queryExpression);
 
     /// <summary>
-    /// Applies the AND operator to both query expressions and returns a new one.
+    /// Applies the AND operator to both request expressions and returns a new one.
     /// </summary>
     /// <param name="left">The expression left side.</param>
     /// <param name="right">The expression right side.</param>
@@ -121,7 +121,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionAnd<TSource>(left, right);
 
     /// <summary>
-    /// Applies the AND operator to both query expressions and returns a new one.
+    /// Applies the AND operator to both request expressions and returns a new one.
     /// </summary>
     /// <param name="left">The expression left side.</param>
     /// <param name="right">The expression right side.</param>
@@ -136,7 +136,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionAnd<TSource>(left, right);
 
     /// <summary>
-    /// Applies the OR operator to both query expressions and returns a new one.
+    /// Applies the OR operator to both request expressions and returns a new one.
     /// </summary>
     /// <param name="left">The expression left side.</param>
     /// <param name="right">The expression right side.</param>
@@ -151,7 +151,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionOr<TSource>(left, right);
 
     /// <summary>
-    /// Applies the OR operator to both query expressions and returns a new one.
+    /// Applies the OR operator to both request expressions and returns a new one.
     /// </summary>
     /// <param name="left">The expression left side.</param>
     /// <param name="right">The expression right side.</param>
@@ -166,7 +166,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionOr<TSource>(left, right);
 
     /// <summary>
-    /// Applies the NOT operator to the query expression and returns a new one.
+    /// Applies the NOT operator to the request expression and returns a new one.
     /// </summary>
     /// <param name="queryExpression">The expression left side.</param>
     /// <returns><see cref="QueryExpression{TSource, TResult}"/> object</returns>
@@ -176,7 +176,7 @@ public static class QueryExpressionExtensions
         => new QueryExpressionNot<TSource>(queryExpression);
 
     /// <summary>
-    /// Applies the NOT operator to the query expression and returns a new one.
+    /// Applies the NOT operator to the request expression and returns a new one.
     /// </summary>
     /// <param name="queryExpression">The expression left side.</param>
     /// <returns><see cref="QueryExpression{TSource, TResult}"/> object</returns>

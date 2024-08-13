@@ -15,21 +15,22 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Commands;
+namespace Xpandables.Net.Distribution.Internals;
 
-internal sealed class QueryHandlerWrapper<TQuery, TResult>(
-    IQueryHandler<TQuery, TResult> decoratee)
-    : IQueryHandlerWrapper<TResult>
-    where TQuery : notnull, IQuery<TResult>
+internal sealed class RequestAggregateHandlerWrapper<TRequest, TAggregate>(
+    IRequestAggregateHandler<TRequest, TAggregate> decoratee)
+    : IRequestAggregateHandlerWrapper<TAggregate>
+    where TAggregate : class, IAggregate
+    where TRequest : class, IRequestAggregate<TAggregate>
 {
-    public async Task<IOperationResult<TResult>> HandleAsync(
-        IQuery<TResult> query,
+    public async Task<IOperationResult> HandleAsync(
+        IRequestAggregate<TAggregate> request,
         CancellationToken cancellationToken = default)
         => await decoratee.HandleAsync(
-            (TQuery)query,
+            (TRequest)request,
             cancellationToken)
         .ConfigureAwait(false);
 }

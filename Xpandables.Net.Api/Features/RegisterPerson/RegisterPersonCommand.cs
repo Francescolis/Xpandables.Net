@@ -17,13 +17,13 @@
 ********************************************************************************/
 using Xpandables.Net.Api.Domains;
 using Xpandables.Net.Api.Primitives;
-using Xpandables.Net.Commands;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Api.Features.RegisterPerson;
 
 // we are using the decider pattern
-public sealed record RegisterPersonCommand : Command<Person>, IValidateDecorator
+public sealed record RegisterPersonCommand : RequestAggregate<Person>, IValidateDecorator
 {
     public required FirstName FirstName { get; init; }
     public required LastName LastName { get; init; }

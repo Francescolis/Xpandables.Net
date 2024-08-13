@@ -23,8 +23,8 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -42,19 +42,19 @@ public sealed class AggregateUnitTest
         IServiceCollection serviceDescriptors = new ServiceCollection()
             .AddLogging()
             .Configure<EventOptions>(EventOptions.Default)
-            .AddXAggregateCommandHandlers()
-            .AddXCommandQueryHandlers(options =>
+            .AddXRequestAggregateHandlers()
+            .AddXAllRequestHandlers(options =>
                 options
                 .UseOperationFinalizer())
             .AddXEventHandlers()
-            .AddXDispatcher()
+            .AddXDistributor()
             .AddXAggregateAccessor()
             .AddXRepositoryEvent<RepositoryPerson>()
             .AddXOperationResultFinalizer()
             .AddXEventPublisher()
             .AddXEventDuplicateDecorator()
             .AddXEventStore()
-            .AddXAggregateCommandDecorator();
+            .AddXRequestAggregateHandlerDecorator();
 
         IServiceProvider serviceProvider = serviceDescriptors
             .BuildServiceProvider(
@@ -68,8 +68,8 @@ public sealed class AggregateUnitTest
         Guid personId = Guid.NewGuid();
 
         // get the dispatcher
-        IDispatcher dispatcher = serviceProvider
-            .GetRequiredService<IDispatcher>();
+        IDistributor dispatcher = serviceProvider
+            .GetRequiredService<IDistributor>();
 
         // create person
         CreatePersonRequestCommand createCommand =
@@ -150,13 +150,13 @@ public sealed class AggregateUnitTest
 public sealed record CreatePersonRequestCommand(
     Guid AggregateId,
     string FirstName,
-    string LastName) : Command<Person>(AggregateId)
+    string LastName) : RequestAggregate<Person>(AggregateId)
 {
     public override bool ContinueWhenNotFound => true;
 }
 
 public sealed class CreatePersonRequestCommandHandler :
-    ICommandHandler<CreatePersonRequestCommand, Person>
+    IRequestAggregateHandler<CreatePersonRequestCommand, Person>
 {
     public Task<IOperationResult> HandleAsync(
         CreatePersonRequestCommand command,
@@ -181,10 +181,10 @@ public sealed class CreatePersonRequestCommandHandler :
 }
 
 public sealed record SendContactRequestCommand(
-    Guid AggregateId, Guid ReceiverId) : Command<Person>(AggregateId);
+    Guid AggregateId, Guid ReceiverId) : RequestAggregate<Person>(AggregateId);
 
 public sealed class SendContactRequestAggregateCommandHandler :
-    ICommandHandler<SendContactRequestCommand, Person>
+    IRequestAggregateHandler<SendContactRequestCommand, Person>
 {
     public Task<IOperationResult> HandleAsync(
         SendContactRequestCommand command,

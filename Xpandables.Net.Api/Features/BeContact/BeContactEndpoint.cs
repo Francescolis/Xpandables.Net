@@ -17,8 +17,8 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Features.BeContact;
@@ -31,7 +31,7 @@ public sealed class BeContactEndpoint : IEndpointRoute
                async (
                    [FromRoute] Guid keyId,
                    [FromBody] BeContactRequest request,
-                   IDispatcher dispatcher,
+                   IDistributor dispatcher,
                    CancellationToken cancellationToken) =>
                {
                    BeContactCommand command = new()

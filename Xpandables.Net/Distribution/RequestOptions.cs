@@ -15,71 +15,71 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Commands;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
+using Xpandables.Net.Transactions;
 using Xpandables.Net.Visitors;
 
-namespace Xpandables.Net.DependencyInjection;
+namespace Xpandables.Net.Distribution;
 
 /// <summary>
-/// Defines options to apply decorators to handlers.
+/// Defines options to apply decorators to request handlers.
 /// </summary>
-public sealed record class CommandOptions
+public sealed record class RequestOptions
 {
     /// <summary>
-    /// Enables Validator behavior to commands/queries 
+    /// Enables Validator behavior to requests 
     /// that are decorated with the <see cref="IValidateDecorator"/> interface.
     /// </summary>
-    public CommandOptions UseValidator()
+    public RequestOptions UseValidator()
     {
         IsValidatorEnabled = true;
         return this;
     }
 
     /// <summary>
-    /// Enables visitor behavior to commands/queries that 
+    /// Enables visitor behavior to requests that 
     /// implement the <see cref="IVisitable{TVisitable}"/> interface.
     /// </summary>
-    public CommandOptions UseVisitor()
+    public RequestOptions UseVisitor()
     {
         IsVisitorEnabled = true;
         return this;
     }
 
     /// <summary>
-    /// Enables persistence behavior to commands 
+    /// Enables persistence behavior to requests 
     /// that are decorated with the <see cref="IPersistenceDecorator"/> 
     /// interface.
     /// </summary>
-    public CommandOptions UsePersistence()
+    public RequestOptions UsePersistence()
     {
         IsPersistenceEnabled = true;
         return this;
     }
 
     /// <summary>
-    /// Enables operation result finalizer behavior to commands/queries 
+    /// Enables operation result finalizer behavior to requests/queries 
     /// that are decorated with the 
     /// <see cref="IOperationFinalizerDecorator"/> interface.
     /// </summary>
     /// <remarks>The target implementation handler(s) must reference 
     /// the <see cref="IOperationFinalizer"/> in order to configure 
     /// the result.</remarks>
-    public CommandOptions UseOperationFinalizer()
+    public RequestOptions UseOperationFinalizer()
     {
         IsOperationFinalizerEnabled = true;
         return this;
     }
 
     /// <summary>
-    /// Enables transaction behavior to commands that are decorated 
+    /// Enables transaction behavior to requests that are decorated 
     /// with the <see cref="ITransactionDecorator"/> interface.
     /// You must register a definition for
-    /// <see cref="ICommandTransactional"/>
+    /// <see cref="ITransactional"/>
     /// that provides with the transactional behavior.
     /// </summary>
-    public CommandOptions UseTransaction()
+    public RequestOptions UseTransaction()
     {
         IsTransactionEnabled = true;
         return this;

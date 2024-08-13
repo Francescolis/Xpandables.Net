@@ -37,9 +37,9 @@ public interface IInterceptorDecorator { }
 
 
 /// <summary>
-/// Defines a marker interface that allows the command/query class 
+/// Defines a marker interface that allows the request/request class 
 /// to add correlation decorator context result after a control flow.
-/// In the calls handling the query/command, using the
+/// In the calls handling the request/request, using the
 /// <see cref="IOperationFinalizer"/>
 /// </summary>
 public interface IOperationFinalizerDecorator { }
@@ -51,14 +51,14 @@ public interface IOperationFinalizerDecorator { }
 public interface IPersistenceDecorator { }
 
 /// <summary>
-/// A marker interface that allows the command handler
+/// A marker interface that allows the request handler
 /// class implementation to be decorated with transaction behavior 
 /// according to the decorated class type.
 /// </summary>
 public interface ITransactionDecorator { }
 
 /// <summary>
-/// A marker interface that allows the command/query/request class to 
+/// A marker interface that allows the request/request/request class to 
 /// be decorated with the validation behavior according to the class type.
 /// </summary>
 public interface IValidateDecorator
@@ -66,11 +66,26 @@ public interface IValidateDecorator
 }
 
 /// <summary>
-/// A marker interface that allows the command/query/request class 
+/// A marker interface that allows the request/request/request class 
 /// to be decorated with the visitor behavior according to the class type.
 /// </summary>
 public interface IVisitorDecorator
 {
+}
+
+/// <summary>
+/// Defines a marker interface for the request aggregate decorator.
+/// </summary>
+public interface IAggregateDecorator
+{
+    /// <summary>
+    /// Determines whether the aspect/decorator should continue when the aggregate 
+    /// is not found.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.
+    /// Usefull when you are creating
+    /// a new aggregate.</remarks>
+    bool ContinueWhenNotFound { get; }
 }
 
 #pragma warning restore CA1040 // Avoid empty interfaces

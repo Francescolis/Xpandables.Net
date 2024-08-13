@@ -15,7 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Commands;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
@@ -26,43 +26,43 @@ namespace Xpandables.Net.Decorators;
 
 /// <summary>
 /// This class allows the application author to add transaction 
-/// support to command control flow.
-/// The target command should implement the 
+/// support to request control flow.
+/// The target request should implement the 
 /// <see cref="ITransactionDecorator"/> in order to activate the behavior.
 /// </summary>
-/// <typeparam name="TCommand">Type of the command.</typeparam>
+/// <typeparam name="TRequest">Type of the request.</typeparam>
 /// <remarks>
 /// Initializes a new instance of the 
-/// <see cref="TransactionCommandDecorator{TCommand}"/> class
+/// <see cref="RequestTransactionHandlerDecorator{TRequest}"/> class
 /// with the handler to be decorated and the transaction scope provider.
 /// </remarks>
-/// <param name="decoratee">The decorated command handler.</param>
+/// <param name="decoratee">The decorated request handler.</param>
 /// <param name="transactional">The transaction process to use.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="decoratee"/> is null.</exception>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="transactional"/> is null.</exception>
-public sealed class TransactionCommandDecorator<TCommand>(
-    ICommandHandler<TCommand> decoratee,
-    ICommandTransactional transactional) :
-    ICommandHandler<TCommand>, IDecorator
-    where TCommand : notnull, ICommand, ITransactionDecorator
+public sealed class RequestTransactionHandlerDecorator<TRequest>(
+    IRequestHandler<TRequest> decoratee,
+    ITransactional transactional) :
+    IRequestHandler<TRequest>, IDecorator
+    where TRequest : notnull, IRequest, ITransactionDecorator
 {
     /// <summary>
-    /// Asynchronously handles the specified command applying 
+    /// Asynchronously handles the specified request applying 
     /// a transaction scope if available and if there is no error.
     /// </summary>
-    /// <param name="command">The command instance to act on.</param>
+    /// <param name="request">The request instance to act on.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="command" /> is null.</exception>
+    /// <paramref name="request" /> is null.</exception>
     /// <exception cref="OperationResultException">The operation failed. 
     /// See inner exception.</exception>
     /// <returns>A task that represents an object 
     /// of <see cref="IOperationResult"/>.</returns>
     public async Task<IOperationResult> HandleAsync(
-        TCommand command,
+        TRequest request,
         CancellationToken cancellationToken = default)
     {
         try
@@ -76,7 +76,7 @@ public sealed class TransactionCommandDecorator<TCommand>(
             try
             {
                 disposable.Result = await decoratee
-                    .HandleAsync(command, cancellationToken)
+                    .HandleAsync(request, cancellationToken)
                     .ConfigureAwait(false);
 
                 return disposable.Result;
@@ -103,7 +103,7 @@ public sealed class TransactionCommandDecorator<TCommand>(
             return OperationResults
                 .InternalError()
                 .WithDetail(I18nXpandables.ActionSpecifiedFailedSeeException
-                    .StringFormat(nameof(TransactionCommandDecorator<TCommand>)))
+                    .StringFormat(nameof(RequestTransactionHandlerDecorator<TRequest>)))
                 .WithException(exception)
                 .Build();
         }

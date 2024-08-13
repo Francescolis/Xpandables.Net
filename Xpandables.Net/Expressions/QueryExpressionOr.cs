@@ -33,11 +33,11 @@ public record class QueryExpressionOr<TSource, TResult>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionOr{TSource, TResult}"/> class with the query 
+    /// <see cref="QueryExpressionOr{TSource, TResult}"/> class with the request 
     /// expressions for composition.
     /// </summary>
-    /// <param name="left">The query expression for the left side.</param>
-    /// <param name="right">The query expression for the right side.</param>
+    /// <param name="left">The request expression for the left side.</param>
+    /// <param name="right">The request expression for the right side.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="left"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The 
@@ -55,7 +55,7 @@ public record class QueryExpressionOr<TSource, TResult>
     /// <see cref="QueryExpressionOr{TSource, TResult}"/> class with the 
     /// expressions for composition.
     /// </summary>
-    /// <param name="left">The query expression for the left side.</param>
+    /// <param name="left">The request expression for the left side.</param>
     /// <param name="rightExpression">The expression for the right side.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="left"/> is null.</exception>
@@ -73,7 +73,7 @@ public record class QueryExpressionOr<TSource, TResult>
 
     /// <summary>
     /// Returns the expression to be used for 
-    /// the clause <see langword="Where"/> in a query.
+    /// the clause <see langword="Where"/> in a request.
     /// </summary>
     public override Expression<Func<TSource, TResult>> GetExpression()
         => _cache ??= QueryExpressionFactory
@@ -96,11 +96,11 @@ public sealed record class QueryExpressionOr<TSource>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionOr{TSource}"/> class with the query 
+    /// <see cref="QueryExpressionOr{TSource}"/> class with the request 
     /// expressions for composition.
     /// </summary>
-    /// <param name="left">The query expression for the left side.</param>
-    /// <param name="right">The query expression for the right side.</param>
+    /// <param name="left">The request expression for the left side.</param>
+    /// <param name="right">The request expression for the right side.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="left"/> is null.</exception>
     /// <exception cref="ArgumentNullException">The 
@@ -118,7 +118,7 @@ public sealed record class QueryExpressionOr<TSource>
     /// <see cref="QueryExpressionOr{TSource}"/> class with the expressions 
     /// for composition.
     /// </summary>
-    /// <param name="left">The query expression for the left side.</param>
+    /// <param name="left">The request expression for the left side.</param>
     /// <param name="rightExpression">The expression for the right side.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="left"/> is null.</exception>
@@ -136,7 +136,7 @@ public sealed record class QueryExpressionOr<TSource>
 
     /// <summary>
     /// Returns the expression to be used for 
-    /// the clause <see langword="Where"/> in a query.
+    /// the clause <see langword="Where"/> in a request.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
         => _cache ??= QueryExpressionFactory

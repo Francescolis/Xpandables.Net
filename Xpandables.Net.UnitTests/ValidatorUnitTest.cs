@@ -21,9 +21,9 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Commands;
 using Xpandables.Net.Decorators;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Validators;
@@ -50,8 +50,8 @@ public sealed class ValidatorUnitTest
         ICompositeValidator<Login> validators = new CompositeValidator<Login>(
             [new ValidatorThrowsValidationException()]);
 
-        ICommandHandler<Login> commandHandler = new HandleLogin();
-        ValidatorCommandDecorator<Login> validatorDecorator =
+        IRequestHandler<Login> commandHandler = new HandleLogin();
+        RequestValidatorHandlerDecorator<Login> validatorDecorator =
             new(commandHandler, validators);
         Login login = new(userName, password);
         Func<Task<IOperationResult>> result = async ()
@@ -68,8 +68,8 @@ public sealed class ValidatorUnitTest
         ICompositeValidator<Login> validators = new CompositeValidator<Login>(
             [new ValidatorReturnsOperationResult()]);
 
-        ICommandHandler<Login> commandHandler = new HandleLogin();
-        ValidatorCommandDecorator<Login> validatorDecorator =
+        IRequestHandler<Login> commandHandler = new HandleLogin();
+        RequestValidatorHandlerDecorator<Login> validatorDecorator =
             new(commandHandler, validators);
         Login login = new(userName, password);
         IOperationResult result = await validatorDecorator.HandleAsync(login);
@@ -87,9 +87,9 @@ public sealed class ValidatorUnitTest
     }
 
     public readonly record struct Login(string UserLogin, string UserPassword)
-        : ICommand, IValidateDecorator;
+        : IRequest, IValidateDecorator;
 
-    public sealed class HandleLogin : ICommandHandler<Login>
+    public sealed class HandleLogin : IRequestHandler<Login>
     {
         public Task<IOperationResult> HandleAsync(
             Login command,

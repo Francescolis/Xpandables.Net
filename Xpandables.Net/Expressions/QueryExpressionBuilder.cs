@@ -45,7 +45,7 @@ public sealed record class QueryExpressionBuilder<TSource, TResult>
 
     /// <summary>
     /// Returns the expression to be used for 
-    /// the clause <see langword="Where"/> in a query.
+    /// the clause <see langword="Where"/> in a request.
     /// </summary>
     public override Expression<Func<TSource, TResult>> GetExpression()
         => _expression;
@@ -76,7 +76,7 @@ public sealed record class QueryExpressionBuilder<TSource>
 
     /// <summary>
     /// Returns the expression to be used for 
-    /// the clause <see langword="Where"/> in a query.
+    /// the clause <see langword="Where"/> in a request.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
         => _expression;

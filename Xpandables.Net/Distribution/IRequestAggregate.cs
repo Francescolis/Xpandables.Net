@@ -16,21 +16,26 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Operations;
+using Xpandables.Net.Optionals;
+using Xpandables.Net.Primitives;
 
-namespace Xpandables.Net.Commands;
+namespace Xpandables.Net.Distribution;
 
-internal sealed class CommandHandlerWrapper<TCommand, TAggregate>(
-    ICommandHandler<TCommand, TAggregate> decoratee)
-    : ICommandHandlerWrapper<TAggregate>
-    where TAggregate : class, IAggregate
-    where TCommand : class, ICommand<TAggregate>
+/// <summary>
+/// This interface is used as a marker for requests targeting aggregate. 
+/// It's used for implementing the Decider pattern. 
+/// </summary>
+public interface IRequestAggregate<TAggregate> : IAggregateDecorator
+    where TAggregate : IAggregate
 {
-    public async Task<IOperationResult> HandleAsync(
-        ICommand<TAggregate> command,
-        CancellationToken cancellationToken = default)
-        => await decoratee.HandleAsync(
-            (TCommand)command,
-            cancellationToken)
-        .ConfigureAwait(false);
+    /// <summary>
+    /// Gets or sets the aggregate instance.
+    /// </summary>
+    /// <remarks>This get populated by the aspect/decorator.</remarks>
+    Optional<TAggregate> Aggregate { get; set; }
+
+    /// <summary>
+    /// Gets the key aggretate identitifer
+    /// </summary>
+    Guid KeyId { get; }
 }

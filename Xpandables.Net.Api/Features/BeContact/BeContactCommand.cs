@@ -16,12 +16,12 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Api.Domains;
-using Xpandables.Net.Commands;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Api.Features.BeContact;
 
-public sealed record BeContactCommand : Command<Person>, IValidateDecorator
+public sealed record BeContactCommand : RequestAggregate<Person>, IValidateDecorator
 {
     public required ContactId ContactId { get; init; }
 }

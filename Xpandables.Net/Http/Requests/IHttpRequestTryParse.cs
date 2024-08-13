@@ -23,7 +23,7 @@ using Xpandables.Net.Primitives.Converters;
 namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// For route, query and header binding sources in minimal Api, 
+/// For route, request and header binding sources in minimal Api, 
 /// </summary>
 /// <typeparam name="TRequest">The type of the custom binding parameter
 /// .</typeparam>
@@ -35,7 +35,7 @@ public interface IHttpRequestTryParse<TRequest>
     /// handler delegates to support custom binding.
     /// </summary>
     /// <param name="value">The string value from the route, 
-    /// query and header.</param>
+    /// request and header.</param>
     /// <param name="provider">An instance of provider used to 
     /// control formatting.</param>
     /// <param name="result">An instance of <typeparamref name="TRequest"/> 

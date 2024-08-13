@@ -23,14 +23,14 @@ using static Xpandables.Net.Http.Requests.HttpClientParameters;
 namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// Provides with a method to retrieve the query 
-/// string content for query string Uri when using <see cref="Location.Query"/>.
+/// Provides with a method to retrieve the request 
+/// string content for request string Uri when using <see cref="Location.Query"/>.
 /// This can be combined with other locations.
 /// </summary>
 public interface IHttpRequestQueryString : IHttpRequest
 {
     /// <summary>
-    /// Returns the keys and values for the query string Uri.
+    /// Returns the keys and values for the request string Uri.
     /// </summary>
     IDictionary<string, string?>? GetQueryStringSource();
 }

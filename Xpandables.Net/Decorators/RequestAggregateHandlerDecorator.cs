@@ -15,74 +15,59 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Commands;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Decorators;
 
 /// <summary>
-/// Defines a marker interface for the command aggregate decorator.
-/// </summary>
-public interface ICommandAggregate
-{
-    /// <summary>
-    /// Determines whether the aspect should continue when the aggregate 
-    /// is not found.
-    /// </summary>
-    /// <remarks>The default value is <see langword="false"/>.
-    /// Usefull when you are creating
-    /// a new aggregate.</remarks>
-    bool ContinueWhenNotFound { get; }
-}
-
-/// <summary>
-/// This class represents a decorator that is used to intercept commands 
-/// targeting aggregates, by supplying the aggregate instance to the command.
+/// This class represents a decorator that is used to intercept requests 
+/// targeting aggregates, by supplying the aggregate instance to the request.
 /// </summary>
 /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
-/// <typeparam name="TCommand">The type of command.</typeparam>
-/// <param name="decoratee">The command handler to decorate.</param>
+/// <typeparam name="TRequest">The type of request.</typeparam>
+/// <param name="decoratee">The request handler to decorate.</param>
 /// <param name="aggregateStore">The aggregate store</param>
-public sealed class AggregateCommandDecorator<TCommand, TAggregate>(
-    ICommandHandler<TCommand, TAggregate> decoratee,
+public sealed class RequestAggregateHandlerDecorator<TRequest, TAggregate>(
+    IRequestAggregateHandler<TRequest, TAggregate> decoratee,
     IAggregateAccessor<TAggregate> aggregateStore) :
-    ICommandHandler<TCommand, TAggregate>, IDecorator
+    IRequestAggregateHandler<TRequest, TAggregate>, IDecorator
     where TAggregate : class, IAggregate
-    where TCommand : class, ICommand<TAggregate>, ICommandAggregate
+    where TRequest : class, IRequestAggregate<TAggregate>, IAggregateDecorator
 {
     ///<inheritdoc/>
     public async Task<IOperationResult> HandleAsync(
-        TCommand command,
+        TRequest request,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(request);
 
         IOperationResult<TAggregate> aggregateOperation = await aggregateStore
-            .PeekAsync(command.KeyId, cancellationToken)
+            .PeekAsync(request.KeyId, cancellationToken)
             .ConfigureAwait(false);
 
         if ((aggregateOperation.IsFailure
                && !aggregateOperation.IsNotFoundStatusCode())
                || (aggregateOperation.IsNotFoundStatusCode()
-                   && !command.ContinueWhenNotFound))
+                   && !request.ContinueWhenNotFound))
         {
             return aggregateOperation;
         }
 
         if (aggregateOperation.IsSuccess)
         {
-            command.Aggregate = aggregateOperation.Result;
+            request.Aggregate = aggregateOperation.Result;
         }
 
         IOperationResult decorateeOperation = await decoratee
-            .HandleAsync(command, cancellationToken)
+            .HandleAsync(request, cancellationToken)
             .ConfigureAwait(false);
 
-        if (command.Aggregate.IsNotEmpty)
+        if (request.Aggregate.IsNotEmpty)
         {
             if ((await aggregateStore
-                .AppendAsync(command.Aggregate.Value, cancellationToken)
+                .AppendAsync(request.Aggregate.Value, cancellationToken)
                 .ConfigureAwait(false)) is { IsFailure: true } appendOperation)
             {
                 return appendOperation;

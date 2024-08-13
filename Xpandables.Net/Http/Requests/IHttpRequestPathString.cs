@@ -24,7 +24,7 @@ namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// Provides with a method to retrieve the path string content 
-/// for query string Uri when using <see cref="Location.Path"/>.
+/// for request string Uri when using <see cref="Location.Path"/>.
 /// This can be combined with other locations.
 /// </summary>
 public interface IHttpRequestPathString : IHttpRequest

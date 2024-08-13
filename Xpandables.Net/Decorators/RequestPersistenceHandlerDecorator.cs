@@ -15,7 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Commands;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
@@ -25,73 +25,73 @@ namespace Xpandables.Net.Decorators;
 
 /// <summary>
 /// Represents a method signature to be used to apply 
-/// persistence behavior to a command task.
+/// persistence behavior to a request task.
 /// </summary>
 /// <param name="cancellationToken">A CancellationToken 
 /// to observe while waiting for the task to complete.</param>
 /// <returns>A task that represents an <see cref="IOperationResult"/>.</returns>
 /// <exception cref="InvalidOperationException">The persistence operation
 /// failed to execute.</exception>
-public delegate Task<IOperationResult> PersistenceCommandDelegate(
+public delegate Task<IOperationResult> PersistenceRequestDelegate(
     CancellationToken cancellationToken);
 
 /// <summary>
 /// This class allows the application author to add persistence 
-/// support to command control flow.
-/// The target command should implement the <see cref="IPersistenceDecorator"/>
+/// support to request control flow.
+/// The target request should implement the <see cref="IPersistenceDecorator"/>
 /// interface in order to activate the behavior.
-/// The class decorates the target command handler with an definition 
-/// of <see cref="PersistenceCommandDelegate"/> 
+/// The class decorates the target request handler with an definition 
+/// of <see cref="PersistenceRequestDelegate"/> 
 /// that get called after the main one in the same control flow only.
 /// </summary>
-/// <typeparam name="TCommand">Type of command.</typeparam>
+/// <typeparam name="TRequest">Type of request.</typeparam>
 /// <remarks>
 /// Initializes a new instance of the 
-/// <see cref="PersistenceCommandDecorator{TCommand}"/> class with
+/// <see cref="RequestPersistenceHandlerDecorator{TRequest}"/> class with
 /// the decorated handler and the unit of work to act on.
 /// </remarks>
-/// <param name="persistenceCommandDelegate">The persistence delegate 
+/// <param name="persistenceRequestDelegate">The persistence delegate 
 /// to apply persistence.</param>
-/// <param name="decoratee">The decorated command handler.</param>
+/// <param name="decoratee">The decorated request handler.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="decoratee"/> 
-/// or <paramref name="persistenceCommandDelegate"/>
+/// or <paramref name="persistenceRequestDelegate"/>
 /// is null.</exception>
-public sealed class PersistenceCommandDecorator<TCommand>(
-    ICommandHandler<TCommand> decoratee,
-    PersistenceCommandDelegate persistenceCommandDelegate)
-    : ICommandHandler<TCommand>, IDecorator
-    where TCommand : notnull, ICommand, IPersistenceDecorator
+public sealed class RequestPersistenceHandlerDecorator<TRequest>(
+    IRequestHandler<TRequest> decoratee,
+    PersistenceRequestDelegate persistenceRequestDelegate)
+    : IRequestHandler<TRequest>, IDecorator
+    where TRequest : notnull, IRequest, IPersistenceDecorator
 {
     /// <summary>
-    /// Asynchronously handles the specified command and persists 
+    /// Asynchronously handles the specified request and persists 
     /// changes to store if there is no exception or error.
     /// </summary>
-    /// <param name="command">The command instance to act on.</param>
+    /// <param name="request">The request instance to act on.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="command"/> is null.</exception>
+    /// <paramref name="request"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 
     /// See inner exception.</exception>
     /// <returns>A task that represents an 
     /// object of <see cref="IOperationResult"/>.</returns>
     public async Task<IOperationResult> HandleAsync(
-        TCommand command,
+        TRequest request,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            IOperationResult commandResult = await decoratee
-                .HandleAsync(command, cancellationToken)
+            IOperationResult requestResult = await decoratee
+                .HandleAsync(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return commandResult.IsFailure
-                ? commandResult
-                : await persistenceCommandDelegate(cancellationToken)
+            return requestResult.IsFailure
+                ? requestResult
+                : await persistenceRequestDelegate(cancellationToken)
                 .ConfigureAwait(false)
                     is { IsFailure: true } persistenceResult
                 ? persistenceResult
-                : commandResult;
+                : requestResult;
         }
         catch (OperationResultException resultException)
         {
@@ -103,7 +103,7 @@ public sealed class PersistenceCommandDecorator<TCommand>(
             return OperationResults
                 .InternalError()
                 .WithDetail(I18nXpandables.ActionSpecifiedFailedSeeException
-                    .StringFormat(nameof(PersistenceCommandDecorator<TCommand>)))
+                    .StringFormat(nameof(RequestPersistenceHandlerDecorator<TRequest>)))
                 .WithException(exception)
                 .Build();
         }

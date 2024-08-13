@@ -18,28 +18,32 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Commands;
+namespace Xpandables.Net.Distribution.Internals;
 
-internal sealed class Dispatcher(IServiceProvider serviceProvider)
-    : IDispatcher
+internal sealed class Distributor(IServiceProvider serviceProvider)
+    : IDistributor
 {
-    public async Task<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
-        TQuery query,
+    private readonly IEventPublisher _eventPublisher = serviceProvider
+        .GetRequiredService<IEventPublisher>();
+
+    public async Task<IOperationResult<TResponse>> GetAsync<TRequest, TResponse>(
+        TRequest request,
         CancellationToken cancellationToken = default)
-        where TQuery : notnull, IQuery<TResult>
+        where TRequest : notnull, IRequest<TResponse>
     {
-        ArgumentNullException.ThrowIfNull(query);
+        ArgumentNullException.ThrowIfNull(request);
 
         try
         {
-            IQueryHandler<TQuery, TResult> handler =
+            IRequestHandler<TRequest, TResponse> handler =
               serviceProvider
-              .GetRequiredService<IQueryHandler<TQuery, TResult>>();
+              .GetRequiredService<IRequestHandler<TRequest, TResponse>>();
 
             return await handler
-                .HandleAsync(query, cancellationToken)
+                .HandleAsync(request, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -47,27 +51,27 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
                 and not OperationResultException)
         {
             return OperationResults
-                .InternalError<TResult>()
+                .InternalError<TResponse>()
                 .WithException(exception)
                 .Build();
         }
     }
 
-    public async Task<IOperationResult> SendAsync<TCommand>(
-        TCommand command,
+    public async Task<IOperationResult> SendAsync<TRequest>(
+        TRequest request,
         CancellationToken cancellationToken = default)
-        where TCommand : notnull, ICommand
+        where TRequest : notnull, IRequest
     {
-        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(request);
 
         try
         {
-            ICommandHandler<TCommand> handler =
+            IRequestHandler<TRequest> handler =
         serviceProvider
-        .GetRequiredService<ICommandHandler<TCommand>>();
+        .GetRequiredService<IRequestHandler<TRequest>>();
 
             return await handler
-                .HandleAsync(command, cancellationToken)
+                .HandleAsync(request, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -82,20 +86,20 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
     }
 
     /// <inheritdoc/>>
-    public async Task<IOperationResult> SendAsync<TCommand, TAggregate>(
-        TCommand command,
+    public async Task<IOperationResult> SendAsync<TRequest, TAggregate>(
+        TRequest request,
         CancellationToken cancellationToken = default)
         where TAggregate : class, IAggregate
-        where TCommand : class, ICommand<TAggregate>
+        where TRequest : class, IRequestAggregate<TAggregate>
     {
         try
         {
-            ICommandHandler<TCommand, TAggregate> handler =
+            IRequestAggregateHandler<TRequest, TAggregate> handler =
             serviceProvider
-                .GetRequiredService<ICommandHandler<TCommand, TAggregate>>();
+                .GetRequiredService<IRequestAggregateHandler<TRequest, TAggregate>>();
 
             return await handler
-                .HandleAsync(command, cancellationToken)
+                .HandleAsync(request, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -112,20 +116,20 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
     object? IServiceProvider.GetService(Type serviceType)
         => serviceProvider.GetService(serviceType);
 
-    public IAsyncEnumerable<TResult> FetchAsync<TQuery, TResult>(
-        TQuery query,
+    public IAsyncEnumerable<TResponse> FetchAsync<TRequest, TResponse>(
+        TRequest request,
         CancellationToken cancellationToken = default)
-        where TQuery : notnull, IAsyncQuery<TResult>
+        where TRequest : notnull, IAsyncRequest<TResponse>
     {
-        ArgumentNullException.ThrowIfNull(query);
+        ArgumentNullException.ThrowIfNull(request);
 
         try
         {
-            IAsyncQueryHandler<TQuery, TResult> handler =
+            IAsyncRequestHandler<TRequest, TResponse> handler =
         serviceProvider
-        .GetRequiredService<IAsyncQueryHandler<TQuery, TResult>>();
+        .GetRequiredService<IAsyncRequestHandler<TRequest, TResponse>>();
 
-            return handler.HandleAsync(query, cancellationToken);
+            return handler.HandleAsync(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException
@@ -135,4 +139,11 @@ internal sealed class Dispatcher(IServiceProvider serviceProvider)
             throw new OperationResultException(operationResult);
         }
     }
+
+    public async Task<IOperationResult> PublishAsync<TEvent>(
+        TEvent @event, CancellationToken cancellationToken = default)
+        where TEvent : notnull, IEvent
+        => await _eventPublisher
+            .PublishAsync(@event, cancellationToken)
+            .ConfigureAwait(false);
 }

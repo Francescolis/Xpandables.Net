@@ -19,8 +19,8 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.Collections;
@@ -28,16 +28,16 @@ using Xpandables.Net.Primitives.Collections;
 namespace Xpandables.Net.UnitTests;
 
 public readonly record struct AddProductCommand(
-    Guid ProductId, int Quantity) : ICommand;
+    Guid ProductId, int Quantity) : IRequest;
 public readonly record struct GetProductQuery(
-    Guid ProductId) : IQuery<string>;
+    Guid ProductId) : IRequest<string>;
 public readonly record struct GetProductAsyncQuery(
-    Guid ProductId) : IAsyncQuery<string>;
+    Guid ProductId) : IAsyncRequest<string>;
 public sealed record class ProductAddedEvent(
     Guid ProductId, int Qty) : EventDomain;
 public sealed record class ProductAddedIntegrationEvent : EventIntegration;
 public sealed class AddProductCommandHandler :
-    ICommandHandler<AddProductCommand>
+    IRequestHandler<AddProductCommand>
 {
     public async Task<IOperationResult> HandleAsync(
         AddProductCommand command,
@@ -51,7 +51,7 @@ public sealed class AddProductCommandHandler :
 }
 
 public sealed class GetProductQueryHandler :
-    IQueryHandler<GetProductQuery, string>
+    IRequestHandler<GetProductQuery, string>
 {
     public async Task<IOperationResult<string>> HandleAsync(
         GetProductQuery query,
@@ -65,7 +65,7 @@ public sealed class GetProductQueryHandler :
 }
 
 public sealed class GetProductAsyncQueryHandler :
-    IAsyncQueryHandler<GetProductAsyncQuery, string>
+    IAsyncRequestHandler<GetProductAsyncQuery, string>
 {
     public IAsyncEnumerable<string> HandleAsync(
         GetProductAsyncQuery query,
@@ -94,17 +94,17 @@ public sealed class MessagingRegistrationUnitTest
     private readonly IServiceProvider _serviceProvider;
     public MessagingRegistrationUnitTest() =>
         _serviceProvider = new ServiceCollection()
-            .AddXCommandHandlers()
-            .AddXQueryHandlers()
-            .AddXAsyncQueryHandlers()
+            .AddXRequestHandlers()
+            .AddXRequestResponseHandlers()
+            .AddXAsyncRequestResponseHandlers()
             .AddXEventHandlers()
             .BuildServiceProvider();
 
     [Fact]
     public void MessagingRegistration_Should_Return_CommandHandler()
     {
-        ICommandHandler<AddProductCommand>? handler = _serviceProvider
-            .GetService<ICommandHandler<AddProductCommand>>();
+        IRequestHandler<AddProductCommand>? handler = _serviceProvider
+            .GetService<IRequestHandler<AddProductCommand>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<AddProductCommandHandler>();
@@ -113,8 +113,8 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_QueryHandler()
     {
-        IQueryHandler<GetProductQuery, string>? handler = _serviceProvider
-            .GetService<IQueryHandler<GetProductQuery, string>>();
+        IRequestHandler<GetProductQuery, string>? handler = _serviceProvider
+            .GetService<IRequestHandler<GetProductQuery, string>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<GetProductQueryHandler>();
@@ -123,9 +123,9 @@ public sealed class MessagingRegistrationUnitTest
     [Fact]
     public void MessagingRegistration_Should_Return_AsyncQueryHandler()
     {
-        IAsyncQueryHandler<GetProductAsyncQuery, string>? handler =
+        IAsyncRequestHandler<GetProductAsyncQuery, string>? handler =
             _serviceProvider
-            .GetService<IAsyncQueryHandler<GetProductAsyncQuery, string>>();
+            .GetService<IAsyncRequestHandler<GetProductAsyncQuery, string>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<GetProductAsyncQueryHandler>();

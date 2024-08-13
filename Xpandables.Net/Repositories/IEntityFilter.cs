@@ -33,7 +33,7 @@ namespace Xpandables.Net.Repositories;
 public interface IEntityFilter
 {
     /// <summary>
-    /// Used to define the pagination of the query result.
+    /// Used to define the pagination of the request result.
     /// </summary>
     /// <remarks>Example : <code>Paging = Paging.With(1,20); </code></remarks>
     Pagination? Paging { get; set; }

@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Commands;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
 
@@ -23,32 +23,32 @@ namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// This class represents an aspect that is used to intercept commands 
-/// targeting aggregates, by supplying the aggregate instance to the command.
+/// targeting aggregates, by supplying the aggregate instance to the request.
 /// </summary>
 /// <typeparam name="TAggregate">The type of aggregate.</typeparam>
-/// <typeparam name="TCommand">The type of command.</typeparam>
+/// <typeparam name="TRequest">The type of request.</typeparam>
 /// <param name="accessor">The aggregate store</param>
-public sealed class OnAspectAggregate<TCommand, TAggregate>(
+public sealed class OnAspectAggregate<TRequest, TAggregate>(
     IAggregateAccessor<TAggregate> accessor) :
-    OnAspect<AspectAggregateAttribute<TCommand, TAggregate>>
+    OnAspect<AspectAggregateAttribute<TRequest, TAggregate>>
     where TAggregate : class, IAggregate
-    where TCommand : class, ICommand<TAggregate>
+    where TRequest : class, IRequestAggregate<TAggregate>
 {
     ///<inheritdoc/>
     protected override async Task InterceptCoreAsync(
         IInvocation invocation)
     {
-        TCommand command = invocation
+        TRequest request = invocation
             .Arguments[0]
             .Value!
-            .AsRequired<TCommand>();
+            .AsRequired<TRequest>();
 
         CancellationToken ct = invocation
             .Arguments[1]
             .Value.As<CancellationToken>();
 
         IOperationResult<TAggregate> aggregateOperation = await accessor
-            .PeekAsync(command.KeyId, ct)
+            .PeekAsync(request.KeyId, ct)
             .ConfigureAwait(false);
 
         if ((aggregateOperation.IsFailure
@@ -62,19 +62,19 @@ public sealed class OnAspectAggregate<TCommand, TAggregate>(
 
         if (aggregateOperation.IsSuccess)
         {
-            command.Aggregate = aggregateOperation.Result;
+            request.Aggregate = aggregateOperation.Result;
         }
 
         _ = invocation
             .Arguments[0]
-            .ChangeValueTo(command);
+            .ChangeValueTo(request);
 
         invocation.Proceed();
 
-        if (command.Aggregate.IsNotEmpty)
+        if (request.Aggregate.IsNotEmpty)
         {
             if ((await accessor
-                .AppendAsync(command.Aggregate.Value, ct)
+                .AppendAsync(request.Aggregate.Value, ct)
                 .ConfigureAwait(false)) is { IsFailure: true } appendOperation)
             {
                 invocation.SetReturnValue(appendOperation);

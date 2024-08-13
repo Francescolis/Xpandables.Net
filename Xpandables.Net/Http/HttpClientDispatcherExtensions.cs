@@ -529,7 +529,7 @@ public static class HttpClientDispatcherExtensions
         string uriToBeAppended = path;
         string anchorText = "";
 
-        // If there is an anchor, then the query string must
+        // If there is an anchor, then the request string must
         // be inserted before its first occurrence.
         if (anchorIndex != -1)
         {

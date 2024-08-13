@@ -33,14 +33,14 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Api.Domains;
-using Xpandables.Net.Commands;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Features.RegisterPerson;
 
 // we are using the decider pattern
 public sealed class RegisterPersonCommandHandler :
-    ICommandHandler<RegisterPersonCommand, Person>
+    IRequestAggregateHandler<RegisterPersonCommand, Person>
 {
     public Task<IOperationResult> HandleAsync(
         RegisterPersonCommand command,

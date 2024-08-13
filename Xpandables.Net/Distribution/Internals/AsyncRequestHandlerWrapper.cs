@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +14,18 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Commands;
 
-internal sealed class AsyncQueryHandlerWrapper<TQuery, TResult>(
-    IAsyncQueryHandler<TQuery, TResult> decoratee)
-    : IAsyncQueryHandlerWrapper<TResult>
-    where TQuery : notnull, IAsyncQuery<TResult>
+namespace Xpandables.Net.Distribution.Internals;
+
+internal sealed class AsyncRequestHandlerWrapper<TRequest, TResponse>(
+    IAsyncRequestHandler<TRequest, TResponse> decoratee)
+    : IAsyncRequestHandlerWrapper<TResponse>
+    where TRequest : notnull, IAsyncRequest<TResponse>
 {
-    public IAsyncEnumerable<TResult> HandleAsync(
-        IAsyncQuery<TResult> query,
+    public IAsyncEnumerable<TResponse> HandleAsync(
+        IAsyncRequest<TResponse> request,
         CancellationToken cancellationToken = default)
         => decoratee.HandleAsync(
-            (TQuery)query,
+            (TRequest)request,
             cancellationToken);
 }

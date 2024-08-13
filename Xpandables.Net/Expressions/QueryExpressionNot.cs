@@ -32,10 +32,10 @@ public record class QueryExpressionNot<TSource, TResult>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionNot{TSource, TResult}"/> class with the query 
+    /// <see cref="QueryExpressionNot{TSource, TResult}"/> class with the request 
     /// expression.
     /// </summary>
-    /// <param name="expression">The query expression  for the left side.</param>
+    /// <param name="expression">The request expression  for the left side.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="expression"/> is null.</exception>
     public QueryExpressionNot(IQueryExpression<TSource, TResult> expression)
@@ -47,7 +47,7 @@ public record class QueryExpressionNot<TSource, TResult>
     /// <see cref="QueryExpressionNot{TSource, TResult}"/> class with the 
     /// expression.
     /// </summary>
-    /// <param name="leftExpression">The query expression 
+    /// <param name="leftExpression">The request expression 
     /// for the left side.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="leftExpression"/> is null.</exception>
@@ -58,7 +58,7 @@ public record class QueryExpressionNot<TSource, TResult>
 
     /// <summary>
     /// Returns the expression to be used for the clause <see langword="Where"/>
-    /// in a query.
+    /// in a request.
     /// </summary>
     public override Expression<Func<TSource, TResult>> GetExpression()
         => _cache ??= QueryExpressionFactory
@@ -79,10 +79,10 @@ public sealed record class QueryExpressionNot<TSource>
 
     /// <summary>
     /// Returns a new instance of 
-    /// <see cref="QueryExpressionNot{TSource}"/> class with the query 
+    /// <see cref="QueryExpressionNot{TSource}"/> class with the request 
     /// expression.
     /// </summary>
-    /// <param name="expression">The query expression 
+    /// <param name="expression">The request expression 
     /// for the left side.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="expression"/> is null.</exception>
@@ -94,7 +94,7 @@ public sealed record class QueryExpressionNot<TSource>
     /// Returns a new instance of 
     /// <see cref="QueryExpressionNot{TSource}"/> class with the expression.
     /// </summary>
-    /// <param name="leftExpression">The query expression 
+    /// <param name="leftExpression">The request expression 
     /// for the left side.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="leftExpression"/> is null.</exception>
@@ -105,7 +105,7 @@ public sealed record class QueryExpressionNot<TSource>
 
     /// <summary>
     /// Returns the expression to be used for the clause <see langword="Where"/> 
-    /// in a query.
+    /// in a request.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
         => _cache ??= QueryExpressionFactory

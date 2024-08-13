@@ -463,12 +463,12 @@ public static class StringExtensions
         => value.TrySerialize(typeof(T), out returnString, out exception);
 
     /// <summary>
-    /// Adds a query string to the given path.
+    /// Adds a request string to the given path.
     /// </summary>
     /// <param name="path">The path to act on.</param>
     /// <param name="queryString">The collection of keys values to be added
     /// .</param>
-    /// <returns>The path with the query string added.</returns>
+    /// <returns>The path with the request string added.</returns>
     /// <exception cref="ArgumentNullException">Thrown if 
     /// <paramref name="path"/> is <see langword="null"/>.</exception>
     public static string AddQueryString(
@@ -487,7 +487,7 @@ public static class StringExtensions
         string uriToBeAppended = path;
         string anchorText = "";
 
-        // If there is an anchor, then the query string must be inserted
+        // If there is an anchor, then the request string must be inserted
         // before its first occurrence.
         if (anchorIndex != -1)
         {

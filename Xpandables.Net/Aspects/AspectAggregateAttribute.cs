@@ -18,15 +18,15 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Commands;
-using Xpandables.Net.Decorators;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Interceptions;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Aspects;
 
 /// <summary>
 /// Aspect aggregate handler attribute, when applied to a class that implements 
-/// the <see cref="ICommandHandler{TCommand, TAggregate}"/>, 
+/// the <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/>, 
 /// specifies that the aspect will get called before the method invocation 
 /// providing the expected parameters and apply the persistence process.
 /// </summary>
@@ -37,10 +37,10 @@ namespace Xpandables.Net.Aspects;
 /// <exception cref="ArgumentNullException">The interface type is null.
 /// </exception>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-public sealed class AspectAggregateAttribute<TCommand, TAggregate> :
-    AspectAttribute, ICommandAggregate
+public sealed class AspectAggregateAttribute<TRequest, TAggregate> :
+    AspectAttribute, IAggregateDecorator
     where TAggregate : class, IAggregate
-    where TCommand : class, ICommand<TAggregate>
+    where TRequest : class, IRequestAggregate<TAggregate>
 {
     /// <summary>
     /// Determines whether the aspect should continue when the aggregate 
@@ -55,12 +55,12 @@ public sealed class AspectAggregateAttribute<TCommand, TAggregate> :
     /// Constructs the aspect aggregate handler attribute.
     /// </summary>
     public AspectAggregateAttribute()
-        : base(typeof(ICommandHandler<TCommand, TAggregate>))
+        : base(typeof(IRequestAggregateHandler<TRequest, TAggregate>))
     { }
 
     /// <inheritdoc/>
     public override IInterceptor Create(
         IServiceProvider serviceProvider)
         => serviceProvider
-        .GetRequiredService<OnAspectAggregate<TCommand, TAggregate>>();
+        .GetRequiredService<OnAspectAggregate<TRequest, TAggregate>>();
 }

@@ -117,7 +117,7 @@ The non generic type has the following properties :
 - An optional *string* **Title** that contains the operation summary problem from the execution operation.
 - An optional *string* **Detail** that contains he operation explanation specific to the execution operation.
 
-The generic type overrides the *object* **Result** to *TResult* type.
+The generic type overrides the *object* **Result** to *TResponse* type.
 
 Create a method that returns an **IOperationResult** :
 
@@ -218,7 +218,7 @@ In the Minimal Api case, if the *name* is null, the operation result from the me
 
 >You can also use the **OperationResultException** to throw a specific exception that contains a failure *IOperationResult* when you are not able to return an *IOperationResult* instance.
 All the operation result instances are serializable with a specific case for **Asp.Net Core** application, the produced response Content will contains the serialized *Result* property value if available in the operation result.
-You will find the same behavior for all the interfaces that use the *IOperationResult* in their method as return value such as : *ICommandHandler< TCommand >*, *IQueryHandler< TQuery, TResult >*, ...*
+You will find the same behavior for all the interfaces that use the *IOperationResult* in their method as return value such as : *IRequestHandler< TRequest >*, *IRequestHandler< TRequest, TResponse >*, ...*
 
 ## Decorator pattern
 You can use the extension methods to apply the decorator pattern to your types.
@@ -229,15 +229,15 @@ You can use the extension methods to apply the decorator pattern to your types.
  services.XTryDecorate<TService, TDecorator, TMarker>();   
 ```
 
-Suppose you have a command and a command handler defined like this :
+Suppose you have a request and a request handler defined like this :
 
 ```c#
-public sealed record AddPersonCommand : ICommand;
+public sealed record AddPersonRequest : IRequest;
 
-public sealed class AddPersonCommandHandler : ICommandHandler<AddPersonCommand>
+public sealed class AddPersonRequestHandler : IRequestHandler<AddPersonRequest>
 {
     public Task<IOperationResult> HandleAsync(
-        AddPersonCommand command, 
+        AddPersonRequest request, 
         CancellationToken cancellationToken = default)
     {
         // your code ...
@@ -248,28 +248,28 @@ public sealed class AddPersonCommandHandler : ICommandHandler<AddPersonCommand>
 ```
 
 ```c#
-Suppose you want to add logging for the AddPersonCommandHandler, you just need to define the decorator class that will use the logger and the handler.
+Suppose you want to add logging for the AddPersonRequestHandler, you just need to define the decorator class that will use the logger and the handler.
 
 ```c#
-public sealed class AddPersonCommandHandlerLoggingDecorator : 
-    ICommandHandler<AddPersonCommand>
+public sealed class AddPersonRequestHandlerLoggingDecorator : 
+    IRequestHandler<AddPersonRequest>
 {
-    private readonly ICommandHandler<AddPersonCommand> _decoratee;
-    private readonly ILogger<AddPersonCommandHandler> _logger;
+    private readonly IRequestHandler<AddPersonRequest> _decoratee;
+    private readonly ILogger<AddPersonRequestHandler> _logger;
     
-    public AddPersonCommandHandlerLoggingDecorator(
-        ILogger<AddPersonCommandHandler> logger,
-        ICommandHandler<AddPersonCommand> decoratee)
+    public AddPersonRequestHandlerLoggingDecorator(
+        ILogger<AddPersonRequestHandler> logger,
+        IRequestHandler<AddPersonRequest> decoratee)
         => (_logger, _decoratee) = (logger, decoratee);
 
     public async Task<IOperationResult> HandleAsync(
-        AddPersonCommand command, 
+        AddPersonRequest request, 
         CancellationToken cancellationToken = default)
     {
         _logger.Information(...);
         
         var response = await _decoratee
-            .HandleAsync(command, cancellationToken)
+            .HandleAsync(request, cancellationToken)
             .configureAwait(false);
         
         _logger.Information(...)
@@ -284,36 +284,36 @@ And to register the decorator, you just need to call the specific extension meth
 ```c#
 services
     .AddXHandlers()
-    .XTryDecorate<AddPersonCommandHandler, AddPersonCommandHandlerLoggingDecorator>();
+    .XTryDecorate<AddPersonRequestHandler, AddPersonRequestHandlerLoggingDecorator>();
 ```
 
-Sometimes you want to use a generic decorator. You can do so for all commands that implement *ICommand*
+Sometimes you want to use a generic decorator. You can do so for all requests that implement *IRequest*
 interface or something else.
-ILoggerDecorator is a marker interface that allows to apply the logger decorator to the command.
+ILoggerDecorator is a marker interface that allows to apply the logger decorator to the request.
 
 ```c#
 
-public sealed record AddPersonCommand : ICommand, ILoggerDecorator;
+public sealed record AddPersonRequest : IRequest, ILoggerDecorator;
 
-public sealed class CommandLoggingDecorator<TCommand> : ICommandHandler<TCommand>
-    where TCommand : notnull, ICommand, ILoggerDecorator // you can add more constraints
+public sealed class RequestLoggingDecorator<TRequest> : IRequestHandler<TRequest>
+    where TRequest : notnull, IRequest, ILoggerDecorator // you can add more constraints
 {
-    private readonly ICommandHandler<TCommand> _ decoratee;
-    private readonly ILogger<TCommand> _logger;
+    private readonly IRequestHandler<TRequest> _ decoratee;
+    private readonly ILogger<TRequest> _logger;
     
-    public CommandLoggingDecorator(
-        ILogger<TCommand> logger, 
-        ICommandHandler<TCommand> decoratee)
+    public RequestLoggingDecorator(
+        ILogger<TRequest> logger, 
+        IRequestHandler<TRequest> decoratee)
         => (_logger, _ decoratee) = (logger, decoratee);
 
     public async Task<IOperationResult> HandleAsync(
-         TCommand command, 
+         TRequest request, 
          CancellationToken cancellationToken = default)
     {
         _logger.Information(...);
         
         var response = await _decoratee
-            .HandleAsync(command, cancellationToken)
+            .HandleAsync(request, cancellationToken)
             .configureAwait(false);
         
         _logger.Information(...)
@@ -322,72 +322,73 @@ public sealed class CommandLoggingDecorator<TCommand> : ICommandHandler<TCommand
     }
 }
 ```
-And for registration the **CommandLoggingDecorator** will be applied to all command handlers whose commands meet the decorator's constraints : To be a *notnull* and implement *ICommand* interface.
+And for registration the **RequestLoggingDecorator** will be applied to all request handlers whose requests meet the decorator's constraints : To be a *notnull* and implement *IRequest* interface.
 
 ```c#
 services
-    .AddXHandlers()
-    .XTryDecorate(typeof(ICommandHandler<>), typeof(CommandLoggingDecorator<>), typeof(ILoggerDecorator));
+    .AddXRequestHandlers()
+    .XTryDecorate(typeof(IRequestHandler<>), typeof(RequestLoggingDecorator<>), typeof(ILoggerDecorator));
 ```
 
-## Commands Pattern
+## Request Pattern
 
->Commands stands for Command and Query Responsibility Segregation, a pattern that separates read and update operations for a data store.
+>Requests stands for Command and Query Responsibility Segregation, a pattern that separates read and update operations for a data store.
 
-The following interfaces are used to apply command and query operations :
+The following interfaces are used to apply request and request operations :
 ```c#
-public interface IQuery<TResult> {}
-public interface IAsyncQuery<TResult> {}
-public interface ICommand {}
+public interface IRequest<TResponse> {}
+public interface IAsyncRequest<TResponse> {}
+public interface IRequest {}
 
-public interface IQueryHandler<TQuery, TResult>
-    where TQuery : notnull, IQuery<TResult> 
+public interface IRequestHandler<TRequest, TResponse>
+    where TRequest : notnull, IRequest<TResponse> 
 {
-    Task<IOperationResult<TResult>> HandleAsync(
-        TQuery query, 
+    Task<IOperationResult<TResponse>> HandleAsync(
+        TRequest request, 
         CancellationToken cancellationToken = default);
 }
-public interface IAsyncQueryHandler<TQuery, TResult>
-    where TQuery : notnull, IAsyncQuery<TResult> 
+public interface IAsyncQueryHandler<TRequest, TResponse>
+    where TRequest : notnull, IAsyncRequest<TResponse> 
 {
-    IAsyncEnumerable<TResult> HandleAsync(
-        TQuery query, 
+    IAsyncEnumerable<TResponse> HandleAsync(
+        TRequest request, 
         CancellationToken cancellationToken = default);
 }
 
-public interface ICommandHandler<TCommand>
-    where TCommand : notnull, ICommand
+public interface IRequestHandler<TRequest>
+    where TRequest : notnull, IRequest
 {
     Task<IOperationResult> HandleAsync(
-        TCommand command, 
+        TRequest request, 
         CancellationToken cancellationToken = default);
 }
 
 ```
 
-So let's create a command and its handler. A command to add a new product for example.
+So let's create a request and its handler. A request to add a new product for example.
 
 ```c#
-public sealed record AddProductCommand(
+public sealed record AddProductRequest(
+    [property : Required] Guid Id,
     [property : StringLength(byte.MaxValue, MinimumLength = 3)] string Name,
     [property : StringLength(short.MaxValue, MinimumLength = 3)] string Description) :
-    ICommand, IPersistenceDecorator;
+    IRequest, IPersistenceDecorator;
 ```
 
-*ICommand* already contain an **Id** property of type *Guid* and the *IPersistenceDecorator* interface is to allow the command to be persisted at the end of the control flow when there is no exception. **Entity** is a base class that contains common properties for entities.
+*IPersistenceDecorator* interface is to allow the request to be persisted at the end of the control flow when there is no exception. **Entity** is a base class that contains common properties for entities.
 
 ```c#
-public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand>
+public sealed class AddProductRequestHandler : IRequestHandler<AddProductRequest>
 {
     private readonly ProductContext _uow;
-    public AddProductCommandHandler(ProductContext uow) => _uow = uow;
+    public AddProductRequestHandler(ProductContext uow) => _uow = uow;
 
     public async Task<IOperationResult> HandleAsync(
-        AddProductCommand command, 
+        AddProductRequest request, 
         CancellationToken cancellationToken)
     {
         // create the new product instance : 'With' is static method to build a product
-        var product = Product.With(command.Id, command.Name, command.Description);
+        var product = Product.With(request.Id, request.Name, request.Description);
 
         // insert the new product in the collection of products
         await _uow.Products
@@ -406,20 +407,20 @@ public sealed class AddProductCommandHandler : ICommandHandler<AddProductCommand
 }
 ```
 
-The validation of the command, the validation of command duplication and persistence will happen during the control flow using decorators.
+The validation of the request, the validation of request duplication and persistence will happen during the control flow using decorators.
 
 ```c#
-public sealed class AddProductCommandValidator<AddProductCommand> :
-    Validator<AddProductCommand>
+public sealed class AddProductRequestValidator<AddProductRequest> :
+    Validator<AddProductRequest>
 {
      private readonly ProductContext _uow;
-    public AddProductCommandValidator(ProductContext uow, IServiceProvider sp)
+    public AddProductRequestValidator(ProductContext uow, IServiceProvider sp)
         :base(sp) => _uow = uow;
 
-     public async Task<IOperationResult> ValidateAsync(AddProductCommand argument)
+     public async Task<IOperationResult> ValidateAsync(AddProductRequest argument)
     {
-        // validate the command using attributes
-       if(Validate(command) is { isFailure : true } failure)
+        // validate the request using attributes
+       if(Validate(request) is { isFailure : true } failure)
             return failure;
 
         // check for duplication
@@ -430,7 +431,7 @@ public sealed class AddProductCommandValidator<AddProductCommand> :
         // we just need to know if a record with
         // the specified id already exist
         var isFound = await _uow.Products
-            .CountAsync(x => x.Id == command.Id, cancellationToken)
+            .CountAsync(x => x.Id == request.Id, cancellationToken)
             .ConfigureAwait(false) > 0;
 
         if( isFound ) // duplicate
@@ -438,7 +439,7 @@ public sealed class AddProductCommandValidator<AddProductCommand> :
             // the result can directly be used in a web environment
             return OperationResults
                 .Conflict()
-                .WithError(nameof(command.Id), $"Command identifier '{command.Id}' already exist")
+                .WithError(nameof(request.Id), $"Command identifier '{request.Id}' already exist")
                 .Build();
         }
 
@@ -447,36 +448,36 @@ public sealed class AddProductCommandValidator<AddProductCommand> :
 }
 ```
 
-And now let's create a query and its handler to request a product.
+And now let's create a request and its handler to request a product.
 
 ```c#
 public readonly record struct ProductDTO(string Id, string Name, string Description);
 
-public sealed record GetProductQuery(Guid Id) : IQuery<ProductDTO?>;
+public sealed record GetProductRequest(Guid Id) : IRequest<ProductDTO?>;
 
 // You can use a class and apply a filter directly on that class :
-public sealed record GetProductQuery(Guid Id) : 
-    QueryExpression<Product>, IQuery<ProductDTO?>
+public sealed record GetProductRequest(Guid Id) : 
+    QueryExpression<Product>, IRequest<ProductDTO?>
 {
     public override Expression<Func<Product, bool>> GetExpression()
         => x => x.Id == Id;
 }
 
-public sealed class GetProductQueryHandler : 
-    IQueryHandler<GetProductQuery, ProductDTO?>
+public sealed class GetProductRequestHandler : 
+    IRequestHandler<GetProductRequest, ProductDTO?>
 {
     private readonly ProductContext _uow;
 
-    public GetProductQueryHandler(ProductContext uow) => _uow = uow;
+    public GetProductRequestHandler(ProductContext uow) => _uow = uow;
 
     public async Task<IOperationResult<ProductDTO?>> HandleAsync(
-        GetProductQuery query, 
+        GetProductRequest request, 
         CancellationToken cancellationToken = default)
     {
-        // You can make a search using a query or the key
+        // You can make a search using a request or the key
 
         if( await _uow.Products
-            .Where(query)
+            .Where(request)
             .OrderBy(o => o.Id)
             .Select(s => new ProductDTO(x.Id, x.Name, x.Description))
             .FirstOrDefaultAsync(canellationToken)
@@ -489,7 +490,7 @@ public sealed class GetProductQueryHandler :
         }
 
         // create a key for search --------------
-        var key = ProductId.With(query.Id);
+        var key = ProductId.With(request.Id);
 
         if(await _uow.Products
             .FindAsync(key, cancellationToken)
@@ -513,15 +514,15 @@ Finally, we need to use the dependency injection to put it all together :
 ```c#
 var serviceProvider = new ServiceCollection()
     .AddXDataContext<ProductContext>(define options)
-    .AddXCommandQueryHandlers(
+    .AddXRequestHandlers(
         options => options.UsePersistence().UseValidator())
-    .AddXDispatcher()
+    .AddXDistributor()
     .BuildServiceprovider();
 
     // Add a product
-    var dispatcher = serviceProvider.GetRequiredService<IDispatcher>();
-    var addProduct = new AddProductCommand("Xpandables 8", "Xpandables.Net Library");
-    IOperationResult result = await dispatcher
+    var distributor = serviceProvider.GetRequiredService<IDistributor>();
+    var addProduct = new AddProductRequest("Xpandables 8", "Xpandables.Net Library");
+    IOperationResult result = await distributor
         .SendAsync(addProduct)
         .ConfigureAwait(false);
 
@@ -530,8 +531,8 @@ var serviceProvider = new ServiceCollection()
 ```
 
 The **AddXDataContext** registers the specified data context using the options provided.  
-The **AddXCommandQueryHandlers** registers all handlers found in the executing application, and apply persistence decorator and validation decorator to all the commands according to the constraints.  
-The **AddXDispatcher** registers the internal implementation of *IDispatcher* to resolve handlers.
+The **AddXRequestHandlers** registers all handlers found in the executing application, and apply persistence decorator and validation decorator to all the requests according to the constraints.  
+The **AddXDistributor** registers the internal implementation of *IDistributor* to resolve handlers.
 
 ## Features
 
@@ -566,4 +567,4 @@ public sealed class RegisterServiceExport : IAddServiceExport
 
 ## IAggregate
 
-Libraries also provide with DDD model implementation *IAggregate< TAggregateId>* using event sourcing and out-box pattern.
+Libraries also provide with DDD model implementation *IAggregate* using event sourcing and out-box pattern.

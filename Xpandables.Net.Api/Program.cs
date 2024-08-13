@@ -22,13 +22,13 @@ builder.Services
         EventOptions.Default(options);
         options.DisposeEventEntityAfterPersistence = false;
     })
-    .AddXAggregateCommandHandlers()
-    .AddXCommandQueryHandlers(options =>
+    .AddXRequestAggregateHandlers()
+    .AddXAllRequestHandlers(options =>
         options
         .UseOperationFinalizer()
         .UseValidator())
     .AddXEventHandlers()
-    .AddXDispatcher()
+    .AddXDistributor()
     .AddXValidatorGenerics()
     .AddXValidators()
     .AddXAggregateAccessor()
@@ -36,7 +36,7 @@ builder.Services
     .AddXEventPublisher()
     .AddXEventDuplicateDecorator()
     .AddXEventStore()
-    .AddXAggregateCommandDecorator()
+    .AddXRequestAggregateHandlerDecorator()
     .AddXEndpointRoutes()
     .AddXOperationResultFinalizer()
     .AddXOperationResultSerializationConfigureOptions()

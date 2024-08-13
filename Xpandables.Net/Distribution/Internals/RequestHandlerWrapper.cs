@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +15,21 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Transactions;
 
-namespace Xpandables.Net.Commands;
+using Xpandables.Net.Operations;
 
-/// <summary>
-/// Describe a contract for a command handler transaction persistence.
-/// </summary>
-/// <remarks>You may derive from <see cref="Transactional"/> class to
-/// implement a custom behavior.</remarks>
-public interface ICommandTransactional : ITransactional
+namespace Xpandables.Net.Distribution.Internals;
+
+internal sealed class RequestHandlerWrapper<TRequest, TResponse>(
+    IRequestHandler<TRequest, TResponse> decoratee)
+    : IRequestHandlerWrapper<TResponse>
+    where TRequest : notnull, IRequest<TResponse>
 {
+    public async Task<IOperationResult<TResponse>> HandleAsync(
+        IRequest<TResponse> request,
+        CancellationToken cancellationToken = default)
+        => await decoratee.HandleAsync(
+            (TRequest)request,
+            cancellationToken)
+        .ConfigureAwait(false);
 }

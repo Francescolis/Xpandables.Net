@@ -15,8 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Features.RegisterPerson;
@@ -28,7 +28,7 @@ public sealed class RegisterPersonEndpoint : IEndpointRoute
                ContractEndpoint.PersonRegisterEndpoint,
                async (
                    RegisterPersonRequest request,
-                   IDispatcher dispatcher,
+                   IDistributor dispatcher,
                    CancellationToken cancellationToken) =>
                {
                    RegisterPersonCommand command = new()

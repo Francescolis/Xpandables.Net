@@ -18,13 +18,13 @@
 using System.Diagnostics;
 
 using Xpandables.Net.Api.Domains;
-using Xpandables.Net.Commands;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Features.BeContact;
 
 public sealed class BeContactCommandHandler :
-    ICommandHandler<BeContactCommand, Person>
+    IRequestAggregateHandler<BeContactCommand, Person>
 {
     public Task<IOperationResult> HandleAsync(
         BeContactCommand command,

@@ -22,7 +22,7 @@ using static Xpandables.Net.Http.Requests.HttpClientParameters;
 namespace Xpandables.Net.Http.RequestBuilders;
 
 /// <summary>
-/// Build the query string for a request.
+/// Build the request string for a request.
 /// </summary>
 public sealed class HttpClientRequestQueryStringBuilder :
     HttpClientRequestBuilder<IHttpRequestQueryString>

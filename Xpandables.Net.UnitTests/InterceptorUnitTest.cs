@@ -21,8 +21,8 @@ using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aspects;
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -85,7 +85,7 @@ public sealed class InterceptorTests
     public async Task AspectValidatorDependencyAttributeMethod(int value)
     {
         ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
             .AddXOnAspects(typeof(AspectValidator<>).Assembly)
             .AddXAspectValidator()
             .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
@@ -93,8 +93,8 @@ public sealed class InterceptorTests
             .AddXAspectLogger<AspectLogger>()
             .BuildServiceProvider();
 
-        IQueryHandler<Args, int> handler = serviceProvider
-                 .GetRequiredService<IQueryHandler<Args, int>>();
+        IRequestHandler<Args, int> handler = serviceProvider
+                 .GetRequiredService<IRequestHandler<Args, int>>();
         IOperationResult result = await handler.HandleAsync(new(value));
 
         Assert.True(result.IsFailure);
@@ -106,15 +106,15 @@ public sealed class InterceptorTests
         int value, int expected)
     {
         ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
             .AddXOnAspects(typeof(AspectValidator<>).Assembly)
             .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
             .AddXAspectLogger<AspectLogger>()
             .AddXAspectBehaviors()
             .BuildServiceProvider();
 
-        IQueryHandler<Args, int> handler = serviceProvider
-                 .GetRequiredService<IQueryHandler<Args, int>>();
+        IRequestHandler<Args, int> handler = serviceProvider
+                 .GetRequiredService<IRequestHandler<Args, int>>();
         IOperationResult<int> result = await handler.HandleAsync(new(value));
 
         Assert.Equal(expected, result.Result);
@@ -126,14 +126,14 @@ public sealed class InterceptorTests
          int value, int expected)
     {
         ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
             .AddXOnAspects(typeof(AspectValidator<>).Assembly)
             .AddXAspectLogger<AspectLogger>()
             .AddXAspectBehaviors()
             .BuildServiceProvider();
 
-        IQueryHandler<Args1, int> handler = serviceProvider
-                 .GetRequiredService<IQueryHandler<Args1, int>>();
+        IRequestHandler<Args1, int> handler = serviceProvider
+                 .GetRequiredService<IRequestHandler<Args1, int>>();
 
         IOperationResult<int> result = await handler.HandleAsync(new(value));
 
@@ -146,14 +146,14 @@ public sealed class InterceptorTests
          int value, int expected)
     {
         ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
             .AddXOnAspects(typeof(AspectValidator<>).Assembly)
             .AddXAspectFinalizer()
             .AddXAspectBehaviors()
             .BuildServiceProvider();
 
-        IQueryHandler<Args2, int> handler = serviceProvider
-                 .GetRequiredService<IQueryHandler<Args2, int>>();
+        IRequestHandler<Args2, int> handler = serviceProvider
+                 .GetRequiredService<IRequestHandler<Args2, int>>();
 
         IOperationResult<int> result = await handler.HandleAsync(new(value));
 
@@ -167,7 +167,7 @@ public sealed class InterceptorTests
     {
         ServiceProvider serviceProvider = new ServiceCollection()
             .AddScoped<ICalculator, Calculator>()
-            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
             .AddXOnAspects(typeof(AspectValidator<>).Assembly)
             .AddXAspectLogger<AspectLogger>()
             .AddXAspectBehaviors()
@@ -188,13 +188,13 @@ public sealed class InterceptorTests
         int value, int expected)
     {
         ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXQueryHandlers(typeof(Calculator).Assembly)
+            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
             .AddXInterceptorHandlers<CalculatorInterceptor>(
             typeof(Calculator).Assembly)
             .BuildServiceProvider();
 
-        IQueryHandler<Args, int> handler = serviceProvider
-            .GetRequiredService<IQueryHandler<Args, int>>();
+        IRequestHandler<Args, int> handler = serviceProvider
+            .GetRequiredService<IRequestHandler<Args, int>>();
         IOperationResult<int> result = await handler.HandleAsync(new(value));
 
         Assert.Equal(expected, result.Result);
@@ -237,7 +237,7 @@ public sealed class InterceptorTests
         public Task<int> CalculateAsync(int args) => Task.FromResult(args);
     }
 
-    public sealed record Args : IQuery<int>, IInterceptorDecorator, IAspectVisitable
+    public sealed record Args : IRequest<int>, IInterceptorDecorator, IAspectVisitable
     {
         public Args(int value) => Value = value;
 
@@ -245,23 +245,23 @@ public sealed class InterceptorTests
         public int Value { get; set; }
     }
 
-    public sealed record Args1(int Value) : IQuery<int>, IInterceptorDecorator;
-    public sealed record Args2(int Value) : IQuery<int>, IInterceptorDecorator;
+    public sealed record Args1(int Value) : IRequest<int>, IInterceptorDecorator;
+    public sealed record Args2(int Value) : IRequest<int>, IInterceptorDecorator;
 
-    [AspectValidator(typeof(IQueryHandler<Args, int>),
+    [AspectValidator(typeof(IRequestHandler<Args, int>),
         ThrowException = false, Order = 2)]
-    [AspectVisitor(typeof(IQueryHandler<Args, int>), Order = 1)]
-    [AspectLogging(typeof(IQueryHandler<Args, int>), Order = 0)]
-    public sealed class HandleArgs : IQueryHandler<Args, int>
+    [AspectVisitor(typeof(IRequestHandler<Args, int>), Order = 1)]
+    [AspectLogging(typeof(IRequestHandler<Args, int>), Order = 0)]
+    public sealed class HandleArgs : IRequestHandler<Args, int>
     {
         public Task<IOperationResult<int>> HandleAsync(
             Args query, CancellationToken cancellationToken = default)
             => Task.FromResult(OperationResults.Ok(query.Value).Build());
     }
 
-    [AspectRetry(typeof(IQueryHandler<Args1, int>), Order = 1)]
-    [AspectLogging(typeof(IQueryHandler<Args1, int>), Order = 0)]
-    public sealed class HandleExceptionArgs : IQueryHandler<Args1, int>
+    [AspectRetry(typeof(IRequestHandler<Args1, int>), Order = 1)]
+    [AspectLogging(typeof(IRequestHandler<Args1, int>), Order = 0)]
+    public sealed class HandleExceptionArgs : IRequestHandler<Args1, int>
     {
         int attemtp = 0;
         public Task<IOperationResult<int>> HandleAsync(
@@ -276,10 +276,10 @@ public sealed class InterceptorTests
         }
     }
 
-    [AspectFinalizer(typeof(IQueryHandler<Args2, int>),
+    [AspectFinalizer(typeof(IRequestHandler<Args2, int>),
         CallFinalizerOnException = true)]
     public sealed class HandleFinalizeArgs(
-        IAspectFinalizer aspectFinalizer) : IQueryHandler<Args2, int>
+        IAspectFinalizer aspectFinalizer) : IRequestHandler<Args2, int>
     {
         public Task<IOperationResult<int>> HandleAsync(
             Args2 query, CancellationToken cancellationToken = default)

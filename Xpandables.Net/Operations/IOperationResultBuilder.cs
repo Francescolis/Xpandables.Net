@@ -81,7 +81,7 @@ public partial interface IOperationResult
 
 
     /// <summary>
-    /// Provides with the command to build the <see cref="IOperationResult"/>.
+    /// Provides with the request to build the <see cref="IOperationResult"/>.
     /// </summary>
     public interface IBuilder
     {
@@ -93,7 +93,7 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to create the target instance that 
+    /// Provides with request to create the target instance that 
     /// implements <see cref="IOperationResult{TResult}"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -111,7 +111,7 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to add status code to 
+    /// Provides with request to add status code to 
     /// the <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
@@ -127,7 +127,7 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to add title and/or detail to the 
+    /// Provides with request to add title and/or detail to the 
     /// <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
@@ -156,7 +156,7 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to add URL to the 
+    /// Provides with request to add URL to the 
     /// <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
@@ -187,7 +187,7 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to add a result of <typeparamref name="TResult"/> 
+    /// Provides with request to add a result of <typeparamref name="TResult"/> 
     /// type to the <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
@@ -206,7 +206,7 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to add header to the 
+    /// Provides with request to add header to the 
     /// <typeparamref name="TBuilder"/> builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
@@ -369,7 +369,7 @@ public partial interface IOperationResult
     }
 
     /// <summary>
-    /// Provides with command to clear the current builder in order to be reused.
+    /// Provides with request to clear the current builder in order to be reused.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the target builder.</typeparam>
     public interface IClearBuilder<out TBuilder>

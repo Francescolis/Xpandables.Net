@@ -50,7 +50,7 @@ public sealed record class SpecificationAnd<TSource> : Specification<TSource>
 
     /// <summary>
     /// Returns the expression to be used for 
-    /// the clause <see langword="Where"/> in a query.
+    /// the clause <see langword="Where"/> in a request.
     /// </summary>
     public override Expression<Func<TSource, bool>> GetExpression()
         => QueryExpressionFactory

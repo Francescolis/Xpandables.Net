@@ -19,15 +19,15 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.UnitTests;
 
-public sealed record QueryDecorated(Guid Id) : IQuery<string>, IValidateDecorator;
-public sealed class QueryDecoratedHandlerA : IQueryHandler<QueryDecorated, string>
+public sealed record QueryDecorated(Guid Id) : IRequest<string>, IValidateDecorator;
+public sealed class QueryDecoratedHandlerA : IRequestHandler<QueryDecorated, string>
 {
     public async Task<IOperationResult<string>> HandleAsync(
         QueryDecorated query,
@@ -40,7 +40,7 @@ public sealed class QueryDecoratedHandlerA : IQueryHandler<QueryDecorated, strin
     }
 }
 
-public sealed class QueryDecoratedHandlerB : IQueryHandler<QueryDecorated, string>
+public sealed class QueryDecoratedHandlerB : IRequestHandler<QueryDecorated, string>
 {
     public async Task<IOperationResult<string>> HandleAsync(
         QueryDecorated query,
@@ -54,7 +54,7 @@ public sealed class QueryDecoratedHandlerB : IQueryHandler<QueryDecorated, strin
 }
 
 public sealed class QueryDecoratedHandlerC :
-    IQueryHandler<QueryDecorated, string>, IValidateDecorator
+    IRequestHandler<QueryDecorated, string>, IValidateDecorator
 {
     public async Task<IOperationResult<string>> HandleAsync(
         QueryDecorated query,
@@ -68,11 +68,11 @@ public sealed class QueryDecoratedHandlerC :
 }
 
 public sealed class CustomValidationQueryDecorator<TQuery, TResult>(
-    IQueryHandler<TQuery, TResult> handler) :
-    IQueryHandler<TQuery, TResult>, IDecorator
-    where TQuery : IQuery<TResult>, IValidateDecorator
+    IRequestHandler<TQuery, TResult> handler) :
+    IRequestHandler<TQuery, TResult>, IDecorator
+    where TQuery : IRequest<TResult>, IValidateDecorator
 {
-    private readonly IQueryHandler<TQuery, TResult> _handler = handler
+    private readonly IRequestHandler<TQuery, TResult> _handler = handler
         ?? throw new ArgumentNullException(nameof(handler));
 
     public Task<IOperationResult<TResult>> HandleAsync(
@@ -86,11 +86,11 @@ public sealed class DecoratorUnitTest
     private readonly IServiceProvider _serviceProvider;
     public DecoratorUnitTest() =>
         _serviceProvider = new ServiceCollection()
-            .AddXQueryHandlers()
+            .AddXRequestResponseHandlers()
             .AddXValidatorGenerics()
             .AddXValidators()
             .XTryDecorate(
-                typeof(IQueryHandler<,>),
+                typeof(IRequestHandler<,>),
                 typeof(CustomValidationQueryDecorator<,>),
                 typeof(IValidateDecorator))
             .BuildServiceProvider();
@@ -98,8 +98,8 @@ public sealed class DecoratorUnitTest
     [Fact]
     public void DecoratorRegistration_Should_Return_DecoratorHandler()
     {
-        IQueryHandler<QueryDecorated, string>? handler = _serviceProvider
-            .GetService<IQueryHandler<QueryDecorated, string>>();
+        IRequestHandler<QueryDecorated, string>? handler = _serviceProvider
+            .GetService<IRequestHandler<QueryDecorated, string>>();
 
         handler.Should().NotBeNull();
         handler.Should().BeOfType<CustomValidationQueryDecorator
@@ -109,9 +109,9 @@ public sealed class DecoratorUnitTest
     [Fact]
     public void Decorator_Should_Match_Number_Registered()
     {
-        IEnumerable<IQueryHandler<QueryDecorated, string>> handlers =
+        IEnumerable<IRequestHandler<QueryDecorated, string>> handlers =
             _serviceProvider
-            .GetServices<IQueryHandler<QueryDecorated, string>>();
+            .GetServices<IRequestHandler<QueryDecorated, string>>();
 
         handlers.Should().Contain(
             handler => handler.GetType() ==
