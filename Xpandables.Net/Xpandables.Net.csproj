@@ -32,7 +32,7 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<PackageTags>Commands;DDD;Optional;Command;Query;Dispatcher;Aggregate;OperationResult;Decorator;Specification;State;HttpClient;Interception;Visitor</PackageTags>
+		<PackageTags>IRequest;DDD;Optional;Distributor;Aggregate;OperationResult;Decorator;Specification;State;HttpClient;Interception;Visitor</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
