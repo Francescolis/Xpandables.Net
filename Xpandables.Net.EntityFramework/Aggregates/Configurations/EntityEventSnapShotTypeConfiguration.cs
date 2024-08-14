@@ -18,7 +18,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Events;
+using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Aggregates.Configurations;

@@ -5,11 +5,12 @@ using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
+using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Api;
 using Xpandables.Net.Api.I18n;
-using Xpandables.Net.Api.Persistence;
+using Xpandables.Net.Api.Persons.Persistence;
+using Xpandables.Net.Api.Persons.Repositories;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,7 @@ builder.Services
     .AddXAggregateAccessor()
     .AddXRepositoryEvent<RepositoryPerson>()
     .AddXEventPublisher()
+    .AddXEventIntegrationScheduler()
     .AddXEventDuplicateDecorator()
     .AddXEventStore()
     .AddXRequestAggregateHandlerDecorator()
@@ -44,6 +46,8 @@ builder.Services
     .AddXOperationResultResponseBuilder()
     .AddXOperationResultMiddleware()
     .AddHttpContextAccessor()
+    .AddScoped<DatabasePerson>()
+    .AddScoped<IPersonExistChecker, PersonExistChecker>()
     .AddRouting(options =>
     {
         options.ConstraintMap.Add("string", typeof(StringConstraintMap));

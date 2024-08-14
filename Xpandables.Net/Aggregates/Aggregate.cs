@@ -15,7 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Events;
+using Xpandables.Net.Distribution;
 using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Primitives.I18n;
 using Xpandables.Net.Primitives.Text;

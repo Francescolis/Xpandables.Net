@@ -23,9 +23,9 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Distribution;
-using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Collections;
@@ -234,7 +234,7 @@ public sealed class ContactRequestSentDomainEventHandler
 }
 
 public sealed record PersonCreatedDomainEvent :
-    EventDomain<Person>, IEventDuplicate
+    EventDomain<Person>, IEventDuplicateDecorator
 {
     [JsonConstructor]
     private PersonCreatedDomainEvent() { }
@@ -271,7 +271,7 @@ public sealed record PersonCreatedDomainEvent :
 }
 
 public sealed record ContactRequestSentDomainEvent :
-    EventDomain<Person>, IEventDuplicate
+    EventDomain<Person>, IEventDuplicateDecorator
 {
     [JsonConstructor]
     private ContactRequestSentDomainEvent() { }

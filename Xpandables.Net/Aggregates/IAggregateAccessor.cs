@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Events;
+using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Aggregates;

@@ -21,7 +21,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Events;
+using Xpandables.Net.Aggregates.Internals;
+using Xpandables.Net.Decorators;
+using Xpandables.Net.Distribution;
+using Xpandables.Net.Distribution.Internals;
+using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -37,7 +41,7 @@ public static class ServiceCollectionEventExtensions
 
     /// <summary>
     /// Registers the 
-    /// <see cref="EventHandlerDuplicateDecorator{TEvent}"/>
+    /// <see cref="EventDuplicateHandlerDecorator{TEvent}"/>
     /// decorator to handle duplicate events.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -50,8 +54,8 @@ public static class ServiceCollectionEventExtensions
         return services
             .XTryDecorate(
                 typeof(IEventHandler<>),
-                typeof(EventHandlerDuplicateDecorator<>),
-                typeof(IEventDuplicate));
+                typeof(EventDuplicateHandlerDecorator<>),
+                typeof(IEventDuplicateDecorator));
     }
 
     /// <summary>

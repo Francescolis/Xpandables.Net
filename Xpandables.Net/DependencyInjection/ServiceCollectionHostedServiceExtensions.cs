@@ -20,7 +20,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Events;
+using Xpandables.Net.Distribution;
+using Xpandables.Net.Distribution.Internals;
 using Xpandables.Net.HostedServices;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -116,5 +117,5 @@ public static class ServiceCollectionHostedServiceExtensions
     /// is null.</exception>
     public static IServiceCollection AddXEventIntegrationScheduler(
         this IServiceCollection services)
-        => services.AddXEventIntegrationScheduler<EventSchedulerInternal>();
+        => services.AddXEventIntegrationScheduler<EventScheduler>();
 }

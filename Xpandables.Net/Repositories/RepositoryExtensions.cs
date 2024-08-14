@@ -17,7 +17,7 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-using Xpandables.Net.Events;
+using Xpandables.Net.Aggregates.Events;
 
 namespace Xpandables.Net.Repositories;
 

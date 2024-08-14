@@ -90,4 +90,9 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Events\" />
+	  <Folder Include="Persistence\" />
+	</ItemGroup>
+
 </Project>

@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Primitives;
@@ -86,6 +87,22 @@ public interface IAggregateDecorator
     /// Usefull when you are creating
     /// a new aggregate.</remarks>
     bool ContinueWhenNotFound { get; }
+}
+
+/// <summary>
+/// A marker interface that defines an event that cannot be duplicated.
+/// </summary>
+public interface IEventDuplicateDecorator
+{
+    /// <summary>
+    /// Returns the filter to check for duplicate events.
+    /// </summary>
+    IEventFilter Filter();
+
+    /// <summary>
+    /// Returns the operation result to return when the event is duplicated.
+    /// </summary>
+    IOperationResult OnFailure();
 }
 
 #pragma warning restore CA1040 // Avoid empty interfaces
