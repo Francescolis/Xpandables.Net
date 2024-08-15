@@ -7,7 +7,7 @@
 		<Platforms>x64</Platforms>
 		<NeutralLanguage>fr-FR</NeutralLanguage>
 		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>D:\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>D:\Sources\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<AnalysisLevel>preview-all</AnalysisLevel>

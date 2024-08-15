@@ -17,10 +17,9 @@
 ********************************************************************************/
 using System.Net;
 
-using Xpandables.Net.Http.ResponseBuilders;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Http.ResponseBuilders;
 
 /// <summary>
 /// Builds the failure response of <see cref="HttpClientResponse"/> type.

@@ -71,7 +71,6 @@ public static class TokenExtensions
         AccessToken accessToken)
     {
         ArgumentNullException.ThrowIfNull(tokenDecoder);
-        ArgumentNullException.ThrowIfNull(accessToken);
 
         return tokenDecoder.DecodeToken(accessToken.Value);
     }

@@ -163,8 +163,6 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     TBuilder IOperationResult.IHeaderBuilder<TBuilder>
         .WithHeaders(ElementCollection headers)
     {
-        ArgumentNullException.ThrowIfNull(headers);
-
         _headers.Merge(headers);
         return (this as TBuilder)!;
     }
@@ -200,8 +198,6 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     TBuilder IOperationResult.IExtensionBuilder<TBuilder>
         .WithExtensions(ElementCollection extensions)
     {
-        ArgumentNullException.ThrowIfNull(extensions);
-
         _extensions.Merge(extensions);
         return (this as TBuilder)!;
     }

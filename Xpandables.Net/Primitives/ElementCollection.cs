@@ -113,8 +113,6 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="element">element to add.</param>
     public void Add(ElementEntry element)
     {
-        ArgumentNullException.ThrowIfNull(element);
-
         if (_items.Find(i => i.Key.Equals(
             element.Key,
             StringComparison.OrdinalIgnoreCase)) is { Key: { } } existsItem)
@@ -143,8 +141,6 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="elements">elements to merge</param>
     public void Merge(ElementCollection elements)
     {
-        ArgumentNullException.ThrowIfNull(elements);
-
         foreach (ElementEntry item in elements)
         {
             _items.Add(item);

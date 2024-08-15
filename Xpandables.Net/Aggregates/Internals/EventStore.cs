@@ -85,8 +85,6 @@ internal sealed class EventStore(
         Exception? exception = null,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(eventId);
-
         await repository
             .MarkEventsAsPublishedAsync(eventId, exception, cancellationToken)
             .ConfigureAwait(false);

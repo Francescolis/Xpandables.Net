@@ -100,8 +100,6 @@ public sealed class AggregateAccessor<TAggregate>(
         Guid keyId,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(keyId);
-
         try
         {
             TAggregate aggregate = AggregateExtensions

@@ -240,7 +240,6 @@ public static class OptionalExtensions
         Func<T, TU> some,
         Func<TU> empty)
     {
-        ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(some);
         ArgumentNullException.ThrowIfNull(empty);
 
@@ -267,7 +266,6 @@ public static class OptionalExtensions
         Action<T> some,
         Action empty)
     {
-        ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(some);
         ArgumentNullException.ThrowIfNull(empty);
 
@@ -467,7 +465,6 @@ public static class OptionalExtensions
         this Optional<T> optional,
         Func<T, bool> predicate)
     {
-        ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(predicate);
 
         return optional.IsNotEmpty && !predicate(optional.Value)
@@ -490,7 +487,6 @@ public static class OptionalExtensions
         this Optional<T> optional,
         Func<T, TU> selector)
     {
-        ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(selector);
 
         return optional.IsNotEmpty
@@ -516,7 +512,6 @@ public static class OptionalExtensions
         this Optional<T> optional,
         Func<T, Optional<TU>> selector)
     {
-        ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(selector);
 
         return optional.Bind(selector);
@@ -543,7 +538,6 @@ public static class OptionalExtensions
         Func<T, Optional<TR>> selector,
         Func<T, TR, TU> resultSelector)
     {
-        ArgumentNullException.ThrowIfNull(optional);
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(resultSelector);
 

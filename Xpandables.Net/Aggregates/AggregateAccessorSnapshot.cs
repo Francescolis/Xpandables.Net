@@ -77,8 +77,6 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
         Guid keyId,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(keyId);
-
         if (options.Value.SnapshotOptions.IsOff)
         {
             return await decoratee

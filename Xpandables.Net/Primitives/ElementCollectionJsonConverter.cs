@@ -49,8 +49,6 @@ public sealed class ElementCollectionJsonConverter
         ElementCollection value,
         JsonSerializerOptions options)
     {
-        ArgumentNullException.ThrowIfNull(value);
-
         JsonSerializer.Serialize(writer, value.ToArray(), options);
     }
 }
