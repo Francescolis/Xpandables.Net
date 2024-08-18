@@ -35,10 +35,12 @@ public sealed class HttpClientDispatcherFactory
     public HttpClientOptions Options => options.Value;
 
     ///<inheritdoc/>
-    public Task<HttpRequestMessage> BuildRequestAsync(
+    public async Task<HttpRequestMessage> BuildRequestAsync(
         IHttpClientRequest request,
         CancellationToken cancellationToken = default)
     {
+        await Task.Yield();
+
         ArgumentNullException.ThrowIfNull(request);
 
         HttpClientAttribute attribute = Options
@@ -59,7 +61,7 @@ public sealed class HttpClientDispatcherFactory
             builder.Build(context);
         }
 
-        return Task.FromResult(context.RequestMessage);
+        return context.RequestMessage;
     }
 
     ///<inheritdoc/>

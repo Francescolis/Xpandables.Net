@@ -158,25 +158,26 @@ public sealed record CreatePersonRequestCommand(
 public sealed class CreatePersonRequestCommandHandler :
     IRequestAggregateHandler<CreatePersonRequestCommand, Person>
 {
-    public Task<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         CreatePersonRequestCommand command,
         CancellationToken cancellationToken = default)
     {
+        await Task.Yield();
         if (command.Aggregate.IsNotEmpty)
         {
-            return Task.FromResult(OperationResults
+            return OperationResults
                 .Conflict()
                 .WithError(nameof(PersonId), "Person already exist")
-                .Build());
+                .Build();
         }
 
         command.Aggregate = Person
             .Create(command.KeyId, command.FirstName, command.LastName);
 
-        return Task.FromResult(OperationResults
+        return OperationResults
             .Ok()
             .WithHeader(nameof(PersonId), command.KeyId.ToString())
-            .Build());
+            .Build();
     }
 }
 
@@ -186,16 +187,17 @@ public sealed record SendContactRequestCommand(
 public sealed class SendContactRequestAggregateCommandHandler :
     IRequestAggregateHandler<SendContactRequestCommand, Person>
 {
-    public Task<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         SendContactRequestCommand command,
         CancellationToken cancellationToken = default)
     {
         Assert.True(command.Aggregate.IsNotEmpty);
+        await Task.Yield();
 
         ContactId receivedId = new(command.ReceiverId);
         IOperationResult result = command.Aggregate.Value.BeContact(receivedId);
 
-        return Task.FromResult(result);
+        return result;
     }
 }
 

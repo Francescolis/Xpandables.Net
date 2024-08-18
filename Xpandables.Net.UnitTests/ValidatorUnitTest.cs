@@ -91,14 +91,16 @@ public sealed class ValidatorUnitTest
 
     public sealed class HandleLogin : IRequestHandler<Login>
     {
-        public Task<IOperationResult> HandleAsync(
+        public async Task<IOperationResult> HandleAsync(
             Login command,
             CancellationToken cancellationToken = default)
-            => Task.FromResult(
-                OperationResults
-                .Ok()
-                .WithHeader(nameof(Login.UserLogin), command.UserLogin)
-                .Build());
+        {
+            await Task.Yield();
+            return OperationResults
+                    .Ok()
+                    .WithHeader(nameof(Login.UserLogin), command.UserLogin)
+                    .Build();
+        }
     }
 
     public sealed class ValidatorReturnsOperationResult : IValidator<Login>

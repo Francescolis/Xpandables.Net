@@ -76,11 +76,13 @@ public abstract class BackgroundServiceBase<TBackgroundService>
     public virtual async Task<IOperationResult<string>> StatusServiceAsync(
         CancellationToken cancellationToken = default)
     {
+        await Task.Yield();
+
         string response = $"{typeof(TBackgroundService).Name}" +
             $" {(IsRunning ? "Is Up" : "Is Down")}";
-        return await Task.FromResult(OperationResults
+
+        return OperationResults
             .Ok(response)
-            .Build())
-            .ConfigureAwait(false);
+            .Build();
     }
 }

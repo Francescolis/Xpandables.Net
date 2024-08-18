@@ -14,10 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Reflection;
-
-using Xpandables.Net.Aspects;
-
 namespace Xpandables.Net.Interceptions;
 
 /// <summary>
@@ -26,41 +22,6 @@ namespace Xpandables.Net.Interceptions;
 /// </summary>
 public static class InterceptorExtensions
 {
-    /// <summary>
-    /// Validates and returns the aspect attribute applied on the method.
-    /// </summary>
-    /// <param name="invocation">The invocation to act on.</param>
-    public static TAspectAttribute ValidateAttribute<TAspectAttribute>
-        (this IInvocation invocation)
-        where TAspectAttribute : AspectAttribute
-    {
-        TAspectAttribute attribute =
-            GetAspectAttribute<TAspectAttribute>(invocation);
-
-        if (!attribute.IsRegisteredByDI)
-        {
-            Type target = GetRealInstance(invocation).GetType();
-            if (!target.IsAssignableFromInterface(attribute.InterfaceType))
-            {
-                throw new InvalidOperationException(
-                    $"{target.Name} must implement " +
-                    $"{attribute.InterfaceType.Name}.");
-            }
-
-            if ((target.IsGenericTypeDefinition
-                 && !attribute.InterfaceType.IsGenericTypeDefinition)
-                 || (!target.IsGenericTypeDefinition
-                       && attribute.InterfaceType.IsGenericTypeDefinition))
-            {
-                throw new InvalidOperationException(
-                    $"{target.Name} and {attribute.InterfaceType.Name} " +
-                    "must be both generic or non-generic.");
-            }
-        }
-
-        return attribute;
-    }
-
     /// <summary>
     /// Returns the real instance of the invocation target.
     /// </summary>
@@ -126,90 +87,4 @@ public static class InterceptorExtensions
             || (type.IsGenericType
                 && type.GetGenericTypeDefinition() == typeof(Task<>));
     }
-
-    /// <summary>
-    /// Returns the aspect attribute applied on the method.
-    /// </summary>
-    /// <param name="invocation">The method argument to be called.</param>
-    /// <returns>The aspect attribute applied on the method.</returns>
-    public static TAspectAttribute GetAspectAttribute
-        <TAspectAttribute>(this IInvocation invocation)
-        where TAspectAttribute : AspectAttribute
-    {
-        ArgumentNullException.ThrowIfNull(invocation);
-
-        object target = GetRealInstance(invocation);
-
-        Type interfaceType = invocation.InterfaceType;
-
-        object? currentTarget = target;
-        while (currentTarget is not null)
-        {
-            TAspectAttribute? aspectAttribute = currentTarget
-                .GetType()
-                .GetMethod(invocation.Method.Name)?
-                .GetCustomAttributes(true)
-                .OfType<TAspectAttribute>()
-                .FirstOrDefault()
-                ?? currentTarget
-                .GetType()
-                .GetCustomAttributes(true)
-                .OfType<TAspectAttribute>()
-                .FirstOrDefault();
-
-            if (aspectAttribute is not null)
-            {
-                return aspectAttribute;
-            }
-
-            // the current Target is a decorator or a wrapper.
-            // Attempt to find a field or property in the current instance
-            // that holds an interface type instance.
-
-            IEnumerable<MemberInfo> fieldsAndProperties = target
-                .GetType()
-                .GetMembers(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
-                .Where(m => m.MemberType is MemberTypes.Field or MemberTypes.Property)
-                .Where(m => interfaceType.IsAssignableFrom(m.GetMemberType()));
-
-            object? nextInstance = null;
-            foreach (MemberInfo member in fieldsAndProperties)
-            {
-                if (member is FieldInfo field
-                    && interfaceType.IsAssignableFrom(field.FieldType))
-                {
-                    nextInstance = field.GetValue(currentTarget);
-                }
-                else if (member is PropertyInfo property
-                    && interfaceType.IsAssignableFrom(property.PropertyType)
-                    && property.CanRead)
-                {
-                    nextInstance = property.GetValue(currentTarget);
-                }
-
-                if (nextInstance != null)
-                {
-                    break; // Found the next instance to inspect, break the loop
-                }
-            }
-
-            // Move to the next instance for the next iteration
-            currentTarget = nextInstance;
-        }
-
-        // we should never reach this point.
-        throw new InvalidOperationException(
-            $"Unable to find an aspect attribute on the implementation class " +
-            $"of {interfaceType.Name}.");
-    }
-
-    private static Type? GetMemberType(this MemberInfo member)
-#pragma warning disable IDE0072 // Add missing cases
-        => member.MemberType switch
-        {
-            MemberTypes.Field => ((FieldInfo)member).FieldType,
-            MemberTypes.Property => ((PropertyInfo)member).PropertyType,
-            _ => null
-        };
-#pragma warning restore IDE0072 // Add missing cases
 }

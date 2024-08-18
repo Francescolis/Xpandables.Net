@@ -135,8 +135,9 @@ public interface IHttpRequestTryParseAsync<TRequest>
         HttpContext context,
         ParameterInfo parameter);
 
-    internal static Task<TRequest?> DoBindAsync(IDictionary dictionary)
+    internal static async Task<TRequest?> DoBindAsync(IDictionary dictionary)
     {
+        await Task.Yield();
         string jsonString = JsonSerializer
             .Serialize(
                 dictionary,
@@ -147,6 +148,6 @@ public interface IHttpRequestTryParseAsync<TRequest>
                 jsonString,
                 JsonSerializerDefaultOptions.OptionDefaultWeb);
 
-        return Task.FromResult(request);
+        return request;
     }
 }

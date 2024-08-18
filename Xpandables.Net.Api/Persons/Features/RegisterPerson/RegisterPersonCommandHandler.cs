@@ -42,24 +42,26 @@ namespace Xpandables.Net.Api.Persons.Features.RegisterPerson;
 public sealed class RegisterPersonCommandHandler :
     IRequestAggregateHandler<RegisterPersonCommand, Person>
 {
-    public Task<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         RegisterPersonCommand command,
         CancellationToken cancellationToken = default)
     {
+        await Task.Yield();
+
         if (command.Aggregate.IsNotEmpty)
         {
-            return Task.FromResult(OperationResults
+            return OperationResults
                 .Conflict()
                 .WithError(nameof(command.KeyId), "Person already exist")
-                .Build());
+                .Build();
         }
 
         command.Aggregate = Person
             .Create(command.KeyId, command.FirstName, command.LastName);
 
-        return Task.FromResult(OperationResults
+        return OperationResults
              .Ok()
              .WithHeader(nameof(PersonId), command.KeyId.ToString())
-             .Build());
+             .Build();
     }
 }

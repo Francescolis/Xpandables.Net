@@ -59,10 +59,11 @@ public interface IValidator
     /// exception thrown by the validator</exception>
     /// <returns>Returns a result state that contains validation information
     /// .</returns>
-    public Task<IOperationResult> ValidateAsync(object argument)
+    public async Task<IOperationResult> ValidateAsync(object argument)
     {
+        await Task.Yield();
         IOperationResult result = Validate(argument);
-        return Task.FromResult(result);
+        return result;
     }
 }
 
@@ -104,10 +105,11 @@ public interface IValidator<in TArgument> : IValidator
     /// exception thrown by the validator</exception>
     /// <returns>Returns a result state that contains 
     /// validation information.</returns>
-    public Task<IOperationResult> ValidateAsync(TArgument argument)
+    public async Task<IOperationResult> ValidateAsync(TArgument argument)
     {
+        await Task.Yield();
         IOperationResult result = Validate(argument);
-        return Task.FromResult(result);
+        return result;
     }
 
     Task<IOperationResult> IValidator.ValidateAsync(object argument)

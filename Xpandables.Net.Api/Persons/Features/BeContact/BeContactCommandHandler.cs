@@ -27,10 +27,11 @@ namespace Xpandables.Net.Api.Persons.Features.BeContact;
 public sealed class BeContactCommandHandler(IPersonExistChecker checker) :
     IRequestAggregateHandler<BeContactCommand, Person>
 {
-    public Task<IOperationResult> HandleAsync(
+    public async Task<IOperationResult> HandleAsync(
         BeContactCommand command,
         CancellationToken cancellationToken = default)
     {
+        await Task.Yield();
         Debug.Assert(command.Aggregate.IsNotEmpty);
 
         IOperationResult result = command
@@ -38,6 +39,6 @@ public sealed class BeContactCommandHandler(IPersonExistChecker checker) :
             .Value
             .BeContact(command.ContactId, checker);
 
-        return Task.FromResult(result);
+        return result;
     }
 }

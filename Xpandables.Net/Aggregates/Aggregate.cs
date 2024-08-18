@@ -50,10 +50,10 @@ public abstract class Aggregate : IAggregate, IEventSourcing
     protected Aggregate() { }
 
     /// <inheritdoc/>
-    public void MarkEventsAsCommitted() => _events.Clear();
+    public virtual void MarkEventsAsCommitted() => _events.Clear();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<IEventDomain> GetUncommittedEvents()
+    public virtual IReadOnlyCollection<IEventDomain> GetUncommittedEvents()
         => [.. _events.OrderBy(o => o.Version)];
 
     /// <inheritdoc/>
@@ -63,12 +63,15 @@ public abstract class Aggregate : IAggregate, IEventSourcing
 
         foreach (IEventDomain @event in events)
         {
-            (this as IEventSourcing).LoadFromHistory(@event);
+            LoadFromHistory(@event);
         }
     }
 
-    void IEventSourcing.LoadFromHistory(IEventDomain @event)
+    /// <inheritdoc/>
+    public virtual void LoadFromHistory(IEventDomain @event)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         Mutate(@event);
         Version = @event.Version;
     }

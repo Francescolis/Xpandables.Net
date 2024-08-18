@@ -16,11 +16,9 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Aspects;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Distribution;
 using Xpandables.Net.Interceptions;
@@ -81,108 +79,6 @@ public sealed class InterceptorTests
     }
 
     [Theory]
-    [InlineData(10)]
-    public async Task AspectValidatorDependencyAttributeMethod(int value)
-    {
-        ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
-            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
-            .AddXAspectValidator()
-            .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
-            .AddXAspectBehaviors()
-            .AddXAspectLogger<AspectLogger>()
-            .BuildServiceProvider();
-
-        IRequestHandler<Args, int> handler = serviceProvider
-                 .GetRequiredService<IRequestHandler<Args, int>>();
-        IOperationResult result = await handler.HandleAsync(new(value));
-
-        Assert.True(result.IsFailure);
-    }
-
-    [Theory]
-    [InlineData(10, ExpectedValue)]
-    public async Task AspectVisitorDependencyAttributeMethod(
-        int value, int expected)
-    {
-        ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
-            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
-            .AddScoped(typeof(IAspectVisitor<Args>), typeof(AspectVisitor))
-            .AddXAspectLogger<AspectLogger>()
-            .AddXAspectBehaviors()
-            .BuildServiceProvider();
-
-        IRequestHandler<Args, int> handler = serviceProvider
-                 .GetRequiredService<IRequestHandler<Args, int>>();
-        IOperationResult<int> result = await handler.HandleAsync(new(value));
-
-        Assert.Equal(expected, result.Result);
-    }
-
-    [Theory]
-    [InlineData(10, 10)]
-    public async Task AspectRetryDependencyAttributeMethod(
-         int value, int expected)
-    {
-        ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
-            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
-            .AddXAspectLogger<AspectLogger>()
-            .AddXAspectBehaviors()
-            .BuildServiceProvider();
-
-        IRequestHandler<Args1, int> handler = serviceProvider
-                 .GetRequiredService<IRequestHandler<Args1, int>>();
-
-        IOperationResult<int> result = await handler.HandleAsync(new(value));
-
-        Assert.Equal(expected, result.Result);
-    }
-
-    [Theory]
-    [InlineData(10, 10)]
-    public async Task AspectFinalizerDependencyAttributeMethod(
-         int value, int expected)
-    {
-        ServiceProvider serviceProvider = new ServiceCollection()
-            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
-            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
-            .AddXAspectFinalizer()
-            .AddXAspectBehaviors()
-            .BuildServiceProvider();
-
-        IRequestHandler<Args2, int> handler = serviceProvider
-                 .GetRequiredService<IRequestHandler<Args2, int>>();
-
-        IOperationResult<int> result = await handler.HandleAsync(new(value));
-
-        Assert.Equal(expected, result.Result);
-    }
-
-    [Theory]
-    [InlineData(10, 10)]
-    public async Task AspectLoggerDependencyAttributeMethod(
-         int value, int expected)
-    {
-        ServiceProvider serviceProvider = new ServiceCollection()
-            .AddScoped<ICalculator, Calculator>()
-            .AddXRequestResponseHandlers(typeof(Calculator).Assembly)
-            .AddXOnAspects(typeof(AspectValidator<>).Assembly)
-            .AddXAspectLogger<AspectLogger>()
-            .AddXAspectBehaviors()
-            .BuildServiceProvider();
-
-        ICalculator handler = serviceProvider
-                 .GetRequiredService<ICalculator>();
-
-        int result = await handler.CalculateAsync(value);
-
-        Assert.Equal(expected, result);
-    }
-
-
-    [Theory]
     [InlineData(10, ExpectedValue)]
     public async Task InterceptorDependencyHandlerMethod(
         int value, int expected)
@@ -231,13 +127,16 @@ public sealed class InterceptorTests
         Task<int> CalculateAsync(int args);
     }
 
-    [AspectLogging(typeof(ICalculator))]
     public sealed class Calculator : ICalculator
     {
-        public Task<int> CalculateAsync(int args) => Task.FromResult(args);
+        public async Task<int> CalculateAsync(int args)
+        {
+            await Task.Yield();
+            return args;
+        }
     }
 
-    public sealed record Args : IRequest<int>, IInterceptorDecorator, IAspectVisitable
+    public sealed record Args : IRequest<int>, IInterceptorDecorator
     {
         public Args(int value) => Value = value;
 
@@ -248,66 +147,24 @@ public sealed class InterceptorTests
     public sealed record Args1(int Value) : IRequest<int>, IInterceptorDecorator;
     public sealed record Args2(int Value) : IRequest<int>, IInterceptorDecorator;
 
-    [AspectValidator(typeof(IRequestHandler<Args, int>),
-        ThrowException = false, Order = 2)]
-    [AspectVisitor(typeof(IRequestHandler<Args, int>), Order = 1)]
-    [AspectLogging(typeof(IRequestHandler<Args, int>), Order = 0)]
     public sealed class HandleArgs : IRequestHandler<Args, int>
     {
-        public Task<IOperationResult<int>> HandleAsync(
+        public async Task<IOperationResult<int>> HandleAsync(
             Args query, CancellationToken cancellationToken = default)
-            => Task.FromResult(OperationResults.Ok(query.Value).Build());
+        {
+            await Task.Yield();
+            return OperationResults.Ok(query.Value).Build();
+        }
     }
 
-    [AspectRetry(typeof(IRequestHandler<Args1, int>), Order = 1)]
-    [AspectLogging(typeof(IRequestHandler<Args1, int>), Order = 0)]
     public sealed class HandleExceptionArgs : IRequestHandler<Args1, int>
     {
-        int attemtp = 0;
-        public Task<IOperationResult<int>> HandleAsync(
+        public async Task<IOperationResult<int>> HandleAsync(
             Args1 query, CancellationToken cancellationToken = default)
         {
-            if (attemtp++ < 2)
-            {
-                throw new InvalidOperationException("Invalid operation exception");
-            }
+            await Task.Yield();
 
-            return Task.FromResult(OperationResults.Ok(query.Value).Build());
+            return OperationResults.Ok(query.Value).Build();
         }
-    }
-
-    [AspectFinalizer(typeof(IRequestHandler<Args2, int>),
-        CallFinalizerOnException = true)]
-    public sealed class HandleFinalizeArgs(
-        IAspectFinalizer aspectFinalizer) : IRequestHandler<Args2, int>
-    {
-        public Task<IOperationResult<int>> HandleAsync(
-            Args2 query, CancellationToken cancellationToken = default)
-        {
-            aspectFinalizer.Finalize = obj => obj switch
-            {
-                Exception _ => OperationResults.Ok(query.Value).Build(),
-                _ => obj
-            };
-
-            throw new InvalidOperationException("Invalid operation exception");
-        }
-    }
-
-    public sealed class AspectVisitor : IAspectVisitor<Args>
-    {
-        public void Visit(Args element) => element.Value = ExpectedValue;
-    }
-
-    public sealed class AspectLogger : IAspectLogger
-    {
-        public void OnEntry(LoggingStateEntry entry)
-            => Debug.WriteLine("OnEntry");
-        public void OnExit(LoggingStateExit exit)
-            => Console.WriteLine("OnExit");
-        public void OnFailure(LoggingStateFailure failure)
-            => Console.WriteLine("OnFailure");
-        public void OnSuccess(LoggingStateSuccess success)
-            => Debug.WriteLine("OnSuccess");
     }
 }

@@ -590,7 +590,11 @@ public static class ServiceCollectionDistributionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddScoped<PersistenceRequestDelegate>(
-            _ => ct => Task.FromResult(OperationResults.Ok().Build()));
+            _ => async ct =>
+            {
+                await Task.Yield();
+                return OperationResults.Ok().Build();
+            });
 
         return services;
     }
