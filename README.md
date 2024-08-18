@@ -283,7 +283,7 @@ And to register the decorator, you just need to call the specific extension meth
 
 ```c#
 services
-    .AddXHandlers()
+    .AddXRequestHandlers()
     .XTryDecorate<AddPersonRequestHandler, AddPersonRequestHandlerLoggingDecorator>();
 ```
 
@@ -330,11 +330,11 @@ services
     .XTryDecorate(typeof(IRequestHandler<>), typeof(RequestLoggingDecorator<>), typeof(ILoggerDecorator));
 ```
 
-## Request Pattern
+## CQRS Pattern
 
->Requests stands for Command and Query Responsibility Segregation, a pattern that separates read and update operations for a data store.
+>Stands for Command and Query Responsibility Segregation, a pattern that separates read and update operations for a data store.
 
-The following interfaces are used to apply request and request operations :
+The following interfaces are used to apply request operations :
 ```c#
 public interface IRequest<TResponse> {}
 public interface IAsyncRequest<TResponse> {}
@@ -514,7 +514,7 @@ Finally, we need to use the dependency injection to put it all together :
 ```c#
 var serviceProvider = new ServiceCollection()
     .AddXDataContext<ProductContext>(define options)
-    .AddXRequestHandlers(
+    .AddXAllRequestHandlers(
         options => options.UsePersistence().UseValidator())
     .AddXDistributor()
     .BuildServiceprovider();

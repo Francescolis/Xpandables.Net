@@ -501,7 +501,7 @@ public static class ServiceCollectionDistributionExtensions
 
         if (definedOptions.IsOperationFinalizerEnabled)
         {
-            _ = services.AddXRequestOperationFinalizerDecorator();
+            _ = services.AddXRequestFinalizerDecorator();
         }
 
         return services;
@@ -695,7 +695,7 @@ public static class ServiceCollectionDistributionExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXRequestOperationFinalizerDecorator(
+    public static IServiceCollection AddXRequestFinalizerDecorator(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
