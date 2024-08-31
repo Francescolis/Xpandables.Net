@@ -85,9 +85,20 @@ public sealed record class RequestOptions
         return this;
     }
 
+    /// <summary>
+    /// Enables aggregate behavior to <see cref="IRequestAggregate{TAggregate}"/>
+    /// providing with the ambient aggregate for the request.
+    /// </summary>
+    public RequestOptions UseAggregate()
+    {
+        IsAggregateEnabled = true;
+        return this;
+    }
+
     internal bool IsValidatorEnabled { get; private set; }
     internal bool IsVisitorEnabled { get; private set; }
     internal bool IsTransactionEnabled { get; private set; }
     internal bool IsPersistenceEnabled { get; private set; }
+    internal bool IsAggregateEnabled { get; private set; }
     internal bool IsOperationFinalizerEnabled { get; private set; }
 }

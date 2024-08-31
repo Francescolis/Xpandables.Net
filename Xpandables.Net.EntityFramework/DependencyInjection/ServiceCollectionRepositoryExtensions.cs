@@ -110,7 +110,7 @@ public static class ServiceCollectionRepositoryExtensions
         => services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
 
     /// <summary>
-    /// Registers the default implementation as <see cref="IRepositoryEvent"/> 
+    /// Registers the default implementation as <see cref="IEventRepository"/> 
     /// to the services with scope life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -124,7 +124,7 @@ public static class ServiceCollectionRepositoryExtensions
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IRepositoryEvent),
+                typeof(IEventRepository),
                 typeof(RepositoryEvent),
                 ServiceLifetime.Scoped));
 

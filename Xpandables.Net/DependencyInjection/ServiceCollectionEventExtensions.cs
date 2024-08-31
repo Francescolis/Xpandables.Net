@@ -100,25 +100,25 @@ public static class ServiceCollectionEventExtensions
     }
 
     /// <summary>
-    /// Registers the implementation as <see cref="IRepositoryEvent"/> 
+    /// Registers the implementation as <see cref="IEventRepository"/> 
     /// to the services with scope life time.
     /// </summary>
-    /// <typeparam name="TRepositoryEvent">The type of that 
-    /// implements <see cref="IRepositoryEvent"/>.</typeparam>
+    /// <typeparam name="TEventRepository">The type of that 
+    /// implements <see cref="IEventRepository"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXRepositoryEvent
-        <TRepositoryEvent>(this IServiceCollection services)
-        where TRepositoryEvent : class, IRepositoryEvent
+    public static IServiceCollection AddXEventRepository
+        <TEventRepository>(this IServiceCollection services)
+        where TEventRepository : class, IEventRepository
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IRepositoryEvent),
-                typeof(TRepositoryEvent),
+                typeof(IEventRepository),
+                typeof(TEventRepository),
                 ServiceLifetime.Scoped));
 
         return services;

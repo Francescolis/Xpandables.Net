@@ -28,7 +28,7 @@ namespace Xpandables.Net.Aggregates.Internals;
 /// Represents the event store implementation.
 /// </summary>
 internal sealed class EventStore(
-    IRepositoryEvent repository,
+    IEventRepository repository,
     IOptions<EventOptions> options) : Disposable, IEventStore
 {
     private IDisposable[] _disposables = [];
@@ -84,11 +84,9 @@ internal sealed class EventStore(
         Guid eventId,
         Exception? exception = null,
         CancellationToken cancellationToken = default)
-    {
-        await repository
+        => await repository
             .MarkEventsAsPublishedAsync(eventId, exception, cancellationToken)
             .ConfigureAwait(false);
-    }
 
     ///<inheritdoc/>
     protected sealed override async ValueTask DisposeAsync(bool disposing)

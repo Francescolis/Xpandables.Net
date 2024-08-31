@@ -31,7 +31,7 @@ public interface IRequestAggregate<TAggregate> : IAggregateDecorator
     /// <summary>
     /// Gets or sets the aggregate instance.
     /// </summary>
-    /// <remarks>This get populated by the aspect/decorator.</remarks>
+    /// <remarks>This get populated by the decorator.</remarks>
     Optional<TAggregate> Aggregate { get; set; }
 
     /// <summary>

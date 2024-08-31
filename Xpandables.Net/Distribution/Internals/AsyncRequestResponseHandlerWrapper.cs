@@ -17,7 +17,7 @@
 
 namespace Xpandables.Net.Distribution.Internals;
 
-internal sealed class AsyncRequestHandlerWrapper<TRequest, TResponse>(
+internal sealed class AsyncRequestResponseHandlerWrapper<TRequest, TResponse>(
     IAsyncRequestHandler<TRequest, TResponse> decoratee)
     : IAsyncRequestHandlerWrapper<TResponse>
     where TRequest : notnull, IAsyncRequest<TResponse>

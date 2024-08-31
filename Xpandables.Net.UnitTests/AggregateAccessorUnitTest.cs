@@ -35,7 +35,7 @@ using Xunit;
 
 public class AggregateAccessorTests
 {
-    private readonly Mock<IRepositoryEvent> _repositoryMock;
+    private readonly Mock<IEventRepository> _repositoryMock;
     private readonly Mock<IEventStore> _eventStoreMock;
     private readonly Mock<IEventPublisher> _publisherMock;
     private readonly Mock<IOptions<EventOptions>> _optionsMock;
@@ -46,7 +46,7 @@ public class AggregateAccessorTests
         EventOptions eventOptions = new();
         EventOptions.Default(eventOptions);
 
-        _repositoryMock = new Mock<IRepositoryEvent>();
+        _repositoryMock = new Mock<IEventRepository>();
         _eventStoreMock = new Mock<IEventStore>();
         _publisherMock = new Mock<IEventPublisher>();
         _optionsMock = new Mock<IOptions<EventOptions>>();

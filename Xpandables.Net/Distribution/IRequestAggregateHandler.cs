@@ -21,6 +21,24 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Distribution;
 
 /// <summary>
+/// Represents a method signature to be used to apply 
+/// <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/> implementation.
+/// </summary>
+/// <typeparam name="TAggregate">The type of aggregate.</typeparam>
+/// <typeparam name="TRequest">Type of the request to act on.</typeparam>
+/// <param name="request">The request instance to act on.</param>
+/// <param name="cancellationToken">A CancellationToken to 
+/// observe while waiting for the task to complete.</param>
+/// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
+/// <exception cref="ArgumentNullException">The 
+/// <paramref name="request"/> is null.</exception>
+public delegate Task<IOperationResult> RequestAggregateHandler
+    <TRequest, TAggregate>(
+    TRequest request, CancellationToken cancellationToken = default)
+    where TAggregate : class, IAggregate
+    where TRequest : class, IRequestAggregate<TAggregate>;
+
+/// <summary>
 /// Provides with a method to handle requests that are associated with an 
 /// aggregate using the Decider pattern.
 /// </summary>

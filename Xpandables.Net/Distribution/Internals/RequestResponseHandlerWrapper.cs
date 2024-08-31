@@ -20,7 +20,7 @@ using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Distribution.Internals;
 
-internal sealed class RequestHandlerWrapper<TRequest, TResponse>(
+internal sealed class RequestResponseHandlerWrapper<TRequest, TResponse>(
     IRequestHandler<TRequest, TResponse> decoratee)
     : IRequestHandlerWrapper<TResponse>
     where TRequest : notnull, IRequest<TResponse>

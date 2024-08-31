@@ -18,10 +18,11 @@
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Primitives.Collections;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Api.Persons.Repositories;
 
-public sealed class RepositoryPerson : IRepositoryEvent
+public sealed class PersonRepository : IEventRepository
 {
     private static readonly HashSet<IEntityEvent> _store = [];
     private static readonly HashSet<IEntityEvent> _events = [];
@@ -52,6 +53,7 @@ public sealed class RepositoryPerson : IRepositoryEvent
         if (entity is not null)
         {
             entity.ErrorMessage = exception?.ToString();
+            entity.SetStatus(EntityStatus.DELETED);
         }
 
         return Task.CompletedTask;

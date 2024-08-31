@@ -37,7 +37,7 @@ public static class ServiceCollectionEndpointExtensions
     /// <summary>
     /// Registers all the classes that implement the 
     /// <see langword="IEndpointRoute"/> that will be resolved by the 
-    /// <see langword="MapXEndpointRoutes"/> to add endpoint to the application.
+    /// <see langword="UseXEndpointRoutes"/> to add endpoint to the application.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 

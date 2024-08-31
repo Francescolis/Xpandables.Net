@@ -22,7 +22,7 @@ namespace Xpandables.Net.Aggregates;
 /// <summary>
 /// Represents the repository for events.
 /// </summary>
-public interface IRepositoryEvent
+public interface IEventRepository
 {
     /// <summary>
     /// Marks the specified entity event to be inserted to the data storage 

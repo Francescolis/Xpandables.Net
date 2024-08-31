@@ -49,7 +49,7 @@ public sealed class AggregateUnitTest
             .AddXEventHandlers()
             .AddXDistributor()
             .AddXAggregateAccessor()
-            .AddXRepositoryEvent<RepositoryPerson>()
+            .AddXEventRepository<RepositoryPerson>()
             .AddXOperationResultFinalizer()
             .AddXEventPublisher()
             .AddXEventDuplicateDecorator()
@@ -383,7 +383,7 @@ public readonly record struct ContactId(Guid Value) :
 
 }
 
-public sealed class RepositoryPerson : IRepositoryEvent
+public sealed class RepositoryPerson : IEventRepository
 {
     private static readonly HashSet<IEntityEvent> _store = [];
     private static readonly HashSet<IEntityEvent> _events = [];

@@ -38,7 +38,7 @@ namespace Xpandables.Net.Aggregates;
 /// <exception cref="ArgumentNullException">The <paramref name="publisher"/> 
 /// or <paramref name="eventStore"/> is null.</exception>"
 public sealed class AggregateAccessor<TAggregate>(
-    IRepositoryEvent repository,
+    IEventRepository repository,
     IEventStore eventStore,
     IEventPublisher publisher,
     IOptions<EventOptions> options) :

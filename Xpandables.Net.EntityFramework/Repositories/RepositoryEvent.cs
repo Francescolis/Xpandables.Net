@@ -26,7 +26,7 @@ namespace Xpandables.Net.Repositories;
 /// Represents the repository event.
 /// </summary>
 public sealed class RepositoryEvent(
-    DataContextEvent context) : IRepositoryEvent
+    DataContextEvent context) : IEventRepository
 {
     ///<inheritdoc/>
     public IAsyncEnumerable<IEntityEvent> FetchAsync(

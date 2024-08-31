@@ -98,7 +98,7 @@ public static class DistributorExtensions
 
         try
         {
-            Type requestWrapperType = typeof(RequestHandlerWrapper<,>)
+            Type requestWrapperType = typeof(RequestResponseHandlerWrapper<,>)
                 .MakeGenericType(request.GetType(), typeof(TResponse));
 
             IRequestHandlerWrapper<TResponse> handler =
@@ -145,7 +145,7 @@ public static class DistributorExtensions
 
         try
         {
-            Type requestWrapperType = typeof(AsyncRequestHandlerWrapper<,>)
+            Type requestWrapperType = typeof(AsyncRequestResponseHandlerWrapper<,>)
                 .MakeGenericType(request.GetType(), typeof(TResponse));
 
             IAsyncRequestHandlerWrapper<TResponse> handler =

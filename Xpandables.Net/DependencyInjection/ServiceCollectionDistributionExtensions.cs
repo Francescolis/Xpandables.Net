@@ -132,7 +132,7 @@ public static class ServiceCollectionDistributionExtensions
     /// the assemblies to the services with scope life time.
     /// </summary>
     /// <remarks>You can refer to the request handler using the 
-    /// <see cref="RequestHandler{TRequest}"/> delegate.</remarks>
+    /// <see cref="RequestAggregateHandler{TRequest, TAggregate}"/> delegate.</remarks>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
     /// If not set, the calling assembly will be used.</param>
@@ -174,8 +174,8 @@ public static class ServiceCollectionDistributionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddTransient(typeof(RequestAggregateHandlerWrapper<,>));
-        services.TryAddTransient(typeof(RequestHandlerWrapper<,>));
-        services.TryAddTransient(typeof(AsyncRequestHandlerWrapper<,>));
+        services.TryAddTransient(typeof(RequestResponseHandlerWrapper<,>));
+        services.TryAddTransient(typeof(AsyncRequestResponseHandlerWrapper<,>));
         return services;
     }
 
@@ -419,6 +419,7 @@ public static class ServiceCollectionDistributionExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
+        _ = services.AddXRequestAggregateHandlers(assemblies);
         _ = services.AddXRequestHandlers(assemblies);
         _ = services.AddXRequestResponseHandlers(assemblies);
         _ = services.AddXAsyncRequestResponseHandlers(assemblies);
@@ -428,8 +429,9 @@ public static class ServiceCollectionDistributionExtensions
 
     /// <summary>
     /// Registers and configures the <see cref="IRequestHandler{TRequest}"/>, 
-    /// <see cref="IRequestHandler{TRequest, TResponse}"/>
-    /// and <see cref="IAsyncRequestHandler{TRequest, TResponse}"/> behaviors.
+    /// <see cref="IRequestHandler{TRequest, TResponse}"/>,
+    /// <see cref="IAsyncRequestHandler{TRequest, TResponse}"/> and
+    /// <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/> behaviors.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <param name="assemblies">The assemblies to scan for implemented types. 
@@ -478,6 +480,11 @@ public static class ServiceCollectionDistributionExtensions
 
         RequestOptions definedOptions = new();
         configureOptions.Invoke(definedOptions);
+
+        if (definedOptions.IsAggregateEnabled)
+        {
+            _ = services.AddXRequestAggregateHandlerDecorator();
+        }
 
         if (definedOptions.IsPersistenceEnabled)
         {
