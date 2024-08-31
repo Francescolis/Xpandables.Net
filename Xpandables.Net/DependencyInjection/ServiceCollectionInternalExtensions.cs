@@ -35,9 +35,9 @@ internal static class ServiceCollectionInternalExtensions
 
         foreach (GenericTypes generic in genericTypes)
         {
-            foreach (Type interf in generic.Interfaces)
+            foreach (Type type in generic.Interfaces)
             {
-                Type[] paramTypes = [.. interf.GetGenericArguments()];
+                Type[] paramTypes = [.. type.GetGenericArguments()];
                 Type methodType = generic.Type;
                 MethodInfo methodGeneric = method
                     .MakeGenericMethod([.. paramTypes, methodType]);
@@ -75,17 +75,17 @@ internal static class ServiceCollectionInternalExtensions
     internal static IServiceCollection DoRegisterTypeServiceLifeTime
         <TInterface, TImplementation>(
          this IServiceCollection services,
-         Func<IServiceProvider, TImplementation>? implFactory = default,
+         Func<IServiceProvider, TImplementation>? factory = default,
          ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
          where TInterface : class
          where TImplementation : class, TInterface
     {
-        if (implFactory is not null)
+        if (factory is not null)
         {
             services.Add(
                 new ServiceDescriptor(
                     typeof(TInterface),
-                    implFactory,
+                    factory,
                     serviceLifetime));
         }
         else
