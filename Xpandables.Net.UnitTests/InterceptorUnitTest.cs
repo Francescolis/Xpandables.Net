@@ -19,11 +19,11 @@ using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Decorators;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Distribution;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.UnitTests;
 

@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Events;
+using Xpandables.Net.Events;
 
 namespace Xpandables.Net.DependencyInjection;
 

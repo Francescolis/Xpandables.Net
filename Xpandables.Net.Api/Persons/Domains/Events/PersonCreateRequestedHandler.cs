@@ -16,8 +16,8 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Aggregates;
 using Xpandables.Net.Distribution;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Persons.Domains.Events;

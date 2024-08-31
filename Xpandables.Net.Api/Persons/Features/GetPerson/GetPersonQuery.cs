@@ -15,8 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Decorators;
 using Xpandables.Net.Distribution;
-using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Api.Persons.Features.GetPerson;
 

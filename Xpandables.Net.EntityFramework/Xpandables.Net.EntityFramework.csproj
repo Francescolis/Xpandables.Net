@@ -77,8 +77,4 @@
 		<ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Events\" />
-	</ItemGroup>
-
 </Project>

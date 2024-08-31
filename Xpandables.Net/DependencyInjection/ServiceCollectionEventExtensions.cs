@@ -21,11 +21,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Internals;
 using Xpandables.Net.Decorators;
 using Xpandables.Net.Distribution;
 using Xpandables.Net.Distribution.Internals;
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Events;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -78,47 +77,6 @@ public static class ServiceCollectionEventExtensions
             new ServiceDescriptor(
                 typeof(IEventStore),
                 typeof(TEventStore),
-                ServiceLifetime.Scoped));
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the default implementation as <see cref="IEventStore"/>
-    /// to the services with scope life time.
-    /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXEventStore(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        return services.AddXEventStore<EventStore>();
-    }
-
-    /// <summary>
-    /// Registers the implementation as <see cref="IEventRepository"/> 
-    /// to the services with scope life time.
-    /// </summary>
-    /// <typeparam name="TEventRepository">The type of that 
-    /// implements <see cref="IEventRepository"/>.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
-    /// is null.</exception>
-    public static IServiceCollection AddXEventRepository
-        <TEventRepository>(this IServiceCollection services)
-        where TEventRepository : class, IEventRepository
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAdd(
-            new ServiceDescriptor(
-                typeof(IEventRepository),
-                typeof(TEventRepository),
                 ServiceLifetime.Scoped));
 
         return services;

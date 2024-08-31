@@ -21,8 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Events;
+using Xpandables.Net.Events;
 using Xpandables.Net.HostedServices;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
@@ -130,14 +129,14 @@ internal sealed class EventScheduler(
                 }
 
                 await eventStore
-                    .MarkEventAsPublished(@event.Id, exception, cancellationToken)
+                    .MarkEventAsPublishedAsync(@event.Id, exception, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception exception)
                 when (exception is not ArgumentNullException)
             {
                 await eventStore
-                    .MarkEventAsPublished(@event.Id, exception, cancellationToken)
+                    .MarkEventAsPublishedAsync(@event.Id, exception, cancellationToken)
                     .ConfigureAwait(false);
             }
         }

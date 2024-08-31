@@ -17,8 +17,8 @@
 ********************************************************************************/
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Distribution;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.I18n;
 
@@ -33,12 +33,10 @@ namespace Xpandables.Net.Aggregates;
 /// </remarks>
 /// <param name="publisher">The event publisher to use.</param>
 /// <param name="eventStore">The event store to use.</param>
-/// <param name="repository">The repository event to use.</param>
 /// <param name="options">The event configuration options to use.</param>
 /// <exception cref="ArgumentNullException">The <paramref name="publisher"/> 
 /// or <paramref name="eventStore"/> is null.</exception>"
 public sealed class AggregateAccessor<TAggregate>(
-    IEventRepository repository,
     IEventStore eventStore,
     IEventPublisher publisher,
     IOptions<EventOptions> options) :
@@ -70,7 +68,7 @@ public sealed class AggregateAccessor<TAggregate>(
                 }
             }
 
-            await repository
+            await eventStore
                 .PersistAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -109,6 +107,7 @@ public sealed class AggregateAccessor<TAggregate>(
                 .GetEventFilterFor<IEventDomain>();
 
             filter.KeyId = keyId;
+            filter.AggregateName = typeof(TAggregate).Name;
 
             await foreach (IEvent @event in eventStore
                 .FetchAsync(filter, cancellationToken))

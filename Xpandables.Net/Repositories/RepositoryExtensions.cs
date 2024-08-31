@@ -17,8 +17,6 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-using Xpandables.Net.Aggregates.Events;
-
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
@@ -128,27 +126,5 @@ public static class RepositoryExtensions
 
         public override Expression Visit(Expression? node)
             => node == from ? to : base.Visit(node)!;
-    }
-
-    internal sealed class EventFilterEntityVisitor : ExpressionVisitor
-    {
-        internal static readonly ParameterExpression EventEntityParameter
-            = Expression.Parameter(typeof(IEntityEventDomain));
-        internal static readonly EventFilterEntityVisitor EventEntityVisitor
-            = new(typeof(IEntityEventDomain), nameof(IEntityEventDomain.Data));
-
-        internal readonly ParameterExpression Parameter;
-        private readonly Expression _expression;
-
-        internal EventFilterEntityVisitor(Type parameterType, string member)
-        {
-            Parameter = Expression.Parameter(parameterType);
-            _expression = Expression.PropertyOrField(Parameter, member);
-        }
-
-        protected override Expression VisitParameter(ParameterExpression node)
-            => node.Type == _expression.Type
-            ? _expression
-            : base.VisitParameter(node);
     }
 }

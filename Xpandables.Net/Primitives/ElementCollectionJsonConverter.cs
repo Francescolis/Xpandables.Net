@@ -48,7 +48,5 @@ public sealed class ElementCollectionJsonConverter
         Utf8JsonWriter writer,
         ElementCollection value,
         JsonSerializerOptions options)
-    {
-        JsonSerializer.Serialize(writer, value.ToArray(), options);
-    }
+        => JsonSerializer.Serialize(writer, value.ToArray(), options);
 }

@@ -18,8 +18,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Aggregates.Events;
-using Xpandables.Net.Distribution;
+using Xpandables.Net.Aggregates;
+using Xpandables.Net.Decorators;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 

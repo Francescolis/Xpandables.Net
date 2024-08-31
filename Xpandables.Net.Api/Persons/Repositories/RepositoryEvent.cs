@@ -15,33 +15,33 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Events;
+using Microsoft.Extensions.Options;
+
+using Xpandables.Net.Events;
 using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Api.Persons.Repositories;
 
-public sealed class PersonRepository : IEventRepository
+public sealed class PersonEventStore(
+    IOptions<EventOptions> options) : EventStore(options)
 {
     private static readonly HashSet<IEntityEvent> _store = [];
     private static readonly HashSet<IEntityEvent> _events = [];
 
-    public Task InsertAsync(
+    protected override Task DoAppendAsync(
         IEntityEvent entity,
         CancellationToken cancellationToken = default)
     {
         _events.Add(entity);
         return Task.CompletedTask;
     }
-
-    public IAsyncEnumerable<IEntityEvent> FetchAsync(
+    protected override IAsyncEnumerable<IEntityEvent> DoFetchAsync(
         IEventFilter eventFilter,
         CancellationToken cancellationToken = default)
         => eventFilter
             .ApplyQueryable(_store.AsQueryable());
-
-    public Task MarkEventsAsPublishedAsync(
+    protected override Task DoMarkEventsAsPublishedAsync(
         Guid eventId,
         Exception? exception = null,
         CancellationToken cancellationToken = default)
@@ -58,7 +58,7 @@ public sealed class PersonRepository : IEventRepository
 
         return Task.CompletedTask;
     }
-    public Task PersistAsync(
+    protected override Task DoPersistAsync(
         CancellationToken cancellationToken = default)
     {
         _events.ForEach(e => _store.Add(e));

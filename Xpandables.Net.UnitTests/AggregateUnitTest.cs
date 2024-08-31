@@ -23,9 +23,10 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Events;
+using Xpandables.Net.Decorators;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Distribution;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.Collections;

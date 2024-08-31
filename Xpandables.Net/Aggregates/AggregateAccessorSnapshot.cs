@@ -16,8 +16,7 @@
 ********************************************************************************/
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Aggregates.Events;
-using Xpandables.Net.Distribution;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Primitives.I18n;
@@ -39,7 +38,7 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
 
         try
         {
-            if (IsSnapshopOptionsActive(aggregate))
+            if (IsSnapshotOptionsActive(aggregate))
             {
                 EventSnapshot @event = new()
                 {
@@ -152,7 +151,7 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
             .Build();
     }
 
-    private bool IsSnapshopOptionsActive(IAggregate aggregate) =>
+    private bool IsSnapshotOptionsActive(IAggregate aggregate) =>
       options.Value.SnapshotOptions.IsOn
           && aggregate.Version % options.Value.SnapshotOptions.Frequency == 0
           && aggregate.Version >= options.Value.SnapshotOptions.Frequency;

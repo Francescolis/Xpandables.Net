@@ -48,13 +48,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Events\**" />
 	  <Compile Remove="Persistence\**" />
 	  <Compile Remove="Properties\**" />
-	  <EmbeddedResource Remove="Events\**" />
 	  <EmbeddedResource Remove="Persistence\**" />
 	  <EmbeddedResource Remove="Properties\**" />
-	  <None Remove="Events\**" />
 	  <None Remove="Persistence\**" />
 	  <None Remove="Properties\**" />
 	</ItemGroup>

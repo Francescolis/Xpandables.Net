@@ -27,7 +27,6 @@ using Xpandables.Net.Distribution;
 using Xpandables.Net.Distribution.Internals;
 using Xpandables.Net.Interceptions;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 using Xpandables.Net.Transactions;
 using Xpandables.Net.Visitors;
 

@@ -25,7 +25,6 @@ using Xpandables.Net.Decorators;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.UnitTests;

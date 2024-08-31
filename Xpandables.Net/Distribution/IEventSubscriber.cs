@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using Xpandables.Net.Events;
+
 namespace Xpandables.Net.Distribution;
 
 /// <summary>

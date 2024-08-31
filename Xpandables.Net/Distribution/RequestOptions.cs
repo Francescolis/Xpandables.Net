@@ -15,8 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Decorators;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 using Xpandables.Net.Transactions;
 using Xpandables.Net.Visitors;
 

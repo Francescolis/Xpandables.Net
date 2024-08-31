@@ -16,11 +16,9 @@
 ********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Distribution;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Decorators;
 

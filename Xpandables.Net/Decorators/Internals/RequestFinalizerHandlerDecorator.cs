@@ -20,7 +20,6 @@ using System.Runtime.CompilerServices;
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Primitives;
 
 namespace Xpandables.Net.Decorators.Internals;
 internal sealed class RequestFinalizerHandlerDecorator<TRequest>(

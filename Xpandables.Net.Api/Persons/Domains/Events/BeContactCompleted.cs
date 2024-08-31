@@ -15,7 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Distribution;
+using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Api.Persons.Domains.Events;
 

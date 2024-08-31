@@ -26,8 +26,8 @@ using Microsoft.Extensions.Options;
 using Moq;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Distribution;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.Collections;
 

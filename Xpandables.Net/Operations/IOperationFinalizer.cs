@@ -20,7 +20,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Decorators;
 
 namespace Xpandables.Net.Operations;
 

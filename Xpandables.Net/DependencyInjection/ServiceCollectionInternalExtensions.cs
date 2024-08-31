@@ -19,7 +19,7 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Decorators;
 
 namespace Xpandables.Net.DependencyInjection;
 internal static class ServiceCollectionInternalExtensions

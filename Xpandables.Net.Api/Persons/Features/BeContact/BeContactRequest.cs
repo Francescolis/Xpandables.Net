@@ -17,8 +17,8 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
+using Xpandables.Net.Decorators;
 using Xpandables.Net.Http.Requests;
-using Xpandables.Net.Primitives;
 
 using static Xpandables.Net.Http.Requests.HttpClientParameters;
 

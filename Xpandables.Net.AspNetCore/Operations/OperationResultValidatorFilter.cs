@@ -18,7 +18,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Primitives;
+using Xpandables.Net.Decorators;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.Operations;

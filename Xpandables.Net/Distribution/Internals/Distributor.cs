@@ -18,6 +18,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Distribution.Internals;

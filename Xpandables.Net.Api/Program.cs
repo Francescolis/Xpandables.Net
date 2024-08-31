@@ -5,12 +5,12 @@ using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-using Xpandables.Net.Aggregates.Events;
 using Xpandables.Net.Api;
 using Xpandables.Net.Api.I18n;
 using Xpandables.Net.Api.Persons.Persistence;
 using Xpandables.Net.Api.Persons.Repositories;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,11 +33,10 @@ builder.Services
     .AddXValidatorGenerics()
     .AddXValidators()
     .AddXAggregateAccessor()
-    .AddXEventRepository<PersonRepository>()
+    .AddXEventStore<PersonEventStore>()
     .AddXEventPublisher()
     .AddXEventIntegrationScheduler()
     .AddXEventDuplicateDecorator()
-    .AddXEventStore()
     .AddXEndpointRoutes()
     .AddXOperationResultFinalizer()
     .AddXOperationResultSerializationConfigureOptions()
