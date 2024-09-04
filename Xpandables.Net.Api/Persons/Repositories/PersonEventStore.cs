@@ -40,7 +40,7 @@ public sealed class PersonEventStore(
         IEventFilter eventFilter,
         CancellationToken cancellationToken = default)
         => eventFilter
-            .ApplyQueryable(_store.AsQueryable());
+            .ApplyFilter(_store.AsQueryable());
     protected override Task DoMarkEventsAsPublishedAsync(
         Guid eventId,
         Exception? exception = null,

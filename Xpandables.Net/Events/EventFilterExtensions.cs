@@ -32,7 +32,7 @@ public static class EventFilterExtensions
     /// <param name="queryable">The queryable to apply the filter.</param>
     /// <exception cref="ArgumentNullException">The event filter or 
     /// queryable is null.</exception>
-    public static IAsyncEnumerable<IEntityEvent> ApplyQueryable(
+    public static IAsyncEnumerable<IEntityEvent> ApplyFilter(
         this IEventFilter eventFilter,
         IQueryable queryable)
     {

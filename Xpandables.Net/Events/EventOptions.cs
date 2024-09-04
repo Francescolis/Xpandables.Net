@@ -54,19 +54,12 @@ public sealed record EventOptions
     public SchedulerOptions SchedulerOptions { get; set; } = new();
 
     /// <summary>
-    /// Determines whether to consider no event handler as an error.
-    /// </summary>
-    public bool ConsiderNoDomainEventHandlerAsError { get; set; }
-
-    /// <summary>
-    /// Determines whether to consider no integration event handler as an error.
-    /// </summary>
-    public bool ConsiderNoEventIntegrationHandlerAsError { get; set; }
-
-    /// <summary>
     /// Determines whether to dispose entity event after persistence.
     /// </summary>
-    /// <remarks>The default value is <see langword="true"/>.</remarks>
+    /// <remarks>The default value is <see langword="true"/>.
+    /// <para>This flag is useful when you use the built in event persistence 
+    /// model that contains a disposable <see cref="JsonDocument"/> property.
+    /// </para></remarks>
     public bool DisposeEventEntityAfterPersistence { get; set; }
 
     /// <summary>
@@ -115,7 +108,7 @@ public sealed record EventOptions
     /// Returns the <see cref="IEventFilter"/> instance for the specified 
     /// type.
     /// </summary>
-    /// <param name="type">The type to filter.</param>
+    /// <param name="type">The event type to filter.</param>
     /// <returns>The <see cref="IEventFilter"/> instance.</returns>
     /// <exception cref="InvalidOperationException">The filter was not found.
     /// </exception>

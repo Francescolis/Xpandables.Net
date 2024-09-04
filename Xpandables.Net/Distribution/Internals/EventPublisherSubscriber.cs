@@ -43,35 +43,62 @@ internal sealed class EventPublisherSubscriber(IServiceProvider serviceProvider)
     {
         try
         {
-            IOperationResult result = OperationResults.Ok().Build();
-            int count = 0;
+            IOperationResult.IFailureBuilder failureBuilder =
+                OperationResults.Failure();
+
+            int subscriberCount = 0;
             foreach (object subscriber in GetHandlersOf<TEvent>())
             {
-                count++;
+                subscriberCount++;
                 switch (subscriber)
                 {
                     case Action<TEvent> action:
-                        action(@event);
+                        if (action.ToOperationResult(@event) is
+                            { IsFailure: true } actionFailure)
+                        {
+                            failureBuilder = failureBuilder.Merge(actionFailure);
+                        }
+
                         break;
                     case Func<TEvent, Task> action:
-                        await action(@event).ConfigureAwait(false);
+                        if (await action(@event)
+                            .ToOperationResultAsync()
+                            .ConfigureAwait(false) is
+                            { IsFailure: true } taskFailure)
+                        {
+                            failureBuilder = failureBuilder.Merge(taskFailure);
+                        }
+
                         break;
                     case IEventHandler<TEvent> handler:
-                        result = await handler
+                        if (await handler
                             .HandleAsync(@event, cancellationToken)
-                            .ConfigureAwait(false);
+                            .ConfigureAwait(false)
+                            is { IsFailure: true } handlerFailure)
+                        {
+                            failureBuilder = failureBuilder.Merge(handlerFailure);
+                        }
+
                         break;
                     default: break;
                 }
             }
 
-            return count == 0
-                ? OperationResults
+            if (subscriberCount == 0)
+            {
+                return OperationResults
                     .NotFound()
                     .WithDetail("No subscriber found for the event !")
                     .WithError(nameof(Event), @event.GetTypeName())
-                    .Build()
-                : result;
+                    .Build();
+            }
+
+            IOperationResult failure = failureBuilder.Build();
+            IOperationResult success = OperationResults.Ok().Build();
+
+            return failure.Errors.Any()
+                ? failure
+                : success;
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException)

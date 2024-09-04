@@ -100,7 +100,7 @@ public static class OperationResultExtensions
 
     /// <summary>
     /// Ensures that the specified status code is a failure code.
-    /// Throws an exception if the status code is not a failure; 
+    /// Throws an exception if the status code is not a failure. 
     /// </summary>
     /// <param name="statusCode">The status code value to be checked.</param>
     /// <returns>Returns the status code if it's a failure code 
@@ -142,7 +142,7 @@ public static class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the current instance to a generic one zith the specified type.
+    /// Converts the current instance to a generic one with the specified type.
     /// </summary>
     /// <param name="operationResult">The current instance.</param>
     /// <param name="genericType">The underlying type.</param>
@@ -290,6 +290,41 @@ public static class OperationResultExtensions
         try
         {
             action();
+            return OperationResults.Ok().Build();
+        }
+        catch (ValidationException validationException)
+        {
+            return validationException.ToOperationResult();
+        }
+        catch (OperationResultException operationResultException)
+        {
+            return operationResultException.Operation;
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            return exception.ToOperationResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts the current <see cref="Action"/> 
+    /// to a <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <param name="action">The action to act on.</param>
+    /// <param name="argument">The argument to pass to the action.</param>
+    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="action"/> is null.</exception>
+    public static IOperationResult ToOperationResult<T>(
+        this Action<T> action,
+        T argument)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        try
+        {
+            action(argument);
             return OperationResults.Ok().Build();
         }
         catch (ValidationException validationException)

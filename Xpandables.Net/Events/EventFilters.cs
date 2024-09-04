@@ -31,9 +31,9 @@ public sealed record EntityEventDomainFilter : EventFilter<EntityEventDomain>
         => Type.IsAssignableFrom(typeToFilter);
 
     ///<inheritdoc/>
-    protected override QueryExpression<EntityEventDomain> CriteriaBuilder()
+    protected override QueryExpression<EntityEventDomain> CriteriaCriteria()
     {
-        QueryExpression<EntityEventDomain> expression = base.CriteriaBuilder();
+        QueryExpression<EntityEventDomain> expression = base.CriteriaCriteria();
 
         if (KeyId is not null)
         {
@@ -62,9 +62,9 @@ public sealed record EntityEventIntegrationFilter : EventFilter<EntityEventInteg
          => Type.IsAssignableFrom(typeToFilter);
 
     ///<inheritdoc/>
-    protected override QueryExpression<EntityEventIntegration> CriteriaBuilder()
+    protected override QueryExpression<EntityEventIntegration> CriteriaCriteria()
     {
-        QueryExpression<EntityEventIntegration> expression = base.CriteriaBuilder();
+        QueryExpression<EntityEventIntegration> expression = base.CriteriaCriteria();
 
         if (OnError is not null)
         {

@@ -29,6 +29,7 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     IOperationResult.IStatusBuilder<TBuilder>,
     IOperationResult.IDescriptionBuilder<TBuilder>,
     IOperationResult.IClearBuilder<TBuilder>,
+    IOperationResult.IMergeBuilder<TBuilder>,
     IOperationResult.IBuilder
     where TBuilder : class, IOperationResult.IBuilder
 {
@@ -63,6 +64,22 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         .WithDetail(string detail)
     {
         _detail = detail;
+        return (this as TBuilder)!;
+    }
+
+    TBuilder IOperationResult.IMergeBuilder<TBuilder>.Merge(
+        IOperationResult failureOperation)
+    {
+        _ = _statusCode.EnsureFailureStatusCode();
+        _ = failureOperation.StatusCode.EnsureFailureStatusCode();
+
+        _errors.Merge(failureOperation.Errors);
+        _detail ??= failureOperation.Detail;
+        _title ??= failureOperation.Title;
+        _extensions.Merge(failureOperation.Extensions);
+        _headers.Merge(failureOperation.Headers);
+        _uri ??= failureOperation.LocationUrl;
+
         return (this as TBuilder)!;
     }
 

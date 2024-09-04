@@ -67,11 +67,11 @@ public abstract record EventFilter<TEntityEvent> : IEventFilter<TEntityEvent>
     public bool? OnError { get; set; }
 
     ///<summary>
-    /// The Criteria returns the <see cref="CriteriaBuilder"/> value.
+    /// The Criteria returns the <see cref="CriteriaCriteria"/> value.
     ///</summary>
     ///<inheritdoc/>
     public Expression<Func<TEntityEvent, bool>>? Criteria
-        => CriteriaBuilder().GetExpression();
+        => CriteriaCriteria().GetExpression();
 
     ///<summary>
     /// The default selector returns the same entity.
@@ -83,12 +83,13 @@ public abstract record EventFilter<TEntityEvent> : IEventFilter<TEntityEvent>
     /// The default order use the <see cref="IEntityEvent.Version"/> property.
     ///</summary>
     ///<inheritdoc/>
-    public virtual Func<IQueryable<TEntityEvent>, IOrderedQueryable<TEntityEvent>>? OrderBy
+    public virtual
+        Func<IQueryable<TEntityEvent>, IOrderedQueryable<TEntityEvent>>? OrderBy
         => x => x.OrderBy(o => o.Version);
 
     /// <summary>
     /// When overridden in a derived class, determines whether the filter 
-    /// instance can apply filters the specified object type.
+    /// instance can be applied on the specified object type.
     /// </summary>
     /// <param name="typeToFilter">The type of the object to apply filter.</param>
     /// <returns><see langword="true"/> if the instance can apply filters the 
@@ -98,7 +99,7 @@ public abstract record EventFilter<TEntityEvent> : IEventFilter<TEntityEvent>
     /// <summary>
     /// When overridden in a derived class, builds the criteria for the filter.
     ///</summary>
-    protected virtual QueryExpression<TEntityEvent> CriteriaBuilder()
+    protected virtual QueryExpression<TEntityEvent> CriteriaCriteria()
     {
         QueryExpression<TEntityEvent> expression
             = QueryExpressionFactory.Create<TEntityEvent>();

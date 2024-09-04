@@ -101,16 +101,16 @@ public interface IEventFilter : IEntityFilter
 
     /// <summary>
     /// When overridden in a derived class, determines whether the filter 
-    /// instance can apply filters the specified object type.
+    /// instance can be applied on the specified object type.
     /// </summary>
     /// <param name="typeToFilter">The type of the object to apply filter.</param>
-    /// <returns><see langword="true"/> if the instance can apply filters the 
+    /// <returns><see langword="true"/> if the instance can apply filters to the 
     /// specified object type; otherwise, <see langword="false"/>.</returns>
     bool CanFilter(Type typeToFilter);
 }
 
 /// <summary>
-/// Provides with criteria for entity event filtering.
+/// Provides with criteria for generic entity event filtering.
 /// </summary>
 /// <typeparam name="TEntityEvent">The type of the entity event to filter
 /// .</typeparam>

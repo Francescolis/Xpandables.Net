@@ -52,7 +52,7 @@ public partial interface IOperationResult
 
     /// <summary>
     /// Provides with commands to build a failure 
-    /// <see cref="IOperationResult"/> in a fluent design.
+    /// <see cref="IOperationResult"/> in a fluent design mode.
     /// </summary>
     public interface IFailureBuilder :
         IHeaderBuilder<IFailureBuilder>,
@@ -61,12 +61,13 @@ public partial interface IOperationResult
         IStatusBuilder<IFailureBuilder>,
         IDescriptionBuilder<IFailureBuilder>,
         IClearBuilder<IFailureBuilder>,
+        IMergeBuilder<IFailureBuilder>,
         IBuilder
     { }
 
     /// <summary>
     /// Provides with commands to build a failure 
-    /// <see cref="IOperationResult{TResult}"/> in a fluent design.
+    /// <see cref="IOperationResult{TResult}"/> in a fluent design mode.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     public interface IFailureBuilder<TResult> :
@@ -76,6 +77,7 @@ public partial interface IOperationResult
         IStatusBuilder<IFailureBuilder<TResult>>,
         IDescriptionBuilder<IFailureBuilder<TResult>>,
         IClearBuilder<IFailureBuilder<TResult>>,
+        IMergeBuilder<IFailureBuilder<TResult>>,
         IBuilder<TResult>
     { }
 
@@ -108,6 +110,20 @@ public partial interface IOperationResult
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         IOperationResult IBuilder.Build() => Build();
+    }
+
+    /// <summary>
+    /// Provides with request to add a failure operation result to the
+    /// builder.
+    /// </summary>
+    public interface IMergeBuilder<out TBuilder>
+    {
+        /// <summary>
+        /// Merges the specified failure operation result into the builder.
+        /// </summary>
+        /// <param name="failureOperation">The failure operation result to 
+        /// merge.</param>
+        TBuilder Merge(IOperationResult failureOperation);
     }
 
     /// <summary>

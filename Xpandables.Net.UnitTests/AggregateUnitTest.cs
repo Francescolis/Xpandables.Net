@@ -401,7 +401,7 @@ public sealed class RepositoryPerson : IEventRepository
         IEventFilter eventFilter,
         CancellationToken cancellationToken = default)
         => eventFilter
-            .ApplyQueryable(_store.AsQueryable());
+            .ApplyFilter(_store.AsQueryable());
 
     public Task MarkEventsAsPublishedAsync(
         Guid eventId,
