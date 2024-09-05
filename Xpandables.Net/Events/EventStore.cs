@@ -19,8 +19,6 @@ using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Primitives.Collections;
-
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -75,6 +73,7 @@ public abstract class EventStore(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(eventFilter);
+        await Task.Yield();
 
         IEventConverter converter = options
             .Value
@@ -83,9 +82,7 @@ public abstract class EventStore(
         IQueryable queryable = GetQueryableCore(eventFilter);
         IEnumerable<IEntityEvent> entities = eventFilter.Fetch(queryable);
 
-        await foreach (IEntityEvent entity in entities
-            .ToAsyncEnumerable()
-            .WithCancellation(cancellationToken))
+        foreach (IEntityEvent entity in entities)
         {
             yield return converter
                 .ConvertFrom(entity, options.Value.SerializerOptions);
