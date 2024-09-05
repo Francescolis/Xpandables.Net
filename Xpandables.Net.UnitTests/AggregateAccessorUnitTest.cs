@@ -35,7 +35,6 @@ using Xunit;
 
 public class AggregateAccessorTests
 {
-    private readonly Mock<IEventRepository> _repositoryMock;
     private readonly Mock<IEventStore> _eventStoreMock;
     private readonly Mock<IEventPublisher> _publisherMock;
     private readonly Mock<IOptions<EventOptions>> _optionsMock;
@@ -46,14 +45,12 @@ public class AggregateAccessorTests
         EventOptions eventOptions = new();
         EventOptions.Default(eventOptions);
 
-        _repositoryMock = new Mock<IEventRepository>();
         _eventStoreMock = new Mock<IEventStore>();
         _publisherMock = new Mock<IEventPublisher>();
         _optionsMock = new Mock<IOptions<EventOptions>>();
         _optionsMock.Setup(o => o.Value).Returns(eventOptions);
 
         _aggregateAccessor = new AggregateAccessor<TestAggregate>(
-            _repositoryMock.Object,
             _eventStoreMock.Object,
             _publisherMock.Object,
             _optionsMock.Object);
@@ -80,8 +77,6 @@ public class AggregateAccessorTests
             It.IsAny<CancellationToken>()), Times.Once);
         _publisherMock.Verify(p => p.PublishAsync(It.IsAny<IEventDomain>(),
             It.IsAny<CancellationToken>()), Times.Once);
-        _repositoryMock.Verify(r => r.PersistAsync(
-            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -105,8 +100,6 @@ public class AggregateAccessorTests
             It.IsAny<CancellationToken>()), Times.Once);
         _publisherMock.Verify(p => p.PublishAsync(It.IsAny<IEventDomain>(),
             It.IsAny<CancellationToken>()), Times.Once);
-        _repositoryMock.Verify(r => r.PersistAsync(
-            It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -141,7 +134,7 @@ public class AggregateAccessorTests
         _eventStoreMock
             .Setup(es => es.FetchAsync(It.IsAny<IEventFilter>(),
             It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable.EmptyAsync<IEvent>());
+            .Returns(AsyncEnumerable.Empty<IEvent>());
 
         // Act
         var result = await _aggregateAccessor.PeekAsync(keyId);
@@ -155,13 +148,14 @@ public class AggregateAccessorTests
 
     private class TestAggregate : Aggregate
     {
-        private readonly List<IEventDomain> _uncommittedEvents = new();
+        private readonly List<IEventDomain> _uncommittedEvents = [];
 
         public bool IsEmpty => _uncommittedEvents.Count == 0;
 
         public void AddEvent(IEventDomain @event) => _uncommittedEvents.Add(@event);
 
-        public override IReadOnlyCollection<IEventDomain> GetUncommittedEvents() => _uncommittedEvents;
+        public override IReadOnlyCollection<IEventDomain> GetUncommittedEvents()
+            => _uncommittedEvents;
 
         public override void LoadFromHistory(IEventDomain @event)
         {

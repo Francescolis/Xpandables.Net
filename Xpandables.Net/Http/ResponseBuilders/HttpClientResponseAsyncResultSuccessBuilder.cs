@@ -60,7 +60,7 @@ public sealed class HttpClientResponseAsyncResultSuccessBuilder
             return new HttpClientResponse<IAsyncEnumerable<TResult>>(
                 context.ResponseMessage.StatusCode,
                 context.ResponseMessage.ReadHttpResponseHeaders(),
-                AsyncEnumerable.EmptyAsync<TResult>(),
+                AsyncEnumerable.Empty<TResult>(),
                 context.ResponseMessage.Version,
                 context.ResponseMessage.ReasonPhrase,
                 default);
@@ -89,7 +89,7 @@ public sealed class HttpClientResponseAsyncResultSuccessBuilder
 #pragma warning disable CA2007 // Consider calling ConfigureAwait 
             //on the awaited task
             await using IAsyncEnumerator<TResult> blockingCollectionIterator
-                = new AsyncEnumerable<TResult>(
+                = new Primitives.Collections.AsyncEnumerable<TResult>(
                 blockingCollection.GetConsumingEnumerable(cancellationToken))
                 .GetAsyncEnumerator(cancellationToken);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait 

@@ -107,6 +107,14 @@ public interface IEventFilter : IEntityFilter
     /// <returns><see langword="true"/> if the instance can apply filters to the 
     /// specified object type; otherwise, <see langword="false"/>.</returns>
     bool CanFilter(Type typeToFilter);
+
+    /// <summary>
+    /// Fetches the entity events asynchronously based on the specified queryable.
+    /// </summary>
+    /// <param name="queryable">The queryable to act on.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that allows asynchronous
+    /// enumeration of the entity events.</returns>
+    IEnumerable<IEntityEvent> Fetch(IQueryable queryable);
 }
 
 /// <summary>
@@ -123,4 +131,22 @@ public interface IEventFilter<TEntityEvent> : IEventFilter, IEntityFilter<TEntit
     new Type Type { get; }
 
     Type IEventFilter.Type => Type;
+
+    /// <summary>
+    /// Fetches the entity events asynchronously based on the specified queryable.
+    /// </summary>
+    /// <param name="queryable">The queryable to act on.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that allows asynchronous
+    /// enumeration of the entity events.</returns>
+    public virtual IEnumerable<IEntityEvent> Fetch(
+        IQueryable<TEntityEvent> queryable)
+    {
+        ArgumentNullException.ThrowIfNull(queryable);
+
+        return Apply(queryable)
+            .AsEnumerable();
+    }
+
+    IEnumerable<IEntityEvent> IEventFilter.Fetch(IQueryable queryable)
+        => Fetch(queryable.OfType<TEntityEvent>());
 }

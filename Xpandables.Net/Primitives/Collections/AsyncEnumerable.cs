@@ -27,7 +27,7 @@ public static class AsyncEnumerable
     /// Returns an empty async-enumerable.
     /// </summary>
     /// <returns>An async-enumerable sequence with no elements.</returns>
-    public static IAsyncEnumerable<T> EmptyAsync<T>()
+    public static IAsyncEnumerable<T> Empty<T>()
         => new AsyncEnumerable<T>([]);
 }
 

@@ -16,8 +16,6 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-using Xpandables.Net.Primitives.Collections;
-
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -25,47 +23,6 @@ namespace Xpandables.Net.Events;
 /// </summary>
 public static class EventFilterExtensions
 {
-    /// <summary>
-    /// Applies the event filter to the queryable.
-    /// </summary>
-    /// <param name="eventFilter">The event filter to apply.</param>
-    /// <param name="queryable">The queryable to apply the filter.</param>
-    /// <exception cref="ArgumentNullException">The event filter or 
-    /// queryable is null.</exception>
-    public static IAsyncEnumerable<IEntityEvent> ApplyFilter(
-        this IEventFilter eventFilter,
-        IQueryable queryable)
-    {
-        ArgumentNullException.ThrowIfNull(eventFilter);
-        ArgumentNullException.ThrowIfNull(queryable);
-
-        return eventFilter.Type switch
-        {
-            Type type when type == typeof(IEventDomain)
-                => DoFetchAsync(eventFilter, queryable.OfType<EntityEventDomain>()),
-            Type type when type == typeof(IEventIntegration)
-                => DoFetchAsync(eventFilter, queryable.OfType<EntityEventIntegration>()),
-            Type type when type == typeof(IEventSnapshot)
-                => DoFetchAsync(eventFilter, queryable.OfType<EntityEventSnapshot>()),
-            _ => throw new InvalidOperationException(
-                $"The type {eventFilter.Type} is not supported.")
-        };
-
-        static IAsyncEnumerable<IEntityEvent> DoFetchAsync<TEntityEvent>(
-            IEventFilter filter,
-            IQueryable<TEntityEvent> queryable)
-            where TEntityEvent : class, IEntityEvent
-        {
-            IQueryable<TEntityEvent> queryableResult =
-                filter
-                    .Apply(queryable)
-                    .OfType<TEntityEvent>();
-
-            return queryableResult
-                .ToAsyncEnumerable();
-        }
-    }
-
     internal sealed class EventFilterEntityVisitor : ExpressionVisitor
     {
         internal static readonly ParameterExpression EventEntityParameter

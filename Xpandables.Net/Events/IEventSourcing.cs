@@ -50,8 +50,8 @@ public interface IEventSourcing
     /// Applies the history specified domain event to the underlying object.
     /// </summary>
     /// <param name="event">The domain event to be applied.</param>
-    /// <remarks>The domain event is not added to t
-    /// he collection of domain events.</remarks>
+    /// <remarks>The domain event is not added to
+    /// the collection of domain events.</remarks>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="event"/> is null.</exception>
     /// <exception cref="InvalidOperationException">The operation failed. 

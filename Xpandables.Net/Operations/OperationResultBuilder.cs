@@ -73,6 +73,11 @@ internal abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         _ = _statusCode.EnsureFailureStatusCode();
         _ = failureOperation.StatusCode.EnsureFailureStatusCode();
 
+        if (_statusCode != failureOperation.StatusCode)
+        {
+            _statusCode = failureOperation.StatusCode;
+        }
+
         _errors.Merge(failureOperation.Errors);
         _detail ??= failureOperation.Detail;
         _title ??= failureOperation.Title;

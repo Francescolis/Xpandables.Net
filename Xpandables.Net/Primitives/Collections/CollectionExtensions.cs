@@ -33,7 +33,7 @@ public static class CollectionExtensions
         typeof(Array).GetMethod("Empty")!;
 
     /// <summary>
-    /// Contains the public <see cref="AsyncEnumerable.EmptyAsync"/> method.
+    /// Contains the public <see cref="AsyncEnumerable.Empty"/> method.
     /// </summary>
     public static readonly MethodInfo AsyncArrayEmptyMethod =
         typeof(AsyncEnumerable).GetMethod("EmptyAsync")!;

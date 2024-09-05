@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.Extensions.DependencyInjection;
-
 using Xpandables.Net.Distribution;
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
@@ -26,10 +24,10 @@ namespace Xpandables.Net.Decorators;
 /// Defines an event handler that checks for duplicate domain events.
 /// </summary>
 /// <typeparam name="TEvent"></typeparam>
-/// <param name="serviceProvider"></param>
+/// <param name="eventStore"></param>
 /// <param name="decoratee"></param>
 public sealed class EventDuplicateHandlerDecorator<TEvent>(
-    IServiceProvider serviceProvider,
+    IEventStore eventStore,
     IEventHandler<TEvent> decoratee) :
     IEventHandler<TEvent>, IDecorator
     where TEvent : notnull, IEventDomain, IEventDuplicateDecorator
@@ -47,9 +45,6 @@ public sealed class EventDuplicateHandlerDecorator<TEvent>(
 
         try
         {
-            IEventStore eventStore = serviceProvider
-                .GetRequiredService<IEventStore>();
-
             return eventStore
                 .FetchAsync(filter, cancellationToken)
                 .ToBlockingEnumerable(cancellationToken)

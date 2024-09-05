@@ -19,6 +19,8 @@ using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.Primitives.Collections;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -51,7 +53,7 @@ public abstract class EventStore(
             _disposables[^1] = entity;
         }
 
-        await DoAppendAsync(entity, cancellationToken)
+        await AppendCoreAsync(entity, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -63,7 +65,7 @@ public abstract class EventStore(
     /// <param name="cancellationToken">A CancellationToken to observe while 
     /// waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation.</returns>
-    protected abstract Task DoAppendAsync(
+    protected abstract Task AppendCoreAsync(
         IEntityEvent entity,
         CancellationToken cancellationToken = default);
 
@@ -78,8 +80,12 @@ public abstract class EventStore(
             .Value
             .GetEventConverterFor(eventFilter.Type);
 
-        await foreach (IEntityEvent entity in DoFetchAsync
-           (eventFilter, cancellationToken))
+        IQueryable queryable = GetQueryableCore(eventFilter);
+        IEnumerable<IEntityEvent> entities = eventFilter.Fetch(queryable);
+
+        await foreach (IEntityEvent entity in entities
+            .ToAsyncEnumerable()
+            .WithCancellation(cancellationToken))
         {
             yield return converter
                 .ConvertFrom(entity, options.Value.SerializerOptions);
@@ -87,46 +93,27 @@ public abstract class EventStore(
     }
 
     /// <summary>
-    /// When overridden in a derived class, fetches the events matching the
-    /// filter from the store.
+    /// When overridden in a derived class, returns the data source to be 
+    /// filtered from the store.
     /// </summary>
-    /// <param name="eventFilter">The filter to search events for.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe 
-    /// while waiting for the task to complete.</param>
-    /// <returns>An enumerator of <see cref="IEntityEvent"/> 
-    /// type that can be asynchronously enumerated.</returns>
-    protected abstract IAsyncEnumerable<IEntityEvent> DoFetchAsync(
-        IEventFilter eventFilter,
-        CancellationToken cancellationToken = default);
-
-    ///<inheritdoc/>
-    public async Task MarkEventAsPublishedAsync(
-        Guid eventId,
-        Exception? exception = null,
-        CancellationToken cancellationToken = default)
-        => await DoMarkEventsAsPublishedAsync(
-            eventId, exception, cancellationToken)
-            .ConfigureAwait(false);
+    /// <param name="eventFilter">The event filter to act on.</param>
+    /// <returns>An <see cref="IQueryable"/> that represents the data 
+    /// source.</returns>
+    protected abstract IQueryable GetQueryableCore(IEventFilter eventFilter);
 
     /// <summary>
     /// When overridden in a derived class, marks the event as published.
     /// </summary>
     /// <param name="eventId">The event id to act on.</param>
     /// <param name="exception">The optional handled exception during publishing
-    /// .</param>
-    /// <param name="cancellationToken">A CancellationToken to observe 
-    /// while waiting for the task to complete.</param>
+    /// the event.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe while
+    /// waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation.</returns>
-
-    protected abstract Task DoMarkEventsAsPublishedAsync(
+    public abstract Task MarkEventAsPublishedAsync(
         Guid eventId,
         Exception? exception = null,
         CancellationToken cancellationToken = default);
-
-    /// <inheritdoc/>
-    public async Task PersistAsync(CancellationToken cancellationToken = default)
-        => await DoPersistAsync(cancellationToken)
-            .ConfigureAwait(false);
 
     /// <summary>
     /// When overridden in a derived class, persists pending entities 
@@ -136,7 +123,7 @@ public abstract class EventStore(
     /// to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the number of persisted objects
     /// .</returns>
-    protected abstract Task DoPersistAsync(
+    public abstract Task PersistAsync(
         CancellationToken cancellationToken = default);
 
     ///<inheritdoc/>

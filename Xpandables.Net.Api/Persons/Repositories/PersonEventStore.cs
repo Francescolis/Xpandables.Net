@@ -29,19 +29,16 @@ public sealed class PersonEventStore(
     private static readonly HashSet<IEntityEvent> _store = [];
     private static readonly HashSet<IEntityEvent> _events = [];
 
-    protected override Task DoAppendAsync(
+    protected override Task AppendCoreAsync(
         IEntityEvent entity,
         CancellationToken cancellationToken = default)
     {
         _events.Add(entity);
         return Task.CompletedTask;
     }
-    protected override IAsyncEnumerable<IEntityEvent> DoFetchAsync(
-        IEventFilter eventFilter,
-        CancellationToken cancellationToken = default)
-        => eventFilter
-            .ApplyFilter(_store.AsQueryable());
-    protected override Task DoMarkEventsAsPublishedAsync(
+    protected override IQueryable GetQueryableCore(IEventFilter eventFilter)
+        => _store.AsQueryable();
+    public override Task MarkEventAsPublishedAsync(
         Guid eventId,
         Exception? exception = null,
         CancellationToken cancellationToken = default)
@@ -58,7 +55,7 @@ public sealed class PersonEventStore(
 
         return Task.CompletedTask;
     }
-    protected override Task DoPersistAsync(
+    public override Task PersistAsync(
         CancellationToken cancellationToken = default)
     {
         _events.ForEach(e => _store.Add(e));

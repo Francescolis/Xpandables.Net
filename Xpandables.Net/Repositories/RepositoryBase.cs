@@ -49,7 +49,7 @@ public abstract class RepositoryBase<TEntity> : IRepository<TEntity>
     public virtual IAsyncEnumerable<TResult> FetchAsync<TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
-        => AsyncEnumerable.EmptyAsync<TResult>();
+        => AsyncEnumerable.Empty<TResult>();
 
     /// <inheritdoc/>
     public virtual Task InsertAsync(

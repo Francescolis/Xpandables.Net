@@ -33,7 +33,7 @@ public sealed class EventStoreEFCore(
     DataContextEvent context) : EventStore(options)
 {
     /// <inheritdoc/>
-    protected override async Task DoAppendAsync(
+    protected override async Task AppendCoreAsync(
         IEntityEvent entity,
         CancellationToken cancellationToken = default)
     {
@@ -45,38 +45,21 @@ public sealed class EventStoreEFCore(
     }
 
     /// <inheritdoc/>
-    protected override IAsyncEnumerable<IEntityEvent> DoFetchAsync(
-        IEventFilter eventFilter,
-        CancellationToken cancellationToken = default)
-    {
-        return eventFilter.Type switch
+    protected override IQueryable GetQueryableCore(IEventFilter eventFilter)
+        => eventFilter.Type switch
         {
             Type type when type == typeof(IEventDomain)
-                => DoFetchAsync(eventFilter, context.Domains.AsNoTracking()),
+                => context.Domains.AsNoTracking(),
             Type type when type == typeof(IEventIntegration)
-                => DoFetchAsync(eventFilter, context.Integrations.AsNoTracking()),
+                => context.Integrations.AsNoTracking(),
             Type type when type == typeof(IEventSnapshot)
-                => DoFetchAsync(eventFilter, context.Snapshots.AsNoTracking()),
+                => context.Snapshots.AsNoTracking(),
             _ => throw new InvalidOperationException(
                 $"The type {eventFilter.Type} is not supported.")
         };
 
-        static IAsyncEnumerable<TEntityEvent> DoFetchAsync<TEntityEvent>(
-            IEventFilter filter,
-            IQueryable<TEntityEvent> queryable)
-        {
-            IQueryable<TEntityEvent> queryableResult =
-                filter
-                    .Apply(queryable)
-                    .OfType<TEntityEvent>();
-
-            return queryableResult
-                .AsAsyncEnumerable();
-        }
-    }
-
     /// <inheritdoc/>
-    protected override async Task DoMarkEventsAsPublishedAsync(
+    public override async Task MarkEventAsPublishedAsync(
         Guid eventId,
         Exception? exception = null,
         CancellationToken cancellationToken = default)
@@ -96,7 +79,7 @@ public sealed class EventStoreEFCore(
                 .ConfigureAwait(false);
 
     /// <inheritdoc/>
-    protected override async Task DoPersistAsync(
+    public override async Task PersistAsync(
         CancellationToken cancellationToken = default)
         => await context
             .SaveChangesAsync(cancellationToken)
