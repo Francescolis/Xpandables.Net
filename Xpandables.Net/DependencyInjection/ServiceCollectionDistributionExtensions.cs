@@ -397,7 +397,8 @@ public static class ServiceCollectionDistributionExtensions
 
     /// <summary>
     /// Registers and configures the <see cref="IRequestHandler{TRequest}"/>, 
-    /// <see cref="IRequestHandler{TRequest, TResponse}"/>
+    /// <see cref="IRequestHandler{TRequest, TResponse}"/>,
+    /// <see cref="IEventHandler{TEvent}"/>
     /// and <see cref="IAsyncRequestHandler{TRequest, TResponse}"/> behaviors.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -406,7 +407,7 @@ public static class ServiceCollectionDistributionExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
-    public static IServiceCollection AddXAllRequestHandlers(
+    public static IServiceCollection AddXHandlers(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -422,6 +423,7 @@ public static class ServiceCollectionDistributionExtensions
         _ = services.AddXRequestHandlers(assemblies);
         _ = services.AddXRequestResponseHandlers(assemblies);
         _ = services.AddXAsyncRequestResponseHandlers(assemblies);
+        _ = services.AddXEventHandlers(assemblies);
 
         return services;
     }
@@ -429,6 +431,7 @@ public static class ServiceCollectionDistributionExtensions
     /// <summary>
     /// Registers and configures the <see cref="IRequestHandler{TRequest}"/>, 
     /// <see cref="IRequestHandler{TRequest, TResponse}"/>,
+    /// <see cref="IEventHandler{TEvent}"/>,
     /// <see cref="IAsyncRequestHandler{TRequest, TResponse}"/> and
     /// <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/> behaviors.
     /// </summary>
@@ -440,7 +443,7 @@ public static class ServiceCollectionDistributionExtensions
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
-    public static IServiceCollection AddXAllRequestHandlers(
+    public static IServiceCollection AddXHandlers(
         this IServiceCollection services,
         Action<RequestOptions> configureOptions,
         params Assembly[] assemblies)
@@ -454,7 +457,7 @@ public static class ServiceCollectionDistributionExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        _ = services.AddXAllRequestHandlers(assemblies);
+        _ = services.AddXHandlers(assemblies);
 
         return services.AddXRequestOptions(configureOptions);
     }
@@ -480,8 +483,14 @@ public static class ServiceCollectionDistributionExtensions
         RequestOptions definedOptions = new();
         configureOptions.Invoke(definedOptions);
 
+        if (definedOptions.IsDuplicateEventEnabled)
+        {
+            _ = services.AddXEventDuplicateDecorator();
+        }
+
         if (definedOptions.IsAggregateEnabled)
         {
+            _ = services.AddXAggregateAccessor();
             _ = services.AddXRequestAggregateHandlerDecorator();
         }
 
@@ -497,16 +506,21 @@ public static class ServiceCollectionDistributionExtensions
 
         if (definedOptions.IsValidatorEnabled)
         {
+            _ = services.AddXValidators();
+            _ = services.AddXValidatorGenerics();
             _ = services.AddXRequestValidatorDecorators();
         }
 
         if (definedOptions.IsVisitorEnabled)
         {
+            _ = services.AddXVisitors();
+            _ = services.AddXVisitorComposite();
             _ = services.AddXRequestVisitorDecorators();
         }
 
         if (definedOptions.IsOperationFinalizerEnabled)
         {
+            _ = services.AddXOperationResultFinalizer();
             _ = services.AddXRequestFinalizerDecorator();
         }
 

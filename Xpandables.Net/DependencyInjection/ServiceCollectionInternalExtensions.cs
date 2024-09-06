@@ -59,6 +59,7 @@ internal static class ServiceCollectionInternalExtensions
         => assemblies.SelectMany(ass => ass.GetExportedTypes())
             .Where(type => !type.IsAbstract
                            && !type.IsInterface
+                           && !type.IsGenericType
                            && type.IsSealed
                            && type.IsNotDecorator()
                            && Array.Exists(

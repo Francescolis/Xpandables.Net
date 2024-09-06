@@ -23,22 +23,17 @@ builder.Services
         EventOptions.Default(options);
         options.DisposeEventEntityAfterPersistence = false;
     })
-    .AddXAllRequestHandlers(options =>
+    .AddXHandlers(options =>
         options
         .UseOperationFinalizer()
         .UseValidator()
-        .UseAggregate())
-    .AddXEventHandlers()
+        .UseAggregate()
+        .UseDuplicateEvent())
     .AddXDistributor()
-    .AddXValidatorGenerics()
-    .AddXValidators()
-    .AddXAggregateAccessor()
     .AddXEventStore<PersonEventStore>()
     .AddXEventPublisher()
     .AddXEventIntegrationScheduler()
-    .AddXEventDuplicateDecorator()
     .AddXEndpointRoutes()
-    .AddXOperationResultFinalizer()
     .AddXOperationResultSerializationConfigureOptions()
     .AddXOperationResultRequestValidator()
     .AddXOperationResultResponseBuilder()

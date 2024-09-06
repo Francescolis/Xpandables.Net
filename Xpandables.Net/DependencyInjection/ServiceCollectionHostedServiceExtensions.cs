@@ -107,8 +107,8 @@ public static class ServiceCollectionHostedServiceExtensions
     }
 
     /// <summary>
-    /// Adds the default background service implementation integration e
-    /// vent scheduler of <see cref="IEventScheduler"/>
+    /// Adds the default background service implementation integration
+    /// event scheduler of <see cref="IEventScheduler"/>
     /// type to manage integration event publishing.
     /// </summary>
     /// <param name="services">The collection of services.</param>

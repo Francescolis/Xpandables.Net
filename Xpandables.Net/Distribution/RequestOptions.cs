@@ -95,10 +95,21 @@ public sealed record class RequestOptions
         return this;
     }
 
+    /// <summary>
+    /// Enables duplicate event behavior to events that are decorated
+    /// with the <see cref="IEventDuplicateDecorator"/> interface.
+    /// </summary>
+    public RequestOptions UseDuplicateEvent()
+    {
+        IsDuplicateEventEnabled = true;
+        return this;
+    }
+
     internal bool IsValidatorEnabled { get; private set; }
     internal bool IsVisitorEnabled { get; private set; }
     internal bool IsTransactionEnabled { get; private set; }
     internal bool IsPersistenceEnabled { get; private set; }
     internal bool IsAggregateEnabled { get; private set; }
+    internal bool IsDuplicateEventEnabled { get; private set; }
     internal bool IsOperationFinalizerEnabled { get; private set; }
 }
