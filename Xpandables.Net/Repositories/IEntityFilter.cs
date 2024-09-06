@@ -112,7 +112,7 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
     }
 
     IQueryable IEntityFilter.Apply(IQueryable queryable)
-        => Apply((IQueryable<TEntity>)queryable);
+        => Apply(queryable.OfType<TEntity>());
 }
 
 /// <summary>

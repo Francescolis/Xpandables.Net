@@ -17,6 +17,7 @@
 using System.Linq.Expressions;
 using System.Text.Json;
 
+using Xpandables.Net.Primitives.Collections;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events;
@@ -109,12 +110,20 @@ public interface IEventFilter : IEntityFilter
     bool CanFilter(Type typeToFilter);
 
     /// <summary>
+    /// Fetches the entity events based on the specified queryable.
+    /// </summary>
+    /// <param name="queryable">The queryable to act on.</param>
+    /// <returns>An <see cref="IEnumerable{T}"/> that allows
+    /// enumeration of the entity events.</returns>
+    IEnumerable<IEntityEvent> Fetch(IQueryable queryable);
+
+    /// <summary>
     /// Fetches the entity events asynchronously based on the specified queryable.
     /// </summary>
     /// <param name="queryable">The queryable to act on.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that allows asynchronous
     /// enumeration of the entity events.</returns>
-    IEnumerable<IEntityEvent> Fetch(IQueryable queryable);
+    IAsyncEnumerable<IEntityEvent> FetchAsync(IQueryable queryable);
 }
 
 /// <summary>
@@ -133,7 +142,7 @@ public interface IEventFilter<TEntityEvent> : IEventFilter, IEntityFilter<TEntit
     Type IEventFilter.Type => Type;
 
     /// <summary>
-    /// Fetches the entity events asynchronously based on the specified queryable.
+    /// Fetches the entity events based on the specified queryable.
     /// </summary>
     /// <param name="queryable">The queryable to act on.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that allows asynchronous
@@ -147,6 +156,24 @@ public interface IEventFilter<TEntityEvent> : IEventFilter, IEntityFilter<TEntit
             .AsEnumerable();
     }
 
+    /// <summary>
+    /// Fetches the entity events asynchronously based on the specified queryable.
+    /// </summary>
+    /// <param name="queryable">The queryable to act on.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that allows asynchronous
+    /// enumeration of the entity events.</returns>
+    public virtual IAsyncEnumerable<IEntityEvent> FetchAsync(
+        IQueryable<TEntityEvent> queryable)
+    {
+        ArgumentNullException.ThrowIfNull(queryable);
+
+        return Apply(queryable)
+            .ToAsyncEnumerable();
+    }
+
     IEnumerable<IEntityEvent> IEventFilter.Fetch(IQueryable queryable)
         => Fetch(queryable.OfType<TEntityEvent>());
+
+    IAsyncEnumerable<IEntityEvent> IEventFilter.FetchAsync(IQueryable queryable)
+        => FetchAsync(queryable.OfType<TEntityEvent>());
 }
