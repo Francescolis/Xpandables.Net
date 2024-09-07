@@ -22,7 +22,7 @@ using static Xpandables.Net.Http.Requests.HttpClientParameters;
 namespace Xpandables.Net.Http.RequestBuilders;
 
 /// <summary>
-/// Build the form url encoded content for a request.
+/// Build the multipart content for a request.
 /// </summary>
 public sealed class HttpClientRequestMultipartBuilder :
     HttpClientRequestBuilder<IHttpRequestMultipart>

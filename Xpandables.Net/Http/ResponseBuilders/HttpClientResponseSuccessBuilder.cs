@@ -46,7 +46,11 @@ public sealed class HttpClientResponseSuccessBuilder :
 
         await Task.Yield();
 
-        if (context.ResponseMessage.Content.Headers.ContentDisposition is not null)
+        if (context
+            .ResponseMessage
+            .Content
+            .Headers
+            .ContentDisposition is not null)
         {
             if (context.ResponseMessage
                 .Content
@@ -62,13 +66,18 @@ public sealed class HttpClientResponseSuccessBuilder :
                     .FileName!
                     .Trim('"');
 
-                Uri requestUri = context.ResponseMessage.RequestMessage!.RequestUri!;
+                Uri requestUri = context
+                    .ResponseMessage
+                    .RequestMessage!
+                    .RequestUri!;
+
                 string baseUrl = requestUri.GetLeftPart(UriPartial.Authority);
 
                 string fileUrl = $"{baseUrl}/{Uri.EscapeDataString(fileName)}";
 
                 System.Collections.Specialized.NameValueCollection headers
                     = context.ResponseMessage.ReadHttpResponseHeaders();
+
                 headers.Add("Location", fileUrl);
 
                 return new HttpClientResponse(

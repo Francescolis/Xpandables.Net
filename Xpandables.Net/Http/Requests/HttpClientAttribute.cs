@@ -95,7 +95,7 @@ public sealed class HttpClientAttribute : Attribute
     /// with the <see cref="Scheme"/> value will be initialized and filled
     /// with an implementation of <see cref="HttpClientAuthorizationHandler"/>.
     /// You need to configure the <see cref="IHttpClientDispatcher"/> 
-    /// registration with on of the extension methods like
+    /// registration with one of the extension methods like
     /// <see cref="HttpClientBuilderExtensions
     /// .ConfigurePrimaryHttpMessageHandler{THandler}(IHttpClientBuilder)"/>    
     /// Or you can use a custom implementation to 

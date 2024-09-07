@@ -86,14 +86,11 @@ public sealed class HttpClientResponseAsyncResultSuccessBuilder
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             using BlockingCollection<TResult> blockingCollection = [];
-#pragma warning disable CA2007 // Consider calling ConfigureAwait 
-            //on the awaited task
+
             await using IAsyncEnumerator<TResult> blockingCollectionIterator
-                = new Primitives.Collections.AsyncEnumerable<TResult>(
+                = new AsyncEnumerable<TResult>(
                 blockingCollection.GetConsumingEnumerable(cancellationToken))
                 .GetAsyncEnumerator(cancellationToken);
-#pragma warning restore CA2007 // Consider calling ConfigureAwait 
-            // on the awaited task
 
             _ = await Task.Run(async () =>
             {
@@ -111,21 +108,22 @@ public sealed class HttpClientResponseAsyncResultSuccessBuilder
                 }
 
             }, cancellationToken)
-                .ContinueWith(t =>
+            .ContinueWith(t =>
+            {
+                blockingCollection.CompleteAdding();
+
+                if (t.IsFaulted)
                 {
-                    blockingCollection.CompleteAdding();
+                    t.Exception.ReThrow();
+                }
 
-                    if (t.IsFaulted)
-                    {
-                        t.Exception.ReThrow();
-                    }
+                return Task.CompletedTask;
 
-                    return Task.CompletedTask;
+            }, TaskScheduler.Current)
+            .ConfigureAwait(false);
 
-                }, TaskScheduler.Current)
-                .ConfigureAwait(false);
-
-            while (await blockingCollectionIterator.MoveNextAsync()
+            while (await blockingCollectionIterator
+                .MoveNextAsync()
                 .ConfigureAwait(false))
             {
                 yield return blockingCollectionIterator.Current;

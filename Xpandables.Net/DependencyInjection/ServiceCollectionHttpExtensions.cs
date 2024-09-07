@@ -48,7 +48,7 @@ public static class ServiceCollectionHttpExtensions
     /// <exception cref="ArgumentNullException">The <paramref name="services"/>
     /// is null.</exception>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientDistributorFactory(
+    public static IServiceCollection AddXHttpClientDispatcherFactory(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -68,7 +68,7 @@ public static class ServiceCollectionHttpExtensions
     /// <exception cref="ArgumentNullException">The <paramref name="services"/> 
     /// is null.</exception>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientDistributorFactory
+    public static IServiceCollection AddXHttpClientDispatcherFactory
         <THttpClientDispatcherFactory>(this IServiceCollection services)
         where THttpClientDispatcherFactory : class, IHttpClientDispatcherFactory
     {

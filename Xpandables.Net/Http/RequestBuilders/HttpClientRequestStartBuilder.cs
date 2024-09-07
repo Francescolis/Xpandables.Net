@@ -22,7 +22,7 @@ using Xpandables.Net.Http.Requests;
 namespace Xpandables.Net.Http.RequestBuilders;
 
 /// <summary>
-/// Build the base <see cref="HttpRequestMessage"/> for a request.
+/// Starts the base <see cref="HttpRequestMessage"/> for a request.
 /// </summary>
 public sealed class HttpClientRequestStartBuilder :
     HttpClientRequestBuilder<IHttpRequest>
