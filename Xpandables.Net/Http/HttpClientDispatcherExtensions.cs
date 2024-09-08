@@ -121,7 +121,7 @@ public static class HttpClientDispatcherExtensions
 
         return request
             .GetType()
-            .GetCustomAttribute<HttpClientAttribute>()
+            .GetCustomAttribute<HttpClientAttribute>(true)
             ?? throw new ArgumentNullException(
                 $"{request.GetType().Name} must be decorated " +
                 $"with {nameof(HttpClientAttribute)} " +

@@ -26,8 +26,8 @@ namespace Xpandables.Net.Http.Requests;
 public interface IHttpClientAttributeProvider
 {
     /// <summary>
-    /// Returns the <see cref="HttpClientAttribute"/> to be applied on 
-    /// the implementing instance.
+    /// Returns the <see cref="HttpClientAttribute"/> to be applied at runtime 
+    /// on the instance of the implementing class.
     /// </summary>
     /// <param name="serviceProvider">The ambient service provider.</param>
     /// <returns>A new instance of <see cref="HttpClientAttribute"/>.</returns>
