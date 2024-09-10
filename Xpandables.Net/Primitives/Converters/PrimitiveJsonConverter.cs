@@ -83,7 +83,7 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue>
             value = serializing.OnSerializing(value);
         }
 
-        JsonSerializer.Serialize(writer, value.Value, typeof(TValue), options);
+        JsonSerializer.Serialize(writer, value.Value, options);
     }
 }
 

@@ -132,11 +132,7 @@ public sealed class OperationResultAspJsonConverter<TValue>
 
         if (value.Result is not null)
         {
-            JsonSerializer.Serialize(
-                writer,
-                value.Result,
-                typeof(TValue),
-                options);
+            JsonSerializer.Serialize(writer, value.Result, options);
         }
     }
 }
@@ -186,8 +182,7 @@ public sealed class OperationResultAspJsonConverterFactory
             && typeToConvert == typeof(IOperationResult))
         {
             return Activator
-                .CreateInstance(typeof(OperationResultAspJsonConverter))
-                as JsonConverter;
+                .CreateInstance<OperationResultAspJsonConverter>();
         }
         else
         {

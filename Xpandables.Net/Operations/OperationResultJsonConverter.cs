@@ -47,7 +47,8 @@ public sealed class OperationResultJsonConverter<TOperationResult>
         JsonSerializerOptions options)
     {
         object? result = JsonSerializer
-            .Deserialize(ref reader, typeof(OperationResult), options);
+            .Deserialize<OperationResult>(ref reader, options);
+
         return result is TOperationResult { } operation
             ? operation
             : throw new InvalidCastException(
@@ -101,7 +102,8 @@ public sealed class OperationResultJsonConverter<TOperationResult, TValue>
         JsonSerializerOptions options)
     {
         object? result = JsonSerializer
-            .Deserialize(ref reader, typeof(OperationResult<TValue>), options);
+            .Deserialize<OperationResult<TValue>>(ref reader, options);
+
         return result is TOperationResult { } operation
             ? operation
             : throw new InvalidCastException(

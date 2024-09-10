@@ -106,7 +106,7 @@ internal sealed class OperationResultRequestValidator :
                     continue;
                 }
 
-                IList<IValidator> validators = context
+                List<IValidator> validators = context
                     .HttpContext
                     .RequestServices
                     .GetServices(validatorType)
