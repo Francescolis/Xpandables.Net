@@ -222,9 +222,7 @@ public static class HttpClientParameters
     /// <summary>
     /// Provides with the content type.
     /// </summary>
-#pragma warning disable CA1034 // Nested types should not be visible
     public static class ContentType
-#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// Returns the application json content type.
@@ -318,9 +316,7 @@ public static class HttpClientParameters
     /// <summary>
     /// Determines the JsonPatch operation.
     /// </summary>
-#pragma warning disable CA1034 // Nested types should not be visible
     public static class Operation
-#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// The <see cref="Add"/> operation performs one of the following 
@@ -452,9 +448,7 @@ public static class HttpClientParameters
     /// <summary>
     /// A helper used to build patch operations.
     /// </summary>
-#pragma warning disable CA1034 // Nested types should not be visible
     public static class Patch
-#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// The <see cref="Add"/> operation performs one of the following 

@@ -73,7 +73,7 @@ public class AggregateAccessorTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        _eventStoreMock.Verify(es => es.AppendAsync(It.IsAny<IEventDomain>(),
+        _eventStoreMock.Verify(es => es.AppendEventAsync(It.IsAny<IEventDomain>(),
             It.IsAny<CancellationToken>()), Times.Once);
         _publisherMock.Verify(p => p.PublishAsync(It.IsAny<IEventDomain>(),
             It.IsAny<CancellationToken>()), Times.Once);
@@ -96,7 +96,7 @@ public class AggregateAccessorTests
 
         // Assert
         Assert.True(result.IsFailure);
-        _eventStoreMock.Verify(es => es.AppendAsync(It.IsAny<IEventDomain>(),
+        _eventStoreMock.Verify(es => es.AppendEventAsync(It.IsAny<IEventDomain>(),
             It.IsAny<CancellationToken>()), Times.Once);
         _publisherMock.Verify(p => p.PublishAsync(It.IsAny<IEventDomain>(),
             It.IsAny<CancellationToken>()), Times.Once);
@@ -111,7 +111,7 @@ public class AggregateAccessorTests
         var testEvent = new TestEvent();
 
         _eventStoreMock
-            .Setup(es => es.FetchAsync(It.IsAny<IEventFilter>(),
+            .Setup(es => es.FetchEventsAsync(It.IsAny<IEventFilter>(),
             It.IsAny<CancellationToken>()))
             .Returns(new[] { testEvent }.ToAsyncEnumerable());
 
@@ -121,7 +121,7 @@ public class AggregateAccessorTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Result);
-        _eventStoreMock.Verify(es => es.FetchAsync(It.IsAny<IEventFilter>(),
+        _eventStoreMock.Verify(es => es.FetchEventsAsync(It.IsAny<IEventFilter>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -132,7 +132,7 @@ public class AggregateAccessorTests
         var keyId = Guid.NewGuid();
 
         _eventStoreMock
-            .Setup(es => es.FetchAsync(It.IsAny<IEventFilter>(),
+            .Setup(es => es.FetchEventsAsync(It.IsAny<IEventFilter>(),
             It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<IEvent>());
 
@@ -142,7 +142,7 @@ public class AggregateAccessorTests
         // Assert
         Assert.True(result.IsFailure);
         Assert.Equal(System.Net.HttpStatusCode.NotFound, result.StatusCode);
-        _eventStoreMock.Verify(es => es.FetchAsync(It.IsAny<IEventFilter>(),
+        _eventStoreMock.Verify(es => es.FetchEventsAsync(It.IsAny<IEventFilter>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 

@@ -49,7 +49,7 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
                 };
 
                 await eventStore
-                    .AppendAsync(@event, cancellationToken)
+                    .AppendEventAsync(@event, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -92,7 +92,7 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
         filter.Paging = Pagination.With(1, 1);
 
         IEventSnapshot? @event = eventStore
-            .FetchAsync(filter, cancellationToken)
+            .FetchEventsAsync(filter, cancellationToken)
             .ToBlockingEnumerable(cancellationToken)
             .FirstOrDefault()
             .As<IEventSnapshot>();
@@ -128,7 +128,7 @@ internal sealed class AggregateAccessorSnapshot<TAggregate>(
         try
         {
             await foreach (IEvent found in eventStore
-                .FetchAsync(eventFilter, cancellationToken)
+                .FetchEventsAsync(eventFilter, cancellationToken)
                 .ConfigureAwait(false))
             {
                 if (found is IEventDomain eventDomain)

@@ -37,9 +37,7 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
     /// <summary>
     /// For route binding sources in minimal Api for asynchronous processes.
     /// </summary>
-#pragma warning disable CA1034 // Nested types should not be visible
     public interface IRouteRequest
-#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// The method discovered by <see langword="RequestDelegateFactory"/> 
@@ -68,9 +66,7 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
     /// <summary>
     /// For header binding sources in minimal Api for asynchronous processes.
     /// </summary>
-#pragma warning disable CA1034 // Nested types should not be visible
     public interface IHeaderRequest
-#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// The method discovered by 
@@ -99,9 +95,7 @@ public interface IHttpRequestTryParseDynamicAsync<TRequest>
     /// <summary>
     /// For request binding sources in minimal Api for asynchronous processes, 
     /// </summary>
-#pragma warning disable CA1034 // Nested types should not be visible
     public interface IQueryRequest
-#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// The method discovered by 

@@ -374,10 +374,6 @@ public static class OptionalExtensions
     /// or the empty optional.</returns>
     /// <exception cref="ArgumentNullException">The
     /// <paramref name="source"/> is null.</exception>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Reliability",
-        "CA2007:Consider calling ConfigureAwait on the awaited task",
-        Justification = "<Pending>")]
     public static async Task<Optional<T>> FirstOrEmptyAsync<T>(
         this IAsyncEnumerable<T> source)
     {
@@ -427,10 +423,6 @@ public static class OptionalExtensions
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="source"/> or <paramref name="predicate"/> is null
     /// .</exception>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Reliability",
-        "CA2007:Consider calling ConfigureAwait on the awaited task",
-        Justification = "<Pending>")]
     public static async Task<Optional<T>> FirstOrEmptyAsync<T>(
         this IAsyncEnumerable<T> source,
         Func<T, Task<bool>> predicate)

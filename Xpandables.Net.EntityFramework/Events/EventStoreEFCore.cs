@@ -33,7 +33,7 @@ public sealed class EventStoreEFCore(
     DataContextEvent context) : EventStore(options)
 {
     /// <inheritdoc/>
-    protected override async Task AppendCoreAsync(
+    protected override async Task AppendEventCoreAsync(
         IEntityEvent entity,
         CancellationToken cancellationToken = default)
     {
@@ -63,25 +63,52 @@ public sealed class EventStoreEFCore(
         Guid eventId,
         Exception? exception = null,
         CancellationToken cancellationToken = default)
-        => _ = await context
-                .Integrations
-                .Where(x => x.Id == eventId)
-                .ExecuteUpdateAsync(setters =>
-                    setters
-                        .SetProperty(p => p.Status, EntityStatus.DELETED)
-                        .SetProperty(p => p.UpdatedOn, DateTime.UtcNow)
-                        .SetProperty(
-                            p => p.ErrorMessage,
-                            exception != null
-                                ? exception.ToString()
-                                : null),
-                                cancellationToken)
-                .ConfigureAwait(false);
+    {
+        try
+        {
+            _ = await context
+                        .Integrations
+                        .Where(x => x.Id == eventId)
+                        .ExecuteUpdateAsync(setters =>
+                            setters
+                                .SetProperty(p => p.Status, EntityStatus.DELETED)
+                                .SetProperty(p => p.UpdatedOn, DateTime.UtcNow)
+                                .SetProperty(
+                                    p => p.ErrorMessage,
+                                    exception != null
+                                        ? exception.ToString()
+                                        : null),
+                                        cancellationToken)
+                        .ConfigureAwait(false);
+
+        }
+        catch (Exception ex)
+            when (exception is not OperationCanceledException
+                or InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                "An error occurred while marking the event as published.",
+                ex);
+        }
+    }
 
     /// <inheritdoc/>
-    public override async Task PersistAsync(
+    public override async Task<int> PersistEventsAsync(
         CancellationToken cancellationToken = default)
-        => await context
-            .SaveChangesAsync(cancellationToken)
-            .ConfigureAwait(false);
+    {
+        try
+        {
+            return await context
+                    .SaveChangesAsync(cancellationToken)
+                    .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not OperationCanceledException
+                or InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                "An error occurred while persisting events.",
+                exception);
+        }
+    }
 }

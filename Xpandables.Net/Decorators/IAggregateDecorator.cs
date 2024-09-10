@@ -30,5 +30,3 @@ public interface IAggregateDecorator
     /// a new aggregate.</remarks>
     bool ContinueWhenNotFound { get; }
 }
-
-#pragma warning restore CA1040 // Avoid empty interfaces

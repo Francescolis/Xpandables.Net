@@ -25,7 +25,6 @@ namespace Xpandables.Net.Http.Requests;
 /// <see cref="IHttpRequestPatch"/>, <see cref="IHttpRequestPathString"/>, 
 /// <see cref="IHttpRequestQueryString"/>, <see cref="IHttpRequestStream"/> 
 /// or <see cref="IHttpRequestString"/>.</remarks>
-#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientRequest { }
 
 /// <summary>
@@ -39,7 +38,6 @@ public interface IHttpClientRequest { }
 /// <see cref="IHttpRequestPatch"/>, <see cref="IHttpRequestPathString"/>, 
 /// <see cref="IHttpRequestQueryString"/>, <see cref="IHttpRequestStream"/> 
 /// or <see cref="IHttpRequestString"/>.</remarks>
-#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientRequest<out TResponse> : IHttpClientRequest { }
 
 /// <summary>
@@ -55,4 +53,3 @@ public interface IHttpClientRequest<out TResponse> : IHttpClientRequest { }
 /// <see cref="IHttpRequestQueryString"/>, <see cref="IHttpRequestStream"/> 
 /// or <see cref="IHttpRequestString"/>.</remarks>
 public interface IHttpClientAsyncRequest<out TResponse> : IHttpClientRequest { }
-#pragma warning restore CA1040 // Avoid empty interfaces

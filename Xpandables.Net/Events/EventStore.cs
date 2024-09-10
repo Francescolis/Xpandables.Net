@@ -30,7 +30,7 @@ public abstract class EventStore(
     private IDisposable[] _disposables = [];
 
     ///<inheritdoc/>
-    public async Task AppendAsync(
+    public async Task AppendEventAsync(
         IEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -43,16 +43,28 @@ public abstract class EventStore(
         IEntityEvent entity = converter
             .ConvertTo(@event, options.Value.SerializerOptions);
 
-        if (options
-            .Value
-            .DisposeEventEntityAfterPersistence)
+        try
         {
-            Array.Resize(ref _disposables, _disposables.Length + 1);
-            _disposables[^1] = entity;
-        }
+            if (options
+                .Value
+                .DisposeEventEntityAfterPersistence)
+            {
+                Array.Resize(ref _disposables, _disposables.Length + 1);
+                _disposables[^1] = entity;
+            }
 
-        await AppendCoreAsync(entity, cancellationToken)
-            .ConfigureAwait(false);
+            await AppendEventCoreAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not OperationCanceledException
+                or InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                $"An error occurred while appending the event " +
+                $"{@event.GetType().Name}.",
+                exception);
+        }
     }
 
     /// <summary>
@@ -63,12 +75,12 @@ public abstract class EventStore(
     /// <param name="cancellationToken">A CancellationToken to observe while 
     /// waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation.</returns>
-    protected abstract Task AppendCoreAsync(
+    protected abstract Task AppendEventCoreAsync(
         IEntityEvent entity,
         CancellationToken cancellationToken = default);
 
     ///<inheritdoc/>
-    public async IAsyncEnumerable<IEvent> FetchAsync(
+    public async IAsyncEnumerable<IEvent> FetchEventsAsync(
         IEventFilter eventFilter,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -79,10 +91,26 @@ public abstract class EventStore(
             .Value
             .GetEventConverterFor(eventFilter.Type);
 
-        IQueryable queryable = GetQueryableCore(eventFilter);
-        IEnumerable<IEntityEvent> entities = eventFilter.Fetch(queryable);
+        IQueryable queryable;
+        IAsyncEnumerable<IEntityEvent> entities;
 
-        foreach (IEntityEvent entity in entities)
+        try
+        {
+            queryable = GetQueryableCore(eventFilter);
+            entities = eventFilter.FetchAsync(queryable);
+        }
+        catch (Exception exception)
+            when (exception is not OperationCanceledException
+                or InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                $"An error occurred while fetching events of type " +
+                $"{eventFilter.Type.Name}.",
+                exception);
+        }
+
+        await foreach (IEntityEvent entity in entities
+            .WithCancellation(cancellationToken))
         {
             yield return converter
                 .ConvertFrom(entity, options.Value.SerializerOptions);
@@ -107,6 +135,7 @@ public abstract class EventStore(
     /// <param name="cancellationToken">A CancellationToken to observe while
     /// waiting for the task to complete.</param>
     /// <returns>A value that represents an asynchronous operation.</returns>
+    /// <inheritdoc/>
     public abstract Task MarkEventAsPublishedAsync(
         Guid eventId,
         Exception? exception = null,
@@ -120,7 +149,8 @@ public abstract class EventStore(
     /// to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the number of persisted objects
     /// .</returns>
-    public abstract Task PersistAsync(
+    /// <inheritdoc/>
+    public abstract Task<int> PersistEventsAsync(
         CancellationToken cancellationToken = default);
 
     ///<inheritdoc/>

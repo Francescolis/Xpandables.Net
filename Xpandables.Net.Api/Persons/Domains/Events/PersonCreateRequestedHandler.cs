@@ -37,7 +37,7 @@ public sealed class PersonCreateRequestedHandler(
         };
 
         return await eventStore
-            .AppendAsync(created, cancellationToken)
+            .AppendEventAsync(created, cancellationToken)
             .ToOperationResultAsync()
             .ConfigureAwait(false);
     }

@@ -66,12 +66,9 @@ public sealed class RequestTransactionHandlerDecorator<TRequest>(
     {
         try
         {
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
             await using ITransactional disposable = await transactional
                 .TransactionAsync(cancellationToken)
                 .ConfigureAwait(false);
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
-
             try
             {
                 disposable.Result = await decoratee

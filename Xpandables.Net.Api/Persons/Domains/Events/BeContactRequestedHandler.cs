@@ -36,7 +36,7 @@ public sealed class BeContactRequestedHandler(
         };
 
         return await eventStore
-            .AppendAsync(completed, cancellationToken)
+            .AppendEventAsync(completed, cancellationToken)
             .ToOperationResultAsync()
             .ConfigureAwait(false);
     }

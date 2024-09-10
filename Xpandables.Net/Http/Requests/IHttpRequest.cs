@@ -22,11 +22,9 @@ namespace Xpandables.Net.Http.Requests;
 /// <summary>
 /// Provides with the base interface for all HTTP content request builders.
 /// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpRequest { }
 
 /// <summary>
 /// Provides with the interface to complete the built.
 /// </summary>
 public interface IHttpRequestComplete : IHttpRequest { }
-#pragma warning restore CA1040 // Avoid empty interfaces

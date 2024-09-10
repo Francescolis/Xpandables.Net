@@ -23,7 +23,6 @@ namespace Xpandables.Net.Distribution;
 /// where "TRequest" is a class that implements <see cref="IRequest"/>.
 /// This can also be enhanced with some useful decorators.
 /// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IRequest
 {
 }
@@ -56,4 +55,3 @@ public interface IRequest<out TResponse>
 public interface IAsyncRequest<out TResponse>
 {
 }
-#pragma warning restore CA1040 // Avoid empty interfaces

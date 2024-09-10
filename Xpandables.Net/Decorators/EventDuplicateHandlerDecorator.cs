@@ -46,7 +46,7 @@ public sealed class EventDuplicateHandlerDecorator<TEvent>(
         try
         {
             return eventStore
-                .FetchAsync(filter, cancellationToken)
+                .FetchEventsAsync(filter, cancellationToken)
                 .ToBlockingEnumerable(cancellationToken)
                 .Any() switch
             {

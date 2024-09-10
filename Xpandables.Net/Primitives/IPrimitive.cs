@@ -96,7 +96,6 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// <typeparamref name="TValue"/>.
     /// </summary>
     /// <param name="self">The current instance.</param>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator TValue(TPrimitive self);
 
     /// <summary>
@@ -104,5 +103,4 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive<TValue>
     /// </summary>
     /// <param name="self"></param>
     static abstract implicit operator string(TPrimitive self);
-#pragma warning restore CA2225 // Operator overloads have named alternates
 }

@@ -55,9 +55,7 @@ public abstract record class QueryExpression<TSource, TResult>
     }
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator QueryExpression<TSource, TResult>(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          Expression<Func<TSource, TResult>> expression)
     {
         ArgumentNullException.ThrowIfNull(expression);
@@ -65,25 +63,19 @@ public abstract record class QueryExpression<TSource, TResult>
     }
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource, TResult> operator &(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          QueryExpression<TSource, TResult> left,
          QueryExpression<TSource, TResult> right)
       => new QueryExpressionAnd<TSource, TResult>(left, right: right);
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource, TResult> operator |(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          QueryExpression<TSource, TResult> left,
          QueryExpression<TSource, TResult> right)
         => new QueryExpressionOr<TSource, TResult>(left, right: right);
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource, TResult> operator !(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          QueryExpression<TSource, TResult> left)
         => new QueryExpressionNot<TSource, TResult>(expression: left);
 
@@ -103,9 +95,7 @@ public abstract record class QueryExpression<TSource>
     : QueryExpression<TSource, bool>, IQueryExpression<TSource>
 {
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Expression<Func<TSource, bool>>(
-#pragma warning restore CA2225 // Operator overloads have named alternates
           QueryExpression<TSource> queryExpression)
     {
         ArgumentNullException.ThrowIfNull(queryExpression);
@@ -113,9 +103,7 @@ public abstract record class QueryExpression<TSource>
     }
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Func<TSource, bool>(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          QueryExpression<TSource> queryExpression)
     {
         ArgumentNullException.ThrowIfNull(queryExpression);
@@ -123,9 +111,7 @@ public abstract record class QueryExpression<TSource>
     }
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator QueryExpression<TSource>(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          Expression<Func<TSource, bool>> expression)
     {
         ArgumentNullException.ThrowIfNull(expression);
@@ -133,25 +119,19 @@ public abstract record class QueryExpression<TSource>
     }
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource> operator &(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          QueryExpression<TSource> left,
          QueryExpression<TSource> right)
       => new QueryExpressionAnd<TSource>(left, right: right);
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource> operator |(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          QueryExpression<TSource> left,
          QueryExpression<TSource> right)
         => new QueryExpressionOr<TSource>(left, right: right);
 
     ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource> operator !(
-#pragma warning restore CA2225 // Operator overloads have named alternates
          QueryExpression<TSource> left)
         => new QueryExpressionNot<TSource>(expression: left);
 }

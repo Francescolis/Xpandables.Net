@@ -169,12 +169,10 @@ internal sealed class AsyncRequestFinalizerHandlerDecorator<TRequest, TResponse>
         TRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on 
         // the awaited task
         await using IAsyncEnumerator<TResponse> asyncEnumerator = decoratee
             .HandleAsync(request, cancellationToken)
             .GetAsyncEnumerator(cancellationToken);
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on 
         // the awaited task
 
 

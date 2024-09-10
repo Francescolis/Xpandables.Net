@@ -33,14 +33,11 @@ public static class TaskExtensions
     /// <para>Use : AsyncExtensions.RunSync(() => AsyncMethod());</para>
     /// </summary>
     /// <param name="task">Task method to execute</param>
-    public static void RunSync(this Func<Task> task)
-#pragma warning disable CA2008 // Do not create tasks without passing a TaskScheduler
-        => TaskFactory
+    public static void RunSync(this Func<Task> task) => TaskFactory
             .StartNew(task)
             .Unwrap()
             .GetAwaiter()
             .GetResult();
-#pragma warning restore CA2008 // Do not create tasks without passing a TaskScheduler
 
     /// <summary>
     /// Executes an async Task{T} method which has a T return type synchronously
@@ -49,12 +46,9 @@ public static class TaskExtensions
     /// <typeparam name="TResult">Return Type</typeparam>
     /// <param name="task">Task{T} method to execute</param>
     /// <returns></returns>
-    public static TResult RunSync<TResult>(this Func<Task<TResult>> task)
-#pragma warning disable CA2008 // Do not create tasks without passing a TaskScheduler
-        => TaskFactory
+    public static TResult RunSync<TResult>(this Func<Task<TResult>> task) => TaskFactory
             .StartNew(task)
             .Unwrap()
             .GetAwaiter()
             .GetResult();
-#pragma warning restore CA2008 // Do not create tasks without passing a TaskScheduler
 }

@@ -111,7 +111,7 @@ internal sealed class EventScheduler(
         filter.Status = EntityStatus.ACTIVE;
 
         await foreach (IEvent @event in eventStore
-            .FetchAsync(filter, cancellationToken))
+            .FetchEventsAsync(filter, cancellationToken))
         {
             try
             {

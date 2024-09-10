@@ -57,12 +57,9 @@ public abstract record class Specification<TSource>
     /// <param name="right">The right specification</param>
     /// <returns>A new specification.</returns>
     [return: NotNull]
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static Specification<TSource> operator &(
         Specification<TSource> left,
-        Specification<TSource> right)
-#pragma warning restore CA2225 // Operator overloads have named alternates
-      => new SpecificationAnd<TSource>(left, right: right);
+        Specification<TSource> right) => new SpecificationAnd<TSource>(left, right: right);
 
     /// <summary>
     /// Returns a composite specification from the two 
@@ -72,12 +69,9 @@ public abstract record class Specification<TSource>
     /// <param name="right">The right specification</param>
     /// <returns>A new specification.</returns>
     [return: NotNull]
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static Specification<TSource> operator |(
         Specification<TSource> left,
-        Specification<TSource> right)
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        => new SpecificationOr<TSource>(left, right: right);
+        Specification<TSource> right) => new SpecificationOr<TSource>(left, right: right);
 
     /// <summary>
     /// Returns a new specification that is the opposite of the specified one.
@@ -85,21 +79,16 @@ public abstract record class Specification<TSource>
     /// <param name="other">The specification to act on.</param>
     /// <returns>An opposite specification.</returns>
     [return: NotNull]
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static SpecificationNot<TSource> operator !(
-        Specification<TSource> other)
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        => new(other);
+        Specification<TSource> other) => new(other);
 
     /// <summary>
     /// Returns the current specification as <see cref="Func{T, TResult}"/>.
     /// </summary>
     /// <param name="other">the target specification.</param>
     [return: NotNull]
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Func<TSource, bool>(
         Specification<TSource> other)
-#pragma warning restore CA2225 // Operator overloads have named alternates
     {
         ArgumentNullException.ThrowIfNull(other);
         return other.GetExpression().Compile();
@@ -109,10 +98,8 @@ public abstract record class Specification<TSource>
     /// Returns the current specification as <see cref="Expression{TDelegate}"/>.
     /// </summary>
     /// <param name="other">The target specification</param>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Expression<Func<TSource, bool>>(
         Specification<TSource> other)
-#pragma warning restore CA2225 // Operator overloads have named alternates
     {
         ArgumentNullException.ThrowIfNull(other);
         return other.GetExpression();

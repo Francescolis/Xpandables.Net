@@ -23,5 +23,3 @@ namespace Xpandables.Net.Decorators;
 public interface IValidateDecorator
 {
 }
-
-#pragma warning restore CA1040 // Avoid empty interfaces

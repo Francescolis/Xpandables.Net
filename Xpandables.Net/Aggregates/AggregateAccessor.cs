@@ -56,7 +56,7 @@ public sealed class AggregateAccessor<TAggregate>(
                 in aggregate.GetUncommittedEvents())
             {
                 await eventStore
-                    .AppendAsync(@event, cancellationToken)
+                    .AppendEventAsync(@event, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (await publisher
@@ -68,8 +68,8 @@ public sealed class AggregateAccessor<TAggregate>(
                 }
             }
 
-            await eventStore
-                .PersistAsync(cancellationToken)
+            _ = await eventStore
+                .PersistEventsAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             aggregate.MarkEventsAsCommitted();
@@ -110,7 +110,7 @@ public sealed class AggregateAccessor<TAggregate>(
             filter.AggregateName = typeof(TAggregate).Name;
 
             await foreach (IEvent @event in eventStore
-                .FetchAsync(filter, cancellationToken))
+                .FetchEventsAsync(filter, cancellationToken))
             {
                 if (@event is IEventDomain eventDomain)
                 {

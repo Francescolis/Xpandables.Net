@@ -29,7 +29,7 @@ public sealed class PersonEventStore(
     private static readonly HashSet<IEntityEvent> _store = [];
     private static readonly HashSet<IEntityEvent> _events = [];
 
-    protected override Task AppendCoreAsync(
+    protected override Task AppendEventCoreAsync(
         IEntityEvent entity,
         CancellationToken cancellationToken = default)
     {
@@ -55,11 +55,15 @@ public sealed class PersonEventStore(
 
         return Task.CompletedTask;
     }
-    public override Task PersistAsync(
+    public override async Task<int> PersistEventsAsync(
         CancellationToken cancellationToken = default)
     {
+        await Task.Yield();
+
+        int count = _events.Count;
         _events.ForEach(e => _store.Add(e));
         _events.Clear();
-        return Task.CompletedTask;
+
+        return count;
     }
 }

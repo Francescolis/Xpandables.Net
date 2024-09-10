@@ -116,10 +116,6 @@ public sealed record OperationResult<TResult> : OperationResultBase<TResult>
     { }
 
     ///<inheritdoc/>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Usage",
-        "CA2225:Operator overloads have named alternates",
-        Justification = "<Pending>")]
     public static implicit operator OperationResult(
         OperationResult<TResult> operation)
     {

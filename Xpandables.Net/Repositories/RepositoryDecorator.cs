@@ -56,12 +56,10 @@ public class RepositoryDecorator<TEntity>
         IEntityFilter<TEntity, TResult> filter,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on 
         // the awaited task
         await using IAsyncEnumerator<TResult> asyncEnumerator = decoratee
             .FetchAsync(filter, cancellationToken)
             .GetAsyncEnumerator(cancellationToken);
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on 
         // the awaited task
 
         TResult? result = default;
