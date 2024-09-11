@@ -32,20 +32,63 @@ public sealed class EventStoreEFCore(
     IOptions<EventOptions> options,
     DataContextEvent context) : EventStore(options)
 {
-    /// <inheritdoc/>
-    protected override async Task AppendEventCoreAsync(
-        IEntityEvent entity,
+    ///<inheritdoc/>
+    public override async Task AppendEventAsync(
+        IEvent @event,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(entity);
+        try
+        {
+            ArgumentNullException.ThrowIfNull(@event);
 
-        _ = await context
-            .AddAsync(entity, cancellationToken)
-            .ConfigureAwait(false);
+            IEntityEvent entity = CreateEntityEvent(@event);
+
+            _ = await context
+                .AddAsync(entity, cancellationToken)
+                .ConfigureAwait(false);
+
+        }
+        catch (Exception exception)
+            when (exception is not OperationCanceledException
+                or InvalidOperationException
+                or ArgumentNullException)
+        {
+            throw new InvalidOperationException(
+                $"An error occurred while appending the event " +
+                $"{@event.GetType().Name}.",
+                exception);
+        }
     }
 
     /// <inheritdoc/>
-    protected override IQueryable GetQueryableCore(IEventFilter eventFilter)
+    public override IAsyncEnumerable<IEvent> FetchEventsAsync(
+        IEventFilter eventFilter,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(eventFilter);
+
+        IQueryable queryable = GetQueryable(eventFilter);
+
+        try
+        {
+            IAsyncEnumerable<IEntityEvent> entities =
+                eventFilter.FetchAsync(queryable);
+
+            return CreateEventsAsync(eventFilter, entities, cancellationToken);
+        }
+        catch (Exception exception)
+            when (exception is not OperationCanceledException
+                or InvalidOperationException
+                or ArgumentNullException)
+        {
+            throw new InvalidOperationException(
+                $"An error occurred while fetching events of type " +
+                $"{eventFilter.Type.Name}.",
+                exception);
+        }
+    }
+
+    private IQueryable GetQueryable(IEventFilter eventFilter)
         => eventFilter.Type switch
         {
             Type type when type == typeof(IEventDomain)
@@ -67,19 +110,19 @@ public sealed class EventStoreEFCore(
         try
         {
             _ = await context
-                        .Integrations
-                        .Where(x => x.Id == eventId)
-                        .ExecuteUpdateAsync(setters =>
-                            setters
-                                .SetProperty(p => p.Status, EntityStatus.DELETED)
-                                .SetProperty(p => p.UpdatedOn, DateTime.UtcNow)
-                                .SetProperty(
-                                    p => p.ErrorMessage,
-                                    exception != null
-                                        ? exception.ToString()
-                                        : null),
-                                        cancellationToken)
-                        .ConfigureAwait(false);
+                .Integrations
+                .Where(x => x.Id == eventId)
+                .ExecuteUpdateAsync(setters =>
+                    setters
+                        .SetProperty(p => p.Status, EntityStatus.DELETED)
+                        .SetProperty(p => p.UpdatedOn, DateTime.UtcNow)
+                        .SetProperty(
+                            p => p.ErrorMessage,
+                            exception != null
+                                ? exception.ToString()
+                                : null),
+                                cancellationToken)
+                .ConfigureAwait(false);
 
         }
         catch (Exception ex)

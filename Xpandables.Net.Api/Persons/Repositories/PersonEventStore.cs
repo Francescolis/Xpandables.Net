@@ -29,15 +29,26 @@ public sealed class PersonEventStore(
     private static readonly HashSet<IEntityEvent> _store = [];
     private static readonly HashSet<IEntityEvent> _events = [];
 
-    protected override Task AppendEventCoreAsync(
-        IEntityEvent entity,
+    public override async Task AppendEventAsync(
+        IEvent @event,
         CancellationToken cancellationToken = default)
     {
+        await Task.Yield();
+
+        IEntityEvent entity = CreateEntityEvent(@event);
         _events.Add(entity);
-        return Task.CompletedTask;
     }
-    protected override IQueryable GetQueryableCore(IEventFilter eventFilter)
-        => _store.AsQueryable();
+
+    public override IAsyncEnumerable<IEvent> FetchEventsAsync(
+        IEventFilter eventFilter,
+        CancellationToken cancellationToken = default)
+    {
+        IAsyncEnumerable<IEntityEvent> entities =
+            eventFilter.FetchAsync(_store.AsQueryable());
+
+        return CreateEventsAsync(eventFilter, entities, cancellationToken);
+    }
+
     public override Task MarkEventAsPublishedAsync(
         Guid eventId,
         Exception? exception = null,

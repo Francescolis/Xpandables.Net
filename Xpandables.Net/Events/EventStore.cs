@@ -29,10 +29,27 @@ public abstract class EventStore(
 {
     private IDisposable[] _disposables = [];
 
+    /// <summary>
+    /// When overridden in a derived class, appends the specified event to
+    /// the store.
+    /// </summary>
+    /// <remarks>It is recommended to use the <see cref="CreateEntityEvent(IEvent)"/>
+    /// to create the entity event while implementing this method.</remarks>
     ///<inheritdoc/>
-    public async Task AppendEventAsync(
+    public abstract Task AppendEventAsync(
         IEvent @event,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates an entity event from the specified event.
+    /// </summary>
+    /// <param name="event">The event to act on.</param>
+    /// <returns>The entity event created.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the
+    /// <paramref name="event"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the operation
+    /// fails. See inner exception for details.</exception>
+    protected IEntityEvent CreateEntityEvent(IEvent @event)
     {
         ArgumentNullException.ThrowIfNull(@event);
 
@@ -43,88 +60,60 @@ public abstract class EventStore(
         IEntityEvent entity = converter
             .ConvertTo(@event, options.Value.SerializerOptions);
 
-        try
+        if (options
+                 .Value
+                 .DisposeEventEntityAfterPersistence)
         {
-            if (options
-                .Value
-                .DisposeEventEntityAfterPersistence)
-            {
-                Array.Resize(ref _disposables, _disposables.Length + 1);
-                _disposables[^1] = entity;
-            }
+            Array.Resize(ref _disposables, _disposables.Length + 1);
+            _disposables[^1] = entity;
+        }
 
-            await AppendEventCoreAsync(entity, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (Exception exception)
-            when (exception is not OperationCanceledException
-                or InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                $"An error occurred while appending the event " +
-                $"{@event.GetType().Name}.",
-                exception);
-        }
+        return entity;
     }
 
     /// <summary>
-    /// When overridden in a derived class, appends the specified entity to 
-    /// the store.
+    /// When overridden in a derived class, asynchronously fetches a collection
+    /// of events matching the filter. Returns an empty collection if no events
+    /// is found.
     /// </summary>
-    /// <param name="entity">The entity to act on.</param>
-    /// <param name="cancellationToken">A CancellationToken to observe while 
-    /// waiting for the task to complete.</param>
-    /// <returns>A value that represents an asynchronous operation.</returns>
-    protected abstract Task AppendEventCoreAsync(
-        IEntityEvent entity,
+    /// <remarks>It is recommended to use the 
+    /// <see cref="CreateEventsAsync(IEventFilter, IAsyncEnumerable{IEntityEvent}, CancellationToken)"/>
+    /// to returns the events while implementing this method.</remarks>
+    ///<inheritdoc/>
+    public abstract IAsyncEnumerable<IEvent> FetchEventsAsync(
+        IEventFilter eventFilter,
         CancellationToken cancellationToken = default);
 
-    ///<inheritdoc/>
-    public async IAsyncEnumerable<IEvent> FetchEventsAsync(
+    /// <summary>
+    /// Creates the events asynchronously.
+    /// </summary>
+    /// <param name="eventFilter">The event filter to act on.</param>
+    /// <param name="entities">The entities to act on.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe while
+    /// operation is in progress.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the
+    /// <paramref name="eventFilter"/> or <paramref name="entities"/> is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">Thrown when the operation
+    /// fails. See inner exception for details.</exception>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> that allows asynchronous
+    /// enumeration of the entity events.</returns>
+    protected async IAsyncEnumerable<IEvent> CreateEventsAsync(
         IEventFilter eventFilter,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IAsyncEnumerable<IEntityEvent> entities,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(eventFilter);
-        await Task.Yield();
-
         IEventConverter converter = options
             .Value
             .GetEventConverterFor(eventFilter.Type);
 
-        IQueryable queryable;
-        IAsyncEnumerable<IEntityEvent> entities;
-
-        try
-        {
-            queryable = GetQueryableCore(eventFilter);
-            entities = eventFilter.FetchAsync(queryable);
-        }
-        catch (Exception exception)
-            when (exception is not OperationCanceledException
-                or InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                $"An error occurred while fetching events of type " +
-                $"{eventFilter.Type.Name}.",
-                exception);
-        }
-
         await foreach (IEntityEvent entity in entities
-            .WithCancellation(cancellationToken))
+               .WithCancellation(cancellationToken))
         {
             yield return converter
                 .ConvertFrom(entity, options.Value.SerializerOptions);
         }
     }
-
-    /// <summary>
-    /// When overridden in a derived class, returns the data source to be 
-    /// filtered from the store.
-    /// </summary>
-    /// <param name="eventFilter">The event filter to act on.</param>
-    /// <returns>An <see cref="IQueryable"/> that represents the data 
-    /// source.</returns>
-    protected abstract IQueryable GetQueryableCore(IEventFilter eventFilter);
 
     /// <summary>
     /// When overridden in a derived class, marks the event as published.
