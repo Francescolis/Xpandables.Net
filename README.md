@@ -88,7 +88,7 @@ var deserialized = result.DeserializeAnonymousType(Optional.Some(new { Name = st
 // var deserialized = result.DeserializeAnonymousType(optional);
 
 // DeserializeAnonymousType is an extension method that allows to deserialize an anonymous type
-// the method is defined in the Xpandables.Net.Extensions namespace
+// the method is defined in the Xpandables.Net.Primitives.Text namespace
 
 ```
 
