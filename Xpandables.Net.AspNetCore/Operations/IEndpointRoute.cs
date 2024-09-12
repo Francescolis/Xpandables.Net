@@ -27,8 +27,8 @@ namespace Xpandables.Net.Operations;
 /// Inherits <see cref="IServiceRegister"/> interface.
 /// </summary>
 /// <remarks>All the implementation classes get registered using the 
-/// <see langword="ServiceCollectionExtensions.AddServiceRegisters(IServiceCollection, System.Reflection.Assembly[])"/> and
-/// applied with <see langword="MapXEndpointRoutes(WebApplication, System.Reflection.Assembly[])"/>.</remarks>
+/// <see cref="ServiceCollectionEndpointExtensions.AddXEndpointRoutes(Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Reflection.Assembly[])"/>
+/// and applied with <see langword="ServiceCollectionEndpointExtensions.UseXEndpointRoutes(WebApplication, params System.Reflection.Assembly[])"/>.</remarks>
 public interface IEndpointRoute : IServiceRegister
 {
     /// <summary>

@@ -1,0 +1,8 @@
+mode: ContinuousDeployment
+branches:
+  master:
+    tag: ''
+  develop:
+    tag: 'alpha'
+  feature:
+    tag: 'beta'
