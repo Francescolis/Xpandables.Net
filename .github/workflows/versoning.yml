@@ -1,0 +1,49 @@
+name: Versioning and Build
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - feature/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install GitVersion
+        run: dotnet tool install -g GitVersion.Tool
+
+      - name: Use GitVersion
+        id: gitversion
+        run: gitversion /output json /showvariable FullSemVer
+
+      - name: Set version
+        run: echo "##[set-output name=version;]${{ steps.gitversion.outputs.FullSemVer }}"
+
+      - name: Display version
+        run: echo "Version:${{ steps.gitversion.outputs.FullSemVer }}"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Pack
+        run: dotnet pack --configuration Release --output ./artifacts
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: nuget-package
+          path: ./artifacts
