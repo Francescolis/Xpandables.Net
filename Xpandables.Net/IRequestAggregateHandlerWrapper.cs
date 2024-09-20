@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,31 +14,32 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Events;
+using Xpandables.Net.Aggregates;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net;
+
 
 /// <summary>
-/// Defines a method to automatically publish events to subscribers.
+/// Represents a wrapper interface that avoids use of C# dynamics 
+/// with decider pattern and allows 
+/// type inference for <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/>.
 /// </summary>
-public interface IEventPublisher
+/// <typeparam name="TAggregate">Type of the aggregate.</typeparam>
+public interface IRequestAggregateHandlerWrapper<TAggregate>
+    where TAggregate : class, IAggregate
 {
     /// <summary>
-    /// Publishes the specified event to all registered subscribers.
+    /// Asynchronously handles the specified request.
     /// </summary>
-    /// <typeparam name="TEvent">Type of event.</typeparam>
-    /// <param name="event">The event to be published.</param>
+    /// <param name="request">The request to act on.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
-    /// <returns>A value that represents an <see cref="IOperationResult"/>
-    /// .</returns>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="event"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The 
-    /// operation failed. See inner exception.</exception>
-    Task<IOperationResult> PublishAsync<TEvent>(
-        TEvent @event,
-        CancellationToken cancellationToken = default)
-        where TEvent : notnull, IEvent;
+    /// <paramref name="request"/> is null.</exception>
+    /// <returns>A task that represents an 
+    /// object of <see cref="IOperationResult"/>.</returns>
+    Task<IOperationResult> HandleAsync(
+        IRequestAggregate<TAggregate> request,
+        CancellationToken cancellationToken = default);
 }

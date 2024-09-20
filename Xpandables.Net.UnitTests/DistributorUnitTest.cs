@@ -19,10 +19,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Moq;
 
+using Xpandables.Net;
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Distribution;
-using Xpandables.Net.Distribution.Internals;
 using Xpandables.Net.Events;
+using Xpandables.Net.Internals;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.Collections;
 
@@ -42,7 +42,7 @@ public static class TestServiceCollection
             typeof(MockRequestAggregateHandler<,>));
         services.AddTransient(typeof(IAsyncRequestHandler<,>),
             typeof(MockAsyncRequestHandler<,>));
-        services.AddTransient<IDistributor, Distributor>();
+        services.AddTransient<IDispatcher, Dispatcher>();
 
         return services.BuildServiceProvider();
     }
@@ -99,12 +99,12 @@ public class MockAsyncRequestHandler<TRequest, TResponse> :
 
 public class DistributorTests
 {
-    private readonly IDistributor _distributor;
+    private readonly IDispatcher _distributor;
 
     public DistributorTests()
     {
         var serviceProvider = TestServiceCollection.ConfigureServices();
-        _distributor = serviceProvider.GetRequiredService<IDistributor>();
+        _distributor = serviceProvider.GetRequiredService<IDispatcher>();
     }
 
     [Fact]

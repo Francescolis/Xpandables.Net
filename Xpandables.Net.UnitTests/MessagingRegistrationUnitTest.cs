@@ -20,7 +20,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Distribution;
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives.Collections;

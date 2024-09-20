@@ -22,9 +22,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Decorators;
-using Xpandables.Net.Distribution;
-using Xpandables.Net.Distribution.Internals;
 using Xpandables.Net.Events;
+using Xpandables.Net.Internals;
 
 namespace Xpandables.Net.DependencyInjection;
 

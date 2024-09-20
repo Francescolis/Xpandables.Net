@@ -18,7 +18,6 @@
 using Xpandables.Net.Api.Persons.Domains;
 using Xpandables.Net.Api.Persons.Primitives;
 using Xpandables.Net.Decorators;
-using Xpandables.Net.Distribution;
 
 namespace Xpandables.Net.Api.Persons.Features.RegisterPerson;
 

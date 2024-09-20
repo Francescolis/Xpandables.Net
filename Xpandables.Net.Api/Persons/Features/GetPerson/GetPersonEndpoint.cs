@@ -18,7 +18,6 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Persons.Features.GetPerson;
@@ -30,12 +29,12 @@ public sealed class GetPersonEndpoint : IEndpointRoute
             ContractEndpoint.PersonGetEndpoint,
             async (
                 [FromRoute] Guid keyId,
-                IDistributor distributor,
+                IDispatcher dispatcher,
                 CancellationToken cancellationToken) =>
             {
                 GetPersonQuery query = new(keyId);
 
-                return await distributor
+                return await dispatcher
                     .GetAsync(query, cancellationToken)
                     .ConfigureAwait(false);
             })

@@ -29,7 +29,7 @@ builder.Services
         .UseValidator()
         .UseAggregate()
         .UseDuplicateEvent())
-    .AddXDistributor()
+    .AddXDispatcher()
     .AddXEventStore<PersonEventStore>()
     .AddXEventPublisher()
     .AddXEventIntegrationScheduler()

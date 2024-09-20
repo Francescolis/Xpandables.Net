@@ -20,7 +20,7 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Transactions;
 using Xpandables.Net.Visitors;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Defines options to apply decorators to request handlers.

@@ -17,30 +17,28 @@
 ********************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents a wrapper interface that avoids use of C# dynamics with 
-/// request pattern and allows type inference 
-/// for <see cref="IAsyncRequestHandler{TRequest, TResponse}"/>.
+/// Defines a method to automatically publish events to subscribers.
 /// </summary>
-/// <typeparam name="TResponse">Type of the response.</typeparam>
-public interface IAsyncRequestHandlerWrapper<TResponse>
+public interface IEventPublisher
 {
     /// <summary>
-    /// Asynchronously handles the specified request 
-    /// and returns an asynchronous response type.
+    /// Publishes the specified event to all registered subscribers.
     /// </summary>
-    /// <param name="request">The request to act on.</param>
-    /// <param name="cancellationToken">A CancellationToken
+    /// <typeparam name="TEvent">Type of event.</typeparam>
+    /// <param name="event">The event to be published.</param>
+    /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
+    /// <returns>A value that represents an <see cref="IOperationResult"/>
+    /// .</returns>
     /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="request"/> is null.</exception>
-    /// <exception cref="OperationResultException">
-    /// The operation failed.</exception>
-    /// <returns>An enumerator of <typeparamref name="TResponse"/> 
-    /// that can be asynchronously enumerated.</returns>
-    IAsyncEnumerable<TResponse> HandleAsync(
-        IAsyncRequest<TResponse> request,
-        CancellationToken cancellationToken = default);
+    /// <paramref name="event"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The 
+    /// operation failed. See inner exception.</exception>
+    Task<IOperationResult> PublishAsync<TEvent>(
+        TEvent @event,
+        CancellationToken cancellationToken = default)
+        where TEvent : notnull, IEvent;
 }

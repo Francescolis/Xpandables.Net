@@ -17,16 +17,17 @@
 ********************************************************************************/
 
 using Xpandables.Net.Aggregates;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Defines a set of methods to automatically distribute requests and events.
 /// The implementation must be 
 /// thread-safe when working in a multi-threaded environment.
 /// </summary>
-public interface IDistributor : IServiceProvider, IEventPublisher
+public interface IDispatcher : IServiceProvider, IEventPublisher
 {
     /// <summary>
     /// Asynchronously send the request to the 

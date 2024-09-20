@@ -21,10 +21,10 @@ using Xpandables.Net.Aggregates;
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution.Internals;
+namespace Xpandables.Net.Internals;
 
-internal sealed class Distributor(IServiceProvider serviceProvider)
-    : IDistributor
+internal sealed class Dispatcher(IServiceProvider serviceProvider)
+    : IDispatcher
 {
     private readonly IEventPublisher _eventPublisher = serviceProvider
         .GetRequiredService<IEventPublisher>();

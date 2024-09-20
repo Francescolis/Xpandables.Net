@@ -18,7 +18,6 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Persons.Features.BeContact;
@@ -31,7 +30,7 @@ public sealed class BeContactEndpoint : IEndpointRoute
                async (
                    [FromRoute] Guid keyId,
                    [FromBody] BeContactRequest request,
-                   IDistributor distributor,
+                   IDispatcher dispatcher,
                    CancellationToken cancellationToken) =>
                {
                    BeContactCommand command = new()
@@ -40,7 +39,7 @@ public sealed class BeContactEndpoint : IEndpointRoute
                        ContactId = request.ContactId
                    };
 
-                   return await distributor
+                   return await dispatcher
                        .SendAsync(command, cancellationToken)
                        .ConfigureAwait(false);
                })

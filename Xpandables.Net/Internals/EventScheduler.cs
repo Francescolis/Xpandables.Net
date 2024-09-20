@@ -27,7 +27,7 @@ using Xpandables.Net.Operations;
 using Xpandables.Net.Primitives;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Distribution.Internals;
+namespace Xpandables.Net.Internals;
 
 internal sealed class EventScheduler(
     IServiceScopeFactory scopeFactory,

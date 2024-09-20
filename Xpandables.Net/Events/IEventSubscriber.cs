@@ -15,9 +15,7 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Events;
-
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Defines a method to automatically subscribe to events.

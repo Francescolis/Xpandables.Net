@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Allows an application author to define a generic handler 

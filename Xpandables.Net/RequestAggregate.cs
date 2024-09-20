@@ -18,7 +18,7 @@
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Optionals;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Represents a request that targets an aggregate.

@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,32 +15,32 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Aggregates;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution;
-
+namespace Xpandables.Net;
 
 /// <summary>
-/// Represents a wrapper interface that avoids use of C# dynamics 
-/// with decider pattern and allows 
-/// type inference for <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/>.
+/// Represents a wrapper interface that avoids use of C# dynamics with 
+/// request pattern and allows type inference 
+/// for <see cref="IAsyncRequestHandler{TRequest, TResponse}"/>.
 /// </summary>
-/// <typeparam name="TAggregate">Type of the aggregate.</typeparam>
-public interface IRequestAggregateHandlerWrapper<TAggregate>
-    where TAggregate : class, IAggregate
+/// <typeparam name="TResponse">Type of the response.</typeparam>
+public interface IAsyncRequestHandlerWrapper<TResponse>
 {
     /// <summary>
-    /// Asynchronously handles the specified request.
+    /// Asynchronously handles the specified request 
+    /// and returns an asynchronous response type.
     /// </summary>
     /// <param name="request">The request to act on.</param>
-    /// <param name="cancellationToken">A CancellationToken 
+    /// <param name="cancellationToken">A CancellationToken
     /// to observe while waiting for the task to complete.</param>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="request"/> is null.</exception>
-    /// <returns>A task that represents an 
-    /// object of <see cref="IOperationResult"/>.</returns>
-    Task<IOperationResult> HandleAsync(
-        IRequestAggregate<TAggregate> request,
+    /// <exception cref="OperationResultException">
+    /// The operation failed.</exception>
+    /// <returns>An enumerator of <typeparamref name="TResponse"/> 
+    /// that can be asynchronously enumerated.</returns>
+    IAsyncEnumerable<TResponse> HandleAsync(
+        IAsyncRequest<TResponse> request,
         CancellationToken cancellationToken = default);
 }

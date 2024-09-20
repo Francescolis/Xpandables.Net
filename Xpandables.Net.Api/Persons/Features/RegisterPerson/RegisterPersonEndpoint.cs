@@ -16,7 +16,6 @@
  *
 ********************************************************************************/
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Persons.Features.RegisterPerson;
@@ -28,7 +27,7 @@ public sealed class RegisterPersonEndpoint : IEndpointRoute
                ContractEndpoint.PersonRegisterEndpoint,
                async (
                    RegisterPersonRequest request,
-                   IDistributor distributor,
+                   IDispatcher dispatcher,
                    CancellationToken cancellationToken) =>
                {
                    RegisterPersonCommand command = new()
@@ -38,7 +37,7 @@ public sealed class RegisterPersonEndpoint : IEndpointRoute
                        LastName = request.LastName
                    };
 
-                   return await distributor
+                   return await dispatcher
                        .SendAsync(command, cancellationToken)
                        .ConfigureAwait(false);
                })

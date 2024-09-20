@@ -16,7 +16,6 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Distribution;
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 

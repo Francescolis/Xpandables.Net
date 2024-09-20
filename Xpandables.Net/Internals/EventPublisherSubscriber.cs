@@ -20,7 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution.Internals;
+namespace Xpandables.Net.Internals;
 
 /// <summary>
 /// Implements <see cref="IEventPublisher"/> 

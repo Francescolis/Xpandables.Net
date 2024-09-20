@@ -520,9 +520,9 @@ var serviceProvider = new ServiceCollection()
     .BuildServiceprovider();
 
     // Add a product
-    var distributor = serviceProvider.GetRequiredService<IDistributor>();
+    var dispatcher = serviceProvider.GetRequiredService<IDistributor>();
     var addProduct = new AddProductRequest("Xpandables 8", "Xpandables.Net Library");
-    IOperationResult result = await distributor
+    IOperationResult result = await dispatcher
         .SendAsync(addProduct)
         .ConfigureAwait(false);
 

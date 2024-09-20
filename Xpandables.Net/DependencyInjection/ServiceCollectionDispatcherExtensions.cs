@@ -23,9 +23,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xpandables.Net.Aggregates;
 using Xpandables.Net.Decorators;
 using Xpandables.Net.Decorators.Internals;
-using Xpandables.Net.Distribution;
-using Xpandables.Net.Distribution.Internals;
+using Xpandables.Net.Events;
 using Xpandables.Net.Interceptions;
+using Xpandables.Net.Internals;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Transactions;
 using Xpandables.Net.Visitors;
@@ -35,56 +35,56 @@ namespace Xpandables.Net.DependencyInjection;
 /// <summary>
 /// Provides with a set of static methods to register request services.
 /// </summary>
-public static class ServiceCollectionDistributionExtensions
+public static class ServiceCollectionDispatcherExtensions
 {
     internal static readonly MethodInfo AddRequestHandlerMethod =
-        typeof(ServiceCollectionDistributionExtensions)
+        typeof(ServiceCollectionDispatcherExtensions)
         .GetMethod(nameof(AddXRequestHandler))!;
 
     internal static readonly MethodInfo AddRequestAggregateHandlerMethod =
-        typeof(ServiceCollectionDistributionExtensions)
+        typeof(ServiceCollectionDispatcherExtensions)
         .GetMethod(nameof(AddXRequestAggregateHandler))!;
 
     internal static readonly MethodInfo AddRequestResponseHandlerMethod =
-        typeof(ServiceCollectionDistributionExtensions)
+        typeof(ServiceCollectionDispatcherExtensions)
         .GetMethod(nameof(AddXRequestResponseHandler))!;
 
     internal static readonly MethodInfo AddAsyncRequestResponseHandlerMethod =
-        typeof(ServiceCollectionDistributionExtensions)
+        typeof(ServiceCollectionDispatcherExtensions)
         .GetMethod(nameof(AddXAsyncRequestResponseHandler))!;
 
     /// <summary>
     /// Registers the <typeparamref name="TDistributor"/> type 
-    /// as <see cref="IDistributor"/> 
+    /// as <see cref="IDispatcher"/> 
     /// to the services with scoped life time.
     /// </summary>
     /// <typeparam name="TDistributor">The type that implements 
-    /// <see cref="IDistributor"/>.</typeparam>
+    /// <see cref="IDispatcher"/>.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXDistributor<TDistributor>(
+    public static IServiceCollection AddXDispatcher<TDistributor>(
         this IServiceCollection services)
-        where TDistributor : class, IDistributor
+        where TDistributor : class, IDispatcher
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddScoped<IDistributor, TDistributor>();
+        services.TryAddScoped<IDispatcher, TDistributor>();
         return services;
     }
 
     /// <summary>
-    /// Registers the default <see cref="IDistributor"/> implementation to 
+    /// Registers the default <see cref="IDispatcher"/> implementation to 
     /// the services with scoped life time.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">The 
     /// <paramref name="services"/> is null.</exception>
-    public static IServiceCollection AddXDistributor(
+    public static IServiceCollection AddXDispatcher(
         this IServiceCollection services)
-        => services.AddXDistributor<Distributor>();
+        => services.AddXDispatcher<Dispatcher>();
 
     /// <summary>
     /// Registers the <typeparamref name="TRequestHandler"/> to the services with 

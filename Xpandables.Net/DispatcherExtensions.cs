@@ -19,22 +19,22 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Aggregates;
-using Xpandables.Net.Distribution.Internals;
+using Xpandables.Net.Internals;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net;
 
 /// <summary>
-/// Provides with extension method for the distributor.
+/// Provides with extension method for the dispatcher.
 /// </summary>
-public static class DistributorExtensions
+public static class DispatcherExtensions
 {
     /// <summary>
     /// Asynchronously send the aggregate from the request using
     /// the <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/> implementation.
     /// </summary>
     /// <typeparam name="TAggregate">Type of the response.</typeparam>
-    /// <param name="distributor">The target distributor instance.</param>
+    /// <param name="dispatcher">The target dispatcher instance.</param>
     /// <param name="request">The request to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while 
     /// waiting for the task to complete.</param>
@@ -43,13 +43,13 @@ public static class DistributorExtensions
     /// <returns>A task that represents an 
     /// <see cref="IOperationResult{TValue}"/>.</returns>
     public static async Task<IOperationResult> SendAsync<TAggregate>(
-        this IDistributor distributor,
+        this IDispatcher dispatcher,
         IRequestAggregate<TAggregate> request,
         CancellationToken cancellationToken = default)
         where TAggregate : class, IAggregate
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(distributor);
+        ArgumentNullException.ThrowIfNull(dispatcher);
 
         try
         {
@@ -57,7 +57,7 @@ public static class DistributorExtensions
                 .MakeGenericType(request.GetType(), typeof(TAggregate));
 
             IRequestAggregateHandlerWrapper<TAggregate> handler =
-                (IRequestAggregateHandlerWrapper<TAggregate>)distributor
+                (IRequestAggregateHandlerWrapper<TAggregate>)dispatcher
                 .GetRequiredService(requestWrapperType);
 
             return await handler
@@ -81,7 +81,7 @@ public static class DistributorExtensions
     /// returns a response.
     /// </summary>
     /// <typeparam name="TResponse">Type of the response.</typeparam>
-    /// <param name="distributor">The target distributor instance.</param>
+    /// <param name="dispatcher">The target dispatcher instance.</param>
     /// <param name="request">The request to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while 
     /// waiting for the task to complete.</param>
@@ -90,11 +90,11 @@ public static class DistributorExtensions
     /// <returns>A task that represents an 
     /// <see cref="IOperationResult{TValue}"/>.</returns>
     public static async Task<IOperationResult<TResponse>> GetAsync<TResponse>(
-        this IDistributor distributor,
+        this IDispatcher dispatcher,
         IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(distributor);
+        ArgumentNullException.ThrowIfNull(dispatcher);
 
         try
         {
@@ -102,7 +102,7 @@ public static class DistributorExtensions
                 .MakeGenericType(request.GetType(), typeof(TResponse));
 
             IRequestHandlerWrapper<TResponse> handler =
-                (IRequestHandlerWrapper<TResponse>)distributor
+                (IRequestHandlerWrapper<TResponse>)dispatcher
                 .GetRequiredService(requestWrapperType);
 
             return await handler.HandleAsync(request, cancellationToken)
@@ -126,7 +126,7 @@ public static class DistributorExtensions
     /// <typeparamref name="TResponse"/> that can be asynchronously enumerated.
     /// </summary>
     /// <typeparam name="TResponse">Type of the response.</typeparam>
-    /// <param name="distributor">The target distributor instance.</param>
+    /// <param name="dispatcher">The target dispatcher instance.</param>
     /// <param name="request">The request to act on.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while
     /// waiting for the task to complete.</param>
@@ -137,11 +137,11 @@ public static class DistributorExtensions
     /// <returns>An enumerator of <typeparamref name="TResponse"/> that can be 
     /// asynchronously enumerated.</returns>
     public static IAsyncEnumerable<TResponse> FetchAsync<TResponse>(
-        this IDistributor distributor,
+        this IDispatcher dispatcher,
         IAsyncRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(distributor);
+        ArgumentNullException.ThrowIfNull(dispatcher);
 
         try
         {
@@ -149,7 +149,7 @@ public static class DistributorExtensions
                 .MakeGenericType(request.GetType(), typeof(TResponse));
 
             IAsyncRequestHandlerWrapper<TResponse> handler =
-                (IAsyncRequestHandlerWrapper<TResponse>)distributor
+                (IAsyncRequestHandlerWrapper<TResponse>)dispatcher
                 .GetRequiredService(requestWrapperType);
 
             return handler.HandleAsync(request, cancellationToken);

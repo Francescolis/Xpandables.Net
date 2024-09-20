@@ -33,7 +33,6 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Api.Persons.Domains;
-using Xpandables.Net.Distribution;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Persons.Features.RegisterPerson;

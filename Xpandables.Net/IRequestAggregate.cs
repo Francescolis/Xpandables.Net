@@ -15,21 +15,27 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Aggregates;
+using Xpandables.Net.Decorators;
+using Xpandables.Net.Optionals;
 
-using Xpandables.Net.Operations;
+namespace Xpandables.Net;
 
-namespace Xpandables.Net.Distribution.Internals;
-
-internal sealed class RequestResponseHandlerWrapper<TRequest, TResponse>(
-    IRequestHandler<TRequest, TResponse> decoratee)
-    : IRequestHandlerWrapper<TResponse>
-    where TRequest : notnull, IRequest<TResponse>
+/// <summary>
+/// This interface is used as a marker for requests targeting aggregate. 
+/// It's used for implementing the Decider pattern. 
+/// </summary>
+public interface IRequestAggregate<TAggregate> : IAggregateDecorator
+    where TAggregate : IAggregate
 {
-    public async Task<IOperationResult<TResponse>> HandleAsync(
-        IRequest<TResponse> request,
-        CancellationToken cancellationToken = default)
-        => await decoratee.HandleAsync(
-            (TRequest)request,
-            cancellationToken)
-        .ConfigureAwait(false);
+    /// <summary>
+    /// Gets or sets the aggregate instance.
+    /// </summary>
+    /// <remarks>This get populated by the decorator.</remarks>
+    Optional<TAggregate> Aggregate { get; set; }
+
+    /// <summary>
+    /// Gets the key aggretate identitifer
+    /// </summary>
+    Guid KeyId { get; }
 }

@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2023 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +15,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.HostedServices;
 
-namespace Xpandables.Net.Distribution.Internals;
+namespace Xpandables.Net.Events;
 
-internal sealed class AsyncRequestResponseHandlerWrapper<TRequest, TResponse>(
-    IAsyncRequestHandler<TRequest, TResponse> decoratee)
-    : IAsyncRequestHandlerWrapper<TResponse>
-    where TRequest : notnull, IAsyncRequest<TResponse>
-{
-    public IAsyncEnumerable<TResponse> HandleAsync(
-        IAsyncRequest<TResponse> request,
-        CancellationToken cancellationToken = default)
-        => decoratee.HandleAsync(
-            (TRequest)request,
-            cancellationToken);
-}
+/// <summary>
+/// Provides with a method to schedule integration events when requested.
+/// </summary>
+public interface IEventScheduler : IBackgroundService { }

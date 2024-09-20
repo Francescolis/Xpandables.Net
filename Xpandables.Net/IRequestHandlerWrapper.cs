@@ -17,7 +17,7 @@
 ********************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Represents a wrapper interface that avoids use of C# dynamics 

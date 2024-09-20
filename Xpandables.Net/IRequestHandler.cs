@@ -15,16 +15,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Aggregates;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Distribution;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Represents a method signature to be used to apply 
-/// <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/> implementation.
+/// <see cref="IRequestHandler{TRequest}"/> implementation.
 /// </summary>
-/// <typeparam name="TAggregate">The type of aggregate.</typeparam>
 /// <typeparam name="TRequest">Type of the request to act on.</typeparam>
 /// <param name="request">The request instance to act on.</param>
 /// <param name="cancellationToken">A CancellationToken to 
@@ -32,29 +30,29 @@ namespace Xpandables.Net.Distribution;
 /// <returns>A value that represents an <see cref="IOperationResult"/>.</returns>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="request"/> is null.</exception>
-public delegate Task<IOperationResult> RequestAggregateHandler
-    <TRequest, TAggregate>(
+public delegate Task<IOperationResult> RequestHandler<in TRequest>(
     TRequest request, CancellationToken cancellationToken = default)
-    where TAggregate : class, IAggregate
-    where TRequest : class, IRequestAggregate<TAggregate>;
+    where TRequest : notnull, IRequest;
 
 /// <summary>
-/// Provides with a method to handle requests that are associated with an 
-/// aggregate using the Decider pattern.
+/// Provides with a method to asynchronously handle a request of specific type.
+/// The implementation must be thread-safe when working i
+/// n a multi-threaded environment.
 /// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-/// <typeparam name="TRequest">The type of the aggregate request.</typeparam>
-public interface IRequestAggregateHandler<TRequest, TAggregate>
-    where TAggregate : class, IAggregate
-    where TRequest : class, IRequestAggregate<TAggregate>
+/// <typeparam name="TRequest">Type of the request to act on.</typeparam>
+public interface IRequestHandler<in TRequest>
+    where TRequest : notnull, IRequest
 {
     /// <summary>
-    /// Handles the specified request for the specified aggregate.
+    /// Asynchronously handles the specified request.
     /// </summary>
-    /// <remarks>The target aggregate will be supplied by the aspect.</remarks>
-    /// <param name="request">The request instance.</param>
+    /// <param name="request">The request instance to act on.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
+    /// <returns>A value that represents an 
+    /// <see cref="IOperationResult"/>.</returns>
     Task<IOperationResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);

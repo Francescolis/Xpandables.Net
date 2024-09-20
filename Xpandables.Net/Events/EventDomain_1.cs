@@ -17,9 +17,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Events;
+using Xpandables.Net.Aggregates;
 
-namespace Xpandables.Net.Aggregates;
+namespace Xpandables.Net.Events;
 /// <summary>
 /// Helper class used to create a domain event with aggregate.
 /// </summary>

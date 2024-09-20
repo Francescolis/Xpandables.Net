@@ -17,7 +17,7 @@
 ********************************************************************************/
 
 using Xpandables.Net.Api.Persons.Persistence;
-using Xpandables.Net.Distribution;
+using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Persons.Domains.Events;
