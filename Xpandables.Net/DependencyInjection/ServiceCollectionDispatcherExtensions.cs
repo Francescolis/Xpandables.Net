@@ -398,7 +398,8 @@ public static class ServiceCollectionDispatcherExtensions
     /// <summary>
     /// Registers and configures the <see cref="IRequestHandler{TRequest}"/>, 
     /// <see cref="IRequestHandler{TRequest, TResponse}"/>,
-    /// <see cref="IEventHandler{TEvent}"/>
+    /// <see cref="IEventHandler{TEvent}"/>,
+    /// <see cref="IRequestAggregateHandler{TRequest, TAggregate}"/>
     /// and <see cref="IAsyncRequestHandler{TRequest, TResponse}"/> behaviors.
     /// </summary>
     /// <param name="services">The collection of services.</param>
