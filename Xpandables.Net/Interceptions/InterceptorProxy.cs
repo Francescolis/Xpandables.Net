@@ -1,6 +1,6 @@
 ﻿
 /*******************************************************************************
- * Copyright (C) 2023 Francis-Black EWANE
+ * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,6 +94,7 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
         InterfaceType = typeof(TInterface);
     }
 
+
     /// <summary>
     /// Executes the method specified in the <paramref name="targetMethod" />.
     /// Applies the interceptor behavior to the called method.
@@ -111,27 +112,9 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
 
         try
         {
-            Type returnType = targetMethod.ReturnType;
-            MethodInfo methodInfo = Interceptor
-                .GetType()
-                .GetMethod(
-                    "InterceptCoreAsync",
-                    BindingFlags.NonPublic | BindingFlags.Instance)!;
-
-            bool isAsync = methodInfo?.IsOverridden() ?? false;
-
             return ReferenceEquals(targetMethod, MethodBaseType)
                 ? Bypass(targetMethod, args)
-                : isAsync
-                    ? GetTaskResult(targetMethod, args)
-                    : DoInvoke(targetMethod, args);
-
-            object? GetTaskResult(MethodInfo methodInfo, object?[]? args)
-            {
-                Task task = DoInvokeAsync(methodInfo, args);
-                task.Wait();
-                return task.GetType().GetProperty("Result")?.GetValue(task);
-            }
+                : DoInvoke(targetMethod, args);
         }
         catch (TargetInvocationException exception)
         {
@@ -148,49 +131,60 @@ public class InterceptorProxy<TInterface> : InterceptorProxy
     {
         Invocation invocation = new(method, Instance, InterfaceType, args);
 
+        bool isAsyncOverridden = InterceptorProxy<TInterface>.IsMethodOverridden(
+            Interceptor.GetType(), nameof(Interceptor.InterceptAsync));
+
+        bool isSyncOverridden = InterceptorProxy<TInterface>.IsMethodOverridden(
+            Interceptor.GetType(), nameof(Interceptor.Intercept));
+
         if (Interceptor.CanHandle(invocation))
         {
-            Interceptor.Intercept(invocation);
+            if (isAsyncOverridden)
+            {
+                return DoInvokeAsync(invocation);
+            }
+            else if (isSyncOverridden)
+            {
+                Interceptor.Intercept(invocation);
+
+                if (invocation.Exception is not null)
+                {
+                    if (invocation.ReThrowException)
+                    {
+                        throw invocation.Exception;
+                    }
+                }
+            }
         }
         else
         {
             invocation.Proceed();
         }
 
-        if (invocation._exceptionDispatchInfo is not null
-            && invocation.ReThrowException)
-        {
-            invocation._exceptionDispatchInfo.Throw();
-        }
-
         return invocation.ReturnValue;
     }
 
-    private async Task<object?> DoInvokeAsync(
-        MethodInfo method,
-        object?[]? args)
+    private async Task<object?> DoInvokeAsync(IInvocation invocation)
     {
-        Invocation invocation = new(method, Instance, InterfaceType, args);
+        await Interceptor.InterceptAsync(invocation);
 
-        if (Interceptor.CanHandle(invocation))
+        if (invocation.Exception is not null)
         {
-            await Interceptor
-                .InterceptAsync(invocation)
-                .ConfigureAwait(false);
-        }
-        else
-        {
-            invocation.Proceed();
-        }
-
-        if (invocation._exceptionDispatchInfo is not null
-            && invocation.ReThrowException)
-        {
-            invocation._exceptionDispatchInfo.Throw();
+            if (invocation.ReThrowException)
+            {
+                throw invocation.Exception;
+            }
         }
 
         return invocation.ReturnValue;
     }
+
+    private static bool IsMethodOverridden(Type derivedType, string methodName) =>
+        derivedType.GetMethod(
+            methodName,
+            BindingFlags.Instance |
+            BindingFlags.Public |
+            BindingFlags.DeclaredOnly) != null;
 
     /// <summary>
     /// Bypass the interceptor application because 

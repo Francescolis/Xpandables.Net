@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
@@ -17,34 +17,38 @@
 		<Authors>Francis-Black EWANE</Authors>
 		<Company>Kamersoft.Net</Company>
 		<Description>A utility library in .Net8.0 to easily add patterns such as Command, Query, Dispatcher, Interception...</Description>
-		<Copyright>Copyright © 2023 Francis-Black EWANE</Copyright>
+		<Copyright>Copyright © 2024 Francis-Black EWANE</Copyright>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-		<PackageReleaseNotes>Add Decider pattern to Aggregate</PackageReleaseNotes>
+		<PackageReleaseNotes>Move to .Net 9</PackageReleaseNotes>
 		<PackageOutputPath>D:\Nugets</PackageOutputPath>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>8.2.0</Version>
-		<AssemblyVersion>8.2.0</AssemblyVersion>
-		<FileVersion>8.2.0</FileVersion>
-		<PackageVersion>8.2.0</PackageVersion>
+		<Version>9.0.0</Version>
+		<AssemblyVersion>9.0.0</AssemblyVersion>
+		<FileVersion>9.0.0</FileVersion>
+		<PackageVersion>9.0.0</PackageVersion>
 		<IncludeSymbols>True</IncludeSymbols>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<PackageTags>IRequest;DDD;Optional;Distributor;Aggregate;OperationResult;Decorator;Specification;State;HttpClient;Interception;Visitor</PackageTags>
+		<PackageTags>Interception</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-		<WarningLevel>7</WarningLevel>
+		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+		<IsTrimmable>False</IsTrimmable>
+		<IsAotCompatible>False</IsAotCompatible>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-		<WarningLevel>7</WarningLevel>
+		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+		<IsTrimmable>False</IsTrimmable>
+		<IsAotCompatible>False</IsAotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>

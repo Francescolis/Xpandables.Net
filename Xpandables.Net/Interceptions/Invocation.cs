@@ -1,6 +1,6 @@
 ﻿
 /*******************************************************************************
- * Copyright (C) 2023 Francis-Black EWANE
+ * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 ********************************************************************************/
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 
 namespace Xpandables.Net.Interceptions;
 
@@ -26,12 +25,11 @@ namespace Xpandables.Net.Interceptions;
 /// </summary>
 internal record class Invocation : IInvocation
 {
-    internal ExceptionDispatchInfo? _exceptionDispatchInfo;
     public MethodInfo Method { get; }
     public object Target { get; }
     public Type InterfaceType { get; }
     public IParameterCollection Arguments { get; }
-    public Exception? Exception => _exceptionDispatchInfo?.SourceException;
+    public Exception? Exception { get; internal set; }
     public bool ReThrowException { get; set; }
     public Type ReturnType => Method.ReturnType;
     public object? ReturnValue { get; internal set; }
@@ -63,39 +61,58 @@ internal record class Invocation : IInvocation
         Arguments = new ParameterCollection(targetMethod, argsValue);
     }
 
-    public void SetException(Exception? exception)
-        => _exceptionDispatchInfo = exception is null
-            ? null
-            : ExceptionDispatchInfo.Capture(exception);
+    public void SetException(Exception? exception) => Exception = exception;
 
-    public void SetReturnValue(object? returnValue)
+    public void SetReturnValue<T>(T? returnValue)
     {
-        _exceptionDispatchInfo = null;
+        SetException(null);
 
         ReturnValue = returnValue;
 
-        Type returnType = ReturnType;
-
-        if (ReturnValue is not null)
+        if (ReturnValue is null)
         {
-            if (returnType.IsAssignableFrom(ReturnValue.GetType()))
+            return;
+        }
+
+        // If it's an async method, check for Task, Task<T>, ValueTask, and ValueTask<T>
+        if (typeof(Task).IsAssignableFrom(ReturnType))
+        {
+            Task task = (Task)ReturnValue;
+
+            if (task.Status != TaskStatus.RanToCompletion)
             {
-                return;
+                task.ConfigureAwait(false).GetAwaiter().GetResult();
             }
 
-            if (returnType.IsGenericType)
+            if (ReturnType.IsGenericType)
             {
-                Type argumentType = returnType.GetGenericArguments()[0];
-                if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
+                Type argumentType = ReturnType.GetGenericArguments()[0];
+
+                if (ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
                     MethodInfo fromResultMethod = typeof(Task)
                         .GetMethod(nameof(Task.FromResult))!
                         .MakeGenericMethod(argumentType);
 
-                    ReturnValue = fromResultMethod.Invoke(null, [ReturnValue]);
+                    object? result = task.GetType().GetProperty("Result")!.GetValue(task);
+                    ReturnValue = fromResultMethod.Invoke(null, [result]);
                 }
+            }
+            else
+            {
+                ReturnValue = Task.CompletedTask;
+            }
+        }
+        else if (typeof(ValueTask).IsAssignableFrom(ReturnType))
+        {
+            ValueTask valueTask = (ValueTask)ReturnValue;
+            valueTask.ConfigureAwait(false).GetAwaiter().GetResult();
 
-                if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+            if (ReturnType.IsGenericType)
+            {
+                Type argumentType = ReturnType.GetGenericArguments()[0];
+
+                if (ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
                 {
                     Type genericValueTaskType = typeof(ValueTask<>)
                         .MakeGenericType(argumentType);
@@ -103,14 +120,18 @@ internal record class Invocation : IInvocation
                     ConstructorInfo constructorInfo = genericValueTaskType
                         .GetConstructor([argumentType])!;
 
-                    ReturnValue = constructorInfo.Invoke([ReturnValue]);
+                    object? result = valueTask.GetType().GetProperty("Result")!.GetValue(valueTask);
+                    ReturnValue = constructorInfo.Invoke([result]);
                 }
+            }
+            else
+            {
+                ReturnValue = ValueTask.CompletedTask;
             }
         }
     }
 
-    public void SetElapsedTime(TimeSpan elapsedTime)
-        => ElapsedTime = elapsedTime;
+    public void SetElapsedTime(TimeSpan elapsedTime) => ElapsedTime = elapsedTime;
 
     public void Proceed()
     {
@@ -118,31 +139,72 @@ internal record class Invocation : IInvocation
 
         try
         {
-            ReturnValue = Method
+            object? result = Method
                 .Invoke(
                     Target,
                     Arguments.Select(arg => arg.Value).ToArray());
 
-            if (ReturnValue is Task { Exception: { } } taskException)
-            {
-                _exceptionDispatchInfo = ExceptionDispatchInfo
-                    .Capture(taskException.Exception);
-            }
-
+            SetReturnValue(result);
+        }
+        catch (TargetInvocationException exception)
+        {
+            SetException(exception.InnerException);
             if (ReThrowException)
             {
-                _exceptionDispatchInfo?.Throw();
+                throw;
             }
         }
         catch (Exception exception)
-            when (ReThrowException)
         {
-            _exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
+            SetException(exception);
+            if (ReThrowException)
+            {
+                throw;
+            }
         }
         finally
         {
             watch.Stop();
-            ElapsedTime = watch.Elapsed;
+            SetElapsedTime(watch.Elapsed);
         }
+    }
+    private static object? HandleTask<T>(T? result)
+    {
+        if (result is Task task)
+        {
+            task.ConfigureAwait(false).GetAwaiter().GetResult();
+
+            if (task.GetType().IsGenericType)
+            {
+                PropertyInfo property = task.GetType().GetProperty("Result")!;
+                object? value = property.GetValue(task)!;
+                return Task.FromResult(value);
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        return result;
+    }
+
+    private static object? HandleValueTask<T>(T? result)
+    {
+        if (result is ValueTask task)
+        {
+            task.ConfigureAwait(false).GetAwaiter().GetResult();
+            if (task.GetType().IsGenericType)
+            {
+                PropertyInfo property = task.GetType().GetProperty("Result")!;
+                object? value = property.GetValue(task)!;
+                return ValueTask.FromResult(value);
+            }
+            else
+            {
+                return ValueTask.CompletedTask;
+            }
+        }
+        return result;
     }
 }

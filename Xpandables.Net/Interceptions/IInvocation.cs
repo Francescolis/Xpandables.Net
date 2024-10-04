@@ -1,6 +1,6 @@
 ﻿
 /*******************************************************************************
- * Copyright (C) 2023 Francis-Black EWANE
+ * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ public interface IInvocation
     /// <summary>
     /// Contains the invocation target method info.
     /// </summary>
-    internal MethodInfo Method { get; }
+    MethodInfo Method { get; }
 
     /// <summary>
     /// Contains the invocation target instance.
@@ -56,7 +56,7 @@ public interface IInvocation
 
     /// <summary>
     /// Determines whether the exception should be rethrown.
-    /// This allows the autor to manually set or remove an exception.
+    /// This allows the author to manually set or remove an exception.
     /// </summary>
     /// <remarks>The default value is <see langword="false"/>.</remarks>
     bool ReThrowException { get; set; }
@@ -82,6 +82,9 @@ public interface IInvocation
     /// If you set this value to null, the process will resume normally and
     /// take care to provide a <see cref="ReturnValue" /> if necessary.
     /// </summary>
+    /// <remarks>Before setting an exception, set the <see cref="ReThrowException"/>
+    /// to <see langword="true"/> or set a new <see cref="ReturnValue"/>.
+    /// Otherwise, a <see cref="NullReferenceException"/> will be thrown.</remarks>
     /// <param name="exception">The exception value.</param>
     void SetException(Exception? exception);
 
@@ -90,8 +93,10 @@ public interface IInvocation
     /// Be aware to match the return value type.
     /// Otherwise it will throw an exception.
     /// </summary>
+    /// <remarks>Setting a <see cref="ReturnValue"/> will clear any exception.</remarks>
+    /// <typeparam name="T">The return value type.</typeparam>
     /// <param name="returnValue">The return value to be used.</param>
-    void SetReturnValue(object? returnValue);
+    void SetReturnValue<T>(T? returnValue);
 
     /// <summary>
     /// Sets the executed method elapsed time.
