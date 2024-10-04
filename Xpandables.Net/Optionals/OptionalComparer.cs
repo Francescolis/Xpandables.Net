@@ -73,6 +73,14 @@ public readonly partial record struct Optional<T> :
         return hashCode.ToHashCode();
     }
 
+    /// <summary>
+    /// Returns the string representation of the value in the optional, 
+    /// if not returns <see cref="string.Empty"/> .
+    /// </summary>
+    /// <returns>The string representation of the value.</returns>
+    public override readonly string ToString()
+        => HasValue ? $"{Value}" : string.Empty;
+
     /// <inheritdoc/>
     public readonly string ToString(string? format, IFormatProvider? formatProvider) =>
         HasValue

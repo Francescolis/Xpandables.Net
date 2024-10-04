@@ -86,4 +86,98 @@ public static class OptionalExtensions
         source
             .WhereAwait(optional => ValueTask.FromResult(optional.IsNotEmpty))
             .SelectAwait(optional => ValueTask.FromResult(optional.Value));
+
+    /// <summary>
+    /// Projects the value of the optional to a new form.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TU">The type of the result.</typeparam>
+    /// <param name="optional">The optional value.</param>
+    /// <param name="selector">A transform function to apply to the value.</param>
+    /// <returns>An optional containing the transformed value.</returns>
+    public static Optional<TU> Select<T, TU>(
+        this Optional<T> optional,
+        Func<T, TU> selector) => optional.Bind(selector);
+
+    /// <summary>
+    /// Projects the value of the optional to a new form asynchronously.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TU">The type of the result.</typeparam>
+    /// <param name="optional">The task representing the optional value.</param>
+    /// <param name="selector">A transform function to apply to the value.</param>
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task result contains an optional containing the transformed value.</returns>
+    public static async Task<Optional<TU>> SelectAsync<T, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<TU>> selector) =>
+        await optional.BindAsync(selector);
+
+    /// <summary>
+    /// Projects the value of the optional to a new form using a specified function.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TU">The type of the result.</typeparam>
+    /// <param name="optional">The optional value.</param>
+    /// <param name="selector">A transform function to apply to the value.</param>
+    /// <returns>An optional containing the transformed value.</returns>
+    public static Optional<TU> SelectMany<T, TU>(
+        this Optional<T> optional,
+        Func<T, Optional<TU>> selector) => optional.Bind(selector);
+
+    /// <summary>
+    /// Projects the value of the optional to a new form asynchronously.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TU">The type of the result.</typeparam>
+    /// <param name="optional">The task representing the optional value.</param>
+    /// <param name="selector">A transform function to apply to the value.</param>
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task result contains an optional containing the transformed value.</returns>
+    public static async Task<Optional<TU>> SelectManyAsync<T, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<Optional<TU>>> selector) =>
+        await optional.BindAsync(selector);
+
+    /// <summary>
+    /// Projects the value of the optional to a new form using a specified 
+    /// function and a result selector.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TR">The type of the intermediate result.</typeparam>
+    /// <typeparam name="TU">The type of the result.</typeparam>
+    /// <param name="optional">The optional value.</param>
+    /// <param name="selector">A transform function to apply to the value.</param>
+    /// <param name="resultSelector">A transform function to apply to the 
+    /// intermediate result.</param>
+    /// <returns>An optional containing the transformed value.</returns>
+    public static Optional<TU> SelectMany<T, TR, TU>(
+        this Optional<T> optional,
+        Func<T, Optional<TR>> selector,
+        Func<T, TR, TU> resultSelector) =>
+        optional
+            .SelectMany(x =>
+                selector(x).Select(y =>
+                    resultSelector(x, y)));
+
+    /// <summary>
+    /// Projects the value of the optional to a new form asynchronously using a
+    /// specified function and a result selector.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TR">The type of the intermediate result.</typeparam>
+    /// <typeparam name="TU">The type of the result.</typeparam>
+    /// <param name="optional">The task representing the optional value.</param>
+    /// <param name="selector">A transform function to apply to the value.</param>
+    /// <param name="resultSelector">A transform function to apply to the 
+    /// intermediate result.</param>
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task result contains an optional containing the transformed value.</returns>
+    public static async Task<Optional<TU>> SelectManyAsync<T, TR, TU>(
+        this Task<Optional<T>> optional,
+        Func<T, Task<Optional<TR>>> selector,
+        Func<T, TR, Task<TU>> resultSelector) =>
+        await optional.BindAsync(x =>
+            selector(x).BindAsync(y =>
+                resultSelector(x, y)));
 }
