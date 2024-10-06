@@ -26,12 +26,12 @@ public interface IEntityFilter
     /// <summary>
     /// Gets or sets the index of the page.
     /// </summary>
-    ushort PageIndex { get; set; }
+    ushort PageIndex { get; }
 
     /// <summary>
     /// Gets or sets the size of the page.
     /// </summary>
-    ushort PageSize { get; set; }
+    ushort PageSize { get; }
 
     /// <summary>
     /// Applies the filter to the given queryable.
