@@ -37,7 +37,8 @@ public readonly partial record struct Optional<T>
     /// returning an <see cref="Optional{T}"/>.</param>  
     /// <returns>A new <see cref="Optional{T}"/> with the mapped value, or   
     /// the current instance if it is empty.</returns>  
-    public readonly async Task<Optional<T>> MapAsync(Func<T, Task<Optional<T>>> some) =>
+    public readonly async Task<Optional<T>> MapAsync(
+        Func<T, Task<Optional<T>>> some) =>
         HasValue
             ? await some(Value)
             : this;
@@ -69,7 +70,8 @@ public readonly partial record struct Optional<T>
     /// <param name="binder">A function to apply to the value if it exists.</param>  
     /// <returns>A new <see cref="Optional{TU}"/> with the bound value, or   
     /// an empty <see cref="Optional{TU}"/> if the current instance is empty.</returns>  
-    public readonly async Task<Optional<TU>> BindAsync<TU>(Func<T, Task<TU>> binder) =>
+    public readonly async Task<Optional<TU>> BindAsync<TU>(
+        Func<T, Task<TU>> binder) =>
         HasValue
             ? new Optional<TU>(await binder(Value))
             : Optional.Empty<TU>();
@@ -83,7 +85,8 @@ public readonly partial record struct Optional<T>
     /// returning an <see cref="Optional{TU}"/>.</param>  
     /// <returns>A new <see cref="Optional{TU}"/> with the bound value, or   
     /// an empty <see cref="Optional{TU}"/> if the current instance is empty.</returns>  
-    public readonly async Task<Optional<TU>> BindAsync<TU>(Func<T, Task<Optional<TU>>> binder) =>
+    public readonly async Task<Optional<TU>> BindAsync<TU>(
+        Func<T, Task<Optional<TU>>> binder) =>
         HasValue
             ? await binder(Value)
             : Optional.Empty<TU>();
@@ -107,7 +110,8 @@ public readonly partial record struct Optional<T>
     /// empty, returning an <see cref="Optional{T}"/>.</param>  
     /// <returns>A new <see cref="Optional{T}"/> with the result of the function, 
     /// or the current instance if it is not empty.</returns>  
-    public readonly async Task<Optional<T>> EmptyAsync(Func<Task<Optional<T>>> empty) =>
+    public readonly async Task<Optional<T>> EmptyAsync(
+        Func<Task<Optional<T>>> empty) =>
         IsEmpty ? await empty() : this;
 
     /// <summary>  

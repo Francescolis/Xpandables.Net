@@ -21,7 +21,8 @@ namespace Xpandables.Net.Optionals;
 public static class OptionalExtensions
 {
     /// <summary>
-    /// Returns the first element of the sequence as an optional value, or an empty optional if the sequence contains 
+    /// Returns the first element of the sequence as an optional value, or an 
+    /// empty optional if the sequence contains 
     /// no elements.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
@@ -32,7 +33,8 @@ public static class OptionalExtensions
         source.Any() ? Optional.Some(source.First()) : Optional.Empty<T>();
 
     /// <summary>
-    /// Returns the first element of the asynchronous sequence as an optional value, or an empty optional if the sequence contains 
+    /// Returns the first element of the asynchronous sequence as an optional 
+    /// value, or an empty optional if the sequence contains 
     /// no elements.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
@@ -81,7 +83,7 @@ public static class OptionalExtensions
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="source">The asynchronous sequence of optional values.</param>
     /// <returns>An asynchronous sequence of values that are not empty.</returns>
-    public static IAsyncEnumerable<T> WhereSome<T>(
+    public static IAsyncEnumerable<T> WhereSomeAsync<T>(
         this IAsyncEnumerable<Optional<T>> source) =>
         source
             .WhereAwait(optional => ValueTask.FromResult(optional.IsNotEmpty))
