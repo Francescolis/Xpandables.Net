@@ -27,6 +27,8 @@ public interface IUnitOfWork : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The number of state entries written to the database.</returns>
+    /// <exception cref="InvalidOperationException">All exceptions 
+    /// related to the operation.</exception>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
