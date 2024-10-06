@@ -22,6 +22,18 @@ namespace Xpandables.Net.Repositories;
 /// Represents a unit of work that encapsulates a series of operations to be 
 /// executed as a single transaction.
 /// </summary>
+/// <remarks>The implementation uses a proxy that allows use of
+/// <see langword="using"/> statement.
+/// <code>
+/// IUnitOfWork unitOfWork = new UnitOfWork();
+/// await (using IRepository repository = unitOfWork.GetRepository())
+/// {
+///     await repository.InsertAsync(entities, ct);
+/// } 
+/// // SaveChangesAsync is called automatically if no exception is thrown,
+/// // and the methods InsertAsync, UpdateAsync, DeleteAsync are called.
+/// </code>
+/// </remarks>
 public abstract class UnitOfWork : IUnitOfWork
 {
     /// <summary>
@@ -35,49 +47,17 @@ public abstract class UnitOfWork : IUnitOfWork
         CancellationToken cancellationToken = default);
 
     /// <inheritdoc/>
-    public IRepository GetRepository<TRepository>()
-        where TRepository : class, IRepository
+    public IRepository GetRepository()
     {
-        TRepository repository = (TRepository)GetRepository(typeof(TRepository));
-        return ProxyRepositoryDisposable<TRepository>.Create(repository, this);
-    }
-
-    /// <inheritdoc/>
-    public IRepositoryRead GetRepositoryRead<TRepository>()
-        where TRepository : class, IRepositoryRead
-    {
-        TRepository repository = (TRepository)GetRepositoryRead(typeof(TRepository));
-        return ProxyRepositoryDisposable<TRepository>.Create(repository, this);
-    }
-
-    /// <inheritdoc/>
-    public IRepositoryWrite GetRepositoryWrite<TRepository>()
-        where TRepository : class, IRepositoryWrite
-    {
-        TRepository repository = (TRepository)GetRepositoryWrite(typeof(TRepository));
-        return ProxyRepositoryDisposable<TRepository>.Create(repository, this);
+        IRepository repository = GetRepositoryCore();
+        return RepositoryProxy.CreateProxy(this, repository);
     }
 
     /// <summary>  
-    /// When overridden in a derived class, gets the repository of the specified type.  
+    /// When overridden in a derived class, gets the real instance of the repository.  
     /// </summary>  
-    /// <param name="repositoryType">The type of the repository to get.</param>  
-    /// <returns>The repository instance of the specified type.</returns>  
-    protected abstract IRepository GetRepository(Type repositoryType);
-
-    /// <summary>  
-    /// When overridden in a derived class, gets the read-only repository of the specified type.  
-    /// </summary>  
-    /// <param name="repositoryType">The type of the repository to get.</param>  
-    /// <returns>The read-only repository instance of the specified type.</returns>  
-    protected abstract IRepositoryRead GetRepositoryRead(Type repositoryType);
-
-    /// <summary>  
-    /// When overridden in a derived class, gets the write repository of the specified type.  
-    /// </summary>  
-    /// <param name="repositoryType">The type of the repository to get.</param>  
-    /// <returns>The write repository instance of the specified type.</returns>  
-    protected abstract IRepositoryWrite GetRepositoryWrite(Type repositoryType);
+    /// <returns>The repository instance.</returns>  
+    protected abstract IRepository GetRepositoryCore();
 
     /// <summary>
     /// Performs application-defined tasks associated with freeing, releasing, 
@@ -87,40 +67,49 @@ public abstract class UnitOfWork : IUnitOfWork
     public abstract ValueTask DisposeAsync();
 }
 
-
-internal sealed class ProxyRepositoryDisposable<TRepository> : DispatchProxy, IAsyncDisposable
-    where TRepository : class
+internal class RepositoryProxy : DispatchProxy
 {
-    private static readonly MethodBase _methodBaseType = typeof(object).GetMethod("GetType")!;
-    private TRepository? _instance;
-    private IUnitOfWork? _unitOfWork;
+    private static readonly MethodBase _methodBaseType =
+        typeof(object).GetMethod("GetType")!;
+    private IUnitOfWork _unitOfWork = default!;
+    private IRepository _repositoryInstance = default!;
     private Exception? _exception;
+    private bool _writeOperation;
     private bool _disposed;
-    private ProxyRepositoryDisposable() { }
-    public static TRepository Create(TRepository instance, IUnitOfWork unitOfWork)
-    {
-        TRepository proxy = Create<TRepository, ProxyRepositoryDisposable<TRepository>>();
 
-        ((ProxyRepositoryDisposable<TRepository>)(object)proxy)
-            .SetParameters(instance, unitOfWork);
+    // Method to create an instance of the proxy, with both IUnitOfWork and concrete IRepository
+    public static IRepository CreateProxy(
+        IUnitOfWork unitOfWork,
+        IRepository repositoryInstance)
+    {
+        ArgumentNullException.ThrowIfNull(unitOfWork);
+        ArgumentNullException.ThrowIfNull(repositoryInstance);
+
+        IRepository proxy = Create<IRepository, RepositoryProxy>();
+
+        ((RepositoryProxy)proxy).SetParameters(unitOfWork, repositoryInstance);
 
         return proxy;
     }
 
-    internal void SetParameters(TRepository instance, IUnitOfWork unitOfWork)
+    internal void SetParameters(
+        IUnitOfWork unitOfWork,
+        IRepository repositoryInstance)
     {
-        _instance = instance;
         _unitOfWork = unitOfWork;
+        _repositoryInstance = repositoryInstance;
     }
+
+    // Overriding the Invoke method to handle method calls dynamically
     protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(targetMethod);
-
+        // Forward the method calls to the provided IRepository instance
         try
         {
             return ReferenceEquals(targetMethod, _methodBaseType)
                 ? Bypass(targetMethod, args)
-                : targetMethod.Invoke(_instance, args);
+                : DoInvoke(targetMethod, args);
         }
         catch (Exception exception)
         {
@@ -129,11 +118,24 @@ internal sealed class ProxyRepositoryDisposable<TRepository> : DispatchProxy, IA
         }
     }
 
-    [DebuggerStepThrough]
-    private object? Bypass(
-        MethodInfo targetMethod,
-        object?[]? args) => targetMethod.Invoke(_instance, args);
+    private object? DoInvoke(MethodInfo targetMethod, object?[]? args)
+    {
+        if (targetMethod.Name == nameof(DisposeAsync))
+        {
+            return DisposeAsync();
+        }
 
+        if (targetMethod.Name is (nameof(IRepository.InsertAsync)) or
+            (nameof(IRepository.UpdateAsync)) or
+            (nameof(IRepository.DeleteAsync)))
+        {
+            _writeOperation = true;
+        }
+
+        return targetMethod.Invoke(_repositoryInstance, args);
+    }
+
+    // DisposeAsync implementation to ensure SaveChangesAsync is called when disposing
     public async ValueTask DisposeAsync()
     {
         if (_disposed || _exception is not null)
@@ -141,19 +143,18 @@ internal sealed class ProxyRepositoryDisposable<TRepository> : DispatchProxy, IA
             return;
         }
 
-        try
+        if (_writeOperation)
         {
-            if (_unitOfWork is not null)
-            {
-                _ = await _unitOfWork
-                    .SaveChangesAsync()
-                    .ConfigureAwait(false);
-            }
+            _ = await _unitOfWork
+                .SaveChangesAsync()
+                .ConfigureAwait(false);
         }
-        finally
-        {
-            _disposed = true;
-            _instance = default;
-        }
+
+        _disposed = true;
     }
+
+    [DebuggerStepThrough]
+    private object? Bypass(
+        MethodInfo targetMethod,
+        object?[]? args) => targetMethod.Invoke(_repositoryInstance, args);
 }

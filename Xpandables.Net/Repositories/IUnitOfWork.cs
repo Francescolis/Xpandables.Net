@@ -32,26 +32,8 @@ public interface IUnitOfWork : IAsyncDisposable
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets the repository of the specified type.
+    /// Returns the repository of the specified type.
     /// </summary>
-    /// <typeparam name="TRepository">The type of the repository.</typeparam>
     /// <returns>The repository instance.</returns>
-    IRepository GetRepository<TRepository>()
-        where TRepository : class, IRepository;
-
-    /// <summary>
-    /// Gets the read-only repository of the specified type.
-    /// </summary>
-    /// <typeparam name="TRepository">The type of the repository.</typeparam>
-    /// <returns>The read-only repository instance.</returns>
-    IRepositoryRead GetRepositoryRead<TRepository>()
-        where TRepository : class, IRepositoryRead;
-
-    /// <summary>
-    /// Gets the write-only repository of the specified type.
-    /// </summary>
-    /// <typeparam name="TRepository">The type of the repository.</typeparam>
-    /// <returns>The write-only repository instance.</returns>
-    IRepositoryWrite GetRepositoryWrite<TRepository>()
-        where TRepository : class, IRepositoryWrite;
+    IRepository GetRepository();
 }
