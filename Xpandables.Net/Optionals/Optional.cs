@@ -25,6 +25,9 @@ namespace Xpandables.Net.Optionals;
 /// Represents an optional value that may or may not be present.
 /// </summary>
 /// <typeparam name="T">The type of the value.</typeparam>
+/// <remarks>This <see langword="struct"/> is decorated 
+/// with <see cref="OptionalJsonConverterFactory"/> 
+/// that automatically applies JSON serialization.</remarks>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 [JsonConverter(typeof(OptionalJsonConverterFactory))]
 public readonly partial record struct Optional<T> : IEnumerable<T>
