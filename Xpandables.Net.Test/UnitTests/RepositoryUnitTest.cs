@@ -12,7 +12,7 @@ public sealed class RepositoryUnitTest
     public async Task UnitOfWork_Should_SaveChanges_OnExit()
     {
         UnitOfWorkTest unitOfWork = new();
-        await using (IRepository repository = unitOfWork.GetRepository())
+        await using (IRepository repository = unitOfWork.GetRepository<IRepository>())
         {
             await repository.InsertAsync(new[] { new EntityTest() }, default);
         }
@@ -29,8 +29,7 @@ internal sealed class EntityTest : IEntity<Guid>
 internal sealed class UnitOfWorkTest : UnitOfWork
 {
     public int Result { get; private set; }
-    protected override IRepository GetRepositoryCore() =>
-        new RepositoryTest();
+
     public override Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default)
     {
@@ -38,6 +37,8 @@ internal sealed class UnitOfWorkTest : UnitOfWork
         return Task.FromResult(Result);
     }
     public override ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    protected override IRepository GetRepositoryCore(Type repositoryType)
+        => new RepositoryTest();
 }
 internal sealed class RepositoryTest : IRepository
 {

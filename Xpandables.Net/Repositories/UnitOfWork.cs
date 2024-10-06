@@ -47,17 +47,19 @@ public abstract class UnitOfWork : IUnitOfWork
         CancellationToken cancellationToken = default);
 
     /// <inheritdoc/>
-    public IRepository GetRepository()
+    public TRepository GetRepository<TRepository>()
+        where TRepository : class, IRepository
     {
-        IRepository repository = GetRepositoryCore();
-        return RepositoryProxy.CreateProxy(this, repository);
+        TRepository repository = (TRepository)GetRepositoryCore(typeof(TRepository));
+        return RepositoryProxy<TRepository>.CreateProxy(this, repository);
     }
 
     /// <summary>  
     /// When overridden in a derived class, gets the real instance of the repository.  
-    /// </summary>  
+    /// </summary>
+    /// <param name="repositoryType">The type of the repository.</param>
     /// <returns>The repository instance.</returns>  
-    protected abstract IRepository GetRepositoryCore();
+    protected abstract IRepository GetRepositoryCore(Type repositoryType);
 
     /// <summary>
     /// Performs application-defined tasks associated with freeing, releasing, 
@@ -67,34 +69,35 @@ public abstract class UnitOfWork : IUnitOfWork
     public abstract ValueTask DisposeAsync();
 }
 
-internal class RepositoryProxy : DispatchProxy
+internal class RepositoryProxy<TRepository> : DispatchProxy
+    where TRepository : class, IRepository
 {
     private static readonly MethodBase _methodBaseType =
         typeof(object).GetMethod("GetType")!;
     private IUnitOfWork _unitOfWork = default!;
-    private IRepository _repositoryInstance = default!;
+    private TRepository _repositoryInstance = default!;
     private Exception? _exception;
     private bool _writeOperation;
     private bool _disposed;
 
     // Method to create an instance of the proxy, with both IUnitOfWork and concrete IRepository
-    public static IRepository CreateProxy(
+    public static TRepository CreateProxy(
         IUnitOfWork unitOfWork,
-        IRepository repositoryInstance)
+        TRepository repositoryInstance)
     {
         ArgumentNullException.ThrowIfNull(unitOfWork);
         ArgumentNullException.ThrowIfNull(repositoryInstance);
 
-        IRepository proxy = Create<IRepository, RepositoryProxy>();
+        object proxy = Create<TRepository, RepositoryProxy<TRepository>>();
 
-        ((RepositoryProxy)proxy).SetParameters(unitOfWork, repositoryInstance);
+        ((RepositoryProxy<TRepository>)proxy).SetParameters(unitOfWork, repositoryInstance);
 
-        return proxy;
+        return (TRepository)proxy;
     }
 
     internal void SetParameters(
         IUnitOfWork unitOfWork,
-        IRepository repositoryInstance)
+        TRepository repositoryInstance)
     {
         _unitOfWork = unitOfWork;
         _repositoryInstance = repositoryInstance;

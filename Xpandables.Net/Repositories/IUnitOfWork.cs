@@ -34,6 +34,8 @@ public interface IUnitOfWork : IAsyncDisposable
     /// <summary>
     /// Returns the repository of the specified type.
     /// </summary>
+    /// <typeparam name="TRepository">The type of the repository.</typeparam>
     /// <returns>The repository instance.</returns>
-    IRepository GetRepository();
+    TRepository GetRepository<TRepository>()
+        where TRepository : class, IRepository;
 }
