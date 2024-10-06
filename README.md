@@ -182,3 +182,26 @@ static T? DeserializeAnonymousType<T>(
 
 ```
 
+### Chaining Methods in a Fluent Manner
+
+You can chain the methods of **Optional< T>** in a fluent manner to produce the expected result.
+```csharp
+
+Optional<int> optional = Optional.Some(42);
+
+Optional<string> result = optional
+    .Map(value => value * 2) // Double the value
+    .Bind(value => Optional.Some(value.ToString())) // Convert to string
+    .Empty(() => "Default Value"); // Provide a default value if empty
+
+if (result.HasValue)
+{
+    Console.WriteLine($"Result: {result.Value}"); // Output: Result: 84
+}
+else
+{
+    Console.WriteLine("Result is empty.");
+}
+
+
+```
