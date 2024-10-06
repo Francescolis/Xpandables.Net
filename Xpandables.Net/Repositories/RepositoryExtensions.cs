@@ -24,6 +24,37 @@ namespace Xpandables.Net.Repositories;
 /// </summary>
 public static class RepositoryExtensions
 {
+    /// <summary>  
+    /// Determines whether the specified entity is active.  
+    /// </summary>  
+    /// <param name="entity">The entity to check.</param>  
+    /// <returns><c>true</c> if the entity is active; otherwise, <c>false</c>.</returns>  
+    public static bool IsActive(this IEntityRelational entity) =>
+        entity.Status == EntityStatus.ACTIVE;
+    /// <summary>  
+    /// Determines whether the specified entity is deleted.  
+    /// </summary>  
+    /// <param name="entity">The entity to check.</param>  
+    /// <returns><c>true</c> if the entity is deleted; otherwise, <c>false</c>.</returns>  
+    public static bool IsDeleted(this IEntityRelational entity) =>
+        entity.Status == EntityStatus.DELETED;
+
+    /// <summary>  
+    /// Determines whether the specified entity is pending.  
+    /// </summary>  
+    /// <param name="entity">The entity to check.</param>  
+    /// <returns><c>true</c> if the entity is pending; otherwise, <c>false</c>.</returns>  
+    public static bool IsPending(this IEntityRelational entity) =>
+        entity.Status == EntityStatus.PENDING;
+
+    /// <summary>  
+    /// Determines whether the specified entity is suspended.  
+    /// </summary>  
+    /// <param name="entity">The entity to check.</param>  
+    /// <returns><c>true</c> if the entity is suspended; otherwise, <c>false</c>.</returns>  
+    public static bool IsSuspended(this IEntityRelational entity) =>
+        entity.Status == EntityStatus.SUSPENDED;
+
     /// <summary>
     /// Combines two expressions into a single expression.
     /// </summary>
