@@ -28,7 +28,7 @@ The **Optional< T>** struct provides a way to represent optional values, similar
 
 ### Creating an Optional Value
 
-You can create an Optional< T> value using the constructor or implicit conversion.
+You can create an Optional< T> value using helpers or implicit conversion.
 ```csharp
 
 using Xpandables.Net.Optionals;
@@ -127,7 +127,7 @@ if (boundOptional.HasValue)
 
 ```
 
-### Using the *Bind* Method
+### Using the *Empty* Method
 
 The *Empty* method allows you to provide a value if the current optional is empty.
 
@@ -169,11 +169,14 @@ Console.WriteLine(anonymousJson); // Output: {"Name":"Hello World"}
 
 var deserializedAnonymous = DeserializeAnonymousType(anonymousJson, anonymous);
 // or you can use an anonymous instance
-// var deserializedAnonymous = result.DeserializeAnonymousType(anonymousJson, Optional.Some(new { Name = string.Empty }));
+// var deserializedAnonymous = DeserializeAnonymousType(
+//      anonymousJson, 
+//      Optional.Some(new { Name = string.Empty }));
 Console.WriteLine($"Deserialized Anonymous Value: {deserializedAnonymous.Value.Name}"); 
 // Output: Deserialized Anonymous Value: Hello World
 
-static T? DeserializeAnonymousType<T>(string json, T _, JsonSerializerOptions? options = default) =>
+static T? DeserializeAnonymousType<T>(
+    string json, T _, JsonSerializerOptions? options = default) =>
     JsonSerializer.Deserialize<T>(json, options);
 
 
