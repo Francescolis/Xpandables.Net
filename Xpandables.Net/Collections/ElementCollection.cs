@@ -22,6 +22,7 @@ namespace Xpandables.Net.Collections;
 /// <summary>
 /// Represents a collection of <see cref="ElementEntry"/> objects.
 /// </summary>
+[JsonConverter(typeof(ElementCollectionJsonConverter))]
 public readonly record struct ElementCollection : IEnumerable<ElementEntry>
 {
     private readonly List<ElementEntry> _entries = [];
@@ -163,7 +164,9 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <returns>The <see cref="ElementEntry"/> associated with the specified 
     /// key, or <c>null</c> if the key is not found.</returns>
     public ElementEntry? this[string key] =>
-        _entries.Find(entry => entry.Key == key);
+        _entries.Find(entry => entry.Key == key) is { Key: not null } entry
+            ? entry
+            : null;
 
     /// <summary>
     /// Adds an <see cref="ElementEntry"/> to the collection. 
@@ -238,6 +241,13 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     internal ElementCollection(string key, params string[] values)
         : this(new ElementEntry(key, values)) { }
     [JsonConstructor]
-    internal ElementCollection(IList<ElementEntry> entries) =>
-        Merge(new ElementCollection(entries ?? []));
+    internal ElementCollection(IList<ElementEntry> entries)
+    {
+        _entries ??= [];
+
+        foreach (ElementEntry entry in entries)
+        {
+            Add(entry);
+        }
+    }
 }

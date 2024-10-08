@@ -15,12 +15,14 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// Represents an entry in a collection with a key and associated values.
 /// </summary>
+[StructLayout(LayoutKind.Auto)]
 public readonly record struct ElementEntry
 {
     /// <summary>
