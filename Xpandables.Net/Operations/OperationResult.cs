@@ -69,7 +69,7 @@ public record OperationResult<TResult> : OperationResult, IOperationResult<TResu
     /// Gets the result object of the operation.  
     /// </summary>  
     [JsonIgnore]
-    [MaybeNull]
+    [MaybeNull, AllowNull]
     public new TResult Result
     {
         get => (TResult?)base.Result;

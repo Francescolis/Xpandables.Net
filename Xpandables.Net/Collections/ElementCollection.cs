@@ -201,6 +201,20 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
         Add(new ElementEntry(key, values));
 
     /// <summary>
+    /// Adds a range of key-value pairs to the collection.
+    /// If an entry with the same key already exists,
+    /// it merges the values of the existing entry with the new values.
+    /// </summary>
+    /// <param name="values">The dictionary of key-value pairs to add.</param>
+    public void AddRange(IDictionary<string, string> values)
+    {
+        foreach (KeyValuePair<string, string> value in values)
+        {
+            Add(value.Key, value.Value);
+        }
+    }
+
+    /// <summary>
     /// Removes the <see cref="ElementEntry"/> with the specified key from the 
     /// collection.
     /// </summary>
