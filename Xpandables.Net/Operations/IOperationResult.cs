@@ -26,7 +26,7 @@ namespace Xpandables.Net.Operations;
 /// <summary>
 /// Represents the result of an operation.
 /// </summary>
-public partial interface IOperationResult
+public interface IOperationResult
 {
     /// <summary>
     /// Gets the status code of the operation.
@@ -96,7 +96,7 @@ public partial interface IOperationResult
 /// Represents the result of an operation with a specific result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result object.</typeparam>
-public partial interface IOperationResult<TResult> : IOperationResult
+public interface IOperationResult<TResult> : IOperationResult
 {
     /// <summary>
     /// Gets the result object of the operation.
