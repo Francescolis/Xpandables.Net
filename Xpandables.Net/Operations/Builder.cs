@@ -321,6 +321,12 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     }
 }
 
+/// <summary>
+/// Represents a builder for creating operation results with a specific result type.
+/// </summary>
+/// <typeparam name="TBuilder">The type of the builder.</typeparam>
+/// <typeparam name="TResult">The type of the result.</typeparam>
+/// <param name="statusCode">The HTTP status code for the operation result.</param>
 public abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     Builder<TBuilder>(statusCode),
     IResultBuilder<TBuilder, TResult>,

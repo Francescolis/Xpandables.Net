@@ -13,14 +13,13 @@ public sealed class OperationResultUnitTest
     [Fact]
     public void OperationResult_Should_Initialize()
     {
-        OperationResult<string> result = new()
-        {
-            StatusCode = HttpStatusCode.OK,
-            Title = "Title",
-            Detail = "Detail",
-            Location = new Uri("http://localhost"),
-            Result = "Name"
-        };
+        SuccessBuilder<string> builder = new(HttpStatusCode.OK);
+        IOperationResult result = builder
+            .WithLocation(new Uri("http://localhost"))
+            .WithResult("Name")
+            .WithHeader("Key", "Value")
+            .WithExtension("Key", "Value")
+            .Build();
 
         IOperationResult result2 = result;
 
