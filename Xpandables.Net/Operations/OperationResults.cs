@@ -45,6 +45,18 @@ public readonly record struct OperationResults
         new SuccessBuilder<TResult>(statusCode);
 
     /// <summary>  
+    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// specified result and status code to build a success operation result.  
+    /// </summary>  
+    /// <typeparam name="TResult">The type of the result.</typeparam>  
+    /// <param name="result">The result of the operation.</param>  
+    /// <param name="statusCode">The status code of the operation result.</param>  
+    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
+    public static ISuccessBuilder<TResult> Success<TResult>(
+        TResult result, HttpStatusCode statusCode = HttpStatusCode.OK) =>
+        new SuccessBuilder<TResult>(statusCode).WithResult(result);
+
+    /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
     /// specified status code to build a failure operation result.  
     /// </summary>  
@@ -79,6 +91,16 @@ public readonly record struct OperationResults
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
     public static ISuccessBuilder<TResult> Ok<TResult>() => Success<TResult>();
+
+    /// <summary>  
+    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// specified result and status code OK to build a success operation result.  
+    /// </summary>  
+    /// <typeparam name="TResult">The type of the result.</typeparam>  
+    /// <param name="result">The result of the operation.</param>  
+    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
+    public static ISuccessBuilder<TResult> Ok<TResult>(TResult result) =>
+        Success(result);
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
