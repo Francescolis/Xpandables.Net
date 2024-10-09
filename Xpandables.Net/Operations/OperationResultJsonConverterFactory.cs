@@ -23,8 +23,21 @@ namespace Xpandables.Net.Operations;
 /// <summary>
 /// A factory for creating JSON converters for <see cref="OperationResult{TResult}"/>.
 /// </summary>
-public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
+/// <remarks>
+/// Initializes a new instance of the 
+/// <see cref="OperationResultJsonConverterFactory"/> class.
+/// The <paramref name="useAspNetCoreCompatibility"/> indicates whether to use
+/// ASP.NET Core compatibility. The default value is <see langword="false"/>.
+/// The ASP.NET Core compatibility is used to serialize only the result of 
+/// the operation.
+/// </remarks>
+/// <param name="useAspNetCoreCompatibility">A value indicating whether to use
+/// ASP.NET Core compatibility.</param>
+public sealed class OperationResultJsonConverterFactory(
+    bool useAspNetCoreCompatibility = false) : JsonConverterFactory
 {
+    private readonly bool _useAspNetCoreCompatibility = useAspNetCoreCompatibility;
+
     /// <inheritdoc/>
     public override bool CanConvert(Type typeToConvert) =>
         typeToConvert == typeof(IOperationResult)
@@ -38,12 +51,15 @@ public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
     {
         if (typeToConvert == typeof(IOperationResult))
         {
-            return new OperationResultJsonConverter();
+            return _useAspNetCoreCompatibility
+                ? new OperationResultAspJsonConverter()
+                : new OperationResultJsonConverter();
         }
 
         Type resultType = typeToConvert.GetGenericArguments()[0];
-        Type converterType = typeof(OperationResultJsonConverter<>)
-            .MakeGenericType(resultType);
+        Type converterType = _useAspNetCoreCompatibility
+            ? typeof(OperationResultAspJsonConverter<>).MakeGenericType(resultType)
+            : typeof(OperationResultJsonConverter<>).MakeGenericType(resultType);
 
         return (JsonConverter)Activator.CreateInstance(converterType)!;
     }

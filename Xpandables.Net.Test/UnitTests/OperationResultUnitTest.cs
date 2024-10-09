@@ -23,8 +23,11 @@ public sealed class OperationResultUnitTest
 
         IOperationResult result2 = result;
 
-        string resultJson = JsonSerializer.Serialize(result);
-        IOperationResult result3 = JsonSerializer.Deserialize<IOperationResult<string>>(resultJson)!;
+        JsonSerializerOptions options = new()
+        { Converters = { new OperationResultJsonConverterFactory() } };
+
+        string resultJson = JsonSerializer.Serialize(result, options);
+        IOperationResult result3 = JsonSerializer.Deserialize<IOperationResult<string>>(resultJson, options)!;
 
         result2.Errors.Add(new ElementEntry("Key", "Value"));
         result2.Headers.Add(new ElementEntry("Key", "Value"));

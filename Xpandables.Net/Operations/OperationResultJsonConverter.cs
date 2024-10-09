@@ -40,15 +40,43 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
         JsonSerializer.Serialize(writer, value, typeof(OperationResult), options);
 }
 
+/// <summary>
+/// A JSON converter for <see cref="IOperationResult"/> in AspNetCore environment.
+/// </summary>
+public sealed class OperationResultAspJsonConverter : JsonConverter<IOperationResult>
+{
+    /// <inheritdoc/>
+    public override IOperationResult? Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options) => throw new NotSupportedException();
+
+    /// <inheritdoc/>
+    public override void Write(
+        Utf8JsonWriter writer,
+        IOperationResult value,
+        JsonSerializerOptions options)
+    {
+        if (value.Result is not null)
+        {
+            JsonSerializer.Serialize(
+                writer,
+                value.Result,
+                value.Result.GetType(),
+                options);
+        }
+    }
+}
 
 /// <summary>
 /// A JSON converter for <see cref="OperationResult{TResult}"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class OperationResultJsonConverter<TResult> : JsonConverter<OperationResult<TResult>>
+public sealed class OperationResultJsonConverter<TResult> :
+    JsonConverter<IOperationResult<TResult>>
 {
     /// <inheritdoc/>
-    public override OperationResult<TResult>? Read(
+    public override IOperationResult<TResult>? Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options) =>
@@ -57,7 +85,38 @@ public sealed class OperationResultJsonConverter<TResult> : JsonConverter<Operat
     /// <inheritdoc/>
     public override void Write(
         Utf8JsonWriter writer,
-        OperationResult<TResult> value,
+        IOperationResult<TResult> value,
         JsonSerializerOptions options) =>
         JsonSerializer.Serialize(writer, value, typeof(OperationResult<TResult>), options);
+}
+
+/// <summary>
+/// A JSON converter for <see cref="OperationResult{TResult}"/> in AspNetCore 
+/// environment.
+/// </summary>
+/// <typeparam name="TResult">The type of the result.</typeparam>
+public sealed class OperationResultAspJsonConverter<TResult> :
+    JsonConverter<IOperationResult<TResult>>
+{
+    /// <inheritdoc/>
+    public override IOperationResult<TResult>? Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options) => throw new NotSupportedException();
+
+    /// <inheritdoc/>
+    public override void Write(
+        Utf8JsonWriter writer,
+        IOperationResult<TResult> value,
+        JsonSerializerOptions options)
+    {
+        if (value.Result is not null)
+        {
+            JsonSerializer.Serialize(
+                writer,
+                value.Result,
+                value.Result.GetType(),
+                options);
+        }
+    }
 }
