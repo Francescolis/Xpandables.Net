@@ -26,6 +26,7 @@ namespace Xpandables.Net.Operations;
 /// <summary>
 /// Represents the result of an operation.
 /// </summary>
+[JsonConverter(typeof(OperationResultJsonConverterFactory))]
 public interface IOperationResult
 {
     /// <summary>
@@ -96,6 +97,7 @@ public interface IOperationResult
 /// Represents the result of an operation with a specific result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result object.</typeparam>
+[JsonConverter(typeof(OperationResultJsonConverterFactory))]
 public interface IOperationResult<TResult> : IOperationResult
 {
     /// <summary>

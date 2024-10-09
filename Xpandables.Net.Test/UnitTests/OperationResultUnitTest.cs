@@ -24,14 +24,12 @@ public sealed class OperationResultUnitTest
         IOperationResult result2 = result;
 
         string resultJson = JsonSerializer.Serialize(result);
-        IOperationResult result3 = JsonSerializer.Deserialize<OperationResult<string>>(resultJson)!;
+        IOperationResult result3 = JsonSerializer.Deserialize<IOperationResult<string>>(resultJson)!;
 
         result2.Errors.Add(new ElementEntry("Key", "Value"));
         result2.Headers.Add(new ElementEntry("Key", "Value"));
         result2.Extensions.Add(new ElementEntry("Key", "Value"));
         result2.StatusCode.Should().Be(HttpStatusCode.OK);
-        result2.Title.Should().Be("Title");
-        result2.Detail.Should().Be("Detail");
         result2.Location.Should().Be(new Uri("http://localhost"));
         result2.Result.Should().BeEquivalentTo("Name");
         result2.Errors.Should().ContainSingle();

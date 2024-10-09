@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Text.Json.Serialization;
 
 using Xpandables.Net.Collections;
 
@@ -68,7 +67,6 @@ public record OperationResult<TResult> : OperationResult, IOperationResult<TResu
     /// <summary>  
     /// Gets the result object of the operation.  
     /// </summary>  
-    [JsonIgnore]
     [MaybeNull, AllowNull]
     public new TResult Result
     {
