@@ -25,31 +25,22 @@ namespace Xpandables.Net.Operations;
 /// </summary>
 public sealed class OperationResultJsonConverter : JsonConverter<IOperationResult>
 {
+    /// <summary>
+    /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.
+    /// The ASP.NET Core compatibility is used to serialize only the result of 
+    /// the operation.</remarks>
+    public bool UseAspNetCoreCompatibility { get; set; }
+
     /// <inheritdoc/>
     public override IOperationResult? Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options) =>
-        JsonSerializer.Deserialize<OperationResult>(ref reader, options);
-
-    /// <inheritdoc/>
-    public override void Write(
-        Utf8JsonWriter writer,
-        IOperationResult value,
-        JsonSerializerOptions options) =>
-        JsonSerializer.Serialize(writer, value, typeof(OperationResult), options);
-}
-
-/// <summary>
-/// A JSON converter for <see cref="IOperationResult"/> in AspNetCore environment.
-/// </summary>
-public sealed class OperationResultAspJsonConverter : JsonConverter<IOperationResult>
-{
-    /// <inheritdoc/>
-    public override IOperationResult? Read(
-        ref Utf8JsonReader reader,
-        Type typeToConvert,
-        JsonSerializerOptions options) => throw new NotSupportedException();
+        UseAspNetCoreCompatibility
+        ? throw new NotSupportedException()
+        : JsonSerializer.Deserialize<OperationResult>(ref reader, options);
 
     /// <inheritdoc/>
     public override void Write(
@@ -57,12 +48,23 @@ public sealed class OperationResultAspJsonConverter : JsonConverter<IOperationRe
         IOperationResult value,
         JsonSerializerOptions options)
     {
-        if (value.Result is not null)
+        if (UseAspNetCoreCompatibility)
+        {
+            if (value.Result is not null)
+            {
+                JsonSerializer.Serialize(
+                    writer,
+                    value.Result,
+                    value.Result.GetType(),
+                    options);
+            }
+        }
+        else
         {
             JsonSerializer.Serialize(
                 writer,
-                value.Result,
-                value.Result.GetType(),
+                value,
+                typeof(OperationResult),
                 options);
         }
     }
@@ -75,34 +77,23 @@ public sealed class OperationResultAspJsonConverter : JsonConverter<IOperationRe
 public sealed class OperationResultJsonConverter<TResult> :
     JsonConverter<IOperationResult<TResult>>
 {
+    /// <summary>
+    /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.
+    /// The ASP.NET Core compatibility is used to serialize only the result of 
+    /// the operation.</remarks>
+    public bool UseAspNetCoreCompatibility { get; set; }
+
     /// <inheritdoc/>
     public override IOperationResult<TResult>? Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options) =>
-        JsonSerializer.Deserialize<OperationResult<TResult>>(ref reader, options);
-
-    /// <inheritdoc/>
-    public override void Write(
-        Utf8JsonWriter writer,
-        IOperationResult<TResult> value,
-        JsonSerializerOptions options) =>
-        JsonSerializer.Serialize(writer, value, typeof(OperationResult<TResult>), options);
-}
-
-/// <summary>
-/// A JSON converter for <see cref="OperationResult{TResult}"/> in AspNetCore 
-/// environment.
-/// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class OperationResultAspJsonConverter<TResult> :
-    JsonConverter<IOperationResult<TResult>>
-{
-    /// <inheritdoc/>
-    public override IOperationResult<TResult>? Read(
-        ref Utf8JsonReader reader,
-        Type typeToConvert,
-        JsonSerializerOptions options) => throw new NotSupportedException();
+        UseAspNetCoreCompatibility
+        ? throw new NotSupportedException()
+        : JsonSerializer.Deserialize<OperationResult<TResult>>(
+            ref reader, options);
 
     /// <inheritdoc/>
     public override void Write(
@@ -110,12 +101,23 @@ public sealed class OperationResultAspJsonConverter<TResult> :
         IOperationResult<TResult> value,
         JsonSerializerOptions options)
     {
-        if (value.Result is not null)
+        if (UseAspNetCoreCompatibility)
+        {
+            if (value.Result is not null)
+            {
+                JsonSerializer.Serialize(
+                    writer,
+                    value.Result,
+                    value.Result.GetType(),
+                    options);
+            }
+        }
+        else
         {
             JsonSerializer.Serialize(
                 writer,
-                value.Result,
-                value.Result.GetType(),
+                value,
+                typeof(OperationResult<TResult>),
                 options);
         }
     }

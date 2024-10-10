@@ -24,19 +24,20 @@ namespace Xpandables.Net.Operations;
 /// A factory for creating JSON converters for <see cref="OperationResult{TResult}"/>.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the 
-/// <see cref="OperationResultJsonConverterFactory"/> class.
-/// The <paramref name="useAspNetCoreCompatibility"/> indicates whether to use
+/// The <see cref="UseAspNetCoreCompatibility"/> indicates whether to use
 /// ASP.NET Core compatibility. The default value is <see langword="false"/>.
 /// The ASP.NET Core compatibility is used to serialize only the result of 
 /// the operation.
 /// </remarks>
-/// <param name="useAspNetCoreCompatibility">A value indicating whether to use
-/// ASP.NET Core compatibility.</param>
-public sealed class OperationResultJsonConverterFactory(
-    bool useAspNetCoreCompatibility = false) : JsonConverterFactory
+public sealed class OperationResultJsonConverterFactory : JsonConverterFactory
 {
-    private readonly bool _useAspNetCoreCompatibility = useAspNetCoreCompatibility;
+    /// <summary>
+    /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.
+    /// The ASP.NET Core compatibility is used to serialize only the result of 
+    /// the operation.</remarks>
+    public bool UseAspNetCoreCompatibility { get; set; }
 
     /// <inheritdoc/>
     public override bool CanConvert(Type typeToConvert) =>
@@ -51,16 +52,18 @@ public sealed class OperationResultJsonConverterFactory(
     {
         if (typeToConvert == typeof(IOperationResult))
         {
-            return _useAspNetCoreCompatibility
-                ? new OperationResultAspJsonConverter()
-                : new OperationResultJsonConverter();
+            return new OperationResultJsonConverter()
+            {
+                UseAspNetCoreCompatibility = UseAspNetCoreCompatibility
+            };
         }
 
         Type resultType = typeToConvert.GetGenericArguments()[0];
-        Type converterType = _useAspNetCoreCompatibility
-            ? typeof(OperationResultAspJsonConverter<>).MakeGenericType(resultType)
-            : typeof(OperationResultJsonConverter<>).MakeGenericType(resultType);
+        Type converterType = typeof(OperationResultJsonConverter<>).MakeGenericType(resultType);
 
-        return (JsonConverter)Activator.CreateInstance(converterType)!;
+        dynamic converter = Activator.CreateInstance(converterType)!;
+        converter.UseAspNetCoreCompatibility = UseAspNetCoreCompatibility;
+
+        return converter;
     }
 }
