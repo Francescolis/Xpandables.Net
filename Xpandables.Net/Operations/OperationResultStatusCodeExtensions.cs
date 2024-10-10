@@ -63,6 +63,26 @@ public static partial class OperationResultExtensions
         !operationResult.StatusCode.IsSuccessStatusCode();
 
     /// <summary>    
+    /// Determines whether the specified HTTP status code is a Created status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a Created status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsCreated(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.Created;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified operation result     
+    /// is a Created status code.    
+    /// </summary>    
+    /// <param name="operationResult">The operation result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the operation     
+    /// result is a Created status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsCreated(this IOperationResult operationResult) =>
+        operationResult.StatusCode.IsCreated();
+
+    /// <summary>    
     /// Determines whether the specified HTTP status code is a Not Found 
     /// status code.    
     /// </summary>    
@@ -83,6 +103,37 @@ public static partial class OperationResultExtensions
     /// otherwise, <see langword="false"/>.</returns>    
     public static bool IsNotFound(this IOperationResult operationResult) =>
         operationResult.StatusCode.IsNotFound();
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a No Content 
+    /// status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a No Content 
+    /// status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsNoContent(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.NoContent;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified operation result     
+    /// is a No Content status code.    
+    /// </summary>    
+    /// <param name="operationResult">The operation result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the operation     
+    /// result is a No Content status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsNoContent(this IOperationResult operationResult) =>
+        operationResult.StatusCode.IsNoContent();
+
+    /// <summary>    
+    /// Determines whether the result of the specified operation result is a file.    
+    /// </summary>    
+    /// <param name="operationResult">The operation result to check.</param>    
+    /// <returns><see langword="true"/> if the result of the operation result is a file;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsResultFile(this IOperationResult operationResult) =>
+       operationResult.Result is ResultFile;
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is a Bad Request 

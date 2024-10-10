@@ -32,4 +32,17 @@ public static class ElementCollectionExtensions
     public static ElementCollection ToElementCollection(
         this IEnumerable<ElementEntry> entries)
         => ElementCollection.With(entries.ToArray());
+
+    /// <summary>
+    /// Converts an <see cref="ElementCollection"/> to a dictionary where the 
+    /// keys are the element keys and the values are arrays of element values.
+    /// </summary>
+    /// <param name="elementCollection">The <see cref="ElementCollection"/> 
+    /// to convert.</param>
+    /// <returns>A dictionary with keys and values from the 
+    /// <see cref="ElementCollection"/>.</returns>
+    public static IDictionary<string, string[]> ToElementDictionary(
+        this ElementCollection elementCollection)
+        => elementCollection
+            .ToDictionary(entry => entry.Key, entry => entry.Values.ToArray());
 }

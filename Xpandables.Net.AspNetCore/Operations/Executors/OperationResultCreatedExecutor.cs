@@ -18,9 +18,6 @@
 using System.Net;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-
-using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Operations.Executors;
 
@@ -44,13 +41,6 @@ public sealed class OperationResultCreatedExecutor : IOperationResultExecutor
             true => Results.Created(operationResult.Location, operationResult.Result),
             _ => Results.Created(operationResult.Location, null)
         };
-
-        context.Response.StatusCode = (int)operationResult.StatusCode;
-        foreach (ElementEntry entry in operationResult.Headers)
-        {
-            context.Response.Headers
-                .Append(entry.Key, new StringValues([.. entry.Values]));
-        }
 
         await resultCreated
             .ExecuteAsync(context)

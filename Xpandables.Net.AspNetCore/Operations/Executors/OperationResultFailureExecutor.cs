@@ -14,43 +14,21 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 
 namespace Xpandables.Net.Operations.Executors;
-
-/// <summary>
-/// Executes an operation result that contains a file.
-/// </summary>
-public sealed class OperationResultFileExecutor : IOperationResultExecutor
+public sealed class OperationResultFailureExecutor : IOperationResultExecutor
 {
     ///<inheritdoc/>
     public bool CanExecute(IOperationResult operationResult) =>
-        operationResult.IsResultFile();
+        operationResult.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public async Task ExecuteAsync(
+    public Task ExecuteAsync(
         HttpContext context,
         IOperationResult operationResult)
     {
-        if (operationResult.Result is not ResultFile resultFile)
-        {
-            throw new InvalidOperationException(
-                "The operation result is not a file result.");
-        }
 
-        context.Response.Headers
-            .Append(
-                "Content-Disposition",
-                $"attachment; filename={resultFile.FileName}");
-
-        IResult result = Results.File(
-            resultFile.Content,
-            resultFile.ContentType,
-            resultFile.FileName);
-
-        await result
-            .ExecuteAsync(context)
-            .ConfigureAwait(false);
     }
 }
