@@ -239,6 +239,28 @@ public static class ServiceCollectionOperationExtensions
             new OperationResultValidationFilter().InvokeAsync);
 
     /// <summary>
+    /// Applies the operation result filter and validation filter to the 
+    /// response of the target route(s),
+    /// adding the <see cref="OperationResultFilter"/> and 
+    /// <see cref="OperationResultValidationFilter"/> 
+    /// to the endpoint convention builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the endpoint convention 
+    /// builder.</typeparam>
+    /// <param name="builder">The endpoint convention builder to configure.</param>
+    /// <returns>A reference to the <typeparamref name="TBuilder"/> after 
+    /// the operation has completed.</returns>
+    /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix 
+    /// (<see cref="string.Empty"/>).
+    /// <para>You can register the <see cref="IProblemDetailsService"/> in order
+    /// to customize the response.</para></remarks>
+    public static TBuilder WithXOperationResultMinimalApi<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.WithXOperationResultFilter()
+            .WithXValidationFilter();
+
+    /// <summary>
     /// Adds the <see cref="OperationResultJsonOptions"/> to the 
     /// specified <see cref="IServiceCollection"/>.
     /// </summary>

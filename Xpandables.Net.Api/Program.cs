@@ -66,13 +66,18 @@ app.MapPost("/user", (CreateUserRequest request) =>
     };
 
     return OperationResults
-        .Ok(user)
+        .Created<User>()
+        .WithLocation("http://localtion.url")
+        .WithResult(user)
         .Build();
 })
 .WithName("CreateUser")
 .WithDescription("Create a new user.")
-.WithXOperationResultFilter()
-.WithXValidationFilter();
+.WithXOperationResultMinimalApi()
+.Produces<User>(201)
+.ProducesValidationProblem()
+.ProducesProblem(500)
+.WithOpenApi();
 
 
 app.Run();
