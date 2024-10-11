@@ -18,7 +18,7 @@
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
-namespace Xpandables.Net.Operations.Minimals;
+namespace Xpandables.Net.Operations.Minimal;
 
 /// <summary>  
 /// Configures JSON options for operation results with minimal settings.  

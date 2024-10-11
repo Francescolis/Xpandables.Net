@@ -24,7 +24,7 @@ using Microsoft.Extensions.Options;
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Controllers;
-using Xpandables.Net.Operations.Minimals;
+using Xpandables.Net.Operations.Minimal;
 
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 

@@ -18,7 +18,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Operations.Minimals;
+namespace Xpandables.Net.Operations.Minimal;
 
 /// <summary>
 /// Provides a factory for creating endpoint filters that validate operation results.
