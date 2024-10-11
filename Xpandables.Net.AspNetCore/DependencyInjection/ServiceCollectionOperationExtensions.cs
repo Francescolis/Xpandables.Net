@@ -39,6 +39,22 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionOperationExtensions
 {
     /// <summary>
+    /// Adds operation result execution services to the service collection 
+    /// for minimal APIs.
+    /// </summary>
+    /// <param name="services">The service collection to add the services
+    /// to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXOperationResultMinimalApi(
+        this IServiceCollection services) =>
+        services.AddXOperationResultExecutors(typeof(IOperationResultExecutor).Assembly)
+            .AddXOperationResultJsonOptions()
+            .AddXOperationResultExecute()
+            .AddXOperationResultValidator()
+            .AddXOperationResultMiddleware()
+            .AddXValidatorGenerics();
+
+    /// <summary>
     /// Adds operation result executors to the service collection.
     /// </summary>
     /// <param name="services">The service collection to add the executors to.</param>
@@ -229,7 +245,7 @@ public static class ServiceCollectionOperationExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the 
     /// service to.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
-    public static IServiceCollection AddXOperationResultMinimalJsonOptions(
+    public static IServiceCollection AddXOperationResultJsonOptions(
         this IServiceCollection services) =>
         services.AddSingleton<IConfigureOptions<JsonOptions>,
             OperationResultJsonOptions>();

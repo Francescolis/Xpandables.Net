@@ -6,7 +6,6 @@ using Xpandables.Net.Api.Models;
 using Xpandables.Net.Api.Requests;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Operations.Executors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-builder.Services.AddXOperationResultExecutors(typeof(IOperationResultExecutor).Assembly);
-builder.Services.AddXOperationResultMinimalJsonOptions();
-builder.Services.AddXOperationResultExecute();
-builder.Services.AddXOperationResultValidator();
-builder.Services.AddXOperationResultMiddleware();
-builder.Services.AddXValidatorGenerics();
+builder.Services.AddXOperationResultMinimalApi();
 
 builder.Services.AddSwaggerGen(options =>
 {
