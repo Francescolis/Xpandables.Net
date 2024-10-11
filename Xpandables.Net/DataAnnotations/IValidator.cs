@@ -46,7 +46,11 @@ public interface IValidator
     /// <param name="instance">The instance to validate.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the result of 
     /// the validation.</returns>
-    ValueTask<IOperationResult> ValidateAsync(object instance);
+    public ValueTask<IOperationResult> ValidateAsync(object instance)
+    {
+        IOperationResult result = Validate(instance);
+        return new ValueTask<IOperationResult>(result);
+    }
 }
 
 /// <summary>
