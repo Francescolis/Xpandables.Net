@@ -155,4 +155,26 @@ public static partial class OperationResultExtensions
             .WithException(exception)
             .Build();
     }
+
+    /// <summary>
+    /// Converts the specified operation result to a dictionary of element 
+    /// extensions.
+    /// </summary>
+    /// <param name="operationResult">The operation result to convert.</param>
+    /// <returns>A dictionary of element extensions representing the operation 
+    /// result.</returns>
+    public static IDictionary<string, object?> ToElementExtensions(
+        this IOperationResult operationResult)
+    {
+        if (!operationResult.Extensions.Any())
+        {
+            return new Dictionary<string, object?>();
+        }
+
+        return operationResult
+            .Extensions
+            .ToDictionary(
+            entry => entry.Key,
+            entry => (object?)string.Join(" ", entry.Values));
+    }
 }

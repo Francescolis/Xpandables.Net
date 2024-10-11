@@ -14,10 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
 
@@ -29,16 +32,16 @@ namespace Xpandables.Net.Operations;
 public static class OperationResultConverterExtensions
 {
     /// <summary>  
-    /// Converts an <see cref="ElementCollection"/> to a <see cref="ModelStateDictionary"/>.  
+    /// Converts the specified operation result to an <see cref="ModelStateDictionary"/>.
     /// </summary>  
-    /// <param name="entries">The collection of elements to convert.</param>  
+    /// <param name="operationResult">The operation result to convert.</param>
     /// <returns>A <see cref="ModelStateDictionary"/> containing the converted  
     /// elements.</returns>  
     public static ModelStateDictionary ToModelStateDictionary(
-        this ElementCollection entries)
+        this IOperationResult operationResult)
     {
         ModelStateDictionary modelState = new();
-        foreach (ElementEntry entry in entries)
+        foreach (ElementEntry entry in operationResult.Errors)
         {
             foreach (string value in entry.Values)
             {
@@ -76,6 +79,75 @@ public static class OperationResultConverterExtensions
             .Build();
 
     /// <summary>  
+    /// Converts a <see cref="BadHttpRequestException"/> to an 
+    /// <see cref="IOperationResult"/>.  
+    /// </summary>  
+    /// <param name="exception">The exception to convert.</param>  
+    /// <returns>An <see cref="IOperationResult"/> representing the 
+    /// operation result.</returns>  
+    public static IOperationResult ToOperationResult(
+        this BadHttpRequestException exception)
+    {
+        int startParameterNameIndex = exception.Message
+            .IndexOf('"', StringComparison.InvariantCulture) + 1;
+
+        int endParameterNameIndex = exception.Message
+            .IndexOf('"', startParameterNameIndex);
+
+        string parameterName = exception
+            .Message[startParameterNameIndex..endParameterNameIndex];
+
+        parameterName = parameterName.Trim();
+
+        string errorMessage = exception.Message
+            .Replace("\\", string.Empty, StringComparison.InvariantCulture)
+            .Replace("\"", string.Empty, StringComparison.InvariantCulture);
+
+        return OperationResults
+            .BadRequest()
+            .WithDetail(exception.Message)
+            .WithStatusCode((HttpStatusCode)exception.StatusCode)
+            .WithError(parameterName, errorMessage)
+            .Build();
+    }
+
+    /// <summary>  
+    /// Converts an <see cref="Exception"/> to an <see cref="IOperationResult"/> 
+    /// for problem details.
+    /// </summary>  
+    /// <param name="exception">The exception to convert.</param>  
+    /// <returns>An <see cref="IOperationResult"/> representing the operation 
+    /// result.</returns>  
+    public static IOperationResult ToOperationResultForProblemDetails(
+        this Exception exception)
+    {
+        switch (exception)
+        {
+            case BadHttpRequestException badHttpRequestException:
+                return badHttpRequestException.ToOperationResult();
+            case OperationResultException operationResultException:
+                return operationResultException.OperationResult;
+            case ValidationException validationException:
+                return validationException.ValidationResult.ToOperationResult();
+            default:
+                bool isDevelopment = (Environment.GetEnvironmentVariable(
+                    "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
+                    Environments.Development;
+
+                return OperationResults
+                    .InternalServerError()
+                    .WithTitle(isDevelopment
+                        ? exception.Message
+                        : HttpStatusCode.InternalServerError.GetTitle())
+                    .WithDetail(isDevelopment
+                        ? $"{exception}" :
+                        HttpStatusCode.InternalServerError.GetDetail())
+                    .WithException(exception)
+                    .Build();
+        }
+    }
+
+    /// <summary>  
     /// Converts an <see cref="IOperationResult"/> to an <see cref="IActionResult"/>.  
     /// </summary>  
     /// <param name="operationResult">The operation result to convert.</param>  
@@ -87,4 +159,12 @@ public static class OperationResultConverterExtensions
         {
             StatusCode = (int)operationResult.StatusCode,
         };
+
+    /// <summary>  
+    /// Converts an <see cref="IOperationResult"/> to an <see cref="IResult"/>.  
+    /// </summary>  
+    /// <param name="operationResult">The operation result to convert.</param>  
+    /// <returns>An <see cref="IResult"/> representing the operation result.</returns>  
+    public static IResult ToMinimalResult(this IOperationResult operationResult) =>
+        new OperationResultResult(operationResult);
 }

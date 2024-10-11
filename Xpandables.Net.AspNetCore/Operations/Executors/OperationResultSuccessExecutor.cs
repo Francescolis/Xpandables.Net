@@ -25,15 +25,49 @@ public sealed class OperationResultSuccessExecutor : IOperationResultExecutor
 {
     ///<inheritdoc/>
     public bool CanExecute(IOperationResult operationResult) =>
-        operationResult.IsSuccessStatusCode()
-        && !operationResult.IsResultFile()
-        && !operationResult.IsCreated();
+        operationResult.IsSuccessStatusCode();
 
     ///<inheritdoc/>
     public async Task ExecuteAsync(
         HttpContext context,
         IOperationResult operationResult)
     {
+        if (operationResult.IsCreated())
+        {
+            IResult resultCreated = (operationResult.Result is not null) switch
+            {
+                true => Results.Created(
+                    operationResult.Location,
+                    operationResult.Result),
+                _ => Results.Created(operationResult.Location, null)
+            };
+
+            await resultCreated
+                .ExecuteAsync(context)
+                .ConfigureAwait(false);
+
+            return;
+        }
+
+        if (operationResult.Result is ResultFile resultFile)
+        {
+            context.Response.Headers
+                .Append(
+                    "Content-Disposition",
+                    $"attachment; filename={resultFile.FileName}");
+
+            IResult result = Results.File(
+                resultFile.Content,
+                resultFile.ContentType,
+                resultFile.FileName);
+
+            await result
+                .ExecuteAsync(context)
+                .ConfigureAwait(false);
+
+            return;
+        }
+
         if (operationResult.Result is not null)
         {
             await context.Response.WriteAsJsonAsync(

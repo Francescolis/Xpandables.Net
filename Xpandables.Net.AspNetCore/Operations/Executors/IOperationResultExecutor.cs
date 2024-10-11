@@ -39,5 +39,7 @@ public interface IOperationResultExecutor
     /// <param name="context">The HTTP context.</param>
     /// <param name="operationResult">The operation result to execute.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    Task ExecuteAsync(HttpContext context, IOperationResult operationResult);
+    Task ExecuteAsync(
+        HttpContext context,
+        IOperationResult operationResult);
 }

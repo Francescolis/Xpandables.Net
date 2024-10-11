@@ -21,16 +21,16 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Represents a minimal operation result that implements the 
+/// Represents an operation result that implements the 
 /// <see cref="IResult"/> interface.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="OperationResultMinimal"/> class.
+/// Initializes a new instance of the <see cref="OperationResultResult"/> class.
 /// </remarks>
 /// <param name="operationResult">The operation result to be executed.</param>
 /// <exception cref="ArgumentNullException">Thrown when the operation result 
 /// is null.</exception>
-public sealed class OperationResultMinimal(IOperationResult operationResult) : IResult
+public sealed class OperationResultResult(IOperationResult operationResult) : IResult
 {
     private readonly IOperationResult _operationResult = operationResult
         ?? throw new ArgumentNullException(nameof(operationResult));

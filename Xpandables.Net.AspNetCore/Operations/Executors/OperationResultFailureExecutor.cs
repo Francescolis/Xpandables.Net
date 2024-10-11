@@ -16,8 +16,15 @@
 ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Xpandables.Net.Operations.Executors;
+
+/// <summary>
+/// Executor for handling operation results that indicate failure.
+/// </summary>
 public sealed class OperationResultFailureExecutor : IOperationResultExecutor
 {
     ///<inheritdoc/>
@@ -29,6 +36,43 @@ public sealed class OperationResultFailureExecutor : IOperationResultExecutor
         HttpContext context,
         IOperationResult operationResult)
     {
+        context.Response.StatusCode = (int)operationResult.StatusCode;
 
+        bool isDevelopment = context.RequestServices
+            .GetRequiredService<IHostEnvironment>()
+            .IsDevelopment();
+
+        ProblemDetails problemDetails = operationResult.StatusCode.IsBadRequest()
+            ? new ValidationProblemDetails(operationResult.ToModelStateDictionary())
+            {
+                Title = operationResult.Title ?? operationResult.StatusCode.GetTitle(),
+                Detail = operationResult.Detail ?? operationResult.StatusCode.GetDetail(),
+                Status = (int)operationResult.StatusCode,
+                Instance = $"{context.Request.Method} {context.Request.Path}",
+                Type = isDevelopment ? operationResult.GetType().Name : null,
+                Extensions = operationResult.ToElementExtensions()
+            }
+            : new ProblemDetails()
+            {
+                Title = operationResult.Title ?? operationResult.StatusCode.GetTitle(),
+                Detail = operationResult.Detail ?? operationResult.StatusCode.GetDetail(),
+                Status = (int)operationResult.StatusCode,
+                Instance = $"{context.Request.Method} {context.Request.Path}",
+                Type = isDevelopment ? operationResult.GetType().Name : null,
+                Extensions = operationResult.ToElementExtensions()
+            };
+
+        if (context.RequestServices
+            .GetService<IProblemDetailsService>() is { } problemDetailsService)
+        {
+            return problemDetailsService.WriteAsync(new ProblemDetailsContext
+            {
+                HttpContext = context,
+                ProblemDetails = problemDetails
+            }).AsTask();
+        }
+
+        IResult result = Results.Problem(problemDetails);
+        return result.ExecuteAsync(context);
     }
 }
