@@ -75,7 +75,7 @@ public sealed class OperationResultValidator : IOperationResultValidator
 
         IOperationResult result = failureBuilder.Build();
 
-        if (result.IsFailureStatusCode())
+        if (result.Errors.Any())
         {
             return result.ToMinimalResult();
         }

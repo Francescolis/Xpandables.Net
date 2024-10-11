@@ -15,6 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Reflection;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +26,7 @@ using Microsoft.Extensions.Options;
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Operations.Controllers;
+using Xpandables.Net.Operations.Executors;
 using Xpandables.Net.Operations.Minimal;
 
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
@@ -35,6 +38,36 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionOperationExtensions
 {
+    /// <summary>
+    /// Adds operation result executors to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the executors to.</param>
+    /// <param name="assemblies">The assemblies to scan for executors. 
+    /// If none are provided, the calling assembly is used.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXOperationResultExecutors(
+        this IServiceCollection services,
+        params Assembly[] assemblies)
+    {
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
+
+        List<Type> executorTypes = assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => !type.IsInterface
+                && type.IsAssignableTo(typeof(IOperationResultExecutor)))
+            .ToList();
+
+        foreach (Type executorType in executorTypes)
+        {
+            _ = services.AddScoped(typeof(IOperationResultExecutor), executorType);
+        }
+
+        return services;
+    }
+
     /// <summary>
     /// Adds a scoped service of the type specified in 
     /// <typeparamref name="TOperationResultExecute"/> 
@@ -96,6 +129,18 @@ public static class ServiceCollectionOperationExtensions
     public static IServiceCollection AddXOperationResultValidator(
         this IServiceCollection services) =>
         services.AddXOperationResultValidator<OperationResultValidator>();
+
+    /// <summary>
+    /// Adds a scoped service of the type <see cref="OperationResultMiddleware"/> 
+    /// to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add 
+    /// the service to.</param>
+    /// <returns>A reference to this instance after the operation has 
+    /// completed.</returns>
+    public static IServiceCollection AddXOperationResultMiddleware(
+        this IServiceCollection services) =>
+        services.AddScoped<OperationResultMiddleware>();
 
     /// <summary>
     /// Adds the <see cref="OperationResultMiddleware"/> to the application's 
