@@ -148,6 +148,11 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
             return;
         }
 
+        // dispose the repository instance
+        await _repositoryInstance
+            .DisposeAsync()
+            .ConfigureAwait(false);
+
         if (_writeOperation)
         {
             _ = await _unitOfWork

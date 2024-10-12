@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Xpandables.Net.Repositories;
@@ -49,7 +50,9 @@ public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
 public record EntityFilter<TEntity> : EntityFilter<TEntity, TEntity>, IEntityFilter<TEntity>
     where TEntity : class, IEntity
 {
-    /// <inheritdoc/>
-    public sealed override required Expression<Func<TEntity, TEntity>> Selector
-    { get; init; } = entity => entity;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EntityFilter{TEntity}"/> class.
+    /// </summary>
+    [SetsRequiredMembers]
+    public EntityFilter() : base() => Selector = entity => entity;
 }
