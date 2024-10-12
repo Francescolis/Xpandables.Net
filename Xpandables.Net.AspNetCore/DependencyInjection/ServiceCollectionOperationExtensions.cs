@@ -73,6 +73,7 @@ public static class ServiceCollectionOperationExtensions
         List<Type> executorTypes = assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => !type.IsInterface
+                && type.IsSealed
                 && type.IsAssignableTo(typeof(IOperationResultExecutor)))
             .ToList();
 
