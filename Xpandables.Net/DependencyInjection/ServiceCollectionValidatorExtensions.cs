@@ -27,14 +27,14 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionValidatorExtensions
 {
     /// <summary>
-    /// Adds generic validators to the service collection.
+    /// Adds the default generic validator to the service collection.
     /// </summary>
     /// <param name="services">The service collection to add the validators 
     /// to.</param>
     /// <returns>The updated service collection.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the service 
     /// collection is null.</exception>
-    public static IServiceCollection AddXValidatorGenerics(
+    public static IServiceCollection AddXValidatorDefault(
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

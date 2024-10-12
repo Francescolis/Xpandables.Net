@@ -52,7 +52,7 @@ public static class ServiceCollectionOperationExtensions
             .AddXOperationResultExecute()
             .AddXOperationResultValidator()
             .AddXOperationResultMiddleware()
-            .AddXValidatorGenerics();
+            .AddXValidatorDefault();
 
     /// <summary>
     /// Adds operation result executors to the service collection.
