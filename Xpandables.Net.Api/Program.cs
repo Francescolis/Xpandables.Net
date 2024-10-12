@@ -15,6 +15,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
 builder.Services.AddXOperationResultMinimalApi();
+builder.Services.AddXValidators();
 
 builder.Services.AddSwaggerGen(options =>
 {
