@@ -1,15 +1,38 @@
-﻿using Xpandables.Net.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+
+using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Api.Requests;
 
-public sealed class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
+public sealed class CreateUserRequestValidator<T> : AbstractValidator<T>
+    where T : class, IUseValidator
 {
-    public override IOperationResult Validate(CreateUserRequest instance) =>
-        OperationResults
-            .BadRequest()
-            .WithError(nameof(instance.UserName), "User name is required.")
-            .WithError(nameof(instance.Email), "Email is required.")
-            .WithError(nameof(instance.Password), "Password is required.")
-            .Build();
+    public override IOperationResult Validate(T instance)
+    {
+        if (instance is not CreateUserRequest createUserRequest)
+        {
+            return OperationResults
+                .BadRequest()
+                .WithError("Request", "Invalid request type.")
+                .Build();
+        }
+
+        List<ValidationResult> validationResults = [];
+        ValidationContext validationContext =
+            new(createUserRequest, null, null);
+
+        if (Validator.TryValidateObject(
+            createUserRequest,
+            validationContext,
+            validationResults,
+            true))
+        {
+            return OperationResults
+                .Ok()
+                .Build();
+        }
+
+        return validationResults.ToOperationResult();
+    }
 }

@@ -17,7 +17,6 @@
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.DataAnnotations;
 
@@ -37,19 +36,10 @@ public static class ServiceCollectionValidatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when the service 
     /// collection is null.</exception>
     public static IServiceCollection AddXValidatorDefault(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAddTransient(
-            typeof(IValidator<>),
-            typeof(Validator<>));
-
-        services.TryAddTransient(
-            typeof(ICompositeValidator<>),
-            typeof(CompositeValidator<>));
-        return services;
-    }
+        this IServiceCollection services) =>
+        services
+        .AddTransient(typeof(IValidator<>), typeof(Validator<>))
+        .AddTransient(typeof(ICompositeValidator<>), typeof(CompositeValidator<>));
 
     /// <summary>
     /// Adds validators from the specified assemblies to the service collection.
@@ -92,19 +82,19 @@ public static class ServiceCollectionValidatorExtensions
         {
             if (validatorType.ValidatorType.IsGenericType)
             {
-                services.TryAddTransient(
+                _ = services.AddTransient(
                     typeof(IValidator<>),
                     validatorType.ValidatorType);
 
                 continue;
             }
 
-            services.TryAddTransient(
+            _ = services.AddTransient(
                 typeof(IValidator<>)
                     .MakeGenericType(validatorType.ArgumentType),
                 validatorType.ValidatorType);
 
-            services.TryAddTransient(
+            _ = services.AddTransient(
                 typeof(ICompositeValidator<>)
                     .MakeGenericType(validatorType.ArgumentType),
                 typeof(CompositeValidator<>)
