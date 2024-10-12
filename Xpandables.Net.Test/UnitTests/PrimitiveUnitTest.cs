@@ -77,7 +77,7 @@ public sealed class PrimitiveUnitTest
         public void IPrimitive_Value_ShouldReturnObjectValue()
         {
             // Arrange
-            IPrimitive primitive = TestPrimitive.Create("test");
+            TestPrimitive primitive = TestPrimitive.Create("test");
 
             // Act
             object value = primitive.Value;

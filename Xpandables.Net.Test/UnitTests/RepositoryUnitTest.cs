@@ -8,7 +8,7 @@ namespace Xpandables.Net.Test.UnitTests;
 
 public sealed class RepositoryUnitTest
 {
-    private readonly IRepository _repository;
+    private readonly InMemoryRepository _repository;
     public RepositoryUnitTest()
     {
         _repository = new InMemoryRepository();
