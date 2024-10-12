@@ -11,33 +11,102 @@ namespace Xpandables.Net.Test.UnitTests;
 public sealed class OperationResultUnitTest
 {
     [Fact]
-    public void OperationResult_Should_Initialize()
+    public void Success_ShouldReturnOperationResultWithStatusCodeOk()
     {
-        SuccessBuilder<string> builder = new(HttpStatusCode.OK);
-        IOperationResult result = builder
-            .WithLocation(new Uri("http://localhost"))
-            .WithResult("Name")
-            .WithHeader("Key", "Value")
-            .WithExtension("Key", "Value")
-            .Build();
+        // Act
+        var result = OperationResults.Success().Build();
 
-        IOperationResult result2 = result;
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        result.IsSuccessStatusCode.Should().BeTrue();
+    }
 
+    [Fact]
+    public void Success_WithResult_ShouldReturnOperationResultWithStatusCodeOkAndResult()
+    {
+        // Arrange
+        var expectedResult = "Success";
+
+        // Act
+        var result = OperationResults.Success(expectedResult).Build();
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        result.IsSuccessStatusCode.Should().BeTrue();
+        result.Result.Should().Be(expectedResult);
+    }
+
+    [Fact]
+    public void Failure_ShouldReturnOperationResultWithStatusCodeBadRequest()
+    {
+        // Act
+        var result = OperationResults.Failure().Build();
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        result.IsSuccessStatusCode.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Failure_WithStatusCode_ShouldReturnOperationResultWithSpecifiedStatusCode()
+    {
+        // Act
+        var result = OperationResults.Failure(HttpStatusCode.NotFound).Build();
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        result.IsSuccessStatusCode.Should().BeFalse();
+    }
+
+    [Fact]
+    public void OperationResult_ShouldSerializeAndDeserializeCorrectly()
+    {
+        // Arrange
+        var operationResult = new OperationResult
+        {
+            StatusCode = HttpStatusCode.OK,
+            Title = "Test Title",
+            Detail = "Test Detail",
+            Location = new Uri("http://example.com"),
+            Errors = ElementCollection.With("ErrorKey", "ErrorValue"),
+            Headers = ElementCollection.With("HeaderKey", "HeaderValue"),
+            Extensions = ElementCollection.With("ExtensionKey", "ExtensionValue")
+        };
+
+        // Act
         JsonSerializerOptions options = new()
         { Converters = { new OperationResultJsonConverterFactory() } };
+        var json = JsonSerializer.Serialize(operationResult, options);
+        var deserializedResult = JsonSerializer.Deserialize<OperationResult>(json, options);
 
-        string resultJson = JsonSerializer.Serialize(result, options);
-        IOperationResult result3 = JsonSerializer.Deserialize<IOperationResult<string>>(resultJson, options)!;
-
-        result2.Errors.Add(new ElementEntry("Key", "Value"));
-        result2.Headers.Add(new ElementEntry("Key", "Value"));
-        result2.Extensions.Add(new ElementEntry("Key", "Value"));
-        result2.StatusCode.Should().Be(HttpStatusCode.OK);
-        result2.Location.Should().Be(new Uri("http://localhost"));
-        result2.Result.Should().BeEquivalentTo("Name");
-        result2.Errors.Should().ContainSingle();
-        result2.Headers.Should().ContainSingle();
-        result2.Extensions.Should().ContainSingle();
-        result2.IsSuccessStatusCode.Should().Be(true);
+        // Assert
+        deserializedResult.Should().BeEquivalentTo(operationResult);
     }
+
+    [Fact]
+    public void OperationResult_WithGenericResult_ShouldSerializeAndDeserializeCorrectly()
+    {
+        // Arrange
+        var operationResult = new OperationResult<string>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Title = "Test Title",
+            Detail = "Test Detail",
+            Location = new Uri("http://example.com"),
+            Result = "Test Result",
+            Errors = ElementCollection.With("ErrorKey", "ErrorValue"),
+            Headers = ElementCollection.With("HeaderKey", "HeaderValue"),
+            Extensions = ElementCollection.With("ExtensionKey", "ExtensionValue")
+        };
+
+        // Act
+        JsonSerializerOptions options = new()
+        { Converters = { new OperationResultJsonConverterFactory() } };
+        var json = JsonSerializer.Serialize(operationResult, options);
+        var deserializedResult = JsonSerializer.Deserialize<OperationResult<string>>(json, options);
+
+        // Assert
+        deserializedResult.Should().BeEquivalentTo(operationResult);
+    }
+
 }
