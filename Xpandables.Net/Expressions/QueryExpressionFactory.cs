@@ -31,22 +31,25 @@ public sealed record QueryExpression
     /// <param name="expression">The expression to be used.</param>
     /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/>.</returns>
     public static QueryExpression<TSource, TResult> Create<TSource, TResult>(
-        Expression<Func<TSource, TResult>> expression) => new(expression);
+        Expression<Func<TSource, TResult>> expression) =>
+        new() { Expression = expression };
 
     /// <summary>
-    /// Creates a new instance of <see cref="QueryExpression{TSource}"/>.
+    /// Creates a new instance of <see cref="QueryExpression{TSource, TResult}"/>.
     /// </summary>
     /// <typeparam name="TSource">The type of the source.</typeparam>
     /// <param name="expression">The expression to be used.</param>
-    /// <returns>A new instance of <see cref="QueryExpression{TSource}"/>.</returns>
-    public static QueryExpression<TSource> Create<TSource>(
-        Expression<Func<TSource, bool>> expression) => new(expression);
+    /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/>.</returns>
+    public static QueryExpression<TSource, bool> Create<TSource>(
+        Expression<Func<TSource, bool>> expression) =>
+        new() { Expression = expression };
 
     /// <summary>
-    /// Creates a new instance of <see cref="QueryExpression{TSource}"/> with a 
+    /// Creates a new instance of <see cref="QueryExpression{TSource, TResult}"/> with a 
     /// default expression that always returns true.
     /// </summary>
     /// <typeparam name="TSource">The type of the source.</typeparam>
-    /// <returns>A new instance of <see cref="QueryExpression{TSource}"/>.</returns>
-    public static QueryExpression<TSource> Create<TSource>() => new(_ => true);
+    /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/>.</returns>
+    public static QueryExpression<TSource, bool> Create<TSource>() =>
+        new() { Expression = _ => true };
 }

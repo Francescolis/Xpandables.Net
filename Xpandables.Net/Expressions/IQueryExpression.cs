@@ -31,11 +31,3 @@ public interface IQueryExpression<TSource, TResult>
     /// </summary>
     Expression<Func<TSource, TResult>> Expression { get; }
 }
-
-/// <summary>
-/// Represents a query expression that can be used to filter data from a source.
-/// </summary>
-/// <typeparam name="TSource">The type of the source data.</typeparam>
-public interface IQueryExpression<TSource> : IQueryExpression<TSource, bool>
-{
-}

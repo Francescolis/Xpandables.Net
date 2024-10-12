@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Xpandables.Net.Expressions;
@@ -29,15 +30,49 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// Initializes a new instance of the 
     /// <see cref="QueryExpression{TSource, TResult}"/> class.
     /// </summary>
-    /// <param name="expression">The expression that defines the query.</param>
-    public QueryExpression(Expression<Func<TSource, TResult>> expression)
-        => Expression = expression
-            ?? throw new ArgumentNullException(nameof(expression));
+    public QueryExpression() { }
+
+    /// <summary>
+    /// Initializes a new instance of the 
+    /// <see cref="QueryExpression{TSource, TResult}"/> class with the specified 
+    /// expressions and expression type to produce a new expression of type
+    /// <see cref="ExpressionType.AndAlso"/> or <see cref="ExpressionType.OrElse"/>.
+    /// </summary>
+    /// <param name="left">The left expression.</param>
+    /// <param name="right">The right expression.</param>
+    /// <param name="expressionType">The type of the expression.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the expression 
+    /// type is not supported.</exception>
+    [SetsRequiredMembers]
+    public QueryExpression(
+        Expression<Func<TSource, TResult>> left,
+        Expression<Func<TSource, TResult>> right,
+#pragma warning disable IDE0072 // Add missing cases
+        ExpressionType expressionType) =>
+        Expression = expressionType switch
+        {
+            ExpressionType.AndAlso => AndExpression(left, right),
+            ExpressionType.OrElse => OrExpression(left, right),
+            _ => throw new InvalidOperationException(
+                $"Only {ExpressionType.AndAlso} and " +
+                $"{ExpressionType.Or} are supported")
+        };
+#pragma warning restore IDE0072 // Add missing cases
+
+    /// <summary>
+    /// Initializes a new instance of the 
+    /// <see cref="QueryExpression{TSource, TResult}"/> class with the specified 
+    /// expression to produce a new negated expression.
+    /// </summary>
+    /// <param name="expression">The expression to negate.</param>
+    [SetsRequiredMembers]
+    public QueryExpression(Expression<Func<TSource, TResult>> expression) =>
+        Expression = NotExpression(expression);
 
     /// <summary>
     /// Gets the expression that defines the query.
     /// </summary>
-    public Expression<Func<TSource, TResult>> Expression { get; }
+    public required Expression<Func<TSource, TResult>> Expression { get; init; }
 
     /// <inheritdoc/>
     public override int GetHashCode() => Expression.GetHashCode();
@@ -69,7 +104,8 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// <param name="expression">The expression to convert.</param>
     /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/>.</returns>
     public static implicit operator QueryExpression<TSource, TResult>(
-        Expression<Func<TSource, TResult>> expression) => new(expression);
+        Expression<Func<TSource, TResult>> expression) =>
+        new() { Expression = expression };
 
     /// <summary>
     /// Implicitly converts a <see cref="Func{TSource, TResult}"/> 
@@ -79,7 +115,7 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// <returns>A new instance of 
     /// <see cref="QueryExpression{TSource, TResult}"/>.</returns>
     public static implicit operator QueryExpression<TSource, TResult>(
-        Func<TSource, TResult> func) => new(x => func(x));
+        Func<TSource, TResult> func) => new() { Expression = x => func(x) };
 
     /// <summary>
     /// Combines two <see cref="QueryExpression{TSource, TResult}"/> instances 
@@ -91,21 +127,8 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// that represents the logical AND of the two expressions.</returns>
     public static QueryExpression<TSource, TResult> operator &(
         QueryExpression<TSource, TResult> left,
-        IQueryExpression<TSource, TResult> right) =>
-        new QueryExpressionAnd<TSource, TResult>(left, right);
-
-    /// <summary>
-    /// Combines two <see cref="QueryExpression{TSource, TResult}"/> instances 
-    /// using a logical AND operation.
-    /// </summary>
-    /// <param name="left">The left query expression.</param>
-    /// <param name="right">The right query expression.</param>
-    /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/> 
-    /// that represents the logical AND of the two expressions.</returns>
-    public static QueryExpression<TSource, TResult> operator &(
-        QueryExpression<TSource, TResult> left,
-        Expression<Func<TSource, TResult>> right) =>
-        new QueryExpressionAnd<TSource, TResult>(left, right);
+        QueryExpression<TSource, TResult> right) =>
+        new(left, right.Expression, ExpressionType.AndAlso);
 
     /// <summary>
     /// Combines two <see cref="QueryExpression{TSource, TResult}"/> instances 
@@ -117,21 +140,8 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// that represents the logical OR of the two expressions.</returns>
     public static QueryExpression<TSource, TResult> operator |(
         QueryExpression<TSource, TResult> left,
-        IQueryExpression<TSource, TResult> right) =>
-        new QueryExpressionOr<TSource, TResult>(left, right);
-
-    /// <summary>
-    /// Combines two <see cref="QueryExpression{TSource, TResult}"/> instances 
-    /// using a logical OR operation.
-    /// </summary>
-    /// <param name="left">The left query expression.</param>
-    /// <param name="right">The right query expression.</param>
-    /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/> 
-    /// that represents the logical OR of the two expressions.</returns>
-    public static QueryExpression<TSource, TResult> operator |(
-        QueryExpression<TSource, TResult> left,
-        Expression<Func<TSource, TResult>> right) =>
-        new QueryExpressionOr<TSource, TResult>(left, right);
+        QueryExpression<TSource, TResult> right) =>
+        new(left, right.Expression, ExpressionType.OrElse);
 
     /// <summary>
     /// Negates the given <see cref="QueryExpression{TSource, TResult}"/>.
@@ -141,24 +151,73 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// <see cref="QueryExpression{TSource, TResult}"/>.</returns>
     public static QueryExpression<TSource, TResult> operator !(
         QueryExpression<TSource, TResult> expression) =>
-        new QueryExpressionNot<TSource, TResult>(expression.Expression);
+        new(expression.Expression);
 
-}
-
-/// <summary>
-/// Represents a query expression that returns a boolean result.
-/// </summary>
-/// <typeparam name="TSource">The type of the source.</typeparam>
-public record QueryExpression<TSource> :
-    QueryExpression<TSource, bool>,
-    IQueryExpression<TSource>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="QueryExpression{TSource}"/> class.
-    /// </summary>
-    /// <param name="expression">The expression that defines the query.</param>
-    public QueryExpression(Expression<Func<TSource, bool>> expression)
-        : base(expression)
+    private static Expression<Func<TSource, TResult>> AndExpression(
+        Expression<Func<TSource, TResult>> left,
+        Expression<Func<TSource, TResult>> right)
     {
+        ParameterExpression parameter = System.Linq.Expressions
+            .Expression.Parameter(typeof(TSource), "param");
+
+        Expression leftBody = ReplaceParameter(
+            left.Body, left.Parameters[0], parameter);
+        Expression rightBody = ReplaceParameter(
+            right.Body, right.Parameters[0], parameter);
+
+        return System.Linq.Expressions.Expression
+            .Lambda<Func<TSource, TResult>>(
+                System.Linq.Expressions.Expression
+                    .AndAlso(leftBody, rightBody), parameter);
+    }
+
+    private static Expression<Func<TSource, TResult>> OrExpression(
+        Expression<Func<TSource, TResult>> left,
+        Expression<Func<TSource, TResult>> right)
+    {
+        ParameterExpression parameter = System.Linq.Expressions
+            .Expression.Parameter(typeof(TSource), "param");
+
+        Expression leftBody = ReplaceParameter(
+            left.Body, left.Parameters[0], parameter);
+        Expression rightBody = ReplaceParameter(
+            right.Body, right.Parameters[0], parameter);
+
+        return System.Linq.Expressions.Expression
+            .Lambda<Func<TSource, TResult>>(
+                System.Linq.Expressions.Expression
+                    .OrElse(leftBody, rightBody), parameter);
+    }
+
+    private static Expression<Func<TSource, TResult>> NotExpression(
+        Expression<Func<TSource, TResult>> expression)
+    {
+        ParameterExpression parameter = System.Linq.Expressions
+            .Expression.Parameter(typeof(TSource), "param");
+
+        Expression expressionBody = ReplaceParameter(
+            expression.Body, expression.Parameters[0], parameter);
+
+        return System.Linq.Expressions.Expression
+            .Lambda<Func<TSource, TResult>>(
+                System.Linq.Expressions.Expression
+                    .Not(expressionBody), parameter);
+    }
+
+    private static Expression ReplaceParameter(
+        Expression body,
+        ParameterExpression toReplace,
+        ParameterExpression replaceWith) =>
+        new ParameterReplacer(toReplace, replaceWith).Visit(body);
+
+    private class ParameterReplacer(
+        ParameterExpression toReplace,
+        ParameterExpression replaceWith) : ExpressionVisitor
+    {
+        private readonly ParameterExpression _toReplace = toReplace;
+        private readonly ParameterExpression _replaceWith = replaceWith;
+
+        protected override Expression VisitParameter(ParameterExpression node) =>
+            node == _toReplace ? _replaceWith : base.VisitParameter(node);
     }
 }
