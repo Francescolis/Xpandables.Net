@@ -119,6 +119,16 @@ public readonly record struct OperationResults
         Success<TResult>(HttpStatusCode.Created);
 
     /// <summary>  
+    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// specified result and status code Created to build a success operation result.  
+    /// </summary>  
+    /// <typeparam name="TResult">The type of the result.</typeparam>  
+    /// <param name="result">The result of the operation.</param>  
+    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
+    public static ISuccessBuilder<TResult> Created<TResult>(TResult result) =>
+        Success(result, HttpStatusCode.Created);
+
+    /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
     /// status code NoContent to build a success operation result.  
     /// </summary>  

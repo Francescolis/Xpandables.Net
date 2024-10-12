@@ -66,9 +66,8 @@ app.MapPost("/user", (CreateUserRequest request) =>
     };
 
     return OperationResults
-        .Created<User>()
+        .Created(user)
         .WithLocation("http://localtion.url")
-        .WithResult(user)
         .Build();
 })
 .WithName("CreateUser")
