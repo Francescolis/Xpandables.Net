@@ -47,7 +47,7 @@ public class HttpClientResponse : Disposable, IEquatable<HttpClientResponse>
        NameValueCollection headers,
        object? result,
        HttpClientException? exception,
-       Version? version,
+       Version version,
        string? reasonPhrase)
     {
         StatusCode = statusCode;
@@ -78,7 +78,7 @@ public class HttpClientResponse : Disposable, IEquatable<HttpClientResponse>
     /// <summary>  
     /// Gets the HTTP protocol version used by the response.  
     /// </summary>  
-    public Version? Version { get; init; }
+    public required Version Version { get; init; }
     /// <summary>  
     /// Gets the reason phrase which typically is sent by servers 
     /// together with the status code.  
@@ -205,7 +205,7 @@ public class HttpClientResponse<TResult> :
         NameValueCollection headers,
         TResult? result,
         HttpClientException? exception,
-        Version? version,
+        Version version,
         string? reasonPhrase)
         : base(statusCode, headers, result, exception, version, reasonPhrase) { }
 

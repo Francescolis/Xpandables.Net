@@ -124,6 +124,7 @@ public sealed class HttpClientResponseBuilderUnitTest
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Version.Should().Be(new Version(1, 1));
+        response.Result.Should().NotBeNull();
         response.ReasonPhrase.Should().Be("OK");
         response.Headers["Custom-Header"].Should().Be("HeaderValue");
         response.Exception.Should().BeNull();
@@ -159,6 +160,7 @@ public sealed class HttpClientResponseBuilderUnitTest
         response.Exception.Should().BeNull();
     }
 
+    record TestResponse(string Key);
     [Fact]
     public async Task SuccessResult_ShouldReturnSuccessResponse()
     {
@@ -175,11 +177,16 @@ public sealed class HttpClientResponseBuilderUnitTest
         var context = new HttpClientResponseContext
         {
             ResponseMessage = responseMessage,
-            SerializerOptions = new JsonSerializerOptions()
+            SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = null,
+                WriteIndented = true
+            }
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpClientResponse<string>>(context);
+        var response = await builder.BuildAsync<HttpClientResponse<TestResponse>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
