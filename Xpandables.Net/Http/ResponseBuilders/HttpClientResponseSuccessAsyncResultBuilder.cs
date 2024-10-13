@@ -69,7 +69,7 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
              .ReadAsStreamAsync(cancellationToken)
              .ConfigureAwait(false);
 
-        _ = _builderResultAsyncMethod
+        MethodInfo builderMethod = _builderResultAsyncMethod
             .MakeGenericMethod(resultType);
 
         MethodInfo asyncEmpty = ElementCollectionExtensions
@@ -77,7 +77,7 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
             .MakeGenericMethod(resultType);
 
         object? results = stream is not null
-            ? _builderResultAsyncMethod.Invoke(
+            ? builderMethod.Invoke(
                 null, [stream, context.SerializerOptions, cancellationToken])
             : asyncEmpty.Invoke(null, null);
 
