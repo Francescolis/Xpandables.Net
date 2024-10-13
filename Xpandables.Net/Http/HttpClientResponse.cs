@@ -24,6 +24,40 @@ namespace Xpandables.Net.Http;
 /// </summary>
 public class HttpClientResponse : Disposable, IEquatable<HttpClientResponse>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpClientResponse"/> class.
+    /// </summary>
+    public HttpClientResponse() { }
+
+    /// <summary>  
+    /// Initializes a new instance of the <see cref="HttpClientResponse"/> 
+    /// class with the specified parameters.  
+    /// </summary>  
+    /// <param name="statusCode">The status code of the HTTP response.</param>  
+    /// <param name="headers">The headers of the HTTP response.</param>  
+    /// <param name="result">The result of the HTTP response.</param>  
+    /// <param name="exception">The exception associated with the HTTP 
+    /// response, if any.</param>  
+    /// <param name="version">The HTTP protocol version used by the response.</param>  
+    /// <param name="reasonPhrase">The reason phrase which typically is sent 
+    /// by servers together with the status code.</param>  
+    [SetsRequiredMembers]
+    public HttpClientResponse(
+       HttpStatusCode statusCode,
+       NameValueCollection headers,
+       object? result,
+       HttpClientException? exception,
+       Version? version,
+       string? reasonPhrase)
+    {
+        StatusCode = statusCode;
+        Headers = headers;
+        Result = result;
+        Exception = exception;
+        Version = version;
+        ReasonPhrase = reasonPhrase;
+    }
+
     /// <summary>  
     /// Gets the status code of the HTTP response.  
     /// </summary>  
@@ -147,6 +181,34 @@ public class HttpClientResponse : Disposable, IEquatable<HttpClientResponse>
 public class HttpClientResponse<TResult> :
     HttpClientResponse, IEquatable<HttpClientResponse<TResult>>
 {
+    /// <summary>  
+    /// Initializes a new instance of the 
+    /// <see cref="HttpClientResponse{TResult}"/> class.  
+    /// </summary>  
+    public HttpClientResponse() { }
+
+    /// <summary>  
+    /// Initializes a new instance of the <see cref="HttpClientResponse{TResult}"/> 
+    /// class with the specified parameters.  
+    /// </summary>  
+    /// <param name="statusCode">The status code of the HTTP response.</param>  
+    /// <param name="headers">The headers of the HTTP response.</param>  
+    /// <param name="result">The result of the HTTP response.</param>  
+    /// <param name="exception">The exception associated with the HTTP 
+    /// response, if any.</param>  
+    /// <param name="version">The HTTP protocol version used by the response.</param>  
+    /// <param name="reasonPhrase">The reason phrase which typically is sent 
+    /// by servers together with the status code.</param>  
+    [SetsRequiredMembers]
+    public HttpClientResponse(
+        HttpStatusCode statusCode,
+        NameValueCollection headers,
+        TResult? result,
+        HttpClientException? exception,
+        Version? version,
+        string? reasonPhrase)
+        : base(statusCode, headers, result, exception, version, reasonPhrase) { }
+
     /// <summary>
     /// Gets the result of the HTTP response.
     /// </summary>

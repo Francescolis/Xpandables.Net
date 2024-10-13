@@ -23,76 +23,71 @@ namespace Xpandables.Net.Http.ResponseBuilders;
 /// </summary>
 public sealed class HttpClientResponseSuccessBuilder : IHttpClientResponseBuilder
 {
-    /// <summary>
-    /// Gets the type of the response.
-    /// </summary>
+    /// <inheritdoc/>
     public Type Type => typeof(HttpClientResponse);
 
-    /// <summary>
-    /// Determines whether this builder can build a response for the specified 
-    /// target type and status code.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="statusCode">The HTTP status code.</param>
-    /// <returns><c>true</c> if this builder can build the response; 
-    /// otherwise, <c>false</c>.</returns>
+    /// <inheritdoc/>
     public bool CanBuild(Type targetType, HttpStatusCode statusCode) =>
         targetType == Type && (int)statusCode is >= 200 and <= 299;
 
-    /// <summary>
-    /// Builds the response.
-    /// </summary>
-    /// <typeparam name="TResponse">The type of the response.</typeparam>
-    /// <returns>A delegate that builds the response.</returns>
-    public ResponseBuilderDelegate<TResponse> Builder<TResponse>()
-        where TResponse : HttpClientResponse =>
-        (context, cancellationToken) =>
+    /// <inheritdoc/>
+    public Task<TResponse> BuildAsync<TResponse>(
+        HttpClientResponseContext context,
+        CancellationToken cancellationToken = default)
+        where TResponse : HttpClientResponse
+    {
+        if (!CanBuild(typeof(TResponse), context.ResponseMessage.StatusCode))
         {
-            if (context.ResponseMessage
-                .Content
-                .Headers
-                .ContentDisposition is null)
-            {
-                HttpClientResponse response = new()
-                {
-                    StatusCode = context.ResponseMessage.StatusCode,
-                    Headers = context.ResponseMessage.ToNameValueCollection(),
-                    Version = context.ResponseMessage.Version,
-                    ReasonPhrase = context.ResponseMessage.ReasonPhrase
-                };
+            throw new InvalidOperationException(
+                $"The response type must be {Type.Name} and success status code.",
+                new NotSupportedException("Unsupported response type"));
+        }
 
-                return Task.FromResult((TResponse)response);
-            }
-
-            string fileName = context.ResponseMessage
-                .Content
-                .Headers
-                .ContentDisposition
-                .FileName!
-                .Trim('"');
-
-            Uri requestUri = context
-                .ResponseMessage
-                .RequestMessage!
-                .RequestUri!;
-
-            string baseUrl = requestUri.GetLeftPart(UriPartial.Authority);
-
-            string fileUrl = $"{baseUrl}/{Uri.EscapeDataString(fileName)}";
-
-            System.Collections.Specialized.NameValueCollection headers
-                = context.ResponseMessage.ToNameValueCollection();
-
-            headers.Add("Location", fileUrl);
-
-            HttpClientResponse responseFile = new()
+        if (context.ResponseMessage
+            .Content
+            .Headers
+            .ContentDisposition is null)
+        {
+            HttpClientResponse response = new()
             {
                 StatusCode = context.ResponseMessage.StatusCode,
-                Headers = headers,
+                Headers = context.ResponseMessage.ToNameValueCollection(),
                 Version = context.ResponseMessage.Version,
                 ReasonPhrase = context.ResponseMessage.ReasonPhrase
             };
 
-            return Task.FromResult((TResponse)responseFile);
+            return Task.FromResult((TResponse)response);
+        }
+
+        string fileName = context.ResponseMessage
+            .Content
+            .Headers
+            .ContentDisposition
+            .FileName!
+            .Trim('"');
+
+        Uri requestUri = context
+            .ResponseMessage
+            .RequestMessage!
+            .RequestUri!;
+
+        string baseUrl = requestUri.GetLeftPart(UriPartial.Authority);
+
+        string fileUrl = $"{baseUrl}/{Uri.EscapeDataString(fileName)}";
+
+        System.Collections.Specialized.NameValueCollection headers
+            = context.ResponseMessage.ToNameValueCollection();
+
+        headers.Add("Location", fileUrl);
+
+        HttpClientResponse responseFile = new()
+        {
+            StatusCode = context.ResponseMessage.StatusCode,
+            Headers = headers,
+            Version = context.ResponseMessage.Version,
+            ReasonPhrase = context.ResponseMessage.ReasonPhrase
         };
+
+        return Task.FromResult((TResponse)responseFile);
+    }
 }
