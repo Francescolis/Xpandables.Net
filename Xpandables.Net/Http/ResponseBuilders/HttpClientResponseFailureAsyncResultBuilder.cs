@@ -42,7 +42,7 @@ public sealed class HttpClientResponseFailureAsyncResultBuilder : IHttpClientRes
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
-        if (!CanBuild(typeof(TResponse), context.ResponseMessage.StatusCode))
+        if (!CanBuild(typeof(TResponse), context.Message.StatusCode))
         {
             throw new InvalidOperationException(
                 $"The response type must be {Type.Name} and failure status code.",
@@ -51,11 +51,11 @@ public sealed class HttpClientResponseFailureAsyncResultBuilder : IHttpClientRes
 
         return (TResponse)Activator.CreateInstance(
             typeof(TResponse),
-            context.ResponseMessage.StatusCode,
-            context.ResponseMessage.ToNameValueCollection(),
+            context.Message.StatusCode,
+            context.Message.ToNameValueCollection(),
             null,
-            await context.ResponseMessage.BuildExceptionAsync(),
-            context.ResponseMessage.Version,
-            context.ResponseMessage.ReasonPhrase)!;
+            await context.Message.BuildExceptionAsync(),
+            context.Message.Version,
+            context.Message.ReasonPhrase)!;
     }
 }

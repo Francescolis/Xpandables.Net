@@ -26,7 +26,7 @@ public record HttpClientResponseContext
     /// <summary>
     /// Gets or sets the HTTP response message.
     /// </summary>
-    public required HttpResponseMessage ResponseMessage { get; init; }
+    public required HttpResponseMessage Message { get; init; }
 
     /// <summary>
     /// Gets or sets the JSON serializer options.

@@ -36,30 +36,30 @@ public sealed class HttpClientResponseSuccessBuilder : IHttpClientResponseBuilde
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
-        if (!CanBuild(typeof(TResponse), context.ResponseMessage.StatusCode))
+        if (!CanBuild(typeof(TResponse), context.Message.StatusCode))
         {
             throw new InvalidOperationException(
                 $"The response type must be {Type.Name} and success status code.",
                 new NotSupportedException("Unsupported response type"));
         }
 
-        if (context.ResponseMessage
+        if (context.Message
             .Content
             .Headers
             .ContentDisposition is null)
         {
             HttpClientResponse response = new()
             {
-                StatusCode = context.ResponseMessage.StatusCode,
-                Headers = context.ResponseMessage.ToNameValueCollection(),
-                Version = context.ResponseMessage.Version,
-                ReasonPhrase = context.ResponseMessage.ReasonPhrase
+                StatusCode = context.Message.StatusCode,
+                Headers = context.Message.ToNameValueCollection(),
+                Version = context.Message.Version,
+                ReasonPhrase = context.Message.ReasonPhrase
             };
 
             return Task.FromResult((TResponse)response);
         }
 
-        string fileName = context.ResponseMessage
+        string fileName = context.Message
             .Content
             .Headers
             .ContentDisposition
@@ -67,7 +67,7 @@ public sealed class HttpClientResponseSuccessBuilder : IHttpClientResponseBuilde
             .Trim('"');
 
         Uri requestUri = context
-            .ResponseMessage
+            .Message
             .RequestMessage!
             .RequestUri!;
 
@@ -76,16 +76,16 @@ public sealed class HttpClientResponseSuccessBuilder : IHttpClientResponseBuilde
         string fileUrl = $"{baseUrl}/{Uri.EscapeDataString(fileName)}";
 
         System.Collections.Specialized.NameValueCollection headers
-            = context.ResponseMessage.ToNameValueCollection();
+            = context.Message.ToNameValueCollection();
 
         headers.Add("Location", fileUrl);
 
         HttpClientResponse responseFile = new()
         {
-            StatusCode = context.ResponseMessage.StatusCode,
+            StatusCode = context.Message.StatusCode,
             Headers = headers,
-            Version = context.ResponseMessage.Version,
-            ReasonPhrase = context.ResponseMessage.ReasonPhrase
+            Version = context.Message.Version,
+            ReasonPhrase = context.Message.ReasonPhrase
         };
 
         return Task.FromResult((TResponse)responseFile);

@@ -38,7 +38,7 @@ public sealed class HttpClientResponseSuccessResultBuilder : IHttpClientResponse
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
-        if (!CanBuild(typeof(TResponse), context.ResponseMessage.StatusCode))
+        if (!CanBuild(typeof(TResponse), context.Message.StatusCode))
         {
             throw new InvalidOperationException(
                 $"The response type must be {Type.Name} and success status code.",
@@ -47,7 +47,7 @@ public sealed class HttpClientResponseSuccessResultBuilder : IHttpClientResponse
 
         Type resultType = typeof(TResponse).GetGenericArguments().First();
 
-        using Stream stream = await context.ResponseMessage.Content
+        using Stream stream = await context.Message.Content
              .ReadAsStreamAsync(cancellationToken)
              .ConfigureAwait(false);
 
@@ -59,11 +59,11 @@ public sealed class HttpClientResponseSuccessResultBuilder : IHttpClientResponse
 
         return (TResponse)Activator.CreateInstance(
             typeof(TResponse),
-            context.ResponseMessage.StatusCode,
-            context.ResponseMessage.ToNameValueCollection(),
+            context.Message.StatusCode,
+            context.Message.ToNameValueCollection(),
             result,
             null,
-            context.ResponseMessage.Version,
-            context.ResponseMessage.ReasonPhrase)!;
+            context.Message.Version,
+            context.Message.ReasonPhrase)!;
     }
 }

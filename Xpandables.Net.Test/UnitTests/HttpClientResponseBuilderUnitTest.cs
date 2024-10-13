@@ -24,7 +24,7 @@ public sealed class HttpClientResponseBuilderUnitTest
 
         var context = new HttpClientResponseContext
         {
-            ResponseMessage = responseMessage,
+            Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
@@ -54,7 +54,7 @@ public sealed class HttpClientResponseBuilderUnitTest
 
         var context = new HttpClientResponseContext
         {
-            ResponseMessage = responseMessage,
+            Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
@@ -84,7 +84,7 @@ public sealed class HttpClientResponseBuilderUnitTest
 
         var context = new HttpClientResponseContext
         {
-            ResponseMessage = responseMessage,
+            Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
@@ -114,7 +114,7 @@ public sealed class HttpClientResponseBuilderUnitTest
 
         var context = new HttpClientResponseContext
         {
-            ResponseMessage = responseMessage,
+            Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
@@ -145,7 +145,7 @@ public sealed class HttpClientResponseBuilderUnitTest
 
         var context = new HttpClientResponseContext
         {
-            ResponseMessage = responseMessage,
+            Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
@@ -176,7 +176,7 @@ public sealed class HttpClientResponseBuilderUnitTest
 
         var context = new HttpClientResponseContext
         {
-            ResponseMessage = responseMessage,
+            Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
             {
                 PropertyNameCaseInsensitive = true,

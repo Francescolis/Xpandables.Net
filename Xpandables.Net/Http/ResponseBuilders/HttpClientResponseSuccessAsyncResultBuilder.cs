@@ -54,7 +54,7 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
-        if (!CanBuild(typeof(TResponse), context.ResponseMessage.StatusCode))
+        if (!CanBuild(typeof(TResponse), context.Message.StatusCode))
         {
             throw new InvalidOperationException(
                 $"The response type must be {Type.Name} and success status code.",
@@ -65,7 +65,7 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
             .GetGenericArguments()[0]
             .GetGenericArguments()[0];
 
-        using Stream stream = await context.ResponseMessage.Content
+        using Stream stream = await context.Message.Content
              .ReadAsStreamAsync(cancellationToken)
              .ConfigureAwait(false);
 
@@ -83,12 +83,12 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
 
         return (TResponse)Activator.CreateInstance(
             typeof(TResponse),
-            context.ResponseMessage.StatusCode,
-            context.ResponseMessage.ToNameValueCollection(),
+            context.Message.StatusCode,
+            context.Message.ToNameValueCollection(),
             results,
             null,
-            context.ResponseMessage.Version,
-            context.ResponseMessage.ReasonPhrase)!;
+            context.Message.Version,
+            context.Message.ReasonPhrase)!;
     }
 
     private static async IAsyncEnumerable<TResult> BuilderResultAsync<TResult>(

@@ -33,4 +33,28 @@ namespace Xpandables.Net.Http;
 /// </summary>
 public interface IHttpClientDispatcher
 {
+    /// <summary>
+    /// Contains the <see cref="System.Net.Http.HttpClient"/> 
+    /// instance for the current dispatcher.
+    /// </summary>
+    HttpClient HttpClient { get; }
+
+    /// <summary>
+    /// Sends the request that does not return a response.
+    /// Make use of <see langword="using"/> key work when call.
+    /// </summary>
+    /// <param name="request">The request to act with. The request 
+    /// must be decorated with 
+    /// the <see cref="HttpClientRequestOptionsAttribute"/> or implements the 
+    /// <see cref="IHttpClientRequestOptionsBuilder"/> interface.</param>
+    /// <param name="cancellationToken">A CancellationToken to 
+    /// observe while waiting for the task to complete.</param>
+    /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// The operation failed. See inner exception.</exception>
+    Task<HttpClientResponse> SendAsync(
+        IHttpClientRequest request,
+        CancellationToken cancellationToken = default);
 }
