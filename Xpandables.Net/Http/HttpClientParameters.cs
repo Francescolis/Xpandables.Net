@@ -84,6 +84,7 @@ public static class HttpClientParameters
     /// Represents the location of the request content in an HTTP request,
     /// can be combined.
     /// </summary>
+    [Flags]
     public enum Location
     {
         /// <summary>

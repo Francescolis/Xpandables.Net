@@ -14,7 +14,55 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel;
+
 namespace Xpandables.Net.Http;
+
+/// <summary>
+/// Builds the request for <see cref="IHttpClientDispatcher"/>.
+/// </summary>
 public interface IHttpClientRequestBuilder
 {
+    /// <summary>
+    /// Gets the request type being built by the current builder instance.
+    /// </summary>
+    Type Type { get; }
+
+    /// <summary>
+    /// Gets the zero based request content execution order.
+    /// </summary>
+    int Order { get; }
+
+    /// <summary>
+    /// When overridden in a derived class, determines whether the builder
+    /// instance can build the specified request.
+    /// </summary>
+    /// <param name="targetType">The type of the target request.</param>
+    /// <returns><see langword="true"/> if the instance can build the
+    /// specified request; otherwise, <see langword="false"/>.</returns>
+    bool CanBuild(Type targetType);
+
+    /// <summary>
+    /// Builds the request for the <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="context">The request context to act with.</param>
+    void Build(HttpClientRequestContext context);
+}
+
+/// <summary>
+/// Builds the request for <see cref="IHttpClientDispatcher"/>.
+/// </summary>
+/// <typeparam name="THttpRequestBuilder">The type of the interface
+/// implemented by the request source.</typeparam>
+public interface IHttpClientRequestBuilder<THttpRequestBuilder> :
+    IHttpClientRequestBuilder
+    where THttpRequestBuilder : class, IHttpRequestBuilder
+{
+    /// <summary>
+    /// Gets the request type being built by the current builder instance.
+    /// </summary>
+    public new Type Type => typeof(THttpRequestBuilder);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type IHttpClientRequestBuilder.Type => Type;
 }

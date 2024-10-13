@@ -15,6 +15,22 @@
  *
 ********************************************************************************/
 namespace Xpandables.Net.Http;
+
+/// <summary>
+/// Provides with methods to handle <see cref="IHttpClientRequest"/> 
+/// or <see cref="IHttpClientRequest{TResponse}"/> requests using a typed 
+/// client HTTP Client.
+/// The request should implement one of the following interfaces :
+/// <see cref="IHttpRequestString"/>, <see cref="IHttpRequestStream"/>, 
+/// <see cref="IHttpRequestByteArray"/>, 
+/// <see cref="IHttpRequestFormUrlEncoded"/>,
+/// <see cref="IHttpRequestMultipart"/>, <see cref="IHttpRequestQueryString"/>, 
+/// <see cref="IHttpRequestCookie"/>,
+/// <see cref="IHttpRequestHeader"/>, <see cref="IHttpRequestPatch"/>
+/// or <see cref="IHttpRequestPathString"/>, and must be decorated 
+/// with <see cref="HttpClientRequestOptionsAttribute"/> 
+/// or implement <see cref="IHttpClientRequestOptionsBuilder"/>.
+/// </summary>
 public interface IHttpClientDispatcher
 {
 }

@@ -112,6 +112,18 @@ public sealed class HttpClientRequestOptionsAttribute : Attribute
     /// </summary>
     public string Scheme { get; set; } = "Bearer";
 
+    /// <summary>
+    /// Gets or sets the request builder.
+    /// </summary>
+    /// <remarks>If set, the request builder will be used to build the request.</remarks>
+    public IHttpClientRequestBuilder? RequestBuilder { get; set; }
+
+    /// <summary>
+    /// Gets or sets the response builder.
+    /// </summary>
+    /// <remarks>If set, the response builder will be used to build the response.</remarks>
+    public IHttpClientResponseBuilder? ResponseBuilder { get; set; }
+
     // Gets or sets the built-in Uri.
     internal Uri Uri { get; set; } = null!;
 }
