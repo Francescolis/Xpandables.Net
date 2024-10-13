@@ -32,7 +32,8 @@ public record Specification<TSource> :
 {
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="Specification{TSource}"/> class.
+    /// <see cref="Specification{TSource}"/> class of 
+    /// <typeparamref name="TSource"/> type.
     /// </summary>
     public Specification() { }
 
