@@ -15,13 +15,12 @@
  *
 ********************************************************************************/
 using System.Net;
-using System.Text.Json;
 
 namespace Xpandables.Net.Http.ResponseBuilders;
 /// <summary>
-/// A builder for creating successful HTTP client responses of specific type result.
+/// A builder for creating failure HTTP client responses of specific type result.
 /// </summary>
-public sealed class HttpClientResponseSuccessResultBuilder : IHttpClientResponseBuilder
+public sealed class HttpClientResponseFailureResultBuilder : IHttpClientResponseBuilder
 {
     /// <inheritdoc/>
     public Type Type => typeof(HttpClientResponse<>);
@@ -30,7 +29,7 @@ public sealed class HttpClientResponseSuccessResultBuilder : IHttpClientResponse
     public bool CanBuild(Type targetType, HttpStatusCode statusCode) =>
         targetType.IsGenericType
             && targetType.GetGenericTypeDefinition() == Type
-            && (int)statusCode is >= 200 and <= 299;
+            && (int)statusCode is < 200 or > 299;
 
     /// <inheritdoc/>
     public async Task<TResponse> BuildAsync<TResponse>(
@@ -41,28 +40,16 @@ public sealed class HttpClientResponseSuccessResultBuilder : IHttpClientResponse
         if (!CanBuild(typeof(TResponse), context.ResponseMessage.StatusCode))
         {
             throw new InvalidOperationException(
-                $"The response type must be {Type.Name} and success status code.",
+                $"The response type must be {Type.Name} and failure status code.",
                 new NotSupportedException("Unsupported response type"));
         }
-
-        Type resultType = typeof(TResponse).GetGenericArguments().First();
-
-        using Stream stream = await context.ResponseMessage.Content
-             .ReadAsStreamAsync(cancellationToken)
-             .ConfigureAwait(false);
-
-        object? result = stream is not null
-            ? await JsonSerializer.DeserializeAsync(
-                stream, resultType, context.SerializerOptions, cancellationToken)
-                .ConfigureAwait(false)
-            : null;
 
         return (TResponse)Activator.CreateInstance(
             typeof(TResponse),
             context.ResponseMessage.StatusCode,
             context.ResponseMessage.ToNameValueCollection(),
-            result,
             null,
+            await context.ResponseMessage.BuildExceptionAsync(),
             context.ResponseMessage.Version,
             context.ResponseMessage.ReasonPhrase)!;
     }

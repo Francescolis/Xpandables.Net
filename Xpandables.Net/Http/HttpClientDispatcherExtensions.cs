@@ -55,4 +55,14 @@ public static class HttpClientDispatcherExtensions
                     resultSelector: nvc => nvc
                     );
     }
+
+    internal static async Task<HttpClientException?>
+        BuildExceptionAsync(this HttpResponseMessage httpResponse)
+        => await httpResponse.Content.ReadAsStringAsync()
+            .ConfigureAwait(false) switch
+        {
+            { } content when !string.IsNullOrWhiteSpace(content)
+                => new HttpClientException(content),
+            _ => default
+        };
 }
