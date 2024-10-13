@@ -1,22 +1,23 @@
-﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
-********************************************************************************/
-using System.Net;
+﻿using System.Net;
 
 namespace Xpandables.Net.Http;
+
+/// <summary>
+/// Represents a delegate that builds an HTTP client response.
+/// </summary>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+/// <param name="context">The context of the HTTP client response.</param>
+/// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+/// <returns>A task that represents the asynchronous operation. 
+/// The task result contains the built response object.</returns>
+public delegate Task<TResponse> ResponseBuilderDelegate<TResponse>(
+    HttpClientResponseContext context,
+    CancellationToken cancellationToken)
+    where TResponse : HttpClientResponse;
+
+/// <summary>
+/// Defines methods to build HTTP client responses.
+/// </summary>
 public interface IHttpClientResponseBuilder
 {
     /// <summary>
@@ -26,12 +27,34 @@ public interface IHttpClientResponseBuilder
     Type Type { get; }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TResponse"></typeparam>
+    /// <returns></returns>
+    ResponseBuilderDelegate<TResponse> Builder<TResponse>()
+        where TResponse : HttpClientResponse;
+
+    /// <summary>
     /// When overridden in a derived class, determines whether the builder
     /// instance can build the response for the specified status code.
     /// </summary>
     /// <param name="targetType">The type of the response.</param>
+    /// <param name="statusCode">The status code of the response.</param>
     /// <returns><see langword="true"/> if the instance can build the
     /// specified request; otherwise, <see langword="false"/>.</returns>
-    /// <param name="targetStatusCode">The status code of the response.</param>
-    bool CanBuild(Type targetType, HttpStatusCode targetStatusCode);
+    bool CanBuild(Type targetType, HttpStatusCode statusCode);
+
+    /// <summary>
+    /// Asynchronously builds the response for the specified context.
+    /// </summary>
+    /// <param name="context">The context of the HTTP client response.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task result contains the built response object.</returns>
+    /// <exception cref="InvalidOperationException">The response cannot be built.</exception>
+    public Task<TResponse> BuildAsync<TResponse>(
+        HttpClientResponseContext context,
+        CancellationToken cancellationToken)
+        where TResponse : HttpClientResponse =>
+        Builder<TResponse>()(context, cancellationToken);
 }

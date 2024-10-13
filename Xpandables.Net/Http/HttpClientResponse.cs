@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Http.Headers;
 
 namespace Xpandables.Net.Http;
 /// <summary>
@@ -31,7 +31,7 @@ public class HttpClientResponse : Disposable, IEquatable<HttpClientResponse>
     /// <summary>  
     /// Gets the headers of the HTTP response.  
     /// </summary>  
-    public required NameValueHeaderValue Headers { get; init; }
+    public required NameValueCollection Headers { get; init; }
     /// <summary>
     /// Gets the result of the HTTP response.
     /// </summary>
