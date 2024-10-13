@@ -107,7 +107,7 @@ public sealed class OptionalUnitTest
          JsonSerializer.Deserialize<T>(json, options);
 }
 
-readonly record struct StructType(string Value);
+readonly record struct StructType(string Name);
 abstract record class Vehicle(string Name);
 sealed record class Car() : Vehicle(nameof(Car));
 sealed record class Truck() : Vehicle(nameof(Car));

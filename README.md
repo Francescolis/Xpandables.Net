@@ -102,7 +102,7 @@ The *Map* method allows you to act on the value inside the optional if it is pre
 Optional<int> optional = 42;
 Optional<int> mappedOptional = optional.Map(value => value * 2);
 
-if (mappedOptional.HasValue)
+if (mappedOptional.IsNotEmpty)
 {
     Console.WriteLine($"Mapped Value: {mappedOptional.Value}"); 
     // Output: Mapped Value: 84
@@ -158,7 +158,7 @@ string json = JsonSerializer.Serialize(optional);
 Console.WriteLine(json); // Output: {"Value":42}
 
 var deserializedOptional = JsonSerializer.Deserialize<Optional<int>>(json);
-Console.WriteLine(deserializedOptional.HasValue); // True
+Console.WriteLine(deserializedOptional.IsNotEmpty); // True
 Console.WriteLine($"Deserialized Value: {deserializedOptional.Value}"); 
 // Output: Deserialized Value: 42
 
@@ -173,7 +173,7 @@ var deserializedAnonymous = DeserializeAnonymousType(anonymousJson, anonymous);
 //      anonymousJson, 
 //      Optional.Some(new { Name = string.Empty }));
 Console.WriteLine($"Deserialized Anonymous Value: {deserializedAnonymous.Value.Name}"); 
-// Output: Deserialized Anonymous Value: Hello World
+// Output: Deserialized Anonymous Value: Name: Hello World
 
 static T? DeserializeAnonymousType<T>(
     string json, T _, JsonSerializerOptions? options = default) =>
@@ -194,7 +194,7 @@ Optional<string> result = optional
     .Bind(value => Optional.Some(value.ToString())) // Convert to string
     .Empty(() => "Default Value"); // Provide a default value if empty
 
-if (result.HasValue)
+if (result.IsNotEmpty)
 {
     Console.WriteLine($"Result: {result.Value}"); // Output: Result: 84
 }
