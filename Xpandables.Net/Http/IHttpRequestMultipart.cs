@@ -24,5 +24,5 @@ public interface IHttpRequestMultipart : IHttpRequestBuilder
     /// Returns the multipart content.
     /// </summary>
     /// <returns>The multipart content.</returns>
-    MultipartContent GetMultipartContent();
+    MultipartFormDataContent GetMultipartContent();
 }
