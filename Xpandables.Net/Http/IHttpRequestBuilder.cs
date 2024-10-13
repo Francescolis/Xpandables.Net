@@ -24,4 +24,4 @@ public interface IHttpRequestBuilder { }
 /// <summary>
 /// Provides with the interface to complete the built.
 /// </summary>
-public interface IHttpRequestCompleteBuilder : IHttpRequestBuilder { }
+public interface IHttpRequestComplete : IHttpRequestBuilder { }
