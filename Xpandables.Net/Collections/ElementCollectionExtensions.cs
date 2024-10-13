@@ -54,13 +54,13 @@ public static class ElementCollectionExtensions
     /// Contains the public <see cref="Array.Empty"/> method.
     /// </summary>
     public static readonly MethodInfo ArrayEmptyMethod =
-        typeof(Array).GetMethod("Empty")!;
+        typeof(Array).GetMethod(nameof(Array.Empty))!;
 
     /// <summary>
     /// Contains the public <see cref="AsyncEnumerable.Empty"/> method.
     /// </summary>
     public static readonly MethodInfo AsyncArrayEmptyMethod =
-        typeof(AsyncEnumerable).GetMethod("EmptyAsync")!;
+        typeof(AsyncEnumerable).GetMethod(nameof(AsyncEnumerable.Empty))!;
 
     /// <summary>
     /// Returns an array of <see cref="Type"/> objects that represent the type 

@@ -18,6 +18,10 @@ using System.Collections.Specialized;
 using System.Net.Http.Headers;
 
 namespace Xpandables.Net.Http;
+/// <summary>
+/// Provides extension methods for <see cref="HttpClient"/> and 
+/// <see cref="HttpResponseMessage"/>.
+/// </summary>
 public static class HttpClientDispatcherExtensions
 {
     /// <summary>
@@ -56,6 +60,11 @@ public static class HttpClientDispatcherExtensions
                     );
     }
 
+    /// <summary>
+    /// Builds an <see cref="HttpClientException"/> asynchronously from the <see cref="HttpResponseMessage"/>.
+    /// </summary>
+    /// <param name="httpResponse">The HTTP response message.</param>
+    /// <returns>An instance of <see cref="HttpClientException"/> if the content is not empty; otherwise, null.</returns>
     internal static async Task<HttpClientException?>
         BuildExceptionAsync(this HttpResponseMessage httpResponse)
         => await httpResponse.Content.ReadAsStringAsync()

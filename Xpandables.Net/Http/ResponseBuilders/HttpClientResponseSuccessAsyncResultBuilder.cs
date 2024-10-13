@@ -72,10 +72,14 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
         _ = _builderResultAsyncMethod
             .MakeGenericMethod(resultType);
 
+        MethodInfo asyncEmpty = ElementCollectionExtensions
+            .AsyncArrayEmptyMethod
+            .MakeGenericMethod(resultType);
+
         object? results = stream is not null
             ? _builderResultAsyncMethod.Invoke(
                 null, [stream, context.SerializerOptions, cancellationToken])
-            : null;
+            : asyncEmpty.Invoke(null, null);
 
         return (TResponse)Activator.CreateInstance(
             typeof(TResponse),

@@ -90,8 +90,7 @@ public sealed class HttpClientRequestOptionsAttribute : Attribute
     /// with an implementation of <see cref="HttpClientAuthorizationHandler"/>.
     /// You need to configure the <see cref="IHttpClientDispatcher"/> 
     /// registration with one of the extension methods like
-    /// <see cref="HttpClientBuilderExtensions
-    /// .ConfigurePrimaryHttpMessageHandler{THandler}(IHttpClientBuilder)"/>    
+    /// <see langword="ConfigurePrimaryHttpMessageHandler{THandler}(IHttpClientBuilder)"/>    
     /// Or you can use a custom implementation to 
     /// fill the authentication header value.
     /// </summary>
