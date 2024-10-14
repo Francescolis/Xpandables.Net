@@ -20,6 +20,7 @@ using System.Text.Json;
 
 using Xpandables.Net.Http.RequestBuilders;
 using Xpandables.Net.Http.ResponseBuilders;
+using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Http;
 /// <summary>
@@ -39,6 +40,11 @@ public sealed record HttpClientOptions
     /// </summary>
     public HashSet<IHttpClientRequestBuilder> RequestBuilders { get; }
         = [];
+
+    /// <summary>
+    /// Gets the resolver function for resolving types.
+    /// </summary>
+    public Func<Type, object?>? Resolver { get; internal set; }
 
     /// <summary>
     /// Gets or sets the <see cref="JsonSerializerOptions"/> to be used.
@@ -130,12 +136,14 @@ public sealed record HttpClientOptions
     /// <exception cref="InvalidOperationException">Thrown when the request is not decorated with <see cref="HttpClientRequestOptionsAttribute"/> or does not implement <see cref="IHttpClientRequestOptionsBuilder"/>.</exception>  
     public HttpClientRequestOptionsAttribute GetRequestOptions(
        IHttpClientRequest request)
-       => request
-           .GetType()
-           .GetCustomAttribute<HttpClientRequestOptionsAttribute>(true)
-           ?? throw new InvalidOperationException(
-               $"Request must be decorated with {nameof(HttpClientRequestOptionsAttribute)} " +
-               $"or implement {nameof(IHttpClientRequestOptionsBuilder)}");
+       => request is IHttpClientRequestOptionsBuilder builder
+            ? builder.Build()
+            : request
+                .GetType()
+                .GetCustomAttribute<HttpClientRequestOptionsAttribute>(true)
+                ?? throw new InvalidOperationException(
+                    $"Request must be decorated with {nameof(HttpClientRequestOptionsAttribute)} " +
+                    $"or implement {nameof(IHttpClientRequestOptionsBuilder)}");
 
     /// <summary>
     /// Configures the default HTTP client options.

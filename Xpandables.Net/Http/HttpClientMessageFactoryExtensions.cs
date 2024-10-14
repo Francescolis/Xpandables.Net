@@ -22,7 +22,7 @@ namespace Xpandables.Net.Http;
 /// Provides extension methods for <see cref="HttpClient"/> and 
 /// <see cref="HttpResponseMessage"/>.
 /// </summary>
-public static class HttpClientDispatcherExtensions
+public static class HttpClientMessageFactoryExtensions
 {
     /// <summary>
     /// Converts the <see cref="HttpResponseHeaders"/> to a 

@@ -66,4 +66,84 @@ public abstract class HttpClientDispatcher(
             };
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<HttpClientResponse<TResult>> SendAsync<TResult>(
+        IHttpClientRequest<TResult> request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using HttpRequestMessage httpRequest = await _factory
+                .BuildRequestAsync(
+                    request,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            using HttpResponseMessage response = await HttpClient
+                .SendAsync(
+                    httpRequest,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            return await _factory
+                .BuildResponseAsync<HttpClientResponse<TResult>>(
+                    response,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
+        {
+            return new HttpClientResponse<TResult>
+            {
+                Exception = new HttpClientException(exception.Message, exception),
+                Headers = HttpClient.DefaultRequestHeaders.ToNameValueCollection(),
+                StatusCode = HttpStatusCode.BadRequest,
+                Version = HttpClient.DefaultRequestVersion
+            };
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
+        IHttpClientAsyncRequest<TResult> request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using HttpRequestMessage httpRequest = await _factory
+                .BuildRequestAsync(
+                    request,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            // Due to the fact that the result is an IAsyncEnumerable,
+            // the response can not be disposed before.
+            HttpResponseMessage response = await HttpClient
+                .SendAsync(
+                    httpRequest,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            return await _factory
+                .BuildResponseAsync<HttpClientResponse<IAsyncEnumerable<TResult>>>(
+                    response,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not ArgumentNullException)
+        {
+            return new HttpClientResponse<IAsyncEnumerable<TResult>>
+            {
+                Exception = new HttpClientException(exception.Message, exception),
+                Headers = HttpClient.DefaultRequestHeaders.ToNameValueCollection(),
+                StatusCode = HttpStatusCode.BadRequest,
+                Version = HttpClient.DefaultRequestVersion
+            };
+        }
+    }
 }

@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +15,22 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Http;
+using Microsoft.Extensions.Options;
 
+namespace Xpandables.Net.Http;
 /// <summary>
-/// Defines a builder interface for creating 
-/// <see cref="HttpClientRequestOptionsAttribute"/>.
+/// Configures the <see cref="HttpClientOptions"/> for the application.
 /// </summary>
-/// <remarks>This interface take priority over the 
-/// <see cref="HttpClientRequestOptionsAttribute"/>.</remarks>
-public interface IHttpClientRequestOptionsBuilder
+/// <remarks>
+/// Initializes a new instance of the <see cref="HttpClientOptionsConfiguration"/> class.
+/// </remarks>
+/// <param name="provider">The service provider.</param>
+public sealed class HttpClientOptionsConfiguration(IServiceProvider provider) :
+    IConfigureOptions<HttpClientOptions>
 {
-    /// <summary>
-    /// Builds the <see cref="HttpClientRequestOptionsAttribute"/>.
-    /// </summary>
-    /// <returns>The built <see cref="HttpClientRequestOptionsAttribute"/>.</returns>
-    HttpClientRequestOptionsAttribute Build();
+    private readonly IServiceProvider _provider = provider;
+
+    /// <inheritdoc/>
+    public void Configure(HttpClientOptions options) =>
+        options.Resolver = _provider.GetService;
 }

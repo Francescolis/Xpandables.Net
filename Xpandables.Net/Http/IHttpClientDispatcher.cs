@@ -40,7 +40,7 @@ public interface IHttpClientDispatcher
     HttpClient HttpClient { get; }
 
     /// <summary>
-    /// Sends the request that does not return a response.
+    /// Sends a request that does not return a response.
     /// Make use of <see langword="using"/> key work when call.
     /// </summary>
     /// <param name="request">The request to act with. The request 
@@ -56,5 +56,48 @@ public interface IHttpClientDispatcher
     /// The operation failed. See inner exception.</exception>
     Task<HttpClientResponse> SendAsync(
         IHttpClientRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends a request that returns a response of 
+    /// <typeparamref name="TResult"/> type.
+    /// Make use of <see langword="using"/> key work when call.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="request">The request to act with. 
+    /// The request must be decorated with
+    /// the <see cref="HttpClientRequestOptionsAttribute"/> or implements 
+    /// the <see cref="IHttpClientRequestOptionsBuilder"/> interface.</param>
+    /// <param name="cancellationToken">A CancellationToken 
+    /// to observe while waiting for the task to complete.</param>
+    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>
+    /// .</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">The operation failed. 
+    /// See inner exception.</exception>
+    Task<HttpClientResponse<TResult>> SendAsync<TResult>(
+        IHttpClientRequest<TResult> request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends a request that returns a stream that can be async-enumerated.
+    /// Make use of <see langword="using"/> key work when call.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="request">The request to act with. The request
+    /// must be decorated with 
+    /// the <see cref="HttpClientRequestOptionsAttribute"/> or implements the 
+    /// <see cref="IHttpClientRequestOptionsBuilder"/> interface.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe 
+    /// while waiting for the task to complete.</param>
+    /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>
+    /// .</returns>
+    /// <exception cref="ArgumentNullException">The 
+    /// <paramref name="request"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// The operation failed. See inner exception.</exception>
+    Task<HttpClientResponse<IAsyncEnumerable<TResult>>> SendAsync<TResult>(
+        IHttpClientAsyncRequest<TResult> request,
         CancellationToken cancellationToken = default);
 }
