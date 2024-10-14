@@ -18,9 +18,13 @@ using System.Net;
 using System.Reflection;
 using System.Text.Json;
 
+using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.ResponseBuilders;
+
 namespace Xpandables.Net.Http;
 /// <summary>
-/// Represents the options for configuring an HTTP client.
+/// Represents the options for to manage <see cref="IHttpClientMessageFactory"/>
+/// factory and its associated services.
 /// </summary>
 public sealed record HttpClientOptions
 {
@@ -132,4 +136,76 @@ public sealed record HttpClientOptions
            ?? throw new InvalidOperationException(
                $"Request must be decorated with {nameof(HttpClientRequestOptionsAttribute)} " +
                $"or implement {nameof(IHttpClientRequestOptionsBuilder)}");
+
+    /// <summary>
+    /// Configures the default HTTP client options.
+    /// </summary>
+    /// <param name="configure">The action to configure the HTTP client 
+    /// options.</param>
+    public static void Default(Action<HttpClientOptions> configure)
+    {
+        HttpClientOptions options = DefaultHttpClientOptions;
+        configure(options);
+        DefaultHttpClientOptions = options;
+    }
+
+    /// <summary>  
+    /// Gets the default HTTP client options.  
+    /// </summary>  
+    public static HttpClientOptions DefaultHttpClientOptions { get; private set; }
+        = Default();
+
+    private static HttpClientOptions Default()
+    {
+        HttpClientOptions options = new();
+
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseFailureAsyncResultBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseFailureBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseFailureResultBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseSuccessAsyncResultBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseSuccessBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseSuccessResultBuilder());
+
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestBasicAuthBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestByteArrayBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestCompleteBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestCookieBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestFormUrlEncodedBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestHeaderBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestMultipartBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestPatchBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestPathStringBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestQueryStringBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestStartBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestStreamBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestStringBuilder());
+
+        options.SerializerOptions ??= new(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = null,
+            WriteIndented = true
+        };
+
+        return options;
+    }
 }

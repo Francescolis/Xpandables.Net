@@ -61,6 +61,32 @@ public static class HttpClientDispatcherExtensions
     }
 
     /// <summary>
+    /// Converts the <see cref="HttpHeaders"/> to a 
+    /// <see cref="NameValueCollection"/>.
+    /// </summary>
+    /// <param name="headers">The headers to act on.</param>
+    /// <returns>An instance of <see cref="NameValueCollection"/>.</returns>
+    public static NameValueCollection ToNameValueCollection(
+        this HttpHeaders headers)
+        => Enumerable
+            .Empty<(string Name, string Value)>()
+            .Concat(
+                headers
+                    .SelectMany(kvp => kvp.Value
+                        .Select(v => (Name: kvp.Key, Value: v))
+                        )
+                    )
+            .Aggregate(
+                seed: new NameValueCollection(),
+                func: (nvc, pair) =>
+                {
+                    (string name, string value) = pair;
+                    nvc.Add(name, value); return nvc;
+                },
+                resultSelector: nvc => nvc
+                );
+
+    /// <summary>
     /// Builds an <see cref="HttpClientException"/> asynchronously from the <see cref="HttpResponseMessage"/>.
     /// </summary>
     /// <param name="httpResponse">The HTTP response message.</param>

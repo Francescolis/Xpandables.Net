@@ -60,7 +60,7 @@ public abstract class HttpClientDispatcher(
             return new HttpClientResponse
             {
                 Exception = new HttpClientException(exception.Message, exception),
-                Headers = [], // TODO: Add headers
+                Headers = HttpClient.DefaultRequestHeaders.ToNameValueCollection(),
                 StatusCode = HttpStatusCode.BadRequest,
                 Version = HttpClient.DefaultRequestVersion
             };
