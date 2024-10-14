@@ -15,7 +15,12 @@
  *
 ********************************************************************************/
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
+using System.Text.Json;
+
+using Xpandables.Net.Collections;
+using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Http;
 /// <summary>
@@ -87,6 +92,154 @@ public static class HttpClientDispatcherExtensions
                 );
 
     /// <summary>
+    /// Determines if the given <see cref="HttpClientException"/> contains 
+    /// validation errors.
+    /// </summary>
+    /// <param name="clientException">The client exception to check.</param>
+    /// <param name="errors">The validation errors if present.</param>
+    /// <param name="exception">The exception if deserialization fails.</param>
+    /// <param name="options">The JSON serializer options.</param>
+    /// <returns><see langword="true"/> if validation errors are present; 
+    /// otherwise, <see langword="false"/>.</returns>
+    public static bool IsHttpClientValidation(
+       this HttpClientException clientException,
+       [MaybeNullWhen(false)] out HttpClientValidation errors,
+       [MaybeNullWhen(true)] out Exception exception,
+       JsonSerializerOptions? options = default)
+    {
+        options ??= HttpClientOptions.DefaultSerializerOptions;
+
+        try
+        {
+            exception = default;
+            var anonymousType = new { Errors = default(HttpClientValidation) };
+            var results = clientException.Message
+                .DeserializeAnonymousType(anonymousType, options);
+
+            errors = results?.Errors;
+            return errors is not null;
+        }
+        catch (Exception ex)
+            when (ex is JsonException
+                    or NotSupportedException
+                    or ArgumentNullException)
+        {
+            exception = ex;
+            errors = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Converts the <see cref="HttpClientResponse"/> to an <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <param name="response">The HTTP client response to convert.</param>
+    /// <param name="options">The JSON serializer options.</param>
+    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
+    public static IOperationResult ToOperationResult(
+        this HttpClientResponse response,
+        JsonSerializerOptions? options = default)
+    {
+        options ??= HttpClientOptions.DefaultSerializerOptions;
+
+        ElementCollection headers = response.Headers.ToElementCollection();
+
+        if (response.IsValid)
+        {
+            return OperationResults
+                .Success(response.StatusCode)
+                .WithHeaders(headers)
+                .Build();
+        }
+
+        if (response.Exception is null)
+        {
+            return OperationResults
+                .Failure(response.StatusCode)
+                .WithHeaders(headers)
+                .Build();
+        }
+
+        HttpClientException responseException = response.Exception;
+
+        if (responseException.IsHttpClientValidation(
+            out HttpClientValidation? errors,
+            out _,
+            options))
+        {
+            return OperationResults
+                .Failure(response.StatusCode)
+                .WithHeaders(headers)
+                .WithErrors(errors.ToElementCollection())
+                .Build();
+        }
+
+        return OperationResults
+            .Failure(response.StatusCode)
+            .WithHeaders(headers)
+            .WithException(responseException)
+            .Build();
+    }
+
+    /// <summary>
+    /// Converts the <see cref="HttpClientResponse"/> to an <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="response">The HTTP client response to convert.</param>
+    /// <param name="options">The JSON serializer options.</param>
+    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
+    public static IOperationResult<TResult> ToOperationResult<TResult>(
+        this HttpClientResponse<TResult> response,
+        JsonSerializerOptions? options = default)
+    {
+        options ??= HttpClientOptions.DefaultSerializerOptions;
+        TResult? result = response.Result is TResult value ? value : default;
+        ElementCollection headers = response.Headers.ToElementCollection();
+
+        if (response.IsValid)
+        {
+            ISuccessBuilder<TResult> successBuilder = OperationResults
+                .Success<TResult>(response.StatusCode)
+                .WithHeaders(headers);
+
+            return (result is not null) switch
+            {
+                true => successBuilder.WithResult(result).Build(),
+                false => successBuilder.Build()
+            };
+        }
+
+        if (response.Exception is null)
+        {
+            return OperationResults
+                .Failure<TResult>(response.StatusCode)
+                .WithHeaders(headers)
+                .Build();
+        }
+
+        HttpClientException responseException = response.Exception;
+
+        if (responseException.IsHttpClientValidation(
+            out HttpClientValidation? errors,
+            out _,
+            options))
+        {
+            return OperationResults
+                .Failure<TResult>(response.StatusCode)
+                .WithHeaders(headers)
+                .WithErrors(errors.ToElementCollection())
+                .Build();
+        }
+
+        return OperationResults
+            .Failure<TResult>(response.StatusCode)
+            .WithHeaders(headers)
+            .WithException(responseException)
+            .Build();
+    }
+
+
+    /// <summary>
     /// Builds an <see cref="HttpClientException"/> asynchronously from the <see cref="HttpResponseMessage"/>.
     /// </summary>
     /// <param name="httpResponse">The HTTP response message.</param>
@@ -100,4 +253,41 @@ public static class HttpClientDispatcherExtensions
                 => new HttpClientException(content),
             _ => default
         };
+
+    internal static ElementCollection ToElementCollection(
+        this NameValueCollection headers) =>
+        headers.Count > 0
+            ? ElementCollection.With(
+                headers
+                .ToDictionary()
+                .Select(x => new ElementEntry(x.Key, [x.Value]))
+                .ToList())
+            : [];
+
+    internal static IDictionary<string, string> ToDictionary(
+        this NameValueCollection nameValueCollection)
+    {
+        Dictionary<string, string> result = [];
+        foreach (string? key in nameValueCollection.AllKeys)
+        {
+            if (key is not null && nameValueCollection[key] is { } value)
+            {
+                result.Add(key, value);
+            }
+        }
+
+        return result;
+    }
+
+    internal static ElementCollection ToElementCollection(
+        this IDictionary<string, IEnumerable<string>> dictionary)
+        => ElementCollection.With(dictionary
+            .Select(x => new ElementEntry(x.Key, x.Value.ToArray()))
+            .ToList());
+
+    internal static T? DeserializeAnonymousType<T>(
+        this string json,
+        T _,
+        JsonSerializerOptions? options = default)
+         => JsonSerializer.Deserialize<T>(json, options);
 }

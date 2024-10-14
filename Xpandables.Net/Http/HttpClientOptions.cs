@@ -30,6 +30,17 @@ namespace Xpandables.Net.Http;
 public sealed record HttpClientOptions
 {
     /// <summary>
+    /// Gets the default <see cref="JsonSerializerOptions"/> to be used.
+    /// </summary>
+    public static readonly JsonSerializerOptions DefaultSerializerOptions =
+        new(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = null,
+            WriteIndented = true
+        };
+
+    /// <summary>
     /// Gets the list of user-defined response builders that were registered.
     /// </summary>
     public HashSet<IHttpClientResponseBuilder> ResponseBuilders { get; }
@@ -50,12 +61,7 @@ public sealed record HttpClientOptions
     /// Gets or sets the <see cref="JsonSerializerOptions"/> to be used.
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; set; }
-        = new(JsonSerializerDefaults.Web)
-        {
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = null,
-            WriteIndented = true,
-        };
+        = DefaultSerializerOptions;
 
     /// <summary>  
     /// Gets the request builder for the specified request type.  
