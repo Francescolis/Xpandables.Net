@@ -19,10 +19,10 @@ using System.Net.Http.Headers;
 
 namespace Xpandables.Net.Http;
 /// <summary>
-/// Provides extension methods for <see cref="HttpClient"/> and 
+/// Provides extension methods for <see cref="IHttpClientMessageFactory"/> and 
 /// <see cref="HttpResponseMessage"/>.
 /// </summary>
-public static class HttpClientMessageFactoryExtensions
+public static class HttpClientDispatcherExtensions
 {
     /// <summary>
     /// Converts the <see cref="HttpResponseHeaders"/> to a 
