@@ -72,24 +72,23 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
             .MakeGenericMethod(
                 typeof(IAsyncEnumerable<>).MakeGenericType(resultType));
 
-        dynamic results;
-
-        if (stream is not null)
-        {
-            dynamic valueTask = deserializeAsyncInvokable
-                .Invoke(
-                    null,
-                    [stream, context.SerializerOptions, cancellationToken])!;
-
-            results = await valueTask;
-        }
-        else
-        {
-            MethodInfo asyncEmpty = ElementCollectionExtensions
+        MethodInfo asyncEmpty = ElementCollectionExtensions
                 .AsyncArrayEmptyMethod
                 .MakeGenericMethod(resultType);
 
-            results = asyncEmpty.Invoke(null, null)!;
+        object results = asyncEmpty.Invoke(null, null)!;
+
+        if (stream is not null)
+        {
+            object? valueTask = deserializeAsyncInvokable
+                .Invoke(
+                    null,
+                    [stream, context.SerializerOptions, cancellationToken]);
+
+            if (valueTask is not null)
+            {
+                results = await ((dynamic)valueTask).ConfigureAwait(false);
+            }
         }
 
         return (TResponse)Activator.CreateInstance(
