@@ -29,11 +29,12 @@ namespace Xpandables.Net.Http.ResponseBuilders;
 /// </summary>
 public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientResponseBuilder
 {
-    private readonly MethodInfo _builderResultAsyncMethod =
-        typeof(HttpClientResponseSuccessAsyncResultBuilder)
+    private static readonly MethodInfo _deserializeAsync =
+        typeof(JsonSerializer)
         .GetMethod(
-            nameof(BuilderResultAsync),
-            BindingFlags.NonPublic | BindingFlags.Static)!;
+            nameof(JsonSerializer.DeserializeAsync),
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(Stream), typeof(JsonSerializerOptions), typeof(CancellationToken)])!;
 
     /// <inheritdoc/>
     public Type Type => typeof(HttpClientResponse<>);
@@ -69,17 +70,27 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
              .ReadAsStreamAsync(cancellationToken)
              .ConfigureAwait(false);
 
-        MethodInfo builderMethod = _builderResultAsyncMethod
-            .MakeGenericMethod(resultType);
+        MethodInfo deserializeAsyncInvokable = _deserializeAsync
+            .MakeGenericMethod(
+                typeof(IAsyncEnumerable<>).MakeGenericType(resultType));
 
-        MethodInfo asyncEmpty = ElementCollectionExtensions
-            .AsyncArrayEmptyMethod
-            .MakeGenericMethod(resultType);
+        dynamic results;
 
-        object? results = stream is not null
-            ? builderMethod.Invoke(
-                null, [stream, context.SerializerOptions, cancellationToken])
-            : asyncEmpty.Invoke(null, null);
+        if (stream is not null)
+        {
+            dynamic valueTask = deserializeAsyncInvokable
+                    .Invoke(null, [stream, context.SerializerOptions, cancellationToken])!;
+
+            results = await valueTask;
+        }
+        else
+        {
+            MethodInfo asyncEmpty = ElementCollectionExtensions
+                .AsyncArrayEmptyMethod
+                .MakeGenericMethod(resultType);
+
+            results = asyncEmpty.Invoke(null, null)!;
+        }
 
         return (TResponse)Activator.CreateInstance(
             typeof(TResponse),

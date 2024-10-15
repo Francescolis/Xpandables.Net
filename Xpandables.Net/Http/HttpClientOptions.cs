@@ -154,13 +154,55 @@ public sealed record HttpClientOptions
     /// <summary>
     /// Configures the default HTTP client options.
     /// </summary>
-    /// <param name="configure">The action to configure the HTTP client 
-    /// options.</param>
-    public static void Default(Action<HttpClientOptions> configure)
+    /// <param name="options">The HTTP client options.</param>
+    public static void Default(HttpClientOptions options)
     {
-        HttpClientOptions options = DefaultHttpClientOptions;
-        configure(options);
-        DefaultHttpClientOptions = options;
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseFailureAsyncResultBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseFailureBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseFailureResultBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseSuccessAsyncResultBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseSuccessBuilder());
+        _ = options.ResponseBuilders
+            .Add(new HttpClientResponseSuccessResultBuilder());
+
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestBasicAuthBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestByteArrayBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestCompleteBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestCookieBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestFormUrlEncodedBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestHeaderBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestMultipartBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestPatchBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestPathStringBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestQueryStringBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestStartBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestStreamBuilder());
+        _ = options.RequestBuilders
+            .Add(new HttpClientRequestStringBuilder());
+
+        options.SerializerOptions ??= new(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = null,
+            WriteIndented = true
+        };
     }
 
     /// <summary>  

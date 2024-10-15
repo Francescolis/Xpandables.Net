@@ -219,6 +219,20 @@ public class HttpClientResponse<TResult> :
         init => base.Result = value;
     }
 
+    /// <summary>  
+    /// Gets a value indicating whether the HTTP response is valid 
+    /// (status code is between 200 and 299).  
+    /// </summary>  
+    [MemberNotNullWhen(true, nameof(Result))]
+    public new bool IsValid => base.IsValid;
+
+    /// <summary>  
+    /// Gets a value indicating whether the HTTP response is not valid 
+    /// (status code is not between 200 and 299).  
+    /// </summary>  
+    [MemberNotNullWhen(true, nameof(Result))]
+    public new bool IsNotValid => base.IsNotValid;
+
     internal override bool IsGeneric => true;
 
     /// <inheritdoc/>
