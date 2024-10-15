@@ -14,10 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Collections.Concurrent;
 using System.Net;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 using Xpandables.Net.Collections;
@@ -79,7 +77,9 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
         if (stream is not null)
         {
             dynamic valueTask = deserializeAsyncInvokable
-                    .Invoke(null, [stream, context.SerializerOptions, cancellationToken])!;
+                .Invoke(
+                    null,
+                    [stream, context.SerializerOptions, cancellationToken])!;
 
             results = await valueTask;
         }
@@ -100,56 +100,5 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
             null,
             context.Message.Version,
             context.Message.ReasonPhrase)!;
-    }
-
-    private static async IAsyncEnumerable<TResult> BuilderResultAsync<TResult>(
-        Stream stream,
-        JsonSerializerOptions options,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        using BlockingCollection<TResult> blockingCollection = [];
-
-        await using IAsyncEnumerator<TResult> blockingCollectionIterator
-            = new AsyncEnumerable<TResult>(
-            blockingCollection.GetConsumingEnumerable(cancellationToken))
-            .GetAsyncEnumerator(cancellationToken);
-
-        _ = await Task.Run(async () =>
-        {
-            await foreach (TResult? element in JsonSerializer
-                .DeserializeAsyncEnumerable<TResult>(
-                stream,
-                options,
-                cancellationToken)
-                .ConfigureAwait(false))
-            {
-                if (element is { } result)
-                {
-                    blockingCollection.Add(result, cancellationToken);
-                }
-            }
-
-        }, cancellationToken)
-        .ContinueWith(t =>
-        {
-            blockingCollection.CompleteAdding();
-
-            if (t.IsFaulted)
-            {
-                throw t.Exception;
-            }
-
-            return Task.CompletedTask;
-
-        }, TaskScheduler.Current)
-        .ConfigureAwait(false);
-
-        while (await blockingCollectionIterator
-            .MoveNextAsync()
-            .ConfigureAwait(false))
-        {
-            yield return blockingCollectionIterator.Current;
-        }
-
     }
 }
