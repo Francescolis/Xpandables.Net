@@ -18,7 +18,7 @@ using System.Net;
 using System.Reflection;
 using System.Text.Json;
 
-using Xpandables.Net.Collections;
+using AsyncEnumerable = Xpandables.Net.Collections.AsyncEnumerable;
 
 namespace Xpandables.Net.Http.ResponseBuilders;
 /// <summary>
@@ -27,12 +27,11 @@ namespace Xpandables.Net.Http.ResponseBuilders;
 /// </summary>
 public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientResponseBuilder
 {
-    private static readonly MethodInfo _deserializeAsync =
-        typeof(JsonSerializer)
+    private static readonly MethodInfo _doBuildAsync =
+        typeof(HttpClientResponseSuccessAsyncResultBuilder)
         .GetMethod(
-            nameof(JsonSerializer.DeserializeAsync),
-            BindingFlags.Public | BindingFlags.Static,
-            [typeof(Stream), typeof(JsonSerializerOptions), typeof(CancellationToken)])!;
+            nameof(DoBuildAsync),
+            BindingFlags.NonPublic | BindingFlags.Static)!;
 
     /// <inheritdoc/>
     public Type Type => typeof(HttpClientResponse<>);
@@ -48,7 +47,7 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
             && (int)statusCode is >= 200 and <= 299;
 
     /// <inheritdoc/>
-    public async Task<TResponse> BuildAsync<TResponse>(
+    public Task<TResponse> BuildAsync<TResponse>(
         HttpClientResponseContext context,
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
@@ -64,40 +63,37 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
             .GetGenericArguments()[0]
             .GetGenericArguments()[0];
 
+        MethodInfo doBuildAsyncInvokable = _doBuildAsync
+            .MakeGenericMethod(resultType);
+
+        return (Task<TResponse>)doBuildAsyncInvokable
+            .Invoke(null, [context, cancellationToken])!;
+    }
+
+    private static async Task<HttpClientResponse<IAsyncEnumerable<TResult>>>
+        DoBuildAsync<TResult>(
+        HttpClientResponseContext context,
+        CancellationToken cancellationToken)
+    {
         using Stream stream = await context.Message.Content
              .ReadAsStreamAsync(cancellationToken)
              .ConfigureAwait(false);
 
-        MethodInfo deserializeAsyncInvokable = _deserializeAsync
-            .MakeGenericMethod(
-                typeof(IAsyncEnumerable<>).MakeGenericType(resultType));
+        IAsyncEnumerable<TResult> results = stream is not null
+            ? await JsonSerializer.DeserializeAsync<IAsyncEnumerable<TResult>>(
+                stream,
+                context.SerializerOptions,
+                cancellationToken)
+                .ConfigureAwait(false) ?? AsyncEnumerable.Empty<TResult>()
+            : AsyncEnumerable.Empty<TResult>();
 
-        MethodInfo asyncEmpty = ElementCollectionExtensions
-                .AsyncArrayEmptyMethod
-                .MakeGenericMethod(resultType);
-
-        object results = asyncEmpty.Invoke(null, null)!;
-
-        if (stream is not null)
+        return new HttpClientResponse<IAsyncEnumerable<TResult>>
         {
-            object? valueTask = deserializeAsyncInvokable
-                .Invoke(
-                    null,
-                    [stream, context.SerializerOptions, cancellationToken]);
-
-            if (valueTask is not null)
-            {
-                results = await ((dynamic)valueTask).ConfigureAwait(false);
-            }
-        }
-
-        return (TResponse)Activator.CreateInstance(
-            typeof(TResponse),
-            context.Message.StatusCode,
-            context.Message.ToNameValueCollection(),
-            results,
-            null,
-            context.Message.Version,
-            context.Message.ReasonPhrase)!;
+            StatusCode = context.Message.StatusCode,
+            Headers = context.Message.ToNameValueCollection(),
+            Result = results,
+            Version = context.Message.Version,
+            ReasonPhrase = context.Message.ReasonPhrase
+        };
     }
 }
