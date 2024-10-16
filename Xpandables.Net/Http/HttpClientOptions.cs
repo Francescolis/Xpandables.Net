@@ -143,7 +143,7 @@ public sealed record HttpClientOptions
     public HttpClientRequestOptionsAttribute GetRequestOptions(
        IHttpClientRequest request)
        => request is IHttpClientRequestOptionsBuilder builder
-            ? builder.Build()
+            ? builder.Build(this)
             : request
                 .GetType()
                 .GetCustomAttribute<HttpClientRequestOptionsAttribute>(true)

@@ -27,6 +27,7 @@ public interface IHttpClientRequestOptionsBuilder
     /// <summary>
     /// Builds the <see cref="HttpClientRequestOptionsAttribute"/>.
     /// </summary>
+    /// <param name="options">The <see cref="HttpClientOptions"/>.</param>
     /// <returns>The built <see cref="HttpClientRequestOptionsAttribute"/>.</returns>
-    HttpClientRequestOptionsAttribute Build();
+    HttpClientRequestOptionsAttribute Build(HttpClientOptions options);
 }
