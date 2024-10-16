@@ -55,5 +55,5 @@ public interface IEventEntity<out TKey, out TTimeStamp> :
     IEventEntity,
     IEntity<TKey, TTimeStamp>
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull, IComparable
+    where TTimeStamp : notnull
 { }

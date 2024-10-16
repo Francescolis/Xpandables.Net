@@ -30,7 +30,7 @@ public abstract class EventEntity<TKey, TTimeStamp> :
     Entity<TKey, TTimeStamp>,
     IEventEntity<TKey, TTimeStamp>
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull, IComparable
+    where TTimeStamp : notnull
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="EventEntity{TKey, TVersion}"/> class.

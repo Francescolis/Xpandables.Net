@@ -43,7 +43,7 @@ public interface IEventEntityDomain : IEventEntity
 /// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
 public interface IEventEntityDomain<out TAggregateId, out TKey, out TTimeStamp> : IEventEntityDomain
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull, IComparable
+    where TTimeStamp : notnull
     where TAggregateId : struct, IPrimitive
 {
     /// <summary>

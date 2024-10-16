@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,18 +19,15 @@ using System.Text.Json;
 
 using Xpandables.Net.Text;
 
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Events.Providers.PostgreSql;
 /// <summary>
-/// Represents an abstract base class for event entities in a domain context.
+/// Represents an abstract base class for PostgreSql event entities 
+/// in a domain context.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-/// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
-public abstract class EventEntityDomain<TAggregateId, TKey, TTimeStamp> :
-    EventEntity<TKey, TTimeStamp>,
-    IEventEntityDomain<TAggregateId, TKey, TTimeStamp>
-    where TKey : notnull, IComparable
-    where TTimeStamp : notnull, IComparable
+public abstract class EventEntityDomain<TAggregateId> :
+    EventEntity<Guid, ulong>,
+    IEventEntityDomain<TAggregateId, Guid, ulong>
     where TAggregateId : struct, IPrimitive
 {
     /// <inheritdoc/>
@@ -40,7 +38,7 @@ public abstract class EventEntityDomain<TAggregateId, TKey, TTimeStamp> :
 
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="EventEntityDomain{TAggregateId, TKey, TTimeStamp}"/> class.
+    /// <see cref="EventEntityDomain{TAggregateId}"/> class.
     /// </summary>
     /// <param name="aggregateId">The aggregate identifier.</param>
     /// <param name="aggregateName">The name of the aggregate.</param>
@@ -54,7 +52,7 @@ public abstract class EventEntityDomain<TAggregateId, TKey, TTimeStamp> :
 #pragma warning restore IDE0290 // Use primary constructor
         TAggregateId aggregateId,
         string aggregateName,
-        TKey key,
+        Guid key,
         string eventName,
         string eventFullName,
         ulong version,

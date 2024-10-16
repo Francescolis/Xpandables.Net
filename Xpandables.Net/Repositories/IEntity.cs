@@ -69,7 +69,7 @@ public interface IEntity
 /// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
 public interface IEntity<out TKey, out TTimeStamp> : IEntity
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull, IComparable
+    where TTimeStamp : notnull
 {
     /// <summary>
     /// Gets the specific unique identity.
