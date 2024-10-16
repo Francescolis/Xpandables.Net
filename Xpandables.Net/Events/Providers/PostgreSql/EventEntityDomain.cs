@@ -19,7 +19,7 @@ using System.Text.Json;
 
 namespace Xpandables.Net.Events.Providers.PostgreSql;
 /// <summary>
-/// Represents an abstract base class for PostgreSql event entities 
+/// Represents a class for PostgreSql event entities 
 /// in a domain context.
 /// <para>It uses <see cref="Guid"/> as Aggregate Id and Key, and 
 /// <see cref="ulong"/> array as timestamp</para>
@@ -29,7 +29,6 @@ namespace Xpandables.Net.Events.Providers.PostgreSql;
 /// <see cref="EventEntityDomain"/> class.
 /// </remarks>
 /// <param name="aggregateId">The aggregate identifier.</param>
-/// <param name="aggregateName">The name of the aggregate.</param>
 /// <param name="key">The key of the event entity.</param>
 /// <param name="eventName">The name of the event.</param>
 /// <param name="eventFullName">The full name of the event.</param>
@@ -37,7 +36,6 @@ namespace Xpandables.Net.Events.Providers.PostgreSql;
 /// <param name="eventData">The data of the event.</param>
 public sealed class EventEntityDomain(
     Guid aggregateId,
-    string aggregateName,
     Guid key,
     string eventName,
     string eventFullName,
@@ -48,7 +46,4 @@ public sealed class EventEntityDomain(
 {
     /// <inheritdoc/>
     public Guid AggregateId { get; } = aggregateId;
-
-    /// <inheritdoc/>
-    public string AggregateName { get; } = aggregateName;
 }

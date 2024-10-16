@@ -19,7 +19,7 @@ using System.Text.Json;
 namespace Xpandables.Net.Events.Providers.MSSql;
 
 /// <summary>
-/// Represents an abstract base class for MSSql event entities in a domain context.
+/// Represents a class for MSSql event entities in a domain context.
 /// <para>It uses <see cref="Guid"/> as Aggregate Id and Key, and 
 /// <see cref="byte"/> array as timestamp</para>
 /// </summary>
@@ -28,7 +28,6 @@ namespace Xpandables.Net.Events.Providers.MSSql;
 /// <see cref="EventEntityDomain"/> class.
 /// </remarks>
 /// <param name="aggregateId">The aggregate identifier.</param>
-/// <param name="aggregateName">The name of the aggregate.</param>
 /// <param name="key">The key of the event entity.</param>
 /// <param name="eventName">The name of the event.</param>
 /// <param name="eventFullName">The full name of the event.</param>
@@ -36,7 +35,6 @@ namespace Xpandables.Net.Events.Providers.MSSql;
 /// <param name="eventData">The data of the event.</param>
 public sealed class EventEntityDomain(
     Guid aggregateId,
-    string aggregateName,
     Guid key,
     string eventName,
     string eventFullName,
@@ -47,7 +45,4 @@ public sealed class EventEntityDomain(
 {
     /// <inheritdoc/>
     public Guid AggregateId { get; } = aggregateId;
-
-    /// <inheritdoc/>
-    public string AggregateName { get; } = aggregateName;
 }

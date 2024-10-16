@@ -23,11 +23,6 @@ namespace Xpandables.Net.Events;
 public interface IEventEntityDomain : IEventEntity
 {
     /// <summary>
-    /// Gets the name of the aggregate.
-    /// </summary>
-    string AggregateName { get; }
-
-    /// <summary>
     /// Gets the identifier of the aggregate.
     /// </summary>
     object AggregateId { get; }
