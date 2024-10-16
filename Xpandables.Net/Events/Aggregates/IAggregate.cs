@@ -14,46 +14,44 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
+using System.ComponentModel;
 
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Text;
 
-namespace Xpandables.Net.Events;
-
+namespace Xpandables.Net.Events.Aggregates;
 /// <summary>
-/// Represents an event entity that contains event-related data.
+/// Represents an aggregate with an identifier and version.
 /// </summary>
-public interface IEventEntity : IEntity, IDisposable
+public interface IAggregate
 {
     /// <summary>
-    /// Gets the name of the event.
+    /// Gets the unique identifier of the aggregate.
     /// </summary>
-    string EventName { get; }
+    object AggregateId { get; }
 
     /// <summary>
-    /// Gets the full name of the event.
-    /// </summary>
-    string EventFullName { get; }
-
-    /// <summary>
-    /// Gets the version of the event.
+    /// Gets the version of the aggregate.
     /// </summary>
     ulong Version { get; }
 
     /// <summary>
-    /// Gets the data associated with the event.
+    /// Gets a value indicating whether the aggregate is empty.
     /// </summary>
-    JsonDocument EventData { get; }
+    bool IsEmpty { get; }
 }
 
 /// <summary>
-/// Represents an event entity with a specific key and version.
+/// Represents an aggregate with a strongly-typed identifier and version.
 /// </summary>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-/// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
-public interface IEventEntity<out TKey, out TTimeStamp> :
-    IEventEntity,
-    IEntity<TKey, TTimeStamp>
-    where TKey : notnull, IComparable
-    where TTimeStamp : notnull, IComparable
-{ }
+/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
+public interface IAggregate<TAggregateId> : IAggregate
+    where TAggregateId : struct, IPrimitive
+{
+    /// <summary>
+    /// Gets the unique identifier of the aggregate.
+    /// </summary>
+    new TAggregateId AggregateId { get; }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    object IAggregate.AggregateId => AggregateId;
+}

@@ -25,7 +25,7 @@ public abstract record Event : IEvent
     public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.UtcNow;
 
     /// <inheritdoc/>
-    public int EventVersion { get; init; }
+    public ulong EventVersion { get; init; }
 
     /// <inheritdoc/>
     public Guid EventId { get; init; } = Guid.NewGuid();

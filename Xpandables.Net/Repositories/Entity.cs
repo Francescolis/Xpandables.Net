@@ -17,15 +17,20 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Xpandables.Net.Repositories;
-/// <summary>  
-/// Represents an abstract base class for entities that are used in relational 
-/// repositories.  
-/// </summary>  
-public abstract class Entity : IEntityRelational
+
+/// <summary>
+/// Represents an abstract base class for entities with a specific key type 
+/// that are used in relational repositories.
+/// </summary>
+/// <typeparam name="TKey">The type of the key.</typeparam>
+/// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
+public abstract class Entity<TKey, TTimeStamp> : IEntity<TKey, TTimeStamp>
+    where TKey : notnull, IComparable
+    where TTimeStamp : notnull, IComparable
 {
-    /// <summary>  
-    /// Initializes a new instance of <see cref="Entity"/>.  
-    /// </summary>  
+    /// <summary>
+    /// Initializes a new instance of <see cref="Entity{TKey, TVersion}"/>.
+    /// </summary>
     protected Entity() { }
 
     /// <inheritdoc/>  
@@ -42,7 +47,11 @@ public abstract class Entity : IEntityRelational
 
     /// <inheritdoc/>  
     [Key]
-    public object Id { get; protected set; } = default!;
+    public TKey Id { get; protected set; } = default!;
+
+    /// <inheritdoc/>
+    [ConcurrencyCheck]
+    public TTimeStamp Timestamp { get; protected set; } = default!;
 
     /// <inheritdoc/>  
     public void SetStatus(string status)
@@ -55,27 +64,5 @@ public abstract class Entity : IEntityRelational
         };
 
         UpdatedOn = DateTime.UtcNow;
-    }
-}
-
-/// <summary>
-/// Represents an abstract base class for entities with a specific key type t
-/// hat are used in relational repositories.
-/// </summary>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public abstract class Entity<TKey> : Entity, IEntityRelational<TKey>
-    where TKey : notnull, IComparable
-{
-    /// <summary>
-    /// Initializes a new instance of <see cref="Entity{TKey}"/>.
-    /// </summary>
-    protected Entity() { }
-
-    /// <inheritdoc/>  
-    [Key]
-    public new TKey Id
-    {
-        get => (TKey)base.Id;
-        protected set => base.Id = value;
     }
 }

@@ -29,7 +29,7 @@ public interface IEvent
     /// <summary>
     /// Gets the version of the event.
     /// </summary>
-    int EventVersion { get; init; }
+    ulong EventVersion { get; init; }
 
     /// <summary>
     /// Gets the unique identifier of the event.

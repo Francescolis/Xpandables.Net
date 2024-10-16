@@ -16,8 +16,8 @@ public sealed class RepositoryUnitTest
         // Arrange
         _repository.InsertAsync(new List<TestEntity>
         {
-            new() { Id = 1, Name = "Test1" },
-            new() { Id = 2, Name = "Test2" }
+            new(1) { Name = "Test1" },
+            new(2) { Name = "Test2" }
         }).Wait();
     }
 
@@ -44,8 +44,8 @@ public sealed class RepositoryUnitTest
         // Arrange
         var entities = new List<TestEntity>
             {
-                new() { Id = 1, Name = "Test1" },
-                new() { Id = 2, Name = "Test2" }
+                new(1) { Name = "Test1" },
+                new(2) { Name = "Test2" }
             };
 
         // Act
@@ -71,7 +71,7 @@ public sealed class RepositoryUnitTest
         };
 
         Expression<Func<TestEntity, TestEntity>> updateExpression =
-            e => new TestEntity { Id = e.Id, Name = "Updated" };
+            e => new TestEntity(e.Id) { Name = "Updated" };
 
         // Act
         await _repository.UpdateAsync(filter, updateExpression);
@@ -134,7 +134,7 @@ public sealed class RepositoryUnitTest
         await using (var repository = unitOfWork.GetRepository<IRepository>())
         {
             await repository.InsertAsync(new List<TestEntity>
-            { new() { Id = 1, Name = "Test" } });
+            { new(1) { Name = "Test" } });
         }
 
         // Assert
@@ -237,8 +237,8 @@ public class InMemoryRepository : IRepository
 }
 
 // Assuming TestEntity is a real implementation of IEntity
-public record class TestEntity : IEntity<int>
+public class TestEntity : Entity<int, byte>
 {
-    public int Id { get; set; }
+    public TestEntity(int id) => Id = id;
     public required string Name { get; set; }
 }
