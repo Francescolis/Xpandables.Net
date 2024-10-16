@@ -27,6 +27,8 @@ namespace Xpandables.Net.Events;
 /// </summary>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
 /// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
+/// <remarks>Add a private parameterless constructor and decorate it 
+/// with the <see cref="JsonConstructorAttribute"/> attribute.</remarks>
 public abstract record EventDomain<TAggregate, TAggregateId> :
     Event, IEventDomain<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
