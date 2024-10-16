@@ -27,7 +27,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// <remarks>The behavior uses <see cref="Validator.TryValidateObject(
 /// object, ValidationContext, ICollection{ValidationResult}?, bool)"/>.</remarks>
 public sealed class Validator<TArgument>(IServiceProvider provider) : AbstractValidator<TArgument>
-    where TArgument : class, IUseValidator
+    where TArgument : class, IUseValidation
 {
     private readonly IServiceProvider _provider = provider
         ?? throw new ArgumentNullException(nameof(provider));

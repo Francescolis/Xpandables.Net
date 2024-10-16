@@ -6,7 +6,7 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Api.Requests;
 
 public sealed class CreateUserRequestValidator<T> : AbstractValidator<T>
-    where T : class, IUseValidator
+    where T : class, IUseValidation
 {
     public override IOperationResult Validate(T instance)
     {

@@ -34,7 +34,7 @@ public sealed class OperationResultValidator : IOperationResultValidator
     {
         List<ArgumentDescriptor> arguments = context
             .Arguments
-            .OfType<IUseValidator>()
+            .OfType<IUseValidation>()
             .Select((parameter, index) => new ArgumentDescriptor
             {
                 Index = index,
@@ -127,7 +127,7 @@ public sealed class OperationResultValidator : IOperationResultValidator
 internal readonly record struct ArgumentDescriptor
 {
     public required int Index { get; init; }
-    public required IUseValidator Parameter { get; init; }
+    public required IUseValidation Parameter { get; init; }
     public required Type ParameterType { get; init; }
 }
 
@@ -135,6 +135,6 @@ internal readonly record struct ValidatorDescriptor
 {
     public required int ArgumentIndex { get; init; }
     public required Type ArgumentType { get; init; }
-    public required IUseValidator Argument { get; init; }
+    public required IUseValidation Argument { get; init; }
     public required IValidator Validator { get; init; }
 }

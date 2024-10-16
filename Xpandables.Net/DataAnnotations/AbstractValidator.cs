@@ -23,7 +23,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// </summary>
 /// <typeparam name="TArgument">The type of the argument to validate.</typeparam>
 public abstract class AbstractValidator<TArgument> : IValidator<TArgument>
-    where TArgument : class, IUseValidator
+    where TArgument : class, IUseValidation
 {
     /// <inheritdoc/>
     public virtual int Order => 0;

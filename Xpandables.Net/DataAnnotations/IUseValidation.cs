@@ -20,6 +20,6 @@ namespace Xpandables.Net.DataAnnotations;
 /// <summary>
 /// Defines a marker interface to indicate that the class uses a validator.
 /// </summary>
-public interface IUseValidator
+public interface IUseValidation
 {
 }

@@ -4,7 +4,7 @@ using Xpandables.Net.DataAnnotations;
 
 namespace Xpandables.Net.Api.Requests;
 
-public sealed record CreateUserRequest : IUseValidator
+public sealed record CreateUserRequest : IUseValidation
 {
     [Required]
     [StringLength(50, MinimumLength = 3)]
