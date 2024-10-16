@@ -38,4 +38,28 @@ public static class ServiceCollectionHttpExtensions
         => services
             .AddTransient<IConfigureOptions<HttpClientOptions>,
                 HttpClientOptionsConfiguration>();
+
+    /// <summary>
+    /// Registers the specified <see cref="IHttpClientMessageFactory"/> 
+    /// implementation to the services.
+    /// </summary>
+    /// <typeparam name="THttpClientMessageFactory">The type of the HTTP client 
+    /// message factory.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
+    public static IServiceCollection AddXHttpClientMessageFactory
+        <THttpClientMessageFactory>(this IServiceCollection services)
+        where THttpClientMessageFactory : class, IHttpClientMessageFactory =>
+        services.AddScoped
+            <IHttpClientMessageFactory, THttpClientMessageFactory>();
+
+    /// <summary>
+    /// Registers the default <see cref="HttpClientMessageFactory"/> 
+    /// implementation to the services.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
+    public static IServiceCollection AddXHttpClientMessageFactory(
+        this IServiceCollection services) =>
+        services.AddXHttpClientMessageFactory<HttpClientMessageFactory>();
 }

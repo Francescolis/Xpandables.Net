@@ -32,6 +32,7 @@ public sealed class HttpClientDispatcherTest
 
         services.Configure<HttpClientOptions>(HttpClientOptions.Default);
         services.AddXHttpClientOptions();
+        services.AddXHttpClientMessageFactory();
         services.AddHttpClient<IHttpClientDispatcher, HttpClientDispatcherDefault>(client =>
         {
             client.BaseAddress = new Uri("https://www.montemagno.com/");
@@ -42,8 +43,6 @@ public sealed class HttpClientDispatcherTest
                 .Add(new System.Net.Http.Headers
                 .MediaTypeWithQualityHeaderValue(ContentType.Json));
         });
-
-        services.AddSingleton<IHttpClientMessageFactory, HttpClientMessageFactory>();
 
         var serviceProvider = services.BuildServiceProvider();
         var dispatcher = serviceProvider.GetRequiredService<IHttpClientDispatcher>();
