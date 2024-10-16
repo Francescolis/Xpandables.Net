@@ -21,7 +21,7 @@ namespace Xpandables.Net.Http.RequestBuilders;
 /// <typeparam name="TInterfaceRequest">The type of the interface request.</typeparam>
 public abstract class HttpClientRequestBuilder<TInterfaceRequest> :
     IHttpClientRequestBuilder<TInterfaceRequest>
-    where TInterfaceRequest : class, IHttpRequestBuilder
+    where TInterfaceRequest : class, IHttpRequestDefinition
 {
     ///<inheritdoc/>
     public Type Type => typeof(TInterfaceRequest);

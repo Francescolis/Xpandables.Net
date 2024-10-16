@@ -18,7 +18,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Represents an HTTP request that supports multipart content.
 /// </summary>
-public interface IHttpRequestMultipart : IHttpRequestBuilder
+public interface IHttpRequestMultipart : IHttpRequestDefinition
 {
     /// <summary>
     /// Returns the multipart content.

@@ -17,11 +17,16 @@
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Provides with the base interface for all HTTP content request builders.
+/// Provides with the base interface for all HTTP content request definition.
 /// </summary>
-public interface IHttpRequestBuilder { }
+public interface IHttpRequestDefinition { }
+
+/// <summary>
+/// Provides with the interface to start the HTTP request definition.
+/// </summary>
+public interface IHttpRequestDefinitionStart : IHttpRequestDefinition { }
 
 /// <summary>
 /// Provides with the interface to complete the built.
 /// </summary>
-public interface IHttpRequestComplete : IHttpRequestBuilder { }
+public interface IHttpRequestDefinitionComplete : IHttpRequestDefinition { }

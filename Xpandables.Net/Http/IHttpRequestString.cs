@@ -18,7 +18,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Interface for building HTTP request strings.
 /// </summary>
-public interface IHttpRequestString : IHttpRequestBuilder
+public interface IHttpRequestString : IHttpRequestDefinition
 {
     /// <summary>
     /// Returns the string content.

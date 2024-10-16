@@ -18,7 +18,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Represents an HTTP request that contains a byte array content.
 /// </summary>
-public interface IHttpRequestByteArray : IHttpRequestBuilder
+public interface IHttpRequestByteArray : IHttpRequestDefinition
 {
     /// <summary>
     /// Returns the byte array content.

@@ -18,7 +18,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Interface for building HTTP requests with form URL encoded content.
 /// </summary>
-public interface IHttpRequestFormUrlEncoded : IHttpRequestBuilder
+public interface IHttpRequestFormUrlEncoded : IHttpRequestDefinition
 {
     /// <summary>
     /// Returns the form URL encoded content.

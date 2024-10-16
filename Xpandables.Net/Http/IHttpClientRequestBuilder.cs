@@ -56,7 +56,7 @@ public interface IHttpClientRequestBuilder
 /// implemented by the request source.</typeparam>
 public interface IHttpClientRequestBuilder<THttpRequestBuilder> :
     IHttpClientRequestBuilder
-    where THttpRequestBuilder : class, IHttpRequestBuilder
+    where THttpRequestBuilder : class, IHttpRequestDefinition
 {
     /// <summary>
     /// Gets the request type being built by the current builder instance.

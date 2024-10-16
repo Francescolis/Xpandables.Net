@@ -21,7 +21,7 @@ namespace Xpandables.Net.Http.RequestBuilders;
 /// A builder class for starting an HTTP client request.
 /// </summary>
 public sealed class HttpClientRequestStartBuilder :
-    HttpClientRequestBuilder<IHttpRequestBuilder>
+    HttpClientRequestBuilder<IHttpRequestDefinitionStart>
 {
     /// <inheritdoc/>
     public override int Order => int.MinValue;
