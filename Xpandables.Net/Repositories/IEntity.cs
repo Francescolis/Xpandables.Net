@@ -38,7 +38,7 @@ public interface IEntity<out TKey> : IEntity
     where TKey : notnull, IComparable
 {
     /// <summary>
-    /// Gets the object unique identity.
+    /// Gets the specific unique identity.
     /// </summary>
     new TKey Id { get; }
 

@@ -22,7 +22,7 @@ namespace Xpandables.Net.Repositories;
 /// Represents an entity that supports concurrency control.
 /// </summary>
 /// <typeparam name="TVersion">The type of the version property.</typeparam>
-public interface IEntityConcurrency<TVersion>
+public interface IEntityConcurrency<out TVersion>
     where TVersion : notnull, IComparable
 {
     /// <summary>
