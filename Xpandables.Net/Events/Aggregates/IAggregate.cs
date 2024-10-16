@@ -16,8 +16,6 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-using Xpandables.Net.Text;
-
 namespace Xpandables.Net.Events.Aggregates;
 /// <summary>
 /// Represents an aggregate with an identifier and version.
@@ -45,7 +43,7 @@ public interface IAggregate
 /// </summary>
 /// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
 public interface IAggregate<TAggregateId> : IAggregate
-    where TAggregateId : struct, IPrimitive
+    where TAggregateId : struct
 {
     /// <summary>
     /// Gets the unique identifier of the aggregate.

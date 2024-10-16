@@ -17,7 +17,6 @@
 using System.ComponentModel;
 
 using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Events;
 /// <summary>
@@ -45,7 +44,7 @@ public interface IEventDomain : IEvent
 /// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
 public interface IEventDomain<out TAggregate, out TAggregateId> : IEventDomain
-    where TAggregateId : struct, IPrimitive
+    where TAggregateId : struct
     where TAggregate : class, IAggregate<TAggregateId>
 {
     /// <summary>

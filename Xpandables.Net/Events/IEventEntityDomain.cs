@@ -16,8 +16,6 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-using Xpandables.Net.Text;
-
 namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents an event entity domain that includes aggregate information.
@@ -41,10 +39,11 @@ public interface IEventEntityDomain : IEventEntity
 /// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
 /// <typeparam name="TKey">The type of the aggregate identifier.</typeparam>
 /// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
-public interface IEventEntityDomain<out TAggregateId, out TKey, out TTimeStamp> : IEventEntityDomain
+public interface IEventEntityDomain<out TAggregateId, out TKey, out TTimeStamp> :
+    IEventEntityDomain
     where TKey : notnull, IComparable
     where TTimeStamp : notnull
-    where TAggregateId : struct, IPrimitive
+    where TAggregateId : struct
 {
     /// <summary>
     /// Gets the identifier of the aggregate.

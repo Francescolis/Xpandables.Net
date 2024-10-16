@@ -17,8 +17,6 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Text;
-
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -32,7 +30,7 @@ public abstract class EventEntityDomain<TAggregateId, TKey, TTimeStamp> :
     IEventEntityDomain<TAggregateId, TKey, TTimeStamp>
     where TKey : notnull, IComparable
     where TTimeStamp : notnull, IComparable
-    where TAggregateId : struct, IPrimitive
+    where TAggregateId : struct
 {
     /// <inheritdoc/>
     public TAggregateId AggregateId { get; }

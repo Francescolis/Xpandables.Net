@@ -17,49 +17,38 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Text;
-
 namespace Xpandables.Net.Events.Providers.PostgreSql;
 /// <summary>
 /// Represents an abstract base class for PostgreSql event entities 
 /// in a domain context.
+/// <para>It uses <see cref="Guid"/> as Aggregate Id and Key, and 
+/// <see cref="ulong"/> array as timestamp</para>
 /// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
-public abstract class EventEntityDomain<TAggregateId> :
-    EventEntity<Guid, ulong>,
-    IEventEntityDomain<TAggregateId, Guid, ulong>
-    where TAggregateId : struct, IPrimitive
+/// <remarks>
+/// Initializes a new instance of the 
+/// <see cref="EventEntityDomain"/> class.
+/// </remarks>
+/// <param name="aggregateId">The aggregate identifier.</param>
+/// <param name="aggregateName">The name of the aggregate.</param>
+/// <param name="key">The key of the event entity.</param>
+/// <param name="eventName">The name of the event.</param>
+/// <param name="eventFullName">The full name of the event.</param>
+/// <param name="version">The version of the event.</param>
+/// <param name="eventData">The data of the event.</param>
+public sealed class EventEntityDomain(
+    Guid aggregateId,
+    string aggregateName,
+    Guid key,
+    string eventName,
+    string eventFullName,
+    ulong version,
+    JsonDocument eventData) :
+    EventEntity<Guid, ulong>(key, eventName, eventFullName, version, eventData),
+    IEventEntityDomain<Guid, Guid, ulong>
 {
     /// <inheritdoc/>
-    public TAggregateId AggregateId { get; }
+    public Guid AggregateId { get; } = aggregateId;
 
     /// <inheritdoc/>
-    public string AggregateName { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the 
-    /// <see cref="EventEntityDomain{TAggregateId}"/> class.
-    /// </summary>
-    /// <param name="aggregateId">The aggregate identifier.</param>
-    /// <param name="aggregateName">The name of the aggregate.</param>
-    /// <param name="key">The key of the event entity.</param>
-    /// <param name="eventName">The name of the event.</param>
-    /// <param name="eventFullName">The full name of the event.</param>
-    /// <param name="version">The version of the event.</param>
-    /// <param name="eventData">The data of the event.</param>
-#pragma warning disable IDE0290 // Use primary constructor
-    protected EventEntityDomain(
-#pragma warning restore IDE0290 // Use primary constructor
-        TAggregateId aggregateId,
-        string aggregateName,
-        Guid key,
-        string eventName,
-        string eventFullName,
-        ulong version,
-        JsonDocument eventData) :
-        base(key, eventName, eventFullName, version, eventData)
-    {
-        AggregateId = aggregateId;
-        AggregateName = aggregateName;
-    }
+    public string AggregateName { get; } = aggregateName;
 }
