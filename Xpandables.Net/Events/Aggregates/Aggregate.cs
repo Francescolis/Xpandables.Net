@@ -120,3 +120,23 @@ public abstract class Aggregate : IAggregate
         }
     }
 }
+
+/// <summary>
+/// Represents an abstract base class for aggregates with a specific aggregate ID type.
+/// </summary>
+/// <typeparam name="TAggregateId">The type of the aggregate ID.</typeparam>
+public abstract class Aggregate<TAggregateId> : Aggregate, IAggregate<TAggregateId>
+    where TAggregateId : struct
+{
+    /// <inheritdoc/>
+    public new TAggregateId AggregateId
+    {
+        get => (TAggregateId)base.AggregateId;
+        protected set => base.AggregateId = value;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Aggregate{TAggregateId}"/> class.
+    /// </summary>
+    protected Aggregate() { }
+}
