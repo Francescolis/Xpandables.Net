@@ -17,14 +17,14 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Events.Converters;
+using Xpandables.Net.Events.Entities;
 
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Events.Converters;
 
 /// <summary>
 /// Converts event entities to domain events and vice versa.
 /// </summary>
-public sealed class EventEntityDomainConverter : EventConverter
+public sealed class EventDomainConverter : EventConverter
 {
     /// <inheritdoc/>
     public override Type EventType => typeof(IEventDomain);
@@ -71,7 +71,7 @@ public sealed class EventEntityDomainConverter : EventConverter
                 Id = eventDomain.EventId,
                 AggregateId = Guid.Parse(eventDomain.AggregateId.ToString()!),
                 EventName = eventDomain.GetType().Name,
-                EventFullName = eventDomain.GetType().FullName!,
+                EventFullName = eventDomain.GetType().AssemblyQualifiedName!,
                 EventVersion = eventDomain.EventVersion,
                 EventData = SerializeEvent(eventDomain, options)
             };
@@ -80,7 +80,7 @@ public sealed class EventEntityDomainConverter : EventConverter
             when (exception is not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                $"Failed to convert the event {@event.GetType().FullName} to {EventType.FullName}. " +
+                $"Failed to convert the event {@event?.GetType().Name} to entity. " +
                 $"See inner exception for details.", exception);
         }
     }
