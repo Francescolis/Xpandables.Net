@@ -14,42 +14,39 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
-namespace Xpandables.Net.Events.Aggregates;
-/// <summary>
-/// Represents an aggregate with an identifier and version.
-/// </summary>
-public interface IAggregate : IEventSourcing
-{
-    /// <summary>
-    /// Gets the unique identifier of the aggregate.
-    /// </summary>
-    object AggregateId { get; }
-
-    /// <summary>
-    /// Gets the version of the aggregate.
-    /// </summary>
-    ulong Version { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether the aggregate is empty.
-    /// </summary>
-    bool IsEmpty { get; }
-}
+namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents an aggregate with a strongly-typed identifier and version.
+/// Interface for event sourcing, providing methods to handle events.
 /// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
-public interface IAggregate<TAggregateId> : IAggregate
-    where TAggregateId : struct
+public interface IEventSourcing
 {
     /// <summary>
-    /// Gets the unique identifier of the aggregate.
+    /// Marks all events as committed.
     /// </summary>
-    new TAggregateId AggregateId { get; }
+    void MarkEventsAsCommitted();
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    object IAggregate.AggregateId => AggregateId;
+    /// <summary>
+    /// Gets the collection of uncommitted events.
+    /// </summary>
+    /// <returns>A read-only collection of uncommitted events.</returns>
+    IReadOnlyCollection<IEventDomain> GetUncommittedEvents();
+
+    /// <summary>
+    /// Loads events from history.
+    /// </summary>
+    /// <param name="events">The collection of events to load.</param>
+    void LoadFromHistory(IEnumerable<IEventDomain> events);
+
+    /// <summary>
+    /// Loads a single event from history.
+    /// </summary>
+    /// <param name="event">The event to load.</param>
+    void LoadFromHistory(IEventDomain @event);
+
+    /// <summary>
+    /// Pushes a new event.
+    /// </summary>
+    /// <param name="event">The event to push.</param>
+    void PushEvent(IEventDomain @event);
 }

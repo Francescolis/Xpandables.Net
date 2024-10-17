@@ -56,6 +56,6 @@ public abstract record EventDomain<TAggregate, TAggregateId> :
     public required TAggregateId AggregateId { get; init; }
 
     /// <inheritdoc/>
-    public virtual IEventDomain WithVersion(ushort version) =>
+    public virtual IEventDomain WithVersion(ulong version) =>
         this with { EventVersion = version };
 }

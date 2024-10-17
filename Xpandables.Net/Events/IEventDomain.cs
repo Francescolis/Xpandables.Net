@@ -29,7 +29,7 @@ public interface IEventDomain : IEvent
     /// </summary>
     /// <param name="version">The version to set.</param>
     /// <returns>The event domain with the specified version.</returns>
-    IEventDomain WithVersion(ushort version);
+    IEventDomain WithVersion(ulong version);
 
     /// <summary>
     /// Gets the aggregate identifier associated with the event.
