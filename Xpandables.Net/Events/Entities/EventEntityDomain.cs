@@ -14,19 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Events.Entities;
 
 /// <summary>
-/// Represents an abstract base class for events.
+/// Represents a class an event entity in a domain context.
+/// <para>It uses <see cref="Guid"/> as Aggregate Id and Key.</para>
 /// </summary>
-public abstract record Event : IEvent
+public sealed class EventEntityDomain : EventEntityDomain<Guid, Guid>
 {
-    /// <inheritdoc/>
-    public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.UtcNow;
-
-    /// <inheritdoc/>
-    public required ulong EventVersion { get; init; }
-
-    /// <inheritdoc/>
-    public Guid EventId { get; init; } = Guid.NewGuid();
 }

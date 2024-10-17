@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -24,44 +21,12 @@ namespace Xpandables.Net.Events;
 /// </summary>
 /// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
 /// <typeparam name="TKey">The type of the key.</typeparam>
-/// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
-public abstract class EventEntityDomain<TAggregateId, TKey, TTimeStamp> :
-    EventEntity<TKey, TTimeStamp>,
-    IEventEntityDomain<TAggregateId, TKey, TTimeStamp>
+public abstract class EventEntityDomain<TAggregateId, TKey> :
+    EventEntity<TKey>,
+    IEventEntityDomain<TAggregateId, TKey>
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull, IComparable
     where TAggregateId : struct
 {
     /// <inheritdoc/>
-    public TAggregateId AggregateId { get; }
-
-    /// <inheritdoc/>
-    public string AggregateName { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the 
-    /// <see cref="EventEntityDomain{TAggregateId, TKey, TTimeStamp}"/> class.
-    /// </summary>
-    /// <param name="aggregateId">The aggregate identifier.</param>
-    /// <param name="aggregateName">The name of the aggregate.</param>
-    /// <param name="key">The key of the event entity.</param>
-    /// <param name="eventName">The name of the event.</param>
-    /// <param name="eventFullName">The full name of the event.</param>
-    /// <param name="version">The version of the event.</param>
-    /// <param name="eventData">The data of the event.</param>
-#pragma warning disable IDE0290 // Use primary constructor
-    protected EventEntityDomain(
-#pragma warning restore IDE0290 // Use primary constructor
-        TAggregateId aggregateId,
-        string aggregateName,
-        TKey key,
-        string eventName,
-        string eventFullName,
-        ulong version,
-        JsonDocument eventData) :
-        base(key, eventName, eventFullName, version, eventData)
-    {
-        AggregateId = aggregateId;
-        AggregateName = aggregateName;
-    }
+    public required TAggregateId AggregateId { get; init; }
 }

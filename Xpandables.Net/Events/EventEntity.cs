@@ -25,50 +25,20 @@ namespace Xpandables.Net.Events;
 /// key and version.
 /// </summary>
 /// <typeparam name="TKey">The type of the key.</typeparam>
-/// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
-public abstract class EventEntity<TKey, TTimeStamp> :
-    Entity<TKey, TTimeStamp>,
-    IEventEntity<TKey, TTimeStamp>
+public abstract class EventEntity<TKey> : Entity<TKey>, IEventEntity<TKey>
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventEntity{TKey, TVersion}"/> class.
-    /// </summary>
-    /// <param name="id">The identifier of the event entity.</param>
-    /// <param name="eventName">The name of the event.</param>
-    /// <param name="eventFullName">The full name of the event.</param>
-    /// <param name="version">The version of the event entity.</param>
-    /// <param name="eventData">The event data as a JSON document.</param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="id"/>, <paramref name="eventName"/>, 
-    /// <paramref name="eventFullName"/>, or <paramref name="eventData"/> is null.
-    /// </exception>
-    protected EventEntity(
-        TKey id,
-        string eventName,
-        string eventFullName,
-        ulong version,
-        JsonDocument eventData)
-    {
-        Id = id ?? throw new ArgumentNullException(nameof(id));
-        EventName = eventName ?? throw new ArgumentNullException(nameof(eventName));
-        EventFullName = eventFullName ?? throw new ArgumentNullException(nameof(eventFullName));
-        Version = version;
-        EventData = eventData ?? throw new ArgumentNullException(nameof(eventData));
-    }
+    /// <inheritdoc/>
+    public required string EventName { get; init; }
 
     /// <inheritdoc/>
-    public string EventName { get; }
+    public required string EventFullName { get; init; }
 
     /// <inheritdoc/>
-    public string EventFullName { get; }
+    public required JsonDocument EventData { get; init; }
 
     /// <inheritdoc/>
-    public JsonDocument EventData { get; }
-
-    /// <inheritdoc/>
-    public ulong Version { get; }
+    public required ulong EventVersion { get; init; }
 
     private bool IsDisposed;
 

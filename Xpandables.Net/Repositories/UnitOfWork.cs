@@ -74,6 +74,7 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
 {
     private static readonly MethodBase _methodBaseType =
         typeof(object).GetMethod("GetType")!;
+
     private IUnitOfWork _unitOfWork = default!;
     private TRepository _repositoryInstance = default!;
     private Exception? _exception;

@@ -29,15 +29,14 @@ public interface IEventEntityDomain : IEventEntity
 }
 
 /// <summary>
-/// Represents an event entity domain with a specific key and timestamp type.
+/// Represents an event entity domain with a specific key.
 /// </summary>
 /// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
 /// <typeparam name="TKey">The type of the aggregate identifier.</typeparam>
-/// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
-public interface IEventEntityDomain<out TAggregateId, out TKey, out TTimeStamp> :
-    IEventEntityDomain
+public interface IEventEntityDomain<out TAggregateId, out TKey> :
+    IEventEntityDomain,
+    IEventEntity<TKey>
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull
     where TAggregateId : struct
 {
     /// <summary>

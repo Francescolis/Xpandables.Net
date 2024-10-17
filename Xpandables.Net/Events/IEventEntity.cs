@@ -38,7 +38,7 @@ public interface IEventEntity : IEntity, IDisposable
     /// <summary>
     /// Gets the version of the event.
     /// </summary>
-    ulong Version { get; }
+    ulong EventVersion { get; }
 
     /// <summary>
     /// Gets the data associated with the event.
@@ -47,13 +47,11 @@ public interface IEventEntity : IEntity, IDisposable
 }
 
 /// <summary>
-/// Represents an event entity with a specific key and version.
+/// Represents an event entity with a specific key.
 /// </summary>
 /// <typeparam name="TKey">The type of the key.</typeparam>
-/// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
-public interface IEventEntity<out TKey, out TTimeStamp> :
+public interface IEventEntity<out TKey> :
     IEventEntity,
-    IEntity<TKey, TTimeStamp>
+    IEntity<TKey>
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull
 { }

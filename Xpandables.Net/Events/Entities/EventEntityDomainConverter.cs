@@ -19,9 +19,10 @@ using System.Text.Json;
 
 using Xpandables.Net.Events.Converters;
 
-namespace Xpandables.Net.Events.Providers.PostgreSql;
+namespace Xpandables.Net.Events.Entities;
+
 /// <summary>
-/// Converts event entities to domain events and vice versa for PostgreSQL.
+/// Converts event entities to domain events and vice versa.
 /// </summary>
 public sealed class EventEntityDomainConverter : EventConverter
 {
@@ -29,7 +30,8 @@ public sealed class EventEntityDomainConverter : EventConverter
     public override Type EventType => typeof(IEventDomain);
 
     /// <inheritdoc/>
-    public override bool CanConvert(Type type) => EventType.IsAssignableFrom(type);
+    public override bool CanConvert(Type type) =>
+        EventType.IsAssignableFrom(type);
 
     /// <inheritdoc/>
     public override IEvent ConvertFrom(
@@ -42,7 +44,7 @@ public sealed class EventEntityDomainConverter : EventConverter
 
             object? @event = entity.EventData.Deserialize(eventType, options)
                 ?? throw new InvalidOperationException(
-                    $"Failed to deserialize the event data to {eventType.FullName}.");
+                    $"Failed to deserialize the event data to {eventType.Name}.");
 
             return (IEventDomain)@event;
         }
@@ -50,7 +52,7 @@ public sealed class EventEntityDomainConverter : EventConverter
             when (exception is not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                $"Failed to convert the event entity to {EventType.FullName}. " +
+                $"Failed to convert the event entity to {EventType.Name}. " +
                 $"See inner exception for details.", exception);
         }
     }
@@ -64,13 +66,15 @@ public sealed class EventEntityDomainConverter : EventConverter
         {
             IEventDomain eventDomain = (IEventDomain)@event;
 
-            return new EventEntityDomain(
-                Guid.Parse(eventDomain.AggregateId.ToString()!),
-                eventDomain.EventId,
-                eventDomain.GetType().Name,
-                eventDomain.GetType().FullName!,
-                eventDomain.EventVersion,
-                SerializeEvent(eventDomain, options));
+            return new EventEntityDomain()
+            {
+                Id = eventDomain.EventId,
+                AggregateId = Guid.Parse(eventDomain.AggregateId.ToString()!),
+                EventName = eventDomain.GetType().Name,
+                EventFullName = eventDomain.GetType().FullName!,
+                EventVersion = eventDomain.EventVersion,
+                EventData = SerializeEvent(eventDomain, options)
+            };
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)

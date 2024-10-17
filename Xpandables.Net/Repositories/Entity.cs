@@ -23,13 +23,11 @@ namespace Xpandables.Net.Repositories;
 /// that are used in relational repositories.
 /// </summary>
 /// <typeparam name="TKey">The type of the key.</typeparam>
-/// <typeparam name="TTimeStamp">The type of the timestamp.</typeparam>
-public abstract class Entity<TKey, TTimeStamp> : IEntity<TKey, TTimeStamp>
+public abstract class Entity<TKey> : IEntity<TKey>
     where TKey : notnull, IComparable
-    where TTimeStamp : notnull
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="Entity{TKey, TVersion}"/>.
+    /// Initializes a new instance of <see cref="Entity{TKey}"/>.
     /// </summary>
     protected Entity() { }
 
@@ -47,11 +45,7 @@ public abstract class Entity<TKey, TTimeStamp> : IEntity<TKey, TTimeStamp>
 
     /// <inheritdoc/>  
     [Key]
-    public TKey Id { get; protected set; } = default!;
-
-    /// <inheritdoc/>
-    [ConcurrencyCheck]
-    public TTimeStamp Timestamp { get; protected set; } = default!;
+    public required TKey Id { get; init; }
 
     /// <inheritdoc/>  
     public void SetStatus(string status)

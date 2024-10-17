@@ -18,7 +18,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Events;
 
@@ -32,7 +31,7 @@ namespace Xpandables.Net.Events;
 public abstract record EventDomain<TAggregate, TAggregateId> :
     Event, IEventDomain<TAggregate, TAggregateId>
     where TAggregate : class, IAggregate<TAggregateId>
-    where TAggregateId : struct, IPrimitive
+    where TAggregateId : struct
 {
     /// <summary>
     /// Initializes a new instance of the 
