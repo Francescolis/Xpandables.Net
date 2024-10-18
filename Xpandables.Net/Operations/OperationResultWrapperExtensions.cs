@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+
 namespace Xpandables.Net.Operations;
 public static partial class OperationResultExtensions
 {
@@ -31,6 +33,38 @@ public static partial class OperationResultExtensions
             return OperationResults.Ok().Build();
         }
         catch (Exception exception)
+        {
+            return exception.ToOperationResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts an <see cref="Action{T}"/> to an <see cref="IOperationResult"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the argument passed to the action.</typeparam>
+    /// <param name="action">The action to execute.</param>
+    /// <param name="args">The argument to pass to the action.</param>
+    /// <returns>An <see cref="IOperationResult"/> representing the result 
+    /// of the action.</returns>
+    public static IOperationResult ToOperationResult<T>(
+        this Action<T> action,
+        T args)
+    {
+        try
+        {
+            action(args);
+            return OperationResults.Ok().Build();
+        }
+        catch (ValidationException validationException)
+        {
+            return validationException.ToOperationResult();
+        }
+        catch (OperationResultException operationResultException)
+        {
+            return operationResultException.OperationResult;
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
         {
             return exception.ToOperationResult();
         }
