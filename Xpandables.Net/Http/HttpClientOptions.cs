@@ -21,6 +21,7 @@ using System.Text.Json;
 using Xpandables.Net.Http.RequestBuilders;
 using Xpandables.Net.Http.ResponseBuilders;
 using Xpandables.Net.Optionals;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;
 /// <summary>
@@ -29,17 +30,6 @@ namespace Xpandables.Net.Http;
 /// </summary>
 public sealed record HttpClientOptions
 {
-    /// <summary>
-    /// Gets the default <see cref="JsonSerializerOptions"/> to be used.
-    /// </summary>
-    public static readonly JsonSerializerOptions DefaultSerializerOptions =
-        new(JsonSerializerDefaults.Web)
-        {
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = null,
-            WriteIndented = true
-        };
-
     /// <summary>
     /// Gets the list of user-defined response builders that were registered.
     /// </summary>
@@ -61,7 +51,7 @@ public sealed record HttpClientOptions
     /// Gets or sets the <see cref="JsonSerializerOptions"/> to be used.
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; set; }
-        = DefaultSerializerOptions;
+        = DefaultSerializerOptions.Defaults;
 
     /// <summary>  
     /// Gets the request builder for the specified request type.  
@@ -139,7 +129,9 @@ public sealed record HttpClientOptions
     /// </summary>  
     /// <param name="request">The HTTP client request.</param>  
     /// <returns>The request options attribute for the specified request.</returns>  
-    /// <exception cref="InvalidOperationException">Thrown when the request is not decorated with <see cref="HttpClientRequestOptionsAttribute"/> or does not implement <see cref="IHttpClientRequestOptionsBuilder"/>.</exception>  
+    /// <exception cref="InvalidOperationException">Thrown when the request is 
+    /// not decorated with <see cref="HttpClientRequestOptionsAttribute"/> or 
+    /// does not implement <see cref="IHttpClientRequestOptionsBuilder"/>.</exception>  
     public HttpClientRequestOptionsAttribute GetRequestOptions(
        IHttpClientRequest request)
        => request is IHttpClientRequestOptionsBuilder builder

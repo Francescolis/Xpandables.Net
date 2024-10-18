@@ -69,7 +69,7 @@ public sealed class EventConverterSnapshot : EventConverter
             return new EventEntitySnapshot
             {
                 Id = snapshot.EventId,
-                Owner = snapshot.Owner,
+                OwnerId = snapshot.OwnerId,
                 EventVersion = snapshot.EventVersion,
                 EventName = snapshot.GetType().Name,
                 EventFullName = snapshot.GetType().AssemblyQualifiedName!,

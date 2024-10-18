@@ -40,11 +40,11 @@ public interface IAggregateStore<TAggregate, TAggregateId>
     /// <summary>
     /// Peeks the specified aggregate asynchronously.
     /// </summary>
-    /// <param name="aggregateId">The aggregate identifier.</param>
+    /// <param name="keyId">The aggregate identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation result containing the aggregate.</returns>
     Task<IOperationResult<TAggregate>> PeekAsync(
-        TAggregateId aggregateId,
+        TAggregateId keyId,
         CancellationToken cancellationToken = default);
 }
 

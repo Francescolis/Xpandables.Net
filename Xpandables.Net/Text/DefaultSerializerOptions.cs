@@ -14,26 +14,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+using System.Text.Json;
+
+namespace Xpandables.Net.Text;
 
 /// <summary>
-/// Represents a snapshot of an event entity with an owner.
+/// Provides default options for JSON serialization.
 /// </summary>
-public interface IEventEntitySnapshot : IEventEntity
+public static class DefaultSerializerOptions
 {
     /// <summary>
-    /// Gets the owner of the event entity snapshot.
+    /// Gets the default <see cref="JsonSerializerOptions"/> to be used.
     /// </summary>
-    string OwnerId { get; }
-}
-
-/// <summary>
-/// Represents a snapshot of an event entity with an owner and a specific key type.
-/// </summary>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public interface IEventEntitySnapshot<out TKey> :
-    IEventEntity<TKey>,
-    IEventEntitySnapshot
-    where TKey : notnull, IComparable
-{
+    public static readonly JsonSerializerOptions Defaults =
+        new(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = null,
+            WriteIndented = true
+        };
 }

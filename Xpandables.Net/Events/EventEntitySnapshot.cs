@@ -28,5 +28,5 @@ public abstract class EventEntitySnapshot<TKey> :
     /// <summary>
     /// Gets the owner of the event entity snapshot.
     /// </summary>
-    public required string Owner { get; init; }
+    public required string OwnerId { get; init; }
 }

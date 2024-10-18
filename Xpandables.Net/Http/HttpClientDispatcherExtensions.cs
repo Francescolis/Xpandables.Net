@@ -21,6 +21,7 @@ using System.Text.Json;
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;
 /// <summary>
@@ -107,7 +108,7 @@ public static class HttpClientDispatcherExtensions
        [MaybeNullWhen(true)] out Exception exception,
        JsonSerializerOptions? options = default)
     {
-        options ??= HttpClientOptions.DefaultSerializerOptions;
+        options ??= DefaultSerializerOptions.Defaults;
 
         try
         {
@@ -140,7 +141,7 @@ public static class HttpClientDispatcherExtensions
         this HttpClientResponse response,
         JsonSerializerOptions? options = default)
     {
-        options ??= HttpClientOptions.DefaultSerializerOptions;
+        options ??= DefaultSerializerOptions.Defaults;
 
         ElementCollection headers = response.Headers.ToElementCollection();
 
@@ -192,7 +193,7 @@ public static class HttpClientDispatcherExtensions
         this HttpClientResponse<TResult> response,
         JsonSerializerOptions? options = default)
     {
-        options ??= HttpClientOptions.DefaultSerializerOptions;
+        options ??= DefaultSerializerOptions.Defaults;
         TResult? result = response.Result is TResult value ? value : default;
         ElementCollection headers = response.Headers.ToElementCollection();
 
