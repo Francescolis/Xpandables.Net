@@ -16,6 +16,7 @@
 ********************************************************************************/
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.States;
 
 namespace Xpandables.Net.Events.Aggregates;
 
@@ -139,4 +140,36 @@ public abstract class Aggregate<TAggregateId> : Aggregate, IAggregate<TAggregate
     /// Initializes a new instance of the <see cref="Aggregate{TAggregateId}"/> class.
     /// </summary>
     protected Aggregate() { }
+}
+
+/// <summary>
+/// Represents an abstract base class for aggregates with a specific state context.
+/// </summary>
+/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
+/// <typeparam name="TAggregateId">The type of the aggregate ID.</typeparam>
+/// <typeparam name="TAggregateState">The type of the aggregate state.</typeparam>
+public abstract class AggregateStateContext<TAggregate, TAggregateState, TAggregateId> :
+    Aggregate<TAggregateId>,
+    IStateContext<TAggregateState>
+    where TAggregate : AggregateStateContext<TAggregate, TAggregateState, TAggregateId>
+    where TAggregateId : struct
+    where TAggregateState : class, IState
+{
+    /// <inheritdoc/>
+    public TAggregateState CurrentState { get; protected set; } = default!;
+
+    /// <summary>
+    /// Initializes a new instance of the 
+    /// <see cref="AggregateStateContext{TAggregate, TAggregateId, TAggregateState}"/> class.
+    /// </summary>
+    /// <param name="startState">The initial state of the aggregate.</param>
+    protected AggregateStateContext(TAggregateState startState) =>
+        TransitionToState(startState);
+
+    /// <inheritdoc/>
+    public void TransitionToState(TAggregateState state)
+    {
+        CurrentState = state ?? throw new ArgumentNullException(nameof(state));
+        CurrentState.EnterStateContext(this);
+    }
 }
