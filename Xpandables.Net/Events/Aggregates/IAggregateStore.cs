@@ -25,7 +25,7 @@ namespace Xpandables.Net.Events.Aggregates;
 /// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
 public interface IAggregateStore<TAggregate, TAggregateId>
     where TAggregateId : struct
-    where TAggregate : class, IAggregate<TAggregateId>
+    where TAggregate : class, IAggregate<TAggregateId>, new()
 {
     /// <summary>
     /// Appends the specified aggregate asynchronously.
@@ -53,6 +53,6 @@ public interface IAggregateStore<TAggregate, TAggregateId>
 /// </summary>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
 public interface IAggregateStore<TAggregate> : IAggregateStore<TAggregate, Guid>
-    where TAggregate : class, IAggregate<Guid>
+    where TAggregate : class, IAggregate<Guid>, new()
 {
 }

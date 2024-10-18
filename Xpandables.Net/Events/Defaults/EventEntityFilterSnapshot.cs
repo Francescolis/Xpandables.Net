@@ -19,21 +19,20 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Text.Json;
 
-using Xpandables.Net.Events.Entities;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Events.Defaults;
 
 /// <summary>
 /// Represents a filter for event entity snapshots.
 /// </summary>
-public sealed record class EventEntitySnapshotFilter :
+public sealed record class EventEntityFilterSnapshot :
     EntityFilter<EventEntitySnapshot>,
     IEventFilter<EventEntitySnapshot>
 {
     /// <inheritdoc/>
     [SetsRequiredMembers]
-    public EventEntitySnapshotFilter() : base() { }
+    public EventEntityFilterSnapshot() : base() { }
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 }

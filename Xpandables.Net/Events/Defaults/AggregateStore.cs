@@ -17,28 +17,31 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Events.Filters;
+using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events.Aggregates;
+namespace Xpandables.Net.Events.Defaults;
 
 /// <summary>
 /// Represents a store for aggregates that handles appending and peeking operations.
+/// it uses a GUID as an identifier.
 /// </summary>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
 /// <remarks>
-/// Initializes a new instance of the <see cref="AggregateStore{TAggregate}"/> class.
+/// Initializes a new instance of the 
+/// <see cref="AggregateStore{TAggregate}"/> class.
+/// The <see cref="IUnitOfWork"/> must be registered with the key "Aggregate".
 /// </remarks>
 /// <param name="eventStore">The event store.</param>
 /// <param name="eventPublisher">The event publisher.</param>
 /// <param name="unitOfWork">The unit of work.</param>
-public sealed class AggregateStore<TAggregate>(
+public abstract class AggregateStore<TAggregate>(
     IEventStore eventStore,
     IEventPublisher eventPublisher,
     [FromKeyedServices("Aggregate")] IUnitOfWork unitOfWork) :
     IAggregateStore<TAggregate>
-    where TAggregate : class, IAggregate<Guid>
+    where TAggregate : class, IAggregate<Guid>, new()
 {
     private readonly IEventStore _eventStore = eventStore;
     private readonly IEventPublisher _eventPublisher = eventPublisher;
@@ -90,48 +93,40 @@ public sealed class AggregateStore<TAggregate>(
         Guid keyId,
         CancellationToken cancellationToken = default)
     {
-        IEventFilter filter = new EventEntityDomainFilter
-        {
-            Predicate = x => x.AggregateId == keyId
-        };
-
-        TAggregate aggregate = CreateAggregate();
-
-        List<IEventDomain> events = await _eventStore
-            .FetchAsync(filter, cancellationToken)
-            .OfType<IEventDomain>()
-            .ToListAsync(cancellationToken);
-
-        aggregate.LoadFromHistory(events);
-
-        if (aggregate.IsEmpty)
-        {
-            return OperationResults
-                .NotFound<TAggregate>()
-                .WithError(
-                    nameof(keyId),
-                    $"Aggregate with id {keyId} not found.")
-                .Build();
-        }
-
-        return OperationResults.Ok(aggregate).Build();
-    }
-
-    private static TAggregate CreateAggregate()
-    {
         try
         {
-            TAggregate aggregate = Activator.CreateInstance<TAggregate>()
-                ?? throw new InvalidOperationException(
-                    "Aggregate creation failed.");
+            IEventFilter filter = new EventEntityFilterDomain
+            {
+                Predicate = x => x.AggregateId == keyId
+            };
 
-            return aggregate;
+            TAggregate aggregate = new();
+
+            List<IEventDomain> events = await _eventStore
+                .FetchAsync(filter, cancellationToken)
+                .OfType<IEventDomain>()
+                .ToListAsync(cancellationToken);
+
+            aggregate.LoadFromHistory(events);
+
+            if (aggregate.IsEmpty)
+            {
+                return OperationResults
+                    .NotFound<TAggregate>()
+                    .WithError(
+                        nameof(keyId),
+                        $"Aggregate with id {keyId} not found.")
+                    .Build();
+            }
+
+            return OperationResults.Ok(aggregate).Build();
         }
         catch (Exception exception)
-            when (exception is InvalidOperationException)
         {
-            throw new InvalidOperationException(
-                "Aggregate creation failed.", exception);
+            return OperationResults
+                .InternalServerError<TAggregate>()
+                .WithException(exception)
+                .Build();
         }
     }
 }

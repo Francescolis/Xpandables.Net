@@ -14,10 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Events.Defaults;
+
 /// <summary>
-/// Represents an integration event entity with a GUID identifier.
+/// Represents a class an event entity in a domain context.
+/// <para>It uses <see cref="Guid"/> as Aggregate Id and Key.</para>
 /// </summary>
-public sealed class EventEntityIntegration : EventEntityIntegration<Guid>
+public sealed class EventEntityDomain : EventEntityDomain<Guid, Guid>
 {
 }

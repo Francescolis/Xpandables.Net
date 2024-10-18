@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Events.Defaults;
 
 /// <summary>
 /// Represents a snapshot of an event entity with a <see cref="Guid"/> identifier.

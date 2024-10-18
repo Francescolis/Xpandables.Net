@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,39 +19,37 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Text.Json;
 
-using Xpandables.Net.Events.Entities;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Events.Defaults;
 
 /// <summary>
-/// Represents a filter for event entity domains.
+/// Represents a filter for event entity integration.
 /// </summary>
-public sealed record EventEntityDomainFilter :
-    EntityFilter<EventEntityDomain>,
-    IEventFilter<EventEntityDomain>
+public sealed record EventEntityFilterIntegration :
+    EntityFilter<EventEntityIntegration>,
+    IEventFilter<EventEntityIntegration>
 {
     /// <inheritdoc/>
     [SetsRequiredMembers]
-    public EventEntityDomainFilter() : base() { }
+    public EventEntityFilterIntegration() : base() { }
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 }
 
 /// <summary>
-/// Represents a filter for event entity domains with a specific result type.
+/// Represents a filter for event entity integration with a specified result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntityDomainFilter<TResult> :
-    EntityFilter<EventEntityDomain, TResult>,
-    IEventFilter<EventEntityDomain, TResult>
+public sealed record EventEntityIntegrationFilter<TResult> :
+    EntityFilter<EventEntityIntegration, TResult>,
+    IEventFilter<EventEntityIntegration, TResult>
 {
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-
     /// <inheritdoc/>
     public override required
-        Expression<Func<EventEntityDomain, TResult>> Selector
+        Expression<Func<EventEntityIntegration, TResult>> Selector
     { get; init; }
 }

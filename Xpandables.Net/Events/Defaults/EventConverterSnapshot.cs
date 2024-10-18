@@ -17,21 +17,21 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Events.Entities;
+using Xpandables.Net.Events.Converters;
 
-namespace Xpandables.Net.Events.Converters;
+namespace Xpandables.Net.Events.Defaults;
 
 /// <summary>
-/// Converts event entities to domain events and vice versa.
+/// Converts event snapshots to and from their entity representations.
 /// </summary>
-public sealed class EventDomainConverter : EventConverter
+public sealed class EventConverterSnapshot : EventConverter
 {
     /// <inheritdoc/>
-    public override Type EventType => typeof(IEventDomain);
+    public override Type EventType => typeof(IEventSnapshot);
 
     /// <inheritdoc/>
-    public override bool CanConvert(Type type) =>
-        EventType.IsAssignableFrom(type);
+    public override bool CanConvert(Type typeToConvert) =>
+        EventType.IsAssignableFrom(typeToConvert);
 
     /// <inheritdoc/>
     public override IEvent ConvertFrom(
@@ -46,7 +46,7 @@ public sealed class EventDomainConverter : EventConverter
                 ?? throw new InvalidOperationException(
                     $"Failed to deserialize the event data to {eventType.Name}.");
 
-            return (IEventDomain)@event;
+            return (IEventSnapshot)@event;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -64,24 +64,23 @@ public sealed class EventDomainConverter : EventConverter
     {
         try
         {
-            IEventDomain eventDomain = (IEventDomain)@event;
+            IEventSnapshot snapshot = (IEventSnapshot)@event;
 
-            return new EventEntityDomain()
+            return new EventEntitySnapshot
             {
-                Id = eventDomain.EventId,
-                AggregateId = Guid.Parse(eventDomain.AggregateId.ToString()!),
-                EventName = eventDomain.GetType().Name,
-                EventFullName = eventDomain.GetType().AssemblyQualifiedName!,
-                EventVersion = eventDomain.EventVersion,
-                EventData = SerializeEvent(eventDomain, options)
+                Id = snapshot.EventId,
+                Owner = snapshot.Owner,
+                EventVersion = snapshot.EventVersion,
+                EventName = snapshot.GetType().Name,
+                EventFullName = snapshot.GetType().AssemblyQualifiedName!,
+                EventData = SerializeEvent(snapshot, options)
             };
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
         {
-            throw new InvalidOperationException(
-                $"Failed to convert the event {@event?.GetType().Name} to entity. " +
-                $"See inner exception for details.", exception);
+
+            throw;
         }
     }
 }

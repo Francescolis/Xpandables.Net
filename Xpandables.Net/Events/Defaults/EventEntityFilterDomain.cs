@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,38 +18,40 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Text.Json;
 
-using Xpandables.Net.Events.Entities;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Events.Defaults;
 
 /// <summary>
-/// Represents a filter for event entity integration.
+/// Represents a filter for event entity domains.
 /// </summary>
-public sealed record EventEntityIntegrationFilter :
-    EntityFilter<EventEntityIntegration>,
-    IEventFilter<EventEntityIntegration>
+public sealed record EventEntityFilterDomain :
+    EntityFilter<EventEntityDomain>,
+    IEventFilter<EventEntityDomain>
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventEntityFilterDomain"/> class.
+    /// </summary>
     [SetsRequiredMembers]
-    public EventEntityIntegrationFilter() : base() { }
+    public EventEntityFilterDomain() : base() { }
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 }
 
 /// <summary>
-/// Represents a filter for event entity integration with a specified result type.
+/// Represents a filter for event entity domains with a specific result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntityIntegrationFilter<TResult> :
-    EntityFilter<EventEntityIntegration, TResult>,
-    IEventFilter<EventEntityIntegration, TResult>
+public sealed record EventEntityDomainFilter<TResult> :
+    EntityFilter<EventEntityDomain, TResult>,
+    IEventFilter<EventEntityDomain, TResult>
 {
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
+
     /// <inheritdoc/>
     public override required
-        Expression<Func<EventEntityIntegration, TResult>> Selector
+        Expression<Func<EventEntityDomain, TResult>> Selector
     { get; init; }
 }
