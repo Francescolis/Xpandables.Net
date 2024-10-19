@@ -24,6 +24,7 @@ using Microsoft.Extensions.Hosting;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Events.Defaults;
+using Xpandables.Net.States;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
@@ -31,6 +32,19 @@ namespace Xpandables.Net.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionEventExtensions
 {
+    /// <summary>
+    /// Adds the aggregate snapshot store to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the aggregate 
+    /// snapshot store to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXAggregateSnapshotStore(
+        this IServiceCollection services) =>
+        services.XTryDecorate(
+            typeof(IAggregateStore<>),
+            typeof(AggregateSnapshotStore<>),
+            typeof(IOriginator));
+
     /// <summary>
     /// Adds the specified aggregate store implementation to the 
     /// <see cref="IServiceCollection"/>.
@@ -277,9 +291,7 @@ public static class ServiceCollectionEventExtensions
         var eventHandlerTypes = assemblies
             .SelectMany(assembly => assembly.GetExportedTypes())
             .Where(type =>
-                type.IsClass
-                && !type.IsAbstract
-                && type.IsSealed
+                type is { IsClass: true, IsAbstract: false, IsSealed: true }
                 && type.GetInterfaces().Any(@interface =>
                     @interface.IsGenericType
                     && @interface.GetGenericTypeDefinition() == typeof(IEventHandler<>)))

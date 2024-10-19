@@ -54,7 +54,7 @@ public static class ServiceCollectionCompositionExtensions
         ServiceExportExtensions.ApplyServiceExports<IAddServiceExport>(
             options, exports =>
         {
-            foreach (IAddService export in exports)
+            foreach (IAddServiceExport export in exports)
             {
                 export.AddServices(services, configuration);
             }

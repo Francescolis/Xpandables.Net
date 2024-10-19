@@ -14,28 +14,17 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
-/// Interface for adding services to the service collection.
+/// Provides a lazy initialization of a service resolved 
+/// from the <see cref="IServiceProvider"/>.
 /// </summary>
-public interface IAddService
+/// <typeparam name="T">The type of the service to be resolved.</typeparam>
+public sealed class LazyResolved<T>(IServiceProvider provider) :
+    Lazy<T>(provider.GetRequiredService<T>())
+    where T : notnull
 {
-    /// <summary>
-    /// Adds services to the specified service collection.
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    public void AddServices(IServiceCollection services) { }
-
-    /// <summary>
-    /// Adds services to the specified service collection using the provided configuration.
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    /// <param name="configuration">The configuration to use for adding services.</param>
-    public void AddServices(
-        IServiceCollection services,
-        IConfiguration configuration) => AddServices(services);
 }
