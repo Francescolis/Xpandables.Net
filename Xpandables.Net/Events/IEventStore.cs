@@ -58,24 +58,3 @@ public interface IEventStore
         IEnumerable<EventPublished> events,
         CancellationToken cancellationToken = default);
 }
-
-/// <summary>
-/// Represents an event that has been published.
-/// </summary>
-public readonly record struct EventPublished
-{
-    /// <summary>
-    /// Gets the unique identifier of the event.
-    /// </summary>
-    public required Guid EventId { get; init; }
-
-    /// <summary>
-    /// Gets the date and time when the event was published.
-    /// </summary>
-    public required DateTimeOffset PublishedOn { get; init; }
-
-    /// <summary>
-    /// Gets the error message if the event failed to publish.
-    /// </summary>
-    public required string? ErrorMessage { get; init; }
-}

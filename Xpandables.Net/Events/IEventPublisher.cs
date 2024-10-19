@@ -46,7 +46,7 @@ public interface IEventPublisher
     /// requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task 
     /// result contains the operation result.</returns>
-    Task<IOperationResult> PublishAsync<TEvent>(
+    Task<IOperationResult<IEnumerable<EventPublished>>> PublishAsync<TEvent>(
         IEnumerable<TEvent> events,
         CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent;

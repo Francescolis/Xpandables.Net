@@ -16,6 +16,7 @@
 ********************************************************************************/
 
 using System.Collections.Concurrent;
+using System.Net;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -60,22 +61,42 @@ public sealed class EventPublisherSubscriber(
                 .WhenAll(tasks)
                 .ConfigureAwait(false);
 
-            IOperationResult failure = results
-                .Where(result => !result.IsSuccessStatusCode)
-                .Aggregate((op1, op2) => { op1.Errors.Merge(op2.Errors); return op1; });
+            IFailureBuilder failureBuilder = OperationResults
+                .Failure()
+                .WithExtension(nameof(@event.EventId), @event.EventId.ToString());
 
-            return failure.Errors.Any() ? failure : OperationResults.Ok().Build();
+            // if one of the result is an internal server error, get it.
+            if (results.Any(result => result.IsInternalServerError()))
+            {
+                failureBuilder = failureBuilder
+                    .WithStatusCode(HttpStatusCode.InternalServerError);
+            }
+
+            // add all errors to the failure result.
+            results
+                .Where(result => !result.IsSuccessStatusCode)
+                .ForEach(result => failureBuilder.WithErrors(result.Errors));
+
+            IOperationResult failure = failureBuilder.Build();
+
+            return failure.Errors.Any()
+                ? failure :
+                OperationResults
+                    .Ok()
+                    .WithExtension(nameof(@event.EventId), @event.EventId.ToString())
+                    .Build();
         }
         catch (Exception exception)
         {
             return OperationResults
                 .InternalServerError()
+                .WithExtension(nameof(@event.EventId), @event.EventId.ToString())
                 .WithException(exception)
                 .Build();
         }
     }
     /// <inheritdoc/>
-    public async Task<IOperationResult> PublishAsync<TEvent>(
+    public async Task<IOperationResult<IEnumerable<EventPublished>>> PublishAsync<TEvent>(
         IEnumerable<TEvent> events,
         CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent
@@ -90,16 +111,26 @@ public sealed class EventPublisherSubscriber(
                 .WhenAll(operationResults)
                 .ConfigureAwait(false);
 
-            IOperationResult failure = results
-                .Where(result => !result.IsSuccessStatusCode)
-                .Aggregate((op1, op2) => { op1.Errors.Merge(op2.Errors); return op1; });
+            IEnumerable<EventPublished> eventPublished = results
+                .Select(result => new EventPublished
+                {
+                    EventId = Guid.Parse(
+                        result.Extensions[nameof(Event.EventId)]
+                        !.Value.Values.First()),
+                    PublishedOn = DateTimeOffset.UtcNow,
+                    ErrorMessage = !result.IsSuccessStatusCode
+                        ? null
+                        : string.Join(
+                            Environment.NewLine,
+                            result.Errors.Select(error => error.Values))
+                });
 
-            return failure.Errors.Any() ? failure : OperationResults.Ok().Build();
+            return OperationResults.Ok(eventPublished).Build();
         }
         catch (Exception exception)
         {
             return OperationResults
-                .InternalServerError()
+                .InternalServerError<IEnumerable<EventPublished>>()
                 .WithException(exception)
                 .Build();
         }
