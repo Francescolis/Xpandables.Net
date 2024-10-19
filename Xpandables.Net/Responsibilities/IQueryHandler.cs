@@ -58,3 +58,15 @@ public interface IQueryHandlerWrapper<TResult>
         IQuery<TResult> query,
         CancellationToken cancellationToken = default);
 }
+
+internal sealed class QueryHandlerWrapper<TQuery, TResult>(
+    IQueryHandler<TQuery, TResult> decoratee) :
+    IQueryHandlerWrapper<TResult>
+    where TQuery : notnull, IQuery<TResult>
+{
+    /// <inheritdoc/>>
+    public Task<IOperationResult<TResult>> HandleAsync(
+        IQuery<TResult> query,
+        CancellationToken cancellationToken = default) =>
+        decoratee.HandleAsync((TQuery)query, cancellationToken);
+}

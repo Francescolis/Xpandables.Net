@@ -50,3 +50,14 @@ public interface IQueryAsyncHandlerWrapper<TResult>
          IQueryAsync<TResult> query,
          CancellationToken cancellationToken = default);
 }
+
+internal sealed class QueryAsyncHandlerWrapper<TQuery, TResult>(
+    IQueryAsyncHandler<TQuery, TResult> decoratee) :
+    IQueryAsyncHandlerWrapper<TResult>
+    where TQuery : notnull, IQueryAsync<TResult>
+{
+    public IAsyncEnumerable<TResult> HandleAsync(
+        IQueryAsync<TResult> query,
+        CancellationToken cancellationToken = default) =>
+        decoratee.HandleAsync((TQuery)query, cancellationToken);
+}

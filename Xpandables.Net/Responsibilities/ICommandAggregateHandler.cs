@@ -58,3 +58,16 @@ public interface ICommandAggregateHandlerWrapper<TAggregate>
         ICommandAggregate<TAggregate> command,
         CancellationToken cancellationToken = default);
 }
+
+internal sealed class CommandAggregateHandlerWrapper<TCommand, TAggregate>(
+    ICommandAggregateHandler<TCommand, TAggregate> decoratee) :
+    ICommandAggregateHandlerWrapper<TAggregate>
+    where TCommand : notnull, ICommandAggregate<TAggregate>
+    where TAggregate : class, IAggregate, new()
+{
+    /// <inheritdoc/>
+    public Task<IOperationResult> HandleAsync(
+        ICommandAggregate<TAggregate> command,
+        CancellationToken cancellationToken = default) =>
+        decoratee.HandleAsync((TCommand)command, cancellationToken);
+}
