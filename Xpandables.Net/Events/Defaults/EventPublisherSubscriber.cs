@@ -23,6 +23,12 @@ using Xpandables.Net.Collections;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Events.Defaults;
+
+/// <summary>
+/// Provides a mechanism for publishing and subscribing to events.
+/// </summary>
+/// <param name="serviceProvider">The service provider to resolve event 
+/// handlers.</param>
 public sealed class EventPublisherSubscriber(
     IServiceProvider serviceProvider) :
     Disposable, IEventPublisher, IEventSubscriber
@@ -36,35 +42,67 @@ public sealed class EventPublisherSubscriber(
         CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent
     {
-        ConcurrentBag<object> handlers = GetHandlersOf<TEvent>();
+        try
+        {
+            ConcurrentBag<object> handlers = GetHandlersOf<TEvent>();
 
-        Task<IOperationResult>[] tasks = handlers
-            .Select(handler => handler switch
-            {
-                Action<TEvent> action => Task.FromResult(action.ToOperationResult(@event)),
-                Func<TEvent, Task> func => func(@event).ToOperationResultAsync(),
-                IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event),
-                _ => Task.FromResult(OperationResults.Ok().Build())
-            })
-            .ToArray();
+            Task<IOperationResult>[] tasks = handlers
+                .Select(handler => handler switch
+                {
+                    Action<TEvent> action => Task.FromResult(action.ToOperationResult(@event)),
+                    Func<TEvent, Task> func => func(@event).ToOperationResultAsync(),
+                    IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event),
+                    _ => Task.FromResult(OperationResults.Ok().Build())
+                })
+                .ToArray();
 
-        IOperationResult[] results = await Task
-            .WhenAll(tasks)
-            .ConfigureAwait(false);
+            IOperationResult[] results = await Task
+                .WhenAll(tasks)
+                .ConfigureAwait(false);
 
-        IOperationResult failure = results
-            .Where(result => !result.IsSuccessStatusCode)
-            .Aggregate((op1, op2) => { op1.Errors.Merge(op2.Errors); return op1; });
+            IOperationResult failure = results
+                .Where(result => !result.IsSuccessStatusCode)
+                .Aggregate((op1, op2) => { op1.Errors.Merge(op2.Errors); return op1; });
 
-        return failure.Errors.Any() ? failure : OperationResults.Ok().Build();
+            return failure.Errors.Any() ? failure : OperationResults.Ok().Build();
+        }
+        catch (Exception exception)
+        {
+            return OperationResults
+                .InternalServerError()
+                .WithException(exception)
+                .Build();
+        }
     }
     /// <inheritdoc/>
-    public Task<IOperationResult> PublishAsync<TEvent>(
+    public async Task<IOperationResult> PublishAsync<TEvent>(
         IEnumerable<TEvent> events,
         CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent
     {
+        try
+        {
+            Task<IOperationResult>[] operationResults = events
+                .Select(@event => PublishAsync(@event, cancellationToken))
+                .ToArray();
 
+            IOperationResult[] results = await Task
+                .WhenAll(operationResults)
+                .ConfigureAwait(false);
+
+            IOperationResult failure = results
+                .Where(result => !result.IsSuccessStatusCode)
+                .Aggregate((op1, op2) => { op1.Errors.Merge(op2.Errors); return op1; });
+
+            return failure.Errors.Any() ? failure : OperationResults.Ok().Build();
+        }
+        catch (Exception exception)
+        {
+            return OperationResults
+                .InternalServerError()
+                .WithException(exception)
+                .Build();
+        }
     }
 
     /// <inheritdoc/>
