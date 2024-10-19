@@ -184,7 +184,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Assert
         var multipart = context.Message.Content as MultipartFormDataContent;
         multipart.Should().NotBeNull();
-        multipart!.Count().Should().Be(1);
+        multipart!.Should().ContainSingle();
     }
 
     private record TestHttpRequestPatch :

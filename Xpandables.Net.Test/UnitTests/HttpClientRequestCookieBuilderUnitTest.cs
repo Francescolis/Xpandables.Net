@@ -10,10 +10,8 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
 {
     private readonly HttpClientRequestCookieBuilder _builder;
 
-    public HttpClientRequestCookieBuilderUnitTest()
-    {
+    public HttpClientRequestCookieBuilderUnitTest() =>
         _builder = new HttpClientRequestCookieBuilder();
-    }
 
     [Fact]
     public void Order_ShouldBeThree()
@@ -78,14 +76,12 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
 
     private class TestHttpRequestCookie : IHttpClientRequest, IHttpRequestCookie
     {
-        public IDictionary<string, object?> GetCookieHeaderValue()
-        {
-            return new Dictionary<string, object?>
+        public IDictionary<string, object?> GetCookieHeaderValue() =>
+            new Dictionary<string, object?>
                 {
                     { "cookie1", "value1" },
                     { "cookie2", "value2" }
                 };
-        }
     }
 
 }

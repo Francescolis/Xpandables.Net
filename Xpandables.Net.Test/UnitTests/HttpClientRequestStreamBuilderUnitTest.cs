@@ -141,14 +141,14 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         // Assert
         var multipart = context.Message.Content as MultipartFormDataContent;
         multipart.Should().NotBeNull();
-        multipart!.Count().Should().Be(1);
+        multipart!.Should().ContainSingle();
     }
 
     private class TestHttpRequestStream : IHttpClientRequest, IHttpRequestStream
     {
         public StreamContent GetStreamContent()
         {
-            var stream = new System.IO.MemoryStream(new byte[] { 1, 2, 3, 4 });
+            var stream = new System.IO.MemoryStream([1, 2, 3, 4]);
             return new StreamContent(stream);
         }
     }

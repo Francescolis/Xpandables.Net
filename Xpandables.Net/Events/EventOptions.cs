@@ -71,16 +71,15 @@ public sealed record EventOptions
     /// </summary>
     /// <param name="options">The options to use as a base for the default values.</param>
     /// <returns>The default <see cref="EventOptions"/>.</returns>
-    public static EventOptions Default(EventOptions options) =>
-        options with
-        {
-            SerializerOptions = DefaultSerializerOptions.Defaults,
-            DisposeEventEntityAfterPersistence = true,
-            IsSnapshotEnabled = true,
-            SnapshotFrequency = 50,
-            IsEventSchedulerEnabled = true,
-            MaxSchedulerRetries = 5,
-            SchedulerRetryInterval = 500,
-            MaxSchedulerEventPerThread = 100
-        };
+    public static void Default(EventOptions options) => _ = options with
+    {
+        SerializerOptions = DefaultSerializerOptions.Defaults,
+        DisposeEventEntityAfterPersistence = true,
+        IsSnapshotEnabled = true,
+        SnapshotFrequency = 50,
+        IsEventSchedulerEnabled = true,
+        MaxSchedulerRetries = 5,
+        SchedulerRetryInterval = 500,
+        MaxSchedulerEventPerThread = 100
+    };
 }

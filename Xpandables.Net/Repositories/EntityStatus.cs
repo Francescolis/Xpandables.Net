@@ -45,4 +45,9 @@ public static class EntityStatus
     /// It is in an error state.
     /// </summary>
     public const string ONERROR = nameof(ONERROR);
+
+    /// <summary>
+    /// It is published.
+    /// </summary>
+    public const string PUBLISHED = nameof(PUBLISHED);
 }

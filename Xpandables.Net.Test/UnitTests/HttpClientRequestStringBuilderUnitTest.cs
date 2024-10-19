@@ -50,7 +50,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         context.Message.Content.Should().NotBeNull();
         context.Message.Content.Should().BeOfType<StringContent>();
         var content = context.Message.Content as StringContent;
-        content.Headers.ContentType.MediaType.Should().Be("application/json");
+        content!.Headers.ContentType!.MediaType.Should().Be("application/json");
     }
 
     [Fact]
@@ -155,15 +155,12 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Assert
         var multipart = context.Message.Content as MultipartFormDataContent;
         multipart.Should().NotBeNull();
-        multipart!.Count().Should().Be(1);
+        multipart!.Should().ContainSingle();
     }
 
     private class TestHttpRequestString : IHttpClientRequest, IHttpRequestString
     {
-        public object GetStringContent()
-        {
-            return new { Key = "value" };
-        }
+        public object GetStringContent() => new { Key = "value" };
     }
 
 }

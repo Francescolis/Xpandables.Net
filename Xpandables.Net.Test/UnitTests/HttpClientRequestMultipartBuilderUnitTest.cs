@@ -120,9 +120,11 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
     {
         public MultipartFormDataContent GetMultipartContent()
         {
-            var content = new MultipartFormDataContent();
-            content.Add(new StringContent("value1"), "key1");
-            content.Add(new StringContent("value2"), "key2");
+            var content = new MultipartFormDataContent
+            {
+                { new StringContent("value1"), "key1" },
+                { new StringContent("value2"), "key2" }
+            };
             return content;
         }
     }
