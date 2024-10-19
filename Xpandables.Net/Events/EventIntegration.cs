@@ -19,6 +19,6 @@ namespace Xpandables.Net.Events;
 /// Represents an integration event that is used to communicate between 
 /// different systems.
 /// </summary>
-public abstract record EventIntegration : Event, IEventIntegration
+public record EventIntegration : Event, IEventIntegration
 {
 }

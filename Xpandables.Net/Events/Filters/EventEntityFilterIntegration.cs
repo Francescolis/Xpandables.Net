@@ -21,42 +21,41 @@ using System.Text.Json;
 
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events.Defaults;
+namespace Xpandables.Net.Events.Filters;
 
 /// <summary>
-/// Represents a filter for event entity snapshots.
+/// Represents a filter for event entity integration.
 /// </summary>
-public sealed record class EventEntityFilterSnapshot :
-    EntityFilter<EventEntitySnapshot>,
-    IEventFilter<EventEntitySnapshot>
+public sealed record EventEntityFilterIntegration :
+    EntityFilter<EventEntityIntegration>,
+    IEventFilter<EventEntityIntegration>
 {
     /// <inheritdoc/>
     [SetsRequiredMembers]
-    public EventEntityFilterSnapshot() : base() { }
+    public EventEntityFilterIntegration() : base() { }
 
     /// <inheritdoc/>
-    public Type EventType => typeof(IEventSnapshot);
+    public Type EventType => typeof(IEventIntegration);
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 }
 
 /// <summary>
-/// Represents a filter for event entity snapshots with a specified result type.
+/// Represents a filter for event entity integration with a specified result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntitySnapshotFilter<TResult> :
-    EntityFilter<EventEntitySnapshot, TResult>,
-    IEventFilter<EventEntitySnapshot, TResult>
+public sealed record EventEntityIntegrationFilter<TResult> :
+    EntityFilter<EventEntityIntegration, TResult>,
+    IEventFilter<EventEntityIntegration, TResult>
 {
     /// <inheritdoc/>
-    public Type EventType => typeof(IEventSnapshot);
+    public Type EventType => typeof(IEventIntegration);
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-
     /// <inheritdoc/>
     public override required
-        Expression<Func<EventEntitySnapshot, TResult>> Selector
+        Expression<Func<EventEntityIntegration, TResult>> Selector
     { get; init; }
 }

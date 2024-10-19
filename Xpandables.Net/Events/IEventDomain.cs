@@ -14,10 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
-using Xpandables.Net.Events.Aggregates;
-
 namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents a domain event that includes versioning and an aggregate identifier.
@@ -34,24 +30,5 @@ public interface IEventDomain : IEvent
     /// <summary>
     /// Gets the aggregate identifier associated with the event.
     /// </summary>
-    object AggregateId { get; }
-}
-
-/// <summary>
-/// Represents a domain event that includes versioning, a strongly-typed 
-/// aggregate identifier, and an aggregate.
-/// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public interface IEventDomain<out TAggregate, out TAggregateId> : IEventDomain
-    where TAggregateId : struct
-    where TAggregate : class, IAggregate<TAggregateId>
-{
-    /// <summary>
-    /// Gets the aggregate identifier associated with the event.
-    /// </summary>
-    new TAggregateId AggregateId { get; }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    object IEventDomain.AggregateId => AggregateId;
+    Guid AggregateId { get; }
 }

@@ -20,7 +20,7 @@ using System.Text.Json;
 
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events.Defaults;
+namespace Xpandables.Net.Events.Filters;
 
 /// <summary>
 /// Represents a filter for event entity domains.

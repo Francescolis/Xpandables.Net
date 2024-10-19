@@ -32,5 +32,5 @@ public interface IEventSnapshot : IEvent
     /// <summary>
     /// Gets the owner of the event snapshot.
     /// </summary>
-    string OwnerId { get; }
+    Guid OwnerId { get; }
 }

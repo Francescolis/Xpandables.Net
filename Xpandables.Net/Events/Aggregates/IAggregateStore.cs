@@ -22,10 +22,8 @@ namespace Xpandables.Net.Events.Aggregates;
 /// Represents a store for aggregates.
 /// </summary>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
-public interface IAggregateStore<TAggregate, TAggregateId>
-    where TAggregateId : struct
-    where TAggregate : class, IAggregate<TAggregateId>, new()
+public interface IAggregateStore<TAggregate>
+    where TAggregate : class, IAggregate, new()
 {
     /// <summary>
     /// Appends the specified aggregate asynchronously.
@@ -44,15 +42,6 @@ public interface IAggregateStore<TAggregate, TAggregateId>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation result containing the aggregate.</returns>
     Task<IOperationResult<TAggregate>> PeekAsync(
-        TAggregateId keyId,
+        Guid keyId,
         CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Represents a store for aggregates with a GUID identifier.
-/// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public interface IAggregateStore<TAggregate> : IAggregateStore<TAggregate, Guid>
-    where TAggregate : class, IAggregate<Guid>, new()
-{
 }

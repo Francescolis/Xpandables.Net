@@ -18,11 +18,11 @@
 
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Operations;
 using Xpandables.Net.States;
 
-namespace Xpandables.Net.Events.Defaults;
+namespace Xpandables.Net.Events.Aggregates;
 
 /// <summary>
 /// Represents a store for aggregate snapshots.
@@ -33,7 +33,7 @@ public sealed class AggregateSnapshotStore<TAggregate>(
     IEventStore eventStore,
     IOptions<EventOptions> options) :
     IAggregateStore<TAggregate>
-    where TAggregate : class, IAggregate<Guid>, IOriginator, new()
+    where TAggregate : class, IAggregate, IOriginator, new()
 {
     private readonly IAggregateStore<TAggregate> _aggregateStore = aggregateStore;
     private readonly IEventStore _eventStore = eventStore;
@@ -55,7 +55,7 @@ public sealed class AggregateSnapshotStore<TAggregate>(
                     EventId = Guid.NewGuid(),
                     EventVersion = aggregate.Version,
                     Memento = memento,
-                    OwnerId = aggregate.AggregateId.ToString()
+                    OwnerId = aggregate.AggregateId
                 };
 
                 await _eventStore
@@ -96,7 +96,7 @@ public sealed class AggregateSnapshotStore<TAggregate>(
         {
             IEventFilter filter = new EventEntityFilterSnapshot
             {
-                Predicate = x => x.OwnerId == keyId.ToString(),
+                Predicate = x => x.OwnerId == keyId,
                 OrderBy = x => x.OrderByDescending(x => x.EventVersion),
                 PageIndex = 1,
                 PageSize = 1

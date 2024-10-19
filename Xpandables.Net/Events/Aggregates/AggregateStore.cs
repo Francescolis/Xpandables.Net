@@ -17,11 +17,11 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events.Defaults;
+namespace Xpandables.Net.Events.Aggregates;
 
 /// <summary>
 /// Represents a store for aggregates that handles appending and peeking operations.
@@ -41,7 +41,7 @@ public abstract class AggregateStore<TAggregate>(
     IEventPublisher eventPublisher,
     [FromKeyedServices("Aggregate")] IUnitOfWork unitOfWork) :
     IAggregateStore<TAggregate>
-    where TAggregate : class, IAggregate<Guid>, new()
+    where TAggregate : class, IAggregate, new()
 {
     private readonly IEventStore _eventStore = eventStore;
     private readonly IEventPublisher _eventPublisher = eventPublisher;

@@ -23,7 +23,7 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents an event entity that contains event-related data.
 /// </summary>
-public interface IEventEntity : IEntity, IDisposable
+public interface IEventEntity : IEntity<Guid>, IDisposable
 {
     /// <summary>
     /// Gets the name of the event.
@@ -45,13 +45,3 @@ public interface IEventEntity : IEntity, IDisposable
     /// </summary>
     JsonDocument EventData { get; }
 }
-
-/// <summary>
-/// Represents an event entity with a specific key.
-/// </summary>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public interface IEventEntity<out TKey> :
-    IEventEntity,
-    IEntity<TKey>
-    where TKey : notnull, IComparable
-{ }

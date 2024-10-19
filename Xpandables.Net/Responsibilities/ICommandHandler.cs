@@ -14,15 +14,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+using Xpandables.Net.Operations;
 
+namespace Xpandables.Net.Responsibilities;
 /// <summary>
-/// Represents a snapshot of an event entity with an owner.
+/// Defines a handler for a command of type <typeparamref name="TCommand"/>.
 /// </summary>
-public interface IEventEntitySnapshot : IEventEntity
+/// <typeparam name="TCommand">The type of the command.</typeparam>
+public interface ICommandHandler<in TCommand>
+    where TCommand : notnull, ICommand
 {
     /// <summary>
-    /// Gets the owner of the event entity snapshot.
+    /// Handles the specified command asynchronously.
     /// </summary>
-    Guid OwnerId { get; }
+    /// <param name="command">The command to handle.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation 
+    /// requests.</param>
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task result contains the operation result.</returns>
+    Task<IOperationResult> HandleAsync(
+        TCommand command,
+        CancellationToken cancellationToken = default);
 }

@@ -26,11 +26,9 @@ namespace Xpandables.Net.Responsibilities;
 /// <remarks>It's used for implementing the Decider pattern. </remarks>
 /// <typeparam name="TCommand">The type of the command.</typeparam>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public interface ICommandAggregateHandler<TCommand, TAggregate, TKey>
-    where TCommand : ICommandAggregate<TAggregate, TKey>
-    where TAggregate : class, IAggregate<TKey>, new()
-    where TKey : struct
+public interface ICommandAggregateHandler<TCommand, TAggregate>
+    where TCommand : notnull, ICommandAggregate<TAggregate>
+    where TAggregate : class, IAggregate, new()
 {
     /// <summary>
     /// Handles the specified command asynchronously.
@@ -44,14 +42,19 @@ public interface ICommandAggregateHandler<TCommand, TAggregate, TKey>
 }
 
 /// <summary>
-/// Defines a handler for command aggregates with a GUID key.
+/// Defines a wrapper for command aggregate handlers.
 /// </summary>
-/// <remarks>It's used for implementing the Decider pattern. </remarks>
-/// <typeparam name="TCommand">The type of the command.</typeparam>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public interface ICommandAggregateHandler<TCommand, TAggregate> :
-    ICommandAggregateHandler<TCommand, TAggregate, Guid>
-    where TCommand : ICommandAggregate<TAggregate, Guid>
-    where TAggregate : class, IAggregate<Guid>, new()
+public interface ICommandAggregateHandlerWrapper<TAggregate>
+    where TAggregate : class, IAggregate, new()
 {
+    /// <summary>
+    /// Handles the specified command asynchronously.
+    /// </summary>
+    /// <param name="command">The command to handle.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the operation.</returns>
+    Task<IOperationResult> HandleAsync(
+        ICommandAggregate<TAggregate> command,
+        CancellationToken cancellationToken = default);
 }

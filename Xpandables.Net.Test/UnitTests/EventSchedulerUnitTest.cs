@@ -8,7 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Collections;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
-using Xpandables.Net.Events.Defaults;
+using Xpandables.Net.Events.Converters;
+using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Text;
 
@@ -109,7 +110,7 @@ public class InMemoryEventStore : IEventStore
         CancellationToken cancellationToken = default)
     {
         var entities = _eventEntities
-            .OfType<IEventEntityIntegration<Guid>>()
+            .OfType<IEventEntityIntegration>()
             .Where(e => events.Any(ep => ep.EventId == e.Id));
 
         entities.ForEach(e => e.SetStatus(EntityStatus.PUBLISHED));

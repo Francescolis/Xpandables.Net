@@ -17,12 +17,9 @@
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents an integration event entity with a specified key type.
+/// Represents an integration event entity.
 /// </summary>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public abstract class EventEntityIntegration<TKey> :
-    EventEntity<TKey>, IEventEntityIntegration<TKey>
-    where TKey : notnull, IComparable
+public sealed class EventEntityIntegration : EventEntity, IEventEntityIntegration
 {
     /// <summary>
     /// Gets the error message associated with the event entity.

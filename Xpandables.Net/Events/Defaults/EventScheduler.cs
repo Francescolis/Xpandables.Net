@@ -21,6 +21,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Repositories;
 

@@ -21,12 +21,9 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents an abstract base class for event entities with a specific 
-/// key and version.
+/// Represents an abstract base class for event entities.
 /// </summary>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public abstract class EventEntity<TKey> : Entity<TKey>, IEventEntity<TKey>
-    where TKey : notnull, IComparable
+public abstract class EventEntity : Entity<Guid>, IEventEntity
 {
     /// <inheritdoc/>
     public required string EventName { get; init; }

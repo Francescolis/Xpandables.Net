@@ -17,16 +17,12 @@
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents a snapshot of an event entity with a specified key type.
+/// Represents a snapshot of an event entity.
 /// </summary>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public abstract class EventEntitySnapshot<TKey> :
-    EventEntity<TKey>,
-    IEventEntitySnapshot<TKey>
-    where TKey : notnull, IComparable
+public sealed class EventEntitySnapshot : EventEntity, IEventEntitySnapshot
 {
     /// <summary>
     /// Gets the owner of the event entity snapshot.
     /// </summary>
-    public required string OwnerId { get; init; }
+    public required Guid OwnerId { get; init; }
 }

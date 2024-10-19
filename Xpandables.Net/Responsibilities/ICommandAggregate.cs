@@ -21,15 +21,18 @@ using Xpandables.Net.Optionals;
 namespace Xpandables.Net.Responsibilities;
 
 /// <summary>
+/// Represents an interface for using Decider pattern on aggregates.
+/// </summary>
+public interface IUseAggregate { }
+
+/// <summary>
 /// Represents a command aggregate interface that defines the structure 
 /// for command aggregates.
 /// </summary>
 /// <remarks>It's used for implementing the Decider pattern. </remarks>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-/// <typeparam name="TKey">The type of the key identifier.</typeparam>
-public interface ICommandAggregate<TAggregate, TKey>
-    where TAggregate : class, IAggregate<TKey>, new()
-    where TKey : struct
+public interface ICommandAggregate<TAggregate> : IUseAggregate
+    where TAggregate : class, IAggregate, new()
 {
     /// <summary>
     /// Gets or sets the aggregate.
@@ -39,18 +42,5 @@ public interface ICommandAggregate<TAggregate, TKey>
     /// <summary>
     /// Gets the key identifier.
     /// </summary>
-    TKey KeyId { get; }
-}
-
-
-/// <summary>
-/// Represents a command aggregate interface that defines the structure 
-/// for command aggregates using GUID identifier.
-/// </summary>
-/// <remarks>It's used for implementing the Decider pattern. </remarks>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public interface ICommandAggregate<TAggregate> :
-    ICommandAggregate<TAggregate, Guid>
-    where TAggregate : class, IAggregate<Guid>, new()
-{
+    Guid KeyId { get; }
 }

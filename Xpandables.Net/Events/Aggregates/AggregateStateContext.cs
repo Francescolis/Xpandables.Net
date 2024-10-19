@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,26 +14,37 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Events.Aggregates;
+
 using Xpandables.Net.States;
 
-namespace Xpandables.Net.Events.Defaults;
+namespace Xpandables.Net.Events.Aggregates;
 
 /// <summary>
-/// Represents the context for an aggregate state with a specific aggregate and 
-/// state type.
+/// Represents an abstract base class for aggregates with a specific state context.
 /// </summary>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
 /// <typeparam name="TAggregateState">The type of the aggregate state.</typeparam>
-/// <remarks>
-/// Initializes a new instance of the 
-/// <see cref="AggregateStateContext{TAggregate, TAggregateState}"/> class.
-/// </remarks>
-/// <param name="startState">The initial state of the aggregate.</param>
-public abstract class AggregateStateContext<TAggregate, TAggregateState>(
-    TAggregateState startState) :
-    AggregateStateContext<TAggregate, TAggregateState, Guid>(startState)
+public abstract class AggregateStateContext<TAggregate, TAggregateState> :
+    Aggregate,
+    IStateContext<TAggregateState>
     where TAggregate : AggregateStateContext<TAggregate, TAggregateState>
     where TAggregateState : class, IState
 {
+    /// <inheritdoc/>
+    public TAggregateState CurrentState { get; protected set; } = default!;
+
+    /// <summary>
+    /// Initializes a new instance of the 
+    /// <see cref="AggregateStateContext{TAggregate, TAggregateId}"/> class.
+    /// </summary>
+    /// <param name="startState">The initial state of the aggregate.</param>
+    protected AggregateStateContext(TAggregateState startState) =>
+        TransitionToState(startState);
+
+    /// <inheritdoc/>
+    public void TransitionToState(TAggregateState state)
+    {
+        CurrentState = state ?? throw new ArgumentNullException(nameof(state));
+        CurrentState.EnterStateContext(this);
+    }
 }

@@ -19,14 +19,8 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents an abstract base class for event entities in a domain context.
 /// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public abstract class EventEntityDomain<TAggregateId, TKey> :
-    EventEntity<TKey>,
-    IEventEntityDomain<TAggregateId, TKey>
-    where TKey : notnull, IComparable
-    where TAggregateId : struct
+public sealed class EventEntityDomain : EventEntity, IEventEntityDomain
 {
     /// <inheritdoc/>
-    public required TAggregateId AggregateId { get; init; }
+    public required Guid AggregateId { get; init; }
 }

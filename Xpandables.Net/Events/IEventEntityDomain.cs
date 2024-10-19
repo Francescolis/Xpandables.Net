@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
 namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents an event entity domain that includes aggregate information.
@@ -25,25 +23,5 @@ public interface IEventEntityDomain : IEventEntity
     /// <summary>
     /// Gets the identifier of the aggregate.
     /// </summary>
-    object AggregateId { get; }
-}
-
-/// <summary>
-/// Represents an event entity domain with a specific key.
-/// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
-/// <typeparam name="TKey">The type of the aggregate identifier.</typeparam>
-public interface IEventEntityDomain<out TAggregateId, out TKey> :
-    IEventEntityDomain,
-    IEventEntity<TKey>
-    where TKey : notnull, IComparable
-    where TAggregateId : struct
-{
-    /// <summary>
-    /// Gets the identifier of the aggregate.
-    /// </summary>
-    new TAggregateId AggregateId { get; }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    object IEventEntityDomain.AggregateId => AggregateId;
+    Guid AggregateId { get; }
 }

@@ -26,15 +26,3 @@ public interface IEventEntityIntegration : IEventEntity
     /// </summary>
     string? ErrorMessage { get; }
 }
-
-/// <summary>
-/// Represents an integration event entity with a specific key type that 
-/// includes an error message.
-/// </summary>
-/// <typeparam name="TKey">The type of the key.</typeparam>
-public interface IEventEntityIntegration<out TKey> :
-    IEventEntity<TKey>,
-    IEventEntityIntegration
-    where TKey : notnull, IComparable
-{
-}

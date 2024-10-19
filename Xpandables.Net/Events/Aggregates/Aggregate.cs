@@ -16,7 +16,6 @@
 ********************************************************************************/
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.States;
 
 namespace Xpandables.Net.Events.Aggregates;
 
@@ -29,13 +28,13 @@ public abstract class Aggregate : IAggregate
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
 
     /// <inheritdoc/>
-    public object AggregateId { get; protected set; } = default!;
+    public Guid AggregateId { get; protected set; } = Guid.Empty;
 
     /// <inheritdoc/>
     public ulong Version { get; protected set; }
 
     /// <inheritdoc/>
-    public bool IsEmpty => AggregateId is null;
+    public bool IsEmpty => AggregateId == Guid.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Aggregate"/> class.
@@ -119,57 +118,5 @@ public abstract class Aggregate : IAggregate
             AggregateId = @event.AggregateId;
             _ = handler.DynamicInvoke(@event);
         }
-    }
-}
-
-/// <summary>
-/// Represents an abstract base class for aggregates with a specific aggregate ID type.
-/// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate ID.</typeparam>
-public abstract class Aggregate<TAggregateId> : Aggregate, IAggregate<TAggregateId>
-    where TAggregateId : struct
-{
-    /// <inheritdoc/>
-    public new TAggregateId AggregateId
-    {
-        get => (TAggregateId)base.AggregateId;
-        protected set => base.AggregateId = value;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Aggregate{TAggregateId}"/> class.
-    /// </summary>
-    protected Aggregate() { }
-}
-
-/// <summary>
-/// Represents an abstract base class for aggregates with a specific state context.
-/// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-/// <typeparam name="TAggregateId">The type of the aggregate ID.</typeparam>
-/// <typeparam name="TAggregateState">The type of the aggregate state.</typeparam>
-public abstract class AggregateStateContext<TAggregate, TAggregateState, TAggregateId> :
-    Aggregate<TAggregateId>,
-    IStateContext<TAggregateState>
-    where TAggregate : AggregateStateContext<TAggregate, TAggregateState, TAggregateId>
-    where TAggregateId : struct
-    where TAggregateState : class, IState
-{
-    /// <inheritdoc/>
-    public TAggregateState CurrentState { get; protected set; } = default!;
-
-    /// <summary>
-    /// Initializes a new instance of the 
-    /// <see cref="AggregateStateContext{TAggregate, TAggregateId, TAggregateState}"/> class.
-    /// </summary>
-    /// <param name="startState">The initial state of the aggregate.</param>
-    protected AggregateStateContext(TAggregateState startState) =>
-        TransitionToState(startState);
-
-    /// <inheritdoc/>
-    public void TransitionToState(TAggregateState state)
-    {
-        CurrentState = state ?? throw new ArgumentNullException(nameof(state));
-        CurrentState.EnterStateContext(this);
     }
 }

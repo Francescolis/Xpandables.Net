@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
 namespace Xpandables.Net.Events.Aggregates;
+
 /// <summary>
 /// Represents an aggregate with an identifier and version.
 /// </summary>
@@ -25,7 +24,7 @@ public interface IAggregate : IEventSourcing
     /// <summary>
     /// Gets the unique identifier of the aggregate.
     /// </summary>
-    object AggregateId { get; }
+    Guid AggregateId { get; }
 
     /// <summary>
     /// Gets the version of the aggregate.
@@ -36,20 +35,4 @@ public interface IAggregate : IEventSourcing
     /// Gets a value indicating whether the aggregate is empty.
     /// </summary>
     bool IsEmpty { get; }
-}
-
-/// <summary>
-/// Represents an aggregate with a strongly-typed identifier and version.
-/// </summary>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
-public interface IAggregate<TAggregateId> : IAggregate
-    where TAggregateId : struct
-{
-    /// <summary>
-    /// Gets the unique identifier of the aggregate.
-    /// </summary>
-    new TAggregateId AggregateId { get; }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    object IAggregate.AggregateId => AggregateId;
 }

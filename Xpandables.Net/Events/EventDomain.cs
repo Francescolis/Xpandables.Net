@@ -24,36 +24,31 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents a domain event that is associated with an aggregate.
 /// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-/// <typeparam name="TAggregateId">The type of the aggregate identifier.</typeparam>
 /// <remarks>Add a private parameterless constructor and decorate it 
 /// with the <see cref="JsonConstructorAttribute"/> attribute.</remarks>
-public abstract record EventDomain<TAggregate, TAggregateId> :
-    Event, IEventDomain<TAggregate, TAggregateId>
-    where TAggregate : class, IAggregate<TAggregateId>
-    where TAggregateId : struct
+public record EventDomain : Event, IEventDomain
 {
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="EventDomain{TAggregate, TAggregateId}"/> class.
+    /// <see cref="EventDomain"/> class.
     /// </summary>
     [JsonConstructor]
     protected EventDomain() { }
 
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="EventDomain{TAggregate, TAggregateId}"/> class.
+    /// <see cref="EventDomain"/> class.
     /// </summary>
     /// <param name="aggregate">The aggregate associated with the event.</param>
     [SetsRequiredMembers]
-    protected EventDomain(TAggregate aggregate)
+    protected EventDomain(IAggregate aggregate)
     {
         AggregateId = aggregate.AggregateId;
         EventVersion = aggregate.Version;
     }
 
     /// <inheritdoc/>
-    public required TAggregateId AggregateId { get; init; }
+    public required Guid AggregateId { get; init; }
 
     /// <inheritdoc/>
     public virtual IEventDomain WithVersion(ulong version) =>

@@ -30,5 +30,5 @@ public sealed record EventSnapshot : Event, IEventSnapshot
     /// <summary>
     /// Gets the owner of the event snapshot.
     /// </summary>
-    public required string OwnerId { get; init; }
+    public required Guid OwnerId { get; init; }
 }
