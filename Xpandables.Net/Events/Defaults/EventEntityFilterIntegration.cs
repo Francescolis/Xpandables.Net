@@ -35,6 +35,9 @@ public sealed record EventEntityFilterIntegration :
     public EventEntityFilterIntegration() : base() { }
 
     /// <inheritdoc/>
+    public Type EventType => typeof(IEventIntegration);
+
+    /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 }
 
@@ -46,6 +49,9 @@ public sealed record EventEntityIntegrationFilter<TResult> :
     EntityFilter<EventEntityIntegration, TResult>,
     IEventFilter<EventEntityIntegration, TResult>
 {
+    /// <inheritdoc/>
+    public Type EventType => typeof(IEventIntegration);
+
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
     /// <inheritdoc/>

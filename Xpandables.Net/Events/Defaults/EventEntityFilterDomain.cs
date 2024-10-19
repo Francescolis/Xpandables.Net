@@ -36,6 +36,9 @@ public sealed record EventEntityFilterDomain :
     public EventEntityFilterDomain() : base() { }
 
     /// <inheritdoc/>
+    public Type EventType => typeof(IEventDomain);
+
+    /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 }
 
@@ -47,6 +50,9 @@ public sealed record EventEntityDomainFilter<TResult> :
     EntityFilter<EventEntityDomain, TResult>,
     IEventFilter<EventEntityDomain, TResult>
 {
+    /// <inheritdoc/>
+    public Type EventType => typeof(IEventDomain);
+
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 

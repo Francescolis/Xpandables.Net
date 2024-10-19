@@ -29,6 +29,13 @@ namespace Xpandables.Net.Events;
 public interface IEventFilter : IEntityFilter
 {
     /// <summary>
+    /// Gets the event type to filter.
+    /// </summary>
+    /// <remarks>e.g. <see cref="IEventDomain"/>, <see cref="IEventIntegration"/>
+    /// or <see cref="IEventSnapshot"/>.</remarks>
+    Type EventType { get; }
+
+    /// <summary>
     /// Gets the predicate expression used to filter event data.
     /// </summary>
     Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; }

@@ -33,6 +33,10 @@ public sealed record class EventEntityFilterSnapshot :
     /// <inheritdoc/>
     [SetsRequiredMembers]
     public EventEntityFilterSnapshot() : base() { }
+
+    /// <inheritdoc/>
+    public Type EventType => typeof(IEventSnapshot);
+
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 }
@@ -45,6 +49,9 @@ public sealed record EventEntitySnapshotFilter<TResult> :
     EntityFilter<EventEntitySnapshot, TResult>,
     IEventFilter<EventEntitySnapshot, TResult>
 {
+    /// <inheritdoc/>
+    public Type EventType => typeof(IEventSnapshot);
+
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 
