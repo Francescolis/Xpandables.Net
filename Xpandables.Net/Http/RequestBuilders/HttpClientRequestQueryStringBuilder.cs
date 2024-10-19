@@ -45,56 +45,9 @@ public sealed class HttpClientRequestQueryStringBuilder :
         string path = context.Attribute.Path
             ?? context.Message.RequestUri!.AbsoluteUri;
 
-        string queryStringPath = AddQueryString(path, queryString);
+        string queryStringPath = path.AddQueryString(queryString);
 
-        context.Message.RequestUri = new Uri(queryStringPath, UriKind.Relative);
-    }
-
-    internal static string AddQueryString(
-        string path,
-        IDictionary<string, string?>? queryString)
-    {
-        // From MS internal code
-        ArgumentNullException.ThrowIfNull(path);
-
-        if (queryString is null)
-        {
-            return path;
-        }
-
-        int anchorIndex = path.IndexOf('#', StringComparison.InvariantCulture);
-        string uriToBeAppended = path;
-        string anchorText = "";
-
-        // If there is an anchor, then the request string must be inserted
-        // before its first occurrence.
-        if (anchorIndex != -1)
-        {
-            anchorText = path[anchorIndex..];
-            uriToBeAppended = path[..anchorIndex];
-        }
-
-#pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-        int queryIndex = uriToBeAppended
-            .IndexOf('?', StringComparison.InvariantCulture);
-#pragma warning restore CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-        bool hasQuery = queryIndex != -1;
-
-        StringBuilder sb = new();
-        _ = sb.Append(uriToBeAppended);
-        foreach (KeyValuePair<string, string?> parameter in queryString)
-        {
-            _ = sb.Append(hasQuery ? '&' : '?');
-            _ = sb.Append(UrlEncoder.Default.Encode(parameter.Key));
-            _ = sb.Append('=');
-            _ = sb.Append(parameter.Value is null
-                ? null
-                : UrlEncoder.Default.Encode(parameter.Value));
-            hasQuery = true;
-        }
-
-        _ = sb.Append(anchorText);
-        return sb.ToString();
+        context.Message.RequestUri = new Uri(queryStringPath, UriKind.Absolute);
     }
 }
 
