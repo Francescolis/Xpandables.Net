@@ -500,4 +500,180 @@ public static class HttpClientParameters
         /// when there's a concurrency conflict.</remarks>
         public const string Test = "test";
     }
+
+    /// <summary>
+    /// A helper used to build patch operations.
+    /// </summary>
+    public static class Patch
+    {
+        /// <summary>
+        /// The <see cref="Add"/> operation performs one of the following 
+        /// functions, depending upon what the target location references:
+        /// <list type="number">
+        ///     <item>If path points to an array element: inserts new element 
+        ///         before the one specified by path.</item>
+        ///     <item>If path points to a property: sets the property value.</item>
+        ///     <item>If path points to a nonexistent location:
+        ///         <list type="bullet">
+        ///             <item>If the resource to patch is a dynamic object: 
+        ///                 adds a property.</item>
+        ///             <item>If the resource to patch is a static object: 
+        ///             the request fails.</item>
+        ///         </list>
+        ///     </item>
+        /// </list>
+        /// <example>
+        /// For example:
+        /// <code> { "op": "add", "path": "/a/b/c", "value": [ "foo", "bar" ] }</code>
+        /// </example>
+        /// </summary>
+        /// <param name="path">The target location.</param>
+        /// <param name="value">The content specifies the value to be 
+        /// added.</param>
+        /// <returns>The "Add" operation with the specified path and value
+        /// .</returns>
+        /// <exception cref="ArgumentNullException">The <paramref name="path"/> 
+        /// or <paramref name="value"/> is null.</exception>
+        public static IPatchOperation Add(string path, object value)
+            => new PatchOperation(Operation.Add, path, value);
+
+        /// <summary>
+        /// The <see cref="Remove"/> operation removes the value at the target 
+        /// location :
+        /// <list type="number">
+        ///     <item>If path points to an array element: removes the element
+        ///     .</item>
+        ///     <item>If path points to a property:</item>
+        ///     <list type="bullet">
+        ///         <item>If resource to patch is a dynamic object: removes 
+        ///         the property.</item>
+        ///         <item>If resource to patch is a static object:
+        ///             <list type="number">
+        ///                 <item>If the property is nullable: sets it to null
+        ///                 .</item>
+        ///                 <item>If the property is non-nullable, sets it to 
+        ///                 default{T}.</item>
+        ///             </list>
+        ///         </item>
+        ///     </list>
+        /// </list>
+        /// <example>
+        /// For example:
+        /// <code> { "op": "remove", "path": "/a/b/c" }</code>
+        /// </example>
+        /// </summary>
+        /// <param name="path">The target location.</param>
+        /// <returns>The "Remove" operation with the specified path.</returns>
+        /// <exception cref="ArgumentNullException">The <paramref name="path"/> 
+        /// is null.</exception>
+        public static IPatchOperation Remove(string path)
+            => new PatchOperation(Operation.Remove, path);
+
+        /// <summary>
+        /// The <see cref="Replace"/> operation replaces the value at the target 
+        /// location with a new value. The operation object MUST contain a 
+        /// "value" member whose content specifies the replacement value.
+        /// <para>This operation is functionally the same as a remove followed 
+        /// by an add.</para>
+        /// <para></para>
+        /// <example>
+        /// For example:
+        /// <code> { "op": "replace", "path": "/a/b/c", "value": 42 }</code>
+        /// </example>
+        /// </summary>
+        /// <remarks>The target location MUST exist for the operation to be 
+        /// successful.</remarks>
+        /// <param name="path">The target location.</param>
+        /// <param name="value">The content of the new value.</param>
+        /// <returns>The "Replace" operation with the specified path and the 
+        /// value.</returns>
+        /// <exception cref="ArgumentNullException">The <paramref name="path"/> 
+        /// or <paramref name="value"/> is null.</exception>
+        public static IPatchOperation Replace(string path, object value)
+            => new PatchOperation(Operation.Remove, path, value);
+
+        /// <summary>
+        /// The <see cref="Move"/> operation removes the value at a specified 
+        /// location and adds it to the target location.
+        /// <list type="number">
+        ///     <item>If path points to an array element: copies from element 
+        ///     to location of path element,
+        /// then runs a remove operation on the from element.</item>
+        ///     <item>If path points to a property: copies value of from 
+        ///     property to path property,
+        /// then runs a remove operation on the from property.</item>
+        ///     <item>If path points to a nonexistent property:
+        ///         <list type="bullet">
+        ///             <item>If the resource to patch is a static object: 
+        ///             the request fails.</item>
+        ///             <item>If the resource to patch is a dynamic object: 
+        ///             copies from property to location indicated by path,
+        /// then runs a remove operation on the from property.</item>
+        ///         </list>
+        ///     </item>
+        /// </list>
+        /// <para></para>
+        /// <example>
+        /// For example:
+        /// <code> { "op": "move", "from": "/a/b/c", "path": "/a/b/d" }</code>
+        /// </example>
+        /// </summary>
+        /// <param name="from">A string containing a JSON pointer value that 
+        /// references the location in the target document to move the value 
+        /// from.</param>
+        /// <param name="path">The target location to receive the value from 
+        /// the 'from' location.</param>
+        /// <returns>The "Move" operation with the specified from and path 
+        /// values.</returns>
+        public static IPatchOperation Move(string from, string path)
+            => new PatchOperation(Operation.Move, from, path);
+
+        /// <summary>
+        /// The <see cref="Copy"/> operation copies the value at a specified 
+        /// location to the target location. The operation object MUST contain 
+        /// a "from" member, which is a string containing a JSON Pointer value 
+        /// that references the location in the target document to copy the 
+        /// value from.
+        /// <para></para>
+        /// <example>
+        /// For example:
+        /// <code> { "op": "copy", "from": "/a/b/c", "path": "/a/b/e" }</code>
+        /// </example>
+        /// </summary>
+        /// <remarks>This operation is functionally the same as a move operation 
+        /// without the final remove step.</remarks>
+        /// <param name="from">A string containing a JSON pointer value that 
+        /// references the location in the target document to copy the value 
+        /// from.</param>
+        /// <param name="path">The target location to receive the value from 
+        /// the 'from' location.</param>
+        /// <returns>The "Copy" operation with the specified from and path 
+        /// values.</returns>
+        public static IPatchOperation Copy(string from, string path)
+            => new PatchOperation(Operation.Copy, from, path);
+
+        /// <summary>
+        ///  The <see cref="Test"/> operation tests that a value at the target 
+        ///  location is equal to a specified value.
+        ///  <para>If the value at the location indicated by path is different 
+        ///  from the value provided in value, the request fails. 
+        ///  In that case, the whole PATCH request fails even if all other 
+        ///  operations in the patch document would otherwise succeed.</para>
+        /// <para></para>
+        /// <example>
+        /// For example:
+        /// <code>  { "op": "test", "path": "/a/b/c", "value": "foo" }</code>
+        /// </example>
+        /// </summary>
+        /// <remarks>The test operation is commonly used to prevent an update 
+        /// when there's a concurrency conflict.</remarks>
+        /// <param name="path">The target location the value must be equal to 
+        /// the specified one.</param>
+        /// <param name="value">The value to be compared to the target location
+        /// .</param>
+        /// <returns>The "test" operation with the specified path and value
+        /// .</returns>
+        public static IPatchOperation Test(string path, object value)
+            => new PatchOperation(Operation.Copy, path, value);
+    }
 }
