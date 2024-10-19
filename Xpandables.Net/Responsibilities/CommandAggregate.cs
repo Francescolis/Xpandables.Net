@@ -21,31 +21,32 @@ using Xpandables.Net.Optionals;
 namespace Xpandables.Net.Responsibilities;
 
 /// <summary>
-/// Represents an interface for using Decider pattern on aggregates.
+/// Represents a command aggregate that contains the aggregate and its key 
+/// identifier.
 /// </summary>
-public interface IUseAggregate { }
-
-/// <summary>
-/// Represents a command aggregate interface that defines the structure 
-/// for command aggregates.
-/// </summary>
-/// <remarks>It's used for implementing the Decider pattern. </remarks>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public interface ICommandAggregate<TAggregate> : IUseAggregate
+public abstract record CommandAggregate<TAggregate> : ICommandAggregate<TAggregate>
     where TAggregate : class, IAggregate, new()
 {
     /// <summary>
-    /// Gets or sets the aggregate.
+    /// Initializes a new instance of the <see cref="CommandAggregate{TAggregate}"/> class.
     /// </summary>
-    Optional<TAggregate> Aggregate { get; set; }
+    protected CommandAggregate() { }
 
     /// <summary>
-    /// Gets the key identifier.
+    /// Initializes a new instance of the 
+    /// <see cref="CommandAggregate{TAggregate}"/> class with the specified 
+    /// key identifier.
     /// </summary>
-    Guid KeyId { get; }
+    /// <param name="keyId">The key identifier.</param>
+    protected CommandAggregate(Guid keyId) => KeyId = keyId;
 
-    /// <summary>
-    /// Gets a value indicating whether to continue when the aggregate is not found.
-    /// </summary>
-    bool ContinueWhenNotFound { get; }
+    /// <inheritdoc/>
+    public Optional<TAggregate> Aggregate { get; set; } = Optional.Empty<TAggregate>();
+
+    /// <inheritdoc/>
+    public Guid KeyId { get; init; }
+
+    /// <inheritdoc/>
+    public virtual bool ContinueWhenNotFound => false;
 }
