@@ -166,7 +166,12 @@ public sealed class EventPublisherSubscriber(
         base.Dispose(disposing);
     }
 
-    private ConcurrentBag<object> GetHandlersOf<TEvent>()
+    /// <summary>
+    /// Gets the handlers of the specified event type.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <returns>A concurrent bag of event handlers.</returns>
+    public ConcurrentBag<object> GetHandlersOf<TEvent>()
         where TEvent : notnull, IEvent
     {
         Type eventType = typeof(TEvent);

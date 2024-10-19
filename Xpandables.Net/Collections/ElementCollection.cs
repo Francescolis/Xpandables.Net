@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Collections;
@@ -105,6 +106,19 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
 
         return collection;
     }
+
+    /// <summary>
+    /// Implicitly converts an <see cref="ElementCollection"/> to 
+    /// a <see cref="ReadOnlyDictionary{TKey, TValue}"/>.
+    /// </summary>
+    /// <param name="collection">The <see cref="ElementCollection"/> to convert.</param>
+    /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> that contains 
+    /// the entries from the collection.</returns>
+    public static implicit operator
+        ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
+        ElementCollection collection) =>
+        new(collection._entries.ToDictionary(
+            entry => entry.Key, entry => entry.Values));
 
     /// <summary>
     /// Gets an empty <see cref="ElementCollection"/>.
