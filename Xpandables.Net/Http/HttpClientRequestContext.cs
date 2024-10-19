@@ -17,6 +17,8 @@
 ********************************************************************************/
 using System.Text.Json;
 
+using Xpandables.Net.Text;
+
 namespace Xpandables.Net.Http;
 /// <summary>
 /// Represents the context for an HTTP client request.
@@ -41,5 +43,6 @@ public record HttpClientRequestContext
     /// <summary>
     /// Gets the JSON serializer options.
     /// </summary>
-    public required JsonSerializerOptions SerializerOptions { get; init; }
+    public JsonSerializerOptions SerializerOptions { get; init; }
+        = DefaultSerializerOptions.Defaults;
 }

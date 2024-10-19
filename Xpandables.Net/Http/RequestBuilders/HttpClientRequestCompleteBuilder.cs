@@ -34,8 +34,7 @@ public sealed class HttpClientRequestCompleteBuilder :
     ///<inheritdoc/>  
     public override void Build(HttpClientRequestContext context)
     {
-        if (context.Message.Content is not null
-                && context.Message.Content.Headers.ContentType is null)
+        if (context.Message.Content is not null)
         {
             context.Message.Content.Headers.ContentType
                 = new MediaTypeHeaderValue(context.Attribute.ContentType);

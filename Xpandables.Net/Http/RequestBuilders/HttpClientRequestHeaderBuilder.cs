@@ -43,9 +43,9 @@ public sealed class HttpClientRequestHeaderBuilder :
         if (request.GetHeaderModelName() is string modelName)
         {
             string headerValue = string.Join(
-                ",",
+                ";",
                 headerSource
-                    .Select(x => $"{x.Key},{string.Join(";", x.Values)}"));
+                    .Select(x => $"{x.Key},{string.Join(",", x.Values)}"));
 
             context.Message
                 .Headers
