@@ -47,6 +47,26 @@ public sealed record EventOptions
     public ulong SnapshotFrequency { get; init; } = 50;
 
     /// <summary>
+    /// Gets a value indicating whether the event scheduler is enabled.
+    /// </summary>
+    public bool IsEventSchedulerEnabled { get; init; } = true;
+
+    /// <summary>
+    /// Gets the maximum number of retries for the scheduler.
+    /// </summary>
+    public uint MaxSchedulerRetries { get; init; } = 5;
+
+    /// <summary>
+    /// Gets the interval between scheduler retries in milliseconds.
+    /// </summary>
+    public uint SchedulerRetryInterval { get; init; } = 500;
+
+    /// <summary>
+    /// Gets the maximum number of events per thread for the scheduler.
+    /// </summary>
+    public ushort MaxSchedulerEventPerThread { get; init; } = 100;
+
+    /// <summary>
     /// Returns the default <see cref="EventOptions"/>.
     /// </summary>
     /// <param name="options">The options to use as a base for the default values.</param>
@@ -57,6 +77,10 @@ public sealed record EventOptions
             SerializerOptions = DefaultSerializerOptions.Defaults,
             DisposeEventEntityAfterPersistence = true,
             IsSnapshotEnabled = true,
-            SnapshotFrequency = 50
+            SnapshotFrequency = 50,
+            IsEventSchedulerEnabled = true,
+            MaxSchedulerRetries = 5,
+            SchedulerRetryInterval = 500,
+            MaxSchedulerEventPerThread = 100
         };
 }

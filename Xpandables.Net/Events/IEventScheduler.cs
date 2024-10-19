@@ -14,35 +14,17 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Repositories;
+namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Provides status constants for entities.
+/// Defines a scheduler for events.
 /// </summary>
-public static class EntityStatus
+public interface IEventScheduler
 {
     /// <summary>
-    /// It is currently functioning (is available).
+    /// Schedules events asynchronously.
     /// </summary>
-    public const string ACTIVE = nameof(ACTIVE);
-
-    /// <summary>
-    /// It is pending (for any reason).
-    /// </summary>
-    public const string PENDING = nameof(PENDING);
-
-    /// <summary>
-    /// It is deleted (logical deletion).
-    /// </summary>
-    public const string DELETED = nameof(DELETED);
-
-    /// <summary>
-    /// It is suspended (for any reason).
-    /// </summary>
-    public const string SUSPENDED = nameof(SUSPENDED);
-
-    /// <summary>
-    /// It is in an error state.
-    /// </summary>
-    public const string ONERROR = nameof(ONERROR);
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ScheduleAsync(CancellationToken cancellationToken = default);
 }
