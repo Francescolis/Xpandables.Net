@@ -27,12 +27,12 @@ namespace Xpandables.Net.Decorators;
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public sealed class LoggingPipelineDecorator<TRequest, TResponse>(
     ILogger<LoggingPipelineDecorator<TRequest, TResponse>> logger) :
-    IPipelineDecorator<TRequest, TResponse>
+    PipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : class, IOperationResult
+    where TResponse : IOperationResult
 {
     /// <inheritdoc/>
-    public Task<TResponse> HandleAsync(
+    protected override async Task<TResponse> HandleCoreAsync(
         TRequest query,
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken = default)
@@ -42,7 +42,7 @@ public sealed class LoggingPipelineDecorator<TRequest, TResponse>(
 
         try
         {
-            Task<TResponse> response = next();
+            TResponse response = await next().ConfigureAwait(false);
 
             logger.LogInformation("Handled {RequestName} with response: " +
                 "{@Response}", typeof(TRequest).Name, response);
@@ -50,13 +50,11 @@ public sealed class LoggingPipelineDecorator<TRequest, TResponse>(
             return response;
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
         {
             logger.LogError(exception, "Error handling {RequestName} with request: " +
                 "{@Request}", typeof(TRequest).Name, query);
 
-            throw new OperationResultException(
-                exception.ToOperationResult());
+            throw;
         }
     }
 }

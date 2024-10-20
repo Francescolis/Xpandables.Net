@@ -59,7 +59,7 @@ public sealed class EventPublisherSubscriberUnitTest
         _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
 
         IDispatcher dispatcher = _serviceProvider.GetRequiredService<IDispatcher>();
-        IQuery<string> query = new TestQuery() { Value = "de" };
+        IQuery<string> query = new TestQuery() { Value = "adbc" };
         var results = await dispatcher.SendAsync(query);
         // Act
         var result = await _eventPublisherSubscriber.PublishAsync(testEvent);

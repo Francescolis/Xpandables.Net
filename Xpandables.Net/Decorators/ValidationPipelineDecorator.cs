@@ -20,30 +20,30 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Decorators;
 
 /// <summary>
-/// A decorator that validates the query before passing it to the next 
+/// A decorator that validates the request before passing it to the next 
 /// handler in the pipeline.
 /// </summary>
-/// <typeparam name="TQuery">The type of the query.</typeparam>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class ValidationPipelineDecorator<TQuery, TResult>(
-    ICompositeValidator<TQuery> validators) :
-    IPipelineDecorator<TQuery, TResult>
-    where TQuery : class, IUseValidation
-    where TResult : class, IOperationResult
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+public sealed class ValidationPipelineDecorator<TRequest, TResponse>(
+    ICompositeValidator<TRequest> validators) :
+    PipelineDecorator<TRequest, TResponse>
+    where TRequest : class, IUseValidation
+    where TResponse : IOperationResult
 {
     /// <inheritdoc/>
-    public Task<TResult> HandleAsync(
-        TQuery query,
-        RequestHandlerDelegate<TResult> next,
+    protected override async Task<TResponse> HandleCoreAsync(
+        TRequest query,
+        RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        IOperationResult result = validators.Validate(query);
+        IOperationResult result = await validators.ValidateAsync(query);
 
         if (!result.IsSuccessStatusCode)
         {
-            return Task.FromResult((TResult)result);
+            return MatchResponse(result);
         }
 
-        return next();
+        return await next();
     }
 }

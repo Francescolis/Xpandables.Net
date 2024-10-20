@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,33 +14,47 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
+using Xpandables.Net.Operations;
 using Xpandables.Net.Responsibilities;
 
 namespace Xpandables.Net.Decorators;
-
 /// <summary>
-/// Represents a delegate that handles asynchronous request and returns an 
-/// asynchronous enumerable response.
-/// </summary>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate IAsyncEnumerable<TResponse> RequestAsyncHandlerDelegate<TResponse>();
-
-/// <summary>
-/// Defines a decorator for handling asynchronous queries.
+/// Represents an asynchronous pipeline decorator that handles a request and 
+/// produces a response.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public interface IAsyncPipelineDecorator<TRequest, TResponse>
+public abstract class AsyncPipelineDecorator<TRequest, TResponse> :
+    IAsyncPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IQueryAsync<TResponse>
 {
+    /// <inheritdoc/>
+    public IAsyncEnumerable<TResponse> HandleAsync(
+        TRequest query,
+        RequestAsyncHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return HandleCoreAsync(query, next, cancellationToken);
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            throw new OperationResultException(
+                exception.ToOperationResult());
+        }
+    }
+
     /// <summary>
-    /// Handles the asynchronous request.
+    /// Handles the core logic of the pipeline decorator.
     /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="next">The next delegate in the chain.</param>
+    /// <param name="request">The request object.</param>
+    /// <param name="next">The next delegate in the pipeline.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An asynchronous enumerable of the response.</returns>
-    IAsyncEnumerable<TResponse> HandleAsync(
+    protected abstract IAsyncEnumerable<TResponse> HandleCoreAsync(
         TRequest request,
         RequestAsyncHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken = default);

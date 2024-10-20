@@ -23,7 +23,7 @@ namespace Xpandables.Net.Decorators;
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public delegate Task<TResponse> RequestHandlerDelegate<TResponse>()
-    where TResponse : class, IOperationResult;
+    where TResponse : IOperationResult;
 
 /// <summary>
 /// Defines a method to handle a request in a pipeline.
@@ -32,7 +32,7 @@ public delegate Task<TResponse> RequestHandlerDelegate<TResponse>()
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public interface IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : class, IOperationResult
+    where TResponse : IOperationResult
 {
     /// <summary>
     /// Handles the request asynchronously.

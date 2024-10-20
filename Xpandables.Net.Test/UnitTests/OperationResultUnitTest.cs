@@ -67,6 +67,7 @@ public sealed class OperationResultUnitTest
             StatusCode = HttpStatusCode.OK,
             Title = "Test Title",
             Detail = "Test Detail",
+            Result = default,
             Location = new Uri("http://example.com"),
             Errors = ElementCollection.With("ErrorKey", "ErrorValue"),
             Headers = ElementCollection.With("HeaderKey", "HeaderValue"),
