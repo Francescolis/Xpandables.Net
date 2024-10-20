@@ -18,7 +18,9 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Operations;
 using Xpandables.Net.Responsibilities;
+using Xpandables.Net.Responsibilities.Decorators;
 using Xpandables.Net.Responsibilities.Wrappers;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -123,4 +125,50 @@ public static class ServiceCollectionDispatcherExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Adds a command aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineAggregateDecorator(
+        this IServiceCollection services) =>
+        services.AddScoped(
+            typeof(IPipelineDecorator<,>),
+            typeof(AggregatePipelineDecorator<,>));
+
+    /// <summary>
+    /// Adds a unit of work pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineUnitOfWorkDecorator(
+        this IServiceCollection services) =>
+        services.AddScoped(
+            typeof(IPipelineDecorator<,>),
+            typeof(UnitOfWorkPipelineDecorator<,>));
+
+    /// <summary>
+    /// Adds a validation pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineValidationDecorator(
+        this IServiceCollection services) =>
+        services.AddScoped(
+            typeof(IPipelineDecorator<,>),
+            typeof(ValidationPipelineDecorator<,>));
+
+    /// <summary>
+    /// Adds a finalizer pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineFinalizerDecorator(
+        this IServiceCollection services) =>
+        services
+            .AddScoped(
+                typeof(IPipelineDecorator<,>),
+                typeof(FinalizerPipelineDecorator<,>))
+            .AddScoped<IOperationResultFinalizer, OperationResultFinalizer>();
 }

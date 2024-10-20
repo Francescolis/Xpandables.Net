@@ -30,14 +30,14 @@ namespace Xpandables.Net.Responsibilities.Decorators;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class CommandAggregatePipelineDecorator<TRequest, TResponse>(
+public sealed class AggregatePipelineDecorator<TRequest, TResponse>(
     IServiceProvider provider) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, ICommandAggregate
     where TResponse : IOperationResult
 {
     private static readonly MethodInfo _doGetAggregate =
-        typeof(CommandAggregatePipelineDecorator<,>)
+        typeof(AggregatePipelineDecorator<,>)
         .GetMethod(
             nameof(GetAggregate),
             BindingFlags.NonPublic | BindingFlags.Instance)!;
