@@ -16,7 +16,7 @@
 ********************************************************************************/
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Decorators;
+namespace Xpandables.Net.Responsibilities.Decorators;
 
 /// <summary>
 /// Represents an abstract base class for pipeline decorators.

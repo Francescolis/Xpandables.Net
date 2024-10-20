@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Decorators;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Responsibilities.Decorators;
 
 namespace Xpandables.Net.Responsibilities.Wrappers;
 

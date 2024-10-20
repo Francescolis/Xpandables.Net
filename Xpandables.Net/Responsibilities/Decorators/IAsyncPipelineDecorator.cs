@@ -14,36 +14,33 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Decorators;
+namespace Xpandables.Net.Responsibilities.Decorators;
 
 /// <summary>
-/// Represents a delegate that handles requests and returns a response.
+/// Represents a delegate that handles asynchronous request and returns an 
+/// asynchronous enumerable response.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate Task<TResponse> RequestHandlerDelegate<TResponse>()
-    where TResponse : IOperationResult;
+public delegate IAsyncEnumerable<TResponse> RequestAsyncHandlerDelegate<TResponse>();
 
 /// <summary>
-/// Defines a method to handle a request in a pipeline.
+/// Defines a decorator for handling asynchronous queries.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public interface IPipelineDecorator<TRequest, TResponse>
-    where TRequest : class
-    where TResponse : IOperationResult
+public interface IAsyncPipelineDecorator<TRequest, TResponse>
+    where TRequest : class, IQueryAsync<TResponse>
 {
     /// <summary>
-    /// Handles the request asynchronously.
+    /// Handles the asynchronous request.
     /// </summary>
     /// <param name="request">The request to handle.</param>
-    /// <param name="next">The next handler in the pipeline.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation. 
-    /// The task result contains the response.</returns>
-    Task<TResponse> HandleAsync(
+    /// <param name="next">The next delegate in the chain.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An asynchronous enumerable of the response.</returns>
+    IAsyncEnumerable<TResponse> HandleAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestAsyncHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken = default);
 }

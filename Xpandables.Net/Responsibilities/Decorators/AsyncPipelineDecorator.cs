@@ -16,9 +16,9 @@
 ********************************************************************************/
 
 using Xpandables.Net.Operations;
-using Xpandables.Net.Responsibilities;
 
-namespace Xpandables.Net.Decorators;
+namespace Xpandables.Net.Responsibilities.Decorators;
+
 /// <summary>
 /// Represents an asynchronous pipeline decorator that handles a request and 
 /// produces a response.

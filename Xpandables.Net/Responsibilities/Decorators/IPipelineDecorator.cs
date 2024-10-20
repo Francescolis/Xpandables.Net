@@ -14,36 +14,37 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.DataAnnotations;
+
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Decorators;
+namespace Xpandables.Net.Responsibilities.Decorators;
 
 /// <summary>
-/// A decorator that validates the request before passing it to the next 
-/// handler in the pipeline.
+/// Represents a delegate that handles requests and returns a response.
+/// </summary>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+public delegate Task<TResponse> RequestHandlerDelegate<TResponse>()
+    where TResponse : IOperationResult;
+
+/// <summary>
+/// Defines a method to handle a request in a pipeline.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class ValidationPipelineDecorator<TRequest, TResponse>(
-    ICompositeValidator<TRequest> validators) :
-    PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IUseValidation
+public interface IPipelineDecorator<TRequest, TResponse>
+    where TRequest : class
     where TResponse : IOperationResult
 {
-    /// <inheritdoc/>
-    protected override async Task<TResponse> HandleCoreAsync(
-        TRequest query,
+    /// <summary>
+    /// Handles the request asynchronously.
+    /// </summary>
+    /// <param name="request">The request to handle.</param>
+    /// <param name="next">The next handler in the pipeline.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task result contains the response.</returns>
+    Task<TResponse> HandleAsync(
+        TRequest request,
         RequestHandlerDelegate<TResponse> next,
-        CancellationToken cancellationToken = default)
-    {
-        IOperationResult result = await validators.ValidateAsync(query);
-
-        if (!result.IsSuccessStatusCode)
-        {
-            return MatchResponse(result);
-        }
-
-        return await next();
-    }
+        CancellationToken cancellationToken = default);
 }

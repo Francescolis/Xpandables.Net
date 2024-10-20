@@ -14,21 +14,21 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.Extensions.Logging;
-
+using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Decorators;
+namespace Xpandables.Net.Responsibilities.Decorators;
 
 /// <summary>
-/// A decorator that logs the handling of a request and its response.
+/// A decorator that validates the request before passing it to the next 
+/// handler in the pipeline.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class LoggingPipelineDecorator<TRequest, TResponse>(
-    ILogger<LoggingPipelineDecorator<TRequest, TResponse>> logger) :
+public sealed class ValidationPipelineDecorator<TRequest, TResponse>(
+    ICompositeValidator<TRequest> validators) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class
+    where TRequest : class, IUseValidation
     where TResponse : IOperationResult
 {
     /// <inheritdoc/>
@@ -37,24 +37,13 @@ public sealed class LoggingPipelineDecorator<TRequest, TResponse>(
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Handling {RequestName} with request: " +
-            "{@Request}", typeof(TRequest).Name, query);
+        IOperationResult result = await validators.ValidateAsync(query);
 
-        try
+        if (!result.IsSuccessStatusCode)
         {
-            TResponse response = await next().ConfigureAwait(false);
-
-            logger.LogInformation("Handled {RequestName} with response: " +
-                "{@Response}", typeof(TRequest).Name, response);
-
-            return response;
+            return MatchResponse(result);
         }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Error handling {RequestName} with request: " +
-                "{@Request}", typeof(TRequest).Name, query);
 
-            throw;
-        }
+        return await next();
     }
 }
