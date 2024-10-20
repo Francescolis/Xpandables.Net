@@ -108,5 +108,4 @@ public sealed class OperationResultUnitTest
         // Assert
         deserializedResult.Should().BeEquivalentTo(operationResult);
     }
-
 }
