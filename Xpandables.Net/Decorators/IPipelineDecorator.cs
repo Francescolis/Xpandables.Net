@@ -14,13 +14,16 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Operations;
+
 namespace Xpandables.Net.Decorators;
 
 /// <summary>
 /// Represents a delegate that handles requests and returns a response.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate Task<TResponse> RequestHandlerDelegate<TResponse>();
+public delegate Task<TResponse> RequestHandlerDelegate<TResponse>()
+    where TResponse : class, IOperationResult;
 
 /// <summary>
 /// Defines a method to handle a request in a pipeline.
@@ -29,6 +32,7 @@ public delegate Task<TResponse> RequestHandlerDelegate<TResponse>();
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public interface IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
+    where TResponse : class, IOperationResult
 {
     /// <summary>
     /// Handles the request asynchronously.

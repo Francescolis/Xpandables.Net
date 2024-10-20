@@ -38,7 +38,8 @@ public sealed class OperationResultException : Exception
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code of the <paramref name="operationResult"/> is between 200 and 299.</exception>
     public OperationResultException(IOperationResult operationResult)
-        : base(operationResult.Title)
+        : base(string.Join(
+            Environment.NewLine, operationResult.Errors.SelectMany(e => e.Values)))
     {
         ArgumentNullException.ThrowIfNull(operationResult);
 

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 using FluentAssertions;
 
@@ -9,20 +10,25 @@ using Xpandables.Net.Decorators;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Defaults;
+using Xpandables.Net.Operations;
 using Xpandables.Net.Responsibilities;
 using Xpandables.Net.Responsibilities.Wrappers;
 
 namespace Xpandables.Net.Test.UnitTests;
 
-public sealed class TestQuery : IQueryAsync<string>, IUseValidation
+public sealed class TestQuery : IQuery<string>, IUseValidation
 {
+    [StringLength(50, MinimumLength = 3)]
+    public required string Value { get; set; } = string.Empty;
 }
-public sealed class TestQueryAsyncHandler : IQueryAsyncHandler<TestQuery, string>
+public sealed class TestQueryHandler : IQueryHandler<TestQuery, string>
 {
-    public IAsyncEnumerable<string> HandleAsync(
+    public Task<IOperationResult<string>> HandleAsync(
         TestQuery query,
         CancellationToken cancellationToken = default) =>
-        AsyncEnumerable.Empty<string>();
+        Task.FromResult(OperationResults
+        .Ok("Test")
+        .Build());
 }
 
 public sealed class EventPublisherSubscriberUnitTest
@@ -33,11 +39,11 @@ public sealed class EventPublisherSubscriberUnitTest
     public EventPublisherSubscriberUnitTest()
     {
         var services = new ServiceCollection();
-        services.AddScoped(typeof(IAsyncPipelineDecorator<,>), typeof(LoggingQueryAsyncHandlerDecorator<,>));
-        services.AddScoped(typeof(IAsyncPipelineDecorator<,>), typeof(ValidationQueryAsyncHandlerDecorator<,>));
-        services.AddScoped<IQueryAsyncHandler<TestQuery, string>, TestQueryAsyncHandler>();
+        services.AddScoped(typeof(IPipelineDecorator<,>), typeof(LoggingPipelineDecorator<,>));
+        services.AddScoped(typeof(IPipelineDecorator<,>), typeof(ValidationPipelineDecorator<,>));
+        services.AddScoped<IQueryHandler<TestQuery, string>, TestQueryHandler>();
         services.AddScoped<IDispatcher, Dispatcher>();
-        services.AddTransient(typeof(QueryAsyncHandlerWrapper<,>));
+        services.AddTransient(typeof(QueryHandlerWrapper<,>));
         services.AddLogging();
         services.AddXEventPublisher();
         services.AddXValidatorDefault();
@@ -53,8 +59,8 @@ public sealed class EventPublisherSubscriberUnitTest
         _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
 
         IDispatcher dispatcher = _serviceProvider.GetRequiredService<IDispatcher>();
-        IQueryAsync<string> query = new TestQuery();
-        var results = await dispatcher.SendAsync(query).ToListAsync();
+        IQuery<string> query = new TestQuery() { Value = "de" };
+        var results = await dispatcher.SendAsync(query);
         // Act
         var result = await _eventPublisherSubscriber.PublishAsync(testEvent);
 

@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 using Xpandables.Net.Collections;
 
@@ -24,6 +25,11 @@ namespace Xpandables.Net.Operations;
 /// </summary>
 public static partial class OperationResultExtensions
 {
+    private static readonly MethodInfo ToOperationResultMethod =
+        typeof(OperationResultExtensions).GetMethod(nameof(ToOperationResult),
+            BindingFlags.Static | BindingFlags.Public,
+            [typeof(IOperationResult)])!;
+
     /// <summary>  
     /// Converts the specified operation result to an <see cref="IOperationResult{TResult}"/>.  
     /// </summary>  
@@ -32,18 +38,22 @@ public static partial class OperationResultExtensions
     /// <returns>An <see cref="IOperationResult{TResult}"/> representing the 
     /// operation result.</returns>  
     public static IOperationResult<TResult> ToOperationResult<TResult>(
-       this IOperationResult operationResult) =>
-       new OperationResult<TResult>
-       {
-           StatusCode = operationResult.StatusCode,
-           Result = (TResult?)operationResult.Result,
-           Errors = operationResult.Errors,
-           Headers = operationResult.Headers,
-           Extensions = operationResult.Extensions,
-           Detail = operationResult.Detail,
-           Title = operationResult.Title,
-           Location = operationResult.Location
-       };
+       this IOperationResult operationResult)
+    {
+        IOperationResult<TResult> result = new OperationResult<TResult>
+        {
+            StatusCode = operationResult.StatusCode,
+            Result = (TResult?)operationResult.Result,
+            Errors = operationResult.Errors,
+            Headers = operationResult.Headers,
+            Extensions = operationResult.Extensions,
+            Detail = operationResult.Detail,
+            Title = operationResult.Title,
+            Location = operationResult.Location
+        };
+
+        return result;
+    }
 
     /// <summary>
     /// Converts the specified operation result to an 
@@ -154,6 +164,25 @@ public static partial class OperationResultExtensions
             .WithDetail(exception.Message)
             .WithException(exception)
             .Build();
+    }
+
+    /// <summary>
+    /// Converts the current instance to a generic one with the specified type.
+    /// </summary>
+    /// <param name="operationResult">The current instance.</param>
+    /// <param name="genericType">The underlying type.</param>
+    /// <returns>A new instance of <see cref="IOperationResult{TResult}"/>
+    /// .</returns>
+    public static dynamic ToOperationResult(
+        this IOperationResult operationResult,
+        Type genericType)
+    {
+        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(genericType);
+
+        return ToOperationResultMethod
+            .MakeGenericMethod(genericType)
+            .Invoke(null, [operationResult])!;
     }
 
     /// <summary>
