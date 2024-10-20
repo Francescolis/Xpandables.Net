@@ -285,7 +285,7 @@ public static class ServiceCollectionEventExtensions
     {
         if (assemblies.Length == 0)
         {
-            assemblies = [Assembly.GetExecutingAssembly()];
+            assemblies = [Assembly.GetCallingAssembly()];
         }
 
         var eventHandlerTypes = assemblies

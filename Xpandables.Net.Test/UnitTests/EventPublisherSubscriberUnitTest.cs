@@ -4,10 +4,23 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Defaults;
+using Xpandables.Net.Operations;
+using Xpandables.Net.Responsibilities;
 
 namespace Xpandables.Net.Test.UnitTests;
+
+public sealed record TestQuery : IQuery<string> { public required string Query { get; set; } }
+public sealed class TestQueryHander : IQueryHandler<TestQuery, string>
+{
+    public Task<IOperationResult<string>> HandleAsync(
+        TestQuery query, CancellationToken cancellationToken) =>
+        Task.FromResult(OperationResults
+            .Ok(query.Query)
+            .Build());
+}
 
 public sealed class EventPublisherSubscriberUnitTest
 {
@@ -17,6 +30,7 @@ public sealed class EventPublisherSubscriberUnitTest
     public EventPublisherSubscriberUnitTest()
     {
         var services = new ServiceCollection();
+        services.AddXDispatcherHandlers();
         _serviceProvider = services.BuildServiceProvider();
         _eventPublisherSubscriber = new EventPublisherSubscriber(_serviceProvider);
     }
