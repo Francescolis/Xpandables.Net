@@ -34,14 +34,17 @@ public interface ICommand
 /// for command aggregates.
 /// </summary>
 /// <remarks>It's used for implementing the Decider pattern. </remarks>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public interface ICommandAggregate<TAggregate> : ICommand
-    where TAggregate : class, IAggregate, new()
+public interface ICommandAggregate : ICommand
 {
+    /// <summary>
+    /// Gets the aggregate type.
+    /// </summary>
+    Type AggregateType { get; }
+
     /// <summary>
     /// Gets or sets the aggregate.
     /// </summary>
-    Optional<TAggregate> Aggregate { get; set; }
+    Optional<IAggregate> Aggregate { get; set; }
 
     /// <summary>
     /// Gets the key identifier.
@@ -52,4 +55,25 @@ public interface ICommandAggregate<TAggregate> : ICommand
     /// Gets a value indicating whether to continue when the aggregate is not found.
     /// </summary>
     bool ContinueWhenNotFound { get; }
+}
+
+/// <summary>
+/// Represents a command aggregate interface that defines the structure 
+/// for command aggregates.
+/// </summary>
+/// <remarks>It's used for implementing the Decider pattern. </remarks>
+/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
+public interface ICommandAggregate<TAggregate> : ICommandAggregate
+    where TAggregate : class, IAggregate, new()
+{
+    /// <summary>
+    /// Gets or sets the aggregate.
+    /// </summary>
+    new Optional<TAggregate> Aggregate { get; set; }
+
+    Optional<IAggregate> ICommandAggregate.Aggregate
+    {
+        get => Aggregate.AsOptional<IAggregate>();
+        set => Aggregate = value.AsOptional<TAggregate>();
+    }
 }

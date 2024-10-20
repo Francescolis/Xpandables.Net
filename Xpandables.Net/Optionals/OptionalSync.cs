@@ -18,6 +18,15 @@ namespace Xpandables.Net.Optionals;
 public readonly partial record struct Optional<T>
 {
     /// <summary>
+    /// Converts the current <see cref="Optional{T}"/> to a new <see cref="Optional{TU}"/>.
+    /// </summary>
+    /// <typeparam name="TU">The type to convert to.</typeparam>
+    /// <returns>A new <see cref="Optional{TU}"/> with the converted value, or 
+    /// an empty <see cref="Optional{TU}"/> if the current instance is empty.</returns>
+    public Optional<TU> AsOptional<TU>() =>
+        HasValue && Value is TU next ? Optional.Some(next) : Optional.Empty<TU>();
+
+    /// <summary>
     /// Maps the value of the current <see cref="Optional{T}"/> to a new value 
     /// using the specified function.
     /// </summary>

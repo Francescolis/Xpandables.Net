@@ -36,20 +36,3 @@ public readonly record struct Optional
     /// <returns>An <see cref="Optional{T}"/> with the specified value.</returns>
     public static Optional<T> Some<T>(T value) => new(value);
 }
-
-/// <summary>
-/// Provides extension methods for converting values to 
-/// <see cref="Optional{T}"/> instances.
-/// </summary>
-public static class OptionalFactory
-{
-    /// <summary>
-    /// Converts a nullable value to an <see cref="Optional{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    /// <param name="value">The nullable value to convert.</param>
-    /// <returns>An <see cref="Optional{T}"/> with the specified value if it 
-    /// is not null; otherwise, an empty <see cref="Optional{T}"/>.</returns>
-    public static Optional<T> ToOptional<T>(this T? value) =>
-        value is not null ? Optional.Some(value) : Optional.Empty<T>();
-}

@@ -33,6 +33,9 @@ public abstract record CommandAggregate<TAggregate> : ICommandAggregate<TAggrega
     /// </summary>
     protected CommandAggregate() { }
 
+    /// <inheritdoc/>
+    public Type AggregateType => typeof(TAggregate);
+
     /// <summary>
     /// Initializes a new instance of the 
     /// <see cref="CommandAggregate{TAggregate}"/> class with the specified 

@@ -21,6 +21,26 @@ namespace Xpandables.Net.Optionals;
 public static class OptionalExtensions
 {
     /// <summary>
+    /// Converts a nullable value to an <see cref="Optional{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The nullable value to convert.</param>
+    /// <returns>An <see cref="Optional{T}"/> with the specified value if it 
+    /// is not null; otherwise, an empty <see cref="Optional{T}"/>.</returns>
+    public static Optional<T> ToOptional<T>(this T? value) =>
+        value is not null ? Optional.Some(value) : Optional.Empty<T>();
+
+    /// <summary>
+    /// Converts the specified optional to an optional instance of another type.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TU"></typeparam>
+    /// <param name="optional"></param>
+    /// <returns></returns>
+    public static Optional<TU> AsOptional<T, TU>(this Optional<T> optional)
+        => optional.IsNotEmpty ? Optional.Some((TU)(object)optional.Value) : Optional.Empty<TU>();
+
+    /// <summary>
     /// Returns the first element of the sequence as an optional value, or an 
     /// empty optional if the sequence contains 
     /// no elements.

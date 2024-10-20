@@ -25,9 +25,7 @@ namespace Xpandables.Net.Operations;
 /// Represents the result of an operation, including status code, title, detail,
 /// location, result, errors, headers, extensions, and status.
 /// </summary>
-#pragma warning disable IDE0250 // Make struct 'readonly'
 public record OperationResult : IOperationResult
-#pragma warning restore IDE0250 // Make struct 'readonly'
 {
     /// <inheritdoc/>
     public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
