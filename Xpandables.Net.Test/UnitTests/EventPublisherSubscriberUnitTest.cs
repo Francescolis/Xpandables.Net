@@ -1,35 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Net;
+﻿using System.Net;
 
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.DataAnnotations;
-using Xpandables.Net.Decorators;
-using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Defaults;
-using Xpandables.Net.Operations;
-using Xpandables.Net.Responsibilities;
-using Xpandables.Net.Responsibilities.Wrappers;
 
 namespace Xpandables.Net.Test.UnitTests;
-
-public sealed class TestQuery : IQuery<string>, IUseValidation
-{
-    [StringLength(50, MinimumLength = 3)]
-    public required string Value { get; set; } = string.Empty;
-}
-public sealed class TestQueryHandler : IQueryHandler<TestQuery, string>
-{
-    public Task<IOperationResult<string>> HandleAsync(
-        TestQuery query,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult(OperationResults
-        .Ok("Test")
-        .Build());
-}
 
 public sealed class EventPublisherSubscriberUnitTest
 {
@@ -39,14 +17,6 @@ public sealed class EventPublisherSubscriberUnitTest
     public EventPublisherSubscriberUnitTest()
     {
         var services = new ServiceCollection();
-        services.AddScoped(typeof(IPipelineDecorator<,>), typeof(LoggingPipelineDecorator<,>));
-        services.AddScoped(typeof(IPipelineDecorator<,>), typeof(ValidationPipelineDecorator<,>));
-        services.AddScoped<IQueryHandler<TestQuery, string>, TestQueryHandler>();
-        services.AddScoped<IDispatcher, Dispatcher>();
-        services.AddTransient(typeof(QueryHandlerWrapper<,>));
-        services.AddLogging();
-        services.AddXEventPublisher();
-        services.AddXValidatorDefault();
         _serviceProvider = services.BuildServiceProvider();
         _eventPublisherSubscriber = new EventPublisherSubscriber(_serviceProvider);
     }
@@ -58,9 +28,6 @@ public sealed class EventPublisherSubscriberUnitTest
         TestEvent testEvent = new() { EventId = Guid.NewGuid(), EventVersion = 1 };
         _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
 
-        IDispatcher dispatcher = _serviceProvider.GetRequiredService<IDispatcher>();
-        IQuery<string> query = new TestQuery() { Value = "adbc" };
-        var results = await dispatcher.SendAsync(query);
         // Act
         var result = await _eventPublisherSubscriber.PublishAsync(testEvent);
 

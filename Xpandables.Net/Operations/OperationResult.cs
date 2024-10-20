@@ -26,11 +26,11 @@ namespace Xpandables.Net.Operations;
 /// location, result, errors, headers, extensions, and status.
 /// </summary>
 #pragma warning disable IDE0250 // Make struct 'readonly'
-public struct OperationResult : IOperationResult
+public record OperationResult : IOperationResult
 #pragma warning restore IDE0250 // Make struct 'readonly'
 {
     /// <inheritdoc/>
-    public required HttpStatusCode StatusCode { get; init; }
+    public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
 
     /// <inheritdoc/>
     [MaybeNull, AllowNull]
@@ -38,39 +38,24 @@ public struct OperationResult : IOperationResult
 
     /// <inheritdoc/>
     [MaybeNull, AllowNull]
-    public required string Detail { get; init; }
+    public string Detail { get; init; }
 
     /// <inheritdoc/>
     [MaybeNull, AllowNull]
-    public required Uri Location { get; init; }
+    public Uri Location { get; init; }
 
     /// <inheritdoc/>
     [MaybeNull, AllowNull]
-    public required object Result { get; init; }
+    public object Result { get; init; }
 
     /// <inheritdoc/>
-    public required ElementCollection Errors { get; init; }
+    public ElementCollection Errors { get; init; } = [];
 
     /// <inheritdoc/>
-    public required ElementCollection Headers { get; init; }
+    public ElementCollection Headers { get; init; } = [];
 
     /// <inheritdoc/>
-    public required ElementCollection Extensions { get; init; }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-    public static implicit operator OperationResult<dynamic>(OperationResult operationResult) =>
-        new()
-        {
-            StatusCode = operationResult.StatusCode,
-            Title = operationResult.Title,
-            Detail = operationResult.Detail,
-            Location = operationResult.Location,
-            Result = operationResult.Result,
-            Errors = operationResult.Errors,
-            Headers = operationResult.Headers,
-            Extensions = operationResult.Extensions
-        };
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+    public ElementCollection Extensions { get; init; } = [];
 }
 
 /// <summary>  
@@ -79,73 +64,13 @@ public struct OperationResult : IOperationResult
 /// and status.  
 /// </summary>  
 /// <typeparam name="TResult">The type of the result object.</typeparam>  
-public readonly record struct OperationResult<TResult> : IOperationResult<TResult>
+public record OperationResult<TResult> : OperationResult, IOperationResult<TResult>
 {
     /// <inheritdoc/>
-    public required HttpStatusCode StatusCode { get; init; }
-
-    /// <inheritdoc/>
     [MaybeNull, AllowNull]
-    public string Title { get; init; }
-
-    /// <inheritdoc/>
-    [MaybeNull, AllowNull]
-    public required string Detail { get; init; }
-
-    /// <inheritdoc/>
-    [MaybeNull, AllowNull]
-    public required Uri Location { get; init; }
-
-    /// <inheritdoc/>
-    [MaybeNull, AllowNull]
-    public required TResult Result { get; init; }
-
-    /// <inheritdoc/>
-    public required ElementCollection Errors { get; init; }
-
-    /// <inheritdoc/>
-    public required ElementCollection Headers { get; init; }
-
-    /// <inheritdoc/>
-    public required ElementCollection Extensions { get; init; }
-
-    /// <summary>
-    /// Implicitly converts an <see cref="OperationResult{TResult}"/> to 
-    /// an <see cref="OperationResult"/>.
-    /// </summary>
-    /// <param name="operationResult">The operation result to convert.</param>
-    /// <returns>An <see cref="OperationResult"/> instance.</returns>
-    public static implicit operator OperationResult(
-        OperationResult<TResult> operationResult) =>
-        new()
-        {
-            StatusCode = operationResult.StatusCode,
-            Title = operationResult.Title,
-            Detail = operationResult.Detail,
-            Location = operationResult.Location,
-            Result = operationResult.Result,
-            Errors = operationResult.Errors,
-            Headers = operationResult.Headers,
-            Extensions = operationResult.Extensions
-        };
-
-    /// <summary>  
-    /// Implicitly converts an <see cref="OperationResult"/> to  
-    /// an <see cref="OperationResult{TResult}"/>.  
-    /// </summary>  
-    /// <param name="operationResult">The operation result to convert.</param>  
-    /// <returns>An <see cref="OperationResult{TResult}"/> instance.</returns>  
-    public static implicit operator OperationResult<TResult>(
-        OperationResult operationResult) =>
-        new()
-        {
-            StatusCode = operationResult.StatusCode,
-            Title = operationResult.Title,
-            Detail = operationResult.Detail,
-            Location = operationResult.Location,
-            Result = (TResult?)operationResult.Result,
-            Errors = operationResult.Errors,
-            Headers = operationResult.Headers,
-            Extensions = operationResult.Extensions
-        };
+    public new TResult Result
+    {
+        get => (TResult?)base.Result;
+        init => base.Result = value;
+    }
 }
