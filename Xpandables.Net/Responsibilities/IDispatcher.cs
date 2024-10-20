@@ -16,7 +16,6 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Events;
-using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Responsibilities;
@@ -28,52 +27,32 @@ public interface IDispatcher : IServiceProvider, IEventPublisher
     /// <summary>
     /// Sends a command asynchronously.
     /// </summary>
-    /// <typeparam name="TCommand">The type of the command.</typeparam>
     /// <param name="command">The command to send.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
-    Task<IOperationResult> SendAsync<TCommand>(
-        TCommand command,
-        CancellationToken cancellationToken = default)
-        where TCommand : notnull, ICommand;
+    Task<IOperationResult> SendAsync(
+        ICommand command,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Sends a command with an aggregate asynchronously.
+    /// Sends a query asynchronously.
     /// </summary>
-    /// <typeparam name="TCommand">The type of the command.</typeparam>
-    /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-    /// <param name="command">The command to send.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The result of the operation.</returns>
-    Task<IOperationResult> SendAsync<TCommand, TAggregate>(
-        TCommand command,
-        CancellationToken cancellationToken = default)
-        where TCommand : notnull, ICommandAggregate<TAggregate>
-        where TAggregate : class, IAggregate, new();
-
-    /// <summary>
-    /// Gets a result asynchronously based on a query.
-    /// </summary>
-    /// <typeparam name="TQuery">The type of the query.</typeparam>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
-    Task<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
-        TQuery query,
-        CancellationToken cancellationToken = default)
-        where TQuery : notnull, IQuery<TResult>;
+    Task<IOperationResult<TResult>> SendAsync<TResult>(
+        IQuery<TResult> query,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Fetches results asynchronously based on a query.
+    /// Sends a query asynchronously.
     /// </summary>
-    /// <typeparam name="TQuery">The type of the query.</typeparam>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An asynchronous enumerable of results.</returns>
-    IAsyncEnumerable<TResult> FetchAsync<TQuery, TResult>(
-        TQuery query,
-        CancellationToken cancellationToken = default)
-        where TQuery : notnull, IQueryAsync<TResult>;
+    IAsyncEnumerable<TResult> SendAsync<TResult>(
+        IQueryAsync<TResult> query,
+        CancellationToken cancellationToken = default);
 }

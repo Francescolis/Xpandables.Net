@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Events;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Responsibilities.Wrappers;
 
 namespace Xpandables.Net.Responsibilities;
 
@@ -32,15 +33,44 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
         .GetRequiredService<IEventPublisher>();
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TResult> FetchAsync<TQuery, TResult>(
-        TQuery query,
+    public Task<IOperationResult> SendAsync(
+        ICommand command,
         CancellationToken cancellationToken = default)
-        where TQuery : notnull, IQueryAsync<TResult>
     {
         try
         {
-            IQueryAsyncHandler<TQuery, TResult> handler =
-                provider.GetRequiredService<IQueryAsyncHandler<TQuery, TResult>>();
+            Type commandWrapperType = typeof(CommandHandlerWrapper<>)
+                .MakeGenericType(command.GetType());
+
+            ICommandHandlerWrapper handler =
+                (ICommandHandlerWrapper)provider
+                .GetRequiredService(commandWrapperType);
+
+            return handler.HandleAsync(command, cancellationToken);
+        }
+        catch (Exception exception)
+            when (exception is not OperationResultException)
+        {
+            return Task.FromResult(OperationResults
+                .InternalServerError()
+                .WithException(exception)
+                .Build());
+        }
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<TResult> SendAsync<TResult>(
+        IQueryAsync<TResult> query,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            Type requestWrapperType = typeof(QueryAsyncHandlerWrapper<,>)
+                .MakeGenericType(query.GetType(), typeof(TResult));
+
+            IQueryAsyncHandlerWrapper<TResult> handler =
+                (IQueryAsyncHandlerWrapper<TResult>)provider
+                .GetRequiredService(requestWrapperType);
 
             return handler.HandleAsync(query, cancellationToken);
         }
@@ -53,15 +83,18 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     }
 
     /// <inheritdoc/>
-    public Task<IOperationResult<TResult>> GetAsync<TQuery, TResult>(
-        TQuery query,
+    public Task<IOperationResult<TResult>> SendAsync<TResult>(
+        IQuery<TResult> query,
         CancellationToken cancellationToken = default)
-        where TQuery : notnull, IQuery<TResult>
     {
         try
         {
-            IQueryHandler<TQuery, TResult> handler =
-                provider.GetRequiredService<IQueryHandler<TQuery, TResult>>();
+            Type requestWrapperType = typeof(QueryHandlerWrapper<,>)
+                .MakeGenericType(query.GetType(), typeof(TResult));
+
+            IQueryHandlerWrapper<TResult> handler =
+                (IQueryHandlerWrapper<TResult>)provider
+                .GetRequiredService(requestWrapperType);
 
             return handler.HandleAsync(query, cancellationToken);
         }
@@ -78,7 +111,10 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     /// <inheritdoc/>
     public Task<IOperationResult> PublishAsync<TEvent>(
         TEvent @event,
-        CancellationToken cancellationToken = default) where TEvent : notnull, IEvent => throw new NotImplementedException();
+        CancellationToken cancellationToken = default)
+        where TEvent : notnull, IEvent =>
+        _eventPublisher.PublishAsync(@event, cancellationToken);
+
     /// <inheritdoc/>
     public Task<IOperationResult<IEnumerable<EventPublished>>> PublishAsync<TEvent>(
         IEnumerable<TEvent> events,
@@ -86,48 +122,6 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
         where TEvent : notnull, IEvent =>
         _eventPublisher.PublishAsync(events, cancellationToken);
 
-    /// <inheritdoc/>
-    public Task<IOperationResult> SendAsync<TCommand>(
-        TCommand command,
-        CancellationToken cancellationToken = default)
-        where TCommand : notnull, ICommand
-    {
-        try
-        {
-            ICommandHandler<TCommand> handler =
-                provider.GetRequiredService<ICommandHandler<TCommand>>();
-
-            return handler.HandleAsync(command, cancellationToken);
-        }
-        catch (Exception exception)
-            when (exception is not OperationResultException)
-        {
-            return Task.FromResult(OperationResults
-                .InternalServerError()
-                .WithException(exception)
-                .Build());
-        }
-    }
     object? IServiceProvider.GetService(Type serviceType)
         => provider.GetService(serviceType);
-    Task<IOperationResult> IDispatcher.SendAsync<TCommand, TAggregate>(
-        TCommand command,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            ICommandAggregateHandler<TCommand, TAggregate> handler =
-                provider.GetRequiredService<ICommandAggregateHandler<TCommand, TAggregate>>();
-
-            return handler.HandleAsync(command, cancellationToken);
-        }
-        catch (Exception exception)
-            when (exception is not OperationResultException)
-        {
-            return Task.FromResult(OperationResults
-                .InternalServerError()
-                .WithException(exception)
-                .Build());
-        }
-    }
 }

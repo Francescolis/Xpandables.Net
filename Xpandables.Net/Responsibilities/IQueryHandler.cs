@@ -24,7 +24,7 @@ namespace Xpandables.Net.Responsibilities;
 /// <typeparam name="TQuery">The type of the query.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public interface IQueryHandler<in TQuery, TResult>
-    where TQuery : notnull, IQuery<TResult>
+    where TQuery : class, IQuery<TResult>
 {
     /// <summary>
     /// Handles the specified query asynchronously.
@@ -37,36 +37,4 @@ public interface IQueryHandler<in TQuery, TResult>
     Task<IOperationResult<TResult>> HandleAsync(
         TQuery query,
         CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Defines a wrapper for handling queries of type <see cref="IQuery{TResult}"/> 
-/// and returning a result of type <typeparamref name="TResult"/>.
-/// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IQueryHandlerWrapper<TResult>
-{
-    /// <summary>
-    /// Handles the specified query asynchronously.
-    /// </summary>
-    /// <param name="query">The query to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation 
-    /// requests.</param>
-    /// <returns>A task that represents the asynchronous operation. The task 
-    /// result contains the operation result.</returns>
-    Task<IOperationResult<TResult>> HandleAsync(
-        IQuery<TResult> query,
-        CancellationToken cancellationToken = default);
-}
-
-internal sealed class QueryHandlerWrapper<TQuery, TResult>(
-    IQueryHandler<TQuery, TResult> decoratee) :
-    IQueryHandlerWrapper<TResult>
-    where TQuery : notnull, IQuery<TResult>
-{
-    /// <inheritdoc/>>
-    public Task<IOperationResult<TResult>> HandleAsync(
-        IQuery<TResult> query,
-        CancellationToken cancellationToken = default) =>
-        decoratee.HandleAsync((TQuery)query, cancellationToken);
 }

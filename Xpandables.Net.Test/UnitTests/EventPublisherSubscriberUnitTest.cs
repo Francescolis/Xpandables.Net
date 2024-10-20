@@ -4,10 +4,27 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Decorators;
+using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Defaults;
+using Xpandables.Net.Responsibilities;
+using Xpandables.Net.Responsibilities.Wrappers;
 
 namespace Xpandables.Net.Test.UnitTests;
+
+public sealed class TestQuery : IQueryAsync<string>, IUseValidation
+{
+}
+public sealed class TestQueryAsyncHandler : IQueryAsyncHandler<TestQuery, string>
+{
+    public IAsyncEnumerable<string> HandleAsync(
+        TestQuery query,
+        CancellationToken cancellationToken = default) =>
+        AsyncEnumerable.Empty<string>();
+}
+
 public sealed class EventPublisherSubscriberUnitTest
 {
     private readonly IServiceProvider _serviceProvider;
@@ -16,6 +33,14 @@ public sealed class EventPublisherSubscriberUnitTest
     public EventPublisherSubscriberUnitTest()
     {
         var services = new ServiceCollection();
+        services.AddScoped(typeof(IAsyncPipelineDecorator<,>), typeof(LoggingQueryAsyncHandlerDecorator<,>));
+        services.AddScoped(typeof(IAsyncPipelineDecorator<,>), typeof(ValidationQueryAsyncHandlerDecorator<,>));
+        services.AddScoped<IQueryAsyncHandler<TestQuery, string>, TestQueryAsyncHandler>();
+        services.AddScoped<IDispatcher, Dispatcher>();
+        services.AddTransient(typeof(QueryAsyncHandlerWrapper<,>));
+        services.AddLogging();
+        services.AddXEventPublisher();
+        services.AddXValidatorDefault();
         _serviceProvider = services.BuildServiceProvider();
         _eventPublisherSubscriber = new EventPublisherSubscriber(_serviceProvider);
     }
@@ -27,6 +52,9 @@ public sealed class EventPublisherSubscriberUnitTest
         TestEvent testEvent = new() { EventId = Guid.NewGuid(), EventVersion = 1 };
         _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
 
+        IDispatcher dispatcher = _serviceProvider.GetRequiredService<IDispatcher>();
+        IQueryAsync<string> query = new TestQuery();
+        var results = await dispatcher.SendAsync(query).ToListAsync();
         // Act
         var result = await _eventPublisherSubscriber.PublishAsync(testEvent);
 

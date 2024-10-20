@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +15,34 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Responsibilities;
+using Xpandables.Net.Responsibilities;
+
+namespace Xpandables.Net.Decorators;
+
 /// <summary>
-/// Defines a handler for processing asynchronous queries.
+/// Represents a delegate that handles asynchronous queries and returns an 
+/// asynchronous enumerable result.
+/// </summary>
+/// <typeparam name="TResult">The type of the result.</typeparam>
+public delegate IAsyncEnumerable<TResult> RequestAsyncHandlerDelegate<TResult>();
+
+/// <summary>
+/// Defines a decorator for handling asynchronous queries.
 /// </summary>
 /// <typeparam name="TQuery">The type of the query.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IQueryAsyncHandler<in TQuery, TResult>
+public interface IAsyncPipelineDecorator<TQuery, TResult>
     where TQuery : class, IQueryAsync<TResult>
 {
     /// <summary>
     /// Handles the asynchronous query.
     /// </summary>
     /// <param name="query">The query to handle.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <param name="next">The next delegate in the chain.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An asynchronous enumerable of the result.</returns>
     IAsyncEnumerable<TResult> HandleAsync(
         TQuery query,
+        RequestAsyncHandlerDelegate<TResult> next,
         CancellationToken cancellationToken = default);
 }

@@ -14,14 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Responsibilities;
+namespace Xpandables.Net.Responsibilities.Wrappers;
+
 /// <summary>
-/// Defines a handler for processing asynchronous queries.
+/// Defines a wrapper for handling asynchronous queries.
 /// </summary>
-/// <typeparam name="TQuery">The type of the query.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IQueryAsyncHandler<in TQuery, TResult>
-    where TQuery : class, IQueryAsync<TResult>
+public interface IQueryAsyncHandlerWrapper<TResult>
 {
     /// <summary>
     /// Handles the asynchronous query.
@@ -30,6 +29,6 @@ public interface IQueryAsyncHandler<in TQuery, TResult>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of the result.</returns>
     IAsyncEnumerable<TResult> HandleAsync(
-        TQuery query,
-        CancellationToken cancellationToken = default);
+         IQueryAsync<TResult> query,
+         CancellationToken cancellationToken = default);
 }
