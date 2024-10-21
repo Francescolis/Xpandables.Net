@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
+using Xpandables.Net.Events.Converters;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Events;
@@ -24,6 +25,12 @@ namespace Xpandables.Net.Events;
 /// </summary>
 public sealed record EventOptions
 {
+    /// <summary>
+    /// Gets the list of user-defined converters that were registered.
+    /// </summary>
+    public IList<IEventConverter> Converters { get; init; }
+        = [];
+
     /// <summary>
     /// Gets the JSON serializer options.
     /// </summary>
@@ -67,6 +74,42 @@ public sealed record EventOptions
     public ushort MaxSchedulerEventPerThread { get; init; } = 100;
 
     /// <summary>
+    /// Returns the <see cref="IEventConverter"/> instance for the specified type.
+    /// </summary>
+    /// <param name="event">The event to convert.</param>
+    /// <returns>The <see cref="IEventConverter"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">The converter was not 
+    /// found.</exception>"
+    public IEventConverter GetEventConverterFor(IEvent @event) =>
+        GetEventConverterFor(@event.GetType());
+
+    /// <summary>
+    /// Returns the <see cref="IEventConverter"/> instance for the specified type.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of event.</typeparam>
+    /// <returns>The <see cref="IEventConverter"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">The converter was not 
+    /// found.</exception>"
+    public IEventConverter GetEventConverterFor<TEvent>()
+        where TEvent : class, IEvent
+        => GetEventConverterFor(typeof(TEvent));
+
+    /// <summary>
+    /// Returns the <see cref="EventConverter"/> instance for the specified type.
+    /// </summary>
+    /// <param name="type">The type of event.</param>
+    /// <returns>The <see cref="EventConverter"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">The converter was not 
+    /// found.</exception>"
+    public IEventConverter GetEventConverterFor(
+        Type type)
+        => Converters
+            .FirstOrDefault(x => x.CanConvert(type))
+            ?? throw new InvalidOperationException(
+                $"The converter for the type '{type}' was not found.");
+
+
+    /// <summary>
     /// Returns the default <see cref="EventOptions"/>.
     /// </summary>
     /// <param name="options">The options to use as a base for the default values.</param>
@@ -80,6 +123,12 @@ public sealed record EventOptions
         IsEventSchedulerEnabled = true,
         MaxSchedulerRetries = 5,
         SchedulerRetryInterval = 500,
-        MaxSchedulerEventPerThread = 100
+        MaxSchedulerEventPerThread = 100,
+        Converters =
+        [
+            new EventConverterDomain(),
+            new EventConverterIntegration(),
+            new EventConverterSnapshot()
+        ]
     };
 }

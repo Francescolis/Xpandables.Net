@@ -1,0 +1,49 @@
+﻿
+/*******************************************************************************
+ * Copyright (C) 2024 Francis-Black EWANE
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+********************************************************************************/
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+using Xpandables.Net.Repositories;
+
+namespace Xpandables.Net.Events;
+
+/// <summary>  
+/// Provides configuration for the <see cref="EventEntityDomain"/> entity type.  
+/// </summary>  
+public sealed class EventEntityDomainConfiguration :
+   IEntityTypeConfiguration<EventEntityDomain>
+{
+    /// <inheritdoc/>  
+    public void Configure(EntityTypeBuilder<EventEntityDomain> builder)
+    {
+        _ = builder.HasKey(e => e.Id);
+        _ = builder.HasIndex(e => new { e.Id, e.AggregateId, e.EventName, e.EventVersion });
+        _ = builder.Property(e => e.Id).IsRequired();
+        _ = builder.Property(e => e.AggregateId).IsRequired();
+        _ = builder.Property(e => e.EventName).IsRequired().HasMaxLength(100);
+        _ = builder.Property(e => e.EventFullName).IsRequired().HasMaxLength(byte.MaxValue);
+        _ = builder.Property(e => e.EventVersion).IsRequired();
+        _ = builder.Property(e => e.EventData).IsRequired();
+        _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(50);
+        _ = builder.Property(e => e.CreatedOn).IsRequired();
+        _ = builder.Property(e => e.UpdatedOn).IsRequired(false);
+        _ = builder.Property(e => e.DeletedOn).IsRequired(false);
+
+        _ = builder.HasQueryFilter(e => e.Status != EntityStatus.DELETED);
+    }
+}
