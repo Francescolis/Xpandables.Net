@@ -37,4 +37,16 @@ public static class ServiceCollectionRepositoryExtensions
         this IServiceCollection services, string key)
         where TUnitOfWork : class, IUnitOfWork =>
         services.AddKeyedScoped<IUnitOfWork, TUnitOfWork>(key);
+
+    /// <summary>
+    /// Adds a scoped <see cref="IUnitOfWork"/> service to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TUnitOfWork">The type of the unit of work.</typeparam>
+    /// <param name="services">The service collection to add the service to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXUnitOfWork<TUnitOfWork>(
+        this IServiceCollection services)
+        where TUnitOfWork : class, IUnitOfWork =>
+        services.AddScoped<IUnitOfWork, TUnitOfWork>();
 }
