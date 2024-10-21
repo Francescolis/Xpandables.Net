@@ -85,6 +85,25 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
     Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? OrderBy { get; }
 
     /// <summary>
+    /// Fetches a collection of entities from the given queryable.
+    /// </summary>
+    /// <param name="queryable">The queryable to fetch entities from.</param>
+    /// <returns>A collection of entities.</returns>
+    public IEnumerable<TResult> Fetch(IQueryable<TEntity> queryable)
+        => Apply(queryable);
+
+    /// <summary>
+    /// Fetches a collection of entities asynchronously from the given queryable.
+    /// </summary>
+    /// <param name="queryable">The queryable to fetch entities from.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>An asynchronous collection of entities.</returns>
+    public IAsyncEnumerable<TResult> FetchAsync(
+        IQueryable<TEntity> queryable,
+        CancellationToken cancellationToken = default)
+        => Apply(queryable).ToAsyncEnumerable();
+
+    /// <summary>
     /// Applies the filter to the given queryable.
     /// </summary>
     /// <param name="queryable">The queryable to apply the filter to.</param>
