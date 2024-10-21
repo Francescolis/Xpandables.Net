@@ -62,4 +62,33 @@ public static class ServiceCollectionHttpExtensions
     public static IServiceCollection AddXHttpClientMessageFactory(
         this IServiceCollection services) =>
         services.AddXHttpClientMessageFactory<HttpClientMessageFactory>();
+
+    /// <summary>
+    /// Registers the specified <see cref="IHttpClientDispatcher"/> 
+    /// implementation to the services.
+    /// </summary>
+    /// <typeparam name="THttpClientDispatcher">The type of the HTTP client 
+    /// dispatcher.</typeparam>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="configureClient">The action to configure the HTTP client.</param>
+    /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+    public static IHttpClientBuilder AddXHttpClientDispatcher<THttpClientDispatcher>(
+        this IServiceCollection services,
+        Action<IServiceProvider, HttpClient> configureClient)
+        where THttpClientDispatcher : class, IHttpClientDispatcher =>
+        services.AddHttpClient
+            <IHttpClientDispatcher, THttpClientDispatcher>(configureClient);
+
+    /// <summary>
+    /// Registers the default <see cref="HttpClientDispatcherDefault"/> 
+    /// implementation to the services.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <param name="configureClient">The action to configure the HTTP client.</param>
+    /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+    public static IHttpClientBuilder AddXHttpClientDispatcher(
+        this IServiceCollection services,
+        Action<IServiceProvider, HttpClient> configureClient) =>
+        services
+        .AddXHttpClientDispatcher<HttpClientDispatcherDefault>(configureClient);
 }
