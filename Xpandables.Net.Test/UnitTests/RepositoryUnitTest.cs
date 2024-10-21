@@ -145,7 +145,7 @@ public sealed class RepositoryUnitTest
 }
 
 // Assuming InMemoryUnitOfWork is a real implementation of UnitOfWork
-public class InMemoryUnitOfWork : UnitOfWork
+public class InMemoryUnitOfWork : UnitOfWorkCore
 {
     private int _changesCount = 0;
 
@@ -162,12 +162,6 @@ public class InMemoryUnitOfWork : UnitOfWork
         new InMemoryRepository();
 
     public Task<int> GetChangesCountAsync() => Task.FromResult(_changesCount);
-    public override ValueTask DisposeAsync()
-    {
-        // Simulate dispose
-        GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
-    }
 }
 
 public class InMemoryRepository : IRepository

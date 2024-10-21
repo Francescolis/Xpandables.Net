@@ -34,7 +34,7 @@ namespace Xpandables.Net.Repositories;
 /// // and the methods InsertAsync, UpdateAsync, DeleteAsync are called.
 /// </code>
 /// </remarks>
-public abstract class UnitOfWork : IUnitOfWork
+public abstract class UnitOfWorkCore : Disposable, IUnitOfWork
 {
     /// <summary>
     /// When overridden in a derived class, saves all changes made in this unit of work.
@@ -60,13 +60,6 @@ public abstract class UnitOfWork : IUnitOfWork
     /// <param name="repositoryType">The type of the repository.</param>
     /// <returns>The repository instance.</returns>  
     protected abstract IRepository GetRepositoryCore(Type repositoryType);
-
-    /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, 
-    /// or resetting unmanaged resources asynchronously.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous dispose operation.</returns>
-    public abstract ValueTask DisposeAsync();
 }
 
 internal class RepositoryProxy<TRepository> : DispatchProxy

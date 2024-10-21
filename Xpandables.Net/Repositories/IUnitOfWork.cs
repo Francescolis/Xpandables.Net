@@ -39,3 +39,13 @@ public interface IUnitOfWork : IAsyncDisposable
     TRepository GetRepository<TRepository>()
         where TRepository : class, IRepository;
 }
+
+/// <summary>
+/// Represents a unit of work that encapsulates a set of operations to 
+/// be performed as a single transaction with a specific context.
+/// </summary>
+/// <typeparam name="TContext">The type of the context.</typeparam>
+public interface IUnitOfWork<TContext> : IUnitOfWork
+    where TContext : class
+{
+}
