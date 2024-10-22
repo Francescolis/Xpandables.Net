@@ -34,7 +34,7 @@ public sealed class EventStore(
 {
     private readonly EventOptions _options = options.Value;
     private readonly DataContextEvent _context = context;
-    private IDisposable[] _disposables = [];
+    private readonly List<IDisposable> _disposables = [];
 
     /// <inheritdoc/>
     public Task AppendAsync(
@@ -46,7 +46,7 @@ public sealed class EventStore(
             IEventConverter eventConverter =
                 _options.GetEventConverterFor(events.First());
 
-            List<IEventEntity> eventEntities = [];
+            List<IEventEntity> eventEntities = new(events.Count());
 
             foreach (IEvent @event in events)
             {
@@ -57,7 +57,7 @@ public sealed class EventStore(
 
                 if (_options.DisposeEventEntityAfterPersistence)
                 {
-                    _disposables = [.. _disposables, eventEntity];
+                    _disposables.Add(eventEntity);
                 }
             }
 
@@ -117,7 +117,7 @@ public sealed class EventStore(
                 events.ToDictionary(e => e.EventId, e => e);
 
             return _context.Integrations
-                .Where(e => events.Any(ep => ep.EventId == e.Id))
+                .Where(e => publishedEvents.Keys.Contains(e.Id))
                 .ExecuteUpdateAsync(setters =>
                     setters
                         .SetProperty(p => p.Status, EntityStatus.PUBLISHED)
