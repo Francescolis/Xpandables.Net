@@ -59,9 +59,9 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive
     /// <summary>
     /// Defines an implicit conversion of a primitive to its value type.
     /// </summary>
-    /// <param name="primitive">The primitive to convert.</param>
+    /// <param name="self">The primitive to convert.</param>
     /// <returns>The value of the primitive.</returns>
-    static abstract implicit operator TValue(TPrimitive primitive);
+    static abstract implicit operator TValue(TPrimitive self);
 
     /// <summary>
     /// Defines an implicit conversion of a value type to its primitive type.
@@ -69,6 +69,13 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive
     /// <param name="value">The value to convert.</param>
     /// <returns>A new instance of the primitive.</returns>
     static abstract implicit operator TPrimitive(TValue value);
+
+    /// <summary>
+    /// Defines an implicit conversion of a primitive to string.
+    /// </summary>
+    /// <param name="self">The primitive to convert.</param>
+    /// <returns>The string value of the primitive.</returns>
+    static abstract implicit operator string(TPrimitive self);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     object IPrimitive.Value => Value;

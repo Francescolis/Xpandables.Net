@@ -46,7 +46,7 @@ public sealed record EventEntityFilterDomain :
 /// Represents a filter for event entity domains with a specific result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntityDomainFilter<TResult> :
+public sealed record EventEntityFilterDomain<TResult> :
     EntityFilter<EventEntityDomain, TResult>,
     IEventFilter<EventEntityDomain, TResult>
 {

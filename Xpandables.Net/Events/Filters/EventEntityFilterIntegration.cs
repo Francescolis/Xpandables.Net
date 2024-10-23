@@ -45,7 +45,7 @@ public sealed record EventEntityFilterIntegration :
 /// Represents a filter for event entity integration with a specified result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntityIntegrationFilter<TResult> :
+public sealed record EventEntityFilterIntegration<TResult> :
     EntityFilter<EventEntityIntegration, TResult>,
     IEventFilter<EventEntityIntegration, TResult>
 {

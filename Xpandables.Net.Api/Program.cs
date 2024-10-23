@@ -1,11 +1,14 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 using Xpandables.Net.Api.Models;
 using Xpandables.Net.Api.Requests;
+using Xpandables.Net.Api.Shared.Persistence;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,14 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddXOperationResultMinimalApi();
 builder.Services.AddXValidators();
+
+builder.Services.AddXDataContext<DataContextUser>();
+builder.Services.AddXDataContextEvent(options =>
+    options.UseSqlServer(builder.Configuration
+        .GetConnectionString(nameof(DataContextEvent)))
+    .EnableDetailedErrors()
+    .EnableSensitiveDataLogging()
+    .EnableServiceProviderCaching());
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -56,6 +67,17 @@ app.UseSwagger()
         options.DocExpansion(DocExpansion.None);
         options.RoutePrefix = routePrefix;
     });
+
+// ensure the database is created and migrated
+
+using var scope = app.Services.CreateScope();
+var userContext = scope.ServiceProvider.GetRequiredService<DataContextUser>();
+await userContext.Database.EnsureDeletedAsync();
+await userContext.Database.EnsureCreatedAsync();
+
+var eventContext = scope.ServiceProvider.GetRequiredService<DataContextEvent>();
+await eventContext.Database.EnsureDeletedAsync();
+await eventContext.Database.EnsureCreatedAsync();
 
 app.MapPost("/user", (CreateUserRequest request) =>
 {

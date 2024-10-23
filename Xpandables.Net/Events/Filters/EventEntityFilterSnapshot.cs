@@ -45,7 +45,7 @@ public sealed record class EventEntityFilterSnapshot :
 /// Represents a filter for event entity snapshots with a specified result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntitySnapshotFilter<TResult> :
+public sealed record EventEntityFilterSnapshot<TResult> :
     EntityFilter<EventEntitySnapshot, TResult>,
     IEventFilter<EventEntitySnapshot, TResult>
 {
