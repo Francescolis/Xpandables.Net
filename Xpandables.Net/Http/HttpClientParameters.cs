@@ -144,9 +144,7 @@ public static class HttpClientParameters
         /// <see cref="IHttpRequestPatch"/>, otherwise the 
         /// whole class will be serialized.
         /// </summary>
-#pragma warning disable CA1720 // Identifier contains type name
         String,
-#pragma warning restore CA1720 // Identifier contains type name
 
         /// <summary>
         /// Body content matching the <see cref="ByteArrayContent"/>.

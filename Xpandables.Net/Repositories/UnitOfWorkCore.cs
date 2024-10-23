@@ -119,9 +119,7 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
     {
         if (targetMethod.Name == nameof(DisposeAsync))
         {
-#pragma warning disable CA2012 // Use ValueTasks correctly
             return DisposeAsync();
-#pragma warning restore CA2012 // Use ValueTasks correctly
         }
 
         if (targetMethod.Name is (nameof(IRepository.InsertAsync)) or

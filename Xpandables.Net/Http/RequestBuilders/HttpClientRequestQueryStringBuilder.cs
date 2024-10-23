@@ -86,10 +86,8 @@ public static class HttpClientRequestQueryStringExtensions
             uriToBeAppended = path[..anchorIndex];
         }
 
-#pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
         int queryIndex = uriToBeAppended
             .IndexOf('?', StringComparison.InvariantCulture);
-#pragma warning restore CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf']
         bool hasQuery = queryIndex != -1;
 
         StringBuilder sb = new();

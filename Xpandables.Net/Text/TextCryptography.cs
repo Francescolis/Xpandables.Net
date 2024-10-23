@@ -155,7 +155,6 @@ public static class TextCryptography
                 aes.IV = rfcKey.GetBytes(aes.BlockSize / 8);
                 aes.Mode = CipherMode.CBC;
 
-#pragma warning disable CA5401
                 using (CryptoStream cryptoStream = new(
                     memoryStream, isEncryption
                         ? aes.CreateEncryptor()
@@ -164,7 +163,7 @@ public static class TextCryptography
                 {
                     cryptoStream.Write(valueBytes, 0, valueBytes.Length);
                 }
-#pragma warning restore CA5401
+
                 byte[] encryptedDescripted = memoryStream.ToArray();
                 encryptedDecryptedString = isEncryption
                     ? Convert.ToBase64String(encryptedDescripted)

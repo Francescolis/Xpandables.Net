@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using Microsoft.Extensions.DependencyInjection;
-
 using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Repositories;
@@ -35,17 +33,14 @@ namespace Xpandables.Net.Events.Aggregates;
 /// </remarks>
 /// <param name="eventStore">The event store.</param>
 /// <param name="eventPublisher">The event publisher.</param>
-/// <param name="unitOfWork">The unit of work.</param>
 public abstract class AggregateStore<TAggregate>(
     IEventStore eventStore,
-    IEventPublisher eventPublisher,
-    [FromKeyedServices("Aggregate")] IUnitOfWork unitOfWork) :
+    IEventPublisher eventPublisher) :
     IAggregateStore<TAggregate>
     where TAggregate : class, IAggregate, new()
 {
     private readonly IEventStore _eventStore = eventStore;
     private readonly IEventPublisher _eventPublisher = eventPublisher;
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     /// <inheritdoc/>
     public async Task<IOperationResult> AppendAsync(
@@ -70,8 +65,6 @@ public abstract class AggregateStore<TAggregate>(
             }
 
             aggregate.MarkEventsAsCommitted();
-
-            _ = await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return OperationResults.Ok().Build();
         }
