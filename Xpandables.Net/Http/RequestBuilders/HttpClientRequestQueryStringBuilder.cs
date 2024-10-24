@@ -63,8 +63,8 @@ public static class HttpClientRequestQueryStringExtensions
     /// <param name="queryString">The query string parameters to add.</param>
     /// <returns>The path with the query string appended.</returns>
     public static string AddQueryString(
-        this string path,
-        IDictionary<string, string?>? queryString)
+    this string path,
+    IDictionary<string, string?>? queryString)
     {
         // From MS internal code
         ArgumentNullException.ThrowIfNull(path);
@@ -86,9 +86,7 @@ public static class HttpClientRequestQueryStringExtensions
             uriToBeAppended = path[..anchorIndex];
         }
 
-        int queryIndex = uriToBeAppended
-            .IndexOf('?', StringComparison.InvariantCulture);
-        bool hasQuery = queryIndex != -1;
+        bool hasQuery = uriToBeAppended.Contains('?');
 
         StringBuilder sb = new();
         _ = sb.Append(uriToBeAppended);

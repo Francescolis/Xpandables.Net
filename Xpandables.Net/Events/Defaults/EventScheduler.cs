@@ -22,7 +22,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Events.Filters;
-using Xpandables.Net.Operations;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events.Defaults;
@@ -99,20 +98,13 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
             return;
         }
 
-        IOperationResult<IEnumerable<EventPublished>> result =
+        IEnumerable<EventPublished> results =
             await eventPublisher
                 .PublishAsync(events, cancellationToken)
                 .ConfigureAwait(false);
 
-        if (!result.IsSuccessStatusCode)
-        {
-            _logger.LogError("An error occurred while publishing events. " +
-                "Error: {Error}", result.Errors);
-            return;
-        }
-
         await eventStore
-            .MarkAsPublishedAsync(result.Result, cancellationToken)
+            .MarkAsPublishedAsync(results, cancellationToken)
             .ConfigureAwait(false);
     }
 

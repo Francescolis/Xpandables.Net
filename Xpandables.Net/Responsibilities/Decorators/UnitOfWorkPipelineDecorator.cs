@@ -48,9 +48,16 @@ public sealed class UnitOfWorkPipelineDecorator<TRequest, TResponse>(
 
         if (response.IsSuccessStatusCode)
         {
-            _ = await unitOfWork
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                _ = await unitOfWork
+                    .SaveChangesAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return MatchResponse(exception.ToOperationResult());
+            }
         }
 
         return response;

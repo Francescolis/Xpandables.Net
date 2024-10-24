@@ -109,17 +109,16 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     }
 
     /// <inheritdoc/>
-    public Task<IOperationResult> PublishAsync<TEvent>(
+    public Task PublishAsync<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent =>
         _eventPublisher.PublishAsync(@event, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<IOperationResult<IEnumerable<EventPublished>>> PublishAsync<TEvent>(
-        IEnumerable<TEvent> events,
-        CancellationToken cancellationToken = default)
-        where TEvent : notnull, IEvent =>
+    public Task<IEnumerable<EventPublished>> PublishAsync(
+        IEnumerable<IEvent> events,
+        CancellationToken cancellationToken = default) =>
         _eventPublisher.PublishAsync(events, cancellationToken);
 
     object? IServiceProvider.GetService(Type serviceType)

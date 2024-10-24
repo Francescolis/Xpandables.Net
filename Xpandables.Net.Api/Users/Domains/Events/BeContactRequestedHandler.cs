@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 using Xpandables.Net.Api.Shared.Integrations;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Filters;
@@ -9,7 +11,7 @@ namespace Xpandables.Net.Api.Users.Domains.Events;
 public sealed class BeContactRequestedHandler(
     IEventStore eventStore) : IEventHandler<BeContactRequested>
 {
-    public async Task<IOperationResult> HandleAsync(
+    public async Task HandleAsync(
         BeContactRequested @event,
         CancellationToken cancellationToken = default)
     {
@@ -27,10 +29,9 @@ public sealed class BeContactRequestedHandler(
         if (await eventStore.FetchAsync(filter, cancellationToken)
             .AnyAsync(cancellationToken))
         {
-            return OperationResults
-                .Conflict()
-                .WithError(nameof(@event.ContactId), "Contact does not exist.")
-                .Build();
+            throw new ValidationException(new ValidationResult(
+                "Contact does not exist.",
+                [nameof(@event.ContactId)]), null, @event.ContactId.Value);
         }
 
         Contacted contacted = new()
@@ -39,7 +40,7 @@ public sealed class BeContactRequestedHandler(
             ContactId = @event.ContactId
         };
 
-        return await eventStore
+        await eventStore
             .AppendAsync([contacted], cancellationToken)
             .ToOperationResultAsync();
     }

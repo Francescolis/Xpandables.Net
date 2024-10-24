@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Operations;
-
 namespace Xpandables.Net.Events;
+
 /// <summary>
 /// Defines a handler for events of type <typeparamref name="TEvent"/>.
 /// </summary>
@@ -30,9 +29,10 @@ public interface IEventHandler<TEvent>
     /// <param name="event">The event to handle.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
     /// requests.</param>
-    /// <returns>A task that represents the asynchronous operation. The task 
-    /// result contains the operation result.</returns>
-    Task<IOperationResult> HandleAsync(
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Handling the event failed.
+    /// See inner exception for details.</exception>
+    Task HandleAsync(
         TEvent @event,
         CancellationToken cancellationToken = default);
 }

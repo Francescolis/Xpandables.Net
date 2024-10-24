@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Operations;
-
 namespace Xpandables.Net.Events;
 /// <summary>
 /// Defines a contract for publishing events.
@@ -26,13 +23,14 @@ public interface IEventPublisher
     /// <summary>
     /// Publishes the specified event asynchronously.
     /// </summary>
-    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <typeparam name="TEvent">The type of event to publish.</typeparam>
     /// <param name="event">The event to publish.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
     /// requests.</param>
-    /// <returns>A task that represents the asynchronous operation. The task 
-    /// result contains the operation result.</returns>
-    Task<IOperationResult> PublishAsync<TEvent>(
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Publishing the event failed.
+    /// See inner exception for details.</exception>
+    Task PublishAsync<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent;
@@ -40,14 +38,13 @@ public interface IEventPublisher
     /// <summary>
     /// Publishes the specified events asynchronously.
     /// </summary>
-    /// <typeparam name="TEvent">The type of the events.</typeparam>
     /// <param name="events">The events to publish.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
     /// requests.</param>
-    /// <returns>A task that represents the asynchronous operation. The task 
-    /// result contains the operation result.</returns>
-    Task<IOperationResult<IEnumerable<EventPublished>>> PublishAsync<TEvent>(
-        IEnumerable<TEvent> events,
-        CancellationToken cancellationToken = default)
-        where TEvent : notnull, IEvent;
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Publishing the events failed.
+    /// See inner exception for details.</exception>
+    Task<IEnumerable<EventPublished>> PublishAsync(
+        IEnumerable<IEvent> events,
+        CancellationToken cancellationToken = default);
 }

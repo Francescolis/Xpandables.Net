@@ -15,8 +15,9 @@
  *
 ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
+
 using Xpandables.Net.Events.Filters;
-using Xpandables.Net.Operations;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events.Aggregates;
@@ -43,7 +44,7 @@ public abstract class AggregateStore<TAggregate>(
     private readonly IEventPublisher _eventPublisher = eventPublisher;
 
     /// <inheritdoc/>
-    public async Task<IOperationResult> AppendAsync(
+    public async Task AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
@@ -52,37 +53,31 @@ public abstract class AggregateStore<TAggregate>(
             IReadOnlyCollection<IEventDomain> uncommittedEvents =
                 aggregate.GetUncommittedEvents();
 
-            await _eventStore.AppendAsync(uncommittedEvents, cancellationToken);
+            await _eventStore
+                .AppendAsync(uncommittedEvents, cancellationToken)
+                .ConfigureAwait(false);
 
-            IOperationResult publishResult =
-                await _eventPublisher.PublishAsync(
-                    uncommittedEvents,
-                    cancellationToken);
+            Task[] tasks = uncommittedEvents
+                .Select(async @event => await _eventPublisher
+                    .PublishAsync(@event, cancellationToken)
+                    .ConfigureAwait(false))
+                .ToArray();
 
-            if (!publishResult.IsSuccessStatusCode)
-            {
-                return publishResult;
-            }
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             aggregate.MarkEventsAsCommitted();
-
-            return OperationResults.Ok().Build();
-        }
-        catch (OperationResultException exceptionResult)
-        {
-            return exceptionResult.OperationResult;
         }
         catch (Exception exception)
+            when (exception is not InvalidOperationException)
         {
-            return OperationResults
-                .InternalServerError()
-                .WithException(exception)
-                .Build();
+            throw new InvalidOperationException(
+                "Unable to append the aggregate. See inner exception for details.",
+                exception);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<IOperationResult<TAggregate>> PeekAsync(
+    public async Task<TAggregate> PeekAsync(
         Guid keyId,
         CancellationToken cancellationToken = default)
     {
@@ -104,22 +99,19 @@ public abstract class AggregateStore<TAggregate>(
 
             if (aggregate.IsEmpty)
             {
-                return OperationResults
-                    .NotFound<TAggregate>()
-                    .WithError(
-                        nameof(keyId),
-                        $"Aggregate with id {keyId} not found.")
-                    .Build();
+                throw new ValidationException(new ValidationResult(
+                    "The aggregate was not found.",
+                    [nameof(keyId)]), null, keyId);
             }
 
-            return OperationResults.Ok(aggregate).Build();
+            return aggregate;
         }
         catch (Exception exception)
+            when (exception is not InvalidOperationException)
         {
-            return OperationResults
-                .InternalServerError<TAggregate>()
-                .WithException(exception)
-                .Build();
+            throw new InvalidOperationException(
+                "Unable to peek the aggregate. See inner exception for details.",
+                exception);
         }
     }
 }

@@ -16,12 +16,10 @@
 ********************************************************************************/
 
 using System.Collections.Concurrent;
-using System.Net;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Events.Defaults;
 
@@ -38,7 +36,7 @@ public sealed class EventPublisherSubscriber(
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     /// <inheritdoc/>
-    public async Task<IOperationResult> PublishAsync<TEvent>(
+    public async Task PublishAsync<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
         where TEvent : notnull, IEvent
@@ -47,92 +45,56 @@ public sealed class EventPublisherSubscriber(
         {
             ConcurrentBag<object> handlers = GetHandlersOf<TEvent>();
 
-            Task<IOperationResult>[] tasks = handlers
+            Task[] tasks = handlers
                 .Select(handler => handler switch
                 {
-                    Action<TEvent> action => Task.FromResult(action.ToOperationResult(@event)),
-                    Func<TEvent, Task> func => func(@event).ToOperationResultAsync(),
+                    Action<TEvent> action => Task.Run(() => action(@event)),
+                    Func<TEvent, Task> func => func(@event),
                     IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event),
-                    _ => Task.FromResult(OperationResults.Ok().Build())
+                    _ => Task.CompletedTask
                 })
                 .ToArray();
 
-            IOperationResult[] results = await Task
-                .WhenAll(tasks)
-                .ConfigureAwait(false);
-
-            IFailureBuilder failureBuilder = OperationResults
-                .Failure()
-                .WithExtension(nameof(@event.EventId), @event.EventId.ToString());
-
-            // if one of the result is an internal server error, get it.
-            if (results.Any(result => result.IsInternalServerError()))
-            {
-                failureBuilder = failureBuilder
-                    .WithStatusCode(HttpStatusCode.InternalServerError);
-            }
-
-            // add all errors to the failure result.
-            results
-                .Where(result => !result.IsSuccessStatusCode)
-                .ForEach(result => failureBuilder.WithErrors(result.Errors));
-
-            IOperationResult failure = failureBuilder.Build();
-
-            return failure.Errors.Any()
-                ? failure :
-                OperationResults
-                    .Ok()
-                    .WithExtension(nameof(@event.EventId), @event.EventId.ToString())
-                    .Build();
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         catch (Exception exception)
+            when (exception is not InvalidOperationException)
         {
-            return OperationResults
-                .InternalServerError()
-                .WithExtension(nameof(@event.EventId), @event.EventId.ToString())
-                .WithException(exception)
-                .Build();
+            throw new InvalidOperationException(
+                $"Unable to publish the event {@event.EventId}. " +
+                $"See inner exception for details.",
+                exception);
         }
     }
     /// <inheritdoc/>
-    public async Task<IOperationResult<IEnumerable<EventPublished>>> PublishAsync<TEvent>(
-        IEnumerable<TEvent> events,
+    public async Task<IEnumerable<EventPublished>> PublishAsync(
+        IEnumerable<IEvent> events,
         CancellationToken cancellationToken = default)
-        where TEvent : notnull, IEvent
     {
         try
         {
-            Task<IOperationResult>[] operationResults = events
-                .Select(@event => PublishAsync(@event, cancellationToken))
+            ConcurrentBag<EventPublished> eventPublished = [];
+
+            Task[] tasks = events
+                .Select(@event => PublishAsync(@event, cancellationToken)
+                    .ContinueWith(t => eventPublished.Add(new EventPublished
+                    {
+                        EventId = @event.EventId,
+                        PublishedOn = DateTimeOffset.UtcNow,
+                        ErrorMessage = t.IsFaulted ? t.Exception?.ToString() : null
+                    })))
                 .ToArray();
 
-            IOperationResult[] results = await Task
-                .WhenAll(operationResults)
-                .ConfigureAwait(false);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            IEnumerable<EventPublished> eventPublished = results
-                .Select(result => new EventPublished
-                {
-                    EventId = Guid.Parse(
-                        result.Extensions[nameof(Event.EventId)]
-                        !.Value.Values.First()),
-                    PublishedOn = DateTimeOffset.UtcNow,
-                    ErrorMessage = !result.IsSuccessStatusCode
-                        ? null
-                        : string.Join(
-                            Environment.NewLine,
-                            result.Errors.Select(error => error.Values))
-                });
-
-            return OperationResults.Ok(eventPublished).Build();
+            return eventPublished;
         }
         catch (Exception exception)
+            when (exception is not InvalidOperationException)
         {
-            return OperationResults
-                .InternalServerError<IEnumerable<EventPublished>>()
-                .WithException(exception)
-                .Build();
+            throw new InvalidOperationException(
+                "Unable to publish the events. See inner exception for details.",
+                exception);
         }
     }
 
@@ -179,6 +141,7 @@ public sealed class EventPublisherSubscriber(
 
         _serviceProvider
             .GetServices<IEventHandler<TEvent>>()
+            .Where(handler => !handlers.Contains(handler))
             .ForEach(handlers.Add);
 
         return handlers;

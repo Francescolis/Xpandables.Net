@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Operations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Xpandables.Net.Events.Aggregates;
 
@@ -31,7 +31,9 @@ public interface IAggregateStore<TAggregate>
     /// <param name="aggregate">The aggregate to append.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation result.</returns>
-    Task<IOperationResult> AppendAsync(
+    /// <exception cref="InvalidOperationException">Unable to append the 
+    /// aggregate. See inner exception for details.</exception>
+    Task AppendAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default);
 
@@ -41,7 +43,11 @@ public interface IAggregateStore<TAggregate>
     /// <param name="keyId">The aggregate identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation result containing the aggregate.</returns>
-    Task<IOperationResult<TAggregate>> PeekAsync(
+    /// <exception cref="ValidationException">The aggregate with the specified 
+    /// keyId does not exist.</exception>
+    /// <exception cref="InvalidOperationException">Unable to peek the aggregate.
+    /// See inner exception for details.</exception>
+    Task<TAggregate> PeekAsync(
         Guid keyId,
         CancellationToken cancellationToken = default);
 }

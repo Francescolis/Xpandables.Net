@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +56,7 @@ public sealed class AggregatePipelineDecorator<TRequest, TResponse>(
             .Invoke(null, [provider, request, next, cancellationToken])!;
     }
 
-    private async Task<TResponse> GetAggregate<TAggregate>(
+    private static async Task<TResponse> GetAggregate<TAggregate>(
         IServiceProvider provider,
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
@@ -65,34 +66,23 @@ public sealed class AggregatePipelineDecorator<TRequest, TResponse>(
         IAggregateStore<TAggregate> aggregateStore =
             provider.GetRequiredService<IAggregateStore<TAggregate>>();
 
-        IOperationResult<TAggregate> operationResult = await aggregateStore
-            .PeekAsync(request.KeyId, cancellationToken)
-            .ConfigureAwait(false);
-
-        if ((!operationResult.IsSuccessStatusCode
-               && !operationResult.IsNotFound())
-               || (operationResult.IsNotFound()
-                   && !request.ContinueWhenNotFound))
+        try
         {
-            return MatchResponse(operationResult);
+            TAggregate aggregate = await aggregateStore
+                .PeekAsync(request.KeyId, cancellationToken)
+                .ConfigureAwait(false);
+
+            request.Aggregate = aggregate;
         }
-
-        if (operationResult.IsSuccessStatusCode)
+        catch (ValidationException exception)
+            when (!request.ContinueWhenNotFound)
         {
-            request.Aggregate = operationResult.Result;
+            throw new InvalidOperationException(
+                $"The aggregate with the key '{request.KeyId}' was not found.",
+                exception);
         }
 
         TResponse result = await next().ConfigureAwait(false);
-
-        if (request.Aggregate.IsNotEmpty)
-        {
-            if ((await aggregateStore
-                .AppendAsync((TAggregate)request.Aggregate.Value, cancellationToken)
-                .ConfigureAwait(false)) is { IsSuccessStatusCode: false } appendOperation)
-            {
-                return MatchResponse(appendOperation);
-            }
-        }
 
         return result;
     }

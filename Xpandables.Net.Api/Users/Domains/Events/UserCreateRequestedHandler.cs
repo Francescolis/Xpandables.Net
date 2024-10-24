@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 using Xpandables.Net.Api.Shared.Integrations;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Filters;
@@ -9,7 +11,7 @@ namespace Xpandables.Net.Api.Users.Domains.Events;
 public sealed class UserCreateRequestedHandler(
     IEventStore eventStore) : IEventHandler<UserCreateRequested>
 {
-    public async Task<IOperationResult> HandleAsync(
+    public async Task HandleAsync(
         UserCreateRequested @event,
         CancellationToken cancellationToken = default)
     {
@@ -27,10 +29,9 @@ public sealed class UserCreateRequestedHandler(
         if (await eventStore.FetchAsync(filter, cancellationToken)
             .AnyAsync(cancellationToken))
         {
-            return OperationResults
-                .Conflict()
-                .WithError(nameof(@event.AggregateId), "User already exists.")
-                .Build();
+            throw new ValidationException(new ValidationResult(
+            "User already exists.",
+                [nameof(@event.AggregateId)]), null, @event.AggregateId);
         }
 
         UserCreated created = new()
@@ -41,7 +42,7 @@ public sealed class UserCreateRequestedHandler(
             Password = @event.Password
         };
 
-        return await eventStore
+        await eventStore
             .AppendAsync([created], cancellationToken)
             .ToOperationResultAsync();
     }

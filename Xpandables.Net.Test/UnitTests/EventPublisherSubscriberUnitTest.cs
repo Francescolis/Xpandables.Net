@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-using FluentAssertions;
+﻿using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -43,15 +41,10 @@ public sealed class EventPublisherSubscriberUnitTest
         _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
 
         // Act
-        var result = await _eventPublisherSubscriber.PublishAsync(testEvent);
+        await _eventPublisherSubscriber.PublishAsync(testEvent);
 
         // Assert
-        result.IsSuccessStatusCode.Should().BeTrue();
-        result.Extensions.Should()
-            .ContainEquivalentOf(
-                new Collections.ElementEntry(
-                    nameof(Event.EventId),
-                    [testEvent.EventId.ToString()]));
+        // No exception should be thrown
     }
 
     [Fact]
@@ -64,16 +57,10 @@ public sealed class EventPublisherSubscriberUnitTest
                 throw new InvalidOperationException("Test exception"));
 
         // Act
-        var result = await _eventPublisherSubscriber.PublishAsync(testEvent);
+        var result = () => _eventPublisherSubscriber.PublishAsync(testEvent);
 
         // Assert
-        result.IsSuccessStatusCode.Should().BeFalse();
-        result.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-        result.Extensions.Should()
-            .ContainEquivalentOf(
-                new Collections.ElementEntry(
-                    nameof(Event.EventId),
-                    [testEvent.EventId.ToString()]));
+        await result.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
@@ -91,8 +78,7 @@ public sealed class EventPublisherSubscriberUnitTest
         var result = await _eventPublisherSubscriber.PublishAsync(testEvents);
 
         // Assert
-        result.IsSuccessStatusCode.Should().BeTrue();
-        result.Result.Should().HaveCount(2);
+        result.Should().HaveCount(2);
     }
 
     [Fact]
