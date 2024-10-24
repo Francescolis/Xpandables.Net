@@ -67,7 +67,7 @@ public sealed class EventConverterIntegration : EventConverter
 
             return new EventEntityIntegration
             {
-                Id = eventIntegration.EventId,
+                KeyId = eventIntegration.EventId,
                 EventName = eventIntegration.GetType().Name,
                 EventFullName = eventIntegration.GetType().AssemblyQualifiedName!,
                 EventVersion = eventIntegration.EventVersion,

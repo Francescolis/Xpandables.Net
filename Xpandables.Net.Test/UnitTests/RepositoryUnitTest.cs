@@ -16,8 +16,8 @@ public sealed class RepositoryUnitTest
         // Arrange
         _repository.InsertAsync(new List<TestEntity>
         {
-            new() { Id = 1, Name = "Test1" },
-            new() { Id = 2, Name = "Test2" }
+            new() { KeyId = 1, Name = "Test1" },
+            new() { KeyId = 2, Name = "Test2" }
         }).Wait();
     }
 
@@ -27,7 +27,7 @@ public sealed class RepositoryUnitTest
         // Arrange
         var filter = new EntityFilter<TestEntity, TestEntity>
         {
-            Predicate = e => e.Id > 0,
+            Predicate = e => e.KeyId > 0,
             Selector = e => e
         };
 
@@ -44,8 +44,8 @@ public sealed class RepositoryUnitTest
         // Arrange
         var entities = new List<TestEntity>
             {
-                new() { Id = 1,  Name = "Test1" },
-                new() { Id = 2, Name = "Test2" }
+                new() { KeyId = 1,  Name = "Test1" },
+                new() { KeyId = 2, Name = "Test2" }
             };
 
         // Act
@@ -54,7 +54,7 @@ public sealed class RepositoryUnitTest
         // Assert
         var filter = new EntityFilter<TestEntity>
         {
-            Predicate = e => e.Id > 0,
+            Predicate = e => e.KeyId > 0,
             Selector = e => e
         };
         var result = await _repository.FetchAsync(filter).ToListAsync();
@@ -67,18 +67,18 @@ public sealed class RepositoryUnitTest
         // Arrange
         var filter = new EntityFilter<TestEntity>
         {
-            Predicate = e => e.Id == 1
+            Predicate = e => e.KeyId == 1
         };
 
         Expression<Func<TestEntity, TestEntity>> updateExpression =
-            e => new TestEntity { Id = e.Id, Name = "Updated" };
+            e => new TestEntity { KeyId = e.KeyId, Name = "Updated" };
 
         // Act
         await _repository.UpdateAsync(filter, updateExpression);
 
         // Assert
         var result = await _repository.FetchAsync(filter).ToListAsync();
-        result.First(e => e.Id == 1).Name.Should().Be("Updated");
+        result.First(e => e.KeyId == 1).Name.Should().Be("Updated");
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public sealed class RepositoryUnitTest
         // Arrange
         var filter = new EntityFilter<TestEntity>
         {
-            Predicate = e => e.Id == 1
+            Predicate = e => e.KeyId == 1
         };
 
         // Act
@@ -95,7 +95,7 @@ public sealed class RepositoryUnitTest
 
         // Assert
         var result = await _repository.FetchAsync(filter).ToListAsync();
-        result.Should().NotContain(e => e.Id == 1);
+        result.Should().NotContain(e => e.KeyId == 1);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public sealed class RepositoryUnitTest
         await using (var repository = unitOfWork.GetRepository<IRepository>())
         {
             await repository.InsertAsync(new List<TestEntity>
-            { new() { Id = 1,  Name = "Test" } });
+            { new() { KeyId = 1,  Name = "Test" } });
         }
 
         // Assert

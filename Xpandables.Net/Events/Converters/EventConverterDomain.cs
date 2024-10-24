@@ -66,7 +66,7 @@ public sealed class EventConverterDomain : EventConverter
 
             return new EventEntityDomain()
             {
-                Id = eventDomain.EventId,
+                KeyId = eventDomain.EventId,
                 AggregateId = Guid.Parse(eventDomain.AggregateId.ToString()!),
                 EventName = eventDomain.GetType().Name,
                 EventFullName = eventDomain.GetType().AssemblyQualifiedName!,

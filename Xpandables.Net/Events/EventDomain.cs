@@ -44,7 +44,7 @@ public record EventDomain : Event, IEventDomain
     [SetsRequiredMembers]
     protected EventDomain(IAggregate aggregate)
     {
-        AggregateId = aggregate.AggregateId;
+        AggregateId = aggregate.KeyId;
         EventVersion = aggregate.Version;
     }
 

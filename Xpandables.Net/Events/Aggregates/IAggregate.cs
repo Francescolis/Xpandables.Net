@@ -24,7 +24,7 @@ public interface IAggregate : IEventSourcing
     /// <summary>
     /// Gets the unique identifier of the aggregate.
     /// </summary>
-    Guid AggregateId { get; }
+    Guid KeyId { get; }
 
     /// <summary>
     /// Gets the version of the aggregate.

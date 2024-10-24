@@ -56,7 +56,7 @@ public sealed class AggregateSnapshotStore<TAggregate>(
                     EventId = Guid.NewGuid(),
                     EventVersion = aggregate.Version,
                     Memento = memento,
-                    OwnerId = aggregate.AggregateId
+                    OwnerId = aggregate.KeyId
                 };
 
                 await _eventStore

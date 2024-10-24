@@ -16,7 +16,7 @@ public sealed class User : Aggregate
     {
         var user = new User();
 
-        UserCreateRequested createRequested = new()
+        UserAdded userAdded = new()
         {
             AggregateId = userId,
             UserName = userName,
@@ -24,7 +24,7 @@ public sealed class User : Aggregate
             Password = password
         };
 
-        user.PushEvent(createRequested);
+        user.PushEvent(userAdded);
 
         return user;
     }
@@ -39,7 +39,7 @@ public sealed class User : Aggregate
                 .Build();
         }
 
-        if (contactId.Value == AggregateId)
+        if (contactId.Value == KeyId)
         {
             return OperationResults
                 .Conflict()
@@ -56,9 +56,9 @@ public sealed class User : Aggregate
 
     private User()
     {
-        On<UserCreateRequested>(@event =>
+        On<UserAdded>(@event =>
         {
-            AggregateId = @event.AggregateId;
+            KeyId = @event.AggregateId;
             UserName = @event.UserName;
             Email = @event.Email;
             Password = @event.Password;

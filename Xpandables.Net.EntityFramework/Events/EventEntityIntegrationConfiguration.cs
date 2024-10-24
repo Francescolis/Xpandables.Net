@@ -30,9 +30,9 @@ public sealed class EventEntityIntegrationConfiguration :
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<EventEntityIntegration> builder)
     {
-        _ = builder.HasKey(e => e.Id);
-        _ = builder.HasIndex(e => new { e.Id, e.EventName, e.EventVersion });
-        _ = builder.Property(e => e.Id).IsRequired();
+        _ = builder.HasKey(e => e.KeyId);
+        _ = builder.HasIndex(e => new { e.KeyId, e.EventName, e.EventVersion });
+        _ = builder.Property(e => e.KeyId).IsRequired();
         _ = builder.Property(e => e.EventName).IsRequired().HasMaxLength(100);
         _ = builder.Property(e => e.EventFullName).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.EventVersion).IsRequired();

@@ -45,7 +45,7 @@ public abstract class Entity<TKey> : IEntity<TKey>
 
     /// <inheritdoc/>  
     [Key]
-    public required TKey Id { get; init; }
+    public required TKey KeyId { get; init; }
 
     /// <inheritdoc/>  
     public void SetStatus(string status)

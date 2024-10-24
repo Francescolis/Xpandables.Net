@@ -27,7 +27,7 @@ public interface IEntity
     /// <summary>
     /// Gets the object unique identity.
     /// </summary>
-    object Id { get; }
+    object KeyId { get; }
 
     /// <summary>  
     /// Get a value indicating the state of the underlying instance.  
@@ -65,8 +65,8 @@ public interface IEntity<out TKey> : IEntity
     /// <summary>
     /// Gets the specific unique identity.
     /// </summary>
-    new TKey Id { get; }
+    new TKey KeyId { get; }
 
     [EditorBrowsable(EditorBrowsableState.Never), JsonIgnore]
-    object IEntity.Id => Id;
+    object IEntity.KeyId => KeyId;
 }

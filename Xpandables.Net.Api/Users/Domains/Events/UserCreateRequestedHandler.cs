@@ -9,10 +9,10 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Api.Users.Domains.Events;
 
 public sealed class UserCreateRequestedHandler(
-    IEventStore eventStore) : IEventHandler<UserCreateRequested>
+    IEventStore eventStore) : IEventHandler<UserAdded>
 {
     public async Task HandleAsync(
-        UserCreateRequested @event,
+        UserAdded @event,
         CancellationToken cancellationToken = default)
     {
         // check for duplicate user
@@ -20,7 +20,7 @@ public sealed class UserCreateRequestedHandler(
         IEventFilter filter = new EventEntityFilterDomain<Guid>
         {
             Predicate = x => x.AggregateId == @event.AggregateId
-                && x.EventName == nameof(UserCreateRequested),
+                && x.EventName == nameof(UserAdded),
             Selector = x => x.AggregateId,
             PageIndex = 1,
             PageSize = 1

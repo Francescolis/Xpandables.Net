@@ -28,11 +28,11 @@ public interface IRepository : IAsyncDisposable
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="entityFilter">The filter to apply to the entities.</param>
+    /// <param name="filter">The filter to apply to the entities.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of the result type.</returns>
     IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        IEntityFilter<TEntity, TResult> entityFilter,
+        IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
 
@@ -52,12 +52,12 @@ public interface IRepository : IAsyncDisposable
     /// Updates entities in the repository based on a filter and an update expression.
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
-    /// <param name="entityFilter">The filter to apply to the entities to update.</param>
+    /// <param name="filter">The filter to apply to the entities to update.</param>
     /// <param name="updateExpression">The expression that defines the update.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task UpdateAsync<TEntity>(
-        IEntityFilter<TEntity> entityFilter,
+        IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, TEntity>> updateExpression,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
@@ -66,11 +66,11 @@ public interface IRepository : IAsyncDisposable
     /// Deletes entities from the repository based on a filter.
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
-    /// <param name="entityFilter">The filter to apply to the entities to delete.</param>
+    /// <param name="filter">The filter to apply to the entities to delete.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task DeleteAsync<TEntity>(
-        IEntityFilter<TEntity> entityFilter,
+        IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
 

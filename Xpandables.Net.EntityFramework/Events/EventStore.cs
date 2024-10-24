@@ -117,12 +117,12 @@ public sealed class EventStore(
                 events.ToDictionary(e => e.EventId, e => e);
 
             return _context.Integrations
-                .Where(e => publishedEvents.Keys.Contains(e.Id))
+                .Where(e => publishedEvents.Keys.Contains(e.KeyId))
                 .ExecuteUpdateAsync(setters =>
                     setters
                         .SetProperty(p => p.Status, EntityStatus.PUBLISHED)
                         .SetProperty(p => p.UpdatedOn, DateTime.UtcNow)
-                        .SetProperty(p => p.ErrorMessage, p => publishedEvents[p.Id].ErrorMessage),
+                        .SetProperty(p => p.ErrorMessage, p => publishedEvents[p.KeyId].ErrorMessage),
                         cancellationToken);
         }
         catch (Exception exception)

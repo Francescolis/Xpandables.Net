@@ -28,13 +28,13 @@ public abstract class Aggregate : IAggregate
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
 
     /// <inheritdoc/>
-    public Guid AggregateId { get; protected set; } = Guid.Empty;
+    public Guid KeyId { get; protected set; } = Guid.Empty;
 
     /// <inheritdoc/>
     public ulong Version { get; protected set; }
 
     /// <inheritdoc/>
-    public bool IsEmpty => AggregateId == Guid.Empty;
+    public bool IsEmpty => KeyId == Guid.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Aggregate"/> class.
@@ -115,7 +115,7 @@ public abstract class Aggregate : IAggregate
     {
         if (_eventHandlers.TryGetValue(@event.GetType(), out Delegate? handler))
         {
-            AggregateId = @event.AggregateId;
+            KeyId = @event.AggregateId;
             _ = handler.DynamicInvoke(@event);
         }
     }

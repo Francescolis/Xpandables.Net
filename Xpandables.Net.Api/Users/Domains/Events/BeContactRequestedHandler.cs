@@ -20,7 +20,7 @@ public sealed class BeContactRequestedHandler(
         IEventFilter filter = new EventEntityFilterDomain<Guid>
         {
             Predicate = x => x.AggregateId == @event.ContactId.Value
-                && x.EventName == nameof(UserCreateRequested),
+                && x.EventName == nameof(UserAdded),
             Selector = x => x.AggregateId,
             PageIndex = 1,
             PageSize = 1

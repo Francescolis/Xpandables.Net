@@ -23,14 +23,14 @@ public sealed class DataContextUser(DbContextOptions<DataContextUser> options) :
     {
         modelBuilder.Entity<UserEntity>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).IsRequired();
+            entity.HasKey(e => e.KeyId);
+            entity.Property(e => e.KeyId).IsRequired();
             entity.Property(e => e.UserName).IsRequired();
             entity.Property(e => e.UserEmail).IsRequired();
             entity.Property(e => e.Password).IsRequired();
             entity.HasMany(e => e.Contacts)
                 .WithOne()
-                .HasForeignKey(e => e.Id);
+                .HasForeignKey(e => e.KeyId);
         });
 
         base.OnModelCreating(modelBuilder);

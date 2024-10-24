@@ -111,7 +111,7 @@ public class InMemoryEventStore : IEventStore
     {
         var entities = _eventEntities
             .OfType<IEventEntityIntegration>()
-            .Where(e => events.Any(ep => ep.EventId == e.Id));
+            .Where(e => events.Any(ep => ep.EventId == e.KeyId));
 
         entities.ForEach(e => e.SetStatus(EntityStatus.PUBLISHED));
 

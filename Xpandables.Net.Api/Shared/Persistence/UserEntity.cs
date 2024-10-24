@@ -14,7 +14,7 @@ public sealed class UserEntity : Entity<Guid>
     [SetsRequiredMembers]
     public UserEntity(Guid id, string userName, string userEmail, string password)
     {
-        Id = id;
+        KeyId = id;
         UserName = userName;
         UserEmail = userEmail;
         Password = password;
