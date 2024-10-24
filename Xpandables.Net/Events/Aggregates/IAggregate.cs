@@ -14,18 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Repositories;
+
 namespace Xpandables.Net.Events.Aggregates;
 
 /// <summary>
 /// Represents an aggregate with an identifier and version.
 /// </summary>
-public interface IAggregate : IEventSourcing
+public interface IAggregate : IEventSourcing, IEntity<Guid>
 {
-    /// <summary>
-    /// Gets the unique identifier of the aggregate.
-    /// </summary>
-    Guid KeyId { get; }
-
     /// <summary>
     /// Gets the version of the aggregate.
     /// </summary>
