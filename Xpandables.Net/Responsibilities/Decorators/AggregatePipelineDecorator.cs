@@ -16,12 +16,12 @@
 ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
+using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Responsibilities.Decorators;
 
@@ -37,53 +37,42 @@ public sealed class AggregatePipelineDecorator<TRequest, TResponse>(
     where TRequest : class, ICommandAggregate
     where TResponse : IOperationResult
 {
-    private static readonly MethodInfo _doGetAggregate =
-        typeof(AggregatePipelineDecorator<,>)
-        .GetMethod(
-            nameof(GetAggregate),
-            BindingFlags.NonPublic | BindingFlags.Instance)!;
-
     /// <inheritdoc/>
-    protected override Task<TResponse> HandleCoreAsync(
+    protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        MethodInfo doBuildAsyncInvokable = _doGetAggregate
-            .MakeGenericMethod(request.AggregateType);
-
-        return (Task<TResponse>)doBuildAsyncInvokable
-            .Invoke(null, [provider, request, next, cancellationToken])!;
-    }
-
-    private static async Task<TResponse> GetAggregate<TAggregate>(
-        IServiceProvider provider,
-        TRequest request,
-        RequestHandlerDelegate<TResponse> next,
-        CancellationToken cancellationToken = default)
-        where TAggregate : class, IAggregate, new()
-    {
-        IAggregateStore<TAggregate> aggregateStore =
-            provider.GetRequiredService<IAggregateStore<TAggregate>>();
-
         try
         {
-            TAggregate aggregate = await aggregateStore
+            Type aggregateStoreType = typeof(IAggregateStore<>)
+                .MakeGenericType(request.AggregateType);
+
+            dynamic aggregateStore = provider.GetRequiredService(aggregateStoreType);
+
+            IAggregate aggregate = await aggregateStore
                 .PeekAsync(request.KeyId, cancellationToken)
                 .ConfigureAwait(false);
 
-            request.Aggregate = aggregate;
+            request.Aggregate = aggregate.ToOptional();
+
+            TResponse result = await next().ConfigureAwait(false);
+
+            if (result.IsSuccessStatusCode)
+            {
+                await aggregateStore
+                    .AppendAsync(aggregate, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            return result;
         }
-        catch (ValidationException exception)
-            when (!request.ContinueWhenNotFound)
+        catch (Exception exception)
+            when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 $"The aggregate with the key '{request.KeyId}' was not found.",
                 exception);
         }
-
-        TResponse result = await next().ConfigureAwait(false);
-
-        return result;
     }
 }

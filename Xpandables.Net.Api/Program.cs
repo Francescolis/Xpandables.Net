@@ -25,6 +25,7 @@ builder.Services.AddXEventStore();
 builder.Services.AddXEventUnitOfWork();
 builder.Services.AddXEventPublisher();
 builder.Services.AddXPipelineUnitOfWorkDecorator();
+builder.Services.AddXPipelineAggregateDecorator();
 
 builder.Services.AddXDataContextEvent(options =>
     options.UseSqlServer(builder.Configuration

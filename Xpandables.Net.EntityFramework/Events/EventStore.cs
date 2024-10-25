@@ -16,6 +16,8 @@
  *
 ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -58,7 +60,7 @@ public sealed class EventStore(
             return _context.AddRangeAsync(eventEntities, cancellationToken);
         }
         catch (Exception exception)
-            when (exception is not InvalidOperationException)
+            when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 "An error occurred while appending the events.",
@@ -73,9 +75,12 @@ public sealed class EventStore(
     {
         IQueryable<IEventEntity> queryable = filter.EventType switch
         {
-            Type type when type == typeof(IEventDomain) => _context.Domains,
-            Type type when type == typeof(IEventIntegration) => _context.Integrations,
-            Type type when type == typeof(IEventSnapshot) => _context.Snapshots,
+            Type type when type == typeof(IEventDomain) =>
+                _context.Domains.AsNoTracking(),
+            Type type when type == typeof(IEventIntegration) =>
+                _context.Integrations.AsNoTracking(),
+            Type type when type == typeof(IEventSnapshot) =>
+            _context.Snapshots.AsNoTracking(),
             _ => throw new InvalidOperationException("The event type is not supported.")
         };
 
@@ -92,7 +97,7 @@ public sealed class EventStore(
                 eventConverter.ConvertFrom(entity, _options.SerializerOptions));
         }
         catch (Exception exception)
-            when (exception is not InvalidOperationException)
+            when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 "An error occurred while fetching the events.",
@@ -120,7 +125,7 @@ public sealed class EventStore(
                         cancellationToken);
         }
         catch (Exception exception)
-            when (exception is not InvalidOperationException)
+            when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 "An error occurred while marking the events as published.",

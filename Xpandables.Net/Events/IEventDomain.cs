@@ -30,5 +30,5 @@ public interface IEventDomain : IEvent
     /// <summary>
     /// Gets the aggregate identifier associated with the event.
     /// </summary>
-    Guid AggregateId { get; }
+    Guid AggregateId { get; init; }
 }

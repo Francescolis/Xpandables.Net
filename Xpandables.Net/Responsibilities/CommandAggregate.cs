@@ -49,7 +49,4 @@ public abstract record CommandAggregate<TAggregate> : ICommandAggregate<TAggrega
 
     /// <inheritdoc/>
     public Guid KeyId { get; init; }
-
-    /// <inheritdoc/>
-    public virtual bool ContinueWhenNotFound => false;
 }

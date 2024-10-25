@@ -1,0 +1,27 @@
+﻿
+using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Operations;
+using Xpandables.Net.Responsibilities;
+
+namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
+
+public sealed class DepositAccountCommandHandler(
+    IAggregateStore<Account> aggregateStore) : ICommandHandler<DepositAccountCommand>
+{
+    public async Task<IOperationResult> HandleAsync(
+        DepositAccountCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        Account account = await aggregateStore
+            .PeekAsync(command.KeyId, cancellationToken)
+            .ConfigureAwait(false);
+
+        account.Deposit(command.Amount);
+
+        await aggregateStore
+            .AppendAsync(account, cancellationToken)
+            .ConfigureAwait(false);
+
+        return OperationResults.Ok().Build();
+    }
+}

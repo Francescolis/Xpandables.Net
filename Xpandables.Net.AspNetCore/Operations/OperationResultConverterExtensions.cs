@@ -20,7 +20,6 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
 
@@ -119,33 +118,17 @@ public static class OperationResultConverterExtensions
     /// <returns>An <see cref="IOperationResult"/> representing the operation 
     /// result.</returns>  
     public static IOperationResult ToOperationResultForProblemDetails(
-        this Exception exception)
-    {
-        switch (exception)
+        this Exception exception) =>
+        exception switch
         {
-            case BadHttpRequestException badHttpRequestException:
-                return badHttpRequestException.ToOperationResult();
-            case OperationResultException operationResultException:
-                return operationResultException.OperationResult;
-            case ValidationException validationException:
-                return validationException.ValidationResult.ToOperationResult();
-            default:
-                bool isDevelopment = (Environment.GetEnvironmentVariable(
-                    "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
-                    Environments.Development;
-
-                return OperationResults
-                    .InternalServerError()
-                    .WithTitle(isDevelopment
-                        ? exception.Message
-                        : HttpStatusCode.InternalServerError.GetTitle())
-                    .WithDetail(isDevelopment
-                        ? $"{exception}" :
-                        HttpStatusCode.InternalServerError.GetDetail())
-                    .WithException(exception)
-                    .Build();
-        }
-    }
+            BadHttpRequestException badHttpRequestException =>
+                badHttpRequestException.ToOperationResult(),
+            OperationResultException operationResultException =>
+                operationResultException.OperationResult,
+            ValidationException validationException =>
+                validationException.ValidationResult.ToOperationResult(),
+            _ => exception.ToOperationResult()
+        };
 
     /// <summary>  
     /// Converts an <see cref="IOperationResult"/> to an <see cref="IActionResult"/>.  

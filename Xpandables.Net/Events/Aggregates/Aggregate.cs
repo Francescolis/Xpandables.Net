@@ -18,17 +18,19 @@
 using System.Collections.Concurrent;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events.Aggregates;
 
 /// <summary>
 /// Represents an abstract base class for aggregates that handle domain events.
 /// </summary>
-public abstract class Aggregate : Entity<Guid>, IAggregate
+public abstract class Aggregate : IAggregate
 {
     private readonly ConcurrentQueue<IEventDomain> _uncommittedEvents = new();
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
+
+    /// <inheritdoc/>
+    public Guid KeyId { get; protected set; } = Guid.Empty;
 
     /// <inheritdoc/>
     public ulong Version { get; protected set; }

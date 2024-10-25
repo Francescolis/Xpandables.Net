@@ -50,11 +50,6 @@ public interface ICommandAggregate : ICommand
     /// Gets the key identifier.
     /// </summary>
     Guid KeyId { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether to continue when the aggregate is not found.
-    /// </summary>
-    bool ContinueWhenNotFound { get; }
 }
 
 /// <summary>

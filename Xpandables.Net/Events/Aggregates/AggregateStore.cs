@@ -68,7 +68,7 @@ public sealed class AggregateStore<TAggregate>(
             aggregate.MarkEventsAsCommitted();
         }
         catch (Exception exception)
-            when (exception is not InvalidOperationException)
+            when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 "Unable to append the aggregate. See inner exception for details.",
@@ -107,7 +107,7 @@ public sealed class AggregateStore<TAggregate>(
             return aggregate;
         }
         catch (Exception exception)
-            when (exception is not InvalidOperationException)
+            when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 "Unable to peek the aggregate. See inner exception for details.",

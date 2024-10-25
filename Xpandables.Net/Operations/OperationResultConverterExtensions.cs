@@ -15,7 +15,10 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Reflection;
+
+using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
 
@@ -152,18 +155,29 @@ public static partial class OperationResultExtensions
             return operationResultException.OperationResult;
         }
 
-        IFailureBuilder builder = exception switch
+        bool isDevelopment = (Environment.GetEnvironmentVariable(
+            "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
+            Environments.Development;
+
+        return exception switch
         {
-            InvalidOperationException => OperationResults.InternalServerError(),
-            ValidationException => OperationResults.BadRequest(),
-            _ => OperationResults.Failure(System.Net.HttpStatusCode.Unused)
+            InvalidOperationException => OperationResults
+                .InternalServerError()
+                .WithTitle(isDevelopment
+                    ? exception.Message
+                    : HttpStatusCode.InternalServerError.GetTitle())
+                .WithDetail(isDevelopment
+                    ? $"{exception}" :
+                    HttpStatusCode.InternalServerError.GetDetail())
+                .WithException(exception)
+                .Build(),
+            ValidationException validation => validation
+                .ValidationResult.ToOperationResult(),
+            _ => OperationResults
+                .Failure(HttpStatusCode.Unused)
+                .Build()
             // this statement must be unreachable, otherwise, it is a bug.
         };
-
-        return builder
-            .WithDetail(exception.Message)
-            .WithException(exception)
-            .Build();
     }
 
     /// <summary>

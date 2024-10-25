@@ -108,7 +108,6 @@ public sealed record EventOptions
     /// </summary>
     /// <param name="options">The options to use as a base for the default values.</param>
     /// <returns>The default <see cref="EventOptions"/>.</returns>
-#pragma warning disable IDE0059 // Unnecessary assignment of a value
     public static void Default(EventOptions options)
     {
         options = options with
@@ -126,5 +125,4 @@ public sealed record EventOptions
         options.Converters.Add(new EventConverterIntegration());
         options.Converters.Add(new EventConverterSnapshot());
     }
-#pragma warning restore IDE0059 // Unnecessary assignment of a value
 }

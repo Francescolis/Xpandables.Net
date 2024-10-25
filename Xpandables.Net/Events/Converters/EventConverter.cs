@@ -57,7 +57,7 @@ public abstract class EventConverter : IEventConverter
     {
         try
         {
-            byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, options);
+            byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), options);
             return Encoding.UTF8.GetString(json);
         }
         catch (Exception exception)
