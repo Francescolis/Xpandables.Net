@@ -1,4 +1,6 @@
-﻿using Xpandables.Net.Api.Accounts.Events;
+﻿using System.ComponentModel.DataAnnotations;
+
+using Xpandables.Net.Api.Accounts.Events;
 
 namespace Xpandables.Net.Api.Accounts;
 
@@ -8,8 +10,10 @@ public sealed class AccountStateActive : AccountState
     {
         if (amount <= 0)
         {
-            throw new InvalidOperationException(
-                "Deposit amount must be greater than zero.");
+            throw new ValidationException(
+                new ValidationResult(
+                    "Deposit amount must be greater than zero.",
+                    [nameof(amount)]), null, amount);
         }
 
         DepositMade @event = new(Context, amount) { Amount = amount };
@@ -21,13 +25,17 @@ public sealed class AccountStateActive : AccountState
     {
         if (amount <= 0)
         {
-            throw new InvalidOperationException(
-                "Withdraw amount must be greater than zero.");
+            throw new ValidationException(
+                new ValidationResult(
+                    "Withdraw amount must be greater than zero.",
+                    [nameof(amount)]), null, amount);
         }
         if (Balance - amount < Overdraft)
         {
-            throw new InvalidOperationException(
-                "Insufficient funds to withdraw.");
+            throw new ValidationException(
+                new ValidationResult(
+                    "Insufficient funds to withdraw.",
+                    [nameof(amount)]), null, amount);
         }
 
         WithdrawMade @event = new(Context, amount) { Amount = amount };

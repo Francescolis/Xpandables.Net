@@ -1,0 +1,36 @@
+﻿
+using Microsoft.AspNetCore.Mvc;
+
+using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Http;
+using Xpandables.Net.Responsibilities;
+
+namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
+
+public sealed class WithdrawAccountEndpoint : IEndpointRoute
+{
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        app.MapPost("/accounts/withdraw", async (
+            [FromBody] WithdrawAccountRequest request,
+            IDispatcher dispatcher,
+            CancellationToken cancellationToken) =>
+        {
+            WithdrawAccountCommand command = new WithdrawAccountCommand
+            {
+                KeyId = request.KeyId,
+                Amount = request.Amount
+            };
+
+            return await dispatcher
+                .SendAsync(command, cancellationToken)
+                .ConfigureAwait(false);
+        })
+        .WithTags("Accounts")
+        .WithName("WithdrawAccount")
+        .WithXOperationResultMinimalApi()
+        .AllowAnonymous()
+        .Accepts<WithdrawAccountRequest>(HttpClientParameters.ContentType.Json)
+        .Produces(StatusCodes.Status200OK);
+    }
+}
