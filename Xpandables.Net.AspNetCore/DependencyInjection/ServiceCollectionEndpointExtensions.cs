@@ -60,7 +60,7 @@ public static class ServiceCollectionEndpointExtensions
             services.Add(new ServiceDescriptor(
                 typeof(IEndpointRoute),
                 type,
-                ServiceLifetime.Scoped)));
+                ServiceLifetime.Transient)));
 
         return services;
     }

@@ -78,6 +78,17 @@ public static class ServiceCollectionRepositoryExtensions
     public static IServiceCollection AddXEventUnitOfWork(
         this IServiceCollection services)
         => services
+            .AddXUnitOfWork<UnitOfWork<DataContextEvent>>();
+
+    /// <summary>
+    /// Adds the keyed UnitOfWork for DataContextEvent to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the UnitOfWork to.</param>
+    /// <returns>The same service collection so that multiple calls can be chained.</returns>
+    /// <remarks>The key is "Aggregate".</remarks>
+    public static IServiceCollection AddXEventUnitOfWorkKeyed(
+        this IServiceCollection services)
+        => services
             .AddXUnitOfWorkKeyed<UnitOfWork<DataContextEvent>>("Aggregate");
 
     /// <summary>

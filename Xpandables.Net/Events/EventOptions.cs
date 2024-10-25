@@ -108,20 +108,23 @@ public sealed record EventOptions
     /// </summary>
     /// <param name="options">The options to use as a base for the default values.</param>
     /// <returns>The default <see cref="EventOptions"/>.</returns>
-    public static void Default(EventOptions options) => _ = options with
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+    public static void Default(EventOptions options)
     {
-        SerializerOptions = DefaultSerializerOptions.Defaults,
-        IsSnapshotEnabled = true,
-        SnapshotFrequency = 50,
-        IsEventSchedulerEnabled = true,
-        MaxSchedulerRetries = 5,
-        SchedulerRetryInterval = 500,
-        MaxSchedulerEventPerThread = 100,
-        Converters =
-        [
-            new EventConverterDomain(),
-            new EventConverterIntegration(),
-            new EventConverterSnapshot()
-        ]
-    };
+        options = options with
+        {
+            SerializerOptions = DefaultSerializerOptions.Defaults,
+            IsSnapshotEnabled = true,
+            SnapshotFrequency = 50,
+            IsEventSchedulerEnabled = true,
+            MaxSchedulerRetries = 5,
+            SchedulerRetryInterval = 500,
+            MaxSchedulerEventPerThread = 100
+        };
+
+        options.Converters.Add(new EventConverterDomain());
+        options.Converters.Add(new EventConverterIntegration());
+        options.Converters.Add(new EventConverterSnapshot());
+    }
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
 }

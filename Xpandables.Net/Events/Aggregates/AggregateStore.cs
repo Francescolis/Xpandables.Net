@@ -34,7 +34,7 @@ namespace Xpandables.Net.Events.Aggregates;
 /// </remarks>
 /// <param name="eventStore">The event store.</param>
 /// <param name="eventPublisher">The event publisher.</param>
-public abstract class AggregateStore<TAggregate>(
+public sealed class AggregateStore<TAggregate>(
     IEventStore eventStore,
     IEventPublisher eventPublisher) :
     IAggregateStore<TAggregate>

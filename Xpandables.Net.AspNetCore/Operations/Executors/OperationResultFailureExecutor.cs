@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,7 +40,7 @@ public sealed class OperationResultFailureExecutor : IOperationResultExecutor
         context.Response.StatusCode = (int)operationResult.StatusCode;
 
         bool isDevelopment = context.RequestServices
-            .GetRequiredService<IHostEnvironment>()
+            .GetRequiredService<IWebHostEnvironment>()
             .IsDevelopment();
 
         ProblemDetails problemDetails = operationResult.StatusCode.IsBadRequest()
@@ -55,7 +56,7 @@ public sealed class OperationResultFailureExecutor : IOperationResultExecutor
             : new ProblemDetails()
             {
                 Title = operationResult.Title ?? operationResult.StatusCode.GetTitle(),
-                Detail = operationResult.Detail ?? operationResult.StatusCode.GetDetail(),
+                Detail = operationResult.Detail ?? GetProblemDetail(operationResult, isDevelopment),
                 Status = (int)operationResult.StatusCode,
                 Instance = $"{context.Request.Method} {context.Request.Path}",
                 Type = isDevelopment ? operationResult.GetType().Name : null,
@@ -74,5 +75,24 @@ public sealed class OperationResultFailureExecutor : IOperationResultExecutor
 
         IResult result = Results.Problem(problemDetails);
         return result.ExecuteAsync(context);
+    }
+
+    private static string GetProblemDetail(
+        IOperationResult operation,
+        bool isDevelopment)
+    {
+        if (isDevelopment)
+        {
+            if (operation.GetException() is { } exception)
+            {
+                return string.Join(Environment.NewLine, exception.Values);
+            }
+
+            return string.Join(
+                Environment.NewLine,
+                operation.Errors.Select(error => error.Values));
+        }
+
+        return operation.StatusCode.GetDetail();
     }
 }

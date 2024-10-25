@@ -91,6 +91,7 @@ public abstract class Aggregate : Entity<Guid>, IAggregate
         if (typeof(IEventDomain).IsAssignableFrom(eventType))
         {
             _ = _eventHandlers.TryAdd(eventType, handler);
+            return;
         }
 
         throw new ArgumentException(
