@@ -3,11 +3,8 @@ using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-using Xpandables.Net.Api.Models;
-using Xpandables.Net.Api.Requests;
-using Xpandables.Net.Api.Shared.Persistence;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Operations;
+using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,10 +14,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
+builder.Services.Configure<EventOptions>(EventOptions.Default);
+builder.Services.AddXEndpointRoutes();
 builder.Services.AddXOperationResultMinimalApi();
-builder.Services.AddXValidators();
+builder.Services.AddXDispatcher();
+builder.Services.AddXDispatcherWrappers();
+builder.Services.AddXDispatcherHandlers();
+builder.Services.AddXAggregateStore();
+builder.Services.AddXEventStore();
+builder.Services.AddXEventUnitOfWork();
+builder.Services.AddXEventPublisher();
+builder.Services.AddXPipelineUnitOfWorkDecorator();
 
-builder.Services.AddXDataContext<DataContextUser>();
 builder.Services.AddXDataContextEvent(options =>
     options.UseSqlServer(builder.Configuration
         .GetConnectionString(nameof(DataContextEvent)))
@@ -68,38 +73,12 @@ app.UseSwagger()
         options.RoutePrefix = routePrefix;
     });
 
+app.UseXEndpointRoutes();
+
 // ensure the database is created and migrated
-
 using var scope = app.Services.CreateScope();
-var userContext = scope.ServiceProvider.GetRequiredService<DataContextUser>();
-await userContext.Database.EnsureDeletedAsync();
-await userContext.Database.EnsureCreatedAsync();
-
 var eventContext = scope.ServiceProvider.GetRequiredService<DataContextEvent>();
 await eventContext.Database.EnsureDeletedAsync();
 await eventContext.Database.EnsureCreatedAsync();
-
-app.MapPost("/user", (CreateUserRequest request) =>
-{
-    User user = new()
-    {
-        UserName = request.UserName,
-        Email = request.Email,
-        Password = request.Password
-    };
-
-    return OperationResults
-        .Created(user)
-        .WithLocation("http://localtion.url")
-        .Build();
-})
-.WithName("CreateUser")
-.WithDescription("Create a new user.")
-.WithXOperationResultMinimalApi()
-.Produces<User>(201)
-.ProducesValidationProblem()
-.ProducesProblem(500)
-.WithOpenApi();
-
 
 app.Run();
