@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events;
@@ -32,39 +30,8 @@ public abstract class EventEntity : Entity<Guid>, IEventEntity
     public required string EventFullName { get; init; }
 
     /// <inheritdoc/>
-    public required JsonDocument EventData { get; init; }
+    public required string EventData { get; init; }
 
     /// <inheritdoc/>
     public required ulong EventVersion { get; init; }
-
-    private bool IsDisposed;
-
-    ///<inheritdoc/>
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Releases the unmanaged resources used by the EventEntity and optionally 
-    /// releases the managed resources.
-    /// </summary>
-    /// <param name="disposing">true to release both managed and unmanaged 
-    /// resources; false to release only unmanaged resources.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (IsDisposed)
-        {
-            return;
-        }
-
-        if (disposing)
-        {
-            EventData?.Dispose();
-        }
-
-        // Dispose has been called.
-        IsDisposed = true;
-    }
 }

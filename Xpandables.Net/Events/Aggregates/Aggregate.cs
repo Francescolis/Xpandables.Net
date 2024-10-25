@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using System.Collections.Concurrent;
+
 using Xpandables.Net.Collections;
 using Xpandables.Net.Repositories;
 
@@ -25,7 +27,7 @@ namespace Xpandables.Net.Events.Aggregates;
 /// </summary>
 public abstract class Aggregate : Entity<Guid>, IAggregate
 {
-    private readonly Queue<IEventDomain> _uncommittedEvents = new();
+    private readonly ConcurrentQueue<IEventDomain> _uncommittedEvents = new();
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
 
     /// <inheritdoc/>

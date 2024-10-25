@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Text;
 using System.Text.Json;
 
 namespace Xpandables.Net.Events.Converters;
@@ -50,20 +51,53 @@ public abstract class EventConverter : IEventConverter
     /// <exception cref="InvalidOperationException">
     /// Thrown when the event cannot be serialized.
     /// </exception>
-    protected static JsonDocument SerializeEvent(
+    protected static string SerializeEvent(
         IEvent @event,
         JsonSerializerOptions? options = default)
     {
         try
         {
             byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, options);
-            return JsonDocument.Parse(json);
+            return Encoding.UTF8.GetString(json);
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 $"Failed to serialize the event {@event.GetType().FullName}. " +
+                $"See inner exception for details.", exception);
+        }
+    }
+
+    /// <summary>
+    /// Deserializes the given JSON document to an event of the specified type.
+    /// </summary>
+    /// <param name="eventData">The JSON document representing the event data.</param>
+    /// <param name="eventType">The type of the event to deserialize to.</param>
+    /// <param name="options">Optional JSON serializer options.</param>
+    /// <returns>An instance of the deserialized event.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the event data cannot be deserialized.
+    /// </exception>
+    protected static IEvent DeserializeEvent(
+        string eventData,
+        Type eventType,
+        JsonSerializerOptions? options = default)
+    {
+        try
+        {
+            byte[] data = Encoding.UTF8.GetBytes(eventData);
+            object? @event = JsonSerializer.Deserialize(data, eventType, options)
+                ?? throw new InvalidOperationException(
+                    $"Failed to deserialize the event data to {eventType.Name}.");
+
+            return (IEvent)@event;
+        }
+        catch (Exception exception)
+            when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                $"Failed to convert the event entity to {eventType.Name}. " +
                 $"See inner exception for details.", exception);
         }
     }

@@ -38,12 +38,6 @@ public sealed record EventOptions
         DefaultSerializerOptions.Defaults;
 
     /// <summary>
-    /// Gets a value indicating whether the event entity should be 
-    /// disposed after persistence.
-    /// </summary>
-    public bool DisposeEventEntityAfterPersistence { get; init; } = true;
-
-    /// <summary>
     /// Gets a value indicating whether snapshot is enabled.
     /// </summary>
     public bool IsSnapshotEnabled { get; init; } = true;
@@ -117,7 +111,6 @@ public sealed record EventOptions
     public static void Default(EventOptions options) => _ = options with
     {
         SerializerOptions = DefaultSerializerOptions.Defaults,
-        DisposeEventEntityAfterPersistence = true,
         IsSnapshotEnabled = true,
         SnapshotFrequency = 50,
         IsEventSchedulerEnabled = true,

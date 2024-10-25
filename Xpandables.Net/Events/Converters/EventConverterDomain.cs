@@ -40,9 +40,7 @@ public sealed class EventConverterDomain : EventConverter
         {
             Type eventType = Type.GetType(entity.EventFullName, true)!;
 
-            object? @event = entity.EventData.Deserialize(eventType, options)
-                ?? throw new InvalidOperationException(
-                    $"Failed to deserialize the event data to {eventType.Name}.");
+            IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
 
             return (IEventDomain)@event;
         }

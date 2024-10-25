@@ -5,7 +5,7 @@ using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Api.Users.Domains.Events;
 
-public sealed record BeContactRequested : EventDomain
+public sealed record BeContactRequested : EventDomain<User>
 {
     [JsonConstructor]
     private BeContactRequested() { }
