@@ -24,9 +24,6 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents a domain event that is associated with an aggregate.
 /// </summary>
-/// <remarks>Add a private parameterless constructor and decorate it 
-/// with the <see cref="JsonConstructorAttribute"/> attribute when you
-/// are using the base constructor with <see cref="IAggregate"/>.</remarks>
 public record EventDomain : Event, IEventDomain
 {
     /// <inheritdoc/>

@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,20 +14,17 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 
 namespace Xpandables.Net.DependencyInjection;
-
-/// <summary>  
-/// Defines a contract for a service that configures middleware for a 
-/// <see cref="WebApplication"/>.  
-/// </summary>  
-public interface IUseService
+/// <summary>
+/// Interface for adding and using endpoint routes.
+/// </summary>
+public interface IEndpointRoute : IAddService, IUseService
 {
-    /// <summary>  
-    /// Configures the middleware for the specified <see cref="WebApplication"/>.  
-    /// </summary>  
-    /// <param name="application">The <see cref="WebApplication"/> 
-    /// to configure.</param>  
-    public virtual void UseServices(WebApplication application) { }
+    /// <summary>
+    /// Adds routes to the specified <see cref="IEndpointRouteBuilder"/>.
+    /// </summary>
+    /// <param name="app">The <see cref="IEndpointRouteBuilder"/> to add routes to.</param>
+    void AddRoutes(IEndpointRouteBuilder app);
 }
