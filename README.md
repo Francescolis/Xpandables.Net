@@ -205,3 +205,114 @@ else
 
 
 ```
+
+## IOperationResult and OperationResults
+
+### Overview
+
+The `IOperationResult` and `OperationResults` classes are part of the `Xpandables.Net.Operations` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
+
+#### IOperationResult
+
+The `IOperationResult` interface represents the result of an operation. It includes properties for status code, title, detail, location, result, errors, headers, and extensions. It also provides methods to check if the operation was successful and to retrieve any associated exceptions.
+
+#### OperationResults
+
+The `OperationResults` class provides static methods to create instances of `IOperationResult` for both success and failure scenarios. It includes methods to set various HTTP status codes and to include additional details like titles, details, locations, and errors.
+
+### Usage
+
+#### Creating a Success Operation Result
+
+To create a success operation result, you can use the `Success` method from the `OperationResults` class. You can specify the status code, result, and other details.
+
+```csharp
+
+using System.Net;
+using Xpandables.Net.Operations;
+
+public class SampleUsage
+{
+    public IOperationResult CreateSuccessResult()
+    {
+        return OperationResults.Success(HttpStatusCode.OK)
+            .WithTitle("Operation Successful")
+            .WithDetail("The operation completed successfully.")
+            .WithLocation(new Uri("http://example.com"))
+            .Build();
+    }
+
+    public IOperationResult<string> CreateSuccessResultWithData()
+    {
+        return OperationResults.Success("Success Data", HttpStatusCode.OK)
+            .WithTitle("Operation Successful")
+            .WithDetail("The operation completed successfully with data.")
+            .WithLocation(new Uri("http://example.com"))
+            .Build();
+    }
+}
+
+```
+
+#### Creating a Failure Operation Result
+
+To create a failure operation result, you can use the `Failure` method from the `OperationResults` class. You can specify the status code, errors, and other details.
+
+```csharp
+
+using System.Net;
+using Xpandables.Net.Operations;
+
+public class SampleUsage
+{
+    public IOperationResult CreateFailureResult()
+    {
+        return OperationResults.Failure(HttpStatusCode.BadRequest)
+            .WithTitle("Operation Failed")
+            .WithDetail("The operation failed due to bad request.")
+            .WithError("ErrorKey", "ErrorMessage")
+            .Build();
+    }
+
+    public IOperationResult<string> CreateFailureResultWithData()
+    {
+        return OperationResults.Failure<string>(HttpStatusCode.BadRequest)
+            .WithTitle("Operation Failed")
+            .WithDetail("The operation failed due to bad request with data.")
+            .WithError("ErrorKey", "ErrorMessage")
+            .Build();
+    }
+}
+
+```
+
+#### Using Predefined Methods
+
+The `OperationResults` class also provides predefined methods for common HTTP status codes like `Ok`, `Created`, `NoContent`, `NotFound`, `BadRequest`, `Conflict`, `Unauthorized`, `InternalServerError`, and `ServiceUnavailable`.
+
+```csharp
+
+using Xpandables.Net.Operations;
+
+public class SampleUsage
+{
+    public IOperationResult CreateOkResult()
+    {
+        return OperationResults.Ok()
+            .WithTitle("Operation Successful")
+            .WithDetail("The operation completed successfully.")
+            .Build();
+    }
+
+    public IOperationResult<string> CreateNotFoundResult()
+    {
+        return OperationResults.NotFound<string>()
+            .WithTitle("Resource Not Found")
+            .WithDetail("The requested resource was not found.")
+            .Build();
+    }
+}
+
+```
+
+The `IOperationResult` and `OperationResults` classes provide a flexible and structured way to handle operation results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
