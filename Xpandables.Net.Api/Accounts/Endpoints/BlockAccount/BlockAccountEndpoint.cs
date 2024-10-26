@@ -30,6 +30,7 @@ public sealed class BlockAccountEndpoint : IEndpointRoute
         .WithXOperationResultMinimalApi()
         .AllowAnonymous()
         .Accepts<BlockAccountRequest>(HttpClientParameters.ContentType.Json)
-        .Produces(StatusCodes.Status200OK);
+        .Produces(StatusCodes.Status200OK)
+        .ProducesValidationProblem(StatusCodes.Status401Unauthorized);
     }
 }
