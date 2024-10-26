@@ -5,21 +5,20 @@ using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
 using Xpandables.Net.Responsibilities;
 
-namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
+namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
-public sealed class DepositAccountEndpoint : IEndpointRoute
+public sealed class UnBlockAccountEndpoint : IEndpointRoute
 {
     public void AddRoutes(IEndpointRouteBuilder app) =>
-        app.MapPost("/accounts/deposit",
+        app.MapPost("/accounts/unblock",
             async (
-                [FromBody] DepositAccountRequest request,
+                [FromBody] UnBlockAccountRequest request,
                 IDispatcher dispatcher,
                 CancellationToken cancellationToken) =>
             {
-                DepositAccountCommand command = new()
+                UnBlockAccountCommand command = new()
                 {
-                    KeyId = request.KeyId,
-                    Amount = request.Amount
+                    KeyId = request.KeyId
                 };
 
                 return await dispatcher
@@ -27,10 +26,10 @@ public sealed class DepositAccountEndpoint : IEndpointRoute
                     .ConfigureAwait(false);
             })
         .WithTags("Accounts")
-        .WithName("DepositAccount")
+        .WithName("UnBlockAccount")
         .WithXOperationResultMinimalApi()
         .AllowAnonymous()
-        .Accepts<DepositAccountRequest>(HttpClientParameters.ContentType.Json)
+        .Accepts<UnBlockAccountRequest>(HttpClientParameters.ContentType.Json)
         .Produces(StatusCodes.Status200OK)
-        .ProducesValidationProblem(StatusCodes.Status401Unauthorized);
+        .Produces(StatusCodes.Status401Unauthorized);
 }

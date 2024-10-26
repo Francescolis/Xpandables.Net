@@ -9,23 +9,23 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 
 public sealed class WithdrawAccountEndpoint : IEndpointRoute
 {
-    public void AddRoutes(IEndpointRouteBuilder app)
-    {
-        app.MapPost("/accounts/withdraw", async (
-            [FromBody] WithdrawAccountRequest request,
-            IDispatcher dispatcher,
-            CancellationToken cancellationToken) =>
-        {
-            WithdrawAccountCommand command = new WithdrawAccountCommand
+    public void AddRoutes(IEndpointRouteBuilder app) =>
+        app.MapPost("/accounts/withdraw",
+            async (
+                [FromBody] WithdrawAccountRequest request,
+                IDispatcher dispatcher,
+                CancellationToken cancellationToken) =>
             {
-                KeyId = request.KeyId,
-                Amount = request.Amount
-            };
+                WithdrawAccountCommand command = new()
+                {
+                    KeyId = request.KeyId,
+                    Amount = request.Amount
+                };
 
-            return await dispatcher
-                .SendAsync(command, cancellationToken)
-                .ConfigureAwait(false);
-        })
+                return await dispatcher
+                    .SendAsync(command, cancellationToken)
+                    .ConfigureAwait(false);
+            })
         .WithTags("Accounts")
         .WithName("WithdrawAccount")
         .WithXOperationResultMinimalApi()
@@ -33,5 +33,4 @@ public sealed class WithdrawAccountEndpoint : IEndpointRoute
         .Accepts<WithdrawAccountRequest>(HttpClientParameters.ContentType.Json)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
-    }
 }
