@@ -7,7 +7,7 @@ public sealed class Account : AggregateStateContext<Account, AccountState>
 {
     public static Account Create(Guid keyId)
     {
-        var account = new Account();
+        Account account = new();
         account.PushEvent(new AccountCreated { AggregateId = keyId });
         return account;
     }
@@ -26,9 +26,11 @@ public sealed class Account : AggregateStateContext<Account, AccountState>
     {
         On<AccountCreated>(@event => KeyId = @event.AggregateId);
 
-        On<AccountBlocked>(@event => TransitionToState(new AccountStateBlocked()));
+        On<AccountBlocked>(@event =>
+            TransitionToState(new AccountStateBlocked(CurrentState.Balance)));
 
-        On<AccountClosed>(@event => TransitionToState(new AccountStateClosed()));
+        On<AccountClosed>(@event =>
+            TransitionToState(new AccountStateClosed(CurrentState.Balance)));
 
         On<DepositMade>(@event => CurrentState.Balance += @event.Amount);
 

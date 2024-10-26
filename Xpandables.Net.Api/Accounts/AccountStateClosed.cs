@@ -2,4 +2,5 @@
 
 public sealed class AccountStateClosed : AccountState
 {
+    public AccountStateClosed(decimal balance) => Balance = balance;
 }
