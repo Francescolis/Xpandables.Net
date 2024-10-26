@@ -97,11 +97,7 @@ public static partial class OperationResultExtensions
                 "The validation result is not valid.");
         }
 
-        ElementCollection errors = ElementCollection.With(validationResult
-            .MemberNames
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Select(s => new ElementEntry(s, validationResult.ErrorMessage))
-            .ToList());
+        ElementCollection errors = validationResult.ToElementCollection();
 
         return OperationResults
             .BadRequest()
@@ -128,12 +124,7 @@ public static partial class OperationResultExtensions
                 "The validation results are not valid.");
         }
 
-        ElementCollection errors = ElementCollection.With(validationResults
-            .Where(s => s.ErrorMessage is not null && s.MemberNames.Any())
-            .SelectMany(s => s.MemberNames
-                .Where(m => !string.IsNullOrWhiteSpace(m))
-                .Select(m => new ElementEntry(m, s.ErrorMessage ?? string.Empty)))
-            .ToList());
+        ElementCollection errors = validationResults.ToElementCollection();
 
         return OperationResults
             .BadRequest()
@@ -173,6 +164,10 @@ public static partial class OperationResultExtensions
                 .Build(),
             ValidationException validation => validation
                 .ValidationResult.ToOperationResult(),
+            UnauthorizedAccessException accessException => OperationResults
+                .Unauthorized()
+                .WithDetail(accessException.Message)
+                .Build(),
             _ => OperationResults
                 .Failure(HttpStatusCode.Unused)
                 .Build()
@@ -197,6 +192,54 @@ public static partial class OperationResultExtensions
         return ToOperationResultMethod
             .MakeGenericMethod(genericType)
             .Invoke(null, [operationResult])!;
+    }
+
+    /// <summary>
+    /// Converts the specified validation result to an 
+    /// <see cref="ElementCollection"/>.
+    /// </summary>
+    /// <param name="validationResult">The validation result to convert.</param>
+    /// <returns>An <see cref="ElementCollection"/> representing the 
+    /// validation result.</returns>
+    public static ElementCollection ToElementCollection(
+        this ValidationResult validationResult)
+    {
+        if (validationResult.ErrorMessage is null
+            || !validationResult.MemberNames.Any())
+        {
+            return ElementCollection.Empty;
+        }
+
+        return ElementCollection.With(validationResult
+            .MemberNames
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => new ElementEntry(s, validationResult.ErrorMessage))
+            .ToList());
+    }
+
+    /// <summary>
+    /// Converts the specified collection of validation results to an 
+    /// <see cref="ElementCollection"/>.
+    /// </summary>
+    /// <param name="validationResults">The collection of validation results 
+    /// to convert.</param>
+    /// <returns>An <see cref="ElementCollection"/> representing the 
+    /// validation results.</returns>
+    public static ElementCollection ToElementCollection(
+        this IEnumerable<ValidationResult> validationResults)
+    {
+        if (!validationResults.Any())
+        {
+            return ElementCollection.Empty;
+        }
+
+        return ElementCollection.With(validationResults
+            .Where(s => s.ErrorMessage is not null && s.MemberNames.Any())
+            .SelectMany(s => s.MemberNames
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Select(m => new ElementEntry(m, s.ErrorMessage ?? string.Empty))
+            )
+            .ToList());
     }
 
     /// <summary>
