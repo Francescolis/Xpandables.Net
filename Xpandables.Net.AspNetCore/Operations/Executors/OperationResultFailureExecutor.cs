@@ -49,7 +49,7 @@ public sealed class OperationResultFailureExecutor : IOperationResultExecutor
                 Title = operationResult.Title ?? operationResult.StatusCode.GetTitle(),
                 Detail = operationResult.Detail ?? operationResult.StatusCode.GetDetail(),
                 Status = (int)operationResult.StatusCode,
-                Instance = $"{context.Request.Method} {context.Request.Path}",
+                Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
                 Type = isDevelopment ? operationResult.GetType().Name : null,
                 Extensions = operationResult.ToElementExtensions()
             }
@@ -58,7 +58,7 @@ public sealed class OperationResultFailureExecutor : IOperationResultExecutor
                 Title = operationResult.Title ?? operationResult.StatusCode.GetTitle(),
                 Detail = operationResult.Detail ?? operationResult.StatusCode.GetDetail(),
                 Status = (int)operationResult.StatusCode,
-                Instance = $"{context.Request.Method} {context.Request.Path}",
+                Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
                 Type = isDevelopment ? operationResult.GetType().Name : null,
                 Extensions = operationResult.ToElementExtensions()
             };

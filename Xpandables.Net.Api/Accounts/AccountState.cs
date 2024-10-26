@@ -4,7 +4,6 @@ namespace Xpandables.Net.Api.Accounts;
 
 public abstract class AccountState : State<Account>
 {
-    public static readonly AccountState Active = new AccountStateActive();
     protected static readonly decimal Overdraft = -1000;
     public decimal Balance { get; internal set; }
     public virtual void Deposit(decimal amount) =>

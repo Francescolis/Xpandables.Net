@@ -22,7 +22,7 @@ public sealed class Account : AggregateStateContext<Account, AccountState>
 
     public void Close() => CurrentState.Close();
 
-    public Account() : base(AccountState.Active)
+    public Account() : base(new AccountStateActive())
     {
         On<AccountCreated>(@event => KeyId = @event.AggregateId);
 
