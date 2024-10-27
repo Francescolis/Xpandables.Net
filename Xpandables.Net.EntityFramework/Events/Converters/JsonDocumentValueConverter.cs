@@ -24,12 +24,12 @@ namespace Xpandables.Net.Events.Converters;
 /// <summary>
 /// Converts a <see cref="JsonDocument"/> to a <see cref="string"/> and vice versa.
 /// </summary>
-public sealed class JsonDocumentConverter : ValueConverter<JsonDocument, string>
+public sealed class JsonDocumentValueConverter : ValueConverter<JsonDocument, string>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="JsonDocumentConverter"/> class.
+    /// Initializes a new instance of the <see cref="JsonDocumentValueConverter"/> class.
     /// </summary>
-    public JsonDocumentConverter() :
+    public JsonDocumentValueConverter() :
         base(
         jsonDocument => jsonDocument.RootElement.GetRawText(),
         json => JsonDocument.Parse(json, default))
