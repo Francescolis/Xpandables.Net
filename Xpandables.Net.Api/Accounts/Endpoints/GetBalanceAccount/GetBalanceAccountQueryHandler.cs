@@ -1,5 +1,4 @@
-﻿
-using Xpandables.Net.Events.Aggregates;
+﻿using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Responsibilities;
 
