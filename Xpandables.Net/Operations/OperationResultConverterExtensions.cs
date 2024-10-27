@@ -229,12 +229,8 @@ public static partial class OperationResultExtensions
                 .ValidationResult.ToOperationResult(),
             UnauthorizedAccessException accessException =>
                 accessException.ToOperationResult(),
-            _ => OperationResults
-                .Failure(HttpStatusCode.Unused)
-                .WithTitle(HttpStatusCode.Unused.GetTitle())
-                .WithDetail(HttpStatusCode.Unused.GetDetail())
-                .WithException(exception)
-                .Build()
+            _ => new InvalidOperationException(exception.Message, exception)
+                .ToOperationResult()
             // this statement must be unreachable, otherwise, it is a bug.
         };
     }
