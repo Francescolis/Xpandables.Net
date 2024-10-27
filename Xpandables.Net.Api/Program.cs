@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
+using Xpandables.Net.Api.Accounts.Persistence;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
@@ -27,12 +27,7 @@ builder.Services.AddXEventPublisher();
 builder.Services.AddXPipelineUnitOfWorkDecorator();
 builder.Services.AddXPipelineAggregateDecorator();
 
-builder.Services.AddXDataContextEvent(options =>
-    options.UseSqlServer(builder.Configuration
-        .GetConnectionString(nameof(DataContextEvent)))
-    .EnableDetailedErrors()
-    .EnableSensitiveDataLogging()
-    .EnableServiceProviderCaching());
+builder.Services.AddDataContextEventForSqlServer(builder.Configuration);
 
 builder.Services.AddSwaggerGen(options =>
 {
