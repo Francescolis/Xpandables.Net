@@ -51,10 +51,7 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
         catch (Exception exception)
             when (exception is not OperationResultException)
         {
-            return Task.FromResult(OperationResults
-                .InternalServerError()
-                .WithException(exception)
-                .Build());
+            return Task.FromResult(exception.ToOperationResult());
         }
     }
 
@@ -101,10 +98,9 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
         catch (Exception exception)
             when (exception is not OperationResultException)
         {
-            return Task.FromResult(OperationResults
-                .InternalServerError<TResult>()
-                .WithException(exception)
-                .Build());
+            return Task.FromResult(exception
+                .ToOperationResult()
+                .ToOperationResult<TResult>());
         }
     }
 

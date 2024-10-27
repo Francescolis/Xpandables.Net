@@ -71,7 +71,7 @@ public sealed class AggregatePipelineDecorator<TRequest, TResponse>(
             when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                $"The aggregate with the key '{request.KeyId}' was not found.",
+                $"An error occurred when peeking the object with the key '{request.KeyId}'.",
                 exception);
         }
     }

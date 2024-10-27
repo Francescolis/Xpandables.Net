@@ -101,6 +101,8 @@ public static partial class OperationResultExtensions
 
         return OperationResults
             .BadRequest()
+            .WithTitle(HttpStatusCode.BadRequest.GetTitle())
+            .WithDetail(HttpStatusCode.BadRequest.GetDetail())
             .WithErrors(errors)
             .Build();
     }
@@ -128,9 +130,82 @@ public static partial class OperationResultExtensions
 
         return OperationResults
             .BadRequest()
+            .WithTitle(HttpStatusCode.BadRequest.GetTitle())
+            .WithDetail(HttpStatusCode.BadRequest.GetDetail())
             .WithErrors(errors)
             .Build();
     }
+
+    /// <summary>  
+    /// Converts a <see cref="UnauthorizedAccessException"/> to an 
+    /// <see cref="IOperationResult"/>.  
+    /// </summary>  
+    /// <param name="exception">The exception to convert.</param>  
+    /// <returns>An <see cref="IOperationResult"/> representing the 
+    /// operation result.</returns>  
+    public static IOperationResult ToOperationResult(
+        this UnauthorizedAccessException exception)
+    {
+        bool isDevelopment = (Environment.GetEnvironmentVariable(
+            "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
+            Environments.Development;
+
+        return OperationResults
+            .Unauthorized()
+            .WithTitle(HttpStatusCode.Unauthorized.GetTitle())
+            .WithDetail(isDevelopment ? exception.Message : HttpStatusCode.Unauthorized.GetDetail())
+            .WithErrors(GetErrors())
+#if DEBUG
+            .WithException(exception)
+#endif
+            .Build();
+
+        ElementCollection GetErrors()
+        {
+            if (exception.InnerException is ValidationException validationException)
+            {
+                return validationException.ValidationResult.ToElementCollection();
+            }
+
+            return ElementCollection.Empty;
+        }
+    }
+
+    /// <summary>  
+    /// Converts a <see cref="InvalidOperationException"/> to an 
+    /// <see cref="IOperationResult"/>.  
+    /// </summary>  
+    /// <param name="exception">The exception to convert.</param>  
+    /// <returns>An <see cref="IOperationResult"/> representing the 
+    /// operation result.</returns>  
+    public static IOperationResult ToOperationResult(
+        this InvalidOperationException exception)
+    {
+        bool isDevelopment = (Environment.GetEnvironmentVariable(
+            "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
+            Environments.Development;
+
+        return OperationResults
+            .InternalServerError()
+            .WithTitle(isDevelopment ? exception.Message : HttpStatusCode.InternalServerError.GetTitle())
+            .WithDetail(isDevelopment ? $"{exception}" : HttpStatusCode.InternalServerError.GetDetail())
+            .WithErrors(GetErrors())
+#if DEBUG
+            .WithException(exception)
+#endif
+            .Build();
+
+        ElementCollection GetErrors()
+        {
+            if (exception.InnerException is ValidationException validationException)
+            {
+                return validationException.ValidationResult.ToElementCollection();
+            }
+
+            return ElementCollection.Empty;
+        }
+    }
+
 
     /// <summary>
     /// Converts the specified exception to an <see cref="IOperationResult"/>.
@@ -146,30 +221,19 @@ public static partial class OperationResultExtensions
             return operationResultException.OperationResult;
         }
 
-        bool isDevelopment = (Environment.GetEnvironmentVariable(
-            "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
-            Environments.Development;
-
         return exception switch
         {
-            InvalidOperationException => OperationResults
-                .InternalServerError()
-                .WithTitle(isDevelopment
-                    ? exception.Message
-                    : HttpStatusCode.InternalServerError.GetTitle())
-                .WithDetail(isDevelopment
-                    ? $"{exception}" :
-                    HttpStatusCode.InternalServerError.GetDetail())
-                .WithException(exception)
-                .Build(),
+            InvalidOperationException invalidOperation =>
+                invalidOperation.ToOperationResult(),
             ValidationException validation => validation
                 .ValidationResult.ToOperationResult(),
-            UnauthorizedAccessException accessException => OperationResults
-                .Unauthorized()
-                .WithDetail(accessException.Message)
-                .Build(),
+            UnauthorizedAccessException accessException =>
+                accessException.ToOperationResult(),
             _ => OperationResults
                 .Failure(HttpStatusCode.Unused)
+                .WithTitle(HttpStatusCode.Unused.GetTitle())
+                .WithDetail(HttpStatusCode.Unused.GetDetail())
+                .WithException(exception)
                 .Build()
             // this statement must be unreachable, otherwise, it is a bug.
         };
