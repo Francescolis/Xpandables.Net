@@ -60,11 +60,9 @@ public interface IEventFilter<TEventEntity, TResult> :
     /// <returns>A queryable collection of filtered results.</returns>
     public new IQueryable<TResult> Apply(IQueryable<TEventEntity> queryable)
     {
-        IQueryable<TEventEntity> query = queryable;
-
         if (Predicate is not null)
         {
-            query = query.Where(Predicate);
+            queryable = queryable.Where(Predicate);
         }
 
         if (EventDataPredicate is not null)
@@ -73,27 +71,27 @@ public interface IEventFilter<TEventEntity, TResult> :
                 RepositoryExtensions.Compose<TEventEntity, JsonDocument, bool>(
                     x => x.EventData, EventDataPredicate);
 
-            query = query.Where(expression);
+            queryable = queryable.Where(expression);
         }
 
         if (OrderBy is not null)
         {
-            query = OrderBy(query);
+            queryable = OrderBy(queryable);
         }
 
         if (PageIndex > 0 && PageSize > 0)
         {
-            query = query
+            queryable = queryable
                 .Skip((PageIndex - 1) * PageSize)
                 .Take(PageSize);
         }
 
-        return query.Select(Selector);
+        return queryable.Select(Selector);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     IQueryable IEntityFilter.Apply(IQueryable queryable)
-        => Apply(queryable.OfType<TEventEntity>());
+        => Apply((IQueryable<TEventEntity>)queryable);
 }
 
 /// <summary>

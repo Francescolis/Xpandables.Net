@@ -21,7 +21,7 @@ namespace Xpandables.Net.Expressions;
 /// <summary>
 /// Represents a factory for creating query expressions.
 /// </summary>
-public sealed record QueryExpression
+public sealed record QueryExpressionExpressionFactory
 {
     /// <summary>
     /// Creates a new instance of <see cref="QueryExpression{TSource, TResult}"/>.
