@@ -41,23 +41,16 @@ public interface IEntityFilter
     IQueryable Apply(IQueryable queryable);
 
     /// <summary>
-    /// Fetches a collection of entities from the given queryable.
+    /// Fetches a collection of results from the given queryable.
     /// </summary>
-    /// <param name="queryable">The queryable to fetch entities from.</param>
-    /// <returns>A collection of entities.</returns>
-    public IEnumerable<IEntity> Fetch(IQueryable queryable)
-        => Apply(queryable).OfType<IEntity>();
-
-    /// <summary>
-    /// Fetches a collection of entities asynchronously from the given queryable.
-    /// </summary>
-    /// <param name="queryable">The queryable to fetch entities from.</param>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="queryable">The queryable to fetch results from.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-    /// <returns>An asynchronous collection of entities.</returns>
-    public IAsyncEnumerable<IEntity> FetchAsync(
+    /// <returns>An asynchronous collection of results.</returns>
+    public IAsyncEnumerable<TResult> FetchAsync<TResult>(
         IQueryable queryable,
-        CancellationToken cancellationToken = default)
-        => Apply(queryable).OfType<IEntity>().ToAsyncEnumerable();
+        CancellationToken cancellationToken = default) =>
+        Apply(queryable).OfType<TResult>().ToAsyncEnumerable();
 }
 
 /// <summary>
@@ -85,32 +78,13 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
     Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? OrderBy { get; }
 
     /// <summary>
-    /// Fetches a collection of entities from the given queryable.
-    /// </summary>
-    /// <param name="queryable">The queryable to fetch entities from.</param>
-    /// <returns>A collection of entities.</returns>
-    public IEnumerable<TResult> Fetch(IQueryable<TEntity> queryable)
-        => Apply(queryable);
-
-    /// <summary>
-    /// Fetches a collection of entities asynchronously from the given queryable.
-    /// </summary>
-    /// <param name="queryable">The queryable to fetch entities from.</param>
-    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-    /// <returns>An asynchronous collection of entities.</returns>
-    public IAsyncEnumerable<TResult> FetchAsync(
-        IQueryable<TEntity> queryable,
-        CancellationToken cancellationToken = default)
-        => Apply(queryable).ToAsyncEnumerable();
-
-    /// <summary>
     /// Applies the filter to the given queryable.
     /// </summary>
     /// <param name="queryable">The queryable to apply the filter to.</param>
     /// <returns>The filtered queryable.</returns>
-    public IQueryable<TResult> Apply(IQueryable<TEntity> queryable)
+    public new IQueryable Apply(IQueryable queryable)
     {
-        IQueryable<TEntity> query = queryable;
+        IQueryable<TEntity> query = (IQueryable<TEntity>)queryable;
 
         if (Predicate is not null)
         {
@@ -134,7 +108,7 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     IQueryable IEntityFilter.Apply(IQueryable queryable)
-        => Apply(queryable.OfType<TEntity>());
+        => Apply((IQueryable<TEntity>)queryable);
 }
 
 /// <summary>

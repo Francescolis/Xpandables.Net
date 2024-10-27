@@ -175,7 +175,7 @@ public class InMemoryRepository : IRepository
     {
         var query = _entities.OfType<TEntity>().AsQueryable();
         var filteredQuery = entityFilter.Apply(query);
-        return filteredQuery.ToAsyncEnumerable();
+        return filteredQuery.OfType<TResult>().ToAsyncEnumerable();
     }
 
     public Task InsertAsync<TEntity>(
@@ -194,7 +194,7 @@ public class InMemoryRepository : IRepository
         where TEntity : class, IEntity
     {
         var query = _entities.OfType<TEntity>().AsQueryable();
-        var filteredEntities = entityFilter.Apply(query).ToList();
+        var filteredEntities = entityFilter.Apply(query).OfType<TEntity>().ToList();
 
         foreach (var entity in filteredEntities)
         {
@@ -212,7 +212,7 @@ public class InMemoryRepository : IRepository
         where TEntity : class, IEntity
     {
         var query = _entities.OfType<TEntity>().AsQueryable();
-        var filteredEntities = entityFilter.Apply(query).ToList();
+        var filteredEntities = entityFilter.Apply(query).OfType<TEntity>().ToList();
 
         foreach (var entity in filteredEntities)
         {

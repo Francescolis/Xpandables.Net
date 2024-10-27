@@ -27,8 +27,8 @@ namespace Xpandables.Net.Events.Filters;
 /// Represents a filter for event entity snapshots.
 /// </summary>
 public sealed record class EventEntityFilterSnapshot :
-    EntityFilter<EventEntitySnapshot>,
-    IEventFilter<EventEntitySnapshot>
+    EntityFilter<IEventEntitySnapshot>,
+    IEventFilter<IEventEntitySnapshot>
 {
     /// <inheritdoc/>
     [SetsRequiredMembers]
@@ -39,24 +39,4 @@ public sealed record class EventEntityFilterSnapshot :
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-}
-
-/// <summary>
-/// Represents a filter for event entity snapshots with a specified result type.
-/// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntityFilterSnapshot<TResult> :
-    EntityFilter<EventEntitySnapshot, TResult>,
-    IEventFilter<EventEntitySnapshot, TResult>
-{
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventSnapshot);
-
-    /// <inheritdoc/>
-    public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-
-    /// <inheritdoc/>
-    public override required
-        Expression<Func<EventEntitySnapshot, TResult>> Selector
-    { get; init; }
 }

@@ -26,8 +26,8 @@ namespace Xpandables.Net.Events.Filters;
 /// Represents a filter for event entity domains.
 /// </summary>
 public sealed record EventEntityFilterDomain :
-    EntityFilter<EventEntityDomain>,
-    IEventFilter<EventEntityDomain>
+    EntityFilter<IEventEntityDomain>,
+    IEventFilter<IEventEntityDomain>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="EventEntityFilterDomain"/> class.
@@ -40,24 +40,4 @@ public sealed record EventEntityFilterDomain :
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-}
-
-/// <summary>
-/// Represents a filter for event entity domains with a specific result type.
-/// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntityFilterDomain<TResult> :
-    EntityFilter<EventEntityDomain, TResult>,
-    IEventFilter<EventEntityDomain, TResult>
-{
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventDomain);
-
-    /// <inheritdoc/>
-    public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-
-    /// <inheritdoc/>
-    public override required
-        Expression<Func<EventEntityDomain, TResult>> Selector
-    { get; init; }
 }

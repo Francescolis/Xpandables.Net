@@ -39,17 +39,34 @@ public interface IEventFilter : IEntityFilter
     /// Gets the predicate expression used to filter event data.
     /// </summary>
     Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; }
+
+    /// <summary>
+    /// Asynchronously fetches event entities from the specified queryable collection.
+    /// </summary>
+    /// <param name="queryable">The queryable collection of entities.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>An asynchronous enumerable of event entities.</returns>
+    public IAsyncEnumerable<IEventEntity> FetchAsync(
+        IQueryable queryable,
+        CancellationToken cancellationToken = default) =>
+        Apply(queryable).OfType<IEventEntity>().ToAsyncEnumerable();
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    IAsyncEnumerable<TResult> IEntityFilter.FetchAsync<TResult>(
+        IQueryable queryable,
+        CancellationToken cancellationToken) =>
+        FetchAsync(queryable, cancellationToken)
+        .OfType<TResult>();
 }
 
 /// <summary>
 /// Represents a filter for events that can be applied to a queryable 
-/// collection of events with specific entity and result types.
+/// collection of events with specific entity.
 /// </summary>
 /// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IEventFilter<TEventEntity, TResult> :
+public interface IEventFilter<TEventEntity> :
     IEventFilter,
-    IEntityFilter<TEventEntity, TResult>
+    IEntityFilter<TEventEntity>
     where TEventEntity : class, IEventEntity
 {
     /// <summary>
@@ -58,11 +75,13 @@ public interface IEventFilter<TEventEntity, TResult> :
     /// </summary>
     /// <param name="queryable">The queryable collection of event entities.</param>
     /// <returns>A queryable collection of filtered results.</returns>
-    public new IQueryable<TResult> Apply(IQueryable<TEventEntity> queryable)
+    public new IQueryable Apply(IQueryable queryable)
     {
+        IQueryable<TEventEntity> query = (IQueryable<TEventEntity>)queryable;
+
         if (Predicate is not null)
         {
-            queryable = queryable.Where(Predicate);
+            query = query.Where(Predicate);
         }
 
         if (EventDataPredicate is not null)
@@ -71,34 +90,25 @@ public interface IEventFilter<TEventEntity, TResult> :
                 RepositoryExtensions.Compose<TEventEntity, JsonDocument, bool>(
                     x => x.EventData, EventDataPredicate);
 
-            queryable = queryable.Where(expression);
+            query = query.Where(expression);
         }
 
         if (OrderBy is not null)
         {
-            queryable = OrderBy(queryable);
+            query = OrderBy(query);
         }
 
         if (PageIndex > 0 && PageSize > 0)
         {
-            queryable = queryable
+            query = query
                 .Skip((PageIndex - 1) * PageSize)
                 .Take(PageSize);
         }
 
-        return queryable.Select(Selector);
+        return query.Select(Selector);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     IQueryable IEntityFilter.Apply(IQueryable queryable)
         => Apply((IQueryable<TEventEntity>)queryable);
 }
-
-/// <summary>
-/// Represents a filter for events that can be applied to a queryable 
-/// collection of events with specific entity and entity result types.
-/// </summary>
-/// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
-public interface IEventFilter<TEventEntity> : IEventFilter<TEventEntity, TEventEntity>
-    where TEventEntity : class, IEventEntity
-{ }

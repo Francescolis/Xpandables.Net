@@ -38,8 +38,11 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
         CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
-        IQueryable<TEntity> query = entityFilter.Apply(Context.Set<TEntity>());
+        IQueryable<TEntity> query = entityFilter.Apply(Context.Set<TEntity>())
+            .OfType<TEntity>();
+
         Context.RemoveRange(query);
+
         return Task.CompletedTask;
     }
     /// <inheritdoc/>
@@ -52,9 +55,9 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
             (typeof(TEntity) == typeof(TResult)) switch
             {
                 true => entityFilter
-                    .FetchAsync(Context.Set<TEntity>(), cancellationToken),
+                    .FetchAsync<TResult>(Context.Set<TEntity>(), cancellationToken),
                 _ => entityFilter
-                    .FetchAsync(Context.Set<TEntity>().AsNoTracking(), cancellationToken)
+                    .FetchAsync<TResult>(Context.Set<TEntity>().AsNoTracking(), cancellationToken)
             };
 
         return results;
@@ -76,7 +79,8 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
         where TEntity : class, IEntity
     {
         Func<TEntity, TEntity> expressionCompiled = updateExpression.Compile();
-        IQueryable<TEntity> query = entityFilter.Apply(Context.Set<TEntity>());
+        IQueryable<TEntity> query = entityFilter.Apply(Context.Set<TEntity>())
+            .OfType<TEntity>();
 
         return query.ForEachAsync(entity => expressionCompiled(entity), cancellationToken);
     }

@@ -27,8 +27,8 @@ namespace Xpandables.Net.Events.Filters;
 /// Represents a filter for event entity integration.
 /// </summary>
 public sealed record EventEntityFilterIntegration :
-    EntityFilter<EventEntityIntegration>,
-    IEventFilter<EventEntityIntegration>
+    EntityFilter<IEventEntityIntegration>,
+    IEventFilter<IEventEntityIntegration>
 {
     /// <inheritdoc/>
     [SetsRequiredMembers]
@@ -39,23 +39,4 @@ public sealed record EventEntityFilterIntegration :
 
     /// <inheritdoc/>
     public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-}
-
-/// <summary>
-/// Represents a filter for event entity integration with a specified result type.
-/// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed record EventEntityFilterIntegration<TResult> :
-    EntityFilter<EventEntityIntegration, TResult>,
-    IEventFilter<EventEntityIntegration, TResult>
-{
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventIntegration);
-
-    /// <inheritdoc/>
-    public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-    /// <inheritdoc/>
-    public override required
-        Expression<Func<EventEntityIntegration, TResult>> Selector
-    { get; init; }
 }

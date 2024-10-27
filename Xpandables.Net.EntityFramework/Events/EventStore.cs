@@ -30,8 +30,11 @@ namespace Xpandables.Net.Events;
 /// Represents a store for events, providing methods to append, fetch, 
 /// and mark events as published.
 /// </summary>
+/// <param name="context">The data context for the event store.</param>
+/// <param name="options">The event options.</param>
 public sealed class EventStore(
-    IOptions<EventOptions> options, DataContextEvent context) :
+    IOptions<EventOptions> options,
+    DataContextEvent context) :
     Disposable, IEventStore
 {
     private readonly EventOptions _options = options.Value;
@@ -91,8 +94,7 @@ public sealed class EventStore(
                 _options.GetEventConverterFor(filter.EventType);
 
             IAsyncEnumerable<IEventEntity> entities =
-                filter.FetchAsync(queryable, cancellationToken)
-                .OfType<IEventEntity>();
+                filter.FetchAsync(queryable, cancellationToken);
 
             return entities.Select(entity =>
                 eventConverter.ConvertFrom(entity, _options.SerializerOptions));
