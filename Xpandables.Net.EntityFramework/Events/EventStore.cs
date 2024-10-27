@@ -32,10 +32,11 @@ namespace Xpandables.Net.Events;
 /// </summary>
 public sealed class EventStore(
     IOptions<EventOptions> options, DataContextEvent context) :
-    IEventStore
+    Disposable, IEventStore
 {
     private readonly EventOptions _options = options.Value;
     private readonly DataContextEvent _context = context;
+    private List<IEventEntity> _eventEntities = [];
 
     /// <inheritdoc/>
     public Task AppendAsync(
@@ -47,17 +48,17 @@ public sealed class EventStore(
             IEventConverter eventConverter =
                 _options.GetEventConverterFor(events.First());
 
-            List<IEventEntity> eventEntities = new(events.Count());
+            _eventEntities = new(events.Count());
 
             foreach (IEvent @event in events)
             {
                 IEventEntity eventEntity = eventConverter
                     .ConvertTo(@event, _options.SerializerOptions);
 
-                eventEntities.Add(eventEntity);
+                _eventEntities.Add(eventEntity);
             }
 
-            return _context.AddRangeAsync(eventEntities, cancellationToken);
+            return _context.AddRangeAsync(_eventEntities, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ValidationException and not InvalidOperationException)
@@ -131,5 +132,17 @@ public sealed class EventStore(
                 "An error occurred while marking the events as published.",
                 exception);
         }
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _eventEntities.ForEach(entity => entity.Dispose());
+            _eventEntities.Clear();
+        }
+
+        base.Dispose(disposing);
     }
 }

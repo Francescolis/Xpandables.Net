@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Text.Json;
+
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events;
@@ -21,7 +23,7 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Represents an event entity that contains event-related data.
 /// </summary>
-public interface IEventEntity : IEntity<Guid>
+public interface IEventEntity : IEntity<Guid>, IDisposable
 {
     /// <summary>
     /// Gets the name of the event.
@@ -41,5 +43,11 @@ public interface IEventEntity : IEntity<Guid>
     /// <summary>
     /// Gets the data associated with the event.
     /// </summary>
-    string EventData { get; }
+    JsonDocument EventData { get; }
+
+    void IDisposable.Dispose()
+    {
+        EventData?.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }
