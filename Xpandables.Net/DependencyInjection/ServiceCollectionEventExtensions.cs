@@ -215,7 +215,7 @@ public static class ServiceCollectionEventExtensions
         services
             .AddXEventScheduler<TEventScheduler>()
             .AddHostedService(provider =>
-                (IHostedService)provider.GetRequiredService<IEventScheduler>());
+                provider.GetRequiredService<IEventScheduler>());
 
     /// <summary>
     /// Adds the default event scheduler implementation that also implements

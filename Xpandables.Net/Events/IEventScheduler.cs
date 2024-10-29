@@ -14,12 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.Hosting;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Defines a scheduler for events.
 /// </summary>
-public interface IEventScheduler
+public interface IEventScheduler : IHostedService, IDisposable
 {
     /// <summary>
     /// Schedules events asynchronously.
