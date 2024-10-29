@@ -76,7 +76,7 @@ public sealed class EventPublisherSubscriber(
             ConcurrentBag<EventPublished> eventPublished = [];
 
             Task[] tasks = events
-                .Select(@event => PublishAsync(@event, cancellationToken)
+                .Select(@event => ((Task)PublishAsync((dynamic)@event, cancellationToken))
                     .ContinueWith(t => eventPublished.Add(new EventPublished
                     {
                         EventId = @event.EventId,
