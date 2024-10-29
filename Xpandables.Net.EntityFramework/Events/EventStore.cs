@@ -126,7 +126,8 @@ public sealed class EventStore(
             entitiesToUpdate.ForEach(entity =>
             {
                 string? errorMessage = publishedEvents[entity.KeyId].ErrorMessage;
-                entity.SetStatus(errorMessage is null ? EntityStatus.PUBLISHED : EntityStatus.ONERROR);
+                entity.SetStatus(errorMessage is null
+                    ? EntityStatus.PUBLISHED : EntityStatus.ONERROR);
                 entity.ErrorMessage = errorMessage;
             });
 
