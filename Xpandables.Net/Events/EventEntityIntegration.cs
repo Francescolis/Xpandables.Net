@@ -24,5 +24,5 @@ public sealed class EventEntityIntegration : EventEntity, IEventEntityIntegratio
     /// <summary>
     /// Gets the error message associated with the event entity.
     /// </summary>
-    public string? ErrorMessage { get; init; }
+    public string? ErrorMessage { get; set; }
 }

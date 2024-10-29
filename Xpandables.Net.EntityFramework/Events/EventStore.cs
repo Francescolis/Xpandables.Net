@@ -109,7 +109,7 @@ public sealed class EventStore(
     }
 
     /// <inheritdoc/>
-    public Task MarkAsPublishedAsync(
+    public async Task MarkAsPublishedAsync(
     IEnumerable<EventPublished> events,
     CancellationToken cancellationToken = default)
     {
@@ -118,17 +118,24 @@ public sealed class EventStore(
             Dictionary<Guid, EventPublished> publishedEvents =
                 events.ToDictionary(e => e.EventId, e => e);
 
-            return _context.Integrations
+            List<EventEntityIntegration> entitiesToUpdate =
+                await _context.Integrations
                 .Where(e => publishedEvents.Keys.Contains(e.KeyId))
-                .ExecuteUpdateAsync(setters =>
-                    setters
-                        .SetProperty(p => p.Status, EntityStatus.PUBLISHED)
-                        .SetProperty(p => p.UpdatedOn, DateTime.UtcNow)
-                        .SetProperty(p => p.ErrorMessage, p => publishedEvents[p.KeyId].ErrorMessage),
-                        cancellationToken);
+                .ToListAsync(cancellationToken);
+
+            entitiesToUpdate.ForEach(entity =>
+            {
+                entity.SetStatus(EntityStatus.PUBLISHED);
+                entity.ErrorMessage = publishedEvents[entity.KeyId].ErrorMessage;
+            });
+
+            _ = await _context
+                .SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception exception)
-            when (exception is not ValidationException and not InvalidOperationException)
+            when (exception is not ValidationException
+            and not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 "An error occurred while marking the events as published.",
