@@ -28,44 +28,54 @@ public sealed record EventOptions
     /// <summary>
     /// Gets the list of user-defined converters that were registered.
     /// </summary>
-    public IList<IEventConverter> Converters { get; init; }
-        = [];
+    public IList<IEventConverter> Converters { get; set; }
+        =
+        [
+            new EventConverterDomain(),
+            new EventConverterIntegration(),
+            new EventConverterSnapshot()
+        ];
 
     /// <summary>
     /// Gets the JSON serializer options.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; init; } =
+    public JsonSerializerOptions SerializerOptions { get; set; } =
         DefaultSerializerOptions.Defaults;
 
     /// <summary>
     /// Gets a value indicating whether snapshot is enabled.
     /// </summary>
-    public bool IsSnapshotEnabled { get; init; } = true;
+    public bool IsSnapshotEnabled { get; set; } = true;
 
     /// <summary>
     /// Gets the frequency of snapshots.
     /// </summary>
-    public ulong SnapshotFrequency { get; init; } = 50;
+    public ulong SnapshotFrequency { get; set; } = 50;
 
     /// <summary>
     /// Gets a value indicating whether the event scheduler is enabled.
     /// </summary>
-    public bool IsEventSchedulerEnabled { get; init; } = true;
+    public bool IsEventSchedulerEnabled { get; set; } = true;
 
     /// <summary>
     /// Gets the maximum number of retries for the scheduler.
     /// </summary>
-    public uint MaxSchedulerRetries { get; init; } = 5;
+    public uint MaxSchedulerRetries { get; set; } = 5;
 
     /// <summary>
     /// Gets the interval between scheduler retries in milliseconds.
     /// </summary>
-    public uint SchedulerRetryInterval { get; init; } = 500;
+    public uint SchedulerRetryInterval { get; set; } = 500;
+
+    /// <summary>
+    /// Gets the frequency of the scheduler in milliseconds.
+    /// </summary>
+    public uint SchedulerFrequency { get; set; } = 15000;
 
     /// <summary>
     /// Gets the maximum number of events per thread for the scheduler.
     /// </summary>
-    public ushort MaxSchedulerEventPerThread { get; init; } = 100;
+    public ushort MaxSchedulerEventPerThread { get; set; } = 100;
 
     /// <summary>
     /// Returns the <see cref="IEventConverter"/> instance for the specified type.
@@ -118,6 +128,7 @@ public sealed record EventOptions
             IsEventSchedulerEnabled = true,
             MaxSchedulerRetries = 5,
             SchedulerRetryInterval = 500,
+            SchedulerFrequency = 15000,
             MaxSchedulerEventPerThread = 100
         };
 

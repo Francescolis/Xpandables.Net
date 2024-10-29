@@ -113,7 +113,7 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
     {
         _retryCount = 0;
 
-        TimeSpan period = TimeSpan.FromMilliseconds(_options.SchedulerRetryInterval);
+        TimeSpan period = TimeSpan.FromMilliseconds(_options.SchedulerFrequency);
         using PeriodicTimer timer = new(period);
 
         while (!stoppingToken.IsCancellationRequested
