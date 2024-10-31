@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Xpandables.Net;
@@ -132,17 +131,19 @@ public static class HelperExtensions
         Type targetType = conversionType
             ?? throw new ArgumentNullException(nameof(conversionType));
 
-        if (conversionType.IsGenericType
-            && conversionType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        if (!conversionType.IsGenericType
+            || conversionType.GetGenericTypeDefinition() != typeof(Nullable<>))
         {
-            Type? underlyingType = Nullable.GetUnderlyingType(targetType);
-            if (underlyingType is null)
-            {
-                return null;
-            }
-
-            targetType = underlyingType;
+            return Convert.ChangeType(value, targetType, formatProvider);
         }
+
+        Type? underlyingType = Nullable.GetUnderlyingType(targetType);
+        if (underlyingType is null)
+        {
+            return null;
+        }
+
+        targetType = underlyingType;
 
         return Convert.ChangeType(value, targetType, formatProvider);
     }
@@ -156,8 +157,7 @@ public static class HelperExtensions
     /// <param name="formatProvider">An optional format provider.</param>
     /// <returns>The value converted to the specified type, or null if the 
     /// value is null.</returns>
-    [return: MaybeNull]
-    public static T ChangeTypeNullable<T>(
+    public static T? ChangeTypeNullable<T>(
         this object? value,
         IFormatProvider? formatProvider = default)
     {
