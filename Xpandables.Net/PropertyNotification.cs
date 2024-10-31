@@ -37,8 +37,7 @@ namespace Xpandables.Net;
 /// which changes are notified to the decorated property.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="name"/> is null.</exception>
-[AttributeUsage(AttributeTargets.Property,
-    AllowMultiple = true, Inherited = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public sealed class PropertyNotificationForAttribute(string name) : Attribute
 {
     /// <summary>
@@ -53,13 +52,28 @@ public sealed class PropertyNotificationForAttribute(string name) : Attribute
 /// <see cref = "INotifyPropertyChanged" /> and 
 /// <see cref="INotifyPropertyChanging"/>.
 /// </summary>
+/// <remarks>This class is disposable.</remarks>
 public abstract class PropertyNotification :
-    INotifyPropertyChanged, INotifyPropertyChanging
+    INotifyPropertyChanged, INotifyPropertyChanging, IDisposable
 {
+    private static Func<Type, IDictionary<string, List<string>>> _dependencyPropertiesProvider =
+        NotifyPropertyExtensions.DependencyPropertiesProvider;
+
+    /// <summary>
+    /// Gets or sets the function that provides the dependency properties.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">The value is null.</exception>
+    public static Func<Type, IDictionary<string, List<string>>> DependencyPropertiesProvider
+    {
+        get => _dependencyPropertiesProvider;
+        set => _dependencyPropertiesProvider = value
+            ?? throw new ArgumentNullException(nameof(value));
+    }
+
     /// <summary>
     /// Contains a collection of dependencies on property changed messages.
     /// </summary>
-    private IDictionary<string, List<string>> Dependencies { get; }
+    protected IDictionary<string, List<string>> Dependencies { get; }
 
     /// <inheritdoc/>
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -89,8 +103,8 @@ public abstract class PropertyNotification :
     /// automatically when invoked from compilers
     /// that support <see cref="CallerMemberNameAttribute" />.
     /// </param>
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        => OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = "") =>
+        OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
 
     /// <summary>
     /// Notifies listeners that a property value is changing.
@@ -114,15 +128,15 @@ public abstract class PropertyNotification :
     /// when invoked from compilers
     /// that support <see cref="CallerMemberNameAttribute" />.
     /// </param>
-    protected void OnPropertyChanging([CallerMemberName] string propertyName = "")
-        => OnPropertyChanging(new PropertyChangingEventArgs(propertyName));
+    protected void OnPropertyChanging([CallerMemberName] string propertyName = "") =>
+        OnPropertyChanging(new PropertyChangingEventArgs(propertyName));
 
     /// <summary>
     /// Initializes a new instance of 
     /// <see cref="PropertyNotification"/> class and its <see cref="Dependencies"/>.
     /// </summary>
-    protected PropertyNotification()
-        => Dependencies = GetType().DependencyPropertiesProvider();
+    protected PropertyNotification() =>
+        Dependencies = DependencyPropertiesProvider.Invoke(GetType());
 
     /// <summary>
     /// Checks if the property does not match the old one.
@@ -388,6 +402,88 @@ public abstract class PropertyNotification :
         return true;
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether this instance is disposed.
+    /// </summary>
+    /// <value>
+    ///  <c>true</c> if this instance is disposed; otherwise, <c>false</c>.
+    /// </value>
+    /// <remarks>Default initialization for 
+    /// a <see cref="bool"/> is <c>false</c>.</remarks>
+    protected bool IsDisposed { get; set; }
+
+    /// <summary>
+    /// Public Implementation of Dispose according to .NET Framework 
+    /// Design Guidelines
+    /// callable by consumers.
+    /// Do not make this method virtual.
+    /// A derived class should not be able to override this method.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This object will be cleaned up by the Dispose method.
+    /// Therefore, you should call GC.SuppressFinalize to take 
+    /// this object off the finalization queue
+    /// and prevent finalization code for this object 
+    /// from executing a second time.
+    /// </para>
+    /// <para>Always use SuppressFinalize() in case 
+    /// a subclass of this type implements a finalizer.</para>
+    /// </remarks>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// When overridden in derived classes, this method get 
+    /// called when the instance will be disposed.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> to 
+    /// release both managed and unmanaged resources;
+    /// <see langword="false"/> to release only unmanaged resources.
+    /// </param>
+    /// <remarks>
+    /// <list type="bulleted">
+    /// <see cref="Dispose(bool)"/> executes in two distinct scenarios.
+    /// <item>If <paramref name="disposing"/> equals <c>true</c>, 
+    /// the method has been called directly
+    /// or indirectly by a user's code. Managed and unmanaged 
+    /// resources can be disposed.</item>
+    /// <item>If <paramref name="disposing"/> equals <c>false</c>, 
+    /// the method has been called
+    /// by the runtime from inside the finalizer and you should 
+    /// not reference other objects.
+    /// Only unmanaged resources can be disposed.</item></list>
+    /// </remarks>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            // Release all managed resources here
+            // Need to unregister/detach yourself from the events.
+            // Always make sure the object is not null first before trying to
+            // unregister/detach them!
+            // Failure to unregister can be a BIG source of memory leaks
+        }
+
+        // Release all unmanaged resources here and override a finalizer below.
+        // Set large fields to null.
+
+        // Dispose has been called.
+        IsDisposed = true;
+
+        // If it is available, make the call to the
+        // base class's Dispose(boolean) method
+    }
+
     internal void PropagatePropertyChangedOnDependents(string property)
     {
         Action<string> onPropertyChangedAction = new(OnPropertyChanged);
@@ -415,7 +511,7 @@ public abstract class PropertyNotification<TModel> : PropertyNotification
     /// Initializes a new instance of 
     /// <see cref="PropertyNotification{T}"/> class and its dependencies.
     /// </summary>
-    protected PropertyNotification() : base() { }
+    protected PropertyNotification() { }
 
     /// <summary>
     /// Checks if the property does not match the old one.
@@ -689,10 +785,7 @@ public abstract class PropertyNotification<TModel> : PropertyNotification
     }
 }
 
-/// <summary>
-/// Provides with extensions method for <see cref="PropertyNotification"/>.
-/// </summary>
-public static class NotifyPropertyExtensions
+internal static class NotifyPropertyExtensions
 {
     internal static string GetMemberNameFromExpression<T, TProperty>(
           this Expression<Func<T, TProperty>> propertyExpression)
@@ -707,12 +800,6 @@ public static class NotifyPropertyExtensions
             throw new ArgumentException("A member expression is expected.");
     }
 
-    /// <summary>
-    /// Provides with the collection of dependencies found i
-    /// n the specified type, to be used with <see cref="PropertyNotification"/> messages.
-    /// </summary>
-    /// <param name="target">The type that derived 
-    /// from <see cref="PropertyNotification"/>.</param>
     internal static IDictionary<string, List<string>>
         DependencyPropertiesProvider(this Type target)
     {
@@ -727,7 +814,7 @@ public static class NotifyPropertyExtensions
                select p)
                 .ToArray();
 
-        foreach (PropertyInfo? property in properties)
+        foreach (ref PropertyInfo property in properties.AsSpan())
         {
             string[] attributes
                 = (from a in property
@@ -749,13 +836,15 @@ public static class NotifyPropertyExtensions
                     dependency,
                     out List<string>? notifiers))
                 {
+                    string propertyName = property.Name;
+
                     Predicate<string> predicateProperty
-                        = new(PredicateFindProperty);
+                        = new(v => PredicateFindProperty(v, propertyName));
                     if (notifiers.Find(predicateProperty) is { })
                     {
                         throw new InvalidOperationException(
                             "Duplicate dependency found.",
-                            new ArgumentException($"The property {property.Name} " +
+                            new ArgumentException($"The property {propertyName} " +
                             $"has already a dependency on {dependency}"));
                     }
 
@@ -764,7 +853,7 @@ public static class NotifyPropertyExtensions
                 else
                 {
                     Predicate<string> predicateFind
-                        = new(PredicateFindDependency);
+                        = new(v => PredicateFindDependency(v, dependency));
                     if (dependencies.TryGetValue(
                         property.Name,
                         out List<string>? propertyNotifiers)
@@ -780,52 +869,16 @@ public static class NotifyPropertyExtensions
                     dependencies.Add(dependency, [property.Name]);
                 }
 
-                bool PredicateFindDependency(string value)
-                    => value == dependency;
+                static bool PredicateFindDependency(
+                    string value, string dependencyName) =>
+                    value == dependencyName;
 
-                bool PredicateFindProperty(string value)
-                    => value == property.Name;
+                static bool PredicateFindProperty(
+                    string value, string propertyName) =>
+                    value == propertyName;
             }
         }
+
         return dependencies;
-    }
-
-    internal static bool SetProperty<TValue>(
-        ref TValue storage,
-        TValue value,
-        string propertyName,
-        Action<string> onPropertyChanged,
-        IDictionary<string, List<string>> dependencies)
-    {
-        if (string.IsNullOrWhiteSpace(propertyName))
-        {
-            throw new ArgumentNullException(nameof(propertyName));
-        }
-
-        if (EqualityComparer<TValue>.Default.Equals(storage, value))
-        {
-            return false;
-        }
-
-        storage = value;
-
-        onPropertyChanged(propertyName);
-
-        PropagatePropertyChangedOnDependents(propertyName);
-
-        return true;
-
-        void PropagatePropertyChangedOnDependents(string property)
-        {
-            Action<string> onPropertyChangedAction = new(onPropertyChanged);
-
-            (from keyValues in dependencies
-             from dependent in keyValues.Value
-             where keyValues.Key.Equals(
-                 property, StringComparison.OrdinalIgnoreCase)
-             select dependent)
-             .ToList()
-             .ForEach(onPropertyChangedAction);
-        }
     }
 }
