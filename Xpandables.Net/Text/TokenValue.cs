@@ -24,7 +24,7 @@ namespace Xpandables.Net.Text;
 /// </summary>
 [DebuggerDisplay("Value = {Value}, Type = {Type}, Expiration = {Expiration}")]
 [StructLayout(LayoutKind.Auto)]
-public readonly record struct TokenValue : IEquatable<TokenValue>
+public readonly record struct TokenValue
 {
     /// <summary>
     /// Gets the value of the token.

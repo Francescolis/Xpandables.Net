@@ -34,9 +34,6 @@ public sealed class QueryAsyncHandlerWrapper<TQuery, TResult>(
         IQueryAsync<TResult> query,
         CancellationToken cancellationToken = default)
     {
-        IAsyncEnumerable<TResult> Handler() =>
-            decoratee.HandleAsync((TQuery)query, cancellationToken);
-
         IAsyncEnumerable<TResult> results = decorators
             .Reverse()
             .Aggregate<IAsyncPipelineDecorator<TQuery, TResult>,
@@ -48,5 +45,8 @@ public sealed class QueryAsyncHandlerWrapper<TQuery, TResult>(
                     cancellationToken))();
 
         return results;
+
+        IAsyncEnumerable<TResult> Handler() =>
+            decoratee.HandleAsync((TQuery)query, cancellationToken);
     }
 }

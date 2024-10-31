@@ -24,7 +24,7 @@ namespace Xpandables.Net.Text;
 /// </summary>
 [DebuggerDisplay("Key = {Key}, Value = {Value}, Salt = {Salt}")]
 [StructLayout(LayoutKind.Auto)]
-public readonly record struct EncryptedValue : IEquatable<EncryptedValue>
+public readonly record struct EncryptedValue
 {
     /// <summary>
     /// Gets the key used for encryption.

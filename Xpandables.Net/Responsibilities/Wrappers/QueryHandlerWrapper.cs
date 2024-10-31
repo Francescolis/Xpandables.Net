@@ -35,9 +35,6 @@ public sealed class QueryHandlerWrapper<TQuery, TResult>(
         IQuery<TResult> query,
         CancellationToken cancellationToken = default)
     {
-        Task<IOperationResult<TResult>> Handler() =>
-            decoratee.HandleAsync((TQuery)query, cancellationToken);
-
         Task<IOperationResult<TResult>> result = decorators
             .Reverse()
             .Aggregate<IPipelineDecorator<TQuery, IOperationResult<TResult>>,
@@ -49,5 +46,8 @@ public sealed class QueryHandlerWrapper<TQuery, TResult>(
                     cancellationToken))();
 
         return result;
+
+        Task<IOperationResult<TResult>> Handler() =>
+            decoratee.HandleAsync((TQuery)query, cancellationToken);
     }
 }

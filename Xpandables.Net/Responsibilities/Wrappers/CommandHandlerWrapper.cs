@@ -40,9 +40,6 @@ public sealed class CommandHandlerWrapper<TCommand>(
         ICommand command,
         CancellationToken cancellationToken = default)
     {
-        Task<IOperationResult> Handler() =>
-            decoratee.HandleAsync((TCommand)command, cancellationToken);
-
         Task<IOperationResult> result = decorators
             .Reverse()
             .Aggregate<IPipelineDecorator<TCommand, IOperationResult>,
@@ -54,5 +51,8 @@ public sealed class CommandHandlerWrapper<TCommand>(
                     cancellationToken))();
 
         return result;
+
+        Task<IOperationResult> Handler() =>
+            decoratee.HandleAsync((TCommand)command, cancellationToken);
     }
 }

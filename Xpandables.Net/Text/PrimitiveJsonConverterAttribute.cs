@@ -21,9 +21,7 @@ namespace Xpandables.Net.Text;
 /// <summary>
 /// Attribute to specify a custom JSON converter for a primitive type.
 /// </summary>
-[AttributeUsage(AttributeTargets.Struct,
-    AllowMultiple = false,
-    Inherited = false)]
+[AttributeUsage(AttributeTargets.Struct, Inherited = false)]
 public sealed class PrimitiveJsonConverterAttribute : JsonConverterAttribute
 {
     /// <summary>

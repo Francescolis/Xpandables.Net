@@ -39,7 +39,7 @@ public static class TextCryptography
         string value,
         string? key = default,
         string? salt = default)
-        => (EncryptedValue)EncryptDecrypt(value, key, salt, true);
+        => (EncryptedValue)EncryptDecrypt(value, key, salt);
 
     /// <summary>
     /// Decrypts the specified encrypted value.
