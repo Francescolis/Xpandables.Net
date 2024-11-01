@@ -21,13 +21,14 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Responsibilities.Decorators;
 
 /// <summary>
-/// Marker interface to indicate that a request should use a unit of work.
+/// Marker interface to indicate that a request should use a unit of work
+/// whatever the outcome of the request.
 /// </summary>
 public interface IUseUnitOfWork { }
 
 /// <summary>
 /// A decorator that ensures the unit of work pattern is applied to the 
-/// pipeline.
+/// pipeline whatever the outcome of the request.
 /// </summary>
 /// <param name="unitOfWork">The unit of work instance.</param>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
@@ -44,10 +45,10 @@ public sealed class UnitOfWorkPipelineDecorator<TRequest, TResponse>(
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        TResponse response = await next().ConfigureAwait(false);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
+            TResponse response = await next().ConfigureAwait(false);
+
             try
             {
                 _ = await unitOfWork
@@ -58,8 +59,25 @@ public sealed class UnitOfWorkPipelineDecorator<TRequest, TResponse>(
             {
                 return MatchResponse(exception.ToOperationResult());
             }
-        }
 
-        return response;
+            return response;
+        }
+        catch (Exception exception)
+        {
+            try
+            {
+                _ = await unitOfWork
+                    .SaveChangesAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                return MatchResponse(exception.ToOperationResult());
+
+            }
+            catch (Exception ex)
+            {
+                AggregateException aggregateException = new(exception, ex);
+                return MatchResponse(aggregateException.ToOperationResult());
+            }
+        }
     }
 }
