@@ -15,6 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Text.Json.Serialization;
+
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
@@ -31,6 +33,8 @@ public sealed class OperationResultJsonOptions : IConfigureOptions<JsonOptions>
         options.SerializerOptions.PropertyNameCaseInsensitive = true;
         options.SerializerOptions.PropertyNamingPolicy = null;
 
+        options.SerializerOptions.Converters
+            .Add(new JsonStringEnumConverter());
         options.SerializerOptions.Converters
             .Add(new OperationResultJsonConverterFactory()
             {
