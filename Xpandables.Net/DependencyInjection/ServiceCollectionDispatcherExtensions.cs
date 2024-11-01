@@ -63,6 +63,10 @@ public static class ServiceCollectionDispatcherExtensions
             .AddTransient(typeof(QueryAsyncHandlerWrapper<,>))
             .AddTransient(typeof(CommandHandlerWrapper<>));
 
+    internal readonly record struct HandlerType(
+        Type Type,
+        IEnumerable<Type> Interfaces);
+
     /// <summary>
     /// Adds dispatcher handlers to the <see cref="IServiceCollection"/>.
     /// </summary>
@@ -79,47 +83,34 @@ public static class ServiceCollectionDispatcherExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        IEnumerable<Type> handlers = assemblies.SelectMany(assembly =>
+        IEnumerable<HandlerType> handlerTypes = assemblies.SelectMany(assembly =>
             assembly.GetExportedTypes()
                 .Where(type =>
-                type is { IsClass: true, IsAbstract: false, IsSealed: true }
+                type is
+                {
+                    IsClass: true,
+                    IsAbstract: false,
+                    IsSealed: true,
+                    IsGenericType: false
+                }
                 && type.GetInterfaces().Any(i =>
                     i.IsGenericType &&
                     (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
                     i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) ||
-                    i.GetGenericTypeDefinition() == typeof(IQueryAsyncHandler<,>)))));
+                    i.GetGenericTypeDefinition() == typeof(IQueryAsyncHandler<,>)))))
+            .Select(type => new HandlerType(
+                Type: type,
+                Interfaces: type.GetInterfaces()
+                    .Where(i => i.IsGenericType &&
+                    (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
+                        i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) ||
+                        i.GetGenericTypeDefinition() == typeof(IQueryAsyncHandler<,>)))));
 
-        IEnumerable<IGrouping<Type, Type>> groupedHandlers = handlers.GroupBy(handler =>
+        foreach (HandlerType handlerType in handlerTypes)
         {
-            Type interfaceType = handler.GetInterfaces().First(i =>
-                i.IsGenericType &&
-                (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
-                i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) ||
-                i.GetGenericTypeDefinition() == typeof(IQueryAsyncHandler<,>)));
-
-            return interfaceType;
-        });
-
-        foreach (IGrouping<Type, Type> group in groupedHandlers)
-        {
-            Type interfaceType = group.Key;
-            Type[] handlerTypes = [.. group];
-            Type interfaceGenericType = interfaceType.GetGenericTypeDefinition();
-
-            foreach (Type handlerType in handlerTypes)
+            foreach (Type interfaceType in handlerType.Interfaces)
             {
-                if (interfaceGenericType == typeof(ICommandHandler<>))
-                {
-                    _ = services.AddScoped(interfaceType, handlerType);
-                }
-                else if (interfaceGenericType == typeof(IQueryHandler<,>))
-                {
-                    _ = services.AddScoped(interfaceType, handlerType);
-                }
-                else if (interfaceGenericType == typeof(IQueryAsyncHandler<,>))
-                {
-                    _ = services.AddScoped(interfaceType, handlerType);
-                }
+                _ = services.AddScoped(interfaceType, handlerType.Type);
             }
         }
 
