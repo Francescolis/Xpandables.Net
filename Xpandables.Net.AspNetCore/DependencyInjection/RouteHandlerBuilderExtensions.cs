@@ -22,7 +22,7 @@ using Xpandables.Net.Http;
 namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
-/// Provides extension methods for <see cref="RouteHandlerBuilder"/> to add 
+/// Provides extension methods for <see cref="IEndpointConventionBuilder"/> to add 
 /// metadata for request and response types.
 /// </summary>
 public static class RouteHandlerBuilderExtensions
@@ -39,8 +39,8 @@ public static class RouteHandlerBuilderExtensions
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
     public static RouteHandlerBuilder Accepts<TRequest>(
         this RouteHandlerBuilder builder)
-        where TRequest : notnull
-        => builder.Accepts<TRequest>(HttpClientParameters.ContentType.Json);
+        where TRequest : notnull =>
+        builder.Accepts<TRequest>(HttpClientParameters.ContentType.Json);
 
     /// <summary>
     /// Adds <see cref="Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata"/>
@@ -49,9 +49,14 @@ public static class RouteHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The route builder.</param>
     /// <returns>The route builder.</returns>
-    public static RouteHandlerBuilder Produces200OK(
-        this RouteHandlerBuilder builder)
-        => builder.Produces(StatusCodes.Status200OK);
+    public static TBuilder Produces200OK<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.WithMetadata(
+            new ProducesResponseTypeMetadata(
+                StatusCodes.Status200OK,
+                typeof(void),
+                [HttpClientParameters.ContentType.Json]));
 
     /// <summary>
     /// Adds <see cref="Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata"/>
@@ -65,8 +70,8 @@ public static class RouteHandlerBuilderExtensions
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
     public static RouteHandlerBuilder Produces200OK<TResponse>(
         this RouteHandlerBuilder builder)
-        where TResponse : notnull
-        => builder.Produces<TResponse>(
+        where TResponse : notnull =>
+        builder.Produces<TResponse>(
             StatusCodes.Status200OK,
             HttpClientParameters.ContentType.Json);
 
@@ -82,8 +87,8 @@ public static class RouteHandlerBuilderExtensions
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
     public static RouteHandlerBuilder Produces201Created<TResponse>(
         this RouteHandlerBuilder builder)
-        where TResponse : notnull
-        => builder.Produces<TResponse>(
+        where TResponse : notnull =>
+        builder.Produces<TResponse>(
             StatusCodes.Status201Created,
             HttpClientParameters.ContentType.Json);
 
@@ -96,9 +101,10 @@ public static class RouteHandlerBuilderExtensions
     /// <returns>The route builder.</returns>
     /// <remarks>The response content type will be to
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
-    public static RouteHandlerBuilder Produces400BadRequest(
-        this RouteHandlerBuilder builder)
-        => builder.ProducesValidationProblem(
+    public static TBuilder Produces400BadRequest<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.ProducesValidationProblem(
             StatusCodes.Status400BadRequest,
             HttpClientParameters.ContentType.JsonProblem);
 
@@ -111,9 +117,10 @@ public static class RouteHandlerBuilderExtensions
     /// <returns>The route builder.</returns>
     /// <remarks>The response content type will be to
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
-    public static RouteHandlerBuilder Produces404NotFound(
-        this RouteHandlerBuilder builder)
-        => builder.ProducesValidationProblem(
+    public static TBuilder Produces404NotFound<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.ProducesValidationProblem(
             StatusCodes.Status404NotFound,
             HttpClientParameters.ContentType.JsonProblem);
 
@@ -126,9 +133,10 @@ public static class RouteHandlerBuilderExtensions
     /// <returns>The route builder.</returns>
     /// <remarks>The response content type will be to
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
-    public static RouteHandlerBuilder Produces409Conflict(
-        this RouteHandlerBuilder builder)
-        => builder.ProducesValidationProblem(
+    public static TBuilder Produces409Conflict<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.ProducesValidationProblem(
             StatusCodes.Status409Conflict,
             HttpClientParameters.ContentType.JsonProblem);
 
@@ -141,9 +149,10 @@ public static class RouteHandlerBuilderExtensions
     /// <returns>The route builder.</returns>
     /// <remarks>The response content type will be to
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
-    public static RouteHandlerBuilder Produces405MethodNotAllowed(
-        this RouteHandlerBuilder builder)
-        => builder.ProducesValidationProblem(
+    public static TBuilder Produces405MethodNotAllowed<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.ProducesValidationProblem(
             StatusCodes.Status405MethodNotAllowed,
             HttpClientParameters.ContentType.JsonProblem);
 
@@ -156,9 +165,10 @@ public static class RouteHandlerBuilderExtensions
     /// <returns>The route builder.</returns>
     /// <remarks>The response content type will be to
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
-    public static RouteHandlerBuilder Produces401Unauthorized(
-        this RouteHandlerBuilder builder)
-        => builder.ProducesValidationProblem(
+    public static TBuilder Produces401Unauthorized<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.ProducesValidationProblem(
             StatusCodes.Status401Unauthorized,
             HttpClientParameters.ContentType.JsonProblem);
 
@@ -167,13 +177,15 @@ public static class RouteHandlerBuilderExtensions
     /// to the <see cref="Endpoint.Metadata"/> for all endpoints produced by the
     /// route builder.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the route builder.</typeparam>
     /// <param name="builder">The route builder.</param>
     /// <returns>The route builder.</returns>
     /// <remarks>The response content type will be to
     /// <see cref="HttpClientParameters.ContentType.Json"/>.</remarks>
-    public static RouteHandlerBuilder Produces500InternalServerError(
-        this RouteHandlerBuilder builder)
-        => builder.ProducesProblem(
+    public static TBuilder Produces500InternalServerError<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.ProducesProblem(
             StatusCodes.Status500InternalServerError,
             HttpClientParameters.ContentType.JsonProblem);
 }

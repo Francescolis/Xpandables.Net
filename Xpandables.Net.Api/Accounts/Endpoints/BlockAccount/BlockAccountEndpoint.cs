@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Http;
 using Xpandables.Net.Responsibilities;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
@@ -29,7 +28,7 @@ public sealed class BlockAccountEndpoint : IEndpointRoute
         .WithName("BlockAccount")
         .WithXOperationResultMinimalApi()
         .AllowAnonymous()
-        .Accepts<BlockAccountRequest>(HttpClientParameters.ContentType.Json)
+        .Accepts<BlockAccountRequest>()
         .Produces(StatusCodes.Status200OK)
         .ProducesValidationProblem(StatusCodes.Status401Unauthorized);
 }
