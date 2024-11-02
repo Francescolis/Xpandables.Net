@@ -20,11 +20,14 @@ internal sealed class AggregateDeciderPipelineDecorator<TRequest, TResponse>(
     {
         try
         {
-            IDeciderDependencyProvider dependencyProvider = serviceProvider
-                .GetRequiredService<IDeciderDependencyProvider>();
+            Type aggregateStoreType = typeof(IAggregateStore<>)
+                .MakeGenericType(request.Type);
 
-            object dependency = await dependencyProvider
-                .GetDependencyAsync(request, cancellationToken)
+            IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+                .GetRequiredService(aggregateStoreType);
+
+            IAggregate dependency = await aggregateStore
+                .PeekAsync(request.KeyId, cancellationToken)
                 .ConfigureAwait(false);
 
             request.Dependency = dependency;
@@ -36,13 +39,9 @@ internal sealed class AggregateDeciderPipelineDecorator<TRequest, TResponse>(
             }
             finally
             {
-                Type aggregateStoreType = typeof(IAggregateStore<>)
-                    .MakeGenericType(request.Type);
-
-                dynamic aggregateStore = serviceProvider.GetRequiredService(aggregateStoreType);
 
                 await aggregateStore
-                    .AppendAsync(request.Dependency, cancellationToken)
+                    .AppendAsync(dependency, cancellationToken)
                     .ConfigureAwait(false);
             }
         }

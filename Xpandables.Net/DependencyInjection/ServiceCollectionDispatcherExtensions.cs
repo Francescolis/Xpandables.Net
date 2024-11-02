@@ -133,16 +133,6 @@ public static class ServiceCollectionDispatcherExtensions
         services.AddScoped<IDeciderDependencyProvider, TService>();
 
     /// <summary>
-    /// Adds an aggregate decider dependency provider to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The service collection to add the decider 
-    /// dependency provider to.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXAggregateDeciderDependencyProvider(
-        this IServiceCollection services) =>
-        services.AddScoped<IDeciderDependencyProvider, AggregateDeciderDependencyProvider>();
-
-    /// <summary>
     /// Adds an aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
