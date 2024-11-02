@@ -47,7 +47,7 @@ public sealed class HttpClientRequestQueryStringBuilder :
 
         string queryStringPath = path.AddQueryString(queryString);
 
-        context.Message.RequestUri = new Uri(queryStringPath, UriKind.Absolute);
+        context.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
     }
 }
 
