@@ -18,6 +18,7 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Responsibilities;
 using Xpandables.Net.Responsibilities.Decorators;
@@ -140,6 +141,17 @@ public static class ServiceCollectionDispatcherExtensions
     public static IServiceCollection AddXAggregateDeciderDependencyProvider(
         this IServiceCollection services) =>
         services.AddScoped<IDeciderDependencyProvider, AggregateDeciderDependencyProvider>();
+
+    /// <summary>
+    /// Adds an aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXAggregatePipelineDecorator(
+        this IServiceCollection services) =>
+        services.AddScoped(
+            typeof(IPipelineDecorator<,>),
+            typeof(AggregateDeciderPipelineDecorator<,>));
 
     /// <summary>
     /// Adds a command aggregate pipeline decorator to the <see cref="IServiceCollection"/>.

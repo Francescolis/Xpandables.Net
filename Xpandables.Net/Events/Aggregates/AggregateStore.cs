@@ -71,7 +71,7 @@ public sealed class AggregateStore<TAggregate>(
             when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                "Unable to append the aggregate. See inner exception for details.",
+                "Unable to append the object. See inner exception for details.",
                 exception);
         }
     }
@@ -100,7 +100,7 @@ public sealed class AggregateStore<TAggregate>(
             if (aggregate.IsEmpty)
             {
                 throw new ValidationException(new ValidationResult(
-                    "The aggregate was not found.",
+                    "The object was not found.",
                     [nameof(keyId)]), null, keyId);
             }
 
@@ -110,7 +110,7 @@ public sealed class AggregateStore<TAggregate>(
             when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                "Unable to peek the aggregate. See inner exception for details.",
+                "Unable to peek the object. See inner exception for details.",
                 exception);
         }
     }

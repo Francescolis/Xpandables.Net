@@ -18,9 +18,9 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Responsibilities;
 
-namespace Xpandables.Net.Responsibilities;
+namespace Xpandables.Net.Events.Aggregates;
 internal sealed class AggregateDeciderDependencyProvider(
     IServiceProvider serviceProvider) : IDeciderDependencyProvider
 {
