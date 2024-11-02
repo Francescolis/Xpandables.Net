@@ -40,8 +40,9 @@ public sealed class DeciderPipelineDecorator<TRequest, TResponse>(
     {
         try
         {
-            object dependency = dependencyProvider
-                .GetDependencyAsync(request, cancellationToken);
+            object dependency = await dependencyProvider
+                .GetDependencyAsync(request, cancellationToken)
+                .ConfigureAwait(false);
 
             request.Dependency = dependency;
 
