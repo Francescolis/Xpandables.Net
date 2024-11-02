@@ -48,6 +48,11 @@ public sealed class EventStore(
     {
         try
         {
+            if (!events.Any())
+            {
+                return Task.CompletedTask;
+            }
+
             IEventConverter eventConverter =
                 _options.GetEventConverterFor(events.First());
 

@@ -53,6 +53,11 @@ public sealed class AggregateStore<TAggregate>(
             IReadOnlyCollection<IEventDomain> uncommittedEvents =
                 aggregate.GetUncommittedEvents();
 
+            if (uncommittedEvents.Count == 0)
+            {
+                return;
+            }
+
             await _eventStore
                 .AppendAsync(uncommittedEvents, cancellationToken)
                 .ConfigureAwait(false);

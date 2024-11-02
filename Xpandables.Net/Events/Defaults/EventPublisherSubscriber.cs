@@ -73,6 +73,11 @@ public sealed class EventPublisherSubscriber(
     {
         try
         {
+            if (events is null || !events.Any())
+            {
+                return [];
+            }
+
             ConcurrentBag<EventPublished> eventPublished = [];
 
             Task[] tasks = events
