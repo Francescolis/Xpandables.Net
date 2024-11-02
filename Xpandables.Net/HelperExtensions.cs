@@ -201,4 +201,39 @@ public static class HelperExtensions
 
         return obj;
     }
+
+    /// <summary>
+    /// Attempts to cast the object to the specified type, returning null if
+    /// not possible.
+    /// </summary>
+    /// <typeparam name="T">The type to cast the object to.</typeparam>
+    /// <param name="obj">The object to cast.</param>
+    /// <returns>The object cast to the specified type, or null if not 
+    /// possible.</returns>
+    public static T? As<T>(this object? obj)
+        where T : class => obj is T t ? t : default;
+
+    /// <summary>
+    /// Attempts to cast the object to the specified type, returning null if
+    /// not possible.
+    /// </summary>
+    /// <typeparam name="T">The type to cast the object to.</typeparam>
+    /// <param name="obj">The object to cast.</param>
+    /// <param name="_">The type to cast the object to.</param>
+    /// <returns>The object cast to the specified type, or null if not
+    /// not possible.</returns>
+    public static T? As<T>(this object? obj, T _)
+        where T : class => obj is T t ? t : default;
+
+    /// <summary>
+    /// Attempts to cast the object to the specified type, throwing an
+    /// exception if not possible.
+    /// </summary>
+    /// <typeparam name="T">The type to cast the object to.</typeparam>
+    /// <param name="obj">The object to cast.</param>
+    /// <returns>The object cast to the specified type.</returns>
+    /// <exception cref="InvalidCastException">Thrown when the object cannot
+    /// cast to the specified type.</exception>
+    public static T AsRequired<T>(this object obj)
+        where T : class => (T)obj;
 }
