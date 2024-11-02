@@ -289,7 +289,7 @@ public static class ServiceCollectionEventExtensions
         }
 
         var eventHandlerTypes = assemblies
-            .SelectMany(assembly => assembly.GetExportedTypes())
+            .SelectMany(assembly => assembly.GetTypes())
             .Where(type =>
                 type is { IsClass: true, IsAbstract: false, IsSealed: true }
                 && type.GetInterfaces().Any(@interface =>

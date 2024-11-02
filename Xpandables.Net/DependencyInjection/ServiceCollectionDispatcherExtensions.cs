@@ -84,7 +84,7 @@ public static class ServiceCollectionDispatcherExtensions
         }
 
         IEnumerable<HandlerType> handlerTypes = assemblies.SelectMany(assembly =>
-            assembly.GetExportedTypes()
+            assembly.GetTypes()
                 .Where(type =>
                 type is
                 {

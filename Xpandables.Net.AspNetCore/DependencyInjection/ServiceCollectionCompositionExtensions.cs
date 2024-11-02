@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Reflection;
+
 using Microsoft.AspNetCore.Builder;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -57,4 +59,45 @@ public static class ServiceCollectionCompositionExtensions
 
         return application;
     }
+
+    /// <summary>
+    /// Uses the specified assemblies to apply services to the web application.
+    /// </summary>
+    /// <param name="application">The web application.</param>
+    /// <param name="assemblies">The assemblies to scan for services.</param>
+    /// <returns>The web application with applied services.</returns>
+    public static WebApplication UseXServices(
+        this WebApplication application,
+        params Assembly[] assemblies)
+    {
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
+
+        List<Type> types = assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type =>
+                type is
+                {
+                    IsAbstract: false,
+                    IsInterface: false,
+                    IsGenericType: false
+                }
+                && Array.Exists(type.GetInterfaces(),
+                    t => !t.IsGenericType
+                    && t == typeof(IUseService)))
+            .ToList();
+
+        foreach (Type type in types)
+        {
+            if (Activator.CreateInstance(type) is IUseService useService)
+            {
+                useService.UseServices(application);
+            }
+        }
+
+        return application;
+    }
+
 }

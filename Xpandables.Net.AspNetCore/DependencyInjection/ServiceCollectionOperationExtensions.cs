@@ -71,7 +71,7 @@ public static class ServiceCollectionOperationExtensions
         }
 
         List<Type> executorTypes = assemblies
-            .SelectMany(assembly => assembly.GetExportedTypes())
+            .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.IsSealed
                 && type.IsAssignableTo(typeof(IOperationResultExecutor)))
             .ToList();

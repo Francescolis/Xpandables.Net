@@ -61,7 +61,7 @@ public static class ServiceCollectionValidatorExtensions
         }
 
         var validatorTypes = assemblies
-            .SelectMany(assembly => assembly.GetExportedTypes())
+            .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.IsSealed
                 && Array.Exists(type.GetInterfaces(),
                     interfaceType => interfaceType.IsGenericType

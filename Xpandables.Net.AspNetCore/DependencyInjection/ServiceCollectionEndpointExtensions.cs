@@ -45,7 +45,7 @@ public static class ServiceCollectionEndpointExtensions
         }
 
         List<Type> endpointTypes = assemblies
-            .SelectMany(assembly => assembly.GetExportedTypes())
+            .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type is
             {
                 IsInterface: false,
