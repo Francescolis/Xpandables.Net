@@ -118,15 +118,39 @@ public static class ServiceCollectionDispatcherExtensions
     }
 
     /// <summary>
+    /// Adds a decider dependency provider of type <typeparamref name="TService"/> to 
+    /// the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TService">The type of the decider dependency 
+    /// provider to add.</typeparam>
+    /// <param name="services">The service collection to add the decider 
+    /// dependency provider to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXDeciderDependencyProvider<TService>(
+        this IServiceCollection services)
+        where TService : class, IDeciderDependencyProvider =>
+        services.AddScoped<IDeciderDependencyProvider, TService>();
+
+    /// <summary>
+    /// Adds an aggregate decider dependency provider to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decider 
+    /// dependency provider to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXAggregateDeciderDependencyProvider(
+        this IServiceCollection services) =>
+        services.AddScoped<IDeciderDependencyProvider, AggregateDeciderDependencyProvider>();
+
+    /// <summary>
     /// Adds a command aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXPipelineAggregateDecorator(
+    public static IServiceCollection AddXPipelineDeciderDecorator(
         this IServiceCollection services) =>
         services.AddScoped(
             typeof(IPipelineDecorator<,>),
-            typeof(AggregatePipelineDecorator<,>));
+            typeof(DeciderPipelineDecorator<,>));
 
     /// <summary>
     /// Adds a unit of work pipeline decorator to the <see cref="IServiceCollection"/>.

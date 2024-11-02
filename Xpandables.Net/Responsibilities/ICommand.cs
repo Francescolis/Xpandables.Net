@@ -14,9 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.Optionals;
-
 namespace Xpandables.Net.Responsibilities;
 
 /// <summary>
@@ -30,45 +27,32 @@ public interface ICommand
 }
 
 /// <summary>
-/// Represents a command aggregate interface that defines the structure 
-/// for command aggregates.
+/// Represents a command uses in a Decider pattern process.
 /// </summary>
-/// <remarks>It's used for implementing the Decider pattern. </remarks>
-public interface ICommandAggregate : ICommand
+/// <remarks>Make sure to provide with a registration of the dependency 
+/// provider <see cref="IDeciderDependencyProvider"/>.</remarks>
+public interface IDeciderCommand : ICommand
 {
     /// <summary>
-    /// Gets the aggregate type.
+    /// Gets the dependency type.
     /// </summary>
-    Type AggregateType { get; }
+    Type Type { get; }
 
     /// <summary>
-    /// Gets or sets the aggregate.
-    /// </summary>
-    Optional<IAggregate> Aggregate { get; set; }
-
-    /// <summary>
-    /// Gets the key identifier.
+    /// Gets the key identifier used to identify an instance of the dependency type.
     /// </summary>
     Guid KeyId { get; }
+
+    internal object Dependency { get; set; }
 }
 
 /// <summary>
-/// Represents a command aggregate interface that defines the structure 
-/// for command aggregates.
+/// Represents a command uses in a Decider pattern process.
 /// </summary>
-/// <remarks>It's used for implementing the Decider pattern. </remarks>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public interface ICommandAggregate<TAggregate> : ICommandAggregate
-    where TAggregate : class, IAggregate, new()
+/// <typeparam name="TDependency">The type of the dependency.</typeparam>
+/// <remarks>Make sure to provide with a registration of the dependency 
+/// provider <see cref="IDeciderDependencyProvider"/>.</remarks>
+public interface IDeciderCommand<TDependency> : IDeciderCommand
+    where TDependency : class
 {
-    /// <summary>
-    /// Gets or sets the aggregate.
-    /// </summary>
-    new Optional<TAggregate> Aggregate { get; set; }
-
-    Optional<IAggregate> ICommandAggregate.Aggregate
-    {
-        get => Aggregate.AsOptional<IAggregate>();
-        set => Aggregate = value.AsOptional<TAggregate>();
-    }
 }

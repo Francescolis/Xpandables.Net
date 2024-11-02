@@ -17,24 +17,19 @@
 
 using System.ComponentModel.DataAnnotations;
 
-using Microsoft.Extensions.DependencyInjection;
-
-using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Responsibilities.Decorators;
 
 /// <summary>
-/// Decorator for handling command aggregates in a pipeline using the
-/// Decider pattern.
+/// Decorator for handling <see cref="IDeciderCommand{TDependency}"/>> in a pipeline.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class AggregatePipelineDecorator<TRequest, TResponse>(
-    IServiceProvider provider) :
+public sealed class DeciderPipelineDecorator<TRequest, TResponse>(
+    IDeciderDependencyProvider dependencyProvider) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, ICommandAggregate
+    where TRequest : class, IDeciderCommand
     where TResponse : IOperationResult
 {
     /// <inheritdoc/>
@@ -45,25 +40,12 @@ public sealed class AggregatePipelineDecorator<TRequest, TResponse>(
     {
         try
         {
-            Type aggregateStoreType = typeof(IAggregateStore<>)
-                .MakeGenericType(request.AggregateType);
+            object dependency = dependencyProvider
+                .GetDependencyAsync(request, cancellationToken);
 
-            dynamic aggregateStore = provider.GetRequiredService(aggregateStoreType);
-
-            IAggregate aggregate = await aggregateStore
-                .PeekAsync(request.KeyId, cancellationToken)
-                .ConfigureAwait(false);
-
-            request.Aggregate = aggregate.ToOptional();
+            request.Dependency = dependency;
 
             TResponse result = await next().ConfigureAwait(false);
-
-            if (result.IsSuccessStatusCode)
-            {
-                await aggregateStore
-                    .AppendAsync(aggregate, cancellationToken)
-                    .ConfigureAwait(false);
-            }
 
             return result;
         }
@@ -71,7 +53,8 @@ public sealed class AggregatePipelineDecorator<TRequest, TResponse>(
             when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                $"An error occurred when peeking the object with the key '{request.KeyId}'.",
+                $"An error occurred when applying decider pattern to the object " +
+                $"with the key '{request.KeyId}'.",
                 exception);
         }
     }
