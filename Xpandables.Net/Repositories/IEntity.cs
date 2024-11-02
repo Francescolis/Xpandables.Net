@@ -53,6 +53,14 @@ public interface IEntity
     /// Sets the status of the underlying instance.  
     /// </summary>  
     void SetStatus(string status);
+
+    /// <summary>
+    /// Sets the last update date of the underlying instance.
+    /// </summary>
+    /// <param name="updatedOn">The updated date.</param>
+    /// <remarks>If <paramref name="updatedOn"/> is not provided, the current 
+    /// date and time will be used.</remarks>
+    void SetUpdatedOn(DateTime? updatedOn = default);
 }
 
 /// <summary>

@@ -56,7 +56,9 @@ public abstract class Entity<TKey> : IEntity<TKey>
             EntityStatus.DELETED => (DateTime?)DateTime.UtcNow,
             _ => null,
         };
-
-        UpdatedOn = DateTime.UtcNow;
     }
+
+    /// <inheritdoc/>
+    public void SetUpdatedOn(DateTime? updatedOn = default) =>
+        UpdatedOn = updatedOn ?? DateTime.UtcNow;
 }

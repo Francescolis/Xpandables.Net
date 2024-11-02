@@ -38,7 +38,10 @@ public abstract class DataContext : DbContext
                 && e.Entry.State == EntityState.Added
                 && e.Entry.Entity is IEntity entity)
             {
-                entity.SetStatus(entity.Status);
+                if (entity.Status is null)
+                {
+                    entity.SetStatus(EntityStatus.ACTIVE);
+                }
             }
         };
 
@@ -47,7 +50,7 @@ public abstract class DataContext : DbContext
             if (e.NewState == EntityState.Modified
                 && e.Entry.Entity is IEntity entity)
             {
-                entity.SetStatus(entity.Status);
+                entity.SetUpdatedOn();
             }
         };
     }
