@@ -53,7 +53,7 @@ public sealed class AggregateSnapshotStore<TAggregate>(
 
                 EventSnapshot @event = new()
                 {
-                    EventId = Guid.NewGuid(),
+                    EventId = Guid.CreateVersion7(),
                     EventVersion = aggregate.Version,
                     Memento = memento,
                     OwnerId = aggregate.KeyId

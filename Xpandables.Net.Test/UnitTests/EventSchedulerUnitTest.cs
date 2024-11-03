@@ -42,7 +42,7 @@ public sealed class EventSchedulerUnitTest
 
         var testEvent = new TestEventIntegration
         {
-            EventId = Guid.NewGuid(),
+            EventId = Guid.CreateVersion7(),
             EventVersion = 1
         };
 

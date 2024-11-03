@@ -37,7 +37,7 @@ public sealed class EventPublisherSubscriberUnitTest
     public async Task PublishAsync_ShouldReturnSuccess_WhenHandlersAreExecutedSuccessfully()
     {
         // Arrange
-        TestEvent testEvent = new() { EventId = Guid.NewGuid(), EventVersion = 1 };
+        TestEvent testEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
         _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
 
         // Act
@@ -51,7 +51,7 @@ public sealed class EventPublisherSubscriberUnitTest
     public async Task PublishAsync_ShouldReturnFailure_WhenHandlerThrowsException()
     {
         // Arrange
-        TestEvent testEvent = new() { EventId = Guid.NewGuid(), EventVersion = 1 };
+        TestEvent testEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
         _eventPublisherSubscriber
             .Subscribe<TestEvent>(e =>
                 throw new InvalidOperationException("Test exception"));
@@ -69,8 +69,8 @@ public sealed class EventPublisherSubscriberUnitTest
         // Arrange
         var testEvents = new List<TestEvent>
             {
-                new() { EventId = Guid.NewGuid(),EventVersion=1 },
-                new() { EventId = Guid.NewGuid(), EventVersion = 1 }
+                new() { EventId = Guid.CreateVersion7(),EventVersion=1 },
+                new() { EventId = Guid.CreateVersion7(), EventVersion = 1 }
             };
         _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
 

@@ -28,5 +28,5 @@ public abstract record Event : IEvent
     public ulong EventVersion { get; init; }
 
     /// <inheritdoc/>
-    public Guid EventId { get; init; } = Guid.NewGuid();
+    public Guid EventId { get; init; } = Guid.CreateVersion7();
 }

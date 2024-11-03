@@ -34,5 +34,6 @@ public interface IEvent
     /// <summary>
     /// Gets the unique identifier of the event.
     /// </summary>
+    /// <remarks>It's based on the <see cref="Guid.CreateVersion7()"/>.</remarks>
     Guid EventId { get; init; }
 }
