@@ -43,14 +43,15 @@ public sealed class EventPublisherSubscriber(
     {
         try
         {
-            ConcurrentBag<object> handlers = GetHandlersOf<TEvent>();
+            ConcurrentBag<object> handlers = GetHandlersOf(@event.GetType());
 
             Task[] tasks = handlers
                 .Select(handler => handler switch
                 {
                     Action<TEvent> action => Task.Run(() => action(@event)),
                     Func<TEvent, Task> func => func(@event),
-                    IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event),
+                    IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event, cancellationToken),
+                    IEventHandler eventHandler1 => eventHandler1.HandleAsync(@event, cancellationToken),
                     _ => Task.CompletedTask
                 })
                 .ToArray();
@@ -139,13 +140,20 @@ public sealed class EventPublisherSubscriber(
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <returns>A concurrent bag of event handlers.</returns>
     public ConcurrentBag<object> GetHandlersOf<TEvent>()
-        where TEvent : notnull, IEvent
+        where TEvent : notnull, IEvent => GetHandlersOf(typeof(TEvent));
+
+    /// <summary>
+    /// Gets the handlers of the specified event type.
+    /// </summary>
+    /// <param name="eventType">The type of the event.</param>
+    /// <returns>A concurrent bag of event handlers.</returns>
+    public ConcurrentBag<object> GetHandlersOf(Type eventType)
     {
-        Type eventType = typeof(TEvent);
         ConcurrentBag<object> handlers = _subscribers.GetOrAdd(eventType, _ => []);
 
         _serviceProvider
-            .GetServices<IEventHandler<TEvent>>()
+            .GetServices(typeof(IEventHandler<>).MakeGenericType(eventType))
+            .Cast<object>()
             .Where(handler => !handlers.Contains(handler))
             .ForEach(handlers.Add);
 

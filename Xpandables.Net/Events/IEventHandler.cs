@@ -14,13 +14,35 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel;
+
 namespace Xpandables.Net.Events;
+
+/// <summary>
+/// Defines a handler for events of type <see cref="IEvent"/>.
+/// </summary>
+public interface IEventHandler
+{
+    /// <summary>
+    /// Handles the specified event asynchronously.
+    /// </summary>
+    /// <param name="event">The event to handle.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation 
+    /// requests.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Handling the event failed.
+    /// See inner exception for details.</exception>
+    Task HandleAsync(
+        object @event,
+        CancellationToken cancellationToken = default);
+}
+
 
 /// <summary>
 /// Defines a handler for events of type <typeparamref name="TEvent"/>.
 /// </summary>
 /// <typeparam name="TEvent">The type of event to handle.</typeparam>
-public interface IEventHandler<TEvent>
+public interface IEventHandler<TEvent> : IEventHandler
     where TEvent : notnull, IEvent
 {
     /// <summary>
@@ -35,4 +57,10 @@ public interface IEventHandler<TEvent>
     Task HandleAsync(
         TEvent @event,
         CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Task IEventHandler.HandleAsync(
+        object @event,
+        CancellationToken cancellationToken) =>
+        HandleAsync((TEvent)@event, cancellationToken);
 }
