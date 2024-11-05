@@ -42,5 +42,5 @@ public readonly record struct TokenValue
     /// <summary>
     /// Gets a value indicating whether the token is expired.
     /// </summary>
-    public bool IsExpired => DateTime.UtcNow > Expiration;
+    public readonly bool GetIsExpired() => DateTime.UtcNow > Expiration;
 }
