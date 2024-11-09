@@ -50,7 +50,7 @@ public abstract class HttpClientAuthorizationHandler : HttpClientHandler
 
         if (!request.Options
             .TryGetValue(
-                new(nameof(HttpClientRequestOptionsAttribute.IsSecured)),
+                new(nameof(HttpClientAttribute.IsSecured)),
                 out bool? isSecured) || !isSecured.GetValueOrDefault())
         {
             return await base

@@ -40,7 +40,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 ContentType = HttpClientParameters.ContentType.Json
             },
@@ -66,7 +66,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 ContentType = HttpClientParameters.ContentType.Json
             },
@@ -87,7 +87,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 IsSecured = true,
                 Scheme = "Bearer"
@@ -110,7 +110,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 IsSecured = false
             },

@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
-[HttpClientRequestOptions(Path = "/accounts/unblock",
+[HttpClient(Path = "/accounts/unblock",
     IsNullable = false,
     IsSecured = false,
     Location = HttpClientParameters.Location.Body,

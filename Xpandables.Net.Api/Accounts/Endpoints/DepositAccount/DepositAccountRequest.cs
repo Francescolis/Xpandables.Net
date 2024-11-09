@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
-[HttpClientRequestOptions(Path = "/accounts/deposit",
+[HttpClient(Path = "/accounts/deposit",
     IsNullable = false,
     IsSecured = false,
     Location = HttpClientParameters.Location.Body,

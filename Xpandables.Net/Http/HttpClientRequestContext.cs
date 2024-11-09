@@ -28,7 +28,7 @@ public record HttpClientRequestContext
     /// <summary>
     /// Gets the attribute associated with the HTTP client request.
     /// </summary>
-    public required HttpClientRequestOptionsAttribute Attribute { get; init; }
+    public required HttpClientAttribute Attribute { get; init; }
 
     /// <summary>
     /// Gets the HTTP client request.

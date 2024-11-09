@@ -30,7 +30,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 Location = Location.Header
             },
@@ -54,7 +54,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 Location = Location.Body
             },
@@ -75,7 +75,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 Location = Location.Header
             },

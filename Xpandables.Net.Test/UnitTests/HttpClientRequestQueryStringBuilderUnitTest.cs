@@ -29,7 +29,7 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 Location = Location.Query,
                 Path = "http://example.com"
@@ -56,7 +56,7 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 Location = Location.Body,
                 Path = "http://example.com"

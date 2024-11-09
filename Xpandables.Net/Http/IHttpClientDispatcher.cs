@@ -28,8 +28,8 @@ namespace Xpandables.Net.Http;
 /// <see cref="IHttpRequestCookie"/>,
 /// <see cref="IHttpRequestHeader"/>, <see cref="IHttpRequestPatch"/>
 /// or <see cref="IHttpRequestPathString"/>, and must be decorated 
-/// with <see cref="HttpClientRequestOptionsAttribute"/> 
-/// or implement <see cref="IHttpClientRequestOptionsBuilder"/>.
+/// with <see cref="HttpClientAttribute"/> 
+/// or implement <see cref="IHttpClientAttributeBuilder"/>.
 /// </summary>
 public interface IHttpClientDispatcher
 {
@@ -45,8 +45,8 @@ public interface IHttpClientDispatcher
     /// </summary>
     /// <param name="request">The request to act with. The request 
     /// must be decorated with 
-    /// the <see cref="HttpClientRequestOptionsAttribute"/> or implements the 
-    /// <see cref="IHttpClientRequestOptionsBuilder"/> interface.</param>
+    /// the <see cref="HttpClientAttribute"/> or implements the 
+    /// <see cref="IHttpClientAttributeBuilder"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken to 
     /// observe while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse"/>.</returns>
@@ -66,8 +66,8 @@ public interface IHttpClientDispatcher
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="request">The request to act with. 
     /// The request must be decorated with
-    /// the <see cref="HttpClientRequestOptionsAttribute"/> or implements 
-    /// the <see cref="IHttpClientRequestOptionsBuilder"/> interface.</param>
+    /// the <see cref="HttpClientAttribute"/> or implements 
+    /// the <see cref="IHttpClientAttributeBuilder"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>
@@ -87,8 +87,8 @@ public interface IHttpClientDispatcher
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="request">The request to act with. The request
     /// must be decorated with 
-    /// the <see cref="HttpClientRequestOptionsAttribute"/> or implements the 
-    /// <see cref="IHttpClientRequestOptionsBuilder"/> interface.</param>
+    /// the <see cref="HttpClientAttribute"/> or implements the 
+    /// <see cref="IHttpClientAttributeBuilder"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="HttpClientResponse{TResult}"/>

@@ -30,16 +30,16 @@ namespace Xpandables.Net.Http;
 /// in order to be used with <see cref="IHttpClientDispatcher"/>.
 /// </summary>
 /// <remarks>
-/// Your class can implement the <see cref="IHttpClientRequestOptionsBuilder"/>
-/// to dynamically return a <see cref="HttpClientRequestOptionsAttribute"/>.</remarks>
+/// Your class can implement the <see cref="IHttpClientAttributeBuilder"/>
+/// to dynamically return a <see cref="HttpClientAttribute"/>.</remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
     Inherited = false, AllowMultiple = false)]
-public sealed class HttpClientRequestOptionsAttribute : Attribute
+public sealed class HttpClientAttribute : Attribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="HttpClientRequestOptionsAttribute"/>.
+    /// Initializes the default instance of <see cref="HttpClientAttribute"/>.
     /// </summary>
-    public HttpClientRequestOptionsAttribute() { }
+    public HttpClientAttribute() { }
 
     /// <summary>
     /// Gets or sets the Uri path. If null, the root path will be set.

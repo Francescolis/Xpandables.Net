@@ -32,7 +32,7 @@ public sealed class HttpClientMessageFactory(IOptions<HttpClientOptions> options
         IHttpClientRequest request,
         CancellationToken cancellationToken = default)
     {
-        HttpClientRequestOptionsAttribute attribute =
+        HttpClientAttribute attribute =
             _options.GetRequestOptions(request);
 
         List<IHttpClientRequestBuilder> builders =

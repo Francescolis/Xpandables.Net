@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 
-[HttpClientRequestOptions(Path = "/accounts/withdraw",
+[HttpClient(Path = "/accounts/withdraw",
     IsNullable = false,
     IsSecured = false,
     Location = HttpClientParameters.Location.Body,

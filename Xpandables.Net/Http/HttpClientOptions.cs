@@ -130,18 +130,18 @@ public sealed record HttpClientOptions
     /// <param name="request">The HTTP client request.</param>  
     /// <returns>The request options attribute for the specified request.</returns>  
     /// <exception cref="InvalidOperationException">Thrown when the request is 
-    /// not decorated with <see cref="HttpClientRequestOptionsAttribute"/> or 
-    /// does not implement <see cref="IHttpClientRequestOptionsBuilder"/>.</exception>  
-    public HttpClientRequestOptionsAttribute GetRequestOptions(
+    /// not decorated with <see cref="HttpClientAttribute"/> or 
+    /// does not implement <see cref="IHttpClientAttributeBuilder"/>.</exception>  
+    public HttpClientAttribute GetRequestOptions(
        IHttpClientRequest request)
-       => request is IHttpClientRequestOptionsBuilder builder
+       => request is IHttpClientAttributeBuilder builder
             ? builder.Build(this)
             : request
                 .GetType()
-                .GetCustomAttribute<HttpClientRequestOptionsAttribute>(true)
+                .GetCustomAttribute<HttpClientAttribute>(true)
                 ?? throw new InvalidOperationException(
-                    $"Request must be decorated with {nameof(HttpClientRequestOptionsAttribute)} " +
-                    $"or implement {nameof(IHttpClientRequestOptionsBuilder)}");
+                    $"Request must be decorated with {nameof(HttpClientAttribute)} " +
+                    $"or implement {nameof(IHttpClientAttributeBuilder)}");
 
     /// <summary>
     /// Configures the default HTTP client options.

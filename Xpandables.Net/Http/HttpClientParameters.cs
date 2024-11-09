@@ -19,7 +19,7 @@ using System.Collections.Immutable;
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Provides with <see cref="HttpClientRequestOptionsAttribute"/> parameters 
+/// Provides with <see cref="HttpClientAttribute"/> parameters 
 /// definition.
 /// </summary>
 public static class HttpClientParameters

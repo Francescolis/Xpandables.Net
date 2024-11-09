@@ -31,7 +31,7 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 Location = Location.BasicAuth
             },
@@ -54,7 +54,7 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 Location = Location.Body
             },

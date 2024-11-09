@@ -44,7 +44,7 @@ public sealed class HttpClientRequestCompleteBuilder :
         {
             context.Message.Options
                 .Set(new(nameof(
-                    HttpClientRequestOptionsAttribute.IsSecured)),
+                    HttpClientAttribute.IsSecured)),
                     context.Attribute.IsSecured);
 
             if (context.Message.Headers.Authorization is null)

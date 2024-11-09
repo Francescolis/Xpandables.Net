@@ -18,16 +18,16 @@ namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines a builder interface for creating 
-/// <see cref="HttpClientRequestOptionsAttribute"/>.
+/// <see cref="HttpClientAttribute"/>.
 /// </summary>
 /// <remarks>This interface take priority over the 
-/// <see cref="HttpClientRequestOptionsAttribute"/>.</remarks>
-public interface IHttpClientRequestOptionsBuilder
+/// <see cref="HttpClientAttribute"/>.</remarks>
+public interface IHttpClientAttributeBuilder
 {
     /// <summary>
-    /// Builds the <see cref="HttpClientRequestOptionsAttribute"/>.
+    /// Builds the <see cref="HttpClientAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="HttpClientOptions"/>.</param>
-    /// <returns>The built <see cref="HttpClientRequestOptionsAttribute"/>.</returns>
-    HttpClientRequestOptionsAttribute Build(HttpClientOptions options);
+    /// <returns>The built <see cref="HttpClientAttribute"/>.</returns>
+    HttpClientAttribute Build(HttpClientOptions options);
 }

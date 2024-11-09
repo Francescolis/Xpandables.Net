@@ -31,7 +31,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -59,7 +59,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 IsNullable = true,
                 Location = Location.Body,
@@ -84,7 +84,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 IsNullable = false,
                 Location = Location.Header,
@@ -109,7 +109,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -134,7 +134,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new HttpClientRequestContext
         {
-            Attribute = new HttpClientRequestOptionsAttribute
+            Attribute = new HttpClientAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,

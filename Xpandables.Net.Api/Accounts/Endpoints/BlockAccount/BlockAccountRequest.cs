@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
 
-[HttpClientRequestOptions(Path = "/accounts/block",
+[HttpClient(Path = "/accounts/block",
     IsNullable = false,
     IsSecured = false,
     Location = HttpClientParameters.Location.Body,
