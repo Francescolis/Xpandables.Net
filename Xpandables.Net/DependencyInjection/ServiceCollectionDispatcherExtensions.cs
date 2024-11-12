@@ -144,7 +144,7 @@ public static class ServiceCollectionDispatcherExtensions
             typeof(AggregateDeciderPipelineDecorator<,>));
 
     /// <summary>
-    /// Adds a command aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// Adds a command pipeline decorator to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>

@@ -31,7 +31,7 @@ public abstract record Command<TDependency> : IDeciderCommand<TDependency>
     public Type Type => typeof(TDependency);
 
     /// <inheritdoc/>
-    public required Guid KeyId { get; init; }
+    public required object KeyId { get; init; }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     object IDeciderCommand.Dependency { get; set; } = default!;

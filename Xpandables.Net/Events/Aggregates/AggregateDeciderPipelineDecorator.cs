@@ -27,7 +27,7 @@ internal sealed class AggregateDeciderPipelineDecorator<TRequest, TResponse>(
                 .GetRequiredService(aggregateStoreType);
 
             IAggregate dependency = await aggregateStore
-                .PeekAsync(request.KeyId, cancellationToken)
+                .PeekAsync((Guid)request.KeyId, cancellationToken)
                 .ConfigureAwait(false);
 
             request.Dependency = dependency;

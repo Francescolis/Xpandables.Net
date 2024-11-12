@@ -27,7 +27,7 @@ public interface ICommand
 }
 
 /// <summary>
-/// Represents a command uses in a Decider pattern process.
+/// Represents a command used in a Decider pattern process.
 /// </summary>
 /// <remarks>Make sure to provide with a registration of the dependency 
 /// provider <see cref="IDeciderDependencyProvider"/>.</remarks>
@@ -41,7 +41,7 @@ public interface IDeciderCommand : ICommand
     /// <summary>
     /// Gets the key identifier used to identify an instance of the dependency type.
     /// </summary>
-    Guid KeyId { get; }
+    object KeyId { get; }
 
     internal object Dependency { get; set; }
 }
