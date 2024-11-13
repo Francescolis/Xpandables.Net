@@ -10,7 +10,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
     IsSecured = false,
     Location = HttpClientParameters.Location.Body,
     Method = HttpClientParameters.Method.POST)]
-public sealed record CreateAccountRequest : IUseValidation
+public sealed record CreateAccountRequest : IApplyValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

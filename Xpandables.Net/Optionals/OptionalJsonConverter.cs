@@ -47,6 +47,9 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
         Optional<T> value,
         JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(options);
+
         if (value.IsNotEmpty)
         {
             JsonSerializer.Serialize(writer, value.Value, options);

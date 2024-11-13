@@ -45,6 +45,9 @@ public static class ServiceCollectionCompositionExtensions
         this WebApplication application,
         Action<ExportOptions> configureOptions)
     {
+        ArgumentNullException.ThrowIfNull(application);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
         ExportOptions options = new();
         configureOptions(options);
 
@@ -70,6 +73,9 @@ public static class ServiceCollectionCompositionExtensions
         this WebApplication application,
         params Assembly[] assemblies)
     {
+        ArgumentNullException.ThrowIfNull(application);
+        ArgumentNullException.ThrowIfNull(assemblies);
+
         if (assemblies.Length == 0)
         {
             assemblies = [Assembly.GetCallingAssembly()];

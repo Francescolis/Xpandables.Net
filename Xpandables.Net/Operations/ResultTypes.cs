@@ -24,7 +24,7 @@ public sealed record ResultFile
     /// <summary>  
     /// Gets the content of the file.  
     /// </summary>  
-    public required byte[] Content { get; init; }
+    public required IReadOnlyCollection<byte> Content { get; init; }
 
     /// <summary>  
     /// Gets the name of the file.  

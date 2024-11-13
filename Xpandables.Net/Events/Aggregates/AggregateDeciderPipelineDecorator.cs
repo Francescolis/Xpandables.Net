@@ -15,7 +15,7 @@ internal sealed class AggregateDeciderPipelineDecorator<TRequest, TResponse>(
 {
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         try

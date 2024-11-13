@@ -30,6 +30,8 @@ public sealed class OperationResultJsonOptions : IConfigureOptions<JsonOptions>
     /// <inheritdoc/>  
     public void Configure(JsonOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         options.SerializerOptions.PropertyNameCaseInsensitive = true;
         options.SerializerOptions.PropertyNamingPolicy = null;
 

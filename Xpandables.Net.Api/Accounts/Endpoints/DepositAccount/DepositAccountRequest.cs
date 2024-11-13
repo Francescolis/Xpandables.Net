@@ -10,7 +10,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
     IsSecured = false,
     Location = HttpClientParameters.Location.Body,
     Method = HttpClientParameters.Method.POST)]
-public sealed record DepositAccountRequest : IUseValidation
+public sealed record DepositAccountRequest : IApplyValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

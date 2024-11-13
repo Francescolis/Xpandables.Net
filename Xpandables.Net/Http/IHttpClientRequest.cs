@@ -19,14 +19,18 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Represents a request to be sent by an HTTP client.
 /// </summary>
+#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientRequest { }
+#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Represents a request to be sent by an HTTP client with a response 
 /// of type <typeparamref name="TResponse"/>.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
+#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientRequest<out TResponse> : IHttpClientRequest { }
+#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Represents a request to be sent by an HTTP client with a stream response 
@@ -34,4 +38,6 @@ public interface IHttpClientRequest<out TResponse> : IHttpClientRequest { }
 /// type.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
+#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientAsyncRequest<out TResponse> : IHttpClientRequest { }
+#pragma warning restore CA1040 // Avoid empty interfaces

@@ -90,7 +90,7 @@ public static class HttpClientParameters
         /// <summary>
         /// Used in the content of the request. 
         /// You can use <see cref="IHttpRequestString"/>,
-        /// <see cref="IHttpRequestPatch"/>, <see cref="IHttpRequestStream"/>, 
+        /// <see cref="IHttpRequestPatch"/>, <see cref="IStreamRequest"/>, 
         /// <see cref="IHttpRequestByteArray"/>, 
         /// <see cref="IHttpRequestMultipart"/> or
         /// <see cref="IHttpRequestFormUrlEncoded"/>
@@ -144,7 +144,9 @@ public static class HttpClientParameters
         /// <see cref="IHttpRequestPatch"/>, otherwise the 
         /// whole class will be serialized.
         /// </summary>
+#pragma warning disable CA1720 // Identifier contains type name
         String,
+#pragma warning restore CA1720 // Identifier contains type name
 
         /// <summary>
         /// Body content matching the <see cref="ByteArrayContent"/>.
@@ -160,7 +162,7 @@ public static class HttpClientParameters
 
         /// <summary>
         /// Body content matching the <see cref="StreamContent"/>.
-        /// The target class should implement <see cref="IHttpRequestStream"/>.
+        /// The target class should implement <see cref="IStreamRequest"/>.
         /// </summary>
         Stream,
 
@@ -221,7 +223,9 @@ public static class HttpClientParameters
     /// <summary>
     /// Provides constants for HTTP content types.
     /// </summary>
+#pragma warning disable CA1034 // Nested types should not be visible
     public static class ContentType
+#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// Represents the JSON content type.
@@ -370,7 +374,9 @@ public static class HttpClientParameters
     /// <summary>
     /// Provides constants for HTTP operations used in PATCH requests.
     /// </summary>
+#pragma warning disable CA1034 // Nested types should not be visible
     public static class Operation
+#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// The <see cref="Add"/> operation performs one of the following 
@@ -502,7 +508,9 @@ public static class HttpClientParameters
     /// <summary>
     /// A helper used to build patch operations.
     /// </summary>
+#pragma warning disable CA1034 // Nested types should not be visible
     public static class Patch
+#pragma warning restore CA1034 // Nested types should not be visible
     {
         /// <summary>
         /// The <see cref="Add"/> operation performs one of the following 

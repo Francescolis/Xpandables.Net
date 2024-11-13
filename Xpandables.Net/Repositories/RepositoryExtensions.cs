@@ -129,7 +129,7 @@ public static class RepositoryExtensions
            Expression replaceEx)
            => new ReplaceVisitor(searchEx, replaceEx).Visit(expression);
 
-    internal class ReplaceVisitor(Expression from, Expression to) :
+    internal sealed class ReplaceVisitor(Expression from, Expression to) :
         ExpressionVisitor
     {
         private readonly Expression from = from, to = to;

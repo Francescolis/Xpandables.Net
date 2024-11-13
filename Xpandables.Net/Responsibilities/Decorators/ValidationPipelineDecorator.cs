@@ -28,22 +28,23 @@ namespace Xpandables.Net.Responsibilities.Decorators;
 public sealed class ValidationPipelineDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IUseValidation
+    where TRequest : class, IApplyValidation
     where TResponse : IOperationResult
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest query,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        IOperationResult result = await validators.ValidateAsync(query);
+        IOperationResult result = await validators.ValidateAsync(query)
+            .ConfigureAwait(false);
 
         if (!result.IsSuccessStatusCode)
         {
             return MatchResponse(result);
         }
 
-        return await next();
+        return await next().ConfigureAwait(false);
     }
 }

@@ -19,7 +19,7 @@ namespace Xpandables.Net.Http;
 /// Represents an HTTP request stream that builds the request and provides 
 /// the stream content.
 /// </summary>
-public interface IHttpRequestStream : IHttpRequestDefinition
+public interface IStreamRequest : IRequestDefinition
 {
     /// <summary>
     /// Returns the stream content.

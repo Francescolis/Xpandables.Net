@@ -51,7 +51,7 @@ public sealed class EventPublisherSubscriber(
                     Action<TEvent> action => Task.Run(() => action(@event)),
                     Func<TEvent, Task> func => func(@event),
                     IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event, cancellationToken),
-                    IEventHandler eventHandler1 => eventHandler1.HandleAsync(@event, cancellationToken),
+                    IEventHandler eventHandler1 => eventHandler1.Handle(@event, cancellationToken),
                     _ => Task.CompletedTask
                 })
                 .ToArray();
@@ -74,21 +74,22 @@ public sealed class EventPublisherSubscriber(
     {
         try
         {
-            if (events is null || !events.Any())
+            List<IEvent> eventList = events.ToList();
+            if (eventList.Count == 0)
             {
                 return [];
             }
 
             ConcurrentBag<EventPublished> eventPublished = [];
 
-            Task[] tasks = events
+            Task[] tasks = eventList
                 .Select(@event => ((Task)PublishAsync((dynamic)@event, cancellationToken))
                     .ContinueWith(t => eventPublished.Add(new EventPublished
                     {
                         EventId = @event.EventId,
                         PublishedOn = DateTimeOffset.UtcNow,
                         ErrorMessage = t.IsFaulted ? t.Exception?.ToString() : null
-                    })))
+                    }), TaskScheduler.Current))
                 .ToArray();
 
             await Task.WhenAll(tasks).ConfigureAwait(false);

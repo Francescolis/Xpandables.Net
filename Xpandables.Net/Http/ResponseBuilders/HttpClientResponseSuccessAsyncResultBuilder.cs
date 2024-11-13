@@ -52,6 +52,8 @@ public sealed class HttpClientResponseSuccessAsyncResultBuilder : IHttpClientRes
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         if (!CanBuild(typeof(TResponse), context.Message.StatusCode))
         {
             throw new InvalidOperationException(

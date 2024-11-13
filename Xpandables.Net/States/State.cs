@@ -29,7 +29,9 @@ public abstract class State<TStateContext> : IState<TStateContext>
     /// </summary>
     protected TStateContext Context { get; private set; } = default!;
 
+#pragma warning disable CA1033 // Interface methods should be callable by child types
     void IState<TStateContext>.EnterStateContext(TStateContext context)
+#pragma warning restore CA1033 // Interface methods should be callable by child types
     {
         OnEnteringStateContext(context);
         Context = context ?? throw new ArgumentNullException(nameof(context));

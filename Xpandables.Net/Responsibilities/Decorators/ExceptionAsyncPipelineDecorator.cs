@@ -32,11 +32,13 @@ public sealed class ExceptionAsyncPipelineDecorator<TRequest, TResponse> :
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestAsyncHandlerDelegate<TResponse> next,
+        RequestAsyncHandler<TResponse> next,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
         await using IAsyncEnumerator<TResponse> enumerator =
             next().GetAsyncEnumerator(cancellationToken);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
         while (true)
         {

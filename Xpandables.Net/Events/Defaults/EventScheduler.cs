@@ -64,7 +64,9 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
     {
         if (!_options.IsEventSchedulerEnabled)
         {
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
             _logger.LogWarning("Event scheduler is disabled.");
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
             return;
         }
 
@@ -90,11 +92,14 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
         IEnumerable<IEventIntegration> events = await eventStore
             .FetchAsync(eventFilter, cancellationToken)
             .OfType<IEventIntegration>()
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         if (!events.Any())
         {
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
             _logger.LogInformation("No events to schedule.");
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
             return;
         }
 
@@ -120,21 +125,26 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
             && await timer.WaitForNextTickAsync(stoppingToken)
                 .ConfigureAwait(false))
         {
+#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                await ScheduleAsync(stoppingToken);
+                await ScheduleAsync(stoppingToken).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
                 _retryCount++;
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
                 _logger.LogError(exception,
                     "An error occurred while scheduling events. " +
                     "Retry count: {RetryCount}", _retryCount);
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
 
                 if (_retryCount >= _options.MaxSchedulerRetries)
                 {
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
                     _logger.LogError("Maximum retry count reached. " +
                         "Stopping the event scheduler.");
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
 
                     using CancellationTokenSource cts =
                         CancellationTokenSource.CreateLinkedTokenSource(
@@ -149,11 +159,12 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
                     break;
                 }
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
     }
 
     /// <inheritdoc/>
-    public override void Dispose()
+    public sealed override void Dispose()
     {
         _optionsMonitor?.Dispose();
         base.Dispose();

@@ -22,7 +22,7 @@ namespace Xpandables.Net.Responsibilities.Decorators;
 /// asynchronous enumerable response.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate IAsyncEnumerable<TResponse> RequestAsyncHandlerDelegate<TResponse>();
+public delegate IAsyncEnumerable<TResponse> RequestAsyncHandler<TResponse>();
 
 /// <summary>
 /// Defines a decorator for handling asynchronous queries.
@@ -41,6 +41,6 @@ public interface IAsyncPipelineDecorator<TRequest, TResponse>
     /// <returns>An asynchronous enumerable of the response.</returns>
     IAsyncEnumerable<TResponse> HandleAsync(
         TRequest request,
-        RequestAsyncHandlerDelegate<TResponse> next,
+        RequestAsyncHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }

@@ -20,6 +20,8 @@ namespace Xpandables.Net.States;
 /// Represents a memento interface for capturing and restoring the state of 
 /// an object.
 /// </summary>
+#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IMemento
+#pragma warning restore CA1040 // Avoid empty interfaces
 {
 }

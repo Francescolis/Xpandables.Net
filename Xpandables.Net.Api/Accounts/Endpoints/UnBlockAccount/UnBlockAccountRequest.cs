@@ -10,7 +10,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
     IsSecured = false,
     Location = HttpClientParameters.Location.Body,
     Method = HttpClientParameters.Method.POST)]
-public sealed record UnBlockAccountRequest : IUseValidation
+public sealed record UnBlockAccountRequest : IApplyValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

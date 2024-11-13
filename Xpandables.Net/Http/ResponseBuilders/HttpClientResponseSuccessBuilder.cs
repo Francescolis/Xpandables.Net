@@ -36,6 +36,8 @@ public sealed class HttpClientResponseSuccessBuilder : IHttpClientResponseBuilde
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         if (!CanBuild(typeof(TResponse), context.Message.StatusCode))
         {
             throw new InvalidOperationException(

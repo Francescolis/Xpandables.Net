@@ -26,10 +26,14 @@ public sealed class HttpClientResponseFailureResultBuilder : IHttpClientResponse
     public Type Type => typeof(HttpClientResponse<>);
 
     /// <inheritdoc/>
-    public bool CanBuild(Type targetType, HttpStatusCode statusCode) =>
-        targetType.IsGenericType
+    public bool CanBuild(Type targetType, HttpStatusCode statusCode)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        return targetType.IsGenericType
             && targetType.GetGenericTypeDefinition() == Type
             && (int)statusCode is < 200 or > 299;
+    }
 
     /// <inheritdoc/>
     public async Task<TResponse> BuildAsync<TResponse>(
@@ -37,6 +41,8 @@ public sealed class HttpClientResponseFailureResultBuilder : IHttpClientResponse
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         if (!CanBuild(typeof(TResponse), context.Message.StatusCode))
         {
             throw new InvalidOperationException(
@@ -49,7 +55,7 @@ public sealed class HttpClientResponseFailureResultBuilder : IHttpClientResponse
             context.Message.StatusCode,
             context.Message.ToNameValueCollection(),
             null,
-            await context.Message.BuildExceptionAsync(),
+            await context.Message.BuildExceptionAsync().ConfigureAwait(false),
             context.Message.Version,
             context.Message.ReasonPhrase)!;
     }

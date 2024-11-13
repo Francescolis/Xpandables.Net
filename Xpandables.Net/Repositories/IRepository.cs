@@ -74,7 +74,9 @@ public interface IRepository : IAsyncDisposable
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
 
+#pragma warning disable CA1033 // Interface methods should be callable by child types
     ValueTask IAsyncDisposable.DisposeAsync()
+#pragma warning restore CA1033 // Interface methods should be callable by child types
     {
         GC.SuppressFinalize(this);
         return ValueTask.CompletedTask;

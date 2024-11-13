@@ -38,7 +38,7 @@ public sealed class QueryHandlerWrapper<TQuery, TResult>(
         Task<IOperationResult<TResult>> result = decorators
             .Reverse()
             .Aggregate<IPipelineDecorator<TQuery, IOperationResult<TResult>>,
-            RequestHandlerDelegate<IOperationResult<TResult>>>(
+            RequestHandler<IOperationResult<TResult>>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(
                     (TQuery)query,

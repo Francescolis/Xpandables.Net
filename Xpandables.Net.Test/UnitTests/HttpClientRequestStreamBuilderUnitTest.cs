@@ -144,7 +144,7 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         multipart!.Should().ContainSingle();
     }
 
-    private class TestHttpRequestStream : IHttpClientRequest, IHttpRequestStream
+    private class TestHttpRequestStream : IHttpClientRequest, IStreamRequest
     {
         public StreamContent GetStreamContent()
         {

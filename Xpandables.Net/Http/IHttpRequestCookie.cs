@@ -18,7 +18,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Represents an HTTP request cookie builder.
 /// </summary>
-public interface IHttpRequestCookie : IHttpRequestDefinition
+public interface IHttpRequestCookie : IRequestDefinition
 {
     /// <summary>
     /// Returns the cookie header value.

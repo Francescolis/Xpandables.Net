@@ -31,6 +31,8 @@ public sealed class EventEntityDomainConfiguration :
     /// <inheritdoc/>  
     public void Configure(EntityTypeBuilder<EventEntityDomain> builder)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         _ = builder.HasKey(e => e.KeyId);
         _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.EventName, e.EventVersion });
         _ = builder.Property(e => e.KeyId).IsRequired();

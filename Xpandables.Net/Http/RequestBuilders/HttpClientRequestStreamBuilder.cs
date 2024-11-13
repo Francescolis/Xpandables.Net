@@ -22,7 +22,7 @@ namespace Xpandables.Net.Http.RequestBuilders;
 /// A builder class for creating HTTP client requests with stream content.
 /// </summary>
 public sealed class HttpClientRequestStreamBuilder :
-    HttpClientRequestBuilder<IHttpRequestStream>
+    HttpClientRequestBuilder<IStreamRequest>
 {
     /// <inheritdoc/>
     public override int Order => 9;
@@ -37,7 +37,7 @@ public sealed class HttpClientRequestStreamBuilder :
             return;
         }
 
-        IHttpRequestStream request = (IHttpRequestStream)context.Request;
+        IStreamRequest request = (IStreamRequest)context.Request;
 
         StreamContent streamContent = request.GetStreamContent();
 

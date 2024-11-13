@@ -34,25 +34,31 @@ public sealed class LoggingPipelineDecorator<TRequest, TResponse>(
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest query,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
         logger.LogInformation("Handling {RequestName} with request: " +
             "{@Request}", typeof(TRequest).Name, query);
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
 
         try
         {
             TResponse response = await next().ConfigureAwait(false);
 
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
             logger.LogInformation("Handled {RequestName} with response: " +
                 "{@Response}", typeof(TRequest).Name, response);
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
 
             return response;
         }
         catch (Exception exception)
         {
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
             logger.LogError(exception, "Error handling {RequestName} with request: " +
                 "{@Request}", typeof(TRequest).Name, query);
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
 
             throw;
         }

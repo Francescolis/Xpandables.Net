@@ -35,6 +35,8 @@ public sealed class DataContextEvent(
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+
         _ = modelBuilder.ApplyConfiguration(new EventEntityDomainConfiguration());
         _ = modelBuilder.ApplyConfiguration(new EventEntityIntegrationConfiguration());
         _ = modelBuilder.ApplyConfiguration(new EventEntitySnapshotConfiguration());

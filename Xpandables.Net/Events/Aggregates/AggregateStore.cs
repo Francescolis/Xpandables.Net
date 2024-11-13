@@ -98,7 +98,8 @@ public sealed class AggregateStore<TAggregate>(
             List<IEventDomain> events = await _eventStore
                 .FetchAsync(filter, cancellationToken)
                 .OfType<IEventDomain>()
-                .ToListAsync(cancellationToken);
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             aggregate.LoadFromHistory(events);
 

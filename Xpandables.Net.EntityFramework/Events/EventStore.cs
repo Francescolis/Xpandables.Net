@@ -38,7 +38,9 @@ public sealed class EventStore(
     Disposable, IEventStore
 {
     private readonly EventOptions _options = options.Value;
+#pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly DataContextEvent _context = context;
+#pragma warning restore CA2213 // Disposable fields should be disposed
     private List<IEventEntity> _eventEntities = [];
 
     /// <inheritdoc/>
@@ -48,17 +50,18 @@ public sealed class EventStore(
     {
         try
         {
-            if (!events.Any())
+            List<IEvent> eventsList = events.ToList();
+            if (eventsList.Count == 0)
             {
                 return Task.CompletedTask;
             }
 
             IEventConverter eventConverter =
-                _options.GetEventConverterFor(events.First());
+                _options.GetEventConverterFor(eventsList.First());
 
-            _eventEntities = new(events.Count());
+            _eventEntities = new(eventsList.Count);
 
-            foreach (IEvent @event in events)
+            foreach (IEvent @event in eventsList)
             {
                 IEventEntity eventEntity = eventConverter
                     .ConvertTo(@event, _options.SerializerOptions);
@@ -82,6 +85,8 @@ public sealed class EventStore(
         IEventFilter filter,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(filter);
+
         IQueryable<IEventEntity> queryable = filter.EventType switch
         {
             Type type when type == typeof(IEventDomain) =>
@@ -126,7 +131,8 @@ public sealed class EventStore(
             List<EventEntityIntegration> entitiesToUpdate =
                 await _context.Integrations
                 .Where(e => publishedEvents.Keys.Contains(e.KeyId))
-                .ToListAsync(cancellationToken);
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             entitiesToUpdate.ForEach(entity =>
             {

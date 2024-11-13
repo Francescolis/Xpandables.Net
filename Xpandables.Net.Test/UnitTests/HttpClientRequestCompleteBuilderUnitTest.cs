@@ -22,7 +22,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     }
 
     [Theory]
-    [InlineData(typeof(IHttpRequestDefinitionComplete), true)]
+    [InlineData(typeof(IRequestDefinitionComplete), true)]
     [InlineData(typeof(IHttpClientRequest), true)]
     [InlineData(typeof(object), false)]
     public void CanBuild_ShouldReturnExpectedResult(Type targetType, bool expectedResult)
@@ -126,7 +126,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     }
 
     private class TestHttpRequestDefinitionComplete :
-        IHttpClientRequest, IHttpRequestDefinitionComplete
+        IHttpClientRequest, IRequestDefinitionComplete
     {
     }
 }

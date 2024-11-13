@@ -36,6 +36,8 @@ public sealed class HttpClientResponseFailureBuilder : IHttpClientResponseBuilde
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         if (!CanBuild(typeof(TResponse), context.Message.StatusCode))
         {
             throw new InvalidOperationException(
@@ -49,7 +51,7 @@ public sealed class HttpClientResponseFailureBuilder : IHttpClientResponseBuilde
             Headers = context.Message.ToNameValueCollection(),
             Version = context.Message.Version,
             ReasonPhrase = context.Message.ReasonPhrase,
-            Exception = await context.Message.BuildExceptionAsync()
+            Exception = await context.Message.BuildExceptionAsync().ConfigureAwait(false)
         };
 
         return (TResponse)response;

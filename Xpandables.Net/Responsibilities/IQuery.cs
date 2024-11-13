@@ -23,6 +23,8 @@ namespace Xpandables.Net.Responsibilities;
 /// This can also be enhanced with some useful decorators.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
+#pragma warning disable CA1040 // Avoid empty interfaces
 public interface IQuery<out TResult>
+#pragma warning restore CA1040 // Avoid empty interfaces
 {
 }

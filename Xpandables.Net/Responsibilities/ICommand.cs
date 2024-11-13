@@ -22,7 +22,9 @@ namespace Xpandables.Net.Responsibilities;
 /// where "TCommand" is a record that implements <see cref="ICommand"/>.
 /// This can also be enhanced with some useful decorators.
 /// </summary>
+#pragma warning disable CA1040 // Avoid empty interfaces
 public interface ICommand
+#pragma warning restore CA1040 // Avoid empty interfaces
 {
 }
 

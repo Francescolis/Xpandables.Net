@@ -86,7 +86,7 @@ public static class HttpClientRequestQueryStringExtensions
             uriToBeAppended = path[..anchorIndex];
         }
 
-        bool hasQuery = uriToBeAppended.Contains('?');
+        bool hasQuery = uriToBeAppended.Contains('?', StringComparison.InvariantCulture);
 
         StringBuilder sb = new();
         _ = sb.Append(uriToBeAppended);

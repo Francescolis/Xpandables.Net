@@ -21,7 +21,7 @@ namespace Xpandables.Net.Http;
 /// or <see cref="IHttpClientRequest{TResponse}"/> requests using a typed 
 /// client HTTP Client.
 /// The request should implement one of the following interfaces :
-/// <see cref="IHttpRequestString"/>, <see cref="IHttpRequestStream"/>, 
+/// <see cref="IHttpRequestString"/>, <see cref="IStreamRequest"/>, 
 /// <see cref="IHttpRequestByteArray"/>, 
 /// <see cref="IHttpRequestFormUrlEncoded"/>,
 /// <see cref="IHttpRequestMultipart"/>, <see cref="IHttpRequestQueryString"/>, 

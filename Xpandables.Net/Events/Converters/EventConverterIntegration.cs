@@ -28,8 +28,8 @@ public sealed class EventConverterIntegration : EventConverter
     public override Type EventType => typeof(IEventIntegration);
 
     /// <inheritdoc/>
-    public override bool CanConvert(Type typeToConvert) =>
-        EventType.IsAssignableFrom(typeToConvert);
+    public override bool CanConvert(Type type) =>
+        EventType.IsAssignableFrom(type);
 
     /// <inheritdoc/>
     public override IEvent ConvertFrom(

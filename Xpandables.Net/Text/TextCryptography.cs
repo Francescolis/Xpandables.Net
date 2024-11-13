@@ -157,7 +157,9 @@ public static class TextCryptography
 
                 using (CryptoStream cryptoStream = new(
                     memoryStream, isEncryption
+#pragma warning disable CA5401
                         ? aes.CreateEncryptor()
+#pragma warning restore CA5401
                         : aes.CreateDecryptor(),
                     CryptoStreamMode.Write))
                 {

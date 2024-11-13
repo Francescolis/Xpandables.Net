@@ -45,7 +45,9 @@ public interface IEventEntity : IEntity<Guid>, IDisposable
     /// </summary>
     JsonDocument EventData { get; }
 
+#pragma warning disable CA1033 // Interface methods should be callable by child types
     void IDisposable.Dispose()
+#pragma warning restore CA1033 // Interface methods should be callable by child types
     {
         EventData?.Dispose();
         GC.SuppressFinalize(this);

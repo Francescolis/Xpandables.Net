@@ -10,7 +10,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
     IsSecured = false,
     Location = HttpClientParameters.Location.Query,
     Method = HttpClientParameters.Method.GET)]
-public sealed record GetBalanceAccountRequest : IUseValidation
+public sealed record GetBalanceAccountRequest : IApplyValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

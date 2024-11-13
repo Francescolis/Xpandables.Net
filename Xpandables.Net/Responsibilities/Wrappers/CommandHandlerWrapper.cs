@@ -43,7 +43,7 @@ public sealed class CommandHandlerWrapper<TCommand>(
         Task<IOperationResult> result = decorators
             .Reverse()
             .Aggregate<IPipelineDecorator<TCommand, IOperationResult>,
-            RequestHandlerDelegate<IOperationResult>>(
+            RequestHandler<IOperationResult>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(
                     (TCommand)command,

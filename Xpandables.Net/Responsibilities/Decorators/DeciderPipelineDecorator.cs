@@ -35,7 +35,7 @@ public sealed class DeciderPipelineDecorator<TRequest, TResponse>(
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         try

@@ -28,7 +28,7 @@ public sealed record EventOptions
     /// <summary>
     /// Gets the list of user-defined converters that were registered.
     /// </summary>
-    public IList<IEventConverter> Converters { get; set; }
+    public IList<IEventConverter> Converters { get; }
         =
         [
             new EventConverterDomain(),
@@ -84,8 +84,11 @@ public sealed record EventOptions
     /// <returns>The <see cref="IEventConverter"/> instance.</returns>
     /// <exception cref="InvalidOperationException">The converter was not 
     /// found.</exception>"
-    public IEventConverter GetEventConverterFor(IEvent @event) =>
-        GetEventConverterFor(@event.GetType());
+    public IEventConverter GetEventConverterFor(IEvent @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+        return GetEventConverterFor(@event.GetType());
+    }
 
     /// <summary>
     /// Returns the <see cref="IEventConverter"/> instance for the specified type.
@@ -120,6 +123,8 @@ public sealed record EventOptions
     /// <returns>The default <see cref="EventOptions"/>.</returns>
     public static void Default(EventOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         options = options with
         {
             SerializerOptions = DefaultSerializerOptions.Defaults,

@@ -34,11 +34,13 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
     /// <inheritdoc/>
 
     public virtual Task DeleteAsync<TEntity>(
-        IEntityFilter<TEntity> entityFilter,
+        IEntityFilter<TEntity> filter,
         CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
-        IQueryable<TEntity> query = entityFilter.Apply(Context.Set<TEntity>())
+        ArgumentNullException.ThrowIfNull(filter);
+
+        IQueryable<TEntity> query = filter.Apply(Context.Set<TEntity>())
             .OfType<TEntity>();
 
         Context.RemoveRange(query);
@@ -47,16 +49,18 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
     }
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        IEntityFilter<TEntity, TResult> entityFilter,
+        IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
+        ArgumentNullException.ThrowIfNull(filter);
+
         IAsyncEnumerable<TResult> results =
             (typeof(TEntity) == typeof(TResult)) switch
             {
-                true => entityFilter
+                true => filter
                     .FetchAsync<TResult>(Context.Set<TEntity>(), cancellationToken),
-                _ => entityFilter
+                _ => filter
                     .FetchAsync<TResult>(Context.Set<TEntity>().AsNoTracking(), cancellationToken)
             };
 
@@ -73,13 +77,16 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
     }
     /// <inheritdoc/>
     public virtual Task UpdateAsync<TEntity>(
-        IEntityFilter<TEntity> entityFilter,
+        IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, TEntity>> updateExpression,
         CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(updateExpression);
+
         Func<TEntity, TEntity> expressionCompiled = updateExpression.Compile();
-        IQueryable<TEntity> query = entityFilter.Apply(Context.Set<TEntity>())
+        IQueryable<TEntity> query = filter.Apply(Context.Set<TEntity>())
             .OfType<TEntity>();
 
         return query.ForEachAsync(entity => expressionCompiled(entity), cancellationToken);

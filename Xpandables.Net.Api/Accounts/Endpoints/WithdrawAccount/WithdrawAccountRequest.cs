@@ -10,7 +10,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
     IsSecured = false,
     Location = HttpClientParameters.Location.Body,
     Method = HttpClientParameters.Method.POST)]
-public sealed record WithdrawAccountRequest : IUseValidation
+public sealed record WithdrawAccountRequest : IApplyValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

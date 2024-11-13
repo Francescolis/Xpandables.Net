@@ -30,6 +30,8 @@ public sealed class OperationResultControllerValidationFilterAttribute :
     /// <inheritdoc/>  
     public override void OnActionExecuting(ActionExecutingContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         if (context.ModelState.IsValid)
         {
             return;

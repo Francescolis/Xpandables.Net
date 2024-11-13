@@ -41,17 +41,17 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     /// <summary>
     /// Gets the collection of headers.
     /// </summary>
-    protected readonly ElementCollection Headers = [];
+    protected ElementCollection Headers { get; } = [];
 
     /// <summary>
     /// Gets the collection of extensions.
     /// </summary>
-    protected readonly ElementCollection Extensions = [];
+    protected ElementCollection Extensions { get; } = [];
 
     /// <summary>
     /// Gets the collection of errors.
     /// </summary>
-    protected readonly ElementCollection Errors = [];
+    protected ElementCollection Errors { get; } = [];
 
     /// <summary>
     /// Gets or sets the HTTP status code for the operation result.
@@ -131,6 +131,8 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     /// <inheritdoc/>
     public TBuilder Merge(IOperationResult operation)
     {
+        ArgumentNullException.ThrowIfNull(operation);
+
         if (operation.IsSuccessStatusCode
             || (int)StatusCode is >= 200 and <= 299)
         {
@@ -217,6 +219,8 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
 
         static string BuildErrorMessage(Exception exception)
         {
+            ArgumentNullException.ThrowIfNull(exception);
+
             if (exception is AggregateException aggregateException)
             {
                 return string.Join(

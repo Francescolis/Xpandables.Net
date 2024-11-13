@@ -31,6 +31,9 @@ public sealed class HttpClientOptionsConfiguration(IServiceProvider provider) :
     private readonly IServiceProvider _provider = provider;
 
     /// <inheritdoc/>
-    public void Configure(HttpClientOptions options) =>
+    public void Configure(HttpClientOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
         options.Resolver = _provider.GetService;
+    }
 }

@@ -43,6 +43,9 @@ public static class ServiceExportExtensions
         Action<IEnumerable<TServiceExport>> onServiceExport)
         where TServiceExport : class
     {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(onServiceExport);
+
         try
         {
             using ComposablePartCatalog directoryCatalog = options

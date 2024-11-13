@@ -54,6 +54,8 @@ public abstract class Aggregate : IAggregate
     /// <inheritdoc/>
     public void LoadFromHistory(IEventDomain @event)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         Mutate(@event);
 
         Version = @event.EventVersion;
@@ -63,7 +65,11 @@ public abstract class Aggregate : IAggregate
     public void MarkEventsAsCommitted() => _uncommittedEvents.Clear();
 
     /// <inheritdoc/>
-    public void PushEvent(IEventDomain @event) => Apply(@event);
+    public void PushEvent(IEventDomain @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+        Apply(@event);
+    }
 
     /// <summary>
     /// Registers an event handler for a specific event type.
@@ -90,6 +96,9 @@ public abstract class Aggregate : IAggregate
     /// not an event domain.</exception>
     protected void On(Type eventType, Delegate handler)
     {
+        ArgumentNullException.ThrowIfNull(eventType);
+        ArgumentNullException.ThrowIfNull(handler);
+
         if (typeof(IEventDomain).IsAssignableFrom(eventType))
         {
             _ = _eventHandlers.TryAdd(eventType, handler);

@@ -66,7 +66,9 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="key">The key of the entry to remove.</param>
     /// <returns>A new <see cref="ElementCollection"/> with the specified entry 
     /// removed.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static ElementCollection operator -(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         ElementCollection collection,
         string key)
     {
@@ -81,7 +83,9 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="entry">The entry to remove.</param>
     /// <returns>A new <see cref="ElementCollection"/> with the specified entry 
     /// removed.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static ElementCollection operator -(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         ElementCollection collection,
         ElementEntry entry)
     {
@@ -95,7 +99,9 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="collection">The collection from which to remove the entries.</param>
     /// <param name="other">The collection containing the entries to remove.</param>
     /// <returns>A new <see cref="ElementCollection"/> with the specified entries removed.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static ElementCollection operator -(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         ElementCollection collection,
         ElementCollection other)
     {
@@ -115,7 +121,9 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> that contains 
     /// the entries from the collection.</returns>
     public static implicit operator
+#pragma warning disable CA2225 // Operator overloads have named alternates
         ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         ElementCollection collection) =>
         new(collection._entries.ToDictionary(
             entry => entry.Key, entry => entry.Values));
@@ -164,7 +172,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <returns>A new <see cref="ElementCollection"/> with the specified list 
     /// of <see cref="ElementEntry"/>.</returns>
     public static ElementCollection With(IList<ElementEntry> entries) =>
-        new(entries);
+        [.. entries];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ElementCollection"/> struct.
@@ -222,6 +230,8 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="values">The dictionary of key-value pairs to add.</param>
     public void AddRange(IDictionary<string, string> values)
     {
+        ArgumentNullException.ThrowIfNull(values);
+
         foreach (KeyValuePair<string, string> value in values)
         {
             Add(value.Key, value.Value);

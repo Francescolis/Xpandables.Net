@@ -74,6 +74,8 @@ public static class ServiceCollectionEndpointExtensions
     public static WebApplication UseXEndpointRoutes(
         this WebApplication application)
     {
+        ArgumentNullException.ThrowIfNull(application);
+
         IEnumerable<IEndpointRoute> endpointRoutes = application.Services
             .GetServices<IEndpointRoute>();
 

@@ -23,7 +23,7 @@ namespace Xpandables.Net.Operations;
 /// </summary>
 /// <param name="operationResult">The operation result to finalize.</param>
 /// <returns>The finalized operation result.</returns>
-public delegate IOperationResult OperationResultFinalizeDelegate(
+public delegate IOperationResult OperationResultFinalize(
     IOperationResult operationResult);
 
 /// <summary>
@@ -41,12 +41,12 @@ public interface IOperationResultFinalizer
     /// <summary>
     /// Gets or sets the delegate to finalize the operation result.
     /// </summary>
-    OperationResultFinalizeDelegate? Finalize { get; set; }
+    OperationResultFinalize? Finalize { get; set; }
 }
 
 internal sealed class OperationResultFinalizer : IOperationResultFinalizer
 {
     [MemberNotNullWhen(true, nameof(Finalize))]
     public bool CallFinalizeOnException { get; set; }
-    public OperationResultFinalizeDelegate? Finalize { get; set; }
+    public OperationResultFinalize? Finalize { get; set; }
 }

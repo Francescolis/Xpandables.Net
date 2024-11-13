@@ -22,7 +22,9 @@ namespace Xpandables.Net.Responsibilities.Decorators;
 /// <summary>
 /// Interface to mark a request that uses a finalizer.
 /// </summary>
-public interface IUseFinalizer { }
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IApplyFinalizer { }
+#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Decorator that finalizes the operation result for requests that use a finalizer.
@@ -32,13 +34,13 @@ public interface IUseFinalizer { }
 public sealed class FinalizerPipelineDecorator<TRequest, TResponse>(
     IOperationResultFinalizer finalizer) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IUseFinalizer
+    where TRequest : class, IApplyFinalizer
     where TResponse : IOperationResult
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         try

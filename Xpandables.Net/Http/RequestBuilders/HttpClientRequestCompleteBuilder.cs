@@ -21,7 +21,7 @@ namespace Xpandables.Net.Http.RequestBuilders;
 /// Represents a builder for completing HTTP client requests.  
 /// </summary>  
 public sealed class HttpClientRequestCompleteBuilder :
-   HttpClientRequestBuilder<IHttpRequestDefinitionComplete>
+   HttpClientRequestBuilder<IRequestDefinitionComplete>
 {
     /// <inheritdoc/>  
     public override int Order => int.MaxValue;

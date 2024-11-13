@@ -50,7 +50,7 @@ public static class OptionalExtensions
     /// <returns>An optional containing the first element of the sequence, 
     /// or an empty optional if the sequence contains no elements.</returns>
     public static Optional<T> FirstOrEmpty<T>(this IEnumerable<T> source) =>
-        source.Any() ? Optional.Some(source.First()) : Optional.Empty<T>();
+        source.FirstOrDefault().ToOptional();
 
     /// <summary>
     /// Returns the first element of the asynchronous sequence as an optional 
@@ -64,8 +64,8 @@ public static class OptionalExtensions
     /// or an empty optional if the sequence contains no elements.</returns>
     public static async Task<Optional<T>> FirstOrEmptyAsync<T>(
         this IAsyncEnumerable<T> source) =>
-        await source.AnyAsync()
-            ? Optional.Some(await source.FirstAsync())
+        await source.AnyAsync().ConfigureAwait(false)
+            ? Optional.Some(await source.FirstAsync().ConfigureAwait(false))
             : Optional.Empty<T>();
 
     /// <summary>
@@ -133,7 +133,7 @@ public static class OptionalExtensions
     public static async Task<Optional<TU>> SelectAsync<T, TU>(
         this Task<Optional<T>> optional,
         Func<T, Task<TU>> selector) =>
-        await optional.BindAsync(selector);
+        await optional.BindAsync(selector).ConfigureAwait(false);
 
     /// <summary>
     /// Projects the value of the optional to a new form using a specified function.
@@ -159,7 +159,7 @@ public static class OptionalExtensions
     public static async Task<Optional<TU>> SelectManyAsync<T, TU>(
         this Task<Optional<T>> optional,
         Func<T, Task<Optional<TU>>> selector) =>
-        await optional.BindAsync(selector);
+        await optional.BindAsync(selector).ConfigureAwait(false);
 
     /// <summary>
     /// Projects the value of the optional to a new form using a specified 
@@ -201,5 +201,5 @@ public static class OptionalExtensions
         Func<T, TR, Task<TU>> resultSelector) =>
         await optional.BindAsync(x =>
             selector(x).BindAsync(y =>
-                resultSelector(x, y)));
+                resultSelector(x, y))).ConfigureAwait(false);
 }

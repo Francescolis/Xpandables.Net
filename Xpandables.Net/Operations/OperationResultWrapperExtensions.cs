@@ -27,12 +27,15 @@ public static partial class OperationResultExtensions
     /// the action.</returns>
     public static IOperationResult ToOperationResult(this Action action)
     {
+        ArgumentNullException.ThrowIfNull(action);
+
         try
         {
             action();
             return OperationResults.Ok().Build();
         }
         catch (Exception exception)
+            when (exception is not OperationResultException)
         {
             return exception.ToOperationResult();
         }
@@ -50,6 +53,8 @@ public static partial class OperationResultExtensions
         this Action<T> action,
         T args)
     {
+        ArgumentNullException.ThrowIfNull(action);
+
         try
         {
             action(args);
@@ -79,12 +84,15 @@ public static partial class OperationResultExtensions
     /// of the task.</returns>
     public static async Task<IOperationResult> ToOperationResultAsync(this Task task)
     {
+        ArgumentNullException.ThrowIfNull(task);
+
         try
         {
             await task.ConfigureAwait(false);
             return OperationResults.Ok().Build();
         }
         catch (Exception exception)
+            when (exception is not OperationResultException)
         {
             return exception.ToOperationResult();
         }
@@ -101,6 +109,8 @@ public static partial class OperationResultExtensions
     public static async Task<IOperationResult<TResult>> ToOperationResultAsync<TResult>(
         this Task<TResult> task)
     {
+        ArgumentNullException.ThrowIfNull(task);
+
         try
         {
             TResult result = await task.ConfigureAwait(false);
@@ -109,6 +119,7 @@ public static partial class OperationResultExtensions
                 .Build();
         }
         catch (Exception exception)
+            when (exception is not OperationResultException)
         {
             return exception
                 .ToOperationResult()
@@ -128,6 +139,8 @@ public static partial class OperationResultExtensions
     public static IOperationResult<TResult> ToOperationResult<TResult>(
         this Func<TResult> func)
     {
+        ArgumentNullException.ThrowIfNull(func);
+
         try
         {
             TResult result = func();
@@ -136,6 +149,7 @@ public static partial class OperationResultExtensions
                 .Build();
         }
         catch (Exception exception)
+            when (exception is not OperationResultException)
         {
             return exception
                 .ToOperationResult()

@@ -21,7 +21,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Interface for building HTTP requests with basic authentication.
 /// </summary>
-public interface IHttpRequestBasicAuth : IHttpRequestDefinition
+public interface IHttpRequestBasicAuth : IRequestDefinition
 {
     /// <summary>
     /// Returns the authentication header value.

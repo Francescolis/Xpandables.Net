@@ -26,7 +26,7 @@ public readonly partial record struct Optional<T>
     /// the current instance if it is empty.</returns>  
     public readonly async Task<Optional<T>> MapAsync(Func<T, Task<T>> some) =>
         HasValue
-            ? new Optional<T>(await some(Value))
+            ? new Optional<T>(await some(Value).ConfigureAwait(false))
             : this;
 
     /// <summary>  
@@ -40,7 +40,7 @@ public readonly partial record struct Optional<T>
     public readonly async Task<Optional<T>> MapAsync(
         Func<T, Task<Optional<T>>> some) =>
         HasValue
-            ? await some(Value)
+            ? await some(Value).ConfigureAwait(false)
             : this;
 
     /// <summary>  
@@ -55,7 +55,7 @@ public readonly partial record struct Optional<T>
         if (HasValue)
         {
             T value = Value;
-            await some(value);
+            await some(value).ConfigureAwait(false);
             return new Optional<T>(value);
         }
 
@@ -73,7 +73,7 @@ public readonly partial record struct Optional<T>
     public readonly async Task<Optional<TU>> BindAsync<TU>(
         Func<T, Task<TU>> binder) =>
         HasValue
-            ? new Optional<TU>(await binder(Value))
+            ? new Optional<TU>(await binder(Value).ConfigureAwait(false))
             : Optional.Empty<TU>();
 
     /// <summary>  
@@ -88,7 +88,7 @@ public readonly partial record struct Optional<T>
     public readonly async Task<Optional<TU>> BindAsync<TU>(
         Func<T, Task<Optional<TU>>> binder) =>
         HasValue
-            ? await binder(Value)
+            ? await binder(Value).ConfigureAwait(false)
             : Optional.Empty<TU>();
 
     /// <summary>  
@@ -100,7 +100,7 @@ public readonly partial record struct Optional<T>
     /// <returns>A new <see cref="Optional{T}"/> with the result of the function, 
     /// or the current instance if it is not empty.</returns>  
     public readonly async Task<Optional<T>> EmptyAsync(Func<Task<T>> empty) =>
-        IsEmpty ? new Optional<T>(await empty()) : this;
+        IsEmpty ? new Optional<T>(await empty().ConfigureAwait(false)) : this;
 
     /// <summary>  
     /// Asynchronously executes the provided function if the current instance 
@@ -112,7 +112,7 @@ public readonly partial record struct Optional<T>
     /// or the current instance if it is not empty.</returns>  
     public readonly async Task<Optional<T>> EmptyAsync(
         Func<Task<Optional<T>>> empty) =>
-        IsEmpty ? await empty() : this;
+        IsEmpty ? await empty().ConfigureAwait(false) : this;
 
     /// <summary>  
     /// Asynchronously executes the provided function if the current instance 
@@ -125,7 +125,7 @@ public readonly partial record struct Optional<T>
     {
         if (IsEmpty)
         {
-            await empty();
+            await empty().ConfigureAwait(false);
         }
 
         return this;

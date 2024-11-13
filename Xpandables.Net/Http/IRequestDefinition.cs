@@ -19,14 +19,20 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Provides with the base interface for all HTTP content request definition.
 /// </summary>
-public interface IHttpRequestDefinition { }
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequestDefinition { }
+#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Provides with the interface to start the HTTP request definition.
 /// </summary>
-public interface IHttpRequestDefinitionStart : IHttpRequestDefinition { }
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequestDefinitionStart : IRequestDefinition { }
+#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Provides with the interface to complete the built.
 /// </summary>
-public interface IHttpRequestDefinitionComplete : IHttpRequestDefinition { }
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequestDefinitionComplete : IRequestDefinition { }
+#pragma warning restore CA1040 // Avoid empty interfaces

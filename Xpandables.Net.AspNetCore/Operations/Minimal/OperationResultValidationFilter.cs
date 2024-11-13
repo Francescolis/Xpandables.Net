@@ -37,6 +37,9 @@ public sealed class OperationResultValidationFilter : IEndpointFilter
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
+
         IOperationResultValidator validator = context
             .HttpContext
             .RequestServices

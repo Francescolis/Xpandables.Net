@@ -31,7 +31,8 @@ public static class OptionalExtended
     /// The task result contains the mapped optional value.</returns>
     public static async Task<Optional<T>> MapAsync<T>(
         this Task<Optional<T>> optional, Func<T, Task<T>> some) =>
-        await (await optional).MapAsync(some);
+        await (await optional.ConfigureAwait(false))
+        .MapAsync(some).ConfigureAwait(false);
 
     /// <summary>
     /// Asynchronously maps the value of the optional if it is present.
@@ -43,7 +44,8 @@ public static class OptionalExtended
     /// The task result contains the mapped optional value.</returns>
     public static async Task<Optional<T>> MapAsync<T>(
         this Task<Optional<T>> optional, Func<T, Task<Optional<T>>> some) =>
-        await (await optional).MapAsync(some);
+        await (await optional.ConfigureAwait(false))
+        .MapAsync(some).ConfigureAwait(false);
 
     /// <summary>
     /// Asynchronously maps the value of the optional if it is present.
@@ -55,7 +57,8 @@ public static class OptionalExtended
     /// The task result contains the mapped optional value.</returns>
     public static async Task<Optional<T>> MapAsync<T>(
         this Task<Optional<T>> optional, Func<T, Task> some) =>
-        await (await optional).MapAsync(some);
+        await (await optional.ConfigureAwait(false))
+        .MapAsync(some).ConfigureAwait(false);
 
     /// <summary>
     /// Asynchronously binds the value of the optional if it is present.
@@ -68,7 +71,8 @@ public static class OptionalExtended
     /// The task result contains the bound optional value.</returns>
     public static async Task<Optional<TU>> BindAsync<T, TU>(
         this Task<Optional<T>> optional, Func<T, Task<TU>> some) =>
-        await (await optional).BindAsync(some);
+        await (await optional.ConfigureAwait(false))
+        .BindAsync(some).ConfigureAwait(false);
 
     /// <summary>
     /// Asynchronously binds the value of the optional if it is present.
@@ -81,7 +85,8 @@ public static class OptionalExtended
     /// The task result contains the bound optional value.</returns>
     public static async Task<Optional<TU>> BindAsync<T, TU>(
         this Task<Optional<T>> optional, Func<T, Task<Optional<TU>>> some) =>
-        await (await optional).BindAsync(some);
+        await (await optional.ConfigureAwait(false))
+        .BindAsync(some).ConfigureAwait(false);
 
     /// <summary>
     /// Asynchronously handles the empty state of the optional if it is empty.
@@ -93,7 +98,8 @@ public static class OptionalExtended
     /// The task result contains the optional value.</returns>
     public static async Task<Optional<T>> EmptyAsync<T>(
         this Task<Optional<T>> optional, Func<Task<T>> empty) =>
-        await (await optional).EmptyAsync(empty);
+        await (await optional.ConfigureAwait(false))
+        .EmptyAsync(empty).ConfigureAwait(false);
 
     /// <summary>
     /// Asynchronously handles the empty state of the optional if it is empty.
@@ -105,7 +111,8 @@ public static class OptionalExtended
     /// The task result contains the optional value.</returns>
     public static async Task<Optional<T>> EmptyAsync<T>(
         this Task<Optional<T>> optional, Func<Task<Optional<T>>> empty) =>
-        await (await optional).EmptyAsync(empty);
+        await (await optional.ConfigureAwait(false))
+        .EmptyAsync(empty).ConfigureAwait(false);
 
     /// <summary>
     /// Asynchronously handles the empty state of the optional if it is empty.
@@ -117,5 +124,6 @@ public static class OptionalExtended
     /// The task result contains the optional value.</returns>
     public static async Task<Optional<T>> EmptyAsync<T>(
         this Task<Optional<T>> optional, Func<Task> empty) =>
-        await (await optional).EmptyAsync(empty);
+        await (await optional.ConfigureAwait(false))
+        .EmptyAsync(empty).ConfigureAwait(false);
 }

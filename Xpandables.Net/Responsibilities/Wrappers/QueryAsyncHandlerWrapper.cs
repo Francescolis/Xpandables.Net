@@ -37,7 +37,7 @@ public sealed class QueryAsyncHandlerWrapper<TQuery, TResult>(
         IAsyncEnumerable<TResult> results = decorators
             .Reverse()
             .Aggregate<IAsyncPipelineDecorator<TQuery, TResult>,
-            RequestAsyncHandlerDelegate<TResult>>(
+            RequestAsyncHandler<TResult>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(
                     (TQuery)query,

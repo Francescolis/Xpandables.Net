@@ -60,11 +60,15 @@ public sealed record HttpClientOptions
     /// <returns>The request builder for the specified request type.</returns>  
     /// <exception cref="InvalidOperationException">Thrown when no request 
     /// builder is found for the specified request type.</exception>  
-    public IHttpClientRequestBuilder GetRequestBuilder(Type requestType)
-       => RequestBuilders
-           .FirstOrDefault(x => x.CanBuild(requestType))
-           ?? throw new InvalidOperationException(
-               $"No request builder found for the request type '{requestType.Name}'.");
+    public IHttpClientRequestBuilder PeekRequestBuilder(Type requestType)
+    {
+        ArgumentNullException.ThrowIfNull(requestType);
+
+        return RequestBuilders
+            .FirstOrDefault(x => x.CanBuild(requestType))
+            ?? throw new InvalidOperationException(
+                $"No request builder found for the request type '{requestType.Name}'.");
+    }
 
     /// <summary>  
     /// Gets the request builder for the specified request type.  
@@ -73,16 +77,16 @@ public sealed record HttpClientOptions
     /// <returns>The request builder for the specified request type.</returns>  
     /// <exception cref="InvalidOperationException">Thrown when no request  
     /// builder is found for the specified request type.</exception>  
-    public IHttpClientRequestBuilder GetRequestBuilder<TRequest>()
+    public IHttpClientRequestBuilder PeekRequestBuilder<TRequest>()
        where TRequest : IHttpClientRequest
-       => GetRequestBuilder(typeof(TRequest));
+       => PeekRequestBuilder(typeof(TRequest));
 
     /// <summary>  
     /// Gets the request builders for the specified request type.  
     /// </summary>  
     /// <param name="requestType">The type of the request.</param>  
     /// <returns>The request builders for the specified request type.</returns>  
-    public IEnumerable<IHttpClientRequestBuilder> GetRequestBuilders(
+    public IEnumerable<IHttpClientRequestBuilder> PeekRequestBuilders(
         Type requestType)
        => RequestBuilders
            .Where(x => x.CanBuild(requestType));
@@ -92,9 +96,9 @@ public sealed record HttpClientOptions
     /// </summary>  
     /// <typeparam name="TRequest">The type of the request.</typeparam>  
     /// <returns>The request builders for the specified request type.</returns>  
-    public IEnumerable<IHttpClientRequestBuilder> GetRequestBuilders<TRequest>()
+    public IEnumerable<IHttpClientRequestBuilder> PeekRequestBuilders<TRequest>()
         where TRequest : IHttpClientRequest
-        => GetRequestBuilders(typeof(TRequest));
+        => PeekRequestBuilders(typeof(TRequest));
 
     /// <summary>  
     /// Gets the response builder for the specified response type and status code.  
@@ -104,12 +108,16 @@ public sealed record HttpClientOptions
     /// <returns>The response builder for the specified response type and status code.</returns>  
     /// <exception cref="InvalidOperationException">Thrown when no response 
     /// builder is found for the specified response type and status code.</exception>  
-    public IHttpClientResponseBuilder GetResponseBuilder(
+    public IHttpClientResponseBuilder PeekResponseBuilder(
         Type responseType, HttpStatusCode statusCode)
-        => ResponseBuilders
+    {
+        ArgumentNullException.ThrowIfNull(responseType);
+
+        return ResponseBuilders
             .FirstOrDefault(x => x.CanBuild(responseType, statusCode))
             ?? throw new InvalidOperationException(
                 $"No response builder found for the response type '{responseType.Name}'.");
+    }
 
     /// <summary>  
     /// Gets the response builder for the specified response type and status code.  
@@ -119,10 +127,10 @@ public sealed record HttpClientOptions
     /// <returns>The response builder for the specified response type and status code.</returns>  
     /// <exception cref="InvalidOperationException">Thrown when no response 
     /// builder is found for the specified response type and status code.</exception>  
-    public IHttpClientResponseBuilder GetResponseBuilder<TResponse>(
+    public IHttpClientResponseBuilder PeekResponseBuilder<TResponse>(
         HttpStatusCode statusCode)
         where TResponse : HttpClientResponse
-        => GetResponseBuilder(typeof(TResponse), statusCode);
+        => PeekResponseBuilder(typeof(TResponse), statusCode);
 
     /// <summary>  
     /// Gets the request options for the specified request.  
@@ -134,7 +142,10 @@ public sealed record HttpClientOptions
     /// does not implement <see cref="IHttpClientAttributeBuilder"/>.</exception>  
     public HttpClientAttribute GetRequestOptions(
        IHttpClientRequest request)
-       => request is IHttpClientAttributeBuilder builder
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return request is IHttpClientAttributeBuilder builder
             ? builder.Build(this)
             : request
                 .GetType()
@@ -142,6 +153,7 @@ public sealed record HttpClientOptions
                 ?? throw new InvalidOperationException(
                     $"Request must be decorated with {nameof(HttpClientAttribute)} " +
                     $"or implement {nameof(IHttpClientAttributeBuilder)}");
+    }
 
     /// <summary>
     /// Configures the default HTTP client options.
@@ -149,6 +161,8 @@ public sealed record HttpClientOptions
     /// <param name="options">The HTTP client options.</param>
     public static void Default(HttpClientOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         _ = options.ResponseBuilders
             .Add(new HttpClientResponseFailureAsyncResultBuilder());
         _ = options.ResponseBuilders
@@ -200,60 +214,13 @@ public sealed record HttpClientOptions
     /// <summary>  
     /// Gets the default HTTP client options.  
     /// </summary>  
-    public static HttpClientOptions DefaultHttpClientOptions { get; private set; }
-        = Default();
-
-    private static HttpClientOptions Default()
+    public static HttpClientOptions DefaultHttpClientOptions
     {
-        HttpClientOptions options = new();
-
-        _ = options.ResponseBuilders
-            .Add(new HttpClientResponseFailureAsyncResultBuilder());
-        _ = options.ResponseBuilders
-            .Add(new HttpClientResponseFailureBuilder());
-        _ = options.ResponseBuilders
-            .Add(new HttpClientResponseFailureResultBuilder());
-        _ = options.ResponseBuilders
-            .Add(new HttpClientResponseSuccessAsyncResultBuilder());
-        _ = options.ResponseBuilders
-            .Add(new HttpClientResponseSuccessBuilder());
-        _ = options.ResponseBuilders
-            .Add(new HttpClientResponseSuccessResultBuilder());
-
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestBasicAuthBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestByteArrayBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestCompleteBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestCookieBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestFormUrlEncodedBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestHeaderBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestMultipartBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestPatchBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestPathStringBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestQueryStringBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestStartBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestStreamBuilder());
-        _ = options.RequestBuilders
-            .Add(new HttpClientRequestStringBuilder());
-
-        options.SerializerOptions ??= new(JsonSerializerDefaults.Web)
+        get
         {
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = null,
-            WriteIndented = true
-        };
-
-        return options;
+            HttpClientOptions options = new();
+            Default(options);
+            return options;
+        }
     }
 }

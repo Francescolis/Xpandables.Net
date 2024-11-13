@@ -28,8 +28,8 @@ public sealed class EventConverterSnapshot : EventConverter
     public override Type EventType => typeof(IEventSnapshot);
 
     /// <inheritdoc/>
-    public override bool CanConvert(Type typeToConvert) =>
-        EventType.IsAssignableFrom(typeToConvert);
+    public override bool CanConvert(Type type) =>
+        EventType.IsAssignableFrom(type);
 
     /// <inheritdoc/>
     public override IEvent ConvertFrom(

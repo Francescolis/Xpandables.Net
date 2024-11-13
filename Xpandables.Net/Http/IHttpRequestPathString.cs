@@ -18,7 +18,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Interface for building HTTP request path strings.
 /// </summary>
-public interface IHttpRequestPathString : IHttpRequestDefinition
+public interface IHttpRequestPathString : IRequestDefinition
 {
     /// <summary>
     /// Returns the path string.

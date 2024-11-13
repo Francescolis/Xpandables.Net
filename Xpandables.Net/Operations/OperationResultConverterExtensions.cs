@@ -288,12 +288,13 @@ public static partial class OperationResultExtensions
     public static ElementCollection ToElementCollection(
         this IEnumerable<ValidationResult> validationResults)
     {
-        if (!validationResults.Any())
+        List<ValidationResult> validations = validationResults.ToList();
+        if (validations.Count == 0)
         {
             return ElementCollection.Empty;
         }
 
-        return ElementCollection.With(validationResults
+        return ElementCollection.With(validations
             .Where(s => s.ErrorMessage is not null && s.MemberNames.Any())
             .SelectMany(s => s.MemberNames
                 .Where(m => !string.IsNullOrWhiteSpace(m))
@@ -312,6 +313,8 @@ public static partial class OperationResultExtensions
     public static IDictionary<string, object?> ToElementExtensions(
         this IOperationResult operationResult)
     {
+        ArgumentNullException.ThrowIfNull(operationResult);
+
         if (!operationResult.Extensions.Any())
         {
             return new Dictionary<string, object?>();

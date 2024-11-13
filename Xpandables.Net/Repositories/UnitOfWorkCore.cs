@@ -62,7 +62,7 @@ public abstract class UnitOfWorkCore : Disposable, IUnitOfWork
     protected abstract IRepository GetRepositoryCore(Type repositoryType);
 }
 
-internal class RepositoryProxy<TRepository> : DispatchProxy
+internal sealed class RepositoryProxy<TRepository> : DispatchProxy
     where TRepository : class, IRepository
 {
     private static readonly MethodBase _methodBaseType =
@@ -73,8 +73,10 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
     private Exception? _exception;
     private bool _writeOperation;
     private bool _disposed;
+    private MethodInfo _disposeMethod = default!;
 
-    // Method to create an instance of the proxy, with both IUnitOfWork and concrete IRepository
+    // Method to create an instance of the proxy, with both IUnitOfWork
+    // and concrete IRepository
     public static TRepository CreateProxy(
         IUnitOfWork unitOfWork,
         TRepository repositoryInstance)
@@ -95,6 +97,7 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
     {
         _unitOfWork = unitOfWork;
         _repositoryInstance = repositoryInstance;
+        _disposeMethod = GetType().GetMethod(nameof(DisposeAsync))!;
     }
 
     // Overriding the Invoke method to handle method calls dynamically
@@ -119,7 +122,7 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
     {
         if (targetMethod.Name == nameof(DisposeAsync))
         {
-            return DisposeAsync();
+            return _disposeMethod.Invoke(this, args);
         }
 
         if (targetMethod.Name is (nameof(IRepository.InsertAsync)) or

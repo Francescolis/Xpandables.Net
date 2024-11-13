@@ -28,8 +28,11 @@ public sealed class EventConverterDomain : EventConverter
     public override Type EventType => typeof(IEventDomain);
 
     /// <inheritdoc/>
-    public override bool CanConvert(Type type) =>
-        EventType.IsAssignableFrom(type);
+    public override bool CanConvert(Type type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        return EventType.IsAssignableFrom(type);
+    }
 
     /// <inheritdoc/>
     public override IEvent ConvertFrom(

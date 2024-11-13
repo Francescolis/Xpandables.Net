@@ -37,7 +37,7 @@ public sealed class HttpClientMessageFactory(IOptions<HttpClientOptions> options
 
         List<IHttpClientRequestBuilder> builders =
             _options
-                .GetRequestBuilders(request.GetType())
+                .PeekRequestBuilders(request.GetType())
                 .ToList();
 
         HttpClientRequestContext context = new()
@@ -63,8 +63,10 @@ public sealed class HttpClientMessageFactory(IOptions<HttpClientOptions> options
         CancellationToken cancellationToken = default)
         where TResponse : HttpClientResponse
     {
+        ArgumentNullException.ThrowIfNull(response);
+
         IHttpClientResponseBuilder builder =
-            _options.GetResponseBuilder<TResponse>(response.StatusCode);
+            _options.PeekResponseBuilder<TResponse>(response.StatusCode);
 
         HttpClientResponseContext context = new()
         {

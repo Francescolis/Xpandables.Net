@@ -29,6 +29,8 @@ public sealed class OperationResultControllerMvcOptions :
     /// <inheritdoc/>
     public void Configure(MvcOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         options.EnableEndpointRouting = false;
         options.RespectBrowserAcceptHeader = true;
         options.ReturnHttpNotAcceptable = true;

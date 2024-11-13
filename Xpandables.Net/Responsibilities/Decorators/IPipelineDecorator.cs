@@ -23,7 +23,7 @@ namespace Xpandables.Net.Responsibilities.Decorators;
 /// Represents a delegate that handles requests and returns a response.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate Task<TResponse> RequestHandlerDelegate<TResponse>()
+public delegate Task<TResponse> RequestHandler<TResponse>()
     where TResponse : IOperationResult;
 
 /// <summary>
@@ -45,6 +45,6 @@ public interface IPipelineDecorator<TRequest, TResponse>
     /// The task result contains the response.</returns>
     Task<TResponse> HandleAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }

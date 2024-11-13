@@ -57,7 +57,7 @@ public sealed class OperationResultSuccessExecutor : IOperationResultExecutor
                     $"attachment; filename={resultFile.FileName}");
 
             IResult result = Results.File(
-                resultFile.Content,
+                [.. resultFile.Content],
                 resultFile.ContentType,
                 resultFile.FileName);
 

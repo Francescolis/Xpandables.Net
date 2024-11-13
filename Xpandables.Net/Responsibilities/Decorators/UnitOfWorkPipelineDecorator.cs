@@ -24,7 +24,9 @@ namespace Xpandables.Net.Responsibilities.Decorators;
 /// Marker interface to indicate that a request should use a unit of work
 /// whatever the outcome of the request.
 /// </summary>
-public interface IUseUnitOfWork { }
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IApplyUnitOfWork { }
+#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// A decorator that ensures the unit of work pattern is applied to the 
@@ -36,15 +38,16 @@ public interface IUseUnitOfWork { }
 public sealed class UnitOfWorkPipelineDecorator<TRequest, TResponse>(
     IUnitOfWork unitOfWork) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IUseUnitOfWork
+    where TRequest : class, IApplyUnitOfWork
     where TResponse : IOperationResult
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             TResponse response = await next().ConfigureAwait(false);
@@ -79,5 +82,6 @@ public sealed class UnitOfWorkPipelineDecorator<TRequest, TResponse>(
                 return MatchResponse(aggregateException.ToOperationResult());
             }
         }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 }

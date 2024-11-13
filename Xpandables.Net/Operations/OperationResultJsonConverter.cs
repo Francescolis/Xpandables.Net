@@ -48,6 +48,8 @@ public sealed class OperationResultJsonConverter : JsonConverter<IOperationResul
         IOperationResult value,
         JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         if (UseAspNetCoreCompatibility)
         {
             if (value.Result is not null)
@@ -101,6 +103,8 @@ public sealed class OperationResultJsonConverter<TResult> :
         IOperationResult<TResult> value,
         JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         if (UseAspNetCoreCompatibility)
         {
             if (value.Result is not null)

@@ -32,7 +32,7 @@ public abstract class AsyncPipelineDecorator<TRequest, TResponse> :
     /// <inheritdoc/>
     public IAsyncEnumerable<TResponse> HandleAsync(
         TRequest query,
-        RequestAsyncHandlerDelegate<TResponse> next,
+        RequestAsyncHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         try
@@ -56,6 +56,6 @@ public abstract class AsyncPipelineDecorator<TRequest, TResponse> :
     /// <returns>An asynchronous enumerable of the response.</returns>
     protected abstract IAsyncEnumerable<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestAsyncHandlerDelegate<TResponse> next,
+        RequestAsyncHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }

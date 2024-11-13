@@ -32,9 +32,10 @@ public sealed class ExceptionPipelineDecorator<TRequest, TResponse> :
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             return await next().ConfigureAwait(false);
@@ -43,5 +44,6 @@ public sealed class ExceptionPipelineDecorator<TRequest, TResponse> :
         {
             return MatchResponse(exception.ToOperationResult());
         }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 }

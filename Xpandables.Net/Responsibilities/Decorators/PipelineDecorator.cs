@@ -31,7 +31,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         try
@@ -44,6 +44,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
             return MatchResponse(operationResultException.OperationResult);
         }
         catch (Exception exception)
+            when (exception is not OperationResultException)
         {
             return MatchResponse(exception.ToOperationResult());
         }
@@ -75,6 +76,6 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
     /// the response.</returns>
     protected abstract Task<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }

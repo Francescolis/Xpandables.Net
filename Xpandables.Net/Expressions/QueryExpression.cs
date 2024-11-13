@@ -83,7 +83,9 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// </summary>
     /// <param name="queryExpression">The query expression to convert.</param>
     /// <returns>The expression that defines the query.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Expression<Func<TSource, TResult>>(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         QueryExpression<TSource, TResult> queryExpression) =>
         queryExpression.Expression;
 
@@ -93,7 +95,9 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// </summary>
     /// <param name="queryExpression">The query expression to convert.</param>
     /// <returns>A compiled function that represents the query.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Func<TSource, TResult>(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         QueryExpression<TSource, TResult> queryExpression) =>
         queryExpression.Expression.Compile();
 
@@ -103,7 +107,9 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// </summary>
     /// <param name="expression">The expression to convert.</param>
     /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/>.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator QueryExpression<TSource, TResult>(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         Expression<Func<TSource, TResult>> expression) =>
         new() { Expression = expression };
 
@@ -114,7 +120,9 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// <param name="func">The function to convert.</param>
     /// <returns>A new instance of 
     /// <see cref="QueryExpression{TSource, TResult}"/>.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator QueryExpression<TSource, TResult>(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         Func<TSource, TResult> func) => new() { Expression = x => func(x) };
 
     /// <summary>
@@ -125,7 +133,9 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// <param name="right">The right query expression.</param>
     /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/> 
     /// that represents the logical AND of the two expressions.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource, TResult> operator &(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         QueryExpression<TSource, TResult> left,
         QueryExpression<TSource, TResult> right) =>
         new(left, right.Expression, ExpressionType.AndAlso);
@@ -138,7 +148,9 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// <param name="right">The right query expression.</param>
     /// <returns>A new instance of <see cref="QueryExpression{TSource, TResult}"/> 
     /// that represents the logical OR of the two expressions.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource, TResult> operator |(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         QueryExpression<TSource, TResult> left,
         QueryExpression<TSource, TResult> right) =>
         new(left, right.Expression, ExpressionType.OrElse);
@@ -149,7 +161,9 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// <param name="expression">The query expression to negate.</param>
     /// <returns>A new instance of 
     /// <see cref="QueryExpression{TSource, TResult}"/>.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static QueryExpression<TSource, TResult> operator !(
+#pragma warning restore CA2225 // Operator overloads have named alternates
         QueryExpression<TSource, TResult> expression) =>
         new(expression.Expression);
 
@@ -210,7 +224,7 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
         ParameterExpression replaceWith) =>
         new ParameterReplacer(toReplace, replaceWith).Visit(body);
 
-    private class ParameterReplacer(
+    private sealed class ParameterReplacer(
         ParameterExpression toReplace,
         ParameterExpression replaceWith) : ExpressionVisitor
     {

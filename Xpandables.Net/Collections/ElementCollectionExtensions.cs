@@ -190,11 +190,12 @@ public static class ElementCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(action);
-        await using IAsyncEnumerator<T> enumeratorAsync =
-            source.GetAsyncEnumerator(cancellationToken);
-        while (await enumeratorAsync.MoveNextAsync().ConfigureAwait(false))
+
+        await foreach (T item in source
+            .WithCancellation(cancellationToken)
+            .ConfigureAwait(false))
         {
-            action(enumeratorAsync.Current);
+            action(item);
         }
     }
 
@@ -218,11 +219,12 @@ public static class ElementCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(action);
-        await using IAsyncEnumerator<T> enumeratorAsync =
-            source.GetAsyncEnumerator(cancellationToken);
-        while (await enumeratorAsync.MoveNextAsync().ConfigureAwait(false))
+
+        await foreach (T item in source
+            .WithCancellation(cancellationToken)
+            .ConfigureAwait(false))
         {
-            await action(enumeratorAsync.Current, cancellationToken)
+            await action(item, cancellationToken)
                 .ConfigureAwait(false);
         }
     }

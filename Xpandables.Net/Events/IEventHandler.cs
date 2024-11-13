@@ -21,7 +21,9 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Defines a handler for events of type <see cref="IEvent"/>.
 /// </summary>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public interface IEventHandler
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>
     /// Handles the specified event asynchronously.
@@ -32,7 +34,7 @@ public interface IEventHandler
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="InvalidOperationException">Handling the event failed.
     /// See inner exception for details.</exception>
-    Task HandleAsync(
+    Task Handle(
         object @event,
         CancellationToken cancellationToken = default);
 }
@@ -42,7 +44,9 @@ public interface IEventHandler
 /// Defines a handler for events of type <typeparamref name="TEvent"/>.
 /// </summary>
 /// <typeparam name="TEvent">The type of event to handle.</typeparam>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public interface IEventHandler<TEvent> : IEventHandler
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TEvent : notnull, IEvent
 {
     /// <summary>
@@ -59,7 +63,9 @@ public interface IEventHandler<TEvent> : IEventHandler
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    Task IEventHandler.HandleAsync(
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+    Task IEventHandler.Handle(
+#pragma warning restore CA1033 // Interface methods should be callable by child types
         object @event,
         CancellationToken cancellationToken) =>
         HandleAsync((TEvent)@event, cancellationToken);

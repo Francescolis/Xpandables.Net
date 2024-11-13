@@ -52,14 +52,20 @@ public readonly partial record struct Optional<T>
         => left.CompareTo(right) >= 0;
 
     ///<inheritdoc/>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Optional<T>([AllowNull] T value)
+#pragma warning restore CA2225 // Operator overloads have named alternates
         => value.ToOptional();
 
     ///<inheritdoc/>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator Optional<T>(Optional<Optional<T>> optional)
+#pragma warning restore CA2225 // Operator overloads have named alternates
         => optional.HasValue ? optional.Value : Optional.Empty<T>();
 
     ///<inheritdoc/>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     public static implicit operator T(Optional<T> optional)
+#pragma warning restore CA2225 // Operator overloads have named alternates
         => optional.Value;
 }

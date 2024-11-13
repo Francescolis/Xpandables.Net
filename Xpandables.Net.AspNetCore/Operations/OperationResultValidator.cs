@@ -32,9 +32,12 @@ public sealed class OperationResultValidator : IOperationResultValidator
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
+
         List<ArgumentDescriptor> arguments = context
             .Arguments
-            .OfType<IUseValidation>()
+            .OfType<IApplyValidation>()
             .Select((parameter, index) => new ArgumentDescriptor
             {
                 Index = index,
@@ -127,7 +130,7 @@ public sealed class OperationResultValidator : IOperationResultValidator
 internal readonly record struct ArgumentDescriptor
 {
     public required int Index { get; init; }
-    public required IUseValidation Parameter { get; init; }
+    public required IApplyValidation Parameter { get; init; }
     public required Type ParameterType { get; init; }
 }
 
@@ -135,6 +138,6 @@ internal readonly record struct ValidatorDescriptor
 {
     public required int ArgumentIndex { get; init; }
     public required Type ArgumentType { get; init; }
-    public required IUseValidation Argument { get; init; }
+    public required IApplyValidation Argument { get; init; }
     public required IValidator Validator { get; init; }
 }

@@ -29,6 +29,9 @@ public sealed class OperationResultFilter : IEndpointFilter
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
+
         object? result = await next(context).ConfigureAwait(false);
 
         if (result is IOperationResult operationResult)

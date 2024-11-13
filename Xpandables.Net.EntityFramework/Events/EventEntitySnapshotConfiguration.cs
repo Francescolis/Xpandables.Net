@@ -31,6 +31,8 @@ public sealed class EventEntitySnapshotConfiguration :
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<EventEntitySnapshot> builder)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         _ = builder.HasKey(p => p.KeyId);
         _ = builder.HasIndex(e => new { e.KeyId, e.OwnerId, e.EventName, e.EventVersion });
         _ = builder.Property(p => p.EventData).IsRequired();

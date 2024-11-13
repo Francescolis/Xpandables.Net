@@ -29,7 +29,7 @@ public abstract class EventConverter : IEventConverter
     public abstract Type EventType { get; }
 
     /// <inheritdoc/>
-    public abstract bool CanConvert(Type typeToConvert);
+    public abstract bool CanConvert(Type type);
 
     /// <inheritdoc/>
     public abstract IEventEntity ConvertTo(

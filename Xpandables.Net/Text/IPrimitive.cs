@@ -61,21 +61,27 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive
     /// </summary>
     /// <param name="self">The primitive to convert.</param>
     /// <returns>The value of the primitive.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator TValue(TPrimitive self);
+#pragma warning restore CA2225 // Operator overloads have named alternates
 
     /// <summary>
     /// Defines an implicit conversion of a value type to its primitive type.
     /// </summary>
     /// <param name="value">The value to convert.</param>
     /// <returns>A new instance of the primitive.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator TPrimitive(TValue value);
+#pragma warning restore CA2225 // Operator overloads have named alternates
 
     /// <summary>
     /// Defines an implicit conversion of a primitive to string.
     /// </summary>
     /// <param name="self">The primitive to convert.</param>
     /// <returns>The string value of the primitive.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator string(TPrimitive self);
+#pragma warning restore CA2225 // Operator overloads have named alternates
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     object IPrimitive.Value => Value;

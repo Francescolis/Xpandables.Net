@@ -23,7 +23,7 @@ namespace Xpandables.Net.Http;
 /// </summary>
 /// <remarks>if you want to set the header model name, you can override the 
 /// <see cref="GetHeaderModelName"/> method.</remarks>
-public interface IHttpRequestHeader : IHttpRequestDefinition
+public interface IHttpRequestHeader : IRequestDefinition
 {
     /// <summary>
     /// Gets the collection of headers.

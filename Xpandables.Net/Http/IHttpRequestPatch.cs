@@ -23,7 +23,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Defines an interface for building HTTP PATCH requests.
 /// </summary>
-public interface IHttpRequestPatch : IHttpRequestDefinition
+public interface IHttpRequestPatch : IRequestDefinition
 {
     /// <summary>
     /// Gets the patch operations.

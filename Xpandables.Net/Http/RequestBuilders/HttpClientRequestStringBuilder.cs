@@ -41,12 +41,14 @@ public sealed class HttpClientRequestStringBuilder :
 
         IHttpRequestString request = (IHttpRequestString)context.Request;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
         StringContent content = new(
             JsonSerializer.Serialize(
                 request.GetStringContent(),
                 context.SerializerOptions),
             Encoding.UTF8,
             context.Attribute.ContentType);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         if (context.Message.Content is MultipartFormDataContent multipart)
         {
