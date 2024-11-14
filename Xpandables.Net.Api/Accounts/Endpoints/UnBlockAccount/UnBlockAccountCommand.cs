@@ -1,5 +1,5 @@
-﻿using Xpandables.Net.Responsibilities;
-using Xpandables.Net.Responsibilities.Decorators;
+﻿using Xpandables.Net.Commands;
+using Xpandables.Net.DataAnnotations;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 

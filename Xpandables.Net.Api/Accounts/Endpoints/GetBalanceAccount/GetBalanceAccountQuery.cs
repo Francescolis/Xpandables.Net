@@ -1,4 +1,4 @@
-﻿using Xpandables.Net.Responsibilities;
+﻿using Xpandables.Net.Commands;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 

@@ -1,5 +1,5 @@
-﻿using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Responsibilities;
+﻿using Xpandables.Net.Commands;
+using Xpandables.Net.DependencyInjection;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 

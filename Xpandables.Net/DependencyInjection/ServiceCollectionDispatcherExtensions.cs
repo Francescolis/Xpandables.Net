@@ -18,11 +18,11 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Commands;
+using Xpandables.Net.Commands.Wrappers;
 using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Responsibilities;
-using Xpandables.Net.Responsibilities.Decorators;
-using Xpandables.Net.Responsibilities.Wrappers;
+using Xpandables.Net.Pipelines;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
@@ -127,21 +127,21 @@ public static class ServiceCollectionDispatcherExtensions
     /// <param name="services">The service collection to add the decider 
     /// dependency provider to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXDeciderDependencyProvider<TService>(
+    public static IServiceCollection AddXCommandDeciderDependencyProvider<TService>(
         this IServiceCollection services)
-        where TService : class, IDeciderDependencyProvider =>
-        services.AddScoped<IDeciderDependencyProvider, TService>();
+        where TService : class, ICommandDeciderDependencyProvider =>
+        services.AddScoped<ICommandDeciderDependencyProvider, TService>();
 
     /// <summary>
     /// Adds an aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXAggregatePipelineDecorator(
+    public static IServiceCollection AddXPipelineAggregateDeciderDecorator(
         this IServiceCollection services) =>
         services.AddScoped(
             typeof(IPipelineDecorator<,>),
-            typeof(AggregateDeciderPipelineDecorator<,>));
+            typeof(PipelineAggregateDeciderDecorator<,>));
 
     /// <summary>
     /// Adds a command pipeline decorator to the <see cref="IServiceCollection"/>.
@@ -152,7 +152,7 @@ public static class ServiceCollectionDispatcherExtensions
         this IServiceCollection services) =>
         services.AddScoped(
             typeof(IPipelineDecorator<,>),
-            typeof(DeciderPipelineDecorator<,>));
+            typeof(PipelineDeciderDecorator<,>));
 
     /// <summary>
     /// Adds a unit of work pipeline decorator to the <see cref="IServiceCollection"/>.
@@ -163,7 +163,7 @@ public static class ServiceCollectionDispatcherExtensions
         this IServiceCollection services) =>
         services.AddScoped(
             typeof(IPipelineDecorator<,>),
-            typeof(UnitOfWorkPipelineDecorator<,>));
+            typeof(PipelineUnitOfWorkDecorator<,>));
 
     /// <summary>
     /// Adds a validation pipeline decorator to the <see cref="IServiceCollection"/>.
@@ -174,7 +174,29 @@ public static class ServiceCollectionDispatcherExtensions
         this IServiceCollection services) =>
         services.AddScoped(
             typeof(IPipelineDecorator<,>),
-            typeof(ValidationPipelineDecorator<,>));
+            typeof(PipelineValidationDecorator<,>));
+
+    /// <summary>
+    /// Adds an exception pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineExceptionDecorator(
+        this IServiceCollection services) =>
+        services.AddScoped(
+            typeof(IPipelineDecorator<,>),
+            typeof(PipelineExceptionDecorator<,>));
+
+    /// <summary>
+    /// Adds an async exception pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXAsyncPipelineExceptionDecorator(
+        this IServiceCollection services) =>
+        services.AddScoped(
+            typeof(IAsyncPipelineDecorator<,>),
+            typeof(AsyncExceptionPipelineDecorator<,>));
 
     /// <summary>
     /// Adds a finalizer pipeline decorator to the <see cref="IServiceCollection"/>.
@@ -186,6 +208,6 @@ public static class ServiceCollectionDispatcherExtensions
         services
             .AddScoped(
                 typeof(IPipelineDecorator<,>),
-                typeof(FinalizerPipelineDecorator<,>))
+                typeof(PipelineFinalizerDecorator<,>))
             .AddScoped<IOperationResultFinalizer, OperationResultFinalizer>();
 }

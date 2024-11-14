@@ -1,6 +1,6 @@
-﻿using Xpandables.Net.Events.Aggregates;
+﻿using Xpandables.Net.Commands;
+using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Responsibilities;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
