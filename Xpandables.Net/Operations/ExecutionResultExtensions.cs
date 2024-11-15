@@ -23,7 +23,7 @@ namespace Xpandables.Net.Operations;
 /// <summary>
 /// Provides extension methods for operation results.
 /// </summary>
-public static partial class OperationResultExtensions
+public static partial class ExecutionResultExtensions
 {
     /// <summary>
     /// Contains the key for the exception in the <see cref="ElementCollection"/>.

@@ -9,7 +9,7 @@ public sealed class CreateAccountCommandHandler(
     IAggregateStore<Account> aggregateStore) :
     ICommandHandler<CreateAccountCommand>
 {
-    public async Task<IOperationResult> HandleAsync(
+    public async Task<IExecutionResult> HandleAsync(
         CreateAccountCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -19,6 +19,6 @@ public sealed class CreateAccountCommandHandler(
             .AppendAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
-        return OperationResults.Ok().Build();
+        return ExecutionResults.Ok().Build();
     }
 }

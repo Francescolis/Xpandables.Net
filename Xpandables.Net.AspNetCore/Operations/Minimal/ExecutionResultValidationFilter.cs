@@ -21,17 +21,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Operations.Minimal;
 
 /// <summary>
-/// Represents a filter that validates the operation result in a minimal API 
+/// Represents a filter that validates the execution result in a minimal API 
 /// endpoint.
 /// </summary>
-public sealed class OperationResultValidationFilter : IEndpointFilter
+public sealed class ExecutionResultValidationFilter : IEndpointFilter
 {
     /// <summary>
     /// Invokes the filter asynchronously.
     /// </summary>
     /// <param name="context">The context for the endpoint filter invocation.</param>
     /// <param name="next">The delegate to invoke the next filter in the pipeline.</param>
-    /// <returns>A task that represents the asynchronous operation, containing 
+    /// <returns>A task that represents the asynchronous execution, containing 
     /// the result of the filter invocation.</returns>
     public ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
@@ -40,10 +40,10 @@ public sealed class OperationResultValidationFilter : IEndpointFilter
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        IOperationResultValidator validator = context
+        IExecutionResultValidator validator = context
             .HttpContext
             .RequestServices
-            .GetRequiredService<IOperationResultValidator>();
+            .GetRequiredService<IExecutionResultValidator>();
 
         return validator.ValidateAsync(context, next);
     }

@@ -20,26 +20,26 @@ using Microsoft.AspNetCore.Http;
 namespace Xpandables.Net.Operations.Executors;
 
 /// <summary>
-/// Defines a contract for executing operation results.
+/// Defines a contract for executing execution results.
 /// </summary>
-public interface IOperationResultExecutor
+public interface IExecutionResultExecutor
 {
     /// <summary>
-    /// Determines whether the specified operation result can be executed by the
+    /// Determines whether the specified execution result can be executed by the
     /// executor.
     /// </summary>
-    /// <param name="operationResult">The operation result to check.</param>
-    /// <returns><see langword="true"/> if the operation result can be executed
+    /// <param name="executionResult">The execution result to check.</param>
+    /// <returns><see langword="true"/> if the execution result can be executed
     /// by the executor; otherwise, <see langword="false"/>.</returns>
-    bool CanExecute(IOperationResult operationResult);
+    bool CanExecute(IExecutionResult executionResult);
 
     /// <summary>
-    /// Executes the operation result asynchronously.
+    /// Executes the execution result asynchronously.
     /// </summary>
     /// <param name="context">The HTTP context.</param>
-    /// <param name="operationResult">The operation result to execute.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="executionResult">The execution result to execute.</param>
+    /// <returns>A task that represents the asynchronous execution.</returns>
     Task ExecuteAsync(
         HttpContext context,
-        IOperationResult operationResult);
+        IExecutionResult executionResult);
 }

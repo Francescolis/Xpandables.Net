@@ -26,7 +26,7 @@ namespace Xpandables.Net.Pipelines;
 public abstract class PipelineDecorator<TRequest, TResponse> :
     IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : IOperationResult
+    where TResponse : IExecutionResult
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(
@@ -39,31 +39,31 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
             return await HandleCoreAsync(request, next, cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (OperationResultException operationResultException)
+        catch (ExecutionResultException executionException)
         {
-            return MatchResponse(operationResultException.OperationResult);
+            return MatchResponse(executionException.ExecutionResult);
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
-            return MatchResponse(exception.ToOperationResult());
+            return MatchResponse(exception.ToExecutionResult());
         }
     }
 
     /// <summary>
     /// Matches the provided operation result to the expected response type.
     /// </summary>
-    /// <param name="operationResult">The operation result to match.</param>
+    /// <param name="executionResult">The operation result to match.</param>
     /// <returns>The matched response of type TResponse.</returns>
-    protected TResponse MatchResponse(IOperationResult operationResult)
+    protected TResponse MatchResponse(IExecutionResult executionResult)
     {
         if (typeof(TResponse).IsGenericType)
         {
             Type resultType = typeof(TResponse).GetGenericArguments()[0];
-            return (TResponse)operationResult.ToOperationResult(resultType);
+            return (TResponse)executionResult.ToExecutionResult(resultType);
         }
 
-        return (TResponse)operationResult;
+        return (TResponse)executionResult;
     }
 
     /// <summary>

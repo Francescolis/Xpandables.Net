@@ -32,7 +32,7 @@ public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
     ICommandDeciderDependencyProvider dependencyProvider) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, ICommandDecider
-    where TResponse : IOperationResult
+    where TResponse : IExecutionResult
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(

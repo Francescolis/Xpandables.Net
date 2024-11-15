@@ -17,7 +17,7 @@
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Interface for building a success operation result.
+/// Interface for building a success execution result.
 /// </summary>
 public interface ISuccessBuilder :
     IHeaderBuilder<ISuccessBuilder>,
@@ -29,7 +29,7 @@ public interface ISuccessBuilder :
 { }
 
 /// <summary>
-/// Interface for building a success operation result with a specific result type.
+/// Interface for building a success execution result with a specific result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public interface ISuccessBuilder<TResult> :

@@ -21,23 +21,23 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Operations.Minimal;
 
 /// <summary>
-/// Provides a factory for creating endpoint filters that validate operation results.
+/// Provides a factory for creating endpoint filters that validate execution results.
 /// </summary>
-public static class OperationResultValidationFilterFactory
+public static class ExecutionResultValidationFilterFactory
 {
     /// <summary>  
-    /// Creates an endpoint filter delegate that validates the operation result.  
+    /// Creates an endpoint filter delegate that validates the execution result.  
     /// </summary>  
     /// <param name="context">The context for the endpoint filter factory.</param>  
     /// <param name="next">The next endpoint filter delegate in the pipeline.</param>  
-    /// <returns>An endpoint filter delegate that validates the operation result.</returns>  
+    /// <returns>An endpoint filter delegate that validates the execution result.</returns>  
     public static EndpointFilterDelegate FilterFactory(
         EndpointFilterFactoryContext context,
         EndpointFilterDelegate next)
     {
-        IOperationResultValidator validator = context
+        IExecutionResultValidator validator = context
             .ApplicationServices
-            .GetRequiredService<IOperationResultValidator>();
+            .GetRequiredService<IExecutionResultValidator>();
 
         return invocationContext =>
             validator.ValidateAsync(invocationContext, next);

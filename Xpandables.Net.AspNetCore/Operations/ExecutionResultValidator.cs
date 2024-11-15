@@ -23,9 +23,9 @@ using Xpandables.Net.DataAnnotations;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Validates the operation result by using the provided validators.
+/// Validates the execution result by using the provided validators.
 /// </summary>
-public sealed class OperationResultValidator : IOperationResultValidator
+public sealed class ExecutionResultValidator : IExecutionResultValidator
 {
     /// <inheritdoc/>
     public async ValueTask<object?> ValidateAsync(
@@ -51,20 +51,20 @@ public sealed class OperationResultValidator : IOperationResultValidator
             return await next(context).ConfigureAwait(false);
         }
 
-        IFailureBuilder failureBuilder = OperationResults.BadRequest();
+        IFailureBuilder failureBuilder = ExecutionResults.BadRequest();
 
         foreach (ValidatorDescriptor descriptor in GetValidatorDescriptors())
         {
             try
             {
-                IOperationResult operationResult = await descriptor.Validator
+                IExecutionResult executionResult = await descriptor.Validator
                     .ValidateAsync(descriptor.Argument)
                     .ConfigureAwait(false);
 
-                if (operationResult.IsFailureStatusCode())
+                if (executionResult.IsFailureStatusCode())
                 {
                     _ = failureBuilder
-                        .Merge(operationResult);
+                        .Merge(executionResult);
                 }
             }
             catch (Exception exception)
@@ -76,7 +76,7 @@ public sealed class OperationResultValidator : IOperationResultValidator
             }
         }
 
-        IOperationResult result = failureBuilder.Build();
+        IExecutionResult result = failureBuilder.Build();
 
         if (result.Errors.Any())
         {

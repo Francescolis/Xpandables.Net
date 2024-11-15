@@ -11,7 +11,7 @@ internal sealed class PipelineAggregateDeciderDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, ICommandDecider
-    where TResponse : IOperationResult
+    where TResponse : IExecutionResult
 {
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,

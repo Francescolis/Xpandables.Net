@@ -24,70 +24,70 @@ using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Operations;
 /// <summary>
-/// Provides extension methods for converting operation results to exceptions.
+/// Provides extension methods for converting execution results to exceptions.
 /// </summary>
-public static partial class OperationResultExtensions
+public static partial class ExecutionResultExtensions
 {
-    private static readonly MethodInfo ToOperationResultMethod =
-        typeof(OperationResultExtensions).GetMethod(nameof(ToOperationResult),
+    private static readonly MethodInfo ToExecutionResultMethod =
+        typeof(ExecutionResultExtensions).GetMethod(nameof(ToExecutionResult),
             BindingFlags.Static | BindingFlags.Public,
-            [typeof(IOperationResult)])!;
+            [typeof(IExecutionResult)])!;
 
     /// <summary>  
-    /// Converts the specified operation result to an <see cref="IOperationResult{TResult}"/>.  
+    /// Converts the specified execution result to an <see cref="IExecutionResult{TResult}"/>.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <param name="operationResult">The operation result to convert.</param>  
-    /// <returns>An <see cref="IOperationResult{TResult}"/> representing the 
-    /// operation result.</returns>  
-    public static IOperationResult<TResult> ToOperationResult<TResult>(
-       this IOperationResult operationResult)
+    /// <param name="executionResult">The execution result to convert.</param>  
+    /// <returns>An <see cref="IExecutionResult{TResult}"/> representing the 
+    /// execution result.</returns>  
+    public static IExecutionResult<TResult> ToExecutionResult<TResult>(
+       this IExecutionResult executionResult)
     {
-        IOperationResult<TResult> result = new OperationResult<TResult>
+        IExecutionResult<TResult> result = new ExecutionResult<TResult>
         {
-            StatusCode = operationResult.StatusCode,
-            Result = (TResult?)operationResult.Result,
-            Errors = operationResult.Errors,
-            Headers = operationResult.Headers,
-            Extensions = operationResult.Extensions,
-            Detail = operationResult.Detail,
-            Title = operationResult.Title,
-            Location = operationResult.Location
+            StatusCode = executionResult.StatusCode,
+            Result = (TResult?)executionResult.Result,
+            Errors = executionResult.Errors,
+            Headers = executionResult.Headers,
+            Extensions = executionResult.Extensions,
+            Detail = executionResult.Detail,
+            Title = executionResult.Title,
+            Location = executionResult.Location
         };
 
         return result;
     }
 
     /// <summary>
-    /// Converts the specified operation result to an 
-    /// <see cref="OperationResultException"/>.
+    /// Converts the specified execution result to an 
+    /// <see cref="ExecutionResultException"/>.
     /// </summary>
-    /// <param name="operationResult">The operation result to convert.</param>
-    /// <returns>An <see cref="OperationResultException"/> representing the 
-    /// operation result.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the operation 
+    /// <param name="executionResult">The execution result to convert.</param>
+    /// <returns>An <see cref="ExecutionResultException"/> representing the 
+    /// execution result.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the execution 
     /// result is a success status code.</exception>
-    public static OperationResultException ToOperationResultException(
-        this IOperationResult operationResult)
+    public static ExecutionResultException ToExecutionResultException(
+        this IExecutionResult executionResult)
     {
-        if (operationResult.IsSuccessStatusCode())
+        if (executionResult.IsSuccessStatusCode())
         {
             throw new InvalidOperationException(
-                "The operation result is not a failure status code.");
+                "The execution result is not a failure status code.");
         }
 
-        return new OperationResultException(operationResult);
+        return new ExecutionResultException(executionResult);
     }
 
     /// <summary>
-    /// Converts the specified validation result to an <see cref="IOperationResult"/>.
+    /// Converts the specified validation result to an <see cref="IExecutionResult"/>.
     /// </summary>
     /// <param name="validationResult">The validation result to convert.</param>
-    /// <returns>An <see cref="IOperationResult"/> representing the 
+    /// <returns>An <see cref="IExecutionResult"/> representing the 
     /// validation result.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the 
     /// validation result is not valid.</exception>
-    public static IOperationResult ToOperationResult(
+    public static IExecutionResult ToExecutionResult(
         this ValidationResult validationResult)
     {
         if (validationResult.ErrorMessage is null
@@ -99,7 +99,7 @@ public static partial class OperationResultExtensions
 
         ElementCollection errors = validationResult.ToElementCollection();
 
-        return OperationResults
+        return ExecutionResults
             .BadRequest()
             .WithTitle(HttpStatusCode.BadRequest.GetTitle())
             .WithDetail(HttpStatusCode.BadRequest.GetDetail())
@@ -109,15 +109,15 @@ public static partial class OperationResultExtensions
 
     /// <summary>
     /// Converts the specified collection of validation results to an 
-    /// <see cref="IOperationResult"/>.
+    /// <see cref="IExecutionResult"/>.
     /// </summary>
     /// <param name="validationResults">The collection of validation results 
     /// to convert.</param>
-    /// <returns>An <see cref="IOperationResult"/> representing the validation 
+    /// <returns>An <see cref="IExecutionResult"/> representing the validation 
     /// results.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the validation 
     /// results are not valid.</exception>
-    public static IOperationResult ToOperationResult(
+    public static IExecutionResult ToExecutionResult(
         this IEnumerable<ValidationResult> validationResults)
     {
         if (!validationResults.Any())
@@ -128,7 +128,7 @@ public static partial class OperationResultExtensions
 
         ElementCollection errors = validationResults.ToElementCollection();
 
-        return OperationResults
+        return ExecutionResults
             .BadRequest()
             .WithTitle(HttpStatusCode.BadRequest.GetTitle())
             .WithDetail(HttpStatusCode.BadRequest.GetDetail())
@@ -138,19 +138,19 @@ public static partial class OperationResultExtensions
 
     /// <summary>  
     /// Converts a <see cref="UnauthorizedAccessException"/> to an 
-    /// <see cref="IOperationResult"/>.  
+    /// <see cref="IExecutionResult"/>.  
     /// </summary>  
     /// <param name="exception">The exception to convert.</param>  
-    /// <returns>An <see cref="IOperationResult"/> representing the 
-    /// operation result.</returns>  
-    public static IOperationResult ToOperationResult(
+    /// <returns>An <see cref="IExecutionResult"/> representing the 
+    /// execution result.</returns>  
+    public static IExecutionResult ToExecutionResult(
         this UnauthorizedAccessException exception)
     {
         bool isDevelopment = (Environment.GetEnvironmentVariable(
             "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
             Environments.Development;
 
-        return OperationResults
+        return ExecutionResults
             .Unauthorized()
             .WithTitle(HttpStatusCode.Unauthorized.GetTitle())
             .WithDetail(isDevelopment ? exception.Message : HttpStatusCode.Unauthorized.GetDetail())
@@ -173,19 +173,19 @@ public static partial class OperationResultExtensions
 
     /// <summary>  
     /// Converts a <see cref="InvalidOperationException"/> to an 
-    /// <see cref="IOperationResult"/>.  
+    /// <see cref="IExecutionResult"/>.  
     /// </summary>  
     /// <param name="exception">The exception to convert.</param>  
-    /// <returns>An <see cref="IOperationResult"/> representing the 
-    /// operation result.</returns>  
-    public static IOperationResult ToOperationResult(
+    /// <returns>An <see cref="IExecutionResult"/> representing the 
+    /// execution result.</returns>  
+    public static IExecutionResult ToExecutionResult(
         this InvalidOperationException exception)
     {
         bool isDevelopment = (Environment.GetEnvironmentVariable(
             "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
             Environments.Development;
 
-        return OperationResults
+        return ExecutionResults
             .InternalServerError()
             .WithTitle(isDevelopment ? exception.Message : HttpStatusCode.InternalServerError.GetTitle())
             .WithDetail(isDevelopment ? $"{exception}" : HttpStatusCode.InternalServerError.GetDetail())
@@ -208,29 +208,29 @@ public static partial class OperationResultExtensions
 
 
     /// <summary>
-    /// Converts the specified exception to an <see cref="IOperationResult"/>.
+    /// Converts the specified exception to an <see cref="IExecutionResult"/>.
     /// </summary>
     /// <param name="exception">The exception to convert.</param>
     /// <remarks>For best practices, this method manages only two types of exceptions :
     /// <see cref="InvalidOperationException"/> and <see cref="ValidationException"/>.</remarks>
-    /// <returns>An <see cref="IOperationResult"/> representing the exception.</returns>
-    public static IOperationResult ToOperationResult(this Exception exception)
+    /// <returns>An <see cref="IExecutionResult"/> representing the exception.</returns>
+    public static IExecutionResult ToExecutionResult(this Exception exception)
     {
-        if (exception is OperationResultException operationResultException)
+        if (exception is ExecutionResultException executionException)
         {
-            return operationResultException.OperationResult;
+            return executionException.ExecutionResult;
         }
 
         return exception switch
         {
             InvalidOperationException invalidOperation =>
-                invalidOperation.ToOperationResult(),
+                invalidOperation.ToExecutionResult(),
             ValidationException validation => validation
-                .ValidationResult.ToOperationResult(),
+                .ValidationResult.ToExecutionResult(),
             UnauthorizedAccessException accessException =>
-                accessException.ToOperationResult(),
+                accessException.ToExecutionResult(),
             _ => new InvalidOperationException(exception.Message, exception)
-                .ToOperationResult()
+                .ToExecutionResult()
             // this statement must be unreachable, otherwise, it is a bug.
         };
     }
@@ -238,20 +238,20 @@ public static partial class OperationResultExtensions
     /// <summary>
     /// Converts the current instance to a generic one with the specified type.
     /// </summary>
-    /// <param name="operationResult">The current instance.</param>
+    /// <param name="executionResult">The current instance.</param>
     /// <param name="genericType">The underlying type.</param>
-    /// <returns>A new instance of <see cref="IOperationResult{TResult}"/>
+    /// <returns>A new instance of <see cref="IExecutionResult{TResult}"/>
     /// .</returns>
-    public static dynamic ToOperationResult(
-        this IOperationResult operationResult,
+    public static dynamic ToExecutionResult(
+        this IExecutionResult executionResult,
         Type genericType)
     {
-        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(executionResult);
         ArgumentNullException.ThrowIfNull(genericType);
 
-        return ToOperationResultMethod
+        return ToExecutionResultMethod
             .MakeGenericMethod(genericType)
-            .Invoke(null, [operationResult])!;
+            .Invoke(null, [executionResult])!;
     }
 
     /// <summary>
@@ -304,23 +304,23 @@ public static partial class OperationResultExtensions
     }
 
     /// <summary>
-    /// Converts the specified operation result to a dictionary of element 
+    /// Converts the specified execution result to a dictionary of element 
     /// extensions.
     /// </summary>
-    /// <param name="operationResult">The operation result to convert.</param>
-    /// <returns>A dictionary of element extensions representing the operation 
+    /// <param name="executionResult">The execution result to convert.</param>
+    /// <returns>A dictionary of element extensions representing the execution 
     /// result.</returns>
     public static IDictionary<string, object?> ToElementExtensions(
-        this IOperationResult operationResult)
+        this IExecutionResult executionResult)
     {
-        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(executionResult);
 
-        if (!operationResult.Extensions.Any())
+        if (!executionResult.Extensions.Any())
         {
             return new Dictionary<string, object?>();
         }
 
-        return operationResult
+        return executionResult
             .Extensions
             .ToDictionary(
             entry => entry.Key,

@@ -18,7 +18,7 @@ using System.Net;
 
 namespace Xpandables.Net.Operations;
 /// <summary>
-/// Represents a builder for creating successful operation results.
+/// Represents a builder for creating successful execution results.
 /// </summary>
 public sealed class SuccessBuilder : Builder<ISuccessBuilder>, ISuccessBuilder
 {
@@ -27,7 +27,7 @@ public sealed class SuccessBuilder : Builder<ISuccessBuilder>, ISuccessBuilder
     /// with the specified status code.
     /// </summary>
     /// <param name="statusCode">The HTTP status code indicating a 
-    /// successful operation.</param>
+    /// successful execution.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code is not between 200 and 299.</exception>
     public SuccessBuilder(HttpStatusCode statusCode) :
@@ -44,7 +44,7 @@ public sealed class SuccessBuilder : Builder<ISuccessBuilder>, ISuccessBuilder
 }
 
 /// <summary>
-/// Represents a builder for creating successful operation results with a 
+/// Represents a builder for creating successful execution results with a 
 /// specified result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -57,7 +57,7 @@ public sealed class SuccessBuilder<TResult> :
     /// with the specified status code.
     /// </summary>
     /// <param name="statusCode">The HTTP status code indicating a 
-    /// successful operation.</param>
+    /// successful execution.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code is not between 200 and 299.</exception>
     public SuccessBuilder(HttpStatusCode statusCode) :

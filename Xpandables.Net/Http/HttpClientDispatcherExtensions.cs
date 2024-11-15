@@ -132,12 +132,12 @@ public static class HttpClientDispatcherExtensions
     }
 
     /// <summary>
-    /// Converts the <see cref="HttpClientResponse"/> to an <see cref="IOperationResult"/>.
+    /// Converts the <see cref="HttpClientResponse"/> to an <see cref="IExecutionResult"/>.
     /// </summary>
     /// <param name="response">The HTTP client response to convert.</param>
     /// <param name="options">The JSON serializer options.</param>
-    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
-    public static IOperationResult ToOperationResult(
+    /// <returns>An instance of <see cref="IExecutionResult"/>.</returns>
+    public static IExecutionResult ToExecutionResult(
         this HttpClientResponse response,
         JsonSerializerOptions? options = default)
     {
@@ -147,7 +147,7 @@ public static class HttpClientDispatcherExtensions
 
         if (response.IsValid)
         {
-            return OperationResults
+            return ExecutionResults
                 .Success(response.StatusCode)
                 .WithHeaders(headers)
                 .Build();
@@ -155,7 +155,7 @@ public static class HttpClientDispatcherExtensions
 
         if (response.Exception is null)
         {
-            return OperationResults
+            return ExecutionResults
                 .Failure(response.StatusCode)
                 .WithHeaders(headers)
                 .Build();
@@ -168,14 +168,14 @@ public static class HttpClientDispatcherExtensions
             out _,
             options))
         {
-            return OperationResults
+            return ExecutionResults
                 .Failure(response.StatusCode)
                 .WithHeaders(headers)
                 .WithErrors(errors.ToElementCollection())
                 .Build();
         }
 
-        return OperationResults
+        return ExecutionResults
             .Failure(response.StatusCode)
             .WithHeaders(headers)
             .WithException(responseException)
@@ -183,13 +183,13 @@ public static class HttpClientDispatcherExtensions
     }
 
     /// <summary>
-    /// Converts the <see cref="HttpClientResponse"/> to an <see cref="IOperationResult"/>.
+    /// Converts the <see cref="HttpClientResponse"/> to an <see cref="IExecutionResult"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="response">The HTTP client response to convert.</param>
     /// <param name="options">The JSON serializer options.</param>
-    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
-    public static IOperationResult<TResult> ToOperationResult<TResult>(
+    /// <returns>An instance of <see cref="IExecutionResult"/>.</returns>
+    public static IExecutionResult<TResult> ToExecutionResult<TResult>(
         this HttpClientResponse<TResult> response,
         JsonSerializerOptions? options = default)
     {
@@ -199,7 +199,7 @@ public static class HttpClientDispatcherExtensions
 
         if (response.IsValid)
         {
-            ISuccessBuilder<TResult> successBuilder = OperationResults
+            ISuccessBuilder<TResult> successBuilder = ExecutionResults
                 .Success<TResult>(response.StatusCode)
                 .WithHeaders(headers);
 
@@ -212,7 +212,7 @@ public static class HttpClientDispatcherExtensions
 
         if (response.Exception is null)
         {
-            return OperationResults
+            return ExecutionResults
                 .Failure<TResult>(response.StatusCode)
                 .WithHeaders(headers)
                 .Build();
@@ -225,14 +225,14 @@ public static class HttpClientDispatcherExtensions
             out _,
             options))
         {
-            return OperationResults
+            return ExecutionResults
                 .Failure<TResult>(response.StatusCode)
                 .WithHeaders(headers)
                 .WithErrors(errors.ToElementCollection())
                 .Build();
         }
 
-        return OperationResults
+        return ExecutionResults
             .Failure<TResult>(response.StatusCode)
             .WithHeaders(headers)
             .WithException(responseException)

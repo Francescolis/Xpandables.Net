@@ -19,15 +19,15 @@ using System.Net;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Provides methods to build success and failure operation results.
+/// Provides methods to build success and failure execution results.
 /// </summary>
-public readonly record struct OperationResults
+public readonly record struct ExecutionResults
 {
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
-    /// specified status code to build a success operation result.  
+    /// specified status code to build a success execution result.  
     /// </summary>  
-    /// <param name="statusCode">The status code of the operation result.</param>  
+    /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
     public static ISuccessBuilder Success(
         HttpStatusCode statusCode = HttpStatusCode.OK) =>
@@ -35,10 +35,10 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
-    /// specified status code to build a success operation result.  
+    /// specified status code to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <param name="statusCode">The status code of the operation result.</param>  
+    /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
     public static ISuccessBuilder<TResult> Success<TResult>(
         HttpStatusCode statusCode = HttpStatusCode.OK) =>
@@ -46,11 +46,11 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
-    /// specified result and status code to build a success operation result.  
+    /// specified result and status code to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <param name="result">The result of the operation.</param>  
-    /// <param name="statusCode">The status code of the operation result.</param>  
+    /// <param name="result">The result of the execution.</param>  
+    /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
     public static ISuccessBuilder<TResult> Success<TResult>(
         TResult result, HttpStatusCode statusCode = HttpStatusCode.OK) =>
@@ -58,9 +58,9 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
-    /// specified status code to build a failure operation result.  
+    /// specified status code to build a failure execution result.  
     /// </summary>  
-    /// <param name="statusCode">The status code of the operation result.</param>  
+    /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
     public static IFailureBuilder Failure(
         HttpStatusCode statusCode = HttpStatusCode.BadRequest) =>
@@ -68,10 +68,10 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
-    /// specified status code to build a failure operation result.  
+    /// specified status code to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <param name="statusCode">The status code of the operation result.</param>  
+    /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
     public static IFailureBuilder<TResult> Failure<TResult>(
         HttpStatusCode statusCode = HttpStatusCode.BadRequest) =>
@@ -79,14 +79,14 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
-    /// status code OK to build a success operation result.  
+    /// status code OK to build a success execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
     public static ISuccessBuilder Ok() => Success();
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
-    /// status code OK to build a success operation result.  
+    /// status code OK to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
@@ -94,24 +94,24 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
-    /// specified result and status code OK to build a success operation result.  
+    /// specified result and status code OK to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <param name="result">The result of the operation.</param>  
+    /// <param name="result">The result of the execution.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
     public static ISuccessBuilder<TResult> Ok<TResult>(TResult result) =>
         Success(result);
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
-    /// status code Created to build a success operation result.  
+    /// status code Created to build a success execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
     public static ISuccessBuilder Created() => Success(HttpStatusCode.Created);
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
-    /// status code Created to build a success operation result.  
+    /// status code Created to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
@@ -120,24 +120,24 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
-    /// specified result and status code Created to build a success operation result.  
+    /// specified result and status code Created to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <param name="result">The result of the operation.</param>  
+    /// <param name="result">The result of the execution.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
     public static ISuccessBuilder<TResult> Created<TResult>(TResult result) =>
         Success(result, HttpStatusCode.Created);
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
-    /// status code NoContent to build a success operation result.  
+    /// status code NoContent to build a success execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
     public static ISuccessBuilder NoContent() => Success(HttpStatusCode.NoContent);
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
-    /// status code NoContent to build a success operation result.  
+    /// status code NoContent to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
@@ -146,14 +146,14 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
-    /// status code NotFound to build a failure operation result.  
+    /// status code NotFound to build a failure execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
     public static IFailureBuilder NotFound() => Failure(HttpStatusCode.NotFound);
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
-    /// status code NotFound to build a failure operation result.  
+    /// status code NotFound to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
@@ -162,14 +162,14 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
-    /// status code BadRequest to build a failure operation result.  
+    /// status code BadRequest to build a failure execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
     public static IFailureBuilder BadRequest() => Failure(HttpStatusCode.BadRequest);
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
-    /// status code BadRequest to build a failure operation result.  
+    /// status code BadRequest to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
@@ -178,14 +178,14 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
-    /// status code Conflict to build a failure operation result.  
+    /// status code Conflict to build a failure execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
     public static IFailureBuilder Conflict() => Failure(HttpStatusCode.Conflict);
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
-    /// status code Conflict to build a failure operation result.  
+    /// status code Conflict to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
@@ -194,7 +194,7 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
-    /// status code Unauthorized to build a failure operation result.  
+    /// status code Unauthorized to build a failure execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
     public static IFailureBuilder Unauthorized() =>
@@ -202,7 +202,7 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
-    /// status code Unauthorized to build a failure operation result.  
+    /// status code Unauthorized to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
@@ -211,7 +211,7 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
-    /// status code InternalServerError to build a failure operation result.  
+    /// status code InternalServerError to build a failure execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
     public static IFailureBuilder InternalServerError() =>
@@ -219,7 +219,7 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
-    /// status code InternalServerError to build a failure operation result.  
+    /// status code InternalServerError to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
@@ -228,7 +228,7 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
-    /// status code ServiceUnavailable to build a failure operation result.  
+    /// status code ServiceUnavailable to build a failure execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
     public static IFailureBuilder ServiceUnavailable() =>
@@ -236,7 +236,7 @@ public readonly record struct OperationResults
 
     /// <summary>  
     /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
-    /// status code ServiceUnavailable to build a failure operation result.  
+    /// status code ServiceUnavailable to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  

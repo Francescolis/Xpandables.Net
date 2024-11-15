@@ -13,9 +13,9 @@ namespace Xpandables.Net.Test.UnitTests;
 public sealed record TestQuery : IQuery<string> { public required string Query { get; set; } }
 public sealed class TestQueryHander : IQueryHandler<TestQuery, string>
 {
-    public Task<IOperationResult<string>> HandleAsync(
+    public Task<IExecutionResult<string>> HandleAsync(
         TestQuery query, CancellationToken cancellationToken) =>
-        Task.FromResult(OperationResults
+        Task.FromResult(ExecutionResults
             .Ok(query.Query)
             .Build());
 }

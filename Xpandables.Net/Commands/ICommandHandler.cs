@@ -34,7 +34,7 @@ public interface ICommandHandler<in TCommand>
     /// requests.</param>
     /// <returns>A task that represents the asynchronous operation. 
     /// The task result contains the operation result.</returns>
-    Task<IOperationResult> HandleAsync(
+    Task<IExecutionResult> HandleAsync(
         TCommand command,
         CancellationToken cancellationToken = default);
 }
@@ -57,13 +57,13 @@ public interface ICommandHandler<in TCommand, TDependency> : ICommandHandler<TCo
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. 
     /// The task result contains the operation result.</returns>
-    Task<IOperationResult> HandleAsync(
+    Task<IExecutionResult> HandleAsync(
         TCommand command,
         TDependency dependency,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    Task<IOperationResult> ICommandHandler<TCommand>.HandleAsync(
+    Task<IExecutionResult> ICommandHandler<TCommand>.HandleAsync(
         TCommand command,
         CancellationToken cancellationToken) =>
         HandleAsync(command, (TDependency)command.Dependency, cancellationToken);

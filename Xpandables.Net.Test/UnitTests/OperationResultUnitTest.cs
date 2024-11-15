@@ -14,7 +14,7 @@ public sealed class OperationResultUnitTest
     public void Success_ShouldReturnOperationResultWithStatusCodeOk()
     {
         // Act
-        var result = OperationResults.Success().Build();
+        var result = ExecutionResults.Success().Build();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -28,7 +28,7 @@ public sealed class OperationResultUnitTest
         var expectedResult = "Success";
 
         // Act
-        var result = OperationResults.Success(expectedResult).Build();
+        var result = ExecutionResults.Success(expectedResult).Build();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -40,7 +40,7 @@ public sealed class OperationResultUnitTest
     public void Failure_ShouldReturnOperationResultWithStatusCodeBadRequest()
     {
         // Act
-        var result = OperationResults.Failure().Build();
+        var result = ExecutionResults.Failure().Build();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -51,7 +51,7 @@ public sealed class OperationResultUnitTest
     public void Failure_WithStatusCode_ShouldReturnOperationResultWithSpecifiedStatusCode()
     {
         // Act
-        var result = OperationResults.Failure(HttpStatusCode.NotFound).Build();
+        var result = ExecutionResults.Failure(HttpStatusCode.NotFound).Build();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -62,7 +62,7 @@ public sealed class OperationResultUnitTest
     public void OperationResult_ShouldSerializeAndDeserializeCorrectly()
     {
         // Arrange
-        var operationResult = new OperationResult
+        var operationResult = new ExecutionResult
         {
             StatusCode = HttpStatusCode.OK,
             Title = "Test Title",
@@ -75,9 +75,9 @@ public sealed class OperationResultUnitTest
 
         // Act
         JsonSerializerOptions options = new()
-        { Converters = { new OperationResultJsonConverterFactory() } };
+        { Converters = { new ExecutionResultJsonConverterFactory() } };
         var json = JsonSerializer.Serialize(operationResult, options);
-        var deserializedResult = JsonSerializer.Deserialize<OperationResult>(json, options);
+        var deserializedResult = JsonSerializer.Deserialize<ExecutionResult>(json, options);
 
         // Assert
         deserializedResult.Should().BeEquivalentTo(operationResult);
@@ -87,7 +87,7 @@ public sealed class OperationResultUnitTest
     public void OperationResult_WithGenericResult_ShouldSerializeAndDeserializeCorrectly()
     {
         // Arrange
-        var operationResult = new OperationResult<string>
+        var operationResult = new ExecutionResult<string>
         {
             StatusCode = HttpStatusCode.OK,
             Title = "Test Title",
@@ -101,9 +101,9 @@ public sealed class OperationResultUnitTest
 
         // Act
         JsonSerializerOptions options = new()
-        { Converters = { new OperationResultJsonConverterFactory() } };
+        { Converters = { new ExecutionResultJsonConverterFactory() } };
         var json = JsonSerializer.Serialize(operationResult, options);
-        var deserializedResult = JsonSerializer.Deserialize<OperationResult<string>>(json, options);
+        var deserializedResult = JsonSerializer.Deserialize<ExecutionResult<string>>(json, options);
 
         // Assert
         deserializedResult.Should().BeEquivalentTo(operationResult);

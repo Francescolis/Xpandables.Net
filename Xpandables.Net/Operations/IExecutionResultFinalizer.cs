@@ -19,17 +19,17 @@ using System.Diagnostics.CodeAnalysis;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Represents a delegate that finalizes an <see cref="IOperationResult"/>.
+/// Represents a delegate that finalizes an <see cref="IExecutionResult"/>.
 /// </summary>
-/// <param name="operationResult">The operation result to finalize.</param>
-/// <returns>The finalized operation result.</returns>
-public delegate IOperationResult OperationResultFinalize(
-    IOperationResult operationResult);
+/// <param name="executionResult">The execution result to finalize.</param>
+/// <returns>The finalized execution result.</returns>
+public delegate IExecutionResult ExecutionResultFinalize(
+    IExecutionResult executionResult);
 
 /// <summary>
-/// Defines a mechanism for finalizing an <see cref="IOperationResult"/>.
+/// Defines a mechanism for finalizing an <see cref="IExecutionResult"/>.
 /// </summary>
-public interface IOperationResultFinalizer
+public interface IExecutionResultFinalizer
 {
     /// <summary>
     /// Gets or sets a value indicating whether to call the finalize method 
@@ -39,14 +39,14 @@ public interface IOperationResultFinalizer
     bool CallFinalizeOnException { get; set; }
 
     /// <summary>
-    /// Gets or sets the delegate to finalize the operation result.
+    /// Gets or sets the delegate to finalize the execution result.
     /// </summary>
-    OperationResultFinalize? Finalize { get; set; }
+    ExecutionResultFinalize? Finalize { get; set; }
 }
 
-internal sealed class OperationResultFinalizer : IOperationResultFinalizer
+internal sealed class ExecutionResultFinalizer : IExecutionResultFinalizer
 {
     [MemberNotNullWhen(true, nameof(Finalize))]
     public bool CallFinalizeOnException { get; set; }
-    public OperationResultFinalize? Finalize { get; set; }
+    public ExecutionResultFinalize? Finalize { get; set; }
 }

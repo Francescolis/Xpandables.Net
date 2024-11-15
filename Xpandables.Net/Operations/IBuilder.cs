@@ -22,19 +22,19 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Interface for building an <see cref="IOperationResult"/>.
+/// Interface for building an <see cref="IExecutionResult"/>.
 /// </summary>
 public interface IBuilder
 {
     /// <summary>
     /// Builds an instance that matches the builder information.
     /// </summary>
-    /// <returns>An instance of <see cref="IOperationResult"/>.</returns>
-    IOperationResult Build();
+    /// <returns>An instance of <see cref="IExecutionResult"/>.</returns>
+    IExecutionResult Build();
 }
 
 /// <summary>
-/// Interface for building an <see cref="IOperationResult{TResult}"/>.
+/// Interface for building an <see cref="IExecutionResult{TResult}"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public interface IBuilder<TResult> : IBuilder
@@ -42,46 +42,46 @@ public interface IBuilder<TResult> : IBuilder
     /// <summary>
     /// Builds an instance that matches the builder information.
     /// </summary>
-    /// <returns>An instance of <see cref="IOperationResult{TResult}"/>.</returns>
-    new IOperationResult<TResult> Build();
+    /// <returns>An instance of <see cref="IExecutionResult{TResult}"/>.</returns>
+    new IExecutionResult<TResult> Build();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    IOperationResult IBuilder.Build() => Build();
+    IExecutionResult IBuilder.Build() => Build();
 }
 
 /// <summary>
-/// Interface for merging the current operation with another operation.
+/// Interface for merging the current execution with another execution.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IMergeBuilder<out TBuilder>
     where TBuilder : class, IBuilder
 {
     /// <summary>
-    /// Merges the current operation with the specified operation.
+    /// Merges the current execution with the specified execution.
     /// </summary>
-    /// <param name="operation">The operation to merge with.</param>
+    /// <param name="execution">The execution to merge with.</param>
     /// <returns>The current builder instance.</returns>
-    TBuilder Merge(IOperationResult operation);
+    TBuilder Merge(IExecutionResult execution);
 }
 
 /// <summary>
-/// Interface for setting the status code of an operation being built.
+/// Interface for setting the status code of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IStatusBuilder<out TBuilder>
     where TBuilder : class, IBuilder
 {
     /// <summary>
-    /// Sets the status code of the operation being built.
+    /// Sets the status code of the execution being built.
     /// </summary>
-    /// <param name="statusCode">The status code of the operation.</param>
+    /// <param name="statusCode">The status code of the execution.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithStatusCode(HttpStatusCode statusCode);
 }
 
 /**
  * <summary>
- * Interface for setting the title of an operation being built.
+ * Interface for setting the title of an execution being built.
  * </summary>
  * <typeparam name="TBuilder">The type of the builder.</typeparam>
  */
@@ -90,53 +90,53 @@ public interface ITitleBuilder<out TBuilder>
 {
     /**
      * <summary>
-     * Sets the title of the operation being built.
+     * Sets the title of the execution being built.
      * </summary>
-     * <param name="title">The title of the operation.</param>
+     * <param name="title">The title of the execution.</param>
      * <returns>The current builder instance.</returns>
      */
     TBuilder WithTitle(string title);
 }
 
 /// <summary>
-/// Interface for setting the detail of an operation being built.
+/// Interface for setting the detail of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IDetailBuilder<out TBuilder>
    where TBuilder : class, IBuilder
 {
     /// <summary>
-    /// Sets the detail of the operation being built.
+    /// Sets the detail of the execution being built.
     /// </summary>
-    /// <param name="detail">The detail of the operation.</param>
+    /// <param name="detail">The detail of the execution.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithDetail(string detail);
 }
 
 /// <summary>
-/// Interface for setting the location of an operation being built.
+/// Interface for setting the location of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface ILocationBuilder<out TBuilder>
     where TBuilder : class, IBuilder
 {
     /// <summary>
-    /// Sets the location of the operation using a URI.
+    /// Sets the location of the execution using a URI.
     /// </summary>
-    /// <param name="location">The URI location of the operation.</param>
+    /// <param name="location">The URI location of the execution.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithLocation(Uri location);
 
     /// <summary>
-    /// Sets the location of the operation using a string.
+    /// Sets the location of the execution using a string.
     /// </summary>
-    /// <param name="location">The string location of the operation.</param>
+    /// <param name="location">The string location of the execution.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithLocation(string location);
 }
 
 /// <summary>
-/// Interface for setting the result of an operation being built.
+/// Interface for setting the result of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -144,22 +144,22 @@ public interface IResultBuilder<out TBuilder, in TResult>
     where TBuilder : class, IBuilder
 {
     /// <summary>
-    /// Sets the result of the operation being built.
+    /// Sets the result of the execution being built.
     /// </summary>
-    /// <param name="result">The result of the operation.</param>
+    /// <param name="result">The result of the execution.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithResult(TResult result);
 }
 
 /// <summary>
-/// Interface for setting headers of an operation being built.
+/// Interface for setting headers of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IHeaderBuilder<out TBuilder>
     where TBuilder : class, IBuilder
 {
     /// <summary>
-    /// Sets a header for the operation being built.
+    /// Sets a header for the execution being built.
     /// </summary>
     /// <param name="key">The header key.</param>
     /// <param name="value">The header value.</param>
@@ -167,7 +167,7 @@ public interface IHeaderBuilder<out TBuilder>
     TBuilder WithHeader(string key, string value);
 
     /// <summary>
-    /// Sets a header with multiple values for the operation being built.
+    /// Sets a header with multiple values for the execution being built.
     /// </summary>
     /// <param name="key">The header key.</param>
     /// <param name="values">The header values.</param>
@@ -175,14 +175,14 @@ public interface IHeaderBuilder<out TBuilder>
     TBuilder WithHeader(string key, params string[] values);
 
     /// <summary>
-    /// Sets multiple headers for the operation being built.
+    /// Sets multiple headers for the execution being built.
     /// </summary>
     /// <param name="headers">The headers dictionary.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithHeaders(IDictionary<string, string> headers);
 
     /// <summary>
-    /// Sets multiple headers for the operation being built.
+    /// Sets multiple headers for the execution being built.
     /// </summary>
     /// <param name="headers">The headers collection.</param>
     /// <returns>The current builder instance.</returns>
@@ -191,7 +191,7 @@ public interface IHeaderBuilder<out TBuilder>
 
 /**
  * <summary>
- * Interface for building an <see cref="IOperationResult"/> with error details.
+ * Interface for building an <see cref="IExecutionResult"/> with error details.
  * </summary>
  * <typeparam name="TBuilder">The type of the builder.</typeparam>
  */
@@ -244,7 +244,7 @@ public interface IErrorBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Interface for building an <see cref="IOperationResult"/> with extensions.
+/// Interface for building an <see cref="IExecutionResult"/> with extensions.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IExtensionBuilder<out TBuilder>
@@ -290,7 +290,7 @@ public interface IExtensionBuilder<out TBuilder>
 
 /**
  * <summary>
- * Interface for clearing various elements of an operation being built.
+ * Interface for clearing various elements of an execution being built.
  * </summary>
  * <typeparam name="TBuilder">The type of the builder.</typeparam>
  */
@@ -298,25 +298,25 @@ public interface IClearBuilder<out TBuilder>
     where TBuilder : class, IBuilder
 {
     /// <summary>
-    /// Clears all errors from the operation being built.
+    /// Clears all errors from the execution being built.
     /// </summary>
     /// <returns>The current builder instance.</returns>
     TBuilder ClearErrors();
 
     /// <summary>
-    /// Clears all headers from the operation being built.
+    /// Clears all headers from the execution being built.
     /// </summary>
     /// <returns>The current builder instance.</returns>
     TBuilder ClearHeaders();
 
     /// <summary>
-    /// Clears all extensions from the operation being built.
+    /// Clears all extensions from the execution being built.
     /// </summary>
     /// <returns>The current builder instance.</returns>
     TBuilder ClearExtensions();
 
     /// <summary>
-    /// Clears all elements from the operation being built.
+    /// Clears all elements from the execution being built.
     /// </summary>
     /// <returns>The current builder instance.</returns>
     TBuilder ClearAll();

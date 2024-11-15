@@ -32,7 +32,7 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
     IUnitOfWork unitOfWork) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IApplyUnitOfWork
-    where TResponse : IOperationResult
+    where TResponse : IExecutionResult
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
@@ -53,7 +53,7 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
             }
             catch (InvalidOperationException exception)
             {
-                return MatchResponse(exception.ToOperationResult());
+                return MatchResponse(exception.ToExecutionResult());
             }
 
             return response;
@@ -66,13 +66,13 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
                     .SaveChangesAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                return MatchResponse(exception.ToOperationResult());
+                return MatchResponse(exception.ToExecutionResult());
 
             }
             catch (Exception ex)
             {
                 AggregateException aggregateException = new(exception, ex);
-                return MatchResponse(aggregateException.ToOperationResult());
+                return MatchResponse(aggregateException.ToExecutionResult());
             }
         }
 #pragma warning restore CA1031 // Do not catch general exception types

@@ -8,7 +8,7 @@ public sealed class GetBalanceAccountQueryHandler(
     IAggregateStore<Account> aggregateStore) :
     IQueryHandler<GetBalanceAccountQuery, decimal>
 {
-    public async Task<IOperationResult<decimal>> HandleAsync(
+    public async Task<IExecutionResult<decimal>> HandleAsync(
         GetBalanceAccountQuery query,
         CancellationToken cancellationToken)
     {
@@ -16,6 +16,6 @@ public sealed class GetBalanceAccountQueryHandler(
             .PeekAsync(query.KeyId, cancellationToken)
             .ConfigureAwait(false);
 
-        return OperationResults.Ok(account.CurrentState.Balance).Build();
+        return ExecutionResults.Ok(account.CurrentState.Balance).Build();
     }
 }

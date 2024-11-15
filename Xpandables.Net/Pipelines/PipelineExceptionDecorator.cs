@@ -27,7 +27,7 @@ namespace Xpandables.Net.Pipelines;
 public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : IOperationResult
+    where TResponse : IExecutionResult
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
@@ -42,7 +42,7 @@ public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
         }
         catch (Exception exception)
         {
-            return MatchResponse(exception.ToOperationResult());
+            return MatchResponse(exception.ToExecutionResult());
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }

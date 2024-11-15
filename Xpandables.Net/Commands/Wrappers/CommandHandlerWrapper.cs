@@ -26,7 +26,7 @@ namespace Xpandables.Net.Commands.Wrappers;
 /// <typeparam name="TCommand">The type of the command.</typeparam>
 public sealed class CommandHandlerWrapper<TCommand>(
     ICommandHandler<TCommand> decoratee,
-    IEnumerable<IPipelineDecorator<TCommand, IOperationResult>> decorators) :
+    IEnumerable<IPipelineDecorator<TCommand, IExecutionResult>> decorators) :
     ICommandHandlerWrapper
     where TCommand : class, ICommand
 {
@@ -36,14 +36,14 @@ public sealed class CommandHandlerWrapper<TCommand>(
     /// <param name="command">The command to handle.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
-    public Task<IOperationResult> HandleAsync(
+    public Task<IExecutionResult> HandleAsync(
         ICommand command,
         CancellationToken cancellationToken = default)
     {
-        Task<IOperationResult> result = decorators
+        Task<IExecutionResult> result = decorators
             .Reverse()
-            .Aggregate<IPipelineDecorator<TCommand, IOperationResult>,
-            RequestHandler<IOperationResult>>(
+            .Aggregate<IPipelineDecorator<TCommand, IExecutionResult>,
+            RequestHandler<IExecutionResult>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(
                     (TCommand)command,
@@ -52,7 +52,7 @@ public sealed class CommandHandlerWrapper<TCommand>(
 
         return result;
 
-        Task<IOperationResult> Handler() =>
+        Task<IExecutionResult> Handler() =>
             decoratee.HandleAsync((TCommand)command, cancellationToken);
     }
 }

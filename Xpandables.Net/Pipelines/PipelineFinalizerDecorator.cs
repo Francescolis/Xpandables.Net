@@ -20,15 +20,15 @@ using Xpandables.Net.Operations;
 namespace Xpandables.Net.Pipelines;
 
 /// <summary>
-/// Decorator that finalizes the operation result for requests that use a finalizer.
+/// Decorator that finalizes the execution result for requests that use a finalizer.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public sealed class PipelineFinalizerDecorator<TRequest, TResponse>(
-    IOperationResultFinalizer finalizer) :
+    IExecutionResultFinalizer finalizer) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IApplyFinalizer
-    where TResponse : IOperationResult
+    where TResponse : IExecutionResult
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
@@ -51,7 +51,7 @@ public sealed class PipelineFinalizerDecorator<TRequest, TResponse>(
             when (finalizer.CallFinalizeOnException)
         {
             return MatchResponse(
-                finalizer.Finalize(exception.ToOperationResult()));
+                finalizer.Finalize(exception.ToExecutionResult()));
         }
     }
 }

@@ -25,7 +25,7 @@ public sealed class NullValidator<TArgument> : AbstractValidator<TArgument>
     where TArgument : class, IApplyValidation
 {
     /// <inheritdoc/>
-    /// Does nothing and returns an <see cref="OperationResults.Ok"/>.
-    public override IOperationResult Validate(TArgument instance) =>
-        OperationResults.Ok().Build();
+    /// Does nothing and returns an <see cref="ExecutionResults.Ok"/>.
+    public override IExecutionResult Validate(TArgument instance) =>
+        ExecutionResults.Ok().Build();
 }

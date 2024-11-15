@@ -8,7 +8,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 public sealed class DepositAccountCommandHandler(
     IAggregateStore<Account> aggregateStore) : ICommandHandler<DepositAccountCommand>
 {
-    public async Task<IOperationResult> HandleAsync(
+    public async Task<IExecutionResult> HandleAsync(
         DepositAccountCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -22,6 +22,6 @@ public sealed class DepositAccountCommandHandler(
             .AppendAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
-        return OperationResults.Ok().Build();
+        return ExecutionResults.Ok().Build();
     }
 }

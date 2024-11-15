@@ -21,31 +21,31 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Represents an operation result that implements the 
+/// Represents an execution result that implements the 
 /// <see cref="IResult"/> interface.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="OperationResultResult"/> class.
+/// Initializes a new instance of the <see cref="ExecutionResultResult"/> class.
 /// </remarks>
-/// <param name="operationResult">The operation result to be executed.</param>
-/// <exception cref="ArgumentNullException">Thrown when the operation result 
+/// <param name="executionResult">The execution result to be executed.</param>
+/// <exception cref="ArgumentNullException">Thrown when the execution result 
 /// is null.</exception>
-public sealed class OperationResultResult(IOperationResult operationResult) : IResult
+public sealed class ExecutionResultResult(IExecutionResult executionResult) : IResult
 {
-    private readonly IOperationResult _operationResult = operationResult
-        ?? throw new ArgumentNullException(nameof(operationResult));
+    private readonly IExecutionResult _executionResult = executionResult
+        ?? throw new ArgumentNullException(nameof(executionResult));
 
     /// <summary>
-    /// Executes the operation result asynchronously.
+    /// Executes the execution result asynchronously.
     /// </summary>
     /// <param name="httpContext">The HTTP context.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <returns>A task that represents the asynchronous execution.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        IOperationResultExecute execute = httpContext
+        IExecutionResultExecute execute = httpContext
             .RequestServices
-            .GetRequiredService<IOperationResultExecute>();
+            .GetRequiredService<IExecutionResultExecute>();
 
-        return execute.ExecuteAsync(httpContext, _operationResult);
+        return execute.ExecuteAsync(httpContext, _executionResult);
     }
 }

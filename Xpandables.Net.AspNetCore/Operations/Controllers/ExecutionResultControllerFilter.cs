@@ -22,10 +22,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Operations.Controllers;
 
 /// <summary>
-/// A filter that executes an <see cref="IOperationResult"/> if the result 
+/// A filter that executes an <see cref="IExecutionResult"/> if the result 
 /// is of type <see cref="ObjectResult"/>.
 /// </summary>
-public sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFilter
+public sealed class ExecutionResultControllerFilter : IAsyncAlwaysRunResultFilter
 {
     /// <inheritdoc/>
     public Task OnResultExecutionAsync(
@@ -33,14 +33,14 @@ public sealed class OperationResultControllerFilter : IAsyncAlwaysRunResultFilte
         ResultExecutionDelegate next)
     {
         if (context.Result is ObjectResult objectResult
-            && objectResult.Value is IOperationResult operationResult)
+            && objectResult.Value is IExecutionResult executionResult)
         {
-            IOperationResultExecute execute = context
+            IExecutionResultExecute execute = context
                 .HttpContext
                 .RequestServices
-                .GetRequiredService<IOperationResultExecute>();
+                .GetRequiredService<IExecutionResultExecute>();
 
-            return execute.ExecuteAsync(context.HttpContext, operationResult);
+            return execute.ExecuteAsync(context.HttpContext, executionResult);
         }
 
         return next();

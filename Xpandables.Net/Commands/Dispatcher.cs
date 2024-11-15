@@ -29,7 +29,7 @@ namespace Xpandables.Net.Commands;
 public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
 {
     /// <inheritdoc/>
-    public Task<IOperationResult> SendAsync(
+    public Task<IExecutionResult> SendAsync(
         ICommand command,
         CancellationToken cancellationToken = default)
     {
@@ -45,9 +45,9 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
             return handler.HandleAsync(command, cancellationToken);
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
-            return Task.FromResult(exception.ToOperationResult());
+            return Task.FromResult(exception.ToExecutionResult());
         }
     }
 
@@ -68,15 +68,15 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
             return handler.HandleAsync(query, cancellationToken);
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
-            IOperationResult operation = exception.ToOperationResult();
-            throw new OperationResultException(operation);
+            IExecutionResult execution = exception.ToExecutionResult();
+            throw new ExecutionResultException(execution);
         }
     }
 
     /// <inheritdoc/>
-    public Task<IOperationResult<TResult>> SendAsync<TResult>(
+    public Task<IExecutionResult<TResult>> SendAsync<TResult>(
         IQuery<TResult> query,
         CancellationToken cancellationToken = default)
     {
@@ -92,11 +92,11 @@ public sealed class Dispatcher(IServiceProvider provider) : IDispatcher
             return handler.HandleAsync(query, cancellationToken);
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
             return Task.FromResult(exception
-                .ToOperationResult()
-                .ToOperationResult<TResult>());
+                .ToExecutionResult()
+                .ToExecutionResult<TResult>());
         }
     }
 }

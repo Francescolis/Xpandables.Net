@@ -15,27 +15,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.Operations.Controllers;
+namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Configures MVC options for the OperationResultController.
+/// Defines a method to execute an execution result within the given HTTP context.
 /// </summary>
-public sealed class OperationResultControllerMvcOptions :
-    IConfigureOptions<MvcOptions>
+public interface IExecutionResultExecute
 {
-    /// <inheritdoc/>
-    public void Configure(MvcOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        options.EnableEndpointRouting = false;
-        options.RespectBrowserAcceptHeader = true;
-        options.ReturnHttpNotAcceptable = true;
-
-        _ = options.Filters.Add<OperationResultControllerValidationFilterAttribute>();
-        _ = options.Filters.Add<OperationResultControllerFilter>(int.MinValue);
-    }
+    /// <summary>
+    /// Executes the execution result asynchronously within the given HTTP context.
+    /// </summary>
+    /// <param name="httpContext">The HTTP context in which to execute the 
+    /// execution result.</param>
+    /// <param name="executionResult">The execution result to execute.</param>
+    /// <returns>A task that represents the asynchronous execution.</returns>
+    Task ExecuteAsync(
+        HttpContext httpContext,
+        IExecutionResult executionResult);
 }

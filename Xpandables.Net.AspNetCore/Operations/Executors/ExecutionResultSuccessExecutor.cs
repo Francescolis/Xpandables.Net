@@ -19,27 +19,27 @@ using Microsoft.AspNetCore.Http;
 namespace Xpandables.Net.Operations.Executors;
 
 /// <summary>
-/// Executes the operation result when the result indicates a successful operation.
+/// Executes the execution result when the result indicates a successful execution.
 /// </summary>
-public sealed class OperationResultSuccessExecutor : IOperationResultExecutor
+public sealed class ExecutionResultSuccessExecutor : IExecutionResultExecutor
 {
     ///<inheritdoc/>
-    public bool CanExecute(IOperationResult operationResult) =>
-        operationResult.IsSuccessStatusCode();
+    public bool CanExecute(IExecutionResult executionResult) =>
+        executionResult.IsSuccessStatusCode();
 
     ///<inheritdoc/>
     public async Task ExecuteAsync(
         HttpContext context,
-        IOperationResult operationResult)
+        IExecutionResult executionResult)
     {
-        if (operationResult.IsCreated())
+        if (executionResult.IsCreated())
         {
-            IResult resultCreated = (operationResult.Result is not null) switch
+            IResult resultCreated = (executionResult.Result is not null) switch
             {
                 true => Results.Created(
-                    operationResult.Location,
-                    operationResult.Result),
-                _ => Results.Created(operationResult.Location, null)
+                    executionResult.Location,
+                    executionResult.Result),
+                _ => Results.Created(executionResult.Location, null)
             };
 
             await resultCreated
@@ -49,7 +49,7 @@ public sealed class OperationResultSuccessExecutor : IOperationResultExecutor
             return;
         }
 
-        if (operationResult.Result is ResultFile resultFile)
+        if (executionResult.Result is ResultFile resultFile)
         {
             context.Response.Headers
                 .Append(
@@ -68,11 +68,11 @@ public sealed class OperationResultSuccessExecutor : IOperationResultExecutor
             return;
         }
 
-        if (operationResult.Result is not null)
+        if (executionResult.Result is not null)
         {
             await context.Response.WriteAsJsonAsync(
-                operationResult.Result,
-                operationResult.Result.GetType())
+                executionResult.Result,
+                executionResult.Result.GetType())
                 .ConfigureAwait(false);
 
             return;

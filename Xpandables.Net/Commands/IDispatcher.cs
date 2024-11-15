@@ -29,7 +29,7 @@ public interface IDispatcher
     /// <param name="command">The command to send.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
-    Task<IOperationResult> SendAsync(
+    Task<IExecutionResult> SendAsync(
         ICommand command,
         CancellationToken cancellationToken = default);
 
@@ -40,7 +40,7 @@ public interface IDispatcher
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
-    Task<IOperationResult<TResult>> SendAsync<TResult>(
+    Task<IExecutionResult<TResult>> SendAsync<TResult>(
         IQuery<TResult> query,
         CancellationToken cancellationToken = default);
 

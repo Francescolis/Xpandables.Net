@@ -33,35 +33,35 @@ using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
-/// Provides extension methods for adding operation result execution services 
+/// Provides extension methods for adding execution result execution services 
 /// to the service collection.
 /// </summary>
 public static class ServiceCollectionOperationExtensions
 {
     /// <summary>
-    /// Adds operation result execution services to the service collection 
+    /// Adds execution result execution services to the service collection 
     /// for minimal APIs.
     /// </summary>
     /// <param name="services">The service collection to add the services
     /// to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXOperationResultMinimalApi(
+    public static IServiceCollection AddXExecutionResultMinimalApi(
         this IServiceCollection services) =>
-        services.AddXOperationResultExecutors(typeof(IOperationResultExecutor).Assembly)
-            .AddXOperationResultJsonOptions()
-            .AddXOperationResultExecute()
-            .AddXOperationResultValidator()
-            .AddXOperationResultMiddleware()
+        services.AddXExecutionResultExecutors(typeof(IExecutionResultExecutor).Assembly)
+            .AddXExecutionResultJsonOptions()
+            .AddXExecutionResultExecute()
+            .AddXExecutionResultValidator()
+            .AddXExecutionResultMiddleware()
             .AddXValidatorDefault();
 
     /// <summary>
-    /// Adds operation result executors to the service collection.
+    /// Adds execution result executors to the service collection.
     /// </summary>
     /// <param name="services">The service collection to add the executors to.</param>
     /// <param name="assemblies">The assemblies to scan for executors. 
     /// If none are provided, the calling assembly is used.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXOperationResultExecutors(
+    public static IServiceCollection AddXExecutionResultExecutors(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -73,12 +73,12 @@ public static class ServiceCollectionOperationExtensions
         List<Type> executorTypes = assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.IsSealed
-                && type.IsAssignableTo(typeof(IOperationResultExecutor)))
+                && type.IsAssignableTo(typeof(IExecutionResultExecutor)))
             .ToList();
 
         foreach (Type executorType in executorTypes)
         {
-            _ = services.AddScoped(typeof(IOperationResultExecutor), executorType);
+            _ = services.AddScoped(typeof(IExecutionResultExecutor), executorType);
         }
 
         return services;
@@ -92,28 +92,28 @@ public static class ServiceCollectionOperationExtensions
     /// <see cref="IServiceCollection"/>.
     /// </summary>
     /// <typeparam name="TOperationResultExecute">The type of the service to add. 
-    /// This class must implement <see cref="IOperationResultExecute"/>.</typeparam>
+    /// This class must implement <see cref="IExecutionResultExecute"/>.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
-    /// <returns>A reference to this instance after the operation has 
+    /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
     public static
-        IServiceCollection AddXOperationResultExecute<TOperationResultExecute>(
+        IServiceCollection AddXExecutionResultExecute<TOperationResultExecute>(
         this IServiceCollection services)
-        where TOperationResultExecute : class, IOperationResultExecute =>
-        services.AddScoped<IOperationResultExecute, TOperationResultExecute>();
+        where TOperationResultExecute : class, IExecutionResultExecute =>
+        services.AddScoped<IExecutionResultExecute, TOperationResultExecute>();
 
     /// <summary>
-    /// Adds a scoped service of the type <see cref="OperationResultExecute"/> 
+    /// Adds a scoped service of the type <see cref="ExecutionResultExecute"/> 
     /// to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
-    /// <returns>A reference to this instance after the operation has 
+    /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
-    public static IServiceCollection AddXOperationResultExecute(
+    public static IServiceCollection AddXExecutionResultExecute(
         this IServiceCollection services) =>
-        services.AddXOperationResultExecute<OperationResultExecute>();
+        services.AddXExecutionResultExecute<ExecutionResultExecute>();
 
     /// <summary>
     /// Adds a scoped service of the type specified in 
@@ -123,82 +123,82 @@ public static class ServiceCollectionOperationExtensions
     /// <see cref="IServiceCollection"/>.
     /// </summary>
     /// <typeparam name="TOperationResultValidator">The type of the service to add. 
-    /// This class must implement <see cref="IOperationResultValidator"/>.</typeparam>
+    /// This class must implement <see cref="IExecutionResultValidator"/>.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
-    /// <returns>A reference to this instance after the operation has 
+    /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
     public static
-        IServiceCollection AddXOperationResultValidator<TOperationResultValidator>(
+        IServiceCollection AddXExecutionResultValidator<TOperationResultValidator>(
         this IServiceCollection services)
-        where TOperationResultValidator : class, IOperationResultValidator =>
-        services.AddScoped<IOperationResultValidator, TOperationResultValidator>();
+        where TOperationResultValidator : class, IExecutionResultValidator =>
+        services.AddScoped<IExecutionResultValidator, TOperationResultValidator>();
 
     /// <summary>
-    /// Adds a scoped service of the type <see cref="OperationResultValidator"/> 
+    /// Adds a scoped service of the type <see cref="ExecutionResultValidator"/> 
     /// to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
-    /// <returns>A reference to this instance after the operation has 
+    /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
-    public static IServiceCollection AddXOperationResultValidator(
+    public static IServiceCollection AddXExecutionResultValidator(
         this IServiceCollection services) =>
-        services.AddXOperationResultValidator<OperationResultValidator>();
+        services.AddXExecutionResultValidator<ExecutionResultValidator>();
 
     /// <summary>
-    /// Adds a scoped service of the type <see cref="OperationResultMiddleware"/> 
+    /// Adds a scoped service of the type <see cref="ExecutionResultMiddleware"/> 
     /// to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
-    /// <returns>A reference to this instance after the operation has 
+    /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
-    public static IServiceCollection AddXOperationResultMiddleware(
+    public static IServiceCollection AddXExecutionResultMiddleware(
         this IServiceCollection services) =>
-        services.AddScoped<OperationResultMiddleware>();
+        services.AddScoped<ExecutionResultMiddleware>();
 
     /// <summary>
-    /// Adds the <see cref="OperationResultMiddleware"/> to the application's 
+    /// Adds the <see cref="ExecutionResultMiddleware"/> to the application's 
     /// request pipeline.
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/> to configure.</param>
     /// <returns>A reference to the <see cref="IApplicationBuilder"/> after the 
-    /// operation has completed.</returns>
-    public static IApplicationBuilder UseXOperationResultMiddleware(
+    /// execution has completed.</returns>
+    public static IApplicationBuilder UseXExecutionResultMiddleware(
         this IApplicationBuilder builder) =>
-        builder.UseMiddleware<OperationResultMiddleware>();
+        builder.UseMiddleware<ExecutionResultMiddleware>();
 
     /// <summary>
-    /// Applies the operation result filter to the response of the target route(s),
-    /// adding the <see cref="OperationResultFilter"/> to the endpoint 
+    /// Applies the execution result filter to the response of the target route(s),
+    /// adding the <see cref="ExecutionResultFilter"/> to the endpoint 
     /// convention builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the endpoint convention 
     /// builder.</typeparam>
     /// <param name="builder">The endpoint convention builder to configure.</param>
     /// <returns>A reference to the <typeparamref name="TBuilder"/> after the 
-    /// operation has completed.</returns>
+    /// execution has completed.</returns>
     /// <remarks>To be applied on many routes, please use 
     /// <see langword="MapGroup"/> with empty prefix 
     /// (<see cref="string.Empty"/>).
     /// <para>You can register the <see cref="IProblemDetailsService"/> in 
     /// order to customize the response.</para></remarks>
-    public static TBuilder WithXOperationResultFilter<TBuilder>(
+    public static TBuilder WithXExecutionResultFilter<TBuilder>(
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter<TBuilder, OperationResultFilter>();
+        builder.AddEndpointFilter<TBuilder, ExecutionResultFilter>();
 
     /// <summary>
     /// Applies the validation filter factory to the request of the target route(s),
-    /// adding the <see cref="OperationResultValidationFilterFactory"/> to the endpoint 
+    /// adding the <see cref="ExecutionResultValidationFilterFactory"/> to the endpoint 
     /// convention builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the endpoint convention 
     /// builder.</typeparam>
     /// <param name="builder">The endpoint convention builder to configure.</param>
     /// <returns>A reference to the <typeparamref name="TBuilder"/> after the 
-    /// operation has completed.</returns>
+    /// execution has completed.</returns>
     /// <remarks>To be applied on many routes, please use 
     /// <see langword="MapGroup"/> with empty prefix 
     /// (<see cref="string.Empty"/>).
@@ -212,17 +212,17 @@ public static class ServiceCollectionOperationExtensions
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
         builder.AddEndpointFilterFactory(
-            OperationResultValidationFilterFactory.FilterFactory);
+            ExecutionResultValidationFilterFactory.FilterFactory);
 
     /// <summary>
     /// Applies the validation filter to the request of the target route(s),
-    /// adding the <see cref="OperationResultValidationFilter"/> to the endpoint 
+    /// adding the <see cref="ExecutionResultValidationFilter"/> to the endpoint 
     /// convention builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the endpoint convention builder.</typeparam>
     /// <param name="builder">The endpoint convention builder to configure.</param>
     /// <returns>A reference to the <typeparamref name="TBuilder"/> after the 
-    /// operation has completed.</returns>
+    /// execution has completed.</returns>
     /// <remarks>To be applied on many routes, please use 
     /// <see langword="MapGroup"/> with empty prefix 
     /// (<see cref="string.Empty"/>).
@@ -236,51 +236,51 @@ public static class ServiceCollectionOperationExtensions
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
         builder.AddEndpointFilter(
-            new OperationResultValidationFilter().InvokeAsync);
+            new ExecutionResultValidationFilter().InvokeAsync);
 
     /// <summary>
-    /// Applies the operation result filter and validation filter to the 
+    /// Applies the execution result filter and validation filter to the 
     /// response of the target route(s),
-    /// adding the <see cref="OperationResultFilter"/> and 
-    /// <see cref="OperationResultValidationFilter"/> 
+    /// adding the <see cref="ExecutionResultFilter"/> and 
+    /// <see cref="ExecutionResultValidationFilter"/> 
     /// to the endpoint convention builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the endpoint convention 
     /// builder.</typeparam>
     /// <param name="builder">The endpoint convention builder to configure.</param>
     /// <returns>A reference to the <typeparamref name="TBuilder"/> after 
-    /// the operation has completed.</returns>
+    /// the execution has completed.</returns>
     /// <remarks>To be applied on many routes, please use <see langword="MapGroup"/> with empty prefix 
     /// (<see cref="string.Empty"/>).
     /// <para>You can register the <see cref="IProblemDetailsService"/> in order
     /// to customize the response.</para></remarks>
-    public static TBuilder WithXOperationResultMinimalApi<TBuilder>(
+    public static TBuilder WithXExecutionResultMinimalApi<TBuilder>(
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
-        builder.WithXOperationResultFilter()
+        builder.WithXExecutionResultFilter()
             .WithXValidationFilter();
 
     /// <summary>
-    /// Adds the <see cref="OperationResultJsonOptions"/> to the 
+    /// Adds the <see cref="ExecutionResultJsonOptions"/> to the 
     /// specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the 
     /// service to.</param>
-    /// <returns>A reference to this instance after the operation has completed.</returns>
-    public static IServiceCollection AddXOperationResultJsonOptions(
+    /// <returns>A reference to this instance after the execution has completed.</returns>
+    public static IServiceCollection AddXExecutionResultJsonOptions(
         this IServiceCollection services) =>
         services.AddSingleton<IConfigureOptions<JsonOptions>,
-            OperationResultJsonOptions>();
+            ExecutionResultJsonOptions>();
 
     /// <summary>
-    /// Adds the <see cref="OperationResultControllerMvcOptions"/> to the 
+    /// Adds the <see cref="ExecutionResultControllerMvcOptions"/> to the 
     /// specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the 
     /// service to.</param>
-    /// <returns>A reference to this instance after the operation has completed.</returns>
-    public static IServiceCollection AddXOperationResultControllerMvcOptions(
+    /// <returns>A reference to this instance after the execution has completed.</returns>
+    public static IServiceCollection AddXExecutionResultControllerMvcOptions(
         this IServiceCollection services) =>
         services.AddSingleton<IConfigureOptions<MvcOptions>,
-            OperationResultControllerMvcOptions>();
+            ExecutionResultControllerMvcOptions>();
 }

@@ -26,19 +26,19 @@ namespace Xpandables.Net.Commands.Wrappers;
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public sealed class QueryHandlerWrapper<TQuery, TResult>(
     IQueryHandler<TQuery, TResult> decoratee,
-    IEnumerable<IPipelineDecorator<TQuery, IOperationResult<TResult>>> decorators) :
+    IEnumerable<IPipelineDecorator<TQuery, IExecutionResult<TResult>>> decorators) :
     IQueryHandlerWrapper<TResult>
     where TQuery : class, IQuery<TResult>
 {
     /// <inheritdoc/>>
-    public Task<IOperationResult<TResult>> HandleAsync(
+    public Task<IExecutionResult<TResult>> HandleAsync(
         IQuery<TResult> query,
         CancellationToken cancellationToken = default)
     {
-        Task<IOperationResult<TResult>> result = decorators
+        Task<IExecutionResult<TResult>> result = decorators
             .Reverse()
-            .Aggregate<IPipelineDecorator<TQuery, IOperationResult<TResult>>,
-            RequestHandler<IOperationResult<TResult>>>(
+            .Aggregate<IPipelineDecorator<TQuery, IExecutionResult<TResult>>,
+            RequestHandler<IExecutionResult<TResult>>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(
                     (TQuery)query,
@@ -47,7 +47,7 @@ public sealed class QueryHandlerWrapper<TQuery, TResult>(
 
         return result;
 
-        Task<IOperationResult<TResult>> Handler() =>
+        Task<IExecutionResult<TResult>> Handler() =>
             decoratee.HandleAsync((TQuery)query, cancellationToken);
     }
 }

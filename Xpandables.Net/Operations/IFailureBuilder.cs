@@ -17,7 +17,7 @@
 namespace Xpandables.Net.Operations;
 
 /// <summary>  
-/// Provides a builder interface for constructing failure operation results.  
+/// Provides a builder interface for constructing failure execution results.  
 /// </summary>  
 public interface IFailureBuilder :
    IErrorBuilder<IFailureBuilder>,
@@ -33,7 +33,7 @@ public interface IFailureBuilder :
 { }
 
 /// <summary>  
-/// Provides a builder interface for constructing failure operation results 
+/// Provides a builder interface for constructing failure execution results 
 /// with a specific result type.  
 /// </summary>  
 /// <typeparam name="TResult">The type of the result.</typeparam>  

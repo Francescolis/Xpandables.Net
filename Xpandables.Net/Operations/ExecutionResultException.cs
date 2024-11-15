@@ -21,78 +21,78 @@ using System.Text.Json;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Represents an exception that occurs during an operation result.
+/// Represents an exception that occurs during an executionResult result.
 /// </summary>
-public sealed class OperationResultException : Exception
+public sealed class ExecutionResultException : Exception
 {
     private static readonly JsonSerializerOptions CachedJsonSerializerOptions =
         new() { WriteIndented = true };
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OperationResultException"/> 
-    /// class with the specified operation result.
+    /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
+    /// class with the specified executionResult result.
     /// </summary>
-    /// <param name="operationResult">The operation result that caused the exception.</param>
+    /// <param name="executionResult">The executionResult result that caused the exception.</param>
     /// <exception cref="ArgumentNullException">Thrown when the 
-    /// <paramref name="operationResult"/> is null.</exception>
+    /// <paramref name="executionResult"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
-    /// code of the <paramref name="operationResult"/> is between 200 and 299.</exception>
-    public OperationResultException(IOperationResult operationResult)
+    /// code of the <paramref name="executionResult"/> is between 200 and 299.</exception>
+    public ExecutionResultException(IExecutionResult executionResult)
         : base(string.Join(
-            Environment.NewLine, operationResult.Errors.SelectMany(e => e.Values)))
+            Environment.NewLine, executionResult.Errors.SelectMany(e => e.Values)))
     {
-        ArgumentNullException.ThrowIfNull(operationResult);
+        ArgumentNullException.ThrowIfNull(executionResult);
 
-        if ((int)operationResult.StatusCode is >= 200 and <= 299)
+        if ((int)executionResult.StatusCode is >= 200 and <= 299)
         {
             throw new ArgumentOutOfRangeException(
-                nameof(operationResult),
-                operationResult.StatusCode,
+                nameof(executionResult),
+                executionResult.StatusCode,
                 "The status code for exception must not be between 200 and 299.");
         }
 
-        OperationResult = operationResult;
+        ExecutionResult = executionResult;
     }
 
     /// <summary>
-    /// Gets the operation result associated with this exception.
+    /// Gets the executionResult associated with this exception.
     /// </summary>
-    public IOperationResult OperationResult { get; }
+    public IExecutionResult ExecutionResult { get; }
 
     [Obsolete("Use constructor with IOperationResult")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    private OperationResultException(
+    private ExecutionResultException(
         SerializationInfo serializationInfo,
         StreamingContext streamingContext)
         : base(serializationInfo, streamingContext)
     {
         ArgumentNullException.ThrowIfNull(serializationInfo);
-        OperationResult = (IOperationResult)serializationInfo
-            .GetValue(nameof(OperationResult), typeof(IOperationResult))!;
+        ExecutionResult = (IExecutionResult)serializationInfo
+            .GetValue(nameof(ExecutionResult), typeof(IExecutionResult))!;
     }
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="OperationResult"/> parameter</remarks>
+    ///<see cref="ExecutionResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public OperationResultException()
+    public ExecutionResultException()
         => throw new NotSupportedException();
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="OperationResult"/> parameter</remarks>
+    ///<see cref="ExecutionResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public OperationResultException(string message) : base(message)
+    public ExecutionResultException(string message) : base(message)
         => throw new NotSupportedException();
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="OperationResult"/> parameter</remarks>
+    ///<see cref="ExecutionResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public OperationResultException(string message, Exception innerException)
+    public ExecutionResultException(string message, Exception innerException)
         : base(message, innerException) => throw new NotSupportedException();
 
     ///<inheritdoc/>
     public override string ToString() => JsonSerializer.Serialize(
-        OperationResult, OperationResult.GetType(), CachedJsonSerializerOptions);
+        ExecutionResult, ExecutionResult.GetType(), CachedJsonSerializerOptions);
 }

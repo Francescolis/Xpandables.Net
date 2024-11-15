@@ -24,43 +24,43 @@ using Microsoft.Extensions.Hosting;
 namespace Xpandables.Net.Operations.Executors;
 
 /// <summary>
-/// Executor for handling operation results that indicate failure.
+/// Executor for handling execution results that indicate failure.
 /// </summary>
-public sealed class OperationResultFailureExecutor : IOperationResultExecutor
+public sealed class ExecutionResultFailureExecutor : IExecutionResultExecutor
 {
     ///<inheritdoc/>
-    public bool CanExecute(IOperationResult operationResult) =>
-        operationResult.IsFailureStatusCode();
+    public bool CanExecute(IExecutionResult executionResult) =>
+        executionResult.IsFailureStatusCode();
 
     ///<inheritdoc/>
     public Task ExecuteAsync(
         HttpContext context,
-        IOperationResult operationResult)
+        IExecutionResult executionResult)
     {
-        context.Response.StatusCode = (int)operationResult.StatusCode;
+        context.Response.StatusCode = (int)executionResult.StatusCode;
 
         bool isDevelopment = context.RequestServices
             .GetRequiredService<IWebHostEnvironment>()
             .IsDevelopment();
 
-        ProblemDetails problemDetails = operationResult.StatusCode.IsBadRequest()
-            ? new ValidationProblemDetails(operationResult.ToModelStateDictionary())
+        ProblemDetails problemDetails = executionResult.StatusCode.IsBadRequest()
+            ? new ValidationProblemDetails(executionResult.ToModelStateDictionary())
             {
-                Title = operationResult.Title ?? operationResult.StatusCode.GetTitle(),
-                Detail = operationResult.Detail ?? operationResult.StatusCode.GetDetail(),
-                Status = (int)operationResult.StatusCode,
+                Title = executionResult.Title ?? executionResult.StatusCode.GetTitle(),
+                Detail = executionResult.Detail ?? executionResult.StatusCode.GetDetail(),
+                Status = (int)executionResult.StatusCode,
                 Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
-                Type = isDevelopment ? operationResult.GetType().Name : null,
-                Extensions = operationResult.ToElementExtensions()
+                Type = isDevelopment ? executionResult.GetType().Name : null,
+                Extensions = executionResult.ToElementExtensions()
             }
             : new ProblemDetails()
             {
-                Title = operationResult.Title ?? operationResult.StatusCode.GetTitle(),
-                Detail = operationResult.Detail ?? operationResult.StatusCode.GetDetail(),
-                Status = (int)operationResult.StatusCode,
+                Title = executionResult.Title ?? executionResult.StatusCode.GetTitle(),
+                Detail = executionResult.Detail ?? executionResult.StatusCode.GetDetail(),
+                Status = (int)executionResult.StatusCode,
                 Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
-                Type = isDevelopment ? operationResult.GetType().Name : null,
-                Extensions = operationResult.ToElementExtensions()
+                Type = isDevelopment ? executionResult.GetType().Name : null,
+                Extensions = executionResult.ToElementExtensions()
             };
 
         if (context.RequestServices

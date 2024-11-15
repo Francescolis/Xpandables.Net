@@ -29,7 +29,7 @@ public sealed class PipelineLoggingDecorator<TRequest, TResponse>(
     ILogger<PipelineLoggingDecorator<TRequest, TResponse>> logger) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : IOperationResult
+    where TResponse : IExecutionResult
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(

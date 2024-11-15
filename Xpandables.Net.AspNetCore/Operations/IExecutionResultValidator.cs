@@ -17,28 +17,20 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.Operations.Minimal;
-/// <summary>  
-/// Represents a filter that processes the result of an endpoint invocation and 
-/// converts it to a minimal result if it implements <see cref="IOperationResult"/>.  
-/// </summary>  
-public sealed class OperationResultFilter : IEndpointFilter
+namespace Xpandables.Net.Operations;
+/// <summary>
+/// Defines a validator for execution results.
+/// </summary>
+public interface IExecutionResultValidator
 {
-    /// <inheritdoc/>  
-    public async ValueTask<object?> InvokeAsync(
+    /// <summary>
+    /// Validates the execution result asynchronously.
+    /// </summary>
+    /// <param name="context">The context of the endpoint filter invocation.</param>
+    /// <param name="next">The next delegate to invoke.</param>
+    /// <returns>A task that represents the asynchronous validation execution. 
+    /// The task result contains the validation result.</returns>
+    ValueTask<object?> ValidateAsync(
         EndpointFilterInvocationContext context,
-        EndpointFilterDelegate next)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(next);
-
-        object? result = await next(context).ConfigureAwait(false);
-
-        if (result is IOperationResult operationResult)
-        {
-            return operationResult.ToMinimalResult();
-        }
-
-        return result;
-    }
+        EndpointFilterDelegate next);
 }

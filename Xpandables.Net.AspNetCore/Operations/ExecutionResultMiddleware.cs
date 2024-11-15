@@ -23,10 +23,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Operations;
 
 /// <summary>  
-/// Middleware to handle operation results and convert exceptions to 
-/// operation results.  
+/// Middleware to handle execution results and convert exceptions to 
+/// execution results.  
 /// </summary>  
-public sealed class OperationResultMiddleware : IMiddleware
+public sealed class ExecutionResultMiddleware : IMiddleware
 {
     /// <inheritdoc/>  
     public async Task InvokeAsync(
@@ -45,15 +45,15 @@ public sealed class OperationResultMiddleware : IMiddleware
                 exception = targetInvocation.InnerException ?? targetInvocation;
             }
 
-            IOperationResultExecute execute = context
+            IExecutionResultExecute execute = context
                 .RequestServices
-                .GetRequiredService<IOperationResultExecute>();
+                .GetRequiredService<IExecutionResultExecute>();
 
-            IOperationResult operationResult =
-                exception.ToOperationResultForProblemDetails();
+            IExecutionResult executionResult =
+                exception.ToExecutionResultForProblemDetails();
 
             await execute
-                .ExecuteAsync(context, operationResult)
+                .ExecuteAsync(context, executionResult)
                 .ConfigureAwait(false);
         }
     }

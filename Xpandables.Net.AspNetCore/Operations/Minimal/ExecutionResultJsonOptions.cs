@@ -23,9 +23,9 @@ using Microsoft.Extensions.Options;
 namespace Xpandables.Net.Operations.Minimal;
 
 /// <summary>  
-/// Configures JSON options for operation results with minimal settings.  
+/// Configures JSON options for execution results with minimal settings.  
 /// </summary>  
-public sealed class OperationResultJsonOptions : IConfigureOptions<JsonOptions>
+public sealed class ExecutionResultJsonOptions : IConfigureOptions<JsonOptions>
 {
     /// <inheritdoc/>  
     public void Configure(JsonOptions options)
@@ -38,7 +38,7 @@ public sealed class OperationResultJsonOptions : IConfigureOptions<JsonOptions>
         options.SerializerOptions.Converters
             .Add(new JsonStringEnumConverter());
         options.SerializerOptions.Converters
-            .Add(new OperationResultJsonConverterFactory()
+            .Add(new ExecutionResultJsonConverterFactory()
             {
                 UseAspNetCoreCompatibility = true
             });

@@ -33,33 +33,33 @@ public sealed class CompositeValidator<TArgument>(
         ?? throw new ArgumentNullException(nameof(validators));
 
     /// <inheritdoc/>
-    public override IOperationResult Validate(TArgument instance)
+    public override IExecutionResult Validate(TArgument instance)
     {
-        IFailureBuilder failureBuilder = OperationResults.Failure();
+        IFailureBuilder failureBuilder = ExecutionResults.Failure();
         foreach (IValidator<TArgument> validator in _validators
             .OrderBy(o => o.Order))
         {
-            IOperationResult result = validator.Validate(instance);
+            IExecutionResult result = validator.Validate(instance);
             if (result.IsFailureStatusCode())
             {
                 failureBuilder = failureBuilder.Merge(result);
             }
         }
 
-        IOperationResult failureResult = failureBuilder.Build();
+        IExecutionResult failureResult = failureBuilder.Build();
         return failureResult.Errors.Any()
             ? failureResult
-            : OperationResults.Ok().Build();
+            : ExecutionResults.Ok().Build();
     }
 
     /// <inheritdoc/>
-    public override async ValueTask<IOperationResult> ValidateAsync(TArgument instance)
+    public override async ValueTask<IExecutionResult> ValidateAsync(TArgument instance)
     {
-        IFailureBuilder failureBuilder = OperationResults.Failure();
+        IFailureBuilder failureBuilder = ExecutionResults.Failure();
         foreach (IValidator<TArgument> validator in _validators
             .OrderBy(o => o.Order))
         {
-            IOperationResult result = await validator
+            IExecutionResult result = await validator
                 .ValidateAsync(instance)
                 .ConfigureAwait(false);
 
@@ -69,9 +69,9 @@ public sealed class CompositeValidator<TArgument>(
             }
         }
 
-        IOperationResult failureResult = failureBuilder.Build();
+        IExecutionResult failureResult = failureBuilder.Build();
         return failureResult.Errors.Any()
             ? failureResult
-            : OperationResults.Ok().Build();
+            : ExecutionResults.Ok().Build();
     }
 }

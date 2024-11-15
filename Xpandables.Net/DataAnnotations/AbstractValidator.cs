@@ -32,9 +32,9 @@ public abstract class AbstractValidator<TArgument> : IValidator<TArgument>
     /// Validates the specified instance and returns the result of the validation.
     /// </summary>
     /// <param name="instance">The instance to validate.</param>
-    /// <returns>An <see cref="IOperationResult"/> representing the result of 
+    /// <returns>An <see cref="IExecutionResult"/> representing the result of 
     /// the validation.</returns>
-    public abstract IOperationResult Validate(TArgument instance);
+    public abstract IExecutionResult Validate(TArgument instance);
 
     /// <summary>
     /// Asynchronously validates the specified instance and returns the result 
@@ -43,9 +43,9 @@ public abstract class AbstractValidator<TArgument> : IValidator<TArgument>
     /// <param name="instance">The instance to validate.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the result of 
     /// the validation.</returns>
-    public virtual ValueTask<IOperationResult> ValidateAsync(TArgument instance)
+    public virtual ValueTask<IExecutionResult> ValidateAsync(TArgument instance)
     {
-        IOperationResult result = Validate(instance);
-        return new ValueTask<IOperationResult>(result);
+        IExecutionResult result = Validate(instance);
+        return new ValueTask<IExecutionResult>(result);
     }
 }

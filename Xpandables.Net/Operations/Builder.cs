@@ -22,7 +22,7 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Represents a builder for creating operation results with various properties.
+/// Represents a builder for creating execution results with various properties.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
@@ -54,33 +54,33 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     protected ElementCollection Errors { get; } = [];
 
     /// <summary>
-    /// Gets or sets the HTTP status code for the operation result.
+    /// Gets or sets the HTTP status code for the execution result.
     /// </summary>
     protected HttpStatusCode StatusCode { get; set; } = statusCode;
 
     /// <summary>
-    /// Gets or sets the title for the operation result.
+    /// Gets or sets the title for the execution result.
     /// </summary>
     protected string? Title { get; set; }
 
     /// <summary>  
-    /// Gets or sets the detail for the operation result.  
+    /// Gets or sets the detail for the execution result.  
     /// </summary>  
     protected string? Detail { get; set; }
 
     /// <summary>
-    /// Gets or sets the result object of the operation.
+    /// Gets or sets the result object of the execution.
     /// </summary>
     protected object? Result { get; set; }
 
     /// <summary>
-    /// Gets or sets the location URI for the operation result.
+    /// Gets or sets the location URI for the execution result.
     /// </summary>
     protected Uri? Location { get; set; }
 
     /// <inheritdoc/>
-    public IOperationResult Build() =>
-        new OperationResult
+    public IExecutionResult Build() =>
+        new ExecutionResult
         {
             StatusCode = StatusCode,
             Title = Title,
@@ -129,24 +129,24 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     }
 
     /// <inheritdoc/>
-    public TBuilder Merge(IOperationResult operation)
+    public TBuilder Merge(IExecutionResult execution)
     {
-        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(execution);
 
-        if (operation.IsSuccessStatusCode
+        if (execution.IsSuccessStatusCode
             || (int)StatusCode is >= 200 and <= 299)
         {
             throw new InvalidOperationException(
-                "Both operation results must be failure to merge them.");
+                "Both execution results must be failure to merge them.");
         }
 
-        StatusCode = operation.StatusCode;
-        Title = operation.Title ?? Title;
-        Detail = operation.Detail ?? Detail;
-        Location = operation.Location ?? Location;
-        Headers.Merge(operation.Headers);
-        Extensions.Merge(operation.Extensions);
-        Errors.Merge(operation.Errors);
+        StatusCode = execution.StatusCode;
+        Title = execution.Title ?? Title;
+        Detail = execution.Detail ?? Detail;
+        Location = execution.Location ?? Location;
+        Headers.Merge(execution.Headers);
+        Extensions.Merge(execution.Extensions);
+        Errors.Merge(execution.Errors);
 
         return (this as TBuilder)!;
     }
@@ -196,7 +196,7 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
     /// <inheritdoc/>
     public TBuilder WithException(Exception exception)
     {
-        ElementEntry? entry = Errors[OperationResultExtensions.ExceptionKey];
+        ElementEntry? entry = Errors[ExecutionResultExtensions.ExceptionKey];
         if (entry.HasValue)
         {
             _ = Errors.Remove(entry.Value.Key);
@@ -209,7 +209,7 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
         else
         {
             entry = new ElementEntry(
-                OperationResultExtensions.ExceptionKey,
+                ExecutionResultExtensions.ExceptionKey,
                 BuildErrorMessage(exception));
         }
 
@@ -326,11 +326,11 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
 }
 
 /// <summary>
-/// Represents a builder for creating operation results with a specific result type.
+/// Represents a builder for creating execution results with a specific result type.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-/// <param name="statusCode">The HTTP status code for the operation result.</param>
+/// <param name="statusCode">The HTTP status code for the execution result.</param>
 public abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     Builder<TBuilder>(statusCode),
     IResultBuilder<TBuilder, TResult>,
@@ -338,7 +338,7 @@ public abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     where TBuilder : class, IBuilder<TResult>
 {
     /// <summary>
-    /// Gets or sets the result object of the operation.
+    /// Gets or sets the result object of the execution.
     /// </summary>
     protected new TResult? Result
     {
@@ -354,8 +354,8 @@ public abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     }
 
     /// <inheritdoc/>
-    public new IOperationResult<TResult> Build() =>
-        new OperationResult<TResult>
+    public new IExecutionResult<TResult> Build() =>
+        new ExecutionResult<TResult>
         {
             StatusCode = StatusCode,
             Title = Title,

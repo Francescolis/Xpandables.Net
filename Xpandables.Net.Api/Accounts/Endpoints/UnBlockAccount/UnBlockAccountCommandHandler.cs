@@ -8,7 +8,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 public sealed class UnBlockAccountCommandHandler(
     IAggregateStore<Account> aggregateStore) : ICommandHandler<UnBlockAccountCommand>
 {
-    public async Task<IOperationResult> HandleAsync(
+    public async Task<IExecutionResult> HandleAsync(
         UnBlockAccountCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -22,6 +22,6 @@ public sealed class UnBlockAccountCommandHandler(
             .AppendAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
-        return OperationResults.Ok().Build();
+        return ExecutionResults.Ok().Build();
     }
 }

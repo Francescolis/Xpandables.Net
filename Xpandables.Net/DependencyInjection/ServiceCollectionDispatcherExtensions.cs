@@ -209,5 +209,5 @@ public static class ServiceCollectionDispatcherExtensions
             .AddScoped(
                 typeof(IPipelineDecorator<,>),
                 typeof(PipelineFinalizerDecorator<,>))
-            .AddScoped<IOperationResultFinalizer, OperationResultFinalizer>();
+            .AddScoped<IExecutionResultFinalizer, ExecutionResultFinalizer>();
 }

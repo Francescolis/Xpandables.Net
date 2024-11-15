@@ -24,93 +24,108 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Represents the result of an operation.
+/// Represents the result of an execution.
 /// </summary>
-public interface IOperationResult
+public interface IExecutionResult
 {
     /// <summary>
-    /// Gets the status code of the operation.
+    /// Gets the status code of the execution.
     /// </summary>
     HttpStatusCode StatusCode { get; }
 
     /// <summary>
-    /// Gets the title of the operation result.
+    /// Gets the title of the execution result.
     /// </summary>
     [MaybeNull, AllowNull]
     string Title { get; }
 
     /// <summary>
-    /// Gets the detail of the operation result.
+    /// Gets the detail of the execution result.
     /// </summary>
     [MaybeNull, AllowNull]
     string Detail { get; }
 
     /// <summary>
-    /// Gets the location URI of the operation result.
+    /// Gets the location URI of the execution result.
     /// </summary>
     [MaybeNull, AllowNull]
     Uri Location { get; }
 
     /// <summary>
-    /// Gets the result object of the operation.
+    /// Gets the result object of the execution.
     /// </summary>
+    /// <remarks>May be null if the execution has no result.</remarks>
     [MaybeNull, AllowNull]
     object Result { get; }
 
     /// <summary>
-    /// Gets the collection of errors associated with the operation.
+    /// Gets the collection of errors associated with the execution.
     /// </summary>
     ElementCollection Errors { get; }
 
     /// <summary>
-    /// Gets the collection of headers associated with the operation.
+    /// Gets the collection of headers associated with the execution.
     /// </summary>
     ElementCollection Headers { get; }
 
     /// <summary>
-    /// Gets the collection of extensions associated with the operation.
+    /// Gets the collection of extensions associated with the execution.
     /// </summary>
     ElementCollection Extensions { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the operation is generic.
+    /// Gets a value indicating whether the execution is generic.
     /// </summary>
     public bool IsGeneric => false;
 
     /// <summary>
-    /// Gets a value indicating whether the operation's status code 
+    /// Gets a value indicating whether the execution's status code 
     /// is a success status code.
     /// </summary>
     public bool IsSuccessStatusCode =>
         (int)StatusCode is >= 200 and <= 299;
 
     /// <summary>
-    /// Gets the exception associated with the operation result, if any.
+    /// Ensures that the execution result has a success status code.
+    /// </summary>
+    /// <exception cref="ExecutionResultException">Thrown if the status code 
+    /// is not a success status code.</exception>
+    public void EnsureSuccessStatusCode()
+    {
+        if (!IsSuccessStatusCode)
+        {
+            throw new ExecutionResultException(this);
+        }
+    }
+
+    /// <summary>
+    /// Gets the exception associated with the execution result, if any.
     /// </summary>
     /// <returns>The exception entry if available; otherwise, null.</returns>
     public ElementEntry? GetException() =>
-        Errors[OperationResultExtensions.ExceptionKey];
+        Errors[ExecutionResultExtensions.ExceptionKey];
 }
 
 /// <summary>
-/// Represents the result of an operation with a specific result type.
+/// Represents the result of an execution with a specific result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result object.</typeparam>
-public interface IOperationResult<TResult> : IOperationResult
+public interface IExecutionResult<TResult> : IExecutionResult
 {
     /// <summary>
-    /// Gets the result object of the operation.
-    /// </summary>    
+    /// Gets the result object of the execution.
+    /// </summary>
+    /// <remarks>May be null if the execution has no result.</remarks>
     [MaybeNull, AllowNull]
     new TResult Result { get; }
 
     [JsonIgnore]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [MaybeNull, AllowNull]
-    object IOperationResult.Result => Result;
+    object IExecutionResult.Result => Result;
 
     /// <summary>
-    /// Gets a value indicating whether the operation's status code 
+    /// Gets a value indicating whether the execution's status code 
     /// is a success status code.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Result))]
@@ -118,14 +133,31 @@ public interface IOperationResult<TResult> : IOperationResult
         (int)StatusCode is >= 200 and <= 299;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    bool IOperationResult.IsSuccessStatusCode => IsSuccessStatusCode;
+    bool IExecutionResult.IsSuccessStatusCode => IsSuccessStatusCode;
+
+    /// <summary>
+    /// Ensures that the execution result has a success status code.
+    /// </summary>
+    /// <exception cref="ExecutionResultException">Thrown if the status code 
+    /// is not a success status code.</exception>
+    [MemberNotNull([nameof(Result)])]
+    public new void EnsureSuccessStatusCode()
+    {
+        if (!IsSuccessStatusCode)
+        {
+            throw new ExecutionResultException(this);
+        }
+    }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    void IExecutionResult.EnsureSuccessStatusCode() => EnsureSuccessStatusCode();
 
     /// <summary>  
-    /// Gets a value indicating whether the operation is generic.  
+    /// Gets a value indicating whether the execution is generic.  
     /// </summary>  
     public new bool IsGeneric => true;
 
     [JsonIgnore]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    bool IOperationResult.IsGeneric => IsGeneric;
+    bool IExecutionResult.IsGeneric => IsGeneric;
 }

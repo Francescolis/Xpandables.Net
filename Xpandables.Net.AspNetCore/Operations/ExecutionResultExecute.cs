@@ -30,61 +30,61 @@ using Xpandables.Net.Operations.Executors;
 namespace Xpandables.Net.Operations;
 
 /// <summary>
-/// Executes an operation result by setting the appropriate metadata and 
+/// Executes an execution result by setting the appropriate metadata and 
 /// invoking the corresponding executor.
 /// </summary>
-public sealed class OperationResultExecute : IOperationResultExecute
+public sealed class ExecutionResultExecute : IExecutionResultExecute
 {
     /// <summary>
-    /// Executes the operation result asynchronously.
+    /// Executes the execution result asynchronously.
     /// </summary>
     /// <param name="httpContext">The HTTP context.</param>
-    /// <param name="operationResult">The operation result to execute.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="executionResult">The execution result to execute.</param>
+    /// <returns>A task that represents the asynchronous execution.</returns>
     public async Task ExecuteAsync(
         HttpContext httpContext,
-        IOperationResult operationResult)
+        IExecutionResult executionResult)
     {
-        await MetadataSetter(httpContext, operationResult)
+        await MetadataSetter(httpContext, executionResult)
             .ConfigureAwait(false);
 
-        IOperationResultExecutor executor = httpContext.RequestServices
-            .GetServices<IOperationResultExecutor>()
-            .FirstOrDefault(executor => executor.CanExecute(operationResult))
+        IExecutionResultExecutor executor = httpContext.RequestServices
+            .GetServices<IExecutionResultExecutor>()
+            .FirstOrDefault(executor => executor.CanExecute(executionResult))
             ?? throw new InvalidOperationException(
-                "No executor found for the operation result.");
+                "No executor found for the execution result.");
 
         await executor
-            .ExecuteAsync(httpContext, operationResult)
+            .ExecuteAsync(httpContext, executionResult)
             .ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Sets the metadata for the HTTP response based on the operation result.
+    /// Sets the metadata for the HTTP response based on the execution result.
     /// </summary>
     /// <param name="context">The HTTP context.</param>
-    /// <param name="operationResult">The operation result.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="executionResult">The execution result.</param>
+    /// <returns>A task that represents the asynchronous execution.</returns>
     private static async Task MetadataSetter(
         HttpContext context,
-        IOperationResult operationResult)
+        IExecutionResult executionResult)
     {
-        if (operationResult.Location is not null)
+        if (executionResult.Location is not null)
         {
             context.Response.Headers.Location =
-                new StringValues(operationResult.Location.ToString());
+                new StringValues(executionResult.Location.ToString());
         }
 
-        context.Response.StatusCode = (int)operationResult.StatusCode;
+        context.Response.StatusCode = (int)executionResult.StatusCode;
 
-        foreach (ElementEntry header in operationResult.Headers)
+        foreach (ElementEntry header in executionResult.Headers)
         {
             context.Response.Headers.Append(
                 header.Key,
                 new StringValues([.. header.Values]));
         }
 
-        if (operationResult.StatusCode == HttpStatusCode.Unauthorized)
+        if (executionResult.StatusCode == HttpStatusCode.Unauthorized)
         {
             if (context.RequestServices.GetService<IAuthenticationSchemeProvider>()
                 is { } schemeProvider)

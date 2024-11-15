@@ -18,7 +18,7 @@ using System.Net;
 
 namespace Xpandables.Net.Operations;
 /// <summary>  
-/// Represents a builder for creating failure operation results.  
+/// Represents a builder for creating failure execution results.  
 /// </summary>  
 public sealed class FailureBuilder : Builder<IFailureBuilder>, IFailureBuilder
 {
@@ -43,7 +43,7 @@ public sealed class FailureBuilder : Builder<IFailureBuilder>, IFailureBuilder
 }
 
 /// <summary>  
-/// Represents a builder for creating failure operation results with a specific 
+/// Represents a builder for creating failure execution results with a specific 
 /// result type.  
 /// </summary>  
 /// <typeparam name="TResult">The type of the result.</typeparam>  

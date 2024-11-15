@@ -26,7 +26,7 @@ public sealed class BlockAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("BlockAccount")
-        .WithXOperationResultMinimalApi()
+        .WithXExecutionResultMinimalApi()
         .AllowAnonymous()
         .Accepts<BlockAccountRequest>()
         .Produces(StatusCodes.Status200OK)

@@ -24,7 +24,7 @@ namespace Xpandables.Net.Operations.Controllers;
 /// Represents an action filter attribute that validates the model state before 
 /// executing the action.  
 /// </summary>  
-public sealed class OperationResultControllerValidationFilterAttribute :
+public sealed class ExecutionResultControllerValidationFilterAttribute :
     ActionFilterAttribute
 {
     /// <inheritdoc/>  
@@ -37,9 +37,9 @@ public sealed class OperationResultControllerValidationFilterAttribute :
             return;
         }
 
-        IOperationResult operationResult =
-            context.ModelState.ToOperationResult();
+        IExecutionResult executionResult =
+            context.ModelState.ToExecutionResult();
 
-        context.Result = new BadRequestObjectResult(operationResult);
+        context.Result = new BadRequestObjectResult(executionResult);
     }
 }

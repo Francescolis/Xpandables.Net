@@ -35,9 +35,9 @@ public interface IValidator
     /// Validates the specified instance and returns the result of the validation.
     /// </summary>
     /// <param name="instance">The instance to validate.</param>
-    /// <returns>An <see cref="IOperationResult"/> representing the result of 
+    /// <returns>An <see cref="IExecutionResult"/> representing the result of 
     /// the validation.</returns>
-    IOperationResult Validate(object instance);
+    IExecutionResult Validate(object instance);
 
     /// <summary>
     /// Asynchronously validates the specified instance and returns the result 
@@ -46,10 +46,10 @@ public interface IValidator
     /// <param name="instance">The instance to validate.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the result of 
     /// the validation.</returns>
-    public ValueTask<IOperationResult> ValidateAsync(object instance)
+    public ValueTask<IExecutionResult> ValidateAsync(object instance)
     {
-        IOperationResult result = Validate(instance);
-        return new ValueTask<IOperationResult>(result);
+        IExecutionResult result = Validate(instance);
+        return new ValueTask<IExecutionResult>(result);
     }
 }
 
@@ -65,12 +65,12 @@ public interface IValidator<in TArgument> : IValidator
     /// Validates the specified instance and returns the result of the validation.
     /// </summary>
     /// <param name="instance">The instance to validate.</param>
-    /// <returns>An <see cref="IOperationResult"/> representing the result of 
+    /// <returns>An <see cref="IExecutionResult"/> representing the result of 
     /// the validation.</returns>
-    IOperationResult Validate(TArgument instance);
+    IExecutionResult Validate(TArgument instance);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    IOperationResult IValidator.Validate(object instance) =>
+    IExecutionResult IValidator.Validate(object instance) =>
         Validate((TArgument)instance);
 
     /// <summary>
@@ -80,9 +80,9 @@ public interface IValidator<in TArgument> : IValidator
     /// <param name="instance">The instance to validate.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the result of 
     /// the validation.</returns>
-    ValueTask<IOperationResult> ValidateAsync(TArgument instance);
+    ValueTask<IExecutionResult> ValidateAsync(TArgument instance);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    ValueTask<IOperationResult> IValidator.ValidateAsync(object instance) =>
+    ValueTask<IExecutionResult> IValidator.ValidateAsync(object instance) =>
         ValidateAsync((TArgument)instance);
 }

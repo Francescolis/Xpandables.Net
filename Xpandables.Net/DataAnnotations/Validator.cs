@@ -33,7 +33,7 @@ public sealed class Validator<TArgument>(IServiceProvider provider) : AbstractVa
         ?? throw new ArgumentNullException(nameof(provider));
 
     /// <inheritdoc/>
-    public override IOperationResult Validate(TArgument instance)
+    public override IExecutionResult Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
         ValidationContext validationContext =
@@ -45,11 +45,11 @@ public sealed class Validator<TArgument>(IServiceProvider provider) : AbstractVa
             validationResults,
             true))
         {
-            return OperationResults
+            return ExecutionResults
                 .Ok()
                 .Build();
         }
 
-        return validationResults.ToOperationResult();
+        return validationResults.ToExecutionResult();
     }
 }

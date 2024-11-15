@@ -54,8 +54,8 @@ public sealed class AsyncExceptionPipelineDecorator<TRequest, TResponse> :
             }
             catch (Exception exception)
             {
-                throw new OperationResultException(
-                    exception.ToOperationResult());
+                throw new ExecutionResultException(
+                    exception.ToExecutionResult());
             }
 
             yield return enumerator.Current;

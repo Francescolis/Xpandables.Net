@@ -31,7 +31,7 @@ public interface ICommandHandlerWrapper
     /// requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task 
     /// result contains the operation result.</returns>
-    Task<IOperationResult> HandleAsync(
+    Task<IExecutionResult> HandleAsync(
         ICommand command,
         CancellationToken cancellationToken = default);
 }

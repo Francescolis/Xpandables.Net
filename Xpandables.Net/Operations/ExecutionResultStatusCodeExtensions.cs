@@ -17,7 +17,7 @@
 using System.Net;
 
 namespace Xpandables.Net.Operations;
-public static partial class OperationResultExtensions
+public static partial class ExecutionResultExtensions
 {
     private const int _minSuccessStatusCode = 200;
     private const int _maxSuccessStatusCode = 299;
@@ -32,15 +32,15 @@ public static partial class OperationResultExtensions
         (int)statusCode is >= _minSuccessStatusCode and <= _maxSuccessStatusCode;
 
     /// <summary>    
-    /// Determines whether the status code of the specified operation result     
+    /// Determines whether the status code of the specified execution result     
     /// is a success status code.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the operation     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
     /// result is a success status code;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsSuccessStatusCode(this IOperationResult operationResult) =>
-        operationResult.StatusCode.IsSuccessStatusCode();
+    public static bool IsSuccessStatusCode(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsSuccessStatusCode();
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is a failure status code.    
@@ -52,15 +52,15 @@ public static partial class OperationResultExtensions
         !statusCode.IsSuccessStatusCode();
 
     /// <summary>    
-    /// Determines whether the status code of the specified operation result     
+    /// Determines whether the status code of the specified execution result     
     /// is a failure status code.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the operation     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
     /// result is a failure status code;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsFailureStatusCode(this IOperationResult operationResult) =>
-        !operationResult.StatusCode.IsSuccessStatusCode();
+    public static bool IsFailureStatusCode(this IExecutionResult executionResult) =>
+        !executionResult.StatusCode.IsSuccessStatusCode();
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is a Created status code.    
@@ -72,15 +72,15 @@ public static partial class OperationResultExtensions
         statusCode == HttpStatusCode.Created;
 
     /// <summary>    
-    /// Determines whether the status code of the specified operation result     
+    /// Determines whether the status code of the specified execution result     
     /// is a Created status code.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the operation     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
     /// result is a Created status code;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsCreated(this IOperationResult operationResult) =>
-        operationResult.StatusCode.IsCreated();
+    public static bool IsCreated(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsCreated();
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is a Not Found 
@@ -94,15 +94,15 @@ public static partial class OperationResultExtensions
         statusCode == HttpStatusCode.NotFound;
 
     /// <summary>    
-    /// Determines whether the status code of the specified operation result     
+    /// Determines whether the status code of the specified execution result     
     /// is a Not Found status code.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the operation     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
     /// result is a Not Found status code;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsNotFound(this IOperationResult operationResult) =>
-        operationResult.StatusCode.IsNotFound();
+    public static bool IsNotFound(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsNotFound();
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is a No Content 
@@ -116,24 +116,24 @@ public static partial class OperationResultExtensions
         statusCode == HttpStatusCode.NoContent;
 
     /// <summary>    
-    /// Determines whether the status code of the specified operation result     
+    /// Determines whether the status code of the specified execution result     
     /// is a No Content status code.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the operation     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
     /// result is a No Content status code;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsNoContent(this IOperationResult operationResult) =>
-        operationResult.StatusCode.IsNoContent();
+    public static bool IsNoContent(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsNoContent();
 
     /// <summary>    
-    /// Determines whether the result of the specified operation result is a file.    
+    /// Determines whether the result of the specified execution result is a file.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the result of the operation result is a file;     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the result of the execution result is a file;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsResultFile(this IOperationResult operationResult) =>
-       operationResult.Result is ResultFile;
+    public static bool IsResultFile(this IExecutionResult executionResult) =>
+       executionResult.Result is ResultFile;
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is a Bad Request 
@@ -147,15 +147,15 @@ public static partial class OperationResultExtensions
         statusCode == HttpStatusCode.BadRequest;
 
     /// <summary>    
-    /// Determines whether the status code of the specified operation result     
+    /// Determines whether the status code of the specified execution result     
     /// is a Bad Request status code.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the operation     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
     /// result is a Bad Request status code;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsBadRequest(this IOperationResult operationResult) =>
-        operationResult.StatusCode.IsBadRequest();
+    public static bool IsBadRequest(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsBadRequest();
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is an Unauthorized   
@@ -169,15 +169,15 @@ public static partial class OperationResultExtensions
        statusCode == HttpStatusCode.Unauthorized;
 
     /// <summary>  
-    /// Determines whether the status code of the specified operation result  
+    /// Determines whether the status code of the specified execution result  
     /// is an Unauthorized status code.  
     /// </summary>  
-    /// <param name="operationResult">The operation result to check.</param>  
-    /// <returns><see langword="true"/> if the status code of the operation  
+    /// <param name="executionResult">The execution result to check.</param>  
+    /// <returns><see langword="true"/> if the status code of the execution  
     /// result is an Unauthorized status code;  
     /// otherwise, <see langword="false"/>.</returns>  
-    public static bool IsUnauthorized(this IOperationResult operationResult) =>
-        operationResult.StatusCode.IsUnauthorized();
+    public static bool IsUnauthorized(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsUnauthorized();
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is an Internal 
@@ -191,15 +191,15 @@ public static partial class OperationResultExtensions
         statusCode == HttpStatusCode.InternalServerError;
 
     /// <summary>    
-    /// Determines whether the status code of the specified operation result     
+    /// Determines whether the status code of the specified execution result     
     /// is an Internal Server Error status code.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the operation     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
     /// result is an Internal Server Error status code;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsInternalServerError(this IOperationResult operationResult) =>
-        operationResult.StatusCode.IsInternalServerError();
+    public static bool IsInternalServerError(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsInternalServerError();
 
     /// <summary>    
     /// Determines whether the specified HTTP status code is a Service Unavailable 
@@ -213,29 +213,13 @@ public static partial class OperationResultExtensions
         statusCode == HttpStatusCode.ServiceUnavailable;
 
     /// <summary>    
-    /// Determines whether the status code of the specified operation result     
+    /// Determines whether the status code of the specified execution result     
     /// is a Service Unavailable status code.    
     /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the operation     
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
     /// result is a Service Unavailable status code;     
     /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsServiceUnavailable(this IOperationResult operationResult) =>
-        operationResult.StatusCode.IsServiceUnavailable();
-
-    /// <summary>    
-    /// Ensures that the status code of the specified operation result is a 
-    /// success status code, otherwise throws an 
-    /// <see cref="OperationResultException"/>.
-    /// </summary>    
-    /// <param name="operationResult">The operation result to check.</param>    
-    /// <exception cref="OperationResultException">Thrown if the status code 
-    /// of the operation result is a failure status code.</exception>
-    public static void EnsureSuccessStatusCode(this IOperationResult operationResult)
-    {
-        if (operationResult.IsFailureStatusCode())
-        {
-            throw new OperationResultException(operationResult);
-        }
-    }
+    public static bool IsServiceUnavailable(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsServiceUnavailable();
 }

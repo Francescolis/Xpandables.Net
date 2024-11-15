@@ -17,39 +17,39 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Xpandables.Net.Operations;
-public static partial class OperationResultExtensions
+public static partial class ExecutionResultExtensions
 {
     /// <summary>
-    /// Converts an <see cref="Action"/> to an <see cref="IOperationResult"/>.
+    /// Converts an <see cref="Action"/> to an <see cref="IExecutionResult"/>.
     /// </summary>
     /// <param name="action">The action to execute.</param>
-    /// <returns>An <see cref="IOperationResult"/> representing the result of 
+    /// <returns>An <see cref="IExecutionResult"/> representing the result of 
     /// the action.</returns>
-    public static IOperationResult ToOperationResult(this Action action)
+    public static IExecutionResult ToExecutionResult(this Action action)
     {
         ArgumentNullException.ThrowIfNull(action);
 
         try
         {
             action();
-            return OperationResults.Ok().Build();
+            return ExecutionResults.Ok().Build();
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
-            return exception.ToOperationResult();
+            return exception.ToExecutionResult();
         }
     }
 
     /// <summary>
-    /// Converts an <see cref="Action{T}"/> to an <see cref="IOperationResult"/>.
+    /// Converts an <see cref="Action{T}"/> to an <see cref="IExecutionResult"/>.
     /// </summary>
     /// <typeparam name="T">The type of the argument passed to the action.</typeparam>
     /// <param name="action">The action to execute.</param>
     /// <param name="args">The argument to pass to the action.</param>
-    /// <returns>An <see cref="IOperationResult"/> representing the result 
+    /// <returns>An <see cref="IExecutionResult"/> representing the result 
     /// of the action.</returns>
-    public static IOperationResult ToOperationResult<T>(
+    public static IExecutionResult ToExecutionResult<T>(
         this Action<T> action,
         T args)
     {
@@ -58,55 +58,55 @@ public static partial class OperationResultExtensions
         try
         {
             action(args);
-            return OperationResults.Ok().Build();
+            return ExecutionResults.Ok().Build();
         }
         catch (ValidationException validationException)
         {
-            return validationException.ToOperationResult();
+            return validationException.ToExecutionResult();
         }
-        catch (OperationResultException operationResultException)
+        catch (ExecutionResultException executionException)
         {
-            return operationResultException.OperationResult;
+            return executionException.ExecutionResult;
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
-            return exception.ToOperationResult();
+            return exception.ToExecutionResult();
         }
     }
 
     /// <summary>
-    /// Converts a <see cref="Task"/> to an <see cref="IOperationResult"/>
+    /// Converts a <see cref="Task"/> to an <see cref="IExecutionResult"/>
     /// asynchronously.
     /// </summary>
     /// <param name="task">The task to execute.</param>
     /// <returns>A <see cref="Task{IOperationResult}"/> representing the result
     /// of the task.</returns>
-    public static async Task<IOperationResult> ToOperationResultAsync(this Task task)
+    public static async Task<IExecutionResult> ToExecutionResultAsync(this Task task)
     {
         ArgumentNullException.ThrowIfNull(task);
 
         try
         {
             await task.ConfigureAwait(false);
-            return OperationResults.Ok().Build();
+            return ExecutionResults.Ok().Build();
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
-            return exception.ToOperationResult();
+            return exception.ToExecutionResult();
         }
     }
 
     /// <summary>
     /// Converts a <see cref="Task{TResult}"/> to an 
-    /// <see cref="IOperationResult{TResult}"/>
+    /// <see cref="IExecutionResult{TResult}"/>
     /// asynchronously.
     /// </summary>
     /// <typeparam name="TResult">The type of the result produced by the task.</typeparam>
     /// <param name="task">The task to execute.</param>
     /// <returns>A <see cref="Task{T}"/> representing the result of the task.</returns>
-    public static async Task<IOperationResult<TResult>> ToOperationResultAsync<TResult>(
+    public static async Task<IExecutionResult<TResult>> ToExecutionResultAsync<TResult>(
         this Task<TResult> task)
     {
         ArgumentNullException.ThrowIfNull(task);
@@ -114,29 +114,29 @@ public static partial class OperationResultExtensions
         try
         {
             TResult result = await task.ConfigureAwait(false);
-            return OperationResults
+            return ExecutionResults
                 .Ok(result)
                 .Build();
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
             return exception
-                .ToOperationResult()
-                .ToOperationResult<TResult>();
+                .ToExecutionResult()
+                .ToExecutionResult<TResult>();
         }
     }
 
     /// <summary>
     /// Converts a <see cref="Func{TResult}"/> to an 
-    /// <see cref="IOperationResult{TResult}"/>.
+    /// <see cref="IExecutionResult{TResult}"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of the result produced by the 
     /// function.</typeparam>
     /// <param name="func">The function to execute.</param>
-    /// <returns>An <see cref="IOperationResult{TResult}"/> representing the 
+    /// <returns>An <see cref="IExecutionResult{TResult}"/> representing the 
     /// result of the function.</returns>
-    public static IOperationResult<TResult> ToOperationResult<TResult>(
+    public static IExecutionResult<TResult> ToExecutionResult<TResult>(
         this Func<TResult> func)
     {
         ArgumentNullException.ThrowIfNull(func);
@@ -144,16 +144,16 @@ public static partial class OperationResultExtensions
         try
         {
             TResult result = func();
-            return OperationResults
+            return ExecutionResults
                 .Ok(result)
                 .Build();
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
             return exception
-                .ToOperationResult()
-                .ToOperationResult<TResult>();
+                .ToExecutionResult()
+                .ToExecutionResult<TResult>();
         }
     }
 }

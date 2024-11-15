@@ -41,10 +41,10 @@ public abstract class AsyncPipelineDecorator<TRequest, TResponse> :
             return HandleCoreAsync(query, next, cancellationToken);
         }
         catch (Exception exception)
-            when (exception is not OperationResultException)
+            when (exception is not ExecutionResultException)
         {
-            throw new OperationResultException(
-                exception.ToOperationResult());
+            throw new ExecutionResultException(
+                exception.ToExecutionResult());
         }
     }
 

@@ -214,7 +214,7 @@ The `IOperationResult` and `OperationResults` classes are part of the `Xpandable
 
 #### IOperationResult
 
-The `IOperationResult` interface represents the result of an operation. It includes properties for status code, title, detail, location, result, errors, headers, and extensions. It also provides methods to check if the operation was successful and to retrieve any associated exceptions.
+The `IOperationResult` interface represents the result of an execution. It includes properties for status code, title, detail, location, result, errors, headers, and extensions. It also provides methods to check if the execution was successful and to retrieve any associated exceptions.
 
 #### OperationResults
 
@@ -224,7 +224,7 @@ The `OperationResults` class provides static methods to create instances of `IOp
 
 #### Creating a Success Operation Result
 
-To create a success operation result, you can use the `Success` method from the `OperationResults` class. You can specify the status code, result, and other details.
+To create a success execution result, you can use the `Success` method from the `OperationResults` class. You can specify the status code, result, and other details.
 
 ```csharp
 
@@ -237,7 +237,7 @@ public class SampleUsage
     {
         return OperationResults.Success(HttpStatusCode.OK)
             .WithTitle("Operation Successful")
-            .WithDetail("The operation completed successfully.")
+            .WithDetail("The execution completed successfully.")
             .WithLocation(new Uri("http://example.com"))
             .Build();
     }
@@ -246,7 +246,7 @@ public class SampleUsage
     {
         return OperationResults.Success("Success Data", HttpStatusCode.OK)
             .WithTitle("Operation Successful")
-            .WithDetail("The operation completed successfully with data.")
+            .WithDetail("The execution completed successfully with data.")
             .WithLocation(new Uri("http://example.com"))
             .Build();
     }
@@ -256,7 +256,7 @@ public class SampleUsage
 
 #### Creating a Failure Operation Result
 
-To create a failure operation result, you can use the `Failure` method from the `OperationResults` class. You can specify the status code, errors, and other details.
+To create a failure execution result, you can use the `Failure` method from the `OperationResults` class. You can specify the status code, errors, and other details.
 
 ```csharp
 
@@ -269,7 +269,7 @@ public class SampleUsage
     {
         return OperationResults.Failure(HttpStatusCode.BadRequest)
             .WithTitle("Operation Failed")
-            .WithDetail("The operation failed due to bad request.")
+            .WithDetail("The execution failed due to bad request.")
             .WithError("ErrorKey", "ErrorMessage")
             .Build();
     }
@@ -278,7 +278,7 @@ public class SampleUsage
     {
         return OperationResults.Failure<string>(HttpStatusCode.BadRequest)
             .WithTitle("Operation Failed")
-            .WithDetail("The operation failed due to bad request with data.")
+            .WithDetail("The execution failed due to bad request with data.")
             .WithError("ErrorKey", "ErrorMessage")
             .Build();
     }
@@ -300,7 +300,7 @@ public class SampleUsage
     {
         return OperationResults.Ok()
             .WithTitle("Operation Successful")
-            .WithDetail("The operation completed successfully.")
+            .WithDetail("The execution completed successfully.")
             .Build();
     }
 
@@ -315,7 +315,7 @@ public class SampleUsage
 
 ```
 
-The `IOperationResult` and `OperationResults` classes provide a flexible and structured way to handle operation results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
+The `IOperationResult` and `OperationResults` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
 
 ## IHttpClientDispatcher and Related Classes
 
