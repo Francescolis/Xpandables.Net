@@ -30,7 +30,9 @@ public sealed record class EventEntityFilterSnapshot :
     EntityFilter<IEventEntitySnapshot>,
     IEventFilter<IEventEntitySnapshot>
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventEntityFilterSnapshot"/> class.
+    /// </summary>
     [SetsRequiredMembers]
     public EventEntityFilterSnapshot() : base() { }
 
