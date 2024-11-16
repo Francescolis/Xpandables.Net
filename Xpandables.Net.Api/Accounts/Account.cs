@@ -3,7 +3,7 @@ using Xpandables.Net.Events.Aggregates;
 
 namespace Xpandables.Net.Api.Accounts;
 
-public sealed class Account : AggregateStateContext<Account, AccountState>
+public sealed class Account : AggregateState<Account, AccountState>
 {
     public static Account Create(Guid keyId)
     {
