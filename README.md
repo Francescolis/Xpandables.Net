@@ -206,25 +206,25 @@ else
 
 ```
 
-## IOperationResult and OperationResults
+## IExecutionResult and ExecutionResults
 
 ### Overview
 
-The `IOperationResult` and `OperationResults` classes are part of the `Xpandables.Net.Operations` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
+The `IExecutionResult` and `ExecutionResults` classes are part of the `Xpandables.Net.Operations` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
 
-#### IOperationResult
+#### IExecutionResult
 
-The `IOperationResult` interface represents the result of an execution. It includes properties for status code, title, detail, location, result, errors, headers, and extensions. It also provides methods to check if the execution was successful and to retrieve any associated exceptions.
+The `IExecutionResult` interface represents the result of an execution. It includes properties for status code, title, detail, location, result, errors, headers, and extensions. It also provides methods to check if the execution was successful and to retrieve any associated exceptions.
 
-#### OperationResults
+#### ExecutionResults
 
-The `OperationResults` class provides static methods to create instances of `IOperationResult` for both success and failure scenarios. It includes methods to set various HTTP status codes and to include additional details like titles, details, locations, and errors.
+The `ExecutionResults` class provides static methods to create instances of `IExecutionResult` for both success and failure scenarios. It includes methods to set various HTTP status codes and to include additional details like titles, details, locations, and errors.
 
 ### Usage
 
-#### Creating a Success Operation Result
+#### Creating a Success Execution Result
 
-To create a success execution result, you can use the `Success` method from the `OperationResults` class. You can specify the status code, result, and other details.
+To create a success execution result, you can use the `Success` method from the `ExecutionResults` class. You can specify the status code, result, and other details.
 
 ```csharp
 
@@ -233,19 +233,19 @@ using Xpandables.Net.Operations;
 
 public class SampleUsage
 {
-    public IOperationResult CreateSuccessResult()
+    public IExecutionResult CreateSuccessResult()
     {
-        return OperationResults.Success(HttpStatusCode.OK)
-            .WithTitle("Operation Successful")
+        return ExecutionResults.Success(HttpStatusCode.OK)
+            .WithTitle("Execution Successful")
             .WithDetail("The execution completed successfully.")
             .WithLocation(new Uri("http://example.com"))
             .Build();
     }
 
-    public IOperationResult<string> CreateSuccessResultWithData()
+    public IExecutionResult<string> CreateSuccessResultWithData()
     {
-        return OperationResults.Success("Success Data", HttpStatusCode.OK)
-            .WithTitle("Operation Successful")
+        return ExecutionResults.Success("Success Data", HttpStatusCode.OK)
+            .WithTitle("Execution Successful")
             .WithDetail("The execution completed successfully with data.")
             .WithLocation(new Uri("http://example.com"))
             .Build();
@@ -254,9 +254,9 @@ public class SampleUsage
 
 ```
 
-#### Creating a Failure Operation Result
+#### Creating a Failure Execution Result
 
-To create a failure execution result, you can use the `Failure` method from the `OperationResults` class. You can specify the status code, errors, and other details.
+To create a failure execution result, you can use the `Failure` method from the `ExecutionResults` class. You can specify the status code, errors, and other details.
 
 ```csharp
 
@@ -265,19 +265,19 @@ using Xpandables.Net.Operations;
 
 public class SampleUsage
 {
-    public IOperationResult CreateFailureResult()
+    public IExecutionResult CreateFailureResult()
     {
-        return OperationResults.Failure(HttpStatusCode.BadRequest)
-            .WithTitle("Operation Failed")
+        return ExecutionResults.Failure(HttpStatusCode.BadRequest)
+            .WithTitle("Execution Failed")
             .WithDetail("The execution failed due to bad request.")
             .WithError("ErrorKey", "ErrorMessage")
             .Build();
     }
 
-    public IOperationResult<string> CreateFailureResultWithData()
+    public IExecutionResult<string> CreateFailureResultWithData()
     {
-        return OperationResults.Failure<string>(HttpStatusCode.BadRequest)
-            .WithTitle("Operation Failed")
+        return ExecutionResults.Failure<string>(HttpStatusCode.BadRequest)
+            .WithTitle("Execution Failed")
             .WithDetail("The execution failed due to bad request with data.")
             .WithError("ErrorKey", "ErrorMessage")
             .Build();
@@ -288,7 +288,7 @@ public class SampleUsage
 
 #### Using Predefined Methods
 
-The `OperationResults` class also provides predefined methods for common HTTP status codes like `Ok`, `Created`, `NoContent`, `NotFound`, `BadRequest`, `Conflict`, `Unauthorized`, `InternalServerError`, and `ServiceUnavailable`.
+The `ExecutionResults` class also provides predefined methods for common HTTP status codes like `Ok`, `Created`, `NoContent`, `NotFound`, `BadRequest`, `Conflict`, `Unauthorized`, `InternalServerError`, and `ServiceUnavailable`.
 
 ```csharp
 
@@ -296,17 +296,17 @@ using Xpandables.Net.Operations;
 
 public class SampleUsage
 {
-    public IOperationResult CreateOkResult()
+    public IExecutionResult CreateOkResult()
     {
-        return OperationResults.Ok()
-            .WithTitle("Operation Successful")
+        return ExecutionResults.Ok()
+            .WithTitle("Execution Successful")
             .WithDetail("The execution completed successfully.")
             .Build();
     }
 
-    public IOperationResult<string> CreateNotFoundResult()
+    public IExecutionResult<string> CreateNotFoundResult()
     {
-        return OperationResults.NotFound<string>()
+        return ExecutionResults.NotFound<string>()
             .WithTitle("Resource Not Found")
             .WithDetail("The requested resource was not found.")
             .Build();
@@ -315,7 +315,7 @@ public class SampleUsage
 
 ```
 
-The `IOperationResult` and `OperationResults` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
+The `IExecutionResult` and `ExecutionResults` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
 
 ## IHttpClientDispatcher and Related Classes
 
@@ -327,19 +327,19 @@ The `IHttpClientDispatcher` interface and related classes in the `Xpandables.Net
 
 The `IHttpClientDispatcher` interface provides methods to handle HTTP client requests using a typed client HTTP client. It supports sending requests that do not return a response, requests that return a response of a specific type, and requests that return a stream that can be async-enumerated.
 
-#### IHttpClientRequestOptionsBuilder
+#### IHttpClientAttributeBuilder
 
-The `IHttpClientRequestOptionsBuilder` interface defines a builder for creating `HttpClientRequestOptionsAttribute`. This interface takes priority over the `HttpClientRequestOptionsAttribute`.
+The `IHttpClientAttributeBuilder` interface defines a builder for creating `HttpClientAttribute`. This interface takes priority over the `HttpClientAttribute`.
 
-#### HttpClientRequestOptionsAttribute
+#### HttpClientAttribute
 
-The `HttpClientRequestOptionsAttribute` class is an attribute used to configure options for HTTP client requests. It should decorate implementations of `IHttpClientRequest`, `IHttpClientAsyncRequest<TResponse>`, or `IHttpClientRequest<TResponse>` to be used with `IHttpClientDispatcher`.
+The `HttpClientAttribute` class is an attribute used to configure options for HTTP client requests. It should decorate implementations of `IHttpClientRequest`, `IHttpClientAsyncRequest<TResponse>`, or `IHttpClientRequest<TResponse>` to be used with `IHttpClientDispatcher`.
 
 ### Usage
 
 #### Creating and Sending a Simple Request
 
-To create and send a simple request using `IHttpClientDispatcher`, you can define a request class and decorate it with `HttpClientRequestOptionsAttribute`.
+To create and send a simple request using `IHttpClientDispatcher`, you can define a request class and decorate it with `HttpClientAttribute`.
 
 ```csharp
 
@@ -418,18 +418,18 @@ public class SampleUsage
 
 #### Using a Custom Request Options Builder
 
-To use a custom request options builder, implement the `IHttpClientRequestOptionsBuilder` interface in your request class.
+To use a custom request options builder, implement the `IHttpClientAttributeBuilder` interface in your request class.
 
 ```csharp
 
 using System.Net; 
 using Xpandables.Net.Http;
 
-public class CustomRequestOptionsBuilder : IHttpClientRequestOptionsBuilder 
+public class CustomRequestAttributeBuilder : IHttpClientAttributeBuilder 
 { 
-    public HttpClientRequestOptionsAttribute Build(HttpClientOptions options) 
+    public HttpClientAttribute Build(HttpClientOptions options) 
     { 
-        return new HttpClientRequestOptionsAttribute 
+        return new HttpClientAttribute 
             { 
                 Path = "/api/custom", 
                 Method = Method.POST, 
@@ -438,7 +438,7 @@ public class CustomRequestOptionsBuilder : IHttpClientRequestOptionsBuilder
     } 
 }
 
-public class CustomRequest : CustomRequestOptionsBuilder;
+public class CustomRequest : CustomRequestAttributeBuilder;
 
 public class SampleUsage 
 { 
