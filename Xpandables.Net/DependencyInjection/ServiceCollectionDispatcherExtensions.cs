@@ -20,7 +20,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Commands;
 using Xpandables.Net.Commands.Wrappers;
-using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Pipelines;
 

@@ -3,10 +3,10 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Commands;
+using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
-using Xpandables.Net.Pipelines;
 
-namespace Xpandables.Net.Events.Aggregates;
+namespace Xpandables.Net.Pipelines;
 internal sealed class PipelineAggregateDeciderDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>

@@ -14,15 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Events.Entities;
 
 /// <summary>
-/// Represents an integration event entity.
+/// Represents an abstract base class for event entities in a domain context.
 /// </summary>
-public sealed class EventEntityIntegration : EventEntity, IEventEntityIntegration
+public sealed class EventEntityDomain : EventEntity, IEventEntityDomain
 {
-    /// <summary>
-    /// Gets the error message associated with the event entity.
-    /// </summary>
-    public string? ErrorMessage { get; set; }
+    /// <inheritdoc/>
+    public required Guid AggregateId { get; init; }
 }

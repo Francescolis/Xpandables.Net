@@ -19,9 +19,10 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Text.Json;
 
+using Xpandables.Net.Events.Entities;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Events.Filters;
 /// <summary>
 /// Represents a filter for events that can be applied to a queryable 
 /// collection of events.

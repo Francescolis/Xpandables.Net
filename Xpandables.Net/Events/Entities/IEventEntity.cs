@@ -18,7 +18,7 @@ using System.Text.Json;
 
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Events.Entities;
 
 /// <summary>
 /// Represents an event entity that contains event-related data.

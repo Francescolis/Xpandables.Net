@@ -14,15 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Events.Entities;
 
 /// <summary>
-/// Represents an integration event entity that includes an error message.
+/// Represents an integration event entity.
 /// </summary>
-public interface IEventEntityIntegration : IEventEntity
+public sealed class EventEntityIntegration : EventEntity, IEventEntityIntegration
 {
     /// <summary>
     /// Gets the error message associated with the event entity.
     /// </summary>
-    string? ErrorMessage { get; }
+    public string? ErrorMessage { get; set; }
 }

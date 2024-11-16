@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Events.Entities;
 
 /// <summary>
 /// Represents a snapshot of an event entity with an owner.

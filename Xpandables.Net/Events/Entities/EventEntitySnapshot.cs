@@ -14,26 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Events.Entities;
 
 /// <summary>
-/// Represents an abstract base class for event entities.
+/// Represents a snapshot of an event entity.
 /// </summary>
-public abstract class EventEntity : Entity<Guid>, IEventEntity
+public sealed class EventEntitySnapshot : EventEntity, IEventEntitySnapshot
 {
-    /// <inheritdoc/>
-    public required string EventName { get; init; }
-
-    /// <inheritdoc/>
-    public required string EventFullName { get; init; }
-
-    /// <inheritdoc/>
-    public required JsonDocument EventData { get; init; }
-
-    /// <inheritdoc/>
-    public required ulong EventVersion { get; init; }
+    /// <summary>
+    /// Gets the owner of the event entity snapshot.
+    /// </summary>
+    public required Guid OwnerId { get; init; }
 }

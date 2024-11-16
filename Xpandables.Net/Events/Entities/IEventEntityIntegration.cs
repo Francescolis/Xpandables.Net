@@ -14,14 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Events.Entities;
+
 /// <summary>
-/// Represents an event entity domain that includes aggregate information.
+/// Represents an integration event entity that includes an error message.
 /// </summary>
-public interface IEventEntityDomain : IEventEntity
+public interface IEventEntityIntegration : IEventEntity
 {
     /// <summary>
-    /// Gets the identifier of the aggregate.
+    /// Gets the error message associated with the event entity.
     /// </summary>
-    Guid AggregateId { get; }
+    string? ErrorMessage { get; }
 }

@@ -18,6 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Text.Json;
 
+using Xpandables.Net.Events.Entities;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events.Filters;

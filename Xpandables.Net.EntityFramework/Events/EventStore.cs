@@ -22,6 +22,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Events.Converters;
+using Xpandables.Net.Events.Entities;
+using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events;

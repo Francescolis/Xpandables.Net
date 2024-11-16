@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Events.Filters;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>

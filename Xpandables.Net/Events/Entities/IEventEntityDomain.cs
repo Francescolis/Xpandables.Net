@@ -14,13 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
-
+namespace Xpandables.Net.Events.Entities;
 /// <summary>
-/// Represents an abstract base class for event entities in a domain context.
+/// Represents an event entity domain that includes aggregate information.
 /// </summary>
-public sealed class EventEntityDomain : EventEntity, IEventEntityDomain
+public interface IEventEntityDomain : IEventEntity
 {
-    /// <inheritdoc/>
-    public required Guid AggregateId { get; init; }
+    /// <summary>
+    /// Gets the identifier of the aggregate.
+    /// </summary>
+    Guid AggregateId { get; }
 }

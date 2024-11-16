@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Events;
 using Xpandables.Net.Events.Converters;
+using Xpandables.Net.Events.Entities;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Api.Accounts.Persistence;
