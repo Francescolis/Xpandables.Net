@@ -48,20 +48,18 @@ public abstract class EventConverter : IEventConverter
     /// </summary>
     /// <param name="event">The event to serialize.</param>
     /// <param name="jsonOptions">Optional JSON serializer options.</param>
-    /// <param name="documentOptions">Optional JSON document options.</param>
     /// <returns>A JSON document representing the serialized event.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the event cannot be serialized.
     /// </exception>
-    protected static JsonDocument SerializeEvent(
+    protected static ReadOnlyMemory<byte> SerializeEvent(
         IEvent @event,
-        JsonSerializerOptions? jsonOptions = default,
-        JsonDocumentOptions documentOptions = default)
+        JsonSerializerOptions? jsonOptions = default)
     {
         try
         {
             byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), jsonOptions);
-            return JsonDocument.Parse(json, documentOptions);
+            return json;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -83,13 +81,13 @@ public abstract class EventConverter : IEventConverter
     /// Thrown when the event data cannot be deserialized.
     /// </exception>
     protected static IEvent DeserializeEvent(
-        JsonDocument eventData,
+        ReadOnlyMemory<byte> eventData,
         Type eventType,
         JsonSerializerOptions? options = default)
     {
         try
         {
-            object? @event = JsonSerializer.Deserialize(eventData, eventType, options)
+            object? @event = JsonSerializer.Deserialize(eventData.Span, eventType, options)
                 ?? throw new InvalidOperationException(
                     $"Failed to deserialize the event data to {eventType.Name}.");
 

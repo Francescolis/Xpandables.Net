@@ -36,14 +36,12 @@ namespace Xpandables.Net.Events;
 /// <param name="options">The event options.</param>
 public sealed class EventStore(
     IOptions<EventOptions> options,
-    DataContextEvent context) :
-    Disposable, IEventStore
+    DataContextEvent context) : IEventStore
 {
     private readonly EventOptions _options = options.Value;
 #pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly DataContextEvent _context = context;
 #pragma warning restore CA2213 // Disposable fields should be disposed
-    private List<IEventEntity> _eventEntities = [];
 
     /// <inheritdoc/>
     public Task AppendAsync(
@@ -61,7 +59,7 @@ public sealed class EventStore(
             IEventConverter eventConverter =
                 _options.GetEventConverterFor(eventsList.First());
 
-            _eventEntities = new(eventsList.Count);
+            List<IEventEntity> _eventEntities = new(eventsList.Count);
 
             foreach (IEvent @event in eventsList)
             {
@@ -156,17 +154,5 @@ public sealed class EventStore(
                 "An error occurred while marking the events as published.",
                 exception);
         }
-    }
-
-    /// <inheritdoc/>
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _eventEntities.ForEach(entity => entity.Dispose());
-            _eventEntities.Clear();
-        }
-
-        base.Dispose(disposing);
     }
 }

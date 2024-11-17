@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,26 +15,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-using Xpandables.Net.Events.Entities;
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Events.Converters;
 
 /// <summary>
-/// Represents a filter for event entity domains.
+/// Converts a <see cref="ReadOnlyMemory{T}"/> of byte to a byte array and vice versa.
 /// </summary>
-public sealed record EventEntityFilterDomain :
-    EntityFilter<IEventEntityDomain>,
-    IEventFilter<IEventEntityDomain>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ReadOnlyMemoryToByteArrayConverter"/> class.
+/// </remarks>
+public sealed class ReadOnlyMemoryToByteArrayConverter() :
+    ValueConverter<ReadOnlyMemory<byte>, byte[]>(
+        v => v.ToArray(),
+        v => new ReadOnlyMemory<byte>(v))
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventEntityFilterDomain"/> class.
-    /// </summary>
-    [SetsRequiredMembers]
-    public EventEntityFilterDomain() : base() { }
-
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventDomain);
 }

@@ -50,4 +50,14 @@ public static class ConverterExtensions
         where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
         where TValue : notnull
         => builder.HasConversion<PrimitiveValueConverter<TPrimitive, TValue>>();
+
+    /// <summary>
+    /// Configures the property to use a <see cref="ReadOnlyMemoryToByteArrayConverter"/> 
+    /// for conversion.
+    /// </summary>
+    /// <param name="builder">The property builder to configure.</param>
+    /// <returns>The configured property builder.</returns>
+    public static PropertyBuilder<ReadOnlyMemory<byte>> HasReadOnlyMemoryToByteArrayConversion(
+        this PropertyBuilder<ReadOnlyMemory<byte>> builder)
+        => builder.HasConversion<ReadOnlyMemoryToByteArrayConverter>();
 }

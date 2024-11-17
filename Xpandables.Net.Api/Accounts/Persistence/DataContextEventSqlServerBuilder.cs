@@ -28,7 +28,9 @@ public static class DataContextEventSqlServerBuilder
 
         modelBuilder.Entity<EventEntityDomain>()
             .Property(p => p.EventData)
-            .HasJsonDocumentConversion();
+            .HasColumnType("VARBINARY(MAX)")
+            .HasReadOnlyMemoryToByteArrayConversion()
+            .IsRequired();
 
         modelBuilder.Entity<EventEntityIntegration>()
             .Property(p => p.KeyId)
@@ -37,7 +39,10 @@ public static class DataContextEventSqlServerBuilder
 
         modelBuilder.Entity<EventEntityIntegration>()
             .Property(p => p.EventData)
-            .HasJsonDocumentConversion();
+            .HasReadOnlyMemoryToByteArrayConversion()
+            .HasColumnType("VARBINARY(MAX)")
+            .IsRequired();
+
 
         modelBuilder.Entity<EventEntityIntegration>()
             .Property<byte[]>("ConcurrencyToken")
@@ -51,7 +56,10 @@ public static class DataContextEventSqlServerBuilder
 
         modelBuilder.Entity<EventEntitySnapshot>()
             .Property(p => p.EventData)
-            .HasJsonDocumentConversion();
+            .HasColumnType("VARBINARY(MAX)")
+            .HasReadOnlyMemoryToByteArrayConversion()
+            .IsRequired();
+
 
         return services.AddXDataContextEvent(options =>
             options.UseSqlServer(

@@ -18,6 +18,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using Xpandables.Net.Events.Converters;
 using Xpandables.Net.Events.Entities;
 using Xpandables.Net.Repositories;
 
@@ -41,7 +42,10 @@ public sealed class EventEntityDomainConfiguration :
         _ = builder.Property(e => e.EventName).IsRequired().HasMaxLength(100);
         _ = builder.Property(e => e.EventFullName).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.EventVersion).IsRequired();
-        _ = builder.Property(e => e.EventData).IsRequired();
+        _ = builder.Property(e => e.EventData)
+            .HasColumnType("VARBINARY(MAX)")
+            .HasReadOnlyMemoryToByteArrayConversion()
+            .IsRequired();
         _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(50);
         _ = builder.Property(e => e.CreatedOn).IsRequired();
         _ = builder.Property(e => e.UpdatedOn).IsRequired(false);

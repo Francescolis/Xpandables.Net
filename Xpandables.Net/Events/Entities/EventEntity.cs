@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events.Entities;
@@ -32,7 +30,7 @@ public abstract class EventEntity : Entity<Guid>, IEventEntity
     public required string EventFullName { get; init; }
 
     /// <inheritdoc/>
-    public required JsonDocument EventData { get; init; }
+    public required ReadOnlyMemory<byte> EventData { get; init; }
 
     /// <inheritdoc/>
     public required ulong EventVersion { get; init; }

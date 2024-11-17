@@ -16,13 +16,12 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
-using System.Linq.Expressions;
-using System.Text.Json;
 
 using Xpandables.Net.Events.Entities;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events.Filters;
+
 /// <summary>
 /// Represents a filter for events that can be applied to a queryable 
 /// collection of events.
@@ -35,11 +34,6 @@ public interface IEventFilter : IEntityFilter
     /// <remarks>e.g. <see cref="IEventDomain"/>, <see cref="IEventIntegration"/>
     /// or <see cref="IEventSnapshot"/>.</remarks>
     Type EventType { get; }
-
-    /// <summary>
-    /// Gets the predicate expression used to filter event data.
-    /// </summary>
-    Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; }
 
     /// <summary>
     /// Asynchronously fetches event entities from the specified queryable collection.
@@ -83,15 +77,6 @@ public interface IEventFilter<TEventEntity> :
         if (Predicate is not null)
         {
             query = query.Where(Predicate);
-        }
-
-        if (EventDataPredicate is not null)
-        {
-            Expression<Func<TEventEntity, bool>> expression =
-                RepositoryExtensions.Compose<TEventEntity, JsonDocument, bool>(
-                    x => x.EventData, EventDataPredicate);
-
-            query = query.Where(expression);
         }
 
         if (OrderBy is not null)
