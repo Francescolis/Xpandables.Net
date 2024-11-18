@@ -14,7 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Globalization;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Xpandables.Net;
 
@@ -236,4 +239,169 @@ public static class HelperExtensions
     /// cast to the specified type.</exception>
     public static T AsRequired<T>(this object obj)
         where T : class => (T)obj;
+
+    /// <summary>
+    /// Replaces the argument object into the current text equivalent
+    /// using the default <see cref="CultureInfo.InvariantCulture"/>.
+    /// </summary>
+    /// <param name="value">The format string.</param>
+    /// <param name="args">The object to be formatted.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null
+    /// or <paramref name="args"/> is null.</exception>
+    /// <exception cref="FormatException">The format is invalid.</exception>
+    /// <returns>value <see cref="string"/> filled with 
+    /// <paramref name="args"/>.</returns>
+    public static string StringFormat(this string value, params object[] args)
+        => value.StringFormat(CultureInfo.InvariantCulture, args);
+
+    /// <summary>
+    /// Replaces the argument object into the current text equivalent using the 
+    /// specified culture.
+    /// </summary>
+    /// <param name="value">The format string.</param>
+    /// <param name="cultureInfo">CultureInfo to be used.</param>
+    /// <param name="args">The object to be formatted.</param>
+    /// <returns>value <see cref="string"/> filled with 
+    /// <paramref name="args"/></returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="value"/> 
+    /// or <paramref name="cultureInfo"/> or <paramref name="args"/> is null
+    /// .</exception>    
+    /// <exception cref="FormatException">The format is invalid.</exception>
+    public static string StringFormat(
+        this string value,
+        CultureInfo cultureInfo,
+        params object[] args)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(cultureInfo);
+
+        return string.Format(cultureInfo, value, args);
+    }
+
+    /// <summary>
+    /// Parses the text representing a single JSON value into an instance of the 
+    /// anonymous type specified by a generic type parameter.
+    /// </summary>
+    /// <typeparam name="T">The anonymous type.</typeparam>
+    /// <param name="json">The JSON data to parse.</param>
+    /// <param name="_">The anonymous instance.</param>
+    /// <param name="options">Options to control the behavior during 
+    /// parsing.</param>
+    /// <returns> A T representation of the JSON value.</returns>
+    /// <exception cref="JsonException">The JSON is invalid or T is not 
+    /// compatible with the JSON or There is remaining data in the string 
+    /// beyond a single JSON value.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible 
+    /// <see cref="JsonConverter"/> for T or its serializable 
+    /// members.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="json"/> 
+    /// is null.</exception>
+    public static T? DeserializeAnonymousType<T>(
+        this string json,
+        T _,
+        JsonSerializerOptions? options = default)
+         => JsonSerializer.Deserialize<T>(json, options);
+
+    /// <summary>
+    /// Asynchronously reads the UTF-8 encoded text representing a single JSON 
+    /// value into an instance of an anonymous type specified by a generic type 
+    /// parameter. The stream will be read to completion.
+    /// </summary>
+    /// <typeparam name="T">The anonymous type.</typeparam>
+    /// <param name="stream">The JSON data to parse.</param>
+    /// <param name="_">The anonymous instance.</param>
+    /// <param name="options">Options to control the behavior during 
+    /// parsing.</param>
+    /// <param name="cancellationToken">A CancellationToken to observe while 
+    /// waiting for the task to complete.</param>
+    /// <returns> A T representation of the JSON value.</returns>
+    /// <exception cref="JsonException">The JSON is invalid or T is not 
+    /// compatible with the JSON or There is remaining data in the 
+    /// stream.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible 
+    /// <see cref="JsonConverter"/> for T or its serializable 
+    /// members.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="stream"/> 
+    /// is null.</exception>
+    public static Task<T?> DeserializeAnonymousTypeAsync<T>(
+        this Stream stream,
+        T _,
+        JsonSerializerOptions? options = default,
+        CancellationToken cancellationToken = default)
+        => JsonSerializer
+            .DeserializeAsync<T>(stream, options, cancellationToken)
+            .AsTask();
+
+    /// <summary>
+    /// Serializes the current instance to JSON string using 
+    /// <see cref="System.Text.Json"/>.
+    /// </summary>
+    /// <param name="source">The object to act on.</param>
+    /// <param name="options">The serializer options to be applied.</param>
+    /// <returns>A JSOn string representation of the object.</returns>
+    /// <exception cref="NotSupportedException">There is no compatible 
+    /// System.Text.Json.Serialization.JsonConverter for TValue or its 
+    /// serializable members.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
+    /// is null.</exception>
+    /// <exception cref="ArgumentException">inputType is not compatible with 
+    /// value.</exception>
+    /// <exception cref="NotSupportedException"> There is no compatible 
+    /// System.Text.Json.Serialization.JsonConverter for inputType or its 
+    /// serializable members.</exception>
+    public static string ToJsonString<T>(
+        this T source,
+        JsonSerializerOptions? options = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        return JsonSerializer.Serialize(source, source.GetType(), options);
+    }
+
+    /// <summary>
+    /// Concatenates all the elements of an <see cref="IEnumerable{T}"/>,
+    /// using the specified string separator between each element.
+    /// </summary>
+    /// <typeparam name="TSource">The generic type parameter.</typeparam>
+    /// <param name="collection">The collection to act on.</param>
+    /// <param name="separator">The string to use as a separator.
+    /// Separator is included in the returned string only if value has more 
+    /// than one element.</param>
+    /// <returns>A string that consists of the elements in value delimited by 
+    /// the separator string. If value is an empty array, the method returns 
+    /// String.Empty.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="collection"/> 
+    /// is null.</exception>
+    /// <exception cref="OutOfMemoryException">The length of the resulting 
+    /// string overflows the maximum allowed length (<see cref="int.MaxValue"/>)
+    /// .</exception>
+    public static string StringJoin<TSource>(
+        this IEnumerable<TSource> collection,
+        string separator)
+        => string.Join(separator, collection);
+
+    /// <summary>
+    /// Concatenates all the elements of an <see cref="IEnumerable{T}"/>,
+    /// using the specified char separator between each element.
+    /// </summary>
+    /// <typeparam name="TSource">The generic type parameter.</typeparam>
+    /// <param name="collection">The collection to act on.</param>
+    /// <param name="separator">The string to use as a separator.
+    /// Separator is included in the returned string only if value has more 
+    /// than one element.</param>
+    /// <returns>A string that consists of the elements in value delimited by 
+    /// the separator string. If value is an empty array, the method returns 
+    /// String.Empty.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="collection"/> 
+    /// is null.</exception>
+    /// <exception cref="OutOfMemoryException">The length of the resulting 
+    /// string overflows the maximum allowed length (<see cref="int.MaxValue"/>)
+    /// .</exception>
+    public static string StringJoin<TSource>(
+        this IEnumerable<TSource> collection,
+        char separator)
+        => string.Join(
+            separator.ToString(CultureInfo.InvariantCulture),
+            collection);
+
 }
