@@ -145,7 +145,7 @@ public static class HttpClientDispatcherExtensions
 
         ElementCollection headers = response.Headers.ToElementCollection();
 
-        if (response.IsValid)
+        if (response.IsSuccessStatusCode)
         {
             return ExecutionResults
                 .Success(response.StatusCode)
@@ -197,7 +197,7 @@ public static class HttpClientDispatcherExtensions
         TResult? result = response.Result is TResult value ? value : default;
         ElementCollection headers = response.Headers.ToElementCollection();
 
-        if (response.IsValid)
+        if (response.IsSuccessStatusCode)
         {
             ISuccessBuilder<TResult> successBuilder = ExecutionResults
                 .Success<TResult>(response.StatusCode)

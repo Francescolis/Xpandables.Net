@@ -90,14 +90,14 @@ public class HttpClientResponse : Disposable, IEquatable<HttpClientResponse>
     /// (status code is between 200 and 299).  
     /// </summary>  
     [MemberNotNullWhen(false, nameof(Exception))]
-    public bool IsValid => (int)StatusCode is >= 200 and <= 299;
+    public bool IsSuccessStatusCode => (int)StatusCode is >= 200 and <= 299;
 
     /// <summary>  
     /// Gets a value indicating whether the HTTP response is not valid 
     /// (status code is not between 200 and 299).  
     /// </summary>  
     [MemberNotNullWhen(true, nameof(Exception))]
-    public bool IsNotValid => !IsValid;
+    public bool IsFailureStatusCode => !IsSuccessStatusCode;
 
     /// <inheritdoc/>
     public bool Equals(HttpClientResponse? other)
@@ -224,14 +224,14 @@ public class HttpClientResponse<TResult> :
     /// (status code is between 200 and 299).  
     /// </summary>  
     [MemberNotNullWhen(true, nameof(Result))]
-    public new bool IsValid => base.IsValid;
+    public new bool IsSuccessStatusCode => base.IsSuccessStatusCode;
 
     /// <summary>  
     /// Gets a value indicating whether the HTTP response is not valid 
     /// (status code is not between 200 and 299).  
     /// </summary>  
     [MemberNotNullWhen(true, nameof(Result))]
-    public new bool IsNotValid => base.IsNotValid;
+    public new bool IsFailureStatusCode => base.IsFailureStatusCode;
 
     internal override bool IsGeneric => true;
 

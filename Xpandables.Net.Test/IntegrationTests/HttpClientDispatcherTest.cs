@@ -51,7 +51,7 @@ public sealed class HttpClientDispatcherTest
 
         // Act
         var response = await dispatcher.SendAsync(query, CancellationToken.None);
-        response.IsValid.Should().BeTrue();
+        response.IsSuccessStatusCode.Should().BeTrue();
         var monkeys = await response.Result!.ToListAsync();
 
         // Assert
