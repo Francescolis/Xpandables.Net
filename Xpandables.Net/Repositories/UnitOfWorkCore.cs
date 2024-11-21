@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Xpandables.Net.Repositories;
@@ -62,7 +63,11 @@ public abstract class UnitOfWorkCore : Disposable, IUnitOfWork
     protected abstract IRepository GetRepositoryCore(Type repositoryType);
 }
 
-internal sealed class RepositoryProxy<TRepository> : DispatchProxy
+[SuppressMessage("Performance", "CA1852:Type 'RepositoryProxy' can be sealed " +
+    "because it has no subtypes in its containing assembly and is not " +
+    "externally visible",
+    Justification = "This class is a proxy and cannot be sealed.")]
+internal class RepositoryProxy<TRepository> : DispatchProxy
     where TRepository : class, IRepository
 {
     private static readonly MethodBase _methodBaseType =
@@ -122,7 +127,9 @@ internal sealed class RepositoryProxy<TRepository> : DispatchProxy
     {
         if (targetMethod.Name == nameof(DisposeAsync))
         {
-            return _disposeMethod.Invoke(this, args);
+#pragma warning disable CA2012 // Use ValueTasks correctly
+            return DisposeAsync();
+#pragma warning restore CA2012 // Use ValueTasks correctly
         }
 
         if (targetMethod.Name is (nameof(IRepository.InsertAsync)) or

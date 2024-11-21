@@ -194,8 +194,8 @@ public static class ServiceCollectionDispatcherExtensions
     public static IServiceCollection AddXAsyncPipelineExceptionDecorator(
         this IServiceCollection services) =>
         services.AddScoped(
-            typeof(IAsyncPipelineDecorator<,>),
-            typeof(AsyncExceptionPipelineDecorator<,>));
+            typeof(IPipelineAsyncDecorator<,>),
+            typeof(PipelineExceptionAsyncDecorator<,>));
 
     /// <summary>
     /// Adds a finalizer pipeline decorator to the <see cref="IServiceCollection"/>.

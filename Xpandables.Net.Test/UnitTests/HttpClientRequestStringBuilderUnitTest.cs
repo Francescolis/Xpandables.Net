@@ -3,17 +3,18 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestStringBuilderUnitTest
 {
-    private readonly HttpClientRequestStringBuilder _builder;
+    private readonly HttpClientStringRequestBuilder _builder;
 
     public HttpClientRequestStringBuilderUnitTest() =>
-        _builder = new HttpClientRequestStringBuilder();
+        _builder = new HttpClientStringRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeEleven()
@@ -158,7 +159,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         multipart!.Should().ContainSingle();
     }
 
-    private class TestHttpRequestString : IHttpClientRequest, IHttpRequestString
+    private class TestHttpRequestString : IHttpClientRequest, IStringRequest
     {
         public object GetStringContent() => new { Key = "value" };
     }

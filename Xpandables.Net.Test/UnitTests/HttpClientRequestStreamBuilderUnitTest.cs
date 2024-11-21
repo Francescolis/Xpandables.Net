@@ -1,17 +1,18 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestStreamBuilderUnitTest
 {
-    private readonly HttpClientRequestStreamBuilder _builder;
+    private readonly HttpClientStreamRequestBuilder _builder;
 
     public HttpClientRequestStreamBuilderUnitTest() =>
-        _builder = new HttpClientRequestStreamBuilder();
+        _builder = new HttpClientStreamRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeNine()

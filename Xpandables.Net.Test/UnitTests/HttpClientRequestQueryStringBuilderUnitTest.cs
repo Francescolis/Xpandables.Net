@@ -1,17 +1,18 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestQueryStringBuilderUnitTest
 {
-    private readonly HttpClientRequestQueryStringBuilder _builder;
+    private readonly HttpClientQueryStringRequestBuilder _builder;
 
     public HttpClientRequestQueryStringBuilderUnitTest() =>
-        _builder = new HttpClientRequestQueryStringBuilder();
+        _builder = new HttpClientQueryStringRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeTwo()
@@ -147,7 +148,7 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
         result.Should().Be("http://example.com?param1=value1&param2=value2#anchor");
     }
 
-    private class TestHttpRequestQueryString : IHttpClientRequest, IHttpRequestQueryString
+    private class TestHttpRequestQueryString : IHttpClientRequest, IQueryStringRequest
     {
         public IDictionary<string, string?>? GetQueryString() =>
             new Dictionary<string, string?>

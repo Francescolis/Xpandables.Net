@@ -17,7 +17,11 @@
 ********************************************************************************/
 using System.Net.Http.Headers;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using Xpandables.Net.Http.Interfaces;
+using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.ResponseBuilders;
+
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Http;
 
@@ -27,7 +31,7 @@ namespace Xpandables.Net.Http;
 /// <see cref="IHttpClientRequest"/>,
 /// <see cref="IHttpClientAsyncRequest{TResponse}"/> 
 /// or <see cref="IHttpClientRequest{TResponse}"/>
-/// in order to be used with <see cref="IHttpClientDispatcher"/>.
+/// in order to be used with <see cref="IHttpClientSender"/>.
 /// </summary>
 /// <remarks>
 /// Your class can implement the <see cref="IHttpClientAttributeBuilder"/>
@@ -88,7 +92,7 @@ public sealed class HttpClientAttribute : Attribute
     /// In this case, an <see cref="AuthenticationHeaderValue"/>
     /// with the <see cref="Scheme"/> value will be initialized and filled
     /// with an implementation of <see cref="HttpClientAuthorizationHandler"/>.
-    /// You need to configure the <see cref="IHttpClientDispatcher"/> 
+    /// You need to configure the <see cref="IHttpClientSender"/> 
     /// registration with one of the extension methods like
     /// <see langword="ConfigurePrimaryHttpMessageHandler{THandler}(IHttpClientBuilder)"/>    
     /// Or you can use a custom implementation to 

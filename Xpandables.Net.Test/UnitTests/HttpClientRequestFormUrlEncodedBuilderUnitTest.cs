@@ -1,17 +1,18 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
 {
-    private readonly HttpClientRequestFormUrlEncodedBuilder _builder;
+    private readonly HttpClientFormUrlEncodedRequestBuilder _builder;
 
     public HttpClientRequestFormUrlEncodedBuilderUnitTest() =>
-        _builder = new HttpClientRequestFormUrlEncodedBuilder();
+        _builder = new HttpClientFormUrlEncodedRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeSeven()
@@ -117,7 +118,7 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     }
 
     private class TestHttpRequestFormUrlEncoded :
-        IHttpClientRequest, IHttpRequestFormUrlEncoded
+        IHttpClientRequest, IFormUrlEncodedRequest
     {
         public FormUrlEncodedContent GetFormUrlEncodedContent()
         {

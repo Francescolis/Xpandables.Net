@@ -25,7 +25,7 @@ namespace Xpandables.Net.Commands.Wrappers;
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public sealed class QueryAsyncHandlerWrapper<TQuery, TResult>(
     IQueryAsyncHandler<TQuery, TResult> decoratee,
-    IEnumerable<IAsyncPipelineDecorator<TQuery, TResult>> decorators) :
+    IEnumerable<IPipelineAsyncDecorator<TQuery, TResult>> decorators) :
     IQueryAsyncHandlerWrapper<TResult>
     where TQuery : class, IQueryAsync<TResult>
 {
@@ -36,7 +36,7 @@ public sealed class QueryAsyncHandlerWrapper<TQuery, TResult>(
     {
         IAsyncEnumerable<TResult> results = decorators
             .Reverse()
-            .Aggregate<IAsyncPipelineDecorator<TQuery, TResult>,
+            .Aggregate<IPipelineAsyncDecorator<TQuery, TResult>,
             RequestAsyncHandler<TResult>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 

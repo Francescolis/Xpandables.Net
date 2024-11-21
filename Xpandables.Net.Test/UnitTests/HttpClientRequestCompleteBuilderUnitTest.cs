@@ -1,15 +1,16 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestCompleteBuilderUnitTest
 {
-    private readonly HttpClientRequestCompleteBuilder _builder;
+    private readonly HttpClientCompleteRequestBuilder _builder;
 
     public HttpClientRequestCompleteBuilderUnitTest() =>
-        _builder = new HttpClientRequestCompleteBuilder();
+        _builder = new HttpClientCompleteRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeIntMaxValue()
@@ -22,7 +23,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     }
 
     [Theory]
-    [InlineData(typeof(IRequestDefinitionComplete), true)]
+    [InlineData(typeof(IDefinitionCompleteRequest), true)]
     [InlineData(typeof(IHttpClientRequest), true)]
     [InlineData(typeof(object), false)]
     public void CanBuild_ShouldReturnExpectedResult(Type targetType, bool expectedResult)
@@ -126,7 +127,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     }
 
     private class TestHttpRequestDefinitionComplete :
-        IHttpClientRequest, IRequestDefinitionComplete
+        IHttpClientRequest, IDefinitionCompleteRequest
     {
     }
 }

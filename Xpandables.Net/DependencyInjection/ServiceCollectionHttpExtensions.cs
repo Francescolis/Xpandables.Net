@@ -22,7 +22,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
-/// Provides extension methods for registering <see cref="IHttpClientDispatcher"/> 
+/// Provides extension methods for registering <see cref="IHttpClientSender"/> 
 /// services in the service collection.
 /// </summary>
 public static class ServiceCollectionHttpExtensions
@@ -64,7 +64,7 @@ public static class ServiceCollectionHttpExtensions
         services.AddXHttpClientMessageFactory<HttpClientMessageFactory>();
 
     /// <summary>
-    /// Registers the specified <see cref="IHttpClientDispatcher"/> 
+    /// Registers the specified <see cref="IHttpClientSender"/> 
     /// implementation to the services.
     /// </summary>
     /// <typeparam name="THttpClientDispatcher">The type of the HTTP client 
@@ -75,12 +75,12 @@ public static class ServiceCollectionHttpExtensions
     public static IHttpClientBuilder AddXHttpClientDispatcher<THttpClientDispatcher>(
         this IServiceCollection services,
         Action<IServiceProvider, HttpClient> configureClient)
-        where THttpClientDispatcher : class, IHttpClientDispatcher =>
+        where THttpClientDispatcher : class, IHttpClientSender =>
         services.AddHttpClient
-            <IHttpClientDispatcher, THttpClientDispatcher>(configureClient);
+            <IHttpClientSender, THttpClientDispatcher>(configureClient);
 
     /// <summary>
-    /// Registers the default <see cref="HttpClientDispatcherDefault"/> 
+    /// Registers the default <see cref="HttpClientSenderDefault"/> 
     /// implementation to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
@@ -90,5 +90,5 @@ public static class ServiceCollectionHttpExtensions
         this IServiceCollection services,
         Action<IServiceProvider, HttpClient> configureClient) =>
         services
-        .AddXHttpClientDispatcher<HttpClientDispatcherDefault>(configureClient);
+        .AddXHttpClientDispatcher<HttpClientSenderDefault>(configureClient);
 }

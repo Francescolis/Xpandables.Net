@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Http.Interfaces;
+
 namespace Xpandables.Net.Http.RequestBuilders;
 /// <summary>
 /// Represents an abstract base class for building HTTP client requests.
@@ -21,7 +23,7 @@ namespace Xpandables.Net.Http.RequestBuilders;
 /// <typeparam name="TInterfaceRequest">The type of the interface request.</typeparam>
 public abstract class HttpClientRequestBuilder<TInterfaceRequest> :
     IHttpClientRequestBuilder<TInterfaceRequest>
-    where TInterfaceRequest : class, IRequestDefinition
+    where TInterfaceRequest : class, IDefinitionRequest
 {
     ///<inheritdoc/>
     public Type Type => typeof(TInterfaceRequest);

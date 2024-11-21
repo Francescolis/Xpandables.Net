@@ -2,17 +2,18 @@
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestHeaderBuilderUnitTest
 {
-    private readonly HttpClientRequestHeaderBuilder _builder;
+    private readonly HttpClientHeaderRequestBuilder _builder;
 
     public HttpClientRequestHeaderBuilderUnitTest() =>
-        _builder = new HttpClientRequestHeaderBuilder();
+        _builder = new HttpClientHeaderRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeFour()
@@ -92,7 +93,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
             .Should().Contain("header1,value1;header2,value2");
     }
 
-    private class TestHttpRequestHeader : IHttpClientRequest, IHttpRequestHeader
+    private class TestHttpRequestHeader : IHttpClientRequest, IHeaderRequest
     {
         public ElementCollection GetHeaders()
         {
@@ -108,7 +109,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
     }
 
     private class TestHttpRequestHeaderWithModelName :
-        IHttpClientRequest, IHttpRequestHeader
+        IHttpClientRequest, IHeaderRequest
     {
         public ElementCollection GetHeaders()
         {

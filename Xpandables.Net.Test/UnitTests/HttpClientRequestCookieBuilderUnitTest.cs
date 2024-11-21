@@ -1,17 +1,18 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestCookieBuilderUnitTest
 {
-    private readonly HttpClientRequestCookieBuilder _builder;
+    private readonly HttpClientCookieRequestBuilder _builder;
 
     public HttpClientRequestCookieBuilderUnitTest() =>
-        _builder = new HttpClientRequestCookieBuilder();
+        _builder = new HttpClientCookieRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeThree()
@@ -74,7 +75,7 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
         context.Message.Options.Should().BeEmpty();
     }
 
-    private class TestHttpRequestCookie : IHttpClientRequest, IHttpRequestCookie
+    private class TestHttpRequestCookie : IHttpClientRequest, ICookieRequest
     {
         public IDictionary<string, object?> GetCookieHeaderValue() =>
             new Dictionary<string, object?>

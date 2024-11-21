@@ -3,17 +3,18 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestBasicAuthBuilderUnitTest
 {
-    private readonly HttpClientRequestBasicAuthBuilder _builder;
+    private readonly HttpClientBasicAuthRequestBuilder _builder;
 
     public HttpClientRequestBasicAuthBuilderUnitTest() =>
-        _builder = new HttpClientRequestBasicAuthBuilder();
+        _builder = new HttpClientBasicAuthRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeFive()
@@ -69,7 +70,7 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
         context.Message.Headers.Authorization.Should().BeNull();
     }
 
-    private class TestHttpRequestBasicAuth : IHttpClientRequest, IHttpRequestBasicAuth
+    private class TestHttpRequestBasicAuth : IHttpClientRequest, IBasicAuthRequest
     {
         public AuthenticationHeaderValue GetAuthenticationHeaderValue() =>
             new("Basic", "dGVzdDp0ZXN0");

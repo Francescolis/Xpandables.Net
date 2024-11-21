@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Http.Interfaces;
+
 namespace Xpandables.Net.Http;
 /// <summary>
 /// Defines methods to build HTTP request and response messages.

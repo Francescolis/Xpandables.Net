@@ -3,18 +3,19 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
-using static Xpandables.Net.Http.HttpClientParameters.Patch;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters.Patch;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestPatchBuilderUnitTest
 {
-    private readonly HttpClientRequestPatchBuilder _builder;
+    private readonly HttpClientPatchRequestBuilder _builder;
 
     public HttpClientRequestPatchBuilderUnitTest() =>
-        _builder = new HttpClientRequestPatchBuilder();
+        _builder = new HttpClientPatchRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeTen()

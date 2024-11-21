@@ -4,8 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.IntegrationTests;
 
@@ -33,7 +34,7 @@ public sealed class HttpClientDispatcherTest
         services.Configure<HttpClientOptions>(HttpClientOptions.Default);
         services.AddXHttpClientOptions();
         services.AddXHttpClientMessageFactory();
-        services.AddHttpClient<IHttpClientDispatcher, HttpClientDispatcherDefault>(client =>
+        services.AddHttpClient<IHttpClientSender, HttpClientSenderDefault>(client =>
         {
             client.BaseAddress = new Uri("https://www.montemagno.com/");
             client.Timeout = new TimeSpan(0, 5, 0);
@@ -45,7 +46,7 @@ public sealed class HttpClientDispatcherTest
         });
 
         var serviceProvider = services.BuildServiceProvider();
-        var dispatcher = serviceProvider.GetRequiredService<IHttpClientDispatcher>();
+        var dispatcher = serviceProvider.GetRequiredService<IHttpClientSender>();
 
         var query = new Query();
 

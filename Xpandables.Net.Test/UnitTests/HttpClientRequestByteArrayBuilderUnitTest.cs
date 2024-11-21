@@ -1,17 +1,18 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestByteArrayBuilderUnitTest
 {
-    private readonly HttpClientRequestByteArrayBuilder _builder;
+    private readonly HttpClientByteArrayRequestBuilder _builder;
 
     public HttpClientRequestByteArrayBuilderUnitTest() =>
-        _builder = new HttpClientRequestByteArrayBuilder();
+        _builder = new HttpClientByteArrayRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeSix()
@@ -116,7 +117,7 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         context.Message.Content.Should().BeNull();
     }
 
-    private class TestHttpRequestByteArray : IHttpClientRequest, IHttpRequestByteArray
+    private class TestHttpRequestByteArray : IHttpClientRequest, IByteArrayRequest
     {
         public ByteArrayContent GetByteArrayContent() => new([1, 2, 3, 4]);
     }

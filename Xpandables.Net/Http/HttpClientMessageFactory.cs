@@ -17,6 +17,10 @@
 
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.Http.Interfaces;
+using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.ResponseBuilders;
+
 namespace Xpandables.Net.Http;
 
 /// <summary>

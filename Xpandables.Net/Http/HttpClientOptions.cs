@@ -18,6 +18,7 @@ using System.Net;
 using System.Reflection;
 using System.Text.Json;
 
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 using Xpandables.Net.Http.ResponseBuilders;
 using Xpandables.Net.Optionals;
@@ -177,31 +178,31 @@ public sealed record HttpClientOptions
             .Add(new HttpClientResponseSuccessResultBuilder());
 
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestBasicAuthBuilder());
+            .Add(new HttpClientBasicAuthRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestByteArrayBuilder());
+            .Add(new HttpClientByteArrayRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestCompleteBuilder());
+            .Add(new HttpClientCompleteRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestCookieBuilder());
+            .Add(new HttpClientCookieRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestFormUrlEncodedBuilder());
+            .Add(new HttpClientFormUrlEncodedRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestHeaderBuilder());
+            .Add(new HttpClientHeaderRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestMultipartBuilder());
+            .Add(new HttpClientMultipartRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestPatchBuilder());
+            .Add(new HttpClientPatchRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestPathStringBuilder());
+            .Add(new HttpClientPathStringRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestQueryStringBuilder());
+            .Add(new HttpClientQueryStringRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestStartBuilder());
+            .Add(new HttpClientStartRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestStreamBuilder());
+            .Add(new HttpClientStreamRequestBuilder());
         _ = options.RequestBuilders
-            .Add(new HttpClientRequestStringBuilder());
+            .Add(new HttpClientStringRequestBuilder());
 
         options.SerializerOptions ??= new(JsonSerializerDefaults.Web)
         {

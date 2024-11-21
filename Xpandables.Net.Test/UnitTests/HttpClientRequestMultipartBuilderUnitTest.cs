@@ -1,17 +1,18 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.HttpClientParameters;
+using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestMultipartBuilderUnitTest
 {
-    private readonly HttpClientRequestMultipartBuilder _builder;
+    private readonly HttpClientMultipartRequestBuilder _builder;
 
     public HttpClientRequestMultipartBuilderUnitTest() =>
-        _builder = new HttpClientRequestMultipartBuilder();
+        _builder = new HttpClientMultipartRequestBuilder();
 
     [Fact]
     public void Order_ShouldBeEight()
@@ -116,7 +117,7 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         context.Message.Content.Should().BeNull();
     }
 
-    private class TestHttpRequestMultipart : IHttpClientRequest, IHttpRequestMultipart
+    private class TestHttpRequestMultipart : IHttpClientRequest, IMultipartRequest
     {
         public MultipartFormDataContent GetMultipartContent()
         {
