@@ -17,7 +17,7 @@
 namespace Xpandables.Net.Events.Entities;
 
 /// <summary>
-/// Represents an abstract base class for event entities in a domain context.
+/// Represents a class for event entities in a domain context.
 /// </summary>
 public sealed class EventEntityDomain : EventEntity, IEventEntityDomain
 {
