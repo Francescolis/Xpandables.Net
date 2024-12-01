@@ -23,14 +23,64 @@ namespace Xpandables.Net.Operations;
 /// </summary>
 public readonly record struct ExecutionResults
 {
+    /// <summary>
+    /// Returns an implementation of <see cref="IExecutionResult"/> with the 
+    /// status code OK.
+    /// </summary>
+    /// <returns>An implementation of <see cref="IExecutionResult"/>.</returns>
+    public static IExecutionResult Success() => Success(HttpStatusCode.OK).Build();
+
+    /// <summary>
+    /// Returns an implementation of <see cref="IExecutionResult{TResult}"/> with the
+    /// status code OK and the specified result.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="result">The result of the execution.</param>
+    /// <returns>An implementation of <see cref="IExecutionResult{TResult}"/>.</returns>
+    public static IExecutionResult<TResult> Success<TResult>(TResult result) =>
+        Success(result, HttpStatusCode.OK).Build();
+
+    /// <summary>
+    /// Returns an implementation of <see cref="IExecutionResult"/> with the
+    /// status code BadRequest and the specified error.
+    /// </summary>
+    /// <param name="key">The key of the error.</param>
+    /// <param name="message">The message of the error.</param>
+    /// <returns>An implementation of <see cref="IExecutionResult"/>.</returns>
+    public static IExecutionResult Failure(string key, string message) =>
+        Failure(HttpStatusCode.BadRequest)
+        .WithError(key, message)
+        .Build();
+
+    /// <summary>
+    /// Returns an implementation of <see cref="IExecutionResult"/> with the
+    /// failure status code and the specified exception.
+    /// </summary>
+    /// <param name="exception">The exception of the error.</param>
+    /// <returns>An implementation of <see cref="IExecutionResult"/>.</returns>
+    public static IExecutionResult Failure(Exception exception) =>
+        Failure(HttpStatusCode.BadRequest)
+        .Merge(exception.ToExecutionResult())
+        .Build();
+
+    /// <summary>
+    /// Returns an implementation of <see cref="IExecutionResult"/> with the
+    /// failure status code and the specified exception.
+    /// </summary>
+    /// <param name="exception">The exception of the error.</param>
+    /// <returns>An implementation of <see cref="IExecutionResult"/>.</returns>
+    public static IExecutionResult<TResult> Failure<TResult>(Exception exception) =>
+        Failure<TResult>(HttpStatusCode.BadRequest)
+        .Merge(exception.ToExecutionResult())
+        .Build();
+
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
     /// specified status code to build a success execution result.  
     /// </summary>  
     /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
-    public static ISuccessBuilder Success(
-        HttpStatusCode statusCode = HttpStatusCode.OK) =>
+    public static ISuccessBuilder Success(HttpStatusCode statusCode) =>
         new SuccessBuilder(statusCode);
 
     /// <summary>  
@@ -41,7 +91,7 @@ public readonly record struct ExecutionResults
     /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
     public static ISuccessBuilder<TResult> Success<TResult>(
-        HttpStatusCode statusCode = HttpStatusCode.OK) =>
+        HttpStatusCode statusCode) =>
         new SuccessBuilder<TResult>(statusCode);
 
     /// <summary>  
@@ -53,7 +103,7 @@ public readonly record struct ExecutionResults
     /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
     public static ISuccessBuilder<TResult> Success<TResult>(
-        TResult result, HttpStatusCode statusCode = HttpStatusCode.OK) =>
+        TResult result, HttpStatusCode statusCode) =>
         new SuccessBuilder<TResult>(statusCode).WithResult(result);
 
     /// <summary>  
@@ -62,8 +112,7 @@ public readonly record struct ExecutionResults
     /// </summary>  
     /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
-    public static IFailureBuilder Failure(
-        HttpStatusCode statusCode = HttpStatusCode.BadRequest) =>
+    public static IFailureBuilder Failure(HttpStatusCode statusCode) =>
         new FailureBuilder(statusCode);
 
     /// <summary>  
@@ -74,7 +123,7 @@ public readonly record struct ExecutionResults
     /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
     public static IFailureBuilder<TResult> Failure<TResult>(
-        HttpStatusCode statusCode = HttpStatusCode.BadRequest) =>
+        HttpStatusCode statusCode) =>
         new FailureBuilder<TResult>(statusCode);
 
     /// <summary>  
@@ -82,7 +131,7 @@ public readonly record struct ExecutionResults
     /// status code OK to build a success execution result.  
     /// </summary>  
     /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
-    public static ISuccessBuilder Ok() => Success();
+    public static ISuccessBuilder Ok() => Success(HttpStatusCode.OK);
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
@@ -90,7 +139,7 @@ public readonly record struct ExecutionResults
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
-    public static ISuccessBuilder<TResult> Ok<TResult>() => Success<TResult>();
+    public static ISuccessBuilder<TResult> Ok<TResult>() => Success<TResult>(HttpStatusCode.OK);
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
@@ -100,7 +149,7 @@ public readonly record struct ExecutionResults
     /// <param name="result">The result of the execution.</param>  
     /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
     public static ISuccessBuilder<TResult> Ok<TResult>(TResult result) =>
-        Success(result);
+        Success(result, HttpStatusCode.OK);
 
     /// <summary>  
     /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   

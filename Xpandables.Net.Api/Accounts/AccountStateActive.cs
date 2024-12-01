@@ -16,7 +16,7 @@ public sealed class AccountStateActive : AccountState
                     [nameof(amount)]), null, amount);
         }
 
-        DepositMade @event = new(Context, amount) { Amount = amount };
+        DepositMade @event = new(Context, amount);
 
         Context.PushEvent(@event);
     }
@@ -38,7 +38,7 @@ public sealed class AccountStateActive : AccountState
                     [nameof(amount)]), null, amount);
         }
 
-        WithdrawMade @event = new(Context, amount) { Amount = amount };
+        WithdrawMade @event = new(Context, amount);
 
         Context.PushEvent(@event);
     }

@@ -14,7 +14,7 @@ public sealed class OperationResultUnitTest
     public void Success_ShouldReturnOperationResultWithStatusCodeOk()
     {
         // Act
-        var result = ExecutionResults.Success().Build();
+        var result = ExecutionResults.Success();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -28,7 +28,7 @@ public sealed class OperationResultUnitTest
         var expectedResult = "Success";
 
         // Act
-        var result = ExecutionResults.Success(expectedResult).Build();
+        var result = ExecutionResults.Success(expectedResult);
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -40,7 +40,7 @@ public sealed class OperationResultUnitTest
     public void Failure_ShouldReturnOperationResultWithStatusCodeBadRequest()
     {
         // Act
-        var result = ExecutionResults.Failure().Build();
+        var result = ExecutionResults.Failure("key", "error");
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.BadRequest);

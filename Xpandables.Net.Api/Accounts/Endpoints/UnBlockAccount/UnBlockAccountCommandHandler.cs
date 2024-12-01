@@ -22,6 +22,6 @@ public sealed class UnBlockAccountCommandHandler(
             .AppendAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
-        return ExecutionResults.Ok().Build();
+        return ExecutionResults.Success();
     }
 }

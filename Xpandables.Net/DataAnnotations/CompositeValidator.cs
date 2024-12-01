@@ -35,7 +35,9 @@ public sealed class CompositeValidator<TArgument>(
     /// <inheritdoc/>
     public override IExecutionResult Validate(TArgument instance)
     {
-        IFailureBuilder failureBuilder = ExecutionResults.Failure();
+        IFailureBuilder failureBuilder =
+            ExecutionResults.Failure(System.Net.HttpStatusCode.BadRequest);
+
         foreach (IValidator<TArgument> validator in _validators
             .OrderBy(o => o.Order))
         {
@@ -55,7 +57,9 @@ public sealed class CompositeValidator<TArgument>(
     /// <inheritdoc/>
     public override async ValueTask<IExecutionResult> ValidateAsync(TArgument instance)
     {
-        IFailureBuilder failureBuilder = ExecutionResults.Failure();
+        IFailureBuilder failureBuilder =
+            ExecutionResults.Failure(System.Net.HttpStatusCode.BadRequest);
+
         foreach (IValidator<TArgument> validator in _validators
             .OrderBy(o => o.Order))
         {
