@@ -37,5 +37,6 @@ public sealed class ExecutionResultControllerMvcOptions :
 
         _ = options.Filters.Add<ExecutionResultControllerValidationFilterAttribute>();
         _ = options.Filters.Add<ExecutionResultControllerFilter>(int.MinValue);
+        options.ModelBinderProviders.Insert(0, new FromModelBinderProvider());
     }
 }
