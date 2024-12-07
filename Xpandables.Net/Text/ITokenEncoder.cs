@@ -28,5 +28,15 @@ public interface ITokenEncoder
     /// </summary>
     /// <param name="claims">The claims to encode.</param>
     /// <returns>A <see cref="TokenValue"/> representing the encoded token.</returns>
+    /// <exception cref="InvalidOperationException">Unable to encode a token.
+    /// See inner exception.</exception>
     TokenValue Encode(IEnumerable<Claim> claims);
+
+    /// <summary>
+    /// Encodes a token as a refresh token.
+    /// </summary>
+    /// <returns>A <see cref="RefreshTokenValue"/> representing the refresh token.</returns>
+    /// <exception cref="InvalidOperationException">Unable to encode a refresh token.
+    /// See inner exception.</exception>
+    RefreshTokenValue Encode();
 }
