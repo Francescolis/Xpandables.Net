@@ -14,6 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Reflection;
+
+using Microsoft.Extensions.Hosting;
+
+using Xpandables.Net.Collections;
+
 namespace Xpandables.Net.Operations;
 /// <summary>
 /// Provides extension methods for converting execution results to exceptions.
