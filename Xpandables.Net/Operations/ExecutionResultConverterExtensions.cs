@@ -14,14 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Reflection;
-
-using Microsoft.Extensions.Hosting;
-
-using Xpandables.Net.Collections;
-
 namespace Xpandables.Net.Operations;
 /// <summary>
 /// Provides extension methods for converting execution results to exceptions.
@@ -46,7 +38,7 @@ public static partial class ExecutionResultExtensions
         IExecutionResult<TResult> result = new ExecutionResult<TResult>
         {
             StatusCode = executionResult.StatusCode,
-            Result = (TResult?)executionResult.Result,
+            Result = executionResult.Result is TResult value ? value : default,
             Errors = executionResult.Errors,
             Headers = executionResult.Headers,
             Extensions = executionResult.Extensions,
