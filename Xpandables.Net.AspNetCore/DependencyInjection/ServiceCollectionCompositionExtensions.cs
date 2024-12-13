@@ -81,7 +81,7 @@ public static class ServiceCollectionCompositionExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        List<Type> types = assemblies
+        List<Type> types = [.. assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type =>
                 type is
@@ -92,8 +92,7 @@ public static class ServiceCollectionCompositionExtensions
                 }
                 && Array.Exists(type.GetInterfaces(),
                     t => !t.IsGenericType
-                    && t == typeof(IUseService)))
-            .ToList();
+                    && t == typeof(IUseService)))];
 
         foreach (Type type in types)
         {

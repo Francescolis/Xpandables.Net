@@ -806,20 +806,19 @@ internal static class NotifyPropertyExtensions
         Dictionary<string, List<string>> dependencies = [];
 
         PropertyInfo[] properties
-            = (from p in target
+            = [.. (from p in target
                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                where p
                 .GetCustomAttributes<PropertyNotificationForAttribute>(true)
                 .Any()
-               select p)
-                .ToArray();
+               select p)];
 
         foreach (ref PropertyInfo property in properties.AsSpan())
         {
             string[] attributes
-                = (from a in property
+                = [.. (from a in property
                         .GetCustomAttributes<PropertyNotificationForAttribute>(false)
-                   select a.Name).ToArray();
+                   select a.Name)];
 
             foreach (string? dependency in attributes)
             {

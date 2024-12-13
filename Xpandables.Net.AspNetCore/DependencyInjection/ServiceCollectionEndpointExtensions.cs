@@ -44,7 +44,7 @@ public static class ServiceCollectionEndpointExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        List<Type> endpointTypes = assemblies
+        List<Type> endpointTypes = [.. assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type is
             {
@@ -53,8 +53,7 @@ public static class ServiceCollectionEndpointExtensions
                 IsClass: true,
                 IsSealed: true
             }
-                && typeof(IEndpointRoute).IsAssignableFrom(type))
-            .ToList();
+                && typeof(IEndpointRoute).IsAssignableFrom(type))];
 
         endpointTypes.ForEach(type =>
             services.Add(new ServiceDescriptor(

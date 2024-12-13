@@ -204,7 +204,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
             _ = _entries.Remove(existingEntry.Value);
             entry = existingEntry.Value with
             {
-                Values = existingEntry.Value.Values.Union(entry.Values).ToArray()
+                Values = [.. existingEntry.Value.Values.Union(entry.Values)]
             };
         }
 

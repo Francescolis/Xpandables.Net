@@ -65,16 +65,13 @@ public static class ExecutionResultConverterExtensions
         ExecutionResults
             .Failure(statusCode)
             .WithErrors(ElementCollection.With(
-                modelState
+                [.. modelState
                     .Keys
                     .Where(key => modelState[key]!.Errors.Count > 0)
                     .Select(key =>
                         new ElementEntry(
                             key,
-                            modelState[key]!.Errors
-                                .Select(error => error.ErrorMessage)
-                                .ToArray()))
-                    .ToList()))
+                            [.. modelState[key]!.Errors.Select(error => error.ErrorMessage)]))]))
             .Build();
 
     /// <summary>  

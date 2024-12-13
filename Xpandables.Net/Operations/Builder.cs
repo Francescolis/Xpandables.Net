@@ -202,8 +202,7 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
             _ = Errors.Remove(entry.Value.Key);
             entry = entry.Value with
             {
-                Values = new string[] { BuildErrorMessage(exception) }
-                    .Union(entry.Value.Values).ToArray()
+                Values = [.. new string[] { BuildErrorMessage(exception) }.Union(entry.Value.Values)]
             };
         }
         else

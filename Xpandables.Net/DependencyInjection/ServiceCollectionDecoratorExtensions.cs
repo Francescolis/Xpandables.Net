@@ -408,21 +408,19 @@ public static class ServiceCollectionDecoratorExtensions
 
     internal static Type[] GetGenericParameterTypeConstraints(
         this Type serviceType)
-        => serviceType
+        => [.. serviceType
             .GetGenericArguments()
-            .SelectMany(s => s.GetGenericParameterConstraints())
-            .ToArray();
+            .SelectMany(s => s.GetGenericParameterConstraints())];
 
     internal static Type[][] GetArgumentTypes(
         this IServiceCollection services,
         Type serviceType)
-        => services
+        => [.. services
             .Where(x => !x.ServiceType.IsGenericTypeDefinition
                 && IsSameGenericType(x.ServiceType, serviceType)
                 && !typeof(Delegate).IsAssignableFrom(x.ServiceType))
             .Select(x => x.ServiceType.GenericTypeArguments)
-            .Distinct(new ArgumentTypeComparer())
-            .ToArray();
+            .Distinct(new ArgumentTypeComparer())];
 
     internal sealed class ArgumentTypeComparer : IEqualityComparer<Type[]>
     {
@@ -488,9 +486,7 @@ public static class ServiceCollectionDecoratorExtensions
     internal static ServiceDescriptor[] GetServiceDescriptors(
          this IServiceCollection services,
          Type serviceType)
-         => services
-            .Where(service => service.ServiceType == serviceType)
-        .ToArray();
+         => [.. services.Where(service => service.ServiceType == serviceType)];
 
     internal static ServiceDescriptor WithFactory(
         this ServiceDescriptor descriptor,

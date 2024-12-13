@@ -40,9 +40,7 @@ public sealed class HttpClientMessageFactory(IOptions<HttpClientOptions> options
             _options.GetRequestOptions(request);
 
         List<IHttpClientRequestBuilder> builders =
-            _options
-                .PeekRequestBuilders(request.GetType())
-                .ToList();
+            [.. _options.PeekRequestBuilders(request.GetType())];
 
         HttpClientRequestContext context = new()
         {

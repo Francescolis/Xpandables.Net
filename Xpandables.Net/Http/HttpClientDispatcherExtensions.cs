@@ -261,10 +261,9 @@ public static class HttpClientDispatcherExtensions
         this NameValueCollection headers) =>
         headers.Count > 0
             ? ElementCollection.With(
-                headers
+                [.. headers
                 .ToDictionary()
-                .Select(x => new ElementEntry(x.Key, [x.Value]))
-                .ToList())
+                .Select(x => new ElementEntry(x.Key, [x.Value]))])
             : [];
 
     internal static IDictionary<string, string> ToDictionary(
@@ -284,9 +283,7 @@ public static class HttpClientDispatcherExtensions
 
     internal static ElementCollection ToElementCollection(
         this IDictionary<string, IEnumerable<string>> dictionary)
-        => ElementCollection.With(dictionary
-            .Select(x => new ElementEntry(x.Key, x.Value.ToArray()))
-            .ToList());
+        => ElementCollection.With([.. dictionary.Select(x => new ElementEntry(x.Key, [.. x.Value]))]);
 
     internal static T? DeserializeAnonymousType<T>(
         this string json,

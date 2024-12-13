@@ -62,11 +62,10 @@ public sealed class AggregateStore<TAggregate>(
                 .AppendAsync(uncommittedEvents, cancellationToken)
                 .ConfigureAwait(false);
 
-            Task[] tasks = uncommittedEvents
+            Task[] tasks = [.. uncommittedEvents
                 .Select(async @event => await _eventPublisher
                     .PublishAsync(@event, cancellationToken)
-                    .ConfigureAwait(false))
-                .ToArray();
+                    .ConfigureAwait(false))];
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 

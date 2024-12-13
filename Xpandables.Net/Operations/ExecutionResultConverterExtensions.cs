@@ -270,11 +270,10 @@ public static partial class ExecutionResultExtensions
             return ElementCollection.Empty;
         }
 
-        return ElementCollection.With(validationResult
+        return ElementCollection.With([.. validationResult
             .MemberNames
             .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Select(s => new ElementEntry(s, validationResult.ErrorMessage))
-            .ToList());
+            .Select(s => new ElementEntry(s, validationResult.ErrorMessage))]);
     }
 
     /// <summary>
@@ -288,19 +287,18 @@ public static partial class ExecutionResultExtensions
     public static ElementCollection ToElementCollection(
         this IEnumerable<ValidationResult> validationResults)
     {
-        List<ValidationResult> validations = validationResults.ToList();
+        List<ValidationResult> validations = [.. validationResults];
         if (validations.Count == 0)
         {
             return ElementCollection.Empty;
         }
 
-        return ElementCollection.With(validations
+        return ElementCollection.With([.. validations
             .Where(s => s.ErrorMessage is not null && s.MemberNames.Any())
             .SelectMany(s => s.MemberNames
                 .Where(m => !string.IsNullOrWhiteSpace(m))
                 .Select(m => new ElementEntry(m, s.ErrorMessage ?? string.Empty))
-            )
-            .ToList());
+            )]);
     }
 
     /// <summary>

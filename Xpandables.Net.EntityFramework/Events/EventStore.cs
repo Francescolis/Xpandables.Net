@@ -50,7 +50,7 @@ public sealed class EventStore(
     {
         try
         {
-            List<IEvent> eventsList = events.ToList();
+            List<IEvent> eventsList = [.. events];
             if (eventsList.Count == 0)
             {
                 return Task.CompletedTask;

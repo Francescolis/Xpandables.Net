@@ -70,11 +70,10 @@ public static class ServiceCollectionOperationExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        List<Type> executorTypes = assemblies
+        List<Type> executorTypes = [.. assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.IsSealed
-                && type.IsAssignableTo(typeof(IExecutionResultExecutor)))
-            .ToList();
+                && type.IsAssignableTo(typeof(IExecutionResultExecutor)))];
 
         foreach (Type executorType in executorTypes)
         {

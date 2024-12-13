@@ -89,9 +89,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         ModelBindingContext bindingContext,
         Type modelType)
     {
-        List<PropertyInfo> modelProperties = modelType.GetProperties()
-            .Where(p => p.GetSetMethod()?.IsPublic == true)
-            .ToList();
+        List<PropertyInfo> modelProperties = [.. modelType.GetProperties().Where(p => p.GetSetMethod()?.IsPublic == true)];
 
         object? model = default;
 

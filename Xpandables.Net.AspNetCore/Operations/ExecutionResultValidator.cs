@@ -35,7 +35,7 @@ public sealed class ExecutionResultValidator : IExecutionResultValidator
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        List<ArgumentDescriptor> arguments = context
+        List<ArgumentDescriptor> arguments = [.. context
             .Arguments
             .OfType<IApplyValidation>()
             .Select((parameter, index) => new ArgumentDescriptor
@@ -43,8 +43,7 @@ public sealed class ExecutionResultValidator : IExecutionResultValidator
                 Index = index,
                 Parameter = parameter,
                 ParameterType = parameter.GetType()
-            })
-            .ToList();
+            })];
 
         if (arguments.Count == 0)
         {
@@ -92,12 +91,11 @@ public sealed class ExecutionResultValidator : IExecutionResultValidator
                 Type validatorType = typeof(IValidator<>)
                     .MakeGenericType(argument.ParameterType);
 
-                List<IValidator> validators = context
+                List<IValidator> validators = [.. context
                     .HttpContext
                     .RequestServices
                     .GetServices(validatorType)
-                    .OfType<IValidator>()
-                    .ToList();
+                    .OfType<IValidator>()];
 
                 // remove the built-in validator if a specific validator
                 // is registered.
@@ -107,9 +105,7 @@ public sealed class ExecutionResultValidator : IExecutionResultValidator
                     Type builtinType = typeof(Validator<>)
                         .MakeGenericType(argument.ParameterType);
 
-                    validators = validators
-                        .Where(validator => validator.GetType() != builtinType)
-                        .ToList();
+                    validators = [.. validators.Where(validator => validator.GetType() != builtinType)];
                 }
 
                 foreach (IValidator validator in validators)

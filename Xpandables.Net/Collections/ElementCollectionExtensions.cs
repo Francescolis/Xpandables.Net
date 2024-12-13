@@ -35,7 +35,7 @@ public static class ElementCollectionExtensions
     /// entries.</returns>
     public static ElementCollection ToElementCollection(
         this IEnumerable<ElementEntry> entries)
-        => ElementCollection.With(entries.ToArray());
+        => ElementCollection.With([.. entries]);
 
     /// <summary>
     /// Converts an <see cref="ElementCollection"/> to a dictionary where the 
