@@ -85,6 +85,26 @@ public class HttpClientResponse : Disposable, IEquatable<HttpClientResponse>
     /// </summary>  
     public string? ReasonPhrase { get; init; }
 
+    /// <summary>
+    /// Ensures that the HTTP response has a success status code.
+    /// Throws an <see cref="InvalidOperationException"/> if the status code 
+    /// is not a success status code.
+    /// </summary>
+    /// <returns>The current instance of <see cref="HttpClientResponse"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the status code
+    /// is not a success status code.</exception>
+    public HttpClientResponse EnsureSuccessStatusCode()
+    {
+        if (IsFailureStatusCode)
+        {
+            throw new InvalidOperationException(
+                ReasonPhrase ?? $"The HTTP response status code is not a success status code: {StatusCode}",
+                Exception);
+        }
+
+        return this;
+    }
+
     /// <summary>  
     /// Gets a value indicating whether the HTTP response is valid 
     /// (status code is between 200 and 299).  
@@ -232,6 +252,26 @@ public class HttpClientResponse<TResult> :
     /// </summary>  
     [MemberNotNullWhen(true, nameof(Result))]
     public new bool IsFailureStatusCode => base.IsFailureStatusCode;
+
+    /// <summary>
+    /// Ensures that the HTTP response has a success status code.
+    /// Throws an <see cref="InvalidOperationException"/> if the status code
+    /// is not a success status code.
+    /// </summary>
+    /// <returns>The current instance of <see cref="HttpClientResponse{TResult}"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the status code
+    /// is not a success status code.</exception>
+    public new HttpClientResponse<TResult> EnsureSuccessStatusCode()
+    {
+        if (IsFailureStatusCode)
+        {
+            throw new InvalidOperationException(
+                ReasonPhrase ?? $"The HTTP response status code is not a success status code: {StatusCode}",
+                Exception);
+        }
+
+        return this;
+    }
 
     internal override bool IsGeneric => true;
 
