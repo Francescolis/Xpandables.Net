@@ -215,7 +215,7 @@ public class HttpClientResponse<TResult> :
     [MaybeNull, AllowNull]
     public new TResult Result
     {
-        get => (TResult?)base.Result;
+        get => base.Result is TResult value ? value : default;
         init => base.Result = value;
     }
 

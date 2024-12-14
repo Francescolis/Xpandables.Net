@@ -341,7 +341,7 @@ public abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
     /// </summary>
     protected new TResult? Result
     {
-        get => (TResult?)base.Result;
+        get => base.Result is TResult value ? value : default;
         set => base.Result = value;
     }
 
