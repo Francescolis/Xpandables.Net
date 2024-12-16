@@ -46,7 +46,9 @@ internal sealed class PipelineAggregateDeciderDecorator<TRequest, TResponse>(
             }
         }
         catch (Exception exception)
-            when (exception is not ValidationException and not InvalidOperationException)
+            when (exception is not ValidationException
+                and not InvalidOperationException
+                and not UnauthorizedAccessException)
         {
             throw new InvalidOperationException(
                 $"An error occurred when applying decider pattern to aggregate " +

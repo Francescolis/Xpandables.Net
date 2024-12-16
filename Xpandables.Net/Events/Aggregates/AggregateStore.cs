@@ -89,7 +89,8 @@ public sealed class AggregateStore<TAggregate>(
         {
             IEventFilter filter = new EventEntityFilterDomain
             {
-                Predicate = x => x.AggregateId == keyId
+                Predicate = x => x.AggregateId == keyId,
+                OrderBy = x => x.OrderBy(o => o.EventVersion)
             };
 
             TAggregate aggregate = new();
@@ -97,6 +98,7 @@ public sealed class AggregateStore<TAggregate>(
             List<IEventDomain> events = await _eventStore
                 .FetchAsync(filter, cancellationToken)
                 .OfType<IEventDomain>()
+                .OrderBy(x => x.EventVersion)
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
