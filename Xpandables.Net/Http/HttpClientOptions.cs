@@ -205,7 +205,7 @@ public sealed record HttpClientOptions
         _ = options.RequestBuilders
             .Add(new HttpClientStringRequestBuilder());
 
-        options.SerializerOptions ??= new(JsonSerializerDefaults.Web)
+        options.SerializerOptions = new(JsonSerializerDefaults.Web)
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = null,
