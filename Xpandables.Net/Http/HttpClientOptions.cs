@@ -17,6 +17,7 @@
 using System.Net;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
@@ -208,7 +209,11 @@ public sealed record HttpClientOptions
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = null,
-            WriteIndented = true
+            WriteIndented = true,
+            Converters =
+            {
+                new JsonStringEnumConverter()
+            }
         };
     }
 
