@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Text;
 
@@ -31,6 +32,10 @@ public static class DefaultSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = null,
-            WriteIndented = true
+            WriteIndented = true,
+            Converters =
+            {
+                new JsonStringEnumConverter()
+            }
         };
 }
