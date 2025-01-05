@@ -119,6 +119,41 @@ public sealed class EventStore(
     }
 
     /// <inheritdoc/>
+    public async Task DeleteAsync(
+        IEventFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        IQueryable<IEventEntity> queryable = filter.EventType switch
+        {
+            Type type when type == typeof(IEventDomain) =>
+                _context.Domains,
+            Type type when type == typeof(IEventIntegration) =>
+                _context.Integrations,
+            Type type when type == typeof(IEventSnapshot) =>
+            _context.Snapshots,
+            _ => throw new InvalidOperationException("The event type is not supported.")
+        };
+
+        try
+        {
+            await filter
+                .Apply(queryable)
+                .OfType<IEventEntity>()
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception is not ValidationException and not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                "An error occurred while deleting the events.",
+                exception);
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task MarkAsPublishedAsync(
     IEnumerable<EventPublished> events,
     CancellationToken cancellationToken = default)

@@ -49,6 +49,17 @@ public interface IEventStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Deletes events from the store based on the specified filter.
+    /// </summary>
+    /// <param name="filter">The filter to apply when deleting events.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <exception cref="InvalidOperationException">Thrown when deleting events
+    /// fails.</exception>
+    Task DeleteAsync(
+        IEventFilter filter,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Marks a collection of events as published in the store.
     /// </summary>
     /// <param name="events">The events to mark as published.</param>

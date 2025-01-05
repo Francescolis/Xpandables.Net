@@ -106,6 +106,15 @@ public class InMemoryEventStore : IEventStore
                     _eventConverter.ConvertFrom(entity, _options)));
     }
 
+    public Task DeleteAsync(
+        IEventFilter filter,
+        CancellationToken cancellationToken = default)
+    {
+        var entities = filter.Apply(_eventEntities.AsQueryable()).OfType<IEventEntity>();
+        entities.ForEach(e => e.SetStatus(EntityStatus.DELETED));
+        return Task.CompletedTask;
+    }
+
     public Task MarkAsPublishedAsync(
         IEnumerable<EventPublished> events,
         CancellationToken cancellationToken = default)
