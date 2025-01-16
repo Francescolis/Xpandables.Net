@@ -66,6 +66,14 @@ public sealed class ExecutionResultValidator : IExecutionResultValidator
                         .Merge(executionResult);
                 }
             }
+            catch (ValidationException validationException)
+            {
+                _ = failureBuilder.Merge(validationException.ToExecutionResult());
+            }
+            catch (ExecutionResultException executionException)
+            {
+                _ = failureBuilder.Merge(executionException.ExecutionResult);
+            }            
             catch (Exception exception)
             {
                 throw new InvalidOperationException(
