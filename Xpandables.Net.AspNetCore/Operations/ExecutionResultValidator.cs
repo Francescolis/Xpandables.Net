@@ -15,6 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -73,7 +75,7 @@ public sealed class ExecutionResultValidator : IExecutionResultValidator
             catch (ExecutionResultException executionException)
             {
                 _ = failureBuilder.Merge(executionException.ExecutionResult);
-            }            
+            }
             catch (Exception exception)
             {
                 throw new InvalidOperationException(
