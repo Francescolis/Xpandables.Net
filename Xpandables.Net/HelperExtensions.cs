@@ -98,7 +98,7 @@ public static class HelperExtensions
     /// <param name="exception">The exception to get the full message from.</param>
     /// <returns>A string containing the full message of the exception and i
     /// ts inner exceptions.</returns>
-    public static string GetFullMessage(this Exception exception)
+    public static string GetCompleteExceptionMessage(this Exception exception)
     {
         StringBuilder message = new();
         _ = message.AppendLine(exception.Message);
