@@ -170,27 +170,6 @@ public class HttpClientResponse : Disposable, IEquatable<HttpClientResponse>
     }
 
     private bool _isDisposed;
-
-    ///<inheritdoc/>
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        if (!_isDisposed)
-        {
-            _isDisposed = true;
-
-            if (Result is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync().ConfigureAwait(false);
-            }
-            else
-            {
-                (Result as IDisposable)?.Dispose();
-            }
-
-            await base.DisposeAsync(disposing).ConfigureAwait(false);
-        }
-    }
-
     internal virtual bool IsGeneric => false;
 }
 
