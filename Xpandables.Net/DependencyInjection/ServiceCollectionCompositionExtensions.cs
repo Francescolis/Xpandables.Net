@@ -28,24 +28,26 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionCompositionExtensions
 {
     /// <summary>
-    /// Adds service exports to the specified <see cref="IServiceCollection"/>.
+    /// Scans the executing directory for types that implement the <see cref="IAddServiceExport"/> 
+    /// interface and invokes their AddServices method.
     /// </summary>
     /// <param name="services">The service collection to add the exports to.</param>
     /// <param name="configuration">The configuration to use for the services.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXServiceExports(
+    public static IServiceCollection InvokeXAddServicesFromAssemblies(
         this IServiceCollection services,
         IConfiguration configuration) =>
-        services.AddXServiceExports(configuration, _ => { });
+        services.InvokeXAddServicesFromAssemblies(configuration, _ => { });
 
     /// <summary>
-    /// Adds service exports to the specified <see cref="IServiceCollection"/>.
+    /// Scans with export options for types that implement the 
+    /// <see cref="IAddServiceExport"/> interface and invokes their AddServices method.
     /// </summary>
     /// <param name="services">The service collection to add the exports to.</param>
     /// <param name="configuration">The configuration to use for the services.</param>
     /// <param name="configureOptions">The action to configure the export options.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXServiceExports(
+    public static IServiceCollection InvokeXAddServicesFromAssemblies(
         this IServiceCollection services,
         IConfiguration configuration,
         Action<ExportOptions> configureOptions)
@@ -66,8 +68,8 @@ public static class ServiceCollectionCompositionExtensions
     }
 
     /// <summary>
-    /// Adds services to the <see cref="IServiceCollection"/> from the 
-    /// specified assemblies.
+    /// Scans the provided assemblies for types that implement the <see cref="IAddService"/> 
+    /// interface and invokes their AddServices method.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the 
     /// services to.</param>
@@ -76,7 +78,7 @@ public static class ServiceCollectionCompositionExtensions
     /// <param name="assemblies">The assemblies to scan for services to add.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls 
     /// can be chained.</returns>
-    public static IServiceCollection AddXServices(
+    public static IServiceCollection InvokeXAddServicesFromAssemblies(
         this IServiceCollection services,
         IConfiguration configuration,
         params Assembly[] assemblies)
