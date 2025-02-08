@@ -57,9 +57,10 @@ public static class ServiceCollectionDispatcherExtensions
     /// <param name="services">The service collection to add the dispatcher 
     /// wrappers to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXDispatcherWrappers(
+    public static IServiceCollection AddXHandlerWrappers(
         this IServiceCollection services) =>
-        services.AddTransient(typeof(QueryHandlerWrapper<,>))
+        services
+            .AddTransient(typeof(QueryHandlerWrapper<,>))
             .AddTransient(typeof(QueryAsyncHandlerWrapper<,>))
             .AddTransient(typeof(CommandHandlerWrapper<>));
 
@@ -68,13 +69,13 @@ public static class ServiceCollectionDispatcherExtensions
         IEnumerable<Type> Interfaces);
 
     /// <summary>
-    /// Adds dispatcher handlers to the <see cref="IServiceCollection"/>.
+    /// Adds handlers to the <see cref="IServiceCollection"/> with scoped lifetime.
     /// </summary>
     /// <param name="services">The service collection to add the dispatcher 
     /// handlers to.</param>
     /// <param name="assemblies">The assemblies to scan for handlers.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXDispatcherHandlers(
+    public static IServiceCollection AddXHandlers(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -118,6 +119,16 @@ public static class ServiceCollectionDispatcherExtensions
     }
 
     /// <summary>
+    /// Adds a decider dependency manager to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decider 
+    /// dependency provider to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXDeciderDependencyManager(
+        this IServiceCollection services) =>
+        services.AddScoped<IDeciderDependencyManager, DeciderDependencyManager>();
+
+    /// <summary>
     /// Adds a decider dependency provider of type <typeparamref name="TService"/> to 
     /// the <see cref="IServiceCollection"/>.
     /// </summary>
@@ -126,21 +137,31 @@ public static class ServiceCollectionDispatcherExtensions
     /// <param name="services">The service collection to add the decider 
     /// dependency provider to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXCommandDeciderDependencyProvider<TService>(
+    public static IServiceCollection AddXDeciderDependencyProvider<TService>(
         this IServiceCollection services)
-        where TService : class, ICommandDeciderDependencyProvider =>
-        services.AddScoped<ICommandDeciderDependencyProvider, TService>();
+        where TService : class, IDeciderDependencyProvider =>
+        services.AddScoped<IDeciderDependencyProvider, TService>();
+
+    /// <summary>
+    /// Adds the aggregate decider dependency provider to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the decider 
+    /// dependency provider to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXAggregateDependencyProvider(
+        this IServiceCollection services) =>
+        services.AddXDeciderDependencyProvider<AggregateDeciderDependencyProvider>();
 
     /// <summary>
     /// Adds an aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXPipelineAggregateDeciderDecorator(
+    public static IServiceCollection AddXPipelineAggregateDecorator(
         this IServiceCollection services) =>
         services.AddScoped(
             typeof(IPipelineDecorator<,>),
-            typeof(PipelineAggregateDeciderDecorator<,>));
+            typeof(PipelineAggregateDecorator<,>));
 
     /// <summary>
     /// Adds a command pipeline decorator to the <see cref="IServiceCollection"/>.

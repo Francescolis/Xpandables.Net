@@ -38,7 +38,7 @@ public static class ServiceExportExtensions
     /// <param name="onServiceExport">The action to execute on the exported services.</param>
     /// <exception cref="InvalidOperationException">Thrown when adding or 
     /// using exports fails.</exception>
-    public static void ApplyServiceExports<TServiceExport>(
+    internal static void ApplyServiceExports<TServiceExport>(
         ExportOptions options,
         Action<IEnumerable<TServiceExport>> onServiceExport)
         where TServiceExport : class

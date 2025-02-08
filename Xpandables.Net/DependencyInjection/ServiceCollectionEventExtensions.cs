@@ -23,7 +23,6 @@ using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.Events.Defaults;
 using Xpandables.Net.States;
 
 namespace Xpandables.Net.DependencyInjection;

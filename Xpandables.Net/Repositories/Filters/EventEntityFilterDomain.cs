@@ -14,25 +14,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+using System.Diagnostics.CodeAnalysis;
+
+using Xpandables.Net.Events;
+
+namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
-/// Represents an event with a timestamp, version, and unique identifier.
+/// Represents a filter for event entity domains.
 /// </summary>
-public interface IEvent
+public sealed record EventEntityFilterDomain :
+    EntityFilter<IEventEntityDomain>,
+    IEventFilter<IEventEntityDomain>
 {
     /// <summary>
-    /// Gets the date and time when the event occurred.
+    /// Initializes a new instance of the <see cref="EventEntityFilterDomain"/> class.
     /// </summary>
-    DateTimeOffset OccurredOn { get; init; }
+    [SetsRequiredMembers]
+    public EventEntityFilterDomain() : base() { }
 
-    /// <summary>
-    /// Gets the version of the event.
-    /// </summary>
-    ulong EventVersion { get; init; }
-
-    /// <summary>
-    /// Gets the unique identifier of the event.
-    /// </summary>
-    Guid EventId { get; init; }
+    /// <inheritdoc/>
+    public Type EventType => typeof(IEventDomain);
 }

@@ -17,10 +17,10 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-using Xpandables.Net.Events.Entities;
+using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
 /// Represents a filter for events that can be applied to a queryable 

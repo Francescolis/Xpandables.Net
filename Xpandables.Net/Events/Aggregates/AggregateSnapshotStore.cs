@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Events.Filters;
+using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.States;
 
 namespace Xpandables.Net.Events.Aggregates;

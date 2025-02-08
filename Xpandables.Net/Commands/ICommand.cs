@@ -27,36 +27,3 @@ public interface ICommand
 #pragma warning restore CA1040 // Avoid empty interfaces
 {
 }
-
-/// <summary>
-/// Represents a command used in a Decider pattern process.
-/// Class implementation is used with the <see cref="ICommandHandler{TCommand, TDependency}"/>. 
-/// </summary>
-/// <remarks>Make sure to provide with a registration of the dependency 
-/// provider <see cref="ICommandDeciderDependencyProvider"/>.</remarks>
-public interface ICommandDecider : ICommand
-{
-    /// <summary>
-    /// Gets the dependency type.
-    /// </summary>
-    Type Type { get; }
-
-    /// <summary>
-    /// Gets the key identifier used to identify an instance of the dependency type.
-    /// </summary>
-    object KeyId { get; }
-
-    internal object Dependency { get; set; }
-}
-
-/// <summary>
-/// Represents a command used in a Decider pattern process.
-/// Class implementation is used with the <see cref="ICommandHandler{TCommand, TDependency}"/>. 
-/// </summary>
-/// <typeparam name="TDependency">The type of the dependency.</typeparam>
-/// <remarks>Make sure to provide with a registration of the dependency 
-/// provider <see cref="ICommandDeciderDependencyProvider"/>.</remarks>
-public interface ICommandDecider<TDependency> : ICommandDecider
-    where TDependency : class
-{
-}

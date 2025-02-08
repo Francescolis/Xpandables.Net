@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Events.Converters;
+using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Events;

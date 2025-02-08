@@ -16,9 +16,9 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Events.Entities;
+using Xpandables.Net.Events;
 
-namespace Xpandables.Net.Events.Converters;
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
 /// Defines methods for converting events to and from event entities.

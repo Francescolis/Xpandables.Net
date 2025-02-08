@@ -14,15 +14,35 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Commands;
 
 /// <summary>
-/// Represents an integration event entity that includes an error message.
+/// Represents a decider used in a Decider pattern process.
 /// </summary>
-public interface IEventEntityIntegration : IEventEntity
+public interface IDecider
 {
     /// <summary>
-    /// Gets the error message associated with the event entity.
+    /// Gets the dependency type.
     /// </summary>
-    string? ErrorMessage { get; }
+    Type Type { get; }
+
+    /// <summary>
+    /// Gets the key identifier used to identify an instance of the dependency type.
+    /// </summary>
+    object KeyId { get; }
+
+    /// <summary>
+    /// Gets the value of the dependency.
+    /// </summary>
+    /// <remarks>For internal use only.</remarks>
+    internal object Dependency { get; set; }
+}
+
+/// <summary>
+/// Represents a decider used in a Decider pattern process.
+/// </summary>
+/// <typeparam name="TDependency">The type of the dependency.</typeparam>
+public interface IDecider<TDependency> : IDecider
+    where TDependency : class
+{
 }

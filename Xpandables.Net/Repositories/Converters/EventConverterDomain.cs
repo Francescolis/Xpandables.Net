@@ -17,21 +17,24 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Events.Entities;
+using Xpandables.Net.Events;
 
-namespace Xpandables.Net.Events.Converters;
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
-/// Converts event entities to and from <see cref="IEventIntegration"/>.
+/// Converts event entities to domain events and vice versa.
 /// </summary>
-public sealed class EventConverterIntegration : EventConverter
+public sealed class EventConverterDomain : EventConverter
 {
     /// <inheritdoc/>
-    public override Type EventType => typeof(IEventIntegration);
+    public override Type EventType => typeof(IEventDomain);
 
     /// <inheritdoc/>
-    public override bool CanConvert(Type type) =>
-        EventType.IsAssignableFrom(type);
+    public override bool CanConvert(Type type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        return EventType.IsAssignableFrom(type);
+    }
 
     /// <inheritdoc/>
     public override IEvent ConvertFrom(
@@ -44,8 +47,7 @@ public sealed class EventConverterIntegration : EventConverter
 
             IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
 
-            return (IEventIntegration)@event;
-
+            return (IEventDomain)@event;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -63,15 +65,16 @@ public sealed class EventConverterIntegration : EventConverter
     {
         try
         {
-            IEventIntegration eventIntegration = (IEventIntegration)@event;
+            IEventDomain eventDomain = (IEventDomain)@event;
 
-            return new EventEntityIntegration
+            return new EventEntityDomain()
             {
-                KeyId = eventIntegration.EventId,
-                EventName = eventIntegration.GetType().Name,
-                EventFullName = eventIntegration.GetType().AssemblyQualifiedName!,
-                EventVersion = eventIntegration.EventVersion,
-                EventData = SerializeEvent(eventIntegration, options)
+                KeyId = eventDomain.EventId,
+                AggregateId = Guid.Parse(eventDomain.AggregateId.ToString()!),
+                EventName = eventDomain.GetType().Name,
+                EventFullName = eventDomain.GetType().AssemblyQualifiedName!,
+                EventVersion = eventDomain.EventVersion,
+                EventData = SerializeEvent(eventDomain, options)
             };
         }
         catch (Exception exception)

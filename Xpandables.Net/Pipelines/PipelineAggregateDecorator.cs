@@ -14,27 +14,22 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.ComponentModel.DataAnnotations;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Xpandables.Net.Commands;
+using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Pipelines;
-
-/// <summary>
-/// Decorator for handling <see cref="IDecider{TDependency}"/>> in a pipeline.
-/// it provides a way to apply the decider pattern to the request object.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
-    IDeciderDependencyManager dependencyManager) :
+internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
+    IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IDecider
+    where TRequest : class, IDecider, IApplyAggregate
     where TResponse : IExecutionResult
 {
-    /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,
         RequestHandler<TResponse> next,
@@ -42,18 +37,26 @@ public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
     {
         try
         {
-            IDeciderDependencyProvider dependencyProvider = dependencyManager
-                .GetDependencyProvider(request.Type);
+            try
+            {
+                TResponse result = await next().ConfigureAwait(false);
+                return result;
+            }
+            finally
+            {
+                if (request.Dependency is not null)
+                {
+                    Type aggregateStoreType = typeof(IAggregateStore<>)
+                        .MakeGenericType(request.Type);
 
-            object dependency = await dependencyProvider
-                .GetDependencyAsync(request, cancellationToken)
-                .ConfigureAwait(false);
+                    IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+                        .GetRequiredService(aggregateStoreType);
 
-            request.Dependency = dependency;
-
-            TResponse result = await next().ConfigureAwait(false);
-
-            return result;
+                    await aggregateStore
+                        .AppendAsync((IAggregate)request.Dependency, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
         }
         catch (Exception exception)
             when (exception is not ValidationException
@@ -61,7 +64,7 @@ public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
                 and not UnauthorizedAccessException)
         {
             throw new InvalidOperationException(
-                $"An error occurred getting dependency of the object " +
+                $"An error occurred when appending aggregate " +
                 $"with the key '{request.KeyId}'.",
                 exception);
         }

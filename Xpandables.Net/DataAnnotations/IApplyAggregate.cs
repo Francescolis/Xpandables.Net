@@ -14,24 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Represents an abstract base class for event entities.
+/// Defines a marker interface to indicate that the class uses an aggregate
+/// and need appending process.
 /// </summary>
-public abstract class EventEntity : Entity<Guid>, IEventEntity
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IApplyAggregate
+#pragma warning restore CA1040 // Avoid empty interfaces
 {
-    /// <inheritdoc/>
-    public required string EventName { get; init; }
-
-    /// <inheritdoc/>
-    public required string EventFullName { get; init; }
-
-    /// <inheritdoc/>
-    public required ReadOnlyMemory<byte> EventData { get; init; }
-
-    /// <inheritdoc/>
-    public required ulong EventVersion { get; init; }
 }

@@ -17,7 +17,9 @@
 using System.ComponentModel;
 using System.Linq.Expressions;
 
-namespace Xpandables.Net.Repositories;
+using Xpandables.Net.Repositories;
+
+namespace Xpandables.Net.Repositories.Filters;
 /// <summary>
 /// Represents a filter for entities with pagination support.
 /// </summary>

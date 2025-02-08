@@ -17,24 +17,21 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-using Xpandables.Net.Events.Entities;
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Events;
 
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
-/// Represents a filter for event entity snapshots.
+/// Represents a filter for event entity integration.
 /// </summary>
-public sealed record class EventEntityFilterSnapshot :
-    EntityFilter<IEventEntitySnapshot>,
-    IEventFilter<IEventEntitySnapshot>
+public sealed record EventEntityFilterIntegration :
+    EntityFilter<IEventEntityIntegration>,
+    IEventFilter<IEventEntityIntegration>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventEntityFilterSnapshot"/> class.
-    /// </summary>
+    /// <inheritdoc/>
     [SetsRequiredMembers]
-    public EventEntityFilterSnapshot() : base() { }
+    public EventEntityFilterIntegration() : base() { }
 
     /// <inheritdoc/>
-    public Type EventType => typeof(IEventSnapshot);
+    public Type EventType => typeof(IEventIntegration);
 }

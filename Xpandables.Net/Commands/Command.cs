@@ -24,7 +24,7 @@ namespace Xpandables.Net.Commands;
 /// identifier.
 /// </summary>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public abstract record Command<TDependency> : ICommandDecider<TDependency>
+public abstract record Command<TDependency> : ICommand, IDecider<TDependency>
     where TDependency : class
 {
     /// <inheritdoc/>
@@ -34,5 +34,5 @@ public abstract record Command<TDependency> : ICommandDecider<TDependency>
     public required object KeyId { get; init; }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    object ICommandDecider.Dependency { get; set; } = default!;
+    object IDecider.Dependency { get; set; } = default!;
 }

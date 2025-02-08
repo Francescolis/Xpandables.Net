@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +14,18 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
-using Xpandables.Net.Events.Entities;
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Commands;
 
 /// <summary>
-/// Represents a filter for event entity integration.
+/// Provides a mechanism to get providers for a dependency.
 /// </summary>
-public sealed record EventEntityFilterIntegration :
-    EntityFilter<IEventEntityIntegration>,
-    IEventFilter<IEventEntityIntegration>
+public interface IDeciderDependencyManager
 {
-    /// <inheritdoc/>
-    [SetsRequiredMembers]
-    public EventEntityFilterIntegration() : base() { }
-
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventIntegration);
+    /// <summary>
+    /// Returns the dependency provider for the specified dependency type.
+    /// </summary>
+    /// <param name="dependencyType">The dependency type.</param>
+    /// <returns>The dependency provider for the specified dependency type.</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    IDeciderDependencyProvider GetDependencyProvider(Type dependencyType);
 }

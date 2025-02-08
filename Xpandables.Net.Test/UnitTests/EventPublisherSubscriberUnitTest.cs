@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
-using Xpandables.Net.Events.Defaults;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Test.UnitTests;
@@ -28,7 +27,7 @@ public sealed class EventPublisherSubscriberUnitTest
     public EventPublisherSubscriberUnitTest()
     {
         var services = new ServiceCollection();
-        services.AddXDispatcherHandlers();
+        services.AddXHandlers();
         _serviceProvider = services.BuildServiceProvider();
         _eventPublisherSubscriber = new EventPublisherSubscriber(_serviceProvider);
     }

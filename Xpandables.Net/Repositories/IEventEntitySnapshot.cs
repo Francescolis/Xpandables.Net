@@ -14,14 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Repositories;
+
 /// <summary>
-/// Represents an event entity domain that includes aggregate information.
+/// Represents a snapshot of an event entity with an owner.
 /// </summary>
-public interface IEventEntityDomain : IEventEntity
+public interface IEventEntitySnapshot : IEventEntity
 {
     /// <summary>
-    /// Gets the identifier of the aggregate.
+    /// Gets the owner of the event entity snapshot.
     /// </summary>
-    Guid AggregateId { get; }
+    Guid OwnerId { get; }
 }

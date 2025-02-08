@@ -35,7 +35,7 @@ namespace Xpandables.Net.Repositories;
 /// // and the methods InsertAsync, UpdateAsync, DeleteAsync are called.
 /// </code>
 /// </remarks>
-public abstract class UnitOfWorkCore : Disposable, IUnitOfWork
+public abstract class UnitOfWorkCore : AsyncDisposable, IUnitOfWork
 {
     /// <summary>
     /// When overridden in a derived class, saves all changes made in this unit of work.

@@ -16,6 +16,8 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
+using Xpandables.Net.Repositories.Filters;
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>

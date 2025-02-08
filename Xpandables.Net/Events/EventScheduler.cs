@@ -21,10 +21,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Repositories.Filters;
 
-namespace Xpandables.Net.Events.Defaults;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Represents a background service that schedules and publishes events.

@@ -17,8 +17,8 @@
 
 using System.ComponentModel.DataAnnotations;
 
-using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Events.Aggregates;
 

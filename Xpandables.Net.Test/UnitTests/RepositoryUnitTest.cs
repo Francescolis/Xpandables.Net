@@ -3,6 +3,7 @@
 using FluentAssertions;
 
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Test.UnitTests;
 

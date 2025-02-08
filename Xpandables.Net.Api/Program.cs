@@ -18,13 +18,16 @@ builder.Services.Configure<EventOptions>(EventOptions.Default);
 builder.Services.AddXEndpointRoutes();
 builder.Services.AddXExecutionResultMinimalApi();
 builder.Services.AddXDispatcher();
-builder.Services.AddXDispatcherWrappers();
-builder.Services.AddXDispatcherHandlers();
+builder.Services.AddXHandlerWrappers();
+builder.Services.AddXHandlers();
 builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();
 builder.Services.AddXEventUnitOfWork();
 builder.Services.AddXEventPublisher();
+builder.Services.AddXAggregateDependencyProvider();
+builder.Services.AddXDeciderDependencyManager();
 builder.Services.AddXPipelineUnitOfWorkDecorator();
+builder.Services.AddXPipelineAggregateDecorator();
 builder.Services.AddXPipelineDeciderDecorator();
 
 builder.Services.AddDataContextEventForSqlServer(builder.Configuration);

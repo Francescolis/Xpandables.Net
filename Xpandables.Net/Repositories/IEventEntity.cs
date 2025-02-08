@@ -14,25 +14,30 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an event with a timestamp, version, and unique identifier.
+/// Represents an event entity that contains event-related data.
 /// </summary>
-public interface IEvent
+public interface IEventEntity : IEntity<Guid>
 {
     /// <summary>
-    /// Gets the date and time when the event occurred.
+    /// Gets the name of the event.
     /// </summary>
-    DateTimeOffset OccurredOn { get; init; }
+    string EventName { get; }
+
+    /// <summary>
+    /// Gets the full name of the event.
+    /// </summary>
+    string EventFullName { get; }
 
     /// <summary>
     /// Gets the version of the event.
     /// </summary>
-    ulong EventVersion { get; init; }
+    ulong EventVersion { get; }
 
     /// <summary>
-    /// Gets the unique identifier of the event.
+    /// Gets the data associated with the event.
     /// </summary>
-    Guid EventId { get; init; }
+    ReadOnlyMemory<byte> EventData { get; }
 }

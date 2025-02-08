@@ -8,10 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Collections;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
-using Xpandables.Net.Events.Converters;
-using Xpandables.Net.Events.Entities;
-using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Repositories.Converters;
+using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Test.UnitTests;

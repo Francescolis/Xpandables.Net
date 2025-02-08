@@ -31,6 +31,8 @@ public sealed class Account : AggregateState<Account, AccountState>
 
         On<AccountClosed>(@event =>
             TransitionToState(new AccountStateClosed(CurrentState.Balance)));
+        On<AccountUnBlocked>(@event =>
+            TransitionToState(new AccountStateActive() { Balance = CurrentState.Balance }));
 
         On<DepositMade>(@event => CurrentState.Balance += @event.Amount);
 
