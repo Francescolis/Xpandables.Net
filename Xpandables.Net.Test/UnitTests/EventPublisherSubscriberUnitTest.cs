@@ -27,7 +27,7 @@ public sealed class EventPublisherSubscriberUnitTest
     public EventPublisherSubscriberUnitTest()
     {
         var services = new ServiceCollection();
-        services.AddXDispatcherHandlers();
+        services.AddXHandlers();
         _serviceProvider = services.BuildServiceProvider();
         _eventPublisherSubscriber = new EventPublisherSubscriber(_serviceProvider);
     }

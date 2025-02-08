@@ -17,13 +17,32 @@
 namespace Xpandables.Net.Commands;
 
 /// <summary>
-/// This interface is used as a marker for command.
-/// Class implementation is used with the <see cref="ICommandHandler{TCommand}"/> 
-/// where "TCommand" is a record that implements <see cref="ICommand"/>.
-/// This can also be enhanced with some useful decorators.
+/// Represents a decider used in a Decider pattern process.
 /// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface ICommand
-#pragma warning restore CA1040 // Avoid empty interfaces
+public interface IDecider
+{
+    /// <summary>
+    /// Gets the dependency type.
+    /// </summary>
+    Type Type { get; }
+
+    /// <summary>
+    /// Gets the key identifier used to identify an instance of the dependency type.
+    /// </summary>
+    object KeyId { get; }
+
+    /// <summary>
+    /// Gets the value of the dependency.
+    /// </summary>
+    /// <remarks>For internal use only.</remarks>
+    internal object Dependency { get; set; }
+}
+
+/// <summary>
+/// Represents a decider used in a Decider pattern process.
+/// </summary>
+/// <typeparam name="TDependency">The type of the dependency.</typeparam>
+public interface IDecider<TDependency> : IDecider
+    where TDependency : class
 {
 }

@@ -17,35 +17,41 @@
 namespace Xpandables.Net.Commands;
 
 /// <summary>
-/// Provides a mechanism to get 
-/// <see cref="ICommandHandler{TCommand, TDependency}"/> dependencies asynchronously.
+/// Provides a mechanism to get dependencies for a decider command.
 /// </summary>
-public interface ICommandDeciderDependencyProvider
+public interface IDeciderDependencyProvider
 {
+    /// <summary>
+    /// Determines whether the provider can provide the dependency of the specified type.
+    /// </summary>
+    bool CanProvideDependency(Type dependencyType);
+
     /// <summary>
     /// Gets the dependency of the specified type asynchronously.
     /// </summary>
-    /// <param name="command">The command of the dependency.</param>
+    /// <param name="decider">The decider of the dependency.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
     /// requests.</param>
     /// <returns>The dependency of the specified type.</returns>
+    /// <exception cref="InvalidOperationException"></exception>
     Task<object> GetDependencyAsync(
-        ICommandDecider command,
+        IDecider decider,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the dependency of the specified type asynchronously.
     /// </summary>
     /// <typeparam name="TDependency">The type of the dependency.</typeparam>
-    /// <param name="command">The command of the dependency.</param>
+    /// <param name="decider">The decider of the dependency.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
     /// requests.</param>
     /// <returns>The dependency of the specified type.</returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<TDependency> GetDependencyAsync<TDependency>(
-        ICommandDecider<TDependency> command,
+        IDecider<TDependency> decider,
         CancellationToken cancellationToken = default)
         where TDependency : class =>
         (TDependency)await GetDependencyAsync(
-            (ICommandDecider)command, cancellationToken)
+            (IDecider)decider, cancellationToken)
             .ConfigureAwait(false);
 }

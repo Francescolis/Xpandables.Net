@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
-namespace Xpandables.Net.Commands;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Represents a command that contains a dependency type and its key 
-/// identifier.
+/// Defines a marker interface to indicate that the class uses an aggregate
+/// and need appending process.
 /// </summary>
-/// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public abstract record Command<TDependency> : ICommand, IDecider<TDependency>
-    where TDependency : class
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IApplyAggregate
+#pragma warning restore CA1040 // Avoid empty interfaces
 {
-    /// <inheritdoc/>
-    public Type Type => typeof(TDependency);
-
-    /// <inheritdoc/>
-    public required object KeyId { get; init; }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    object IDecider.Dependency { get; set; } = default!;
 }

@@ -45,8 +45,8 @@ public interface ICommandHandler<in TCommand>
 /// </summary>
 /// <typeparam name="TCommand">The type of the command.</typeparam>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public interface ICommandHandler<in TCommand, TDependency> : ICommandHandler<TCommand>
-    where TCommand : class, ICommandDecider<TDependency>
+public interface ICommandHandler<in TCommand, in TDependency> : ICommandHandler<TCommand>
+    where TCommand : class, ICommand, IDecider<TDependency>
     where TDependency : class
 {
     /// <summary>

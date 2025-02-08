@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +14,18 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
 namespace Xpandables.Net.Commands;
 
 /// <summary>
-/// Represents a command that contains a dependency type and its key 
-/// identifier.
+/// Provides a mechanism to get providers for a dependency.
 /// </summary>
-/// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public abstract record Command<TDependency> : ICommand, IDecider<TDependency>
-    where TDependency : class
+public interface IDeciderDependencyManager
 {
-    /// <inheritdoc/>
-    public Type Type => typeof(TDependency);
-
-    /// <inheritdoc/>
-    public required object KeyId { get; init; }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    object IDecider.Dependency { get; set; } = default!;
+    /// <summary>
+    /// Returns the dependency provider for the specified dependency type.
+    /// </summary>
+    /// <param name="dependencyType">The dependency type.</param>
+    /// <returns>The dependency provider for the specified dependency type.</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    IDeciderDependencyProvider GetDependencyProvider(Type dependencyType);
 }
