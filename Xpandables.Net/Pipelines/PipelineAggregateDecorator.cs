@@ -44,15 +44,18 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
             }
             finally
             {
-                Type aggregateStoreType = typeof(IAggregateStore<>)
-                    .MakeGenericType(request.Type);
+                if (request.Dependency is not null)
+                {
+                    Type aggregateStoreType = typeof(IAggregateStore<>)
+                        .MakeGenericType(request.Type);
 
-                IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
-                    .GetRequiredService(aggregateStoreType);
+                    IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+                        .GetRequiredService(aggregateStoreType);
 
-                await aggregateStore
-                    .AppendAsync((IAggregate)request.Dependency, cancellationToken)
-                    .ConfigureAwait(false);
+                    await aggregateStore
+                        .AppendAsync((IAggregate)request.Dependency, cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
         }
         catch (Exception exception)

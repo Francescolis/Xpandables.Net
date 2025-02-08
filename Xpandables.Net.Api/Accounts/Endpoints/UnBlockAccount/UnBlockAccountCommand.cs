@@ -3,7 +3,6 @@ using Xpandables.Net.DataAnnotations;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
-public sealed record UnBlockAccountCommand : ICommand, IApplyUnitOfWork
+public sealed record UnBlockAccountCommand : Command<Account>, IApplyUnitOfWork, IApplyAggregate
 {
-    public required Guid KeyId { get; init; }
 }
