@@ -14,15 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a snapshot of an event entity.
+/// Represents an integration event entity that includes an error message.
 /// </summary>
-public sealed class EventEntitySnapshot : EventEntity, IEventEntitySnapshot
+public interface IEventEntityIntegration : IEventEntity
 {
     /// <summary>
-    /// Gets the owner of the event entity snapshot.
+    /// Gets the error message associated with the event entity.
     /// </summary>
-    public required Guid OwnerId { get; init; }
+    string? ErrorMessage { get; }
 }

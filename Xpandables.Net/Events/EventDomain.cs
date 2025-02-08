@@ -39,8 +39,8 @@ public record EventDomain : Event, IEventDomain
 /// </summary>
 /// <remarks>Add a private parameterless constructor and decorate it 
 /// with the <see cref="JsonConstructorAttribute"/> attribute when you
-/// are using the base constructor with <see cref="IAggregate"/>.</remarks>
-public record EventDomain<TAggregate> : Event, IEventDomain
+/// are using the base constructor with <typeparamref name="TAggregate"/>.</remarks>
+public record EventDomain<TAggregate> : EventDomain
     where TAggregate : class, IAggregate
 {
     /// <summary>
@@ -61,11 +61,4 @@ public record EventDomain<TAggregate> : Event, IEventDomain
         AggregateId = aggregate.KeyId;
         EventVersion = aggregate.Version;
     }
-
-    /// <inheritdoc/>
-    public required Guid AggregateId { get; init; }
-
-    /// <inheritdoc/>
-    public virtual IEventDomain WithVersion(ulong version) =>
-        this with { EventVersion = version };
 }

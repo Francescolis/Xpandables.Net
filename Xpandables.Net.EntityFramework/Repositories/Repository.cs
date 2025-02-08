@@ -18,6 +18,8 @@ using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 
+using Xpandables.Net.Repositories.Filters;
+
 namespace Xpandables.Net.Repositories;
 /// <summary>
 /// Represents a repository that provides data access functionality for a 

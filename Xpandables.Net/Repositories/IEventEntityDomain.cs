@@ -14,26 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
-using Xpandables.Net.Events.Entities;
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Events.Filters;
-
+namespace Xpandables.Net.Repositories;
 /// <summary>
-/// Represents a filter for event entity domains.
+/// Represents an event entity domain that includes aggregate information.
 /// </summary>
-public sealed record EventEntityFilterDomain :
-    EntityFilter<IEventEntityDomain>,
-    IEventFilter<IEventEntityDomain>
+public interface IEventEntityDomain : IEventEntity
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventEntityFilterDomain"/> class.
+    /// Gets the identifier of the aggregate.
     /// </summary>
-    [SetsRequiredMembers]
-    public EventEntityFilterDomain() : base() { }
-
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventDomain);
+    Guid AggregateId { get; }
 }

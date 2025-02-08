@@ -17,17 +17,17 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Events.Entities;
+using Xpandables.Net.Events;
 
-namespace Xpandables.Net.Events.Converters;
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
-/// Converts event snapshots to and from their entity representations.
+/// Converts event entities to and from <see cref="IEventIntegration"/>.
 /// </summary>
-public sealed class EventConverterSnapshot : EventConverter
+public sealed class EventConverterIntegration : EventConverter
 {
     /// <inheritdoc/>
-    public override Type EventType => typeof(IEventSnapshot);
+    public override Type EventType => typeof(IEventIntegration);
 
     /// <inheritdoc/>
     public override bool CanConvert(Type type) =>
@@ -44,7 +44,8 @@ public sealed class EventConverterSnapshot : EventConverter
 
             IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
 
-            return (IEventSnapshot)@event;
+            return (IEventIntegration)@event;
+
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -62,23 +63,23 @@ public sealed class EventConverterSnapshot : EventConverter
     {
         try
         {
-            IEventSnapshot snapshot = (IEventSnapshot)@event;
+            IEventIntegration eventIntegration = (IEventIntegration)@event;
 
-            return new EventEntitySnapshot
+            return new EventEntityIntegration
             {
-                KeyId = snapshot.EventId,
-                OwnerId = snapshot.OwnerId,
-                EventVersion = snapshot.EventVersion,
-                EventName = snapshot.GetType().Name,
-                EventFullName = snapshot.GetType().AssemblyQualifiedName!,
-                EventData = SerializeEvent(snapshot, options)
+                KeyId = eventIntegration.EventId,
+                EventName = eventIntegration.GetType().Name,
+                EventFullName = eventIntegration.GetType().AssemblyQualifiedName!,
+                EventVersion = eventIntegration.EventVersion,
+                EventData = SerializeEvent(eventIntegration, options)
             };
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
         {
-
-            throw;
+            throw new InvalidOperationException(
+                $"Failed to convert the event {@event?.GetType().Name} to entity. " +
+                $"See inner exception for details.", exception);
         }
     }
 }

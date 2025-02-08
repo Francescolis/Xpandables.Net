@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,24 +15,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Repositories;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Events.Entities;
+using Xpandables.Net.Events;
+
+namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
-/// Represents an abstract base class for event entities.
+/// Represents a filter for event entity integration.
 /// </summary>
-public abstract class EventEntity : Entity<Guid>, IEventEntity
+public sealed record EventEntityFilterIntegration :
+    EntityFilter<IEventEntityIntegration>,
+    IEventFilter<IEventEntityIntegration>
 {
     /// <inheritdoc/>
-    public required string EventName { get; init; }
+    [SetsRequiredMembers]
+    public EventEntityFilterIntegration() : base() { }
 
     /// <inheritdoc/>
-    public required string EventFullName { get; init; }
-
-    /// <inheritdoc/>
-    public required ReadOnlyMemory<byte> EventData { get; init; }
-
-    /// <inheritdoc/>
-    public required ulong EventVersion { get; init; }
+    public Type EventType => typeof(IEventIntegration);
 }

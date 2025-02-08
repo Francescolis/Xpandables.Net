@@ -14,15 +14,22 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a snapshot of an event entity with an owner.
+/// Represents an abstract base class for event entities.
 /// </summary>
-public interface IEventEntitySnapshot : IEventEntity
+public abstract class EventEntity : Entity<Guid>, IEventEntity
 {
-    /// <summary>
-    /// Gets the owner of the event entity snapshot.
-    /// </summary>
-    Guid OwnerId { get; }
+    /// <inheritdoc/>
+    public required string EventName { get; init; }
+
+    /// <inheritdoc/>
+    public required string EventFullName { get; init; }
+
+    /// <inheritdoc/>
+    public required ReadOnlyMemory<byte> EventData { get; init; }
+
+    /// <inheritdoc/>
+    public required ulong EventVersion { get; init; }
 }

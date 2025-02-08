@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,26 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
-using Xpandables.Net.Events.Entities;
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a filter for event entity snapshots.
+/// Represents a snapshot of an event entity with an owner.
 /// </summary>
-public sealed record class EventEntityFilterSnapshot :
-    EntityFilter<IEventEntitySnapshot>,
-    IEventFilter<IEventEntitySnapshot>
+public interface IEventEntitySnapshot : IEventEntity
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventEntityFilterSnapshot"/> class.
+    /// Gets the owner of the event entity snapshot.
     /// </summary>
-    [SetsRequiredMembers]
-    public EventEntityFilterSnapshot() : base() { }
-
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventSnapshot);
+    Guid OwnerId { get; }
 }

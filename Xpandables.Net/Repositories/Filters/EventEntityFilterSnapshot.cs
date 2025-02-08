@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Entities;
+using System.Diagnostics.CodeAnalysis;
+
+using Xpandables.Net.Events;
+
+namespace Xpandables.Net.Repositories.Filters;
+
 /// <summary>
-/// Represents an event entity domain that includes aggregate information.
+/// Represents a filter for event entity snapshots.
 /// </summary>
-public interface IEventEntityDomain : IEventEntity
+public sealed record class EventEntityFilterSnapshot :
+    EntityFilter<IEventEntitySnapshot>,
+    IEventFilter<IEventEntitySnapshot>
 {
     /// <summary>
-    /// Gets the identifier of the aggregate.
+    /// Initializes a new instance of the <see cref="EventEntityFilterSnapshot"/> class.
     /// </summary>
-    Guid AggregateId { get; }
+    [SetsRequiredMembers]
+    public EventEntityFilterSnapshot() : base() { }
+
+    /// <inheritdoc/>
+    public Type EventType => typeof(IEventSnapshot);
 }

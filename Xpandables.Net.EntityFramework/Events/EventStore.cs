@@ -21,10 +21,9 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Events.Converters;
-using Xpandables.Net.Events.Entities;
-using Xpandables.Net.Events.Filters;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Repositories.Converters;
+using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Events;
 

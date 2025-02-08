@@ -26,25 +26,25 @@ namespace Xpandables.Net;
 /// When used with <see cref="PropertyNotification"/> 
 /// or <see cref="PropertyNotification{T}"/>, 
 /// makes sure that the decorated property will be notified
-/// when the target specified property by <see cref="Name"/> has changed.
+/// when the target specified property by <see cref="PropertyName"/> has changed.
 /// </summary>
 /// <remarks>
 /// Specifies that the decorated property will be notified 
 /// when the target specified by name has changed.
 /// We advise the use of <see langword="nameof(propertyName)"/> as value.
 /// </remarks>
-/// <param name="name">The name of the target property 
+/// <param name="propertyName">The name of the target property 
 /// which changes are notified to the decorated property.</param>
 /// <exception cref="ArgumentNullException">The 
-/// <paramref name="name"/> is null.</exception>
+/// <paramref name="propertyName"/> is null.</exception>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
-public sealed class PropertyNotificationForAttribute(string name) : Attribute
+public sealed class PropertyNotificationForAttribute(string propertyName) : Attribute
 {
     /// <summary>
     /// Gets the name of the target property which 
     /// changes are notified to the decorated property.
     /// </summary>
-    public string Name { get; } = name;
+    public string PropertyName { get; } = propertyName;
 }
 
 /// <summary>
@@ -53,8 +53,7 @@ public sealed class PropertyNotificationForAttribute(string name) : Attribute
 /// <see cref="INotifyPropertyChanging"/>.
 /// </summary>
 /// <remarks>This class is disposable.</remarks>
-public abstract class PropertyNotification :
-    INotifyPropertyChanged, INotifyPropertyChanging, IDisposable
+public abstract class PropertyNotification : Disposable, INotifyPropertyChanged, INotifyPropertyChanging
 {
     private static Func<Type, IDictionary<string, List<string>>> _dependencyPropertiesProvider =
         NotifyPropertyExtensions.DependencyPropertiesProvider;
@@ -402,88 +401,6 @@ public abstract class PropertyNotification :
         return true;
     }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether this instance is disposed.
-    /// </summary>
-    /// <value>
-    ///  <c>true</c> if this instance is disposed; otherwise, <c>false</c>.
-    /// </value>
-    /// <remarks>Default initialization for 
-    /// a <see cref="bool"/> is <c>false</c>.</remarks>
-    protected bool IsDisposed { get; set; }
-
-    /// <summary>
-    /// Public Implementation of Dispose according to .NET Framework 
-    /// Design Guidelines
-    /// callable by consumers.
-    /// Do not make this method virtual.
-    /// A derived class should not be able to override this method.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This object will be cleaned up by the Dispose method.
-    /// Therefore, you should call GC.SuppressFinalize to take 
-    /// this object off the finalization queue
-    /// and prevent finalization code for this object 
-    /// from executing a second time.
-    /// </para>
-    /// <para>Always use SuppressFinalize() in case 
-    /// a subclass of this type implements a finalizer.</para>
-    /// </remarks>
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Protected implementation of Dispose pattern.
-    /// When overridden in derived classes, this method get 
-    /// called when the instance will be disposed.
-    /// </summary>
-    /// <param name="disposing"><see langword="true"/> to 
-    /// release both managed and unmanaged resources;
-    /// <see langword="false"/> to release only unmanaged resources.
-    /// </param>
-    /// <remarks>
-    /// <list type="bulleted">
-    /// <see cref="Dispose(bool)"/> executes in two distinct scenarios.
-    /// <item>If <paramref name="disposing"/> equals <c>true</c>, 
-    /// the method has been called directly
-    /// or indirectly by a user's code. Managed and unmanaged 
-    /// resources can be disposed.</item>
-    /// <item>If <paramref name="disposing"/> equals <c>false</c>, 
-    /// the method has been called
-    /// by the runtime from inside the finalizer and you should 
-    /// not reference other objects.
-    /// Only unmanaged resources can be disposed.</item></list>
-    /// </remarks>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (IsDisposed)
-        {
-            return;
-        }
-
-        if (disposing)
-        {
-            // Release all managed resources here
-            // Need to unregister/detach yourself from the events.
-            // Always make sure the object is not null first before trying to
-            // unregister/detach them!
-            // Failure to unregister can be a BIG source of memory leaks
-        }
-
-        // Release all unmanaged resources here and override a finalizer below.
-        // Set large fields to null.
-
-        // Dispose has been called.
-        IsDisposed = true;
-
-        // If it is available, make the call to the
-        // base class's Dispose(boolean) method
-    }
-
     internal void PropagatePropertyChangedOnDependents(string property)
     {
         Action<string> onPropertyChangedAction = new(OnPropertyChanged);
@@ -818,7 +735,7 @@ internal static class NotifyPropertyExtensions
             string[] attributes
                 = [.. (from a in property
                         .GetCustomAttributes<PropertyNotificationForAttribute>(false)
-                   select a.Name)];
+                   select a.PropertyName)];
 
             foreach (string? dependency in attributes)
             {

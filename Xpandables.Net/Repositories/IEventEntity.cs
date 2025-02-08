@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +14,30 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
-using Xpandables.Net.Events.Entities;
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Events.Filters;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a filter for event entity integration.
+/// Represents an event entity that contains event-related data.
 /// </summary>
-public sealed record EventEntityFilterIntegration :
-    EntityFilter<IEventEntityIntegration>,
-    IEventFilter<IEventEntityIntegration>
+public interface IEventEntity : IEntity<Guid>
 {
-    /// <inheritdoc/>
-    [SetsRequiredMembers]
-    public EventEntityFilterIntegration() : base() { }
+    /// <summary>
+    /// Gets the name of the event.
+    /// </summary>
+    string EventName { get; }
 
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventIntegration);
+    /// <summary>
+    /// Gets the full name of the event.
+    /// </summary>
+    string EventFullName { get; }
+
+    /// <summary>
+    /// Gets the version of the event.
+    /// </summary>
+    ulong EventVersion { get; }
+
+    /// <summary>
+    /// Gets the data associated with the event.
+    /// </summary>
+    ReadOnlyMemory<byte> EventData { get; }
 }

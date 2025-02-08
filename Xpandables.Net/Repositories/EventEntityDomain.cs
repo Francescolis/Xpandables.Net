@@ -14,32 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Events.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an event entity that contains event-related data.
+/// Represents a class for event entities in a domain context.
 /// </summary>
-public interface IEventEntity : IEntity<Guid>
+public sealed class EventEntityDomain : EventEntity, IEventEntityDomain
 {
-    /// <summary>
-    /// Gets the name of the event.
-    /// </summary>
-    string EventName { get; }
-
-    /// <summary>
-    /// Gets the full name of the event.
-    /// </summary>
-    string EventFullName { get; }
-
-    /// <summary>
-    /// Gets the version of the event.
-    /// </summary>
-    ulong EventVersion { get; }
-
-    /// <summary>
-    /// Gets the data associated with the event.
-    /// </summary>
-    ReadOnlyMemory<byte> EventData { get; }
+    /// <inheritdoc/>
+    public required Guid AggregateId { get; init; }
 }

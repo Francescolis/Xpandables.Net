@@ -21,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Collections;
 
-namespace Xpandables.Net.Events.Defaults;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Provides a mechanism for publishing and subscribing to events.

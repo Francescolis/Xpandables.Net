@@ -17,7 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-namespace Xpandables.Net.Repositories;
+namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
 /// Represents a filter for querying entities with specified criteria.

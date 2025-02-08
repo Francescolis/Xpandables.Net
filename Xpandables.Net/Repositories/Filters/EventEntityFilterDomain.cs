@@ -14,15 +14,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Entities;
+using System.Diagnostics.CodeAnalysis;
+
+using Xpandables.Net.Events;
+
+namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
-/// Represents an integration event entity.
+/// Represents a filter for event entity domains.
 /// </summary>
-public sealed class EventEntityIntegration : EventEntity, IEventEntityIntegration
+public sealed record EventEntityFilterDomain :
+    EntityFilter<IEventEntityDomain>,
+    IEventFilter<IEventEntityDomain>
 {
     /// <summary>
-    /// Gets the error message associated with the event entity.
+    /// Initializes a new instance of the <see cref="EventEntityFilterDomain"/> class.
     /// </summary>
-    public string? ErrorMessage { get; set; }
+    [SetsRequiredMembers]
+    public EventEntityFilterDomain() : base() { }
+
+    /// <inheritdoc/>
+    public Type EventType => typeof(IEventDomain);
 }
