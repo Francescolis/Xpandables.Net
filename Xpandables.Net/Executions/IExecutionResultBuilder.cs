@@ -19,12 +19,12 @@ using System.Net;
 
 using Xpandables.Net.Collections;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Interface for building an <see cref="IExecutionResult"/>.
+/// Represents a method for building an <see cref="IExecutionResult"/>.
 /// </summary>
-public interface IBuilder
+public interface IExecutionResultBuilder
 {
     /// <summary>
     /// Builds an instance that matches the builder information.
@@ -34,10 +34,10 @@ public interface IBuilder
 }
 
 /// <summary>
-/// Interface for building an <see cref="IExecutionResult{TResult}"/>.
+/// Represents a method for building an <see cref="IExecutionResult{TResult}"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IBuilder<TResult> : IBuilder
+public interface IExecutionResultBuilder<TResult> : IExecutionResultBuilder
 {
     /// <summary>
     /// Builds an instance that matches the builder information.
@@ -46,15 +46,15 @@ public interface IBuilder<TResult> : IBuilder
     new IExecutionResult<TResult> Build();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    IExecutionResult IBuilder.Build() => Build();
+    IExecutionResult IExecutionResultBuilder.Build() => Build();
 }
 
 /// <summary>
-/// Interface for merging the current execution with another execution.
+/// Represents a method for merging the current execution with another execution result.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IMergeBuilder<out TBuilder>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultMergeBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Merges the current execution with the specified execution.
@@ -65,11 +65,11 @@ public interface IMergeBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Interface for setting the status code of an execution being built.
+/// Represents a method for setting the status code of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IStatusBuilder<out TBuilder>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultStatusBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Sets the status code of the execution being built.
@@ -81,12 +81,12 @@ public interface IStatusBuilder<out TBuilder>
 
 /**
  * <summary>
- * Interface for setting the title of an execution being built.
+ * Represents a method for setting the title of an execution being built.
  * </summary>
  * <typeparam name="TBuilder">The type of the builder.</typeparam>
  */
-public interface ITitleBuilder<out TBuilder>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultTitleBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /**
      * <summary>
@@ -99,11 +99,11 @@ public interface ITitleBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Interface for setting the detail of an execution being built.
+/// Represents a method for setting the detail of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IDetailBuilder<out TBuilder>
-   where TBuilder : class, IBuilder
+public interface IExecutionResultDetailBuilder<out TBuilder>
+   where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Sets the detail of the execution being built.
@@ -114,11 +114,11 @@ public interface IDetailBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Interface for setting the location of an execution being built.
+/// Represents a method for setting the location of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface ILocationBuilder<out TBuilder>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultLocationBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Sets the location of the execution using a URI.
@@ -136,12 +136,12 @@ public interface ILocationBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Interface for setting the result of an execution being built.
+/// Represents a method for setting the result of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IResultBuilder<out TBuilder, in TResult>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultResultBuilder<out TBuilder, in TResult>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Sets the result of the execution being built.
@@ -152,11 +152,11 @@ public interface IResultBuilder<out TBuilder, in TResult>
 }
 
 /// <summary>
-/// Interface for setting headers of an execution being built.
+/// Represents a method for setting headers of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IHeaderBuilder<out TBuilder>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultHeaderBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Sets a header for the execution being built.
@@ -191,12 +191,12 @@ public interface IHeaderBuilder<out TBuilder>
 
 /**
  * <summary>
- * Interface for building an <see cref="IExecutionResult"/> with error details.
+ * Represents a method for building an <see cref="IExecutionResult"/> with error details.
  * </summary>
  * <typeparam name="TBuilder">The type of the builder.</typeparam>
  */
-public interface IErrorBuilder<out TBuilder>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultErrorBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Adds an error with the specified key and error message.
@@ -244,11 +244,11 @@ public interface IErrorBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Interface for building an <see cref="IExecutionResult"/> with extensions.
+/// Represents a method for building an <see cref="IExecutionResult"/> with extensions.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExtensionBuilder<out TBuilder>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultExtensionBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Adds an extension with the specified key and value.
@@ -290,12 +290,12 @@ public interface IExtensionBuilder<out TBuilder>
 
 /**
  * <summary>
- * Interface for clearing various elements of an execution being built.
+ * Represents a method for clearing various elements of an execution being built.
  * </summary>
  * <typeparam name="TBuilder">The type of the builder.</typeparam>
  */
-public interface IClearBuilder<out TBuilder>
-    where TBuilder : class, IBuilder
+public interface IExecutionResultClearBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Clears all errors from the execution being built.

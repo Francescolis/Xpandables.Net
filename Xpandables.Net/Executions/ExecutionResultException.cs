@@ -18,15 +18,21 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Text.Json;
 
-namespace Xpandables.Net.Operations;
+using Xpandables.Net.Text;
+
+namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Represents an exception that occurs during an executionResult result.
+/// Represents an exception that is thrown when an execution result has an 
+/// unsuccessful status code.
 /// </summary>
+[Serializable]
 public sealed class ExecutionResultException : Exception
 {
-    private static readonly JsonSerializerOptions CachedJsonSerializerOptions =
-        new() { WriteIndented = true };
+    /// <summary>
+    /// Gets the executionResult associated with this exception.
+    /// </summary>
+    public IExecutionResult ExecutionResult { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
@@ -38,12 +44,11 @@ public sealed class ExecutionResultException : Exception
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code of the <paramref name="executionResult"/> is between 200 and 299.</exception>
     public ExecutionResultException(IExecutionResult executionResult)
-        : base(string.Join(
-            Environment.NewLine, executionResult.Errors.SelectMany(e => e.Values)))
+        : base($"Execution failed with status code: {executionResult.StatusCode}")
     {
         ArgumentNullException.ThrowIfNull(executionResult);
 
-        if ((int)executionResult.StatusCode is >= 200 and <= 299)
+        if (executionResult.IsSuccessStatusCode)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(executionResult),
@@ -55,9 +60,27 @@ public sealed class ExecutionResultException : Exception
     }
 
     /// <summary>
-    /// Gets the executionResult associated with this exception.
+    /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
+    /// class with a specified error message and execution result.
     /// </summary>
-    public IExecutionResult ExecutionResult { get; }
+    /// <param name="message">The message that describes the error.</param>
+    /// <param name="executionResult">The execution result that caused the exception.</param>
+    public ExecutionResultException(string message, IExecutionResult executionResult)
+        : base(message) =>
+        ExecutionResult = executionResult;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
+    /// class with a specified error message, execution result, and a reference 
+    /// to the inner exception that is the cause of this exception.
+    /// </summary>
+    /// <param name="message">The message that describes the error.</param>
+    /// <param name="executionResult">The execution result that caused the exception.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public ExecutionResultException(
+        string message, IExecutionResult executionResult, Exception innerException)
+        : base(message, innerException) =>
+        ExecutionResult = executionResult;
 
     [Obsolete("Use constructor with IOperationResult")]
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -71,12 +94,24 @@ public sealed class ExecutionResultException : Exception
             .GetValue(nameof(ExecutionResult), typeof(IExecutionResult))!;
     }
 
+    /// <summary>
+    /// Sets the <see cref="SerializationInfo"/> with information about the exception.
+    /// </summary>
+    /// <param name="info">The object that holds the serialized object data.</param>
+    /// <param name="context">The contextual information about the source or destination.</param>
+    [Obsolete("Use constructor with IOperationResult")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public override void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        base.GetObjectData(info, context);
+        info.AddValue(nameof(ExecutionResult), ExecutionResult, typeof(IExecutionResult));
+    }
+
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="ExecutionResult"/> parameter</remarks>
+    ///<see cref="IExecutionResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ExecutionResultException()
-        => throw new NotSupportedException();
+    public ExecutionResultException() => throw new NotSupportedException();
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
@@ -93,6 +128,7 @@ public sealed class ExecutionResultException : Exception
         : base(message, innerException) => throw new NotSupportedException();
 
     ///<inheritdoc/>
-    public override string ToString() => JsonSerializer.Serialize(
-        ExecutionResult, ExecutionResult.GetType(), CachedJsonSerializerOptions);
+    public override string ToString() =>
+        $"{base.ToString()}{Environment.NewLine}{JsonSerializer.Serialize(
+        ExecutionResult, ExecutionResult.GetType(), DefaultSerializerOptions.Defaults)}";
 }

@@ -19,7 +19,7 @@ using System.Net;
 
 using Xpandables.Net.Collections;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
 /// Represents the result of an execution, including status code, title, detail,
@@ -28,7 +28,7 @@ namespace Xpandables.Net.Operations;
 public record ExecutionResult : IExecutionResult
 {
     /// <inheritdoc/>
-    public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
+    public required HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
 
     /// <inheritdoc/>
     [MaybeNull, AllowNull]

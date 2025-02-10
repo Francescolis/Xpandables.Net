@@ -21,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Commands;
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.Pipelines;
 internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(

@@ -18,7 +18,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
 /// A JSON converter for <see cref="IExecutionResult"/>.
@@ -124,5 +124,53 @@ public sealed class ExecutionResultJsonConverter<TResult> :
                 typeof(ExecutionResult<TResult>),
                 options);
         }
+    }
+}
+
+/// <summary>
+/// A factory for creating JSON converters for <see cref="ExecutionResult{TResult}"/>.
+/// </summary>
+/// <remarks>
+/// The <see cref="UseAspNetCoreCompatibility"/> indicates whether to use
+/// ASP.NET Core compatibility. The default value is <see langword="false"/>.
+/// The ASP.NET Core compatibility is used to serialize only the result of 
+/// the operation.
+/// </remarks>
+public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
+{
+    /// <summary>
+    /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.
+    /// The ASP.NET Core compatibility is used to serialize only the result of 
+    /// the operation.</remarks>
+    public bool UseAspNetCoreCompatibility { get; set; }
+
+    /// <inheritdoc/>
+    public override bool CanConvert(Type typeToConvert) =>
+        typeToConvert == typeof(IExecutionResult)
+        || (typeToConvert.IsGenericType
+            && typeToConvert.GetGenericTypeDefinition() == typeof(IExecutionResult<>));
+
+    /// <inheritdoc/>
+    public override JsonConverter CreateConverter(
+        Type typeToConvert,
+        JsonSerializerOptions options)
+    {
+        if (typeToConvert == typeof(IExecutionResult))
+        {
+            return new ExecutionResultJsonConverter()
+            {
+                UseAspNetCoreCompatibility = UseAspNetCoreCompatibility
+            };
+        }
+
+        Type resultType = typeToConvert.GetGenericArguments()[0];
+        Type converterType = typeof(ExecutionResultJsonConverter<>).MakeGenericType(resultType);
+
+        dynamic converter = Activator.CreateInstance(converterType)!;
+        converter.UseAspNetCoreCompatibility = UseAspNetCoreCompatibility;
+
+        return converter;
     }
 }

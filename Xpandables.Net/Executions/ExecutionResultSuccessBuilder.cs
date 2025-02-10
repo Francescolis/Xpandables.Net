@@ -16,21 +16,22 @@
 ********************************************************************************/
 using System.Net;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 /// <summary>
 /// Represents a builder for creating successful execution results.
 /// </summary>
-public sealed class SuccessBuilder : Builder<ISuccessBuilder>, ISuccessBuilder
+public sealed class ExecutionResultSuccessBuilder :
+    ExecutionResultBuilder<IExecutionResultSuccessBuilder>, IExecutionResultSuccessBuilder
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SuccessBuilder"/> class 
+    /// Initializes a new instance of the <see cref="ExecutionResultSuccessBuilder"/> class 
     /// with the specified status code.
     /// </summary>
     /// <param name="statusCode">The HTTP status code indicating a 
     /// successful execution.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code is not between 200 and 299.</exception>
-    public SuccessBuilder(HttpStatusCode statusCode) :
+    public ExecutionResultSuccessBuilder(HttpStatusCode statusCode) :
         base(statusCode)
     {
         if ((int)StatusCode is not >= 200 or not <= 299)
@@ -48,19 +49,19 @@ public sealed class SuccessBuilder : Builder<ISuccessBuilder>, ISuccessBuilder
 /// specified result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class SuccessBuilder<TResult> :
-    Builder<ISuccessBuilder<TResult>, TResult>,
-    ISuccessBuilder<TResult>
+public sealed class ExecutionResultSuccessBuilder<TResult> :
+    ExecutionResultBuilder<IExecutionResultSuccessBuilder<TResult>, TResult>,
+    IExecutionResultSuccessBuilder<TResult>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SuccessBuilder{TResult}"/> class 
+    /// Initializes a new instance of the <see cref="ExecutionResultSuccessBuilder{TResult}"/> class 
     /// with the specified status code.
     /// </summary>
     /// <param name="statusCode">The HTTP status code indicating a 
     /// successful execution.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code is not between 200 and 299.</exception>
-    public SuccessBuilder(HttpStatusCode statusCode) :
+    public ExecutionResultSuccessBuilder(HttpStatusCode statusCode) :
         base(statusCode)
     {
         if ((int)StatusCode is not >= 200 or not <= 299)

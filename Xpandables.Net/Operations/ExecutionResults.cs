@@ -16,6 +16,8 @@
 ********************************************************************************/
 using System.Net;
 
+using Xpandables.Net.Executions;
+
 namespace Xpandables.Net.Operations;
 
 /// <summary>
@@ -75,220 +77,220 @@ public readonly record struct ExecutionResults
         .Build();
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder"/> with the   
     /// specified status code to build a success execution result.  
     /// </summary>  
     /// <param name="statusCode">The status code of the execution result.</param>  
-    /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
-    public static ISuccessBuilder Success(HttpStatusCode statusCode) =>
-        new SuccessBuilder(statusCode);
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder"/>.</returns>  
+    public static IExecutionResultSuccessBuilder Success(HttpStatusCode statusCode) =>
+        new ExecutionResultSuccessBuilder(statusCode);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder{TResult}"/> with the   
     /// specified status code to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <param name="statusCode">The status code of the execution result.</param>  
-    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
-    public static ISuccessBuilder<TResult> Success<TResult>(
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultSuccessBuilder<TResult> Success<TResult>(
         HttpStatusCode statusCode) =>
-        new SuccessBuilder<TResult>(statusCode);
+        new ExecutionResultSuccessBuilder<TResult>(statusCode);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder{TResult}"/> with the   
     /// specified result and status code to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <param name="result">The result of the execution.</param>  
     /// <param name="statusCode">The status code of the execution result.</param>  
-    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
-    public static ISuccessBuilder<TResult> Success<TResult>(
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultSuccessBuilder<TResult> Success<TResult>(
         TResult result, HttpStatusCode statusCode) =>
-        new SuccessBuilder<TResult>(statusCode).WithResult(result);
+        new ExecutionResultSuccessBuilder<TResult>(statusCode).WithResult(result);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder"/> with the   
     /// specified status code to build a failure execution result.  
     /// </summary>  
     /// <param name="statusCode">The status code of the execution result.</param>  
-    /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
-    public static IFailureBuilder Failure(HttpStatusCode statusCode) =>
-        new FailureBuilder(statusCode);
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder"/>.</returns>  
+    public static IExecutionResultFailureBuilder Failure(HttpStatusCode statusCode) =>
+        new ExecutionResultFailureBuilder(statusCode);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder{TResult}"/> with the   
     /// specified status code to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <param name="statusCode">The status code of the execution result.</param>  
-    /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
-    public static IFailureBuilder<TResult> Failure<TResult>(
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultFailureBuilder<TResult> Failure<TResult>(
         HttpStatusCode statusCode) =>
-        new FailureBuilder<TResult>(statusCode);
+        new ExecutionResultFailureBuilder<TResult>(statusCode);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder"/> with the   
     /// status code OK to build a success execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
-    public static ISuccessBuilder Ok() => Success(HttpStatusCode.OK);
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder"/>.</returns>  
+    public static IExecutionResultSuccessBuilder Ok() => Success(HttpStatusCode.OK);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder{TResult}"/> with the   
     /// status code OK to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
-    public static ISuccessBuilder<TResult> Ok<TResult>() => Success<TResult>(HttpStatusCode.OK);
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultSuccessBuilder<TResult> Ok<TResult>() => Success<TResult>(HttpStatusCode.OK);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder{TResult}"/> with the   
     /// specified result and status code OK to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <param name="result">The result of the execution.</param>  
-    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
-    public static ISuccessBuilder<TResult> Ok<TResult>(TResult result) =>
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultSuccessBuilder<TResult> Ok<TResult>(TResult result) =>
         Success(result, HttpStatusCode.OK);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder"/> with the   
     /// status code Created to build a success execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
-    public static ISuccessBuilder Created() => Success(HttpStatusCode.Created);
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder"/>.</returns>  
+    public static IExecutionResultSuccessBuilder Created() => Success(HttpStatusCode.Created);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder{TResult}"/> with the   
     /// status code Created to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
-    public static ISuccessBuilder<TResult> Created<TResult>() =>
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultSuccessBuilder<TResult> Created<TResult>() =>
         Success<TResult>(HttpStatusCode.Created);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder{TResult}"/> with the   
     /// specified result and status code Created to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <param name="result">The result of the execution.</param>  
-    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
-    public static ISuccessBuilder<TResult> Created<TResult>(TResult result) =>
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultSuccessBuilder<TResult> Created<TResult>(TResult result) =>
         Success(result, HttpStatusCode.Created);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder"/> with the   
     /// status code NoContent to build a success execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="ISuccessBuilder"/>.</returns>  
-    public static ISuccessBuilder NoContent() => Success(HttpStatusCode.NoContent);
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder"/>.</returns>  
+    public static IExecutionResultSuccessBuilder NoContent() => Success(HttpStatusCode.NoContent);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="ISuccessBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultSuccessBuilder{TResult}"/> with the   
     /// status code NoContent to build a success execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="ISuccessBuilder{TResult}"/>.</returns>  
-    public static ISuccessBuilder<TResult> NoContent<TResult>() =>
+    /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultSuccessBuilder<TResult> NoContent<TResult>() =>
         Success<TResult>(HttpStatusCode.NoContent);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder"/> with the   
     /// status code NotFound to build a failure execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
-    public static IFailureBuilder NotFound() => Failure(HttpStatusCode.NotFound);
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder"/>.</returns>  
+    public static IExecutionResultFailureBuilder NotFound() => Failure(HttpStatusCode.NotFound);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder{TResult}"/> with the   
     /// status code NotFound to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
-    public static IFailureBuilder<TResult> NotFound<TResult>() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultFailureBuilder<TResult> NotFound<TResult>() =>
        Failure<TResult>(HttpStatusCode.NotFound);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder"/> with the   
     /// status code BadRequest to build a failure execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
-    public static IFailureBuilder BadRequest() => Failure(HttpStatusCode.BadRequest);
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder"/>.</returns>  
+    public static IExecutionResultFailureBuilder BadRequest() => Failure(HttpStatusCode.BadRequest);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder{TResult}"/> with the   
     /// status code BadRequest to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
-    public static IFailureBuilder<TResult> BadRequest<TResult>() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultFailureBuilder<TResult> BadRequest<TResult>() =>
         Failure<TResult>(HttpStatusCode.BadRequest);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder"/> with the   
     /// status code Conflict to build a failure execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
-    public static IFailureBuilder Conflict() => Failure(HttpStatusCode.Conflict);
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder"/>.</returns>  
+    public static IExecutionResultFailureBuilder Conflict() => Failure(HttpStatusCode.Conflict);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder{TResult}"/> with the   
     /// status code Conflict to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
-    public static IFailureBuilder<TResult> Conflict<TResult>() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultFailureBuilder<TResult> Conflict<TResult>() =>
         Failure<TResult>(HttpStatusCode.Conflict);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder"/> with the   
     /// status code Unauthorized to build a failure execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
-    public static IFailureBuilder Unauthorized() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder"/>.</returns>  
+    public static IExecutionResultFailureBuilder Unauthorized() =>
         Failure(HttpStatusCode.Unauthorized);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder{TResult}"/> with the   
     /// status code Unauthorized to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
-    public static IFailureBuilder<TResult> Unauthorized<TResult>() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultFailureBuilder<TResult> Unauthorized<TResult>() =>
        Failure<TResult>(HttpStatusCode.Unauthorized);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder"/> with the   
     /// status code InternalServerError to build a failure execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
-    public static IFailureBuilder InternalServerError() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder"/>.</returns>  
+    public static IExecutionResultFailureBuilder InternalServerError() =>
         Failure(HttpStatusCode.InternalServerError);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder{TResult}"/> with the   
     /// status code InternalServerError to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
-    public static IFailureBuilder<TResult> InternalServerError<TResult>() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultFailureBuilder<TResult> InternalServerError<TResult>() =>
         Failure<TResult>(HttpStatusCode.InternalServerError);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder"/> with the   
     /// status code ServiceUnavailable to build a failure execution result.  
     /// </summary>  
-    /// <returns>An instance of <see cref="IFailureBuilder"/>.</returns>  
-    public static IFailureBuilder ServiceUnavailable() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder"/>.</returns>  
+    public static IExecutionResultFailureBuilder ServiceUnavailable() =>
         Failure(HttpStatusCode.ServiceUnavailable);
 
     /// <summary>  
-    /// Returns an implementation of <see cref="IFailureBuilder{TResult}"/> with the   
+    /// Returns an implementation of <see cref="IExecutionResultFailureBuilder{TResult}"/> with the   
     /// status code ServiceUnavailable to build a failure execution result.  
     /// </summary>  
     /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <returns>An instance of <see cref="IFailureBuilder{TResult}"/>.</returns>  
-    public static IFailureBuilder<TResult> ServiceUnavailable<TResult>() =>
+    /// <returns>An instance of <see cref="IExecutionResultFailureBuilder{TResult}"/>.</returns>  
+    public static IExecutionResultFailureBuilder<TResult> ServiceUnavailable<TResult>() =>
         Failure<TResult>(HttpStatusCode.ServiceUnavailable);
 }

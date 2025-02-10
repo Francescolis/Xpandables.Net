@@ -18,6 +18,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Commands.Wrappers;
+using Xpandables.Net.Executions;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Commands;

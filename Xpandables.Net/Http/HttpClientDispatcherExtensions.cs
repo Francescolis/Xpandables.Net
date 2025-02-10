@@ -20,6 +20,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.Executions;
 using Xpandables.Net.Operations;
 using Xpandables.Net.Text;
 
@@ -199,7 +200,7 @@ public static class HttpClientDispatcherExtensions
 
         if (response.IsSuccessStatusCode)
         {
-            ISuccessBuilder<TResult> successBuilder = ExecutionResults
+            IExecutionResultSuccessBuilder<TResult> successBuilder = ExecutionResults
                 .Success<TResult>(response.StatusCode)
                 .WithHeaders(headers);
 

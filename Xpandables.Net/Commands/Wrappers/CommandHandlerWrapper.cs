@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 using Xpandables.Net.Pipelines;
 
 namespace Xpandables.Net.Commands.Wrappers;

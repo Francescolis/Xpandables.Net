@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.Operations;
 
@@ -52,7 +53,7 @@ public sealed class ExecutionResultValidator : IExecutionResultValidator
             return await next(context).ConfigureAwait(false);
         }
 
-        IFailureBuilder failureBuilder = ExecutionResults.BadRequest();
+        IExecutionResultFailureBuilder failureBuilder = ExecutionResults.BadRequest();
 
         foreach (ValidatorDescriptor descriptor in GetValidatorDescriptors())
         {

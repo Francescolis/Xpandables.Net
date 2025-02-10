@@ -16,20 +16,21 @@
 ********************************************************************************/
 using System.Net;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 /// <summary>  
 /// Represents a builder for creating failure execution results.  
 /// </summary>  
-public sealed class FailureBuilder : Builder<IFailureBuilder>, IFailureBuilder
+public sealed class ExecutionResultFailureBuilder :
+    ExecutionResultBuilder<IExecutionResultFailureBuilder>, IExecutionResultFailureBuilder
 {
     /// <summary>  
-    /// Initializes a new instance of the <see cref="FailureBuilder"/> class 
+    /// Initializes a new instance of the <see cref="ExecutionResultFailureBuilder"/> class 
     /// with the specified status code.  
     /// </summary>  
     /// <param name="statusCode">The HTTP status code for the failure.</param>  
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code is between 200 and 299.</exception>  
-    public FailureBuilder(HttpStatusCode statusCode) :
+    public ExecutionResultFailureBuilder(HttpStatusCode statusCode) :
         base(statusCode)
     {
         if ((int)StatusCode is >= 200 and <= 299)
@@ -47,18 +48,18 @@ public sealed class FailureBuilder : Builder<IFailureBuilder>, IFailureBuilder
 /// result type.  
 /// </summary>  
 /// <typeparam name="TResult">The type of the result.</typeparam>  
-public sealed class FailureBuilder<TResult> :
-   Builder<IFailureBuilder<TResult>, TResult>,
-   IFailureBuilder<TResult>
+public sealed class ExecutionResultFailureBuilder<TResult> :
+   ExecutionResultBuilder<IExecutionResultFailureBuilder<TResult>, TResult>,
+   IExecutionResultFailureBuilder<TResult>
 {
     /// <summary>  
-    /// Initializes a new instance of the <see cref="FailureBuilder{TResult}"/> class  
+    /// Initializes a new instance of the <see cref="ExecutionResultFailureBuilder{TResult}"/> class  
     /// with the specified status code.  
     /// </summary>  
     /// <param name="statusCode">The HTTP status code for the failure.</param>  
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status  
     /// code is between 200 and 299.</exception>  
-    public FailureBuilder(HttpStatusCode statusCode) :
+    public ExecutionResultFailureBuilder(HttpStatusCode statusCode) :
         base(statusCode)
     {
         if ((int)StatusCode is >= 200 and <= 299)

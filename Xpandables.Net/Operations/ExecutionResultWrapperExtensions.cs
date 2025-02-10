@@ -16,6 +16,8 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
+using Xpandables.Net.Executions;
+
 namespace Xpandables.Net.Operations;
 public static partial class ExecutionResultExtensions
 {

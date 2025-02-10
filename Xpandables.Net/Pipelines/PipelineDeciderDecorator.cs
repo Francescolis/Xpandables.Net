@@ -18,7 +18,7 @@
 using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Commands;
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.Pipelines;
 

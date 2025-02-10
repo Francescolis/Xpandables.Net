@@ -20,8 +20,9 @@ using System.Net;
 using System.Text.Json.Serialization;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
 /// Represents the result of an execution.
@@ -74,7 +75,7 @@ public interface IExecutionResult
     ElementCollection Extensions { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the execution is generic.
+    /// Gets a value indicating whether the execution result is generic.
     /// </summary>
     public bool IsGeneric => false;
 

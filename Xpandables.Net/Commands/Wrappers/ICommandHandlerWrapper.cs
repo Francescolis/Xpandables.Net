@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.Commands.Wrappers;
 

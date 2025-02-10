@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Executions;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.DataAnnotations;
@@ -35,7 +36,7 @@ public sealed class CompositeValidator<TArgument>(
     /// <inheritdoc/>
     public override IExecutionResult Validate(TArgument instance)
     {
-        IFailureBuilder failureBuilder =
+        IExecutionResultFailureBuilder failureBuilder =
             ExecutionResults.Failure(System.Net.HttpStatusCode.BadRequest);
 
         foreach (IValidator<TArgument> validator in _validators
@@ -57,7 +58,7 @@ public sealed class CompositeValidator<TArgument>(
     /// <inheritdoc/>
     public override async ValueTask<IExecutionResult> ValidateAsync(TArgument instance)
     {
-        IFailureBuilder failureBuilder =
+        IExecutionResultFailureBuilder failureBuilder =
             ExecutionResults.Failure(System.Net.HttpStatusCode.BadRequest);
 
         foreach (IValidator<TArgument> validator in _validators

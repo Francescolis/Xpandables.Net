@@ -17,6 +17,7 @@
 using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Commands;
+using Xpandables.Net.Executions;
 using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Pipelines;

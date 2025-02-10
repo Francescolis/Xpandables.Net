@@ -18,25 +18,26 @@
 using System.Net;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.Operations;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
 /// Represents a builder for creating execution results with various properties.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
-    IHeaderBuilder<TBuilder>,
-    ILocationBuilder<TBuilder>,
-    IErrorBuilder<TBuilder>,
-    IDetailBuilder<TBuilder>,
-    ITitleBuilder<TBuilder>,
-    IMergeBuilder<TBuilder>,
-    IStatusBuilder<TBuilder>,
-    IExtensionBuilder<TBuilder>,
-    IClearBuilder<TBuilder>,
-    IBuilder
-    where TBuilder : class, IBuilder
+public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode) :
+    IExecutionResultHeaderBuilder<TBuilder>,
+    IExecutionResultLocationBuilder<TBuilder>,
+    IExecutionResultErrorBuilder<TBuilder>,
+    IExecutionResultDetailBuilder<TBuilder>,
+    IExecutionResultTitleBuilder<TBuilder>,
+    IExecutionResultMergeBuilder<TBuilder>,
+    IExecutionResultStatusBuilder<TBuilder>,
+    IExecutionResultExtensionBuilder<TBuilder>,
+    IExecutionResultClearBuilder<TBuilder>,
+    IExecutionResultBuilder
+    where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
     /// Gets the collection of headers.
@@ -330,11 +331,11 @@ public abstract class Builder<TBuilder>(HttpStatusCode statusCode) :
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 /// <param name="statusCode">The HTTP status code for the execution result.</param>
-public abstract class Builder<TBuilder, TResult>(HttpStatusCode statusCode) :
-    Builder<TBuilder>(statusCode),
-    IResultBuilder<TBuilder, TResult>,
-    IBuilder<TResult>
-    where TBuilder : class, IBuilder<TResult>
+public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode statusCode) :
+    ExecutionResultBuilder<TBuilder>(statusCode),
+    IExecutionResultResultBuilder<TBuilder, TResult>,
+    IExecutionResultBuilder<TResult>
+    where TBuilder : class, IExecutionResultBuilder<TResult>
 {
     /// <summary>
     /// Gets or sets the result object of the execution.
