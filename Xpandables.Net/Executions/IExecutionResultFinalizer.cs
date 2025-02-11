@@ -16,9 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
 /// Represents a delegate that finalizes an <see cref="IExecutionResult"/>.

@@ -16,9 +16,7 @@
 ********************************************************************************/
 using System.Net;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
 /// Provides methods to build success and failure execution results.

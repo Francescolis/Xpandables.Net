@@ -5,7 +5,6 @@ using FluentAssertions;
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Test.UnitTests;
 

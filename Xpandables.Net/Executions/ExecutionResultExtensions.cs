@@ -21,15 +21,17 @@ using System.Reflection;
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Executions;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
 /// Provides extension methods for operation results.
 /// </summary>
 public static partial class ExecutionResultExtensions
 {
+    private const int _minSuccessStatusCode = 200;
+    private const int _maxSuccessStatusCode = 299;
+
     /// <summary>
     /// Contains the key for the exception in the <see cref="ElementCollection"/>.
     /// </summary>
@@ -417,4 +419,344 @@ public static partial class ExecutionResultExtensions
                 _ => "Please refer to the errors property for additional details",
             };
 #pragma warning restore IDE0072 // Add missing cases
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a success status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a success status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsSuccessStatusCode(this HttpStatusCode statusCode) =>
+        (int)statusCode is >= _minSuccessStatusCode and <= _maxSuccessStatusCode;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified execution result     
+    /// is a success status code.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
+    /// result is a success status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsSuccessStatusCode(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsSuccessStatusCode();
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a failure status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a failure status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsFailureStatusCode(this HttpStatusCode statusCode) =>
+        !statusCode.IsSuccessStatusCode();
+
+    /// <summary>    
+    /// Determines whether the status code of the specified execution result     
+    /// is a failure status code.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
+    /// result is a failure status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsFailureStatusCode(this IExecutionResult executionResult) =>
+        !executionResult.StatusCode.IsSuccessStatusCode();
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a Created status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a Created status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsCreated(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.Created;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified execution result     
+    /// is a Created status code.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
+    /// result is a Created status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsCreated(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsCreated();
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a Not Found 
+    /// status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a Not Found 
+    /// status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsNotFound(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.NotFound;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified execution result     
+    /// is a Not Found status code.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
+    /// result is a Not Found status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsNotFound(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsNotFound();
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a No Content 
+    /// status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a No Content 
+    /// status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsNoContent(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.NoContent;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified execution result     
+    /// is a No Content status code.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
+    /// result is a No Content status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsNoContent(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsNoContent();
+
+    /// <summary>    
+    /// Determines whether the result of the specified execution result is a file.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the result of the execution result is a file;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsResultFile(this IExecutionResult executionResult) =>
+       executionResult.Result is ResultFile;
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a Bad Request 
+    /// status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a Bad Request
+    /// status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsBadRequest(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.BadRequest;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified execution result     
+    /// is a Bad Request status code.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
+    /// result is a Bad Request status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsBadRequest(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsBadRequest();
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is an Unauthorized   
+    /// status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is an Unauthorized   
+    /// status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsUnauthorized(this HttpStatusCode statusCode) =>
+       statusCode == HttpStatusCode.Unauthorized;
+
+    /// <summary>  
+    /// Determines whether the status code of the specified execution result  
+    /// is an Unauthorized status code.  
+    /// </summary>  
+    /// <param name="executionResult">The execution result to check.</param>  
+    /// <returns><see langword="true"/> if the status code of the execution  
+    /// result is an Unauthorized status code;  
+    /// otherwise, <see langword="false"/>.</returns>  
+    public static bool IsUnauthorized(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsUnauthorized();
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is an Internal 
+    /// Server Error status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is an Internal 
+    /// Server Error status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsInternalServerError(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.InternalServerError;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified execution result     
+    /// is an Internal Server Error status code.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
+    /// result is an Internal Server Error status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsInternalServerError(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsInternalServerError();
+
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a Service Unavailable 
+    /// status code.    
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a Service Unavailable 
+    /// status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsServiceUnavailable(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.ServiceUnavailable;
+
+    /// <summary>    
+    /// Determines whether the status code of the specified execution result     
+    /// is a Service Unavailable status code.    
+    /// </summary>    
+    /// <param name="executionResult">The execution result to check.</param>    
+    /// <returns><see langword="true"/> if the status code of the execution     
+    /// result is a Service Unavailable status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsServiceUnavailable(this IExecutionResult executionResult) =>
+        executionResult.StatusCode.IsServiceUnavailable();
+
+    /// <summary>
+    /// Converts an <see cref="Action"/> to an <see cref="IExecutionResult"/>.
+    /// </summary>
+    /// <param name="action">The action to execute.</param>
+    /// <returns>An <see cref="IExecutionResult"/> representing the result of 
+    /// the action.</returns>
+    public static IExecutionResult ToExecutionResult(this Action action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        try
+        {
+            action();
+            return ExecutionResults.Ok().Build();
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception.ToExecutionResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts an <see cref="Action{T}"/> to an <see cref="IExecutionResult"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the argument passed to the action.</typeparam>
+    /// <param name="action">The action to execute.</param>
+    /// <param name="args">The argument to pass to the action.</param>
+    /// <returns>An <see cref="IExecutionResult"/> representing the result 
+    /// of the action.</returns>
+    public static IExecutionResult ToExecutionResult<T>(
+        this Action<T> action,
+        T args)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        try
+        {
+            action(args);
+            return ExecutionResults.Ok().Build();
+        }
+        catch (ValidationException validationException)
+        {
+            return validationException.ToExecutionResult();
+        }
+        catch (ExecutionResultException executionException)
+        {
+            return executionException.ExecutionResult;
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception.ToExecutionResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Task"/> to an <see cref="IExecutionResult"/>
+    /// asynchronously.
+    /// </summary>
+    /// <param name="task">The task to execute.</param>
+    /// <returns>A <see cref="Task{IOperationResult}"/> representing the result
+    /// of the task.</returns>
+    public static async Task<IExecutionResult> ToExecutionResultAsync(this Task task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        try
+        {
+            await task.ConfigureAwait(false);
+            return ExecutionResults.Ok().Build();
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception.ToExecutionResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Task{TResult}"/> to an 
+    /// <see cref="IExecutionResult{TResult}"/>
+    /// asynchronously.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result produced by the task.</typeparam>
+    /// <param name="task">The task to execute.</param>
+    /// <returns>A <see cref="Task{T}"/> representing the result of the task.</returns>
+    public static async Task<IExecutionResult<TResult>> ToExecutionResultAsync<TResult>(
+        this Task<TResult> task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        try
+        {
+            TResult result = await task.ConfigureAwait(false);
+            return ExecutionResults
+                .Ok(result)
+                .Build();
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception
+                .ToExecutionResult()
+                .ToExecutionResult<TResult>();
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Func{TResult}"/> to an 
+    /// <see cref="IExecutionResult{TResult}"/>.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result produced by the 
+    /// function.</typeparam>
+    /// <param name="func">The function to execute.</param>
+    /// <returns>An <see cref="IExecutionResult{TResult}"/> representing the 
+    /// result of the function.</returns>
+    public static IExecutionResult<TResult> ToExecutionResult<TResult>(
+        this Func<TResult> func)
+    {
+        ArgumentNullException.ThrowIfNull(func);
+
+        try
+        {
+            TResult result = func();
+            return ExecutionResults
+                .Ok(result)
+                .Build();
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception
+                .ToExecutionResult()
+                .ToExecutionResult<TResult>();
+        }
+    }
+
 }

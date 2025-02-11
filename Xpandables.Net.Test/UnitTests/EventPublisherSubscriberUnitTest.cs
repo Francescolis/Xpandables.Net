@@ -6,7 +6,6 @@ using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Operations;
 
 namespace Xpandables.Net.Test.UnitTests;
 
