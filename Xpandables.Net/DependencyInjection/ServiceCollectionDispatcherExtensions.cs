@@ -18,10 +18,10 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Commands;
-using Xpandables.Net.Commands.Wrappers;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Pipelines;
+using Xpandables.Net.Executions.Deciders;
+using Xpandables.Net.Executions.Pipelines;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
@@ -60,9 +60,9 @@ public static class ServiceCollectionDispatcherExtensions
     public static IServiceCollection AddXHandlerWrappers(
         this IServiceCollection services) =>
         services
-            .AddTransient(typeof(QueryHandlerWrapper<,>))
-            .AddTransient(typeof(QueryAsyncHandlerWrapper<,>))
-            .AddTransient(typeof(CommandHandlerWrapper<>));
+            .AddTransient(typeof(PipelineQueryHandler<,>))
+            .AddTransient(typeof(PipelineQueryAsyncHandler<,>))
+            .AddTransient(typeof(PipelineCommandHandler<>));
 
     internal readonly record struct HandlerType(
         Type Type,
