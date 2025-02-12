@@ -26,8 +26,8 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Factory class for creating HTTP client messages.
 /// </summary>
-public sealed class HttpClientMessageFactory(IOptions<HttpClientOptions> options) :
-    IHttpClientMessageFactory
+public sealed class HttpClientSenderFactory(IOptions<HttpClientOptions> options) :
+    IHttpClientSenderFactory
 {
     private readonly HttpClientOptions _options = options.Value;
 

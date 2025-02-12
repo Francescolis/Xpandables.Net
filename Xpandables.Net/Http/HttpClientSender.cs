@@ -25,10 +25,10 @@ namespace Xpandables.Net.Http;
 /// <param name="factory">The factory to create HTTP client messages.</param>
 /// <param name="httpClient">The HTTP client instance.</param>
 public abstract class HttpClientSender(
-    IHttpClientMessageFactory factory,
+    IHttpClientSenderFactory factory,
     HttpClient httpClient) : Disposable, IHttpClientSender
 {
-    private readonly IHttpClientMessageFactory _factory = factory;
+    private readonly IHttpClientSenderFactory _factory = factory;
 
     ///<inheritdoc/>
     public HttpClient HttpClient => httpClient;

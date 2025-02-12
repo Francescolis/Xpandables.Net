@@ -20,7 +20,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Defines methods to build HTTP request and response messages.
 /// </summary>
-public interface IHttpClientMessageFactory
+public interface IHttpClientSenderFactory
 {
     /// <summary>
     /// Builds an HTTP request message asynchronously.

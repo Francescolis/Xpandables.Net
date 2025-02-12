@@ -27,7 +27,7 @@ using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;
 /// <summary>
-/// Represents the options for to manage <see cref="IHttpClientMessageFactory"/>
+/// Represents the options for to manage <see cref="IHttpClientSenderFactory"/>
 /// factory and its associated services.
 /// </summary>
 public sealed record HttpClientOptions

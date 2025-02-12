@@ -40,44 +40,44 @@ public static class ServiceCollectionHttpExtensions
                 HttpClientOptionsConfiguration>();
 
     /// <summary>
-    /// Registers the specified <see cref="IHttpClientMessageFactory"/> 
+    /// Registers the specified <see cref="IHttpClientSenderFactory"/> 
     /// implementation to the services.
     /// </summary>
     /// <typeparam name="THttpClientMessageFactory">The type of the HTTP client 
     /// message factory.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientMessageFactory
+    public static IServiceCollection AddXHttpClientSenderFactory
         <THttpClientMessageFactory>(this IServiceCollection services)
-        where THttpClientMessageFactory : class, IHttpClientMessageFactory =>
+        where THttpClientMessageFactory : class, IHttpClientSenderFactory =>
         services.AddScoped
-            <IHttpClientMessageFactory, THttpClientMessageFactory>();
+            <IHttpClientSenderFactory, THttpClientMessageFactory>();
 
     /// <summary>
-    /// Registers the default <see cref="HttpClientMessageFactory"/> 
+    /// Registers the default <see cref="HttpClientSenderFactory"/> 
     /// implementation to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXHttpClientMessageFactory(
+    public static IServiceCollection AddXHttpClientSenderFactory(
         this IServiceCollection services) =>
-        services.AddXHttpClientMessageFactory<HttpClientMessageFactory>();
+        services.AddXHttpClientSenderFactory<HttpClientSenderFactory>();
 
     /// <summary>
     /// Registers the specified <see cref="IHttpClientSender"/> 
     /// implementation to the services.
     /// </summary>
-    /// <typeparam name="THttpClientDispatcher">The type of the HTTP client 
+    /// <typeparam name="THttpClientSender">The type of the HTTP client 
     /// dispatcher.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <param name="configureClient">The action to configure the HTTP client.</param>
     /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
-    public static IHttpClientBuilder AddXHttpClientDispatcher<THttpClientDispatcher>(
+    public static IHttpClientBuilder AddXHttpClientSender<THttpClientSender>(
         this IServiceCollection services,
         Action<IServiceProvider, HttpClient> configureClient)
-        where THttpClientDispatcher : class, IHttpClientSender =>
+        where THttpClientSender : class, IHttpClientSender =>
         services.AddHttpClient
-            <IHttpClientSender, THttpClientDispatcher>(configureClient);
+            <IHttpClientSender, THttpClientSender>(configureClient);
 
     /// <summary>
     /// Registers the default <see cref="HttpClientSenderDefault"/> 
@@ -86,9 +86,9 @@ public static class ServiceCollectionHttpExtensions
     /// <param name="services">The collection of services.</param>
     /// <param name="configureClient">The action to configure the HTTP client.</param>
     /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
-    public static IHttpClientBuilder AddXHttpClientDispatcher(
+    public static IHttpClientBuilder AddXHttpClientSender(
         this IServiceCollection services,
         Action<IServiceProvider, HttpClient> configureClient) =>
         services
-        .AddXHttpClientDispatcher<HttpClientSenderDefault>(configureClient);
+        .AddXHttpClientSender<HttpClientSenderDefault>(configureClient);
 }

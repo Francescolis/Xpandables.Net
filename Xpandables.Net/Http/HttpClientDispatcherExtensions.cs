@@ -25,7 +25,7 @@ using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;
 /// <summary>
-/// Provides extension methods for <see cref="IHttpClientMessageFactory"/> and 
+/// Provides extension methods for <see cref="IHttpClientSenderFactory"/> and 
 /// <see cref="HttpResponseMessage"/>.
 /// </summary>
 public static class HttpClientDispatcherExtensions

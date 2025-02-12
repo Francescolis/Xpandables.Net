@@ -20,7 +20,7 @@ namespace Xpandables.Net.Http;
 /// Default implementation of the <see cref="HttpClientSender"/>.
 /// </summary>
 public sealed class HttpClientSenderDefault(
-    IHttpClientMessageFactory messageFactory,
+    IHttpClientSenderFactory messageFactory,
     HttpClient httpClient) :
     HttpClientSender(messageFactory, httpClient)
 {

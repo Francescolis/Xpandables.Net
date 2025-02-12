@@ -33,7 +33,7 @@ public sealed class HttpClientDispatcherTest
 
         services.Configure<HttpClientOptions>(HttpClientOptions.Default);
         services.AddXHttpClientOptions();
-        services.AddXHttpClientMessageFactory();
+        services.AddXHttpClientSenderFactory();
         services.AddHttpClient<IHttpClientSender, HttpClientSenderDefault>(client =>
         {
             client.BaseAddress = new Uri("https://www.montemagno.com/");
