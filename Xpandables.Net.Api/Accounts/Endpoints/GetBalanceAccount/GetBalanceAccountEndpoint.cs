@@ -23,7 +23,7 @@ public sealed class GetBalanceAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("GetBalanceAccount")
-        .WithXExecutionResultMinimalApi()
+        .WithXMinimalApi()
         .AllowAnonymous()
         .Produces(StatusCodes.Status200OK);
 }

@@ -18,15 +18,17 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Operations.Minimal;
+using Xpandables.Net.DataAnnotations;
+
+namespace Xpandables.Net.Executions.Minimals;
 
 /// <summary>
-/// Provides a factory for creating endpoint filters that validate execution results.
+/// Provides a factory for creating endpoint filters for validation.
 /// </summary>
-public static class ExecutionResultValidationFilterFactory
+public static class MinimalValidationFilterFactory
 {
     /// <summary>  
-    /// Creates an endpoint filter delegate that validates the execution result.  
+    /// Creates an endpoint filter delegate that validates the request.  
     /// </summary>  
     /// <param name="context">The context for the endpoint filter factory.</param>  
     /// <param name="next">The next endpoint filter delegate in the pipeline.</param>  
@@ -35,9 +37,9 @@ public static class ExecutionResultValidationFilterFactory
         EndpointFilterFactoryContext context,
         EndpointFilterDelegate next)
     {
-        IExecutionResultValidator validator = context
+        IEndpointValidator validator = context
             .ApplicationServices
-            .GetRequiredService<IExecutionResultValidator>();
+            .GetRequiredService<IEndpointValidator>();
 
         return invocationContext =>
             validator.ValidateAsync(invocationContext, next);

@@ -52,12 +52,12 @@ public static class ServiceCollectionDispatcherExtensions
         services.AddXDispatcher<Dispatcher>();
 
     /// <summary>
-    /// Adds dispatcher wrappers to the <see cref="IServiceCollection"/>.
+    /// Adds handler pipelines to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to add the dispatcher 
     /// wrappers to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXHandlerWrappers(
+    public static IServiceCollection AddXHandlerPipelines(
         this IServiceCollection services) =>
         services
             .AddTransient(typeof(PipelineQueryHandler<,>))

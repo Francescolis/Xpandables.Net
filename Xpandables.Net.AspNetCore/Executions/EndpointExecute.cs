@@ -25,16 +25,14 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Executions;
-using Xpandables.Net.Operations.Executors;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Executes an execution result by setting the appropriate metadata and 
+/// Processes an execution result by setting the appropriate metadata and 
 /// invoking the corresponding executor.
 /// </summary>
-public sealed class ExecutionResultExecute : IExecutionResultExecute
+public sealed class EndpointExecute : IEndpointExecute
 {
     /// <summary>
     /// Executes the execution result asynchronously.
@@ -49,14 +47,14 @@ public sealed class ExecutionResultExecute : IExecutionResultExecute
         await MetadataSetter(httpContext, executionResult)
             .ConfigureAwait(false);
 
-        IExecutionResultExecutor executor = httpContext.RequestServices
-            .GetServices<IExecutionResultExecutor>()
-            .FirstOrDefault(executor => executor.CanExecute(executionResult))
+        IEndpointProcessor executor = httpContext.RequestServices
+            .GetServices<IEndpointProcessor>()
+            .FirstOrDefault(executor => executor.CanProcess(executionResult))
             ?? throw new InvalidOperationException(
                 "No executor found for the execution result.");
 
         await executor
-            .ExecuteAsync(httpContext, executionResult)
+            .ProcessAsync(httpContext, executionResult)
             .ConfigureAwait(false);
     }
 

@@ -18,16 +18,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations.Controllers;
+namespace Xpandables.Net.Executions.Controllers;
 
 /// <summary>  
 /// Represents an action filter attribute that validates the model state before 
 /// executing the action.  
 /// </summary>  
-public sealed class ExecutionResultControllerValidationFilterAttribute :
-    ActionFilterAttribute
+public sealed class ControllerValidationFilterAttribute : ActionFilterAttribute
 {
     /// <inheritdoc/>  
     public override void OnActionExecuting(ActionExecutingContext context)

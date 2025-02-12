@@ -28,7 +28,7 @@ public sealed class DepositAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("DepositAccount")
-        .WithXExecutionResultMinimalApi()
+        .WithXMinimalApi()
         .AllowAnonymous()
         .Accepts<DepositAccountRequest>(HttpClientParameters.ContentType.Json)
         .Produces(StatusCodes.Status200OK)

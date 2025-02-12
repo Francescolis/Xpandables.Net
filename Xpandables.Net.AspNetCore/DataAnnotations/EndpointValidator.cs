@@ -20,15 +20,14 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Executions;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Validates the execution result by using the provided validators.
 /// </summary>
-public sealed class ExecutionResultValidator : IExecutionResultValidator
+public sealed class EndpointValidator : IEndpointValidator
 {
     /// <inheritdoc/>
     public async ValueTask<object?> ValidateAsync(

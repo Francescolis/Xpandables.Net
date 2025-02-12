@@ -17,31 +17,29 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations.Executors;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Defines a contract for executing execution results.
+/// Defines a contract for processing execution results.
 /// </summary>
-public interface IExecutionResultExecutor
+public interface IEndpointProcessor
 {
     /// <summary>
-    /// Determines whether the specified execution result can be executed by the
+    /// Determines whether the specified execution result can be processed by the
     /// executor.
     /// </summary>
     /// <param name="executionResult">The execution result to check.</param>
-    /// <returns><see langword="true"/> if the execution result can be executed
+    /// <returns><see langword="true"/> if the execution result can be processed
     /// by the executor; otherwise, <see langword="false"/>.</returns>
-    bool CanExecute(IExecutionResult executionResult);
+    bool CanProcess(IExecutionResult executionResult);
 
     /// <summary>
-    /// Executes the execution result asynchronously.
+    /// Processes the execution result asynchronously with the context.
     /// </summary>
     /// <param name="context">The HTTP context.</param>
-    /// <param name="executionResult">The execution result to execute.</param>
+    /// <param name="executionResult">The execution result to process.</param>
     /// <returns>A task that represents the asynchronous execution.</returns>
-    Task ExecuteAsync(
+    Task ProcessAsync(
         HttpContext context,
         IExecutionResult executionResult);
 }

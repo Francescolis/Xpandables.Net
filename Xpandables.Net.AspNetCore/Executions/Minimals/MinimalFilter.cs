@@ -17,14 +17,12 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations.Minimal;
+namespace Xpandables.Net.Executions.Minimals;
 /// <summary>  
 /// Represents a filter that processes the result of an endpoint invocation and 
 /// converts it to a minimal result if it implements <see cref="IExecutionResult"/>.  
 /// </summary>  
-public sealed class ExecutionResultFilter : IEndpointFilter
+public sealed class MinimalFilter : IEndpointFilter
 {
     /// <inheritdoc/>  
     public async ValueTask<object?> InvokeAsync(

@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Provides with the binder matching one of the attributes : 

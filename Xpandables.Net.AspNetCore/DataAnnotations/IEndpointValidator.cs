@@ -17,14 +17,14 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.DataAnnotations;
 /// <summary>
-/// Defines a validator for execution results.
+/// Defines a validator for endpoints.
 /// </summary>
-public interface IExecutionResultValidator
+public interface IEndpointValidator
 {
     /// <summary>
-    /// Validates the execution result asynchronously.
+    /// Validates the endpoint asynchronously.
     /// </summary>
     /// <param name="context">The context of the endpoint filter invocation.</param>
     /// <param name="next">The next delegate to invoke.</param>

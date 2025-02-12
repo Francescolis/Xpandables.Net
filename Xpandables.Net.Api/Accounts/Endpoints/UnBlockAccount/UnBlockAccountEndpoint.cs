@@ -27,7 +27,7 @@ public sealed class UnBlockAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("UnBlockAccount")
-        .WithXExecutionResultMinimalApi()
+        .WithXMinimalApi()
         .AllowAnonymous()
         .Accepts<UnBlockAccountRequest>(HttpClientParameters.ContentType.Json)
         .Produces(StatusCodes.Status200OK)

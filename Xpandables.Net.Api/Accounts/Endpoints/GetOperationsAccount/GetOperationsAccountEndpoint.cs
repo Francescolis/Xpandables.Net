@@ -22,7 +22,7 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("GetOperationsAccount")
-        .WithXExecutionResultMinimalApi()
+        .WithXMinimalApi()
         .AllowAnonymous()
         .Produces<IAsyncEnumerable<OperationAccount>>();
 }

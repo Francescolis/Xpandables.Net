@@ -20,14 +20,12 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations.Minimal;
+namespace Xpandables.Net.Executions.Minimals;
 
 /// <summary>  
-/// Configures JSON options for execution results with minimal settings.  
+/// Configures JSON options for endpoints with minimal settings.  
 /// </summary>  
-public sealed class ExecutionResultJsonOptions : IConfigureOptions<JsonOptions>
+public sealed class MinimalJsonOptions : IConfigureOptions<JsonOptions>
 {
     /// <inheritdoc/>  
     public void Configure(JsonOptions options)

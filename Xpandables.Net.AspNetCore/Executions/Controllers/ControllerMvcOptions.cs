@@ -15,25 +15,29 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Executions;
+using Xpandables.Net.DataAnnotations;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions.Controllers;
 
 /// <summary>
-/// Defines a method to execute an execution result within the given HTTP context.
+/// Configures MVC options for the ExecutionResultController.
 /// </summary>
-public interface IExecutionResultExecute
+public sealed class ControllerMvcOptions : IConfigureOptions<MvcOptions>
 {
-    /// <summary>
-    /// Executes the execution result asynchronously within the given HTTP context.
-    /// </summary>
-    /// <param name="httpContext">The HTTP context in which to execute the 
-    /// execution result.</param>
-    /// <param name="executionResult">The execution result to execute.</param>
-    /// <returns>A task that represents the asynchronous execution.</returns>
-    Task ExecuteAsync(
-        HttpContext httpContext,
-        IExecutionResult executionResult);
+    /// <inheritdoc/>
+    public void Configure(MvcOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        options.EnableEndpointRouting = false;
+        options.RespectBrowserAcceptHeader = true;
+        options.ReturnHttpNotAcceptable = true;
+
+        _ = options.Filters.Add<ControllerValidationFilterAttribute>();
+        _ = options.Filters.Add<ControllerFilter>(int.MinValue);
+        options.ModelBinderProviders.Insert(0, new FromModelBinderProvider());
+    }
 }

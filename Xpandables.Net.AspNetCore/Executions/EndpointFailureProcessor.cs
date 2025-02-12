@@ -21,21 +21,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations.Executors;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Executor for handling execution results that indicate failure.
+/// Processes for handling execution results that indicate failure.
 /// </summary>
-public sealed class ExecutionResultFailureExecutor : IExecutionResultExecutor
+public sealed class EndpointFailureProcessor : IEndpointProcessor
 {
     ///<inheritdoc/>
-    public bool CanExecute(IExecutionResult executionResult) =>
+    public bool CanProcess(IExecutionResult executionResult) =>
         executionResult.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public Task ExecuteAsync(
+    public Task ProcessAsync(
         HttpContext context,
         IExecutionResult executionResult)
     {

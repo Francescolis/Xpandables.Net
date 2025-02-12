@@ -20,15 +20,13 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions.Minimals;
 
 /// <summary>  
 /// Middleware to handle execution results and convert exceptions to 
 /// execution results.  
 /// </summary>  
-public sealed class ExecutionResultMiddleware : IMiddleware
+public sealed class MinimalMiddleware : IMiddleware
 {
     /// <inheritdoc/>  
     public async Task InvokeAsync(
@@ -47,9 +45,9 @@ public sealed class ExecutionResultMiddleware : IMiddleware
                 exception = targetInvocation.InnerException ?? targetInvocation;
             }
 
-            IExecutionResultExecute execute = context
+            IEndpointExecute execute = context
                 .RequestServices
-                .GetRequiredService<IExecutionResultExecute>();
+                .GetRequiredService<IEndpointExecute>();
 
             IExecutionResult executionResult =
                 exception.ToExecutionResultForProblemDetails();

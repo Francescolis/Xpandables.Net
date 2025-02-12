@@ -23,7 +23,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Abstract class that holds the <see cref="FromModelBinder"/> dictionary

@@ -16,21 +16,19 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations.Executors;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Executes the execution result when the result indicates a successful execution.
+/// Processes the execution result when the result indicates a successful execution.
 /// </summary>
-public sealed class ExecutionResultSuccessExecutor : IExecutionResultExecutor
+public sealed class EndpointSuccessProcessor : IEndpointProcessor
 {
     ///<inheritdoc/>
-    public bool CanExecute(IExecutionResult executionResult) =>
+    public bool CanProcess(IExecutionResult executionResult) =>
         executionResult.IsSuccessStatusCode();
 
     ///<inheritdoc/>
-    public async Task ExecuteAsync(
+    public async Task ProcessAsync(
         HttpContext context,
         IExecutionResult executionResult)
     {

@@ -19,15 +19,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Operations.Controllers;
+namespace Xpandables.Net.Executions.Controllers;
 
 /// <summary>
 /// A filter that executes an <see cref="IExecutionResult"/> if the result 
 /// is of type <see cref="ObjectResult"/>.
 /// </summary>
-public sealed class ExecutionResultControllerFilter : IAsyncAlwaysRunResultFilter
+public sealed class ControllerFilter : IAsyncAlwaysRunResultFilter
 {
     /// <inheritdoc/>
     public Task OnResultExecutionAsync(
@@ -37,10 +35,10 @@ public sealed class ExecutionResultControllerFilter : IAsyncAlwaysRunResultFilte
         if (context.Result is ObjectResult objectResult
             && objectResult.Value is IExecutionResult executionResult)
         {
-            IExecutionResultExecute execute = context
+            IEndpointExecute execute = context
                 .HttpContext
                 .RequestServices
-                .GetRequiredService<IExecutionResultExecute>();
+                .GetRequiredService<IEndpointExecute>();
 
             return execute.ExecuteAsync(context.HttpContext, executionResult);
         }

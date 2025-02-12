@@ -22,14 +22,14 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Minimals;
 
-namespace Xpandables.Net.Operations;
+namespace Xpandables.Net.Executions;
 
 /// <summary>  
 /// Provides extension methods for converting execution results.  
 /// </summary>  
-public static class ExecutionResultConverterExtensions
+public static class ExecutionResultExtensions
 {
     /// <summary>  
     /// Converts the specified execution result to an <see cref="ModelStateDictionary"/>.
@@ -148,5 +148,5 @@ public static class ExecutionResultConverterExtensions
     /// <param name="executionResult">The execution result to convert.</param>  
     /// <returns>An <see cref="IResult"/> representing the execution result.</returns>  
     public static IResult ToMinimalResult(this IExecutionResult executionResult) =>
-        new ExecutionResultResult(executionResult);
+        new MinimalResult(executionResult);
 }
