@@ -21,7 +21,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// A validator that does nothing and always returns a successful result.
 /// </summary>
 /// <typeparam name="TArgument">The type of the argument to validate.</typeparam>
-public sealed class NullValidator<TArgument> : AbstractValidator<TArgument>
+public sealed class NullValidator<TArgument> : Validator<TArgument>
     where TArgument : class, IApplyValidation
 {
     /// <inheritdoc/>

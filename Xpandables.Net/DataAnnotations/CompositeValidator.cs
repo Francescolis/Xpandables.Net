@@ -26,7 +26,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// <param name="validators">The validators to use for the validation.</param>
 public sealed class CompositeValidator<TArgument>(
     IEnumerable<IValidator<TArgument>> validators) :
-    AbstractValidator<TArgument>, ICompositeValidator<TArgument>
+    Validator<TArgument>, ICompositeValidator<TArgument>
     where TArgument : class, IApplyValidation
 {
     private readonly IEnumerable<IValidator<TArgument>> _validators = validators
