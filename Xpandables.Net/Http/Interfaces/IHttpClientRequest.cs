@@ -17,14 +17,14 @@
 namespace Xpandables.Net.Http.Interfaces;
 
 /// <summary>
-/// Represents a request to be sent by an HTTP client.
+/// Represents a request to be sent by <see cref="IHttpClientSender"/>.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
 public interface IHttpClientRequest { }
 #pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
-/// Represents a request to be sent by an HTTP client with a response 
+/// Represents a request to be sent by <see cref="IHttpClientSender"/> with a response 
 /// of type <typeparamref name="TResponse"/>.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
@@ -33,7 +33,7 @@ public interface IHttpClientRequest<out TResponse> : IHttpClientRequest { }
 #pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
-/// Represents a request to be sent by an HTTP client with a stream response 
+/// Represents a request to be sent by <see cref="IHttpClientSender"/> with a stream response 
 /// of type <see cref="IAsyncEnumerable{T}"/> of <typeparamref name="TResponse"/> 
 /// type.
 /// </summary>

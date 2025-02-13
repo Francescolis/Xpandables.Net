@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Reflection;
 using System.Text.Json;
@@ -35,14 +36,12 @@ public sealed record HttpClientOptions
     /// <summary>
     /// Gets the list of user-defined response builders that were registered.
     /// </summary>
-    public HashSet<IHttpClientResponseBuilder> ResponseBuilders { get; }
-        = [];
+    public Collection<IHttpClientResponseBuilder> ResponseBuilders { get; } = [];
 
     /// <summary>
     /// Gets the list of user-defined request builders that were registered.
     /// </summary>
-    public HashSet<IHttpClientRequestBuilder> RequestBuilders { get; }
-        = [];
+    public Collection<IHttpClientRequestBuilder> RequestBuilders { get; } = [];
 
     /// <summary>
     /// Gets the resolver function for resolving types.
@@ -165,44 +164,44 @@ public sealed record HttpClientOptions
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        _ = options.ResponseBuilders
+        options.ResponseBuilders
             .Add(new HttpClientResponseFailureAsyncResultBuilder());
-        _ = options.ResponseBuilders
+        options.ResponseBuilders
             .Add(new HttpClientResponseFailureBuilder());
-        _ = options.ResponseBuilders
+        options.ResponseBuilders
             .Add(new HttpClientResponseFailureResultBuilder());
-        _ = options.ResponseBuilders
+        options.ResponseBuilders
             .Add(new HttpClientResponseSuccessAsyncResultBuilder());
-        _ = options.ResponseBuilders
+        options.ResponseBuilders
             .Add(new HttpClientResponseSuccessBuilder());
-        _ = options.ResponseBuilders
+        options.ResponseBuilders
             .Add(new HttpClientResponseSuccessResultBuilder());
 
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientBasicAuthRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientByteArrayRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientCompleteRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientCookieRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientFormUrlEncodedRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientHeaderRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientMultipartRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientPatchRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientPathStringRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientQueryStringRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientStartRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientStreamRequestBuilder());
-        _ = options.RequestBuilders
+        options.RequestBuilders
             .Add(new HttpClientStringRequestBuilder());
 
         options.SerializerOptions = new(JsonSerializerDefaults.Web)
