@@ -57,7 +57,7 @@ internal sealed class RequestFactory : Disposable, IRequestFactory
         RequestDefinitionAttribute attribute = _requestOptions.GetRequestDefinition(request);
 
         List<IRequestHttpBuilder> builders =
-            _requestOptions.PeekRequestBuilders(request.GetType()).ToList();
+            [.. _requestOptions.PeekRequestBuilders(request.GetType())];
 
         if (builders.Count == 0)
             throw new InvalidOperationException(
