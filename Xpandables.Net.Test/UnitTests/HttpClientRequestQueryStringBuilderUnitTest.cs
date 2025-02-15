@@ -1,36 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.RequestDefinitions;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestQueryStringBuilderUnitTest
 {
-    private readonly HttpClientQueryStringRequestBuilder _builder;
+    private readonly RequestHttpQueryStringBuilder _builder;
 
     public HttpClientRequestQueryStringBuilderUnitTest() =>
-        _builder = new HttpClientQueryStringRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeTwo()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(2);
-    }
+        _builder = new RequestHttpQueryStringBuilder();
 
     [Fact]
     public void Build_ShouldSetQueryString_WhenLocationIsQuery()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.Query,
                 Path = "http://example.com"
@@ -55,9 +44,9 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
     public void Build_ShouldNotSetQueryString_WhenLocationIsNotQuery()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.Body,
                 Path = "http://example.com"
@@ -148,7 +137,7 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
         result.Should().Be("http://example.com?param1=value1&param2=value2#anchor");
     }
 
-    private class TestHttpRequestQueryString : IHttpClientRequest, IQueryStringRequest
+    private class TestHttpRequestQueryString : IRequestHttp, IRequestQueryString
     {
         public IDictionary<string, string?>? GetQueryString() =>
             new Dictionary<string, string?>

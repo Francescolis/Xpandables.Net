@@ -3,36 +3,25 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.RequestDefinitions;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestStringBuilderUnitTest
 {
-    private readonly HttpClientStringRequestBuilder _builder;
+    private readonly RequestHttpStringBuilder _builder;
 
     public HttpClientRequestStringBuilderUnitTest() =>
-        _builder = new HttpClientStringRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeEleven()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(11);
-    }
+        _builder = new RequestHttpStringBuilder();
 
     [Fact]
     public void Build_ShouldSetStringContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -58,9 +47,9 @@ public sealed class HttpClientRequestStringBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenIsNullableIsTrue()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = true,
                 Location = Location.Body,
@@ -83,9 +72,9 @@ public sealed class HttpClientRequestStringBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Header,
@@ -108,9 +97,9 @@ public sealed class HttpClientRequestStringBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenBodyFormatIsNotString()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -133,9 +122,9 @@ public sealed class HttpClientRequestStringBuilderUnitTest
     public void Build_ShouldAddStringContentToMultipart_WhenContentIsMultipart()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -159,7 +148,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         multipart!.Should().ContainSingle();
     }
 
-    private class TestHttpRequestString : IHttpClientRequest, IStringRequest
+    private class TestHttpRequestString : IRequestHttp, IRequestString
     {
         public object GetStringContent() => new { Key = "value" };
     }

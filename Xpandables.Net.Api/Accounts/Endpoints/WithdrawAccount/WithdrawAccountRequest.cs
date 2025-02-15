@@ -2,15 +2,14 @@
 
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 
-[HttpClient(Path = "/accounts/withdraw",
+[RequestDefinition(Path = "/accounts/withdraw",
     IsNullable = false,
     IsSecured = false,
-    Location = HttpClientParameters.Location.Body,
-    Method = HttpClientParameters.Method.POST)]
+    Location = RequestDefinitions.Location.Body,
+    Method = RequestDefinitions.Method.POST)]
 public sealed record WithdrawAccountRequest : IApplyValidation
 {
     [Required]

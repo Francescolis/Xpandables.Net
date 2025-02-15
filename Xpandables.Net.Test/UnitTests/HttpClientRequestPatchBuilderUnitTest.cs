@@ -3,37 +3,26 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters.Patch;
+using static Xpandables.Net.Http.RequestDefinitions;
+using static Xpandables.Net.Http.RequestDefinitions.Patch;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestPatchBuilderUnitTest
 {
-    private readonly HttpClientPatchRequestBuilder _builder;
+    private readonly RequestHttpPatchBuilder _builder;
 
     public HttpClientRequestPatchBuilderUnitTest() =>
-        _builder = new HttpClientPatchRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeTen()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(10);
-    }
+        _builder = new RequestHttpPatchBuilder();
 
     [Fact]
     public void Build_ShouldSetStringContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -65,9 +54,9 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenIsNullableIsTrue()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = true,
                 Location = Location.Body,
@@ -95,9 +84,9 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Header,
@@ -126,9 +115,9 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenBodyFormatIsNotString()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -156,9 +145,9 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     public void Build_ShouldAddStringContentToMultipart_WhenContentIsMultipart()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -189,7 +178,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     }
 
     private record TestHttpRequestPatch :
-        HttpRequestPatch<TestHttpRequestPatch>, IHttpClientRequest
+        HttpRequestPatch<TestHttpRequestPatch>, IRequestHttp
     {
     }
 }

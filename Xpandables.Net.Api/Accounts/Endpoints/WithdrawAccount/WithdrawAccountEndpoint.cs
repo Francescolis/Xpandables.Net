@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Executions.Tasks;
-using Xpandables.Net.Http.Interfaces;
+using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 
@@ -30,7 +30,7 @@ public sealed class WithdrawAccountEndpoint : IEndpointRoute
         .WithName("WithdrawAccount")
         .WithXMinimalApi()
         .AllowAnonymous()
-        .Accepts<WithdrawAccountRequest>(HttpClientParameters.ContentType.Json)
+        .Accepts<WithdrawAccountRequest>(RequestDefinitions.ContentType.Json)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
 }

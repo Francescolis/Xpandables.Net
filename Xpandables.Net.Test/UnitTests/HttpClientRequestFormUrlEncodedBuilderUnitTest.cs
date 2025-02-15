@@ -1,36 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.RequestDefinitions;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
 {
-    private readonly HttpClientFormUrlEncodedRequestBuilder _builder;
+    private readonly RequestHttpFormUrlEncodedBuilder _builder;
 
     public HttpClientRequestFormUrlEncodedBuilderUnitTest() =>
-        _builder = new HttpClientFormUrlEncodedRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeSeven()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(7);
-    }
+        _builder = new RequestHttpFormUrlEncodedBuilder();
 
     [Fact]
     public void Build_ShouldSetFormUrlEncodedContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -52,9 +41,9 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     public void Build_ShouldNotSetFormUrlEncodedContent_WhenIsNullableIsTrue()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = true,
                 Location = Location.Body,
@@ -75,9 +64,9 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     public void Build_ShouldNotSetFormUrlEncodedContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Header,
@@ -98,9 +87,9 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     public void Build_ShouldNotSetFormUrlEncodedContent_WhenBodyFormatIsNotFormUrlEncoded()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -118,7 +107,7 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     }
 
     private class TestHttpRequestFormUrlEncoded :
-        IHttpClientRequest, IFormUrlEncodedRequest
+        IRequestHttp, IRequestFormUrlEncoded
     {
         public FormUrlEncodedContent GetFormUrlEncodedContent()
         {
