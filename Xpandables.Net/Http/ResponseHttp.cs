@@ -118,7 +118,7 @@ public class ResponseHttp : Disposable, IEquatable<ResponseHttp>
     /// (status code is not between 200 and 299).  
     /// </summary>  
     [MemberNotNullWhen(true, nameof(Exception))]
-    public bool IsFailureStatusCode => !IsSuccessStatusCode;
+    public bool IsFailureStatusCode => (int)StatusCode is not (>= 200 and <= 299);
 
     /// <inheritdoc/>
     public bool Equals(ResponseHttp? other)
