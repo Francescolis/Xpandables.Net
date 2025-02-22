@@ -62,7 +62,7 @@ public static class ServiceCollectionDispatcherExtensions
         services
             .AddTransient(typeof(PipelineQueryHandler<,>))
             .AddTransient(typeof(PipelineQueryAsyncHandler<,>))
-            .AddTransient(typeof(PipelineCommandHandler<>));
+            .AddTransient(typeof(PipelineRequestHandler<>));
 
     internal readonly record struct HandlerType(
         Type Type,
@@ -96,14 +96,14 @@ public static class ServiceCollectionDispatcherExtensions
                 }
                 && type.GetInterfaces().Any(i =>
                     i.IsGenericType &&
-                    (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
+                    (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>) ||
                     i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) ||
                     i.GetGenericTypeDefinition() == typeof(IQueryAsyncHandler<,>)))))
             .Select(type => new HandlerType(
                 Type: type,
                 Interfaces: type.GetInterfaces()
                     .Where(i => i.IsGenericType &&
-                    (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
+                    (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>) ||
                         i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) ||
                         i.GetGenericTypeDefinition() == typeof(IQueryAsyncHandler<,>)))));
 

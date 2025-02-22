@@ -21,22 +21,22 @@ using Xpandables.Net.Executions.Deciders;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// This interface is used as a marker for command.
-/// Class implementation is used with the <see cref="ICommandHandler{TCommand}"/> 
-/// where "TCommand" is a record that implements <see cref="ICommand"/>.
+/// This interface is used as a marker for request.
+/// Class implementation is used with the <see cref="IRequestHandler{TRequest}"/> 
+/// where "TRequest" is a record that implements <see cref="IRequest"/>.
 /// This can also be enhanced with some useful decorators.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface ICommand
+public interface IRequest
 #pragma warning restore CA1040 // Avoid empty interfaces
 {
 }
 
 /// <summary>
-/// Represents a command that contains a dependency type and its key identifier.
+/// Represents a request that contains a dependency type and its key identifier.
 /// </summary>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public abstract record Command<TDependency> : ICommand, IDecider<TDependency>
+public abstract record Request<TDependency> : IRequest, IDecider<TDependency>
     where TDependency : class
 {
     /// <inheritdoc/>

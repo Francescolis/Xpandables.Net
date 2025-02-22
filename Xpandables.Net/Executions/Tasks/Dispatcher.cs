@@ -21,25 +21,25 @@ namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// Represents a dispatcher that handles various operations such as fetching, 
-/// sending command and queries.
+/// sending request and queries.
 /// </summary>
 internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
 {
     /// <inheritdoc/>
     public Task<IExecutionResult> SendAsync(
-        ICommand command,
+        IRequest request,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            Type commandWrapperType = typeof(PipelineCommandHandler<>)
-                .MakeGenericType(command.GetType());
+            Type commandWrapperType = typeof(PipelineRequestHandler<>)
+                .MakeGenericType(request.GetType());
 
-            IPipelineCommandHandler handler =
-                (IPipelineCommandHandler)provider
+            IPipelineRequestHandler handler =
+                (IPipelineRequestHandler)provider
                 .GetRequiredService(commandWrapperType);
 
-            return handler.HandleAsync(command, cancellationToken);
+            return handler.HandleAsync(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)

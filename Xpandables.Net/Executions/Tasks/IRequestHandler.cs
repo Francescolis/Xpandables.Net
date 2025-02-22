@@ -20,51 +20,51 @@ using Xpandables.Net.Executions.Deciders;
 
 namespace Xpandables.Net.Executions.Tasks;
 /// <summary>
-/// Defines a handler for a command of type <typeparamref name="TCommand"/>.
+/// Defines a handler for a request of type <typeparamref name="TRequest"/>.
 /// </summary>
-/// <typeparam name="TCommand">The type of the command.</typeparam>
-public interface ICommandHandler<in TCommand>
-    where TCommand : class, ICommand
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+public interface IRequestHandler<in TRequest>
+    where TRequest : class, IRequest
 {
     /// <summary>
-    /// Handles the specified command asynchronously.
+    /// Handles the specified request asynchronously.
     /// </summary>
-    /// <param name="command">The command to handle.</param>
+    /// <param name="request">The request to handle.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
     /// requests.</param>
     /// <returns>A task that represents the asynchronous operation. 
     /// The task result contains the operation result.</returns>
     Task<IExecutionResult> HandleAsync(
-        TCommand command,
+        TRequest request,
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Defines a handler for a command of type <typeparamref name="TCommand"/> 
+/// Defines a handler for a request of type <typeparamref name="TRequest"/> 
 /// with a dependency of type <typeparamref name="TDependency"/>.
 /// </summary>
-/// <typeparam name="TCommand">The type of the command.</typeparam>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public interface ICommandHandler<in TCommand, in TDependency> : ICommandHandler<TCommand>
-    where TCommand : class, ICommand, IDecider<TDependency>
+public interface IRequestHandler<in TRequest, in TDependency> : IRequestHandler<TRequest>
+    where TRequest : class, IRequest, IDecider<TDependency>
     where TDependency : class
 {
     /// <summary>
-    /// Handles the specified command asynchronously with the given dependency.
+    /// Handles the specified request asynchronously with the given dependency.
     /// </summary>
-    /// <param name="command">The command to handle.</param>
-    /// <param name="dependency">The dependency required to handle the command.</param>
+    /// <param name="request">The request to handle.</param>
+    /// <param name="dependency">The dependency required to handle the request.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. 
     /// The task result contains the operation result.</returns>
     Task<IExecutionResult> HandleAsync(
-        TCommand command,
+        TRequest request,
         TDependency dependency,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    Task<IExecutionResult> ICommandHandler<TCommand>.HandleAsync(
-        TCommand command,
+    Task<IExecutionResult> IRequestHandler<TRequest>.HandleAsync(
+        TRequest request,
         CancellationToken cancellationToken) =>
-        HandleAsync(command, (TDependency)command.Dependency, cancellationToken);
+        HandleAsync(request, (TDependency)request.Dependency, cancellationToken);
 }

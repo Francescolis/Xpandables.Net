@@ -5,7 +5,7 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 
 public sealed class WithdrawAccountCommandHandler(
-    IAggregateStore<Account> aggregateStore) : ICommandHandler<WithdrawAccountCommand>
+    IAggregateStore<Account> aggregateStore) : IRequestHandler<WithdrawAccountCommand>
 {
     public async Task<IExecutionResult> HandleAsync(
         WithdrawAccountCommand command,

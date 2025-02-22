@@ -6,7 +6,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 
 public sealed class CreateAccountCommandHandler(
     IAggregateStore<Account> aggregateStore) :
-    ICommandHandler<CreateAccountCommand>
+    IRequestHandler<CreateAccountCommand>
 {
     public async Task<IExecutionResult> HandleAsync(
         CreateAccountCommand command,

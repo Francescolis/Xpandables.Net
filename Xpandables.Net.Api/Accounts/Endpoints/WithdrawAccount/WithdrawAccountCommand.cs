@@ -3,7 +3,7 @@ using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 
-public sealed record WithdrawAccountCommand : ICommand, IApplyUnitOfWork
+public sealed record WithdrawAccountCommand : IRequest, IApplyUnitOfWork
 {
     public required Guid KeyId { get; init; }
     public required decimal Amount { get; init; }

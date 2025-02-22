@@ -16,18 +16,18 @@
 ********************************************************************************/
 namespace Xpandables.Net.Executions.Tasks;
 /// <summary>
-/// Defines a dispatcher interface for sending commands and queries.
+/// Defines a dispatcher interface for sending requests and queries.
 /// </summary>
 public interface IDispatcher
 {
     /// <summary>
-    /// Sends a command asynchronously.
+    /// Sends a request asynchronously.
     /// </summary>
-    /// <param name="command">The command to send.</param>
+    /// <param name="request">The request to send.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
     Task<IExecutionResult> SendAsync(
-        ICommand command,
+        IRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>

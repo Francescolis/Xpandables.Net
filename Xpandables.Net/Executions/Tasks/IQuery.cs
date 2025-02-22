@@ -18,7 +18,7 @@ namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// This interface is used as a marker for query.
-/// Class implementation is used with the <see cref="ICommandHandler{TQuery}"/> 
+/// Class implementation is used with the <see cref="IRequestHandler{TQuery}"/> 
 /// where "TQuery" is a class that implements <see cref="IQuery{TResult}"/>.
 /// This can also be enhanced with some useful decorators.
 /// </summary>
