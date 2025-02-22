@@ -24,10 +24,10 @@
 		<PackageTags>Optional</PackageTags>
 		<PackageReleaseNotes>Optional</PackageReleaseNotes>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>9.0.2</Version>
-		<AssemblyVersion>9.0.2</AssemblyVersion>
-		<FileVersion>9.0.2</FileVersion>
-		<PackageVersion>9.0.2</PackageVersion>
+		<Version>9.0.3</Version>
+		<AssemblyVersion>9.0.3</AssemblyVersion>
+		<FileVersion>9.0.3</FileVersion>
+		<PackageVersion>9.0.3</PackageVersion>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>

@@ -133,7 +133,8 @@ public interface IExecutionResult<TResult> : IExecutionResult
         (int)StatusCode is >= 200 and <= 299;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    bool IExecutionResult.IsSuccessStatusCode => IsSuccessStatusCode;
+    bool IExecutionResult.IsSuccessStatusCode =>
+        (int)StatusCode is >= 200 and <= 299;
 
     /// <summary>
     /// Ensures that the execution result has a success status code.
