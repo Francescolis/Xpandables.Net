@@ -45,7 +45,7 @@ public interface IEventSourcing
     void LoadFromHistory(IEventDomain @event);
 
     /// <summary>
-    /// Pushes a new event.
+    /// Pushes an event to the handler.
     /// </summary>
     /// <param name="event">The event to push.</param>
     void PushEvent(IEventDomain @event);
