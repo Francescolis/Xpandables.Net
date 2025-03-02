@@ -130,5 +130,10 @@ public abstract class Aggregate : IAggregate
             KeyId = @event.AggregateId;
             _ = handler.DynamicInvoke(@event);
         }
+        else
+        {
+            throw new InvalidOperationException(
+                $"The event handler for {@event.GetType().Name} is not registered.");
+        }
     }
 }
