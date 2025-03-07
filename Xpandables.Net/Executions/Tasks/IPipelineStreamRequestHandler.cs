@@ -42,7 +42,7 @@ public interface IPipelineStreamRequestHandler<TResult>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public sealed class PipelineQueryAsyncHandler<TRequest, TResult>(
     IStreamRequestHandler<TRequest, TResult> decoratee,
-    IEnumerable<IPipelineAsyncDecorator<TRequest, TResult>> decorators) :
+    IEnumerable<IPipelineStreamDecorator<TRequest, TResult>> decorators) :
     IPipelineStreamRequestHandler<TResult>
     where TRequest : class, IStreamRequest<TResult>
 {
@@ -53,7 +53,7 @@ public sealed class PipelineQueryAsyncHandler<TRequest, TResult>(
     {
         IAsyncEnumerable<TResult> results = decorators
             .Reverse()
-            .Aggregate<IPipelineAsyncDecorator<TRequest, TResult>,
+            .Aggregate<IPipelineStreamDecorator<TRequest, TResult>,
             RequestStreamHandler<TResult>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(

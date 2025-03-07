@@ -18,11 +18,12 @@
 using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Executions.Deciders;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
-/// Decorator for handling <see cref="IDecider{TDependency}"/>> in a pipeline.
+/// Decorator for handling <see cref="IDeciderRequest{TDependency}"/>> in a pipeline.
 /// it provides a way to apply the decider pattern to the request object.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
@@ -30,7 +31,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
     IDeciderDependencyManager dependencyManager) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IDecider
+    where TRequest : class, IDeciderRequest
     where TResponse : IExecutionResult
 {
     /// <inheritdoc/>

@@ -88,7 +88,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public abstract class PipelineAsyncDecorator<TRequest, TResponse> :
-    IPipelineAsyncDecorator<TRequest, TResponse>
+    IPipelineStreamDecorator<TRequest, TResponse>
     where TRequest : class, IStreamRequest<TResponse>
 {
     /// <inheritdoc/>

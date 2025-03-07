@@ -15,10 +15,12 @@
  *
 ********************************************************************************/
 
+using Xpandables.Net.Executions.Tasks;
+
 namespace Xpandables.Net.Executions.Deciders;
 
 /// <summary>
-/// Provides a mechanism to get dependencies for a decider command.
+/// Provides a mechanism to get dependencies for a decider.
 /// </summary>
 public interface IDeciderDependencyProvider
 {
@@ -36,7 +38,7 @@ public interface IDeciderDependencyProvider
     /// <returns>The dependency of the specified type.</returns>
     /// <exception cref="InvalidOperationException"></exception>
     Task<object> GetDependencyAsync(
-        IDecider decider,
+        IDeciderRequest decider,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -49,10 +51,10 @@ public interface IDeciderDependencyProvider
     /// <returns>The dependency of the specified type.</returns>
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<TDependency> GetDependencyAsync<TDependency>(
-        IDecider<TDependency> decider,
+        IDeciderRequest<TDependency> decider,
         CancellationToken cancellationToken = default)
         where TDependency : class =>
         (TDependency)await GetDependencyAsync(
-            (IDecider)decider, cancellationToken)
+            (IDeciderRequest)decider, cancellationToken)
             .ConfigureAwait(false);
 }

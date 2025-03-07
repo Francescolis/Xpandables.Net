@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Deciders;
 
@@ -30,7 +31,7 @@ internal sealed class AggregateDeciderDependencyProvider(
         typeof(IAggregate).IsAssignableFrom(dependencyType);
 
     public async Task<object> GetDependencyAsync(
-        IDecider decider, CancellationToken cancellationToken = default)
+        IDeciderRequest decider, CancellationToken cancellationToken = default)
     {
         await Task.Yield();
 

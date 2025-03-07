@@ -20,13 +20,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.Executions.Deciders;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Pipelines;
 internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IDecider, IApplyAggregate
+    where TRequest : class, IDeciderRequest, IApplyAggregate
     where TResponse : IExecutionResult
 {
     protected override async Task<TResponse> HandleCoreAsync(

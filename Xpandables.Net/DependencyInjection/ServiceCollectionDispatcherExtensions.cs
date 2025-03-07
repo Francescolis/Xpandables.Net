@@ -215,7 +215,7 @@ public static class ServiceCollectionDispatcherExtensions
     public static IServiceCollection AddXAsyncPipelineExceptionDecorator(
         this IServiceCollection services) =>
         services.AddScoped(
-            typeof(IPipelineAsyncDecorator<,>),
+            typeof(IPipelineStreamDecorator<,>),
             typeof(PipelineExceptionAsyncDecorator<,>));
 
     /// <summary>
