@@ -33,7 +33,7 @@ public interface IRequest
 }
 
 /// <summary>
-/// Represents a request that contains a dependency type and its key identifier.
+/// Represents a request that contains a dependency type that gets resolved by the decider.
 /// </summary>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
 public abstract record Request<TDependency> : IRequest, IDecider<TDependency>

@@ -65,6 +65,11 @@ public interface IRequestHandler<in TRequest, in TDependency> : IRequestHandler<
     [EditorBrowsable(EditorBrowsableState.Never)]
     Task<IExecutionResult> IRequestHandler<TRequest>.HandleAsync(
         TRequest request,
-        CancellationToken cancellationToken) =>
-        HandleAsync(request, (TDependency)request.Dependency, cancellationToken);
+        CancellationToken cancellationToken)
+    {
+        if (request.Dependency is null)
+            throw new InvalidOperationException("The dependency is not set.");
+
+        return HandleAsync(request, (TDependency)request.Dependency, cancellationToken);
+    }
 }
