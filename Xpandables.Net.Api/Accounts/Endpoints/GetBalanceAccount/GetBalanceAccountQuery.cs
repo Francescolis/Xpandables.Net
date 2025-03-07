@@ -2,7 +2,7 @@
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
-public sealed record GetBalanceAccountQuery : IQuery<decimal>
+public sealed record GetBalanceAccountQuery : IRequest<decimal>
 {
     public required Guid KeyId { get; init; }
 }

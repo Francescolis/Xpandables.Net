@@ -3,7 +3,7 @@ using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
 
-public sealed class BlockAccountCommandHandler : IRequestHandler<BlockAccountCommand, Account>
+public sealed class BlockAccountCommandHandler : IDeciderRequestHandler<BlockAccountCommand, Account>
 {
     public async Task<IExecutionResult> HandleAsync(
         BlockAccountCommand command,

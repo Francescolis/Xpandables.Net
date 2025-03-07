@@ -27,12 +27,12 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public sealed class PipelineExceptionAsyncDecorator<TRequest, TResponse> :
     PipelineAsyncDecorator<TRequest, TResponse>
-    where TRequest : class, IQueryAsync<TResponse>
+    where TRequest : class, IStreamRequest<TResponse>
 {
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResponse> HandleCoreAsync(
         TRequest request,
-        RequestAsyncHandler<TResponse> next,
+        RequestStreamHandler<TResponse> next,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task

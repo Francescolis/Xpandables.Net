@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Executions.Tasks;
+
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
@@ -75,5 +77,47 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
     protected abstract Task<TResponse> HandleCoreAsync(
         TRequest request,
         RequestHandler<TResponse> next,
+        CancellationToken cancellationToken = default);
+}
+
+
+/// <summary>
+/// Represents an asynchronous pipeline decorator that handles 
+/// <see cref="IStreamRequest{TResult}"/> request and produces a response.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+public abstract class PipelineAsyncDecorator<TRequest, TResponse> :
+    IPipelineAsyncDecorator<TRequest, TResponse>
+    where TRequest : class, IStreamRequest<TResponse>
+{
+    /// <inheritdoc/>
+    public IAsyncEnumerable<TResponse> HandleAsync(
+        TRequest query,
+        RequestStreamHandler<TResponse> next,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return HandleCoreAsync(query, next, cancellationToken);
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            throw new ExecutionResultException(
+                exception.ToExecutionResult());
+        }
+    }
+
+    /// <summary>
+    /// Handles the core logic of the pipeline decorator.
+    /// </summary>
+    /// <param name="request">The request object.</param>
+    /// <param name="next">The next delegate in the pipeline.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An asynchronous enumerable of the response.</returns>
+    protected abstract IAsyncEnumerable<TResponse> HandleCoreAsync(
+        TRequest request,
+        RequestStreamHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }

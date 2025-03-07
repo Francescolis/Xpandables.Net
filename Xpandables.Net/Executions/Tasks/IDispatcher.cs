@@ -31,24 +31,24 @@ public interface IDispatcher
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Sends a query asynchronously.
+    /// Sends a request asynchronously.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="query">The query to execute.</param>
+    /// <param name="request">The request to execute.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
     Task<IExecutionResult<TResult>> SendAsync<TResult>(
-        IQuery<TResult> query,
+        IRequest<TResult> request,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Sends a query asynchronously.
+    /// Sends a stream request asynchronously.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="query">The query to execute.</param>
+    /// <param name="request">The request to execute.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An asynchronous enumerable of results.</returns>
     IAsyncEnumerable<TResult> SendAsync<TResult>(
-        IQueryAsync<TResult> query,
+        IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default);
 }

@@ -9,7 +9,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
 
 public sealed class GetOperationsAccountQueryHandler(
     IEventStore eventStore) :
-    IQueryAsyncHandler<GetOperationsAccountQuery, OperationAccount>
+    IStreamRequestHandler<GetOperationsAccountQuery, OperationAccount>
 {
     public async IAsyncEnumerable<OperationAccount> HandleAsync(
         GetOperationsAccountQuery query,

@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using Xpandables.Net.Executions.Tasks;
+
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
@@ -44,5 +46,33 @@ public interface IPipelineDecorator<TRequest, TResponse>
     Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Represents a delegate that handles stream request and returns an 
+/// asynchronous enumerable response.
+/// </summary>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+public delegate IAsyncEnumerable<TResponse> RequestStreamHandler<TResponse>();
+
+/// <summary>
+/// Defines a decorator for handling asynchronous queries.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+public interface IPipelineAsyncDecorator<TRequest, TResponse>
+    where TRequest : class, IStreamRequest<TResponse>
+{
+    /// <summary>
+    /// Handles the asynchronous request.
+    /// </summary>
+    /// <param name="request">The request to handle.</param>
+    /// <param name="next">The next delegate in the chain.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An asynchronous enumerable of the response.</returns>
+    IAsyncEnumerable<TResponse> HandleAsync(
+        TRequest request,
+        RequestStreamHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }

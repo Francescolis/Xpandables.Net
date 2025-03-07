@@ -19,51 +19,51 @@ using Xpandables.Net.Executions.Pipelines;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a pipeline when handling asynchronous queries.
+/// Defines a pipeline when handling stream requests.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IPipelineQueryAsyncHandler<TResult>
+public interface IPipelineStreamRequestHandler<TResult>
 {
     /// <summary>
-    /// Handles the asynchronous query.
+    /// Handles the stream request.
     /// </summary>
-    /// <param name="query">The query to handle.</param>
+    /// <param name="request">The request to handle.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of the result.</returns>
     IAsyncEnumerable<TResult> HandleAsync(
-         IQueryAsync<TResult> query,
+         IStreamRequest<TResult> request,
          CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// A wrapper class for handling asynchronous queries with decorators.
+/// A wrapper class for handling stream requests with decorators.
 /// </summary>
-/// <typeparam name="TQuery">The type of the query.</typeparam>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class PipelineQueryAsyncHandler<TQuery, TResult>(
-    IQueryAsyncHandler<TQuery, TResult> decoratee,
-    IEnumerable<IPipelineAsyncDecorator<TQuery, TResult>> decorators) :
-    IPipelineQueryAsyncHandler<TResult>
-    where TQuery : class, IQueryAsync<TResult>
+public sealed class PipelineQueryAsyncHandler<TRequest, TResult>(
+    IStreamRequestHandler<TRequest, TResult> decoratee,
+    IEnumerable<IPipelineAsyncDecorator<TRequest, TResult>> decorators) :
+    IPipelineStreamRequestHandler<TResult>
+    where TRequest : class, IStreamRequest<TResult>
 {
     /// <inheritdoc/>
     public IAsyncEnumerable<TResult> HandleAsync(
-        IQueryAsync<TResult> query,
+        IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default)
     {
         IAsyncEnumerable<TResult> results = decorators
             .Reverse()
-            .Aggregate<IPipelineAsyncDecorator<TQuery, TResult>,
-            RequestAsyncHandler<TResult>>(
+            .Aggregate<IPipelineAsyncDecorator<TRequest, TResult>,
+            RequestStreamHandler<TResult>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(
-                    (TQuery)query,
+                    (TRequest)request,
                     next,
                     cancellationToken))();
 
         return results;
 
         IAsyncEnumerable<TResult> Handler() =>
-            decoratee.HandleAsync((TQuery)query, cancellationToken);
+            decoratee.HandleAsync((TRequest)request, cancellationToken);
     }
 }

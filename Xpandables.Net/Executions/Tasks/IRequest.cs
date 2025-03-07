@@ -16,12 +16,10 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-using Xpandables.Net.Executions.Deciders;
-
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// This interface is used as a marker for request.
+/// Provides a way to define a request.
 /// Class implementation is used with the <see cref="IRequestHandler{TRequest}"/> 
 /// where "TRequest" is a record that implements <see cref="IRequest"/>.
 /// </summary>
@@ -32,10 +30,72 @@ public interface IRequest
 }
 
 /// <summary>
+/// Provides a way to define a request that returns a result.
+/// Class implementation is used with the <see cref="IRequestHandler{TRequest, TResult}"/> 
+/// where "TRequest" is a class that implements <see cref="IRequest{TResult}"/>.
+/// </summary>
+/// <typeparam name="TResult">The type of the result.</typeparam>
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequest<out TResult>
+#pragma warning restore CA1040 // Avoid empty interfaces
+{
+}
+
+/// <summary>
+/// Provides a way to define a stream request that returns a result asynchronously.
+/// <see cref="IAsyncEnumerable{TResult}"/> of specific-type response.
+/// Class implementation is used with the 
+/// <see cref="IStreamRequestHandler{TRequest, TResult}"/> where
+/// "TRequest" is a class that implements the 
+/// <see cref="IStreamRequest{TResult}"/> interface. 
+/// </summary>
+/// <typeparam name="TResult">Type of the result of the request.</typeparam>
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IStreamRequest<out TResult>
+#pragma warning restore CA1040 // Avoid empty interfaces
+{
+}
+
+/// <summary>
+/// Provides a way to define a request with a dependency type that gets resolved by the decider.
+/// </summary>
+public interface IDeciderRequest : IRequest
+{
+    /// <summary>
+    /// The dependency type.
+    /// </summary>
+    Type Type { get; }
+
+    /// <summary>
+    /// The key identifier used to identify an instance of the dependency type.
+    /// </summary>
+    object KeyId { get; }
+
+    /// <summary>
+    /// The value of the dependency.
+    /// </summary>
+    /// <remarks>For internal use only.</remarks>
+    internal object Dependency { get; set; }
+}
+
+/// <summary>
+/// Provides a way to define a request with a dependency type that gets resolved by the decider.
+/// </summary>
+/// <typeparam name="TDependency">The type of the dependency.</typeparam>
+public interface IDeciderRequest<TDependency> : IDeciderRequest
+    where TDependency : class
+{
+    /// <summary>
+    /// The type of the dependency.
+    /// </summary>
+    public new Type Type => typeof(TDependency);
+}
+
+/// <summary>
 /// Represents a request that contains a dependency type that gets resolved by the decider.
 /// </summary>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public abstract record Request<TDependency> : IRequest, IDecider<TDependency>
+public abstract record DeciderRequest<TDependency> : IDeciderRequest<TDependency>
     where TDependency : class
 {
     /// <inheritdoc/>
@@ -45,5 +105,5 @@ public abstract record Request<TDependency> : IRequest, IDecider<TDependency>
     public required object KeyId { get; init; }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    object IDecider.Dependency { get; set; } = default!;
+    object IDeciderRequest.Dependency { get; set; } = default!;
 }

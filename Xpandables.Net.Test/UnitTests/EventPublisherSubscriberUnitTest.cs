@@ -9,8 +9,8 @@ using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Test.UnitTests;
 
-public sealed record TestQuery : IQuery<string> { public required string Query { get; set; } }
-public sealed class TestQueryHander : IQueryHandler<TestQuery, string>
+public sealed record TestQuery : IRequest<string> { public required string Query { get; set; } }
+public sealed class TestQueryHander : IRequestHandler<TestQuery, string>
 {
     public Task<IExecutionResult<string>> HandleAsync(
         TestQuery query, CancellationToken cancellationToken) =>

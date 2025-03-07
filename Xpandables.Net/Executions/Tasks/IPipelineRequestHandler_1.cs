@@ -20,54 +20,54 @@ using Xpandables.Net.Executions.Pipelines;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a pipeline when handling queries of type <see cref="IQuery{TResult}"/> 
+/// Defines a pipeline when handling requests of type <see cref="IRequest{TResult}"/> 
 /// and returning a result of type <typeparamref name="TResult"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IPipelineQueryHandler<TResult>
+public interface IPipelineRequestHandler<TResult>
 {
     /// <summary>
-    /// Handles the specified query asynchronously.
+    /// Handles the specified request asynchronously.
     /// </summary>
-    /// <param name="query">The query to handle.</param>
+    /// <param name="request">The request to handle.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
     /// requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task 
     /// result contains the operation result.</returns>
     Task<IExecutionResult<TResult>> HandleAsync(
-        IQuery<TResult> query,
+        IRequest<TResult> request,
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// A wrapper for handling queries with a specified query handler.
+/// A wrapper for handling requests with a specified query handler.
 /// </summary>
-/// <typeparam name="TQuery">The type of the query.</typeparam>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class PipelineQueryHandler<TQuery, TResult>(
-    IQueryHandler<TQuery, TResult> decoratee,
-    IEnumerable<IPipelineDecorator<TQuery, IExecutionResult<TResult>>> decorators) :
-    IPipelineQueryHandler<TResult>
-    where TQuery : class, IQuery<TResult>
+public sealed class PipelineQueryHandler<TRequest, TResult>(
+    IRequestHandler<TRequest, TResult> decoratee,
+    IEnumerable<IPipelineDecorator<TRequest, IExecutionResult<TResult>>> decorators) :
+    IPipelineRequestHandler<TResult>
+    where TRequest : class, IRequest<TResult>
 {
     /// <inheritdoc/>>
     public Task<IExecutionResult<TResult>> HandleAsync(
-        IQuery<TResult> query,
+        IRequest<TResult> request,
         CancellationToken cancellationToken = default)
     {
         Task<IExecutionResult<TResult>> result = decorators
             .Reverse()
-            .Aggregate<IPipelineDecorator<TQuery, IExecutionResult<TResult>>,
+            .Aggregate<IPipelineDecorator<TRequest, IExecutionResult<TResult>>,
             RequestHandler<IExecutionResult<TResult>>>(
                 Handler,
                 (next, decorator) => () => decorator.HandleAsync(
-                    (TQuery)query,
+                    (TRequest)request,
                     next,
                     cancellationToken))();
 
         return result;
 
         Task<IExecutionResult<TResult>> Handler() =>
-            decoratee.HandleAsync((TQuery)query, cancellationToken);
+            decoratee.HandleAsync((TRequest)request, cancellationToken);
     }
 }

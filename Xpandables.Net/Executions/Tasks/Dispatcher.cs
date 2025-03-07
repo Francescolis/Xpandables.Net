@@ -50,19 +50,19 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
 
     /// <inheritdoc/>
     public IAsyncEnumerable<TResult> SendAsync<TResult>(
-        IQueryAsync<TResult> query,
+        IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default)
     {
         try
         {
             Type requestWrapperType = typeof(PipelineQueryAsyncHandler<,>)
-                .MakeGenericType(query.GetType(), typeof(TResult));
+                .MakeGenericType(request.GetType(), typeof(TResult));
 
-            IPipelineQueryAsyncHandler<TResult> handler =
-                (IPipelineQueryAsyncHandler<TResult>)provider
+            IPipelineStreamRequestHandler<TResult> handler =
+                (IPipelineStreamRequestHandler<TResult>)provider
                 .GetRequiredService(requestWrapperType);
 
-            return handler.HandleAsync(query, cancellationToken);
+            return handler.HandleAsync(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
@@ -74,19 +74,19 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
 
     /// <inheritdoc/>
     public Task<IExecutionResult<TResult>> SendAsync<TResult>(
-        IQuery<TResult> query,
+        IRequest<TResult> request,
         CancellationToken cancellationToken = default)
     {
         try
         {
             Type requestWrapperType = typeof(PipelineQueryHandler<,>)
-                .MakeGenericType(query.GetType(), typeof(TResult));
+                .MakeGenericType(request.GetType(), typeof(TResult));
 
-            IPipelineQueryHandler<TResult> handler =
-                (IPipelineQueryHandler<TResult>)provider
+            IPipelineRequestHandler<TResult> handler =
+                (IPipelineRequestHandler<TResult>)provider
                 .GetRequiredService(requestWrapperType);
 
-            return handler.HandleAsync(query, cancellationToken);
+            return handler.HandleAsync(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)

@@ -16,8 +16,6 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-using Xpandables.Net.Executions.Deciders;
-
 namespace Xpandables.Net.Executions.Tasks;
 /// <summary>
 /// Defines a handler for a request of type <typeparamref name="TRequest"/>.
@@ -41,14 +39,55 @@ public interface IRequestHandler<in TRequest>
 }
 
 /// <summary>
+/// Defines a handler for processing requests of type <typeparamref name="TRequest"/> 
+/// and returning a result of type <typeparamref name="TResult"/>.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TResult">The type of the result.</typeparam>
+public interface IRequestHandler<in TRequest, TResult>
+    where TRequest : class, IRequest<TResult>
+{
+    /// <summary>
+    /// Handles the specified query that returns a result asynchronously.
+    /// </summary>
+    /// <param name="request">The request to handle.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation
+    /// requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task 
+    /// result contains the operation result.</returns>
+    Task<IExecutionResult<TResult>> HandleAsync(
+        TRequest request,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Defines a handler for processing stream requests.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TResult">The type of the result.</typeparam>
+public interface IStreamRequestHandler<in TRequest, TResult>
+    where TRequest : class, IStreamRequest<TResult>
+{
+    /// <summary>
+    /// Handles the stream query.
+    /// </summary>
+    /// <param name="request">The request to handle.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>An asynchronous enumerable of the result.</returns>
+    IAsyncEnumerable<TResult> HandleAsync(
+        TRequest request,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
 /// Defines a handler for a request of type <typeparamref name="TRequest"/> 
 /// with a dependency of type <typeparamref name="TDependency"/>.
 /// </summary>
 /// <remarks>This can also be enhanced with some useful decorators.</remarks>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public interface IRequestHandler<in TRequest, in TDependency> : IRequestHandler<TRequest>
-    where TRequest : class, IRequest, IDecider<TDependency>
+public interface IDeciderRequestHandler<in TRequest, in TDependency> : IRequestHandler<TRequest>
+    where TRequest : class, IDeciderRequest<TDependency>
     where TDependency : class
 {
     /// <summary>

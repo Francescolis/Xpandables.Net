@@ -3,7 +3,7 @@ using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
-public sealed class DepositAccountCommandHandler : IRequestHandler<DepositAccountCommand, Account>
+public sealed class DepositAccountCommandHandler : IDeciderRequestHandler<DepositAccountCommand, Account>
 {
     public async Task<IExecutionResult> HandleAsync(
         DepositAccountCommand command,

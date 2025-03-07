@@ -3,7 +3,7 @@ using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
-public sealed class UnBlockAccountCommandHandler : IRequestHandler<UnBlockAccountCommand, Account>
+public sealed class UnBlockAccountCommandHandler : IDeciderRequestHandler<UnBlockAccountCommand, Account>
 {
     public async Task<IExecutionResult> HandleAsync(
         UnBlockAccountCommand command,

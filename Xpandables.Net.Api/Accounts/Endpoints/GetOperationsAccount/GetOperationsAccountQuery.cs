@@ -2,7 +2,7 @@
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
 
-public sealed record GetOperationsAccountQuery : IQueryAsync<OperationAccount>
+public sealed record GetOperationsAccountQuery : IStreamRequest<OperationAccount>
 {
     public required Guid KeyId { get; init; }
 }

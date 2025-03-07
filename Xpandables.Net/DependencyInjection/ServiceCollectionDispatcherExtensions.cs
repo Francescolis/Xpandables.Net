@@ -97,15 +97,15 @@ public static class ServiceCollectionDispatcherExtensions
                 && type.GetInterfaces().Any(i =>
                     i.IsGenericType &&
                     (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>) ||
-                    i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) ||
-                    i.GetGenericTypeDefinition() == typeof(IQueryAsyncHandler<,>)))))
+                    i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>) ||
+                    i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)))))
             .Select(type => new HandlerType(
                 Type: type,
                 Interfaces: type.GetInterfaces()
                     .Where(i => i.IsGenericType &&
                     (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>) ||
-                        i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) ||
-                        i.GetGenericTypeDefinition() == typeof(IQueryAsyncHandler<,>)))));
+                        i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>) ||
+                        i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)))));
 
         foreach (HandlerType handlerType in handlerTypes)
         {
