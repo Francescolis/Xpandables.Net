@@ -22,6 +22,7 @@ namespace Xpandables.Net.Executions.Tasks;
 /// <summary>
 /// Defines a handler for a request of type <typeparamref name="TRequest"/>.
 /// </summary>
+/// <remarks>This can also be enhanced with some useful decorators.</remarks>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 public interface IRequestHandler<in TRequest>
     where TRequest : class, IRequest
@@ -43,6 +44,7 @@ public interface IRequestHandler<in TRequest>
 /// Defines a handler for a request of type <typeparamref name="TRequest"/> 
 /// with a dependency of type <typeparamref name="TDependency"/>.
 /// </summary>
+/// <remarks>This can also be enhanced with some useful decorators.</remarks>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
 public interface IRequestHandler<in TRequest, in TDependency> : IRequestHandler<TRequest>

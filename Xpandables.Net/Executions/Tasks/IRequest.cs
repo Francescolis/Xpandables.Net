@@ -24,7 +24,6 @@ namespace Xpandables.Net.Executions.Tasks;
 /// This interface is used as a marker for request.
 /// Class implementation is used with the <see cref="IRequestHandler{TRequest}"/> 
 /// where "TRequest" is a record that implements <see cref="IRequest"/>.
-/// This can also be enhanced with some useful decorators.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
 public interface IRequest
