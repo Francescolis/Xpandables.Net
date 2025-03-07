@@ -12,7 +12,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         _builder = new RequestHttpCompletionBuilder();
 
     [Theory]
-    [InlineData(typeof(IRequestCompletion), true)]
+    [InlineData(typeof(IRequestHttpCompletion), true)]
     [InlineData(typeof(IRequestHttp), true)]
     [InlineData(typeof(object), false)]
     public void CanBuild_ShouldReturnExpectedResult(Type targetType, bool expectedResult)
@@ -116,7 +116,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     }
 
     private class TestHttpRequestDefinitionComplete :
-        IRequestHttp, IRequestCompletion
+        IRequestHttp, IRequestHttpCompletion
     {
     }
 }

@@ -20,7 +20,7 @@ namespace Xpandables.Net.Http.RequestBuilders;
 /// <summary>
 /// A builder class for starting an HTTP client request.
 /// </summary>
-public sealed class RequestHttpStartBuilder : RequestHttpBuilder<IRequestStart>
+public sealed class RequestHttpStartBuilder : RequestHttpBuilder<IRequestHttpStart>
 {
     /// <inheritdoc/>
     public override bool CanBuild(Type targetType)

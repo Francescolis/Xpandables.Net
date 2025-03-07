@@ -20,7 +20,7 @@ namespace Xpandables.Net.Http.RequestBuilders;
 /// </summary>
 /// <typeparam name="TRequestDefinition">The type of the request definition.</typeparam>
 public abstract class RequestHttpBuilder<TRequestDefinition> : IRequestHttpBuilder<TRequestDefinition>
-    where TRequestDefinition : class, IRequestDefinition
+    where TRequestDefinition : class, IRequestHttpDefinition
 {
     ///<inheritdoc/>
     public Type Type => typeof(TRequestDefinition);

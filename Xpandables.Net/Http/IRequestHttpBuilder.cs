@@ -56,7 +56,7 @@ public interface IRequestHttpBuilder
 /// <see cref="IRequestStream"/> and <see cref="IRequestString"/>.</typeparam>
 public interface IRequestHttpBuilder<TRequestDefinition> :
     IRequestHttpBuilder
-    where TRequestDefinition : class, IRequestDefinition
+    where TRequestDefinition : class, IRequestHttpDefinition
 {
     /// <summary>
     /// Gets the request type being built by the current builder instance.

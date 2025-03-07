@@ -28,27 +28,27 @@ namespace Xpandables.Net.Http;
 /// Provides with the base HTTP content request definition.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequestDefinition { }
+public interface IRequestHttpDefinition { }
 #pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Provides with base HTTP content used to start building a request.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequestStart : IRequestDefinition { }
+public interface IRequestHttpStart : IRequestHttpDefinition { }
 #pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Provides with base HTTP content used to complete building a request.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequestCompletion : IRequestDefinition { }
+public interface IRequestHttpCompletion : IRequestHttpDefinition { }
 #pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Interface for building HTTP requests with basic authentication.
 /// </summary>
-public interface IRequestBasicAuthentication : IRequestDefinition
+public interface IRequestBasicAuthentication : IRequestHttpDefinition
 {
     /// <summary>
     /// Returns the authentication header value.
@@ -60,7 +60,7 @@ public interface IRequestBasicAuthentication : IRequestDefinition
 /// <summary>
 /// Represents an HTTP request that contains a byte array content.
 /// </summary>
-public interface IRequestByteArray : IRequestDefinition
+public interface IRequestByteArray : IRequestHttpDefinition
 {
     /// <summary>
     /// Returns the byte array content.
@@ -72,7 +72,7 @@ public interface IRequestByteArray : IRequestDefinition
 /// <summary>
 /// Represents an HTTP request cookie builder.
 /// </summary>
-public interface IRequestCookie : IRequestDefinition
+public interface IRequestCookie : IRequestHttpDefinition
 {
     /// <summary>
     /// Returns the cookie header value.
@@ -86,7 +86,7 @@ public interface IRequestCookie : IRequestDefinition
 /// <summary>
 /// Interface for building HTTP requests with form URL encoded content.
 /// </summary>
-public interface IRequestFormUrlEncoded : IRequestDefinition
+public interface IRequestFormUrlEncoded : IRequestHttpDefinition
 {
     /// <summary>
     /// Returns the form URL encoded content.
@@ -100,7 +100,7 @@ public interface IRequestFormUrlEncoded : IRequestDefinition
 /// </summary>
 /// <remarks>if you want to set the header model name, you can override the 
 /// <see cref="GetHeaderModelName"/> method.</remarks>
-public interface IRequestHeader : IRequestDefinition
+public interface IRequestHeader : IRequestHttpDefinition
 {
     /// <summary>
     /// Gets the collection of headers.
@@ -119,7 +119,7 @@ public interface IRequestHeader : IRequestDefinition
 /// <summary>
 /// Represents an HTTP request that supports multipart content.
 /// </summary>
-public interface IRequestMultipart : IRequestDefinition
+public interface IRequestMultipart : IRequestHttpDefinition
 {
     /// <summary>
     /// Returns the multipart content.
@@ -131,7 +131,7 @@ public interface IRequestMultipart : IRequestDefinition
 /// <summary>
 /// Interface for building HTTP request path strings.
 /// </summary>
-public interface IRequestPathString : IRequestDefinition
+public interface IRequestPathString : IRequestHttpDefinition
 {
     /// <summary>
     /// Returns the path string.
@@ -143,7 +143,7 @@ public interface IRequestPathString : IRequestDefinition
 /// <summary>
 /// Interface for building HTTP request query strings.
 /// </summary>
-public interface IRequestQueryString : IRequestDefinition
+public interface IRequestQueryString : IRequestHttpDefinition
 {
     /// <summary>
     /// Returns the query string.
@@ -157,7 +157,7 @@ public interface IRequestQueryString : IRequestDefinition
 /// the stream content.
 /// </summary>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public interface IRequestStream : IRequestDefinition
+public interface IRequestStream : IRequestHttpDefinition
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>
@@ -170,7 +170,7 @@ public interface IRequestStream : IRequestDefinition
 /// <summary>
 /// Interface for building HTTP request strings.
 /// </summary>
-public interface IRequestString : IRequestDefinition
+public interface IRequestString : IRequestHttpDefinition
 {
     /// <summary>
     /// Returns the string content.
@@ -182,7 +182,7 @@ public interface IRequestString : IRequestDefinition
 /// <summary>
 /// Defines an interface for building HTTP PATCH requests.
 /// </summary>
-public interface IRequestPatch : IRequestDefinition
+public interface IRequestPatch : IRequestHttpDefinition
 {
     /// <summary>
     /// Gets the patch operations.

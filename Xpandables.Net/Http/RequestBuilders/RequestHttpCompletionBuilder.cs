@@ -20,7 +20,7 @@ namespace Xpandables.Net.Http.RequestBuilders;
 /// <summary>  
 /// Represents a builder for completing HTTP client requests.  
 /// </summary>  
-public sealed class RequestHttpCompletionBuilder : RequestHttpBuilder<IRequestCompletion>
+public sealed class RequestHttpCompletionBuilder : RequestHttpBuilder<IRequestHttpCompletion>
 {
     /// <inheritdoc/>  
     public override bool CanBuild(Type targetType)
