@@ -44,7 +44,7 @@ public abstract class EventConverter : IEventConverter
         JsonSerializerOptions? options = default);
 
     /// <summary>
-    /// Serializes the given event to a JSON document.
+    /// Serializes the given event to bytes.
     /// </summary>
     /// <param name="event">The event to serialize.</param>
     /// <param name="jsonOptions">Optional JSON serializer options.</param>
@@ -71,7 +71,7 @@ public abstract class EventConverter : IEventConverter
     }
 
     /// <summary>
-    /// Deserializes the given JSON document to an event of the specified type.
+    /// Deserializes the given bytes to an event of the specified type.
     /// </summary>
     /// <param name="eventData">The JSON document representing the event data.</param>
     /// <param name="eventType">The type of the event to deserialize to.</param>
