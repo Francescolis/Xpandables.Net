@@ -132,8 +132,8 @@ public abstract class Aggregate : IAggregate
         }
         else
         {
-            throw new InvalidOperationException(
-                $"The event handler for {@event.GetType().Name} is not registered.");
+            throw new UnauthorizedAccessException(
+                $"The submitted action {@event.GetType().Name} is not authorized.");
         }
     }
 }
