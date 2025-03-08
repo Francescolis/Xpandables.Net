@@ -17,7 +17,8 @@
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Interface to mark a request that uses a finalizer.
+/// Marker interface to indicate that a request should use a unit of work
+/// whatever the outcome of the request.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IApplyFinalizer { }
+public interface IUnitOfWorkApplier { }

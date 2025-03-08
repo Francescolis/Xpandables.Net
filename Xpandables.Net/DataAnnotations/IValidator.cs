@@ -59,7 +59,7 @@ public interface IValidator
 /// </summary>
 /// <typeparam name="TArgument">The type of the instance to validate.</typeparam>
 public interface IValidator<in TArgument> : IValidator
-    where TArgument : class, IApplyValidation
+    where TArgument : class, IValidationEnabled
 {
     /// <summary>
     /// Validates the specified instance and returns the result of the validation.

@@ -30,7 +30,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
     IUnitOfWork unitOfWork) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IApplyUnitOfWork
+    where TRequest : class, IUnitOfWorkApplier
     where TResponse : class
 {
     /// <inheritdoc/>

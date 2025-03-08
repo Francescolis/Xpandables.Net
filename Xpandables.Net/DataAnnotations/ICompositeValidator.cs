@@ -21,5 +21,5 @@ namespace Xpandables.Net.DataAnnotations;
 /// </summary>
 /// <typeparam name="TArgument">The type of the argument to validate.</typeparam>
 public interface ICompositeValidator<in TArgument> : IValidator<TArgument>
-    where TArgument : class, IApplyValidation
+    where TArgument : class, IValidationEnabled
 { }

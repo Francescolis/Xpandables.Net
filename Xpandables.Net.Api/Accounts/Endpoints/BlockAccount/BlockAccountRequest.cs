@@ -10,7 +10,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
     IsSecured = false,
     Location = RequestDefinitions.Location.Body,
     Method = RequestDefinitions.Method.POST)]
-public sealed record BlockAccountRequest : IApplyValidation
+public sealed record BlockAccountRequest : IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }

@@ -26,7 +26,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IDeciderRequest, IApplyAggregate
+    where TRequest : class, IDeciderRequest, IAggregateAppender
     where TResponse : class
 {
     protected override TResponse HandleCore(

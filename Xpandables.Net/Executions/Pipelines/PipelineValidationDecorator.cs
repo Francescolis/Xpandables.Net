@@ -27,7 +27,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IApplyValidation
+    where TRequest : class, IValidationEnabled
     where TResponse : class
 {
     /// <inheritdoc/>

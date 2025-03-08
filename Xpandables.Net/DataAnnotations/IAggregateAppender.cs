@@ -17,8 +17,11 @@
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Marker interface to indicate that a request should use a unit of work
-/// whatever the outcome of the request.
+/// Defines a marker interface to indicate that the class uses an aggregate
+/// and need appending process.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IApplyUnitOfWork { }
+public interface IAggregateAppender
+#pragma warning restore CA1040 // Avoid empty interfaces
+{
+}

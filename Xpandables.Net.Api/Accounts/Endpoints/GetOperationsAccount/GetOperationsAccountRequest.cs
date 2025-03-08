@@ -10,7 +10,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
     IsSecured = false,
     Location = RequestDefinitions.Location.Query,
     Method = RequestDefinitions.Method.GET)]
-public sealed record GetOperationsAccountRequest : IApplyValidation
+public sealed record GetOperationsAccountRequest : IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }

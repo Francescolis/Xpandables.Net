@@ -21,7 +21,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// Defines a marker interface to indicate that the class uses a validator.
 /// </summary>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IApplyValidation
+public interface IValidationEnabled
 #pragma warning restore CA1040 // Avoid empty interfaces
 {
 }
