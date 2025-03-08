@@ -3,7 +3,6 @@
 using Xpandables.Net.Api.Accounts.Events;
 using Xpandables.Net.Events;
 using Xpandables.Net.Executions.Tasks;
-using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
@@ -19,10 +18,10 @@ public sealed class GetOperationsAccountQueryHandler(
         IEventFilter filter = new EventEntityFilterDomain
         {
             Predicate = e => e.AggregateId == query.KeyId,
-            EventDataPredicate = e => e.RootElement
-                .GetProperty(nameof(EventEntityDomain.EventName))
-                .GetString()!
-                .EndsWith("Made"),
+            //EventDataPredicate = e => e.RootElement
+            //    .GetProperty(nameof(EventEntityDomain.EventName))
+            //    .GetString()!
+            //    .EndsWith("Made"), // For Postgresql
             OrderBy = e => e.OrderByDescending(o => o.CreatedOn)
         };
 
