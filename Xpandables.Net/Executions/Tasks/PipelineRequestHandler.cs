@@ -14,43 +14,39 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Executions.Pipelines;
 
-namespace Xpandables.Net.Executions.Pipelines;
+namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Decorator that finalizes the execution result for requests that use a finalizer.
+/// A wrapper for applying pipeline on requests.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class PipelineFinalizerDecorator<TRequest, TResponse>(
-    IExecutionResultFinalizer finalizer) :
-    PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IApplyFinalizer
-    where TResponse : IExecutionResult
+public sealed class PipelineRequestHandler<TRequest, TResponse>(
+    IHandler<TRequest, TResponse> decoratee,
+    IEnumerable<IPipelineDecorator<TRequest, TResponse>> decorators) :
+    IPipelineRequestHandler<TRequest, TResponse>
+    where TRequest : class
+    where TResponse : class
 {
     /// <inheritdoc/>
-    protected override async Task<TResponse> HandleCoreAsync(
+    public TResponse Handle(
         TRequest request,
-        RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            TResponse response = await next().ConfigureAwait(false);
+        TResponse result = decorators
+            .Reverse()
+            .Aggregate<IPipelineDecorator<TRequest, TResponse>,
+            RequestHandler<TResponse>>(
+                Handler,
+                (next, decorator) => () => decorator.Handle(
+                    request,
+                    next,
+                    cancellationToken))();
 
-            if (finalizer.Finalize is not null)
-            {
-                response = MatchResponse(finalizer.Finalize(response));
-            }
+        return result;
 
-            return response;
-        }
-        catch (Exception exception)
-            when (finalizer.CallFinalizeOnException)
-        {
-            return MatchResponse(
-                finalizer.Finalize(exception.ToExecutionResult()));
-        }
+        TResponse Handler() => decoratee.Handle(request, cancellationToken);
     }
 }

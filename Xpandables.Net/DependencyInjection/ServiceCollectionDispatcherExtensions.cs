@@ -18,7 +18,6 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Executions;
 using Xpandables.Net.Executions.Deciders;
 using Xpandables.Net.Executions.Pipelines;
 using Xpandables.Net.Executions.Tasks;
@@ -49,20 +48,9 @@ public static class ServiceCollectionDispatcherExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXDispatcher(
         this IServiceCollection services) =>
-        services.AddXDispatcher<Dispatcher>();
-
-    /// <summary>
-    /// Adds handler pipelines to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The service collection to add the dispatcher 
-    /// wrappers to.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXHandlerPipelines(
-        this IServiceCollection services) =>
         services
-            .AddTransient(typeof(PipelineQueryHandler<,>))
-            .AddTransient(typeof(PipelineQueryAsyncHandler<,>))
-            .AddTransient(typeof(PipelineRequestHandler<>));
+            .AddXDispatcher<Dispatcher>()
+            .AddTransient(typeof(PipelineRequestHandler<,>));
 
     internal readonly record struct HandlerType(
         Type Type,
@@ -105,7 +93,8 @@ public static class ServiceCollectionDispatcherExtensions
                     .Where(i => i.IsGenericType &&
                     (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>) ||
                         i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>) ||
-                        i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)))));
+                        i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>) ||
+                        i.GetGenericTypeDefinition() == typeof(IHandler<,>)))));
 
         foreach (HandlerType handlerType in handlerTypes)
         {
@@ -206,28 +195,4 @@ public static class ServiceCollectionDispatcherExtensions
         services.AddScoped(
             typeof(IPipelineDecorator<,>),
             typeof(PipelineExceptionDecorator<,>));
-
-    /// <summary>
-    /// Adds an async exception pipeline decorator to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The service collection to add the decorator to.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXAsyncPipelineExceptionDecorator(
-        this IServiceCollection services) =>
-        services.AddScoped(
-            typeof(IPipelineStreamDecorator<,>),
-            typeof(PipelineExceptionAsyncDecorator<,>));
-
-    /// <summary>
-    /// Adds a finalizer pipeline decorator to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The service collection to add the decorator to.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXPipelineFinalizerDecorator(
-        this IServiceCollection services) =>
-        services
-            .AddScoped(
-                typeof(IPipelineDecorator<,>),
-                typeof(PipelineFinalizerDecorator<,>))
-            .AddScoped<IExecutionResultFinalizer, ExecutionResultFinalizer>();
 }

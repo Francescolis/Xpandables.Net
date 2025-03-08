@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions.Tasks;
-
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
@@ -26,45 +24,14 @@ namespace Xpandables.Net.Executions.Pipelines;
 public abstract class PipelineDecorator<TRequest, TResponse> :
     IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : IExecutionResult
+    where TResponse : class
 {
     /// <inheritdoc/>
-    public async Task<TResponse> HandleAsync(
+    public TResponse Handle(
         TRequest request,
         RequestHandler<TResponse> next,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            return await HandleCoreAsync(request, next, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (ExecutionResultException executionException)
-        {
-            return MatchResponse(executionException.ExecutionResult);
-        }
-        catch (Exception exception)
-            when (exception is not ExecutionResultException)
-        {
-            return MatchResponse(exception.ToExecutionResult());
-        }
-    }
-
-    /// <summary>
-    /// Matches the provided operation result to the expected response type.
-    /// </summary>
-    /// <param name="executionResult">The operation result to match.</param>
-    /// <returns>The matched response of type TResponse.</returns>
-    protected TResponse MatchResponse(IExecutionResult executionResult)
-    {
-        if (typeof(TResponse).IsGenericType)
-        {
-            Type resultType = typeof(TResponse).GetGenericArguments()[0];
-            return (TResponse)executionResult.ToExecutionResult(resultType);
-        }
-
-        return (TResponse)executionResult;
-    }
+        CancellationToken cancellationToken = default) =>
+        HandleCore(request, next, cancellationToken);
 
     /// <summary>
     /// Handles the core logic of the pipeline decorator.
@@ -72,52 +39,9 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
     /// <param name="request">The request object.</param>
     /// <param name="next">The next delegate in the pipeline.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation, containing 
-    /// the response.</returns>
-    protected abstract Task<TResponse> HandleCoreAsync(
+    /// <returns>The response of the request.</returns>
+    protected abstract TResponse HandleCore(
         TRequest request,
         RequestHandler<TResponse> next,
-        CancellationToken cancellationToken = default);
-}
-
-
-/// <summary>
-/// Represents an asynchronous pipeline decorator that handles 
-/// <see cref="IStreamRequest{TResult}"/> request and produces a response.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public abstract class PipelineAsyncDecorator<TRequest, TResponse> :
-    IPipelineStreamDecorator<TRequest, TResponse>
-    where TRequest : class, IStreamRequest<TResponse>
-{
-    /// <inheritdoc/>
-    public IAsyncEnumerable<TResponse> HandleAsync(
-        TRequest query,
-        RequestStreamHandler<TResponse> next,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            return HandleCoreAsync(query, next, cancellationToken);
-        }
-        catch (Exception exception)
-            when (exception is not ExecutionResultException)
-        {
-            throw new ExecutionResultException(
-                exception.ToExecutionResult());
-        }
-    }
-
-    /// <summary>
-    /// Handles the core logic of the pipeline decorator.
-    /// </summary>
-    /// <param name="request">The request object.</param>
-    /// <param name="next">The next delegate in the pipeline.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An asynchronous enumerable of the response.</returns>
-    protected abstract IAsyncEnumerable<TResponse> HandleCoreAsync(
-        TRequest request,
-        RequestStreamHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }

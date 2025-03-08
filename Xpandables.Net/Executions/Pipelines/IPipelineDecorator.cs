@@ -15,64 +15,33 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Executions.Tasks;
-
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
-/// Represents a delegate that handles requests and returns a response.
+/// Represents the next delegate to be executed on a pipeline.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate Task<TResponse> RequestHandler<TResponse>()
-    where TResponse : IExecutionResult;
+public delegate TResponse RequestHandler<TResponse>()
+    where TResponse : class;
 
 /// <summary>
-/// Defines a method to handle a request in a pipeline.
+/// Defines a method to handle a request in a pipeline process.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public interface IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : IExecutionResult
+    where TResponse : class
 {
     /// <summary>
-    /// Handles the request asynchronously.
+    /// Handles the request.
     /// </summary>
     /// <param name="request">The request to handle.</param>
     /// <param name="next">The next handler in the pipeline.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation. 
-    /// The task result contains the response.</returns>
-    Task<TResponse> HandleAsync(
+    /// <returns>The response of the request.</returns>
+    TResponse Handle(
         TRequest request,
         RequestHandler<TResponse> next,
-        CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Represents a delegate that handles stream request and returns an 
-/// asynchronous enumerable response.
-/// </summary>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate IAsyncEnumerable<TResponse> RequestStreamHandler<TResponse>();
-
-/// <summary>
-/// Defines a decorator for handling stream request.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public interface IPipelineStreamDecorator<TRequest, TResponse>
-    where TRequest : class, IStreamRequest<TResponse>
-{
-    /// <summary>
-    /// Handles the stream request.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="next">The next delegate in the chain.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An asynchronous enumerable of the response.</returns>
-    IAsyncEnumerable<TResponse> HandleAsync(
-        TRequest request,
-        RequestStreamHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }

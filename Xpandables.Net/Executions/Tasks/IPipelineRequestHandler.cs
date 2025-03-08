@@ -14,61 +14,49 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions.Pipelines;
+using System.ComponentModel;
 
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a pipeline when handling requests.
+/// Applies pipeline when handling requests.
 /// </summary>
-public interface IPipelineRequestHandler
+public interface IPipelineRequestHandler<TResponse>
+    where TResponse : class
 {
     /// <summary>
-    /// Handles the specified request asynchronously.
+    /// Handles the specified request on a pipeline.
     /// </summary>
     /// <param name="request">The request to handle.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation
     /// requests.</param>
-    /// <returns>A task that represents the asynchronous operation. The task 
-    /// result contains the operation result.</returns>
-    Task<IExecutionResult> HandleAsync(
-        IRequest request,
+    /// <returns>The response of the request.</returns>
+    TResponse Handle(
+        object request,
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// A wrapper for handling requests with decorators.
+/// Applies pipeline when handling requests with specific request type.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-public sealed class PipelineRequestHandler<TRequest>(
-    IRequestHandler<TRequest> decoratee,
-    IEnumerable<IPipelineDecorator<TRequest, IExecutionResult>> decorators) :
-    IPipelineRequestHandler
-    where TRequest : class, IRequest
+public interface IPipelineRequestHandler<TRequest, TResponse> : IPipelineRequestHandler<TResponse>
+    where TRequest : class
+    where TResponse : class
 {
     /// <summary>
-    /// Handles the request asynchronously.
+    /// Handles the specified request on a pipeline.
     /// </summary>
     /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The result of the operation.</returns>
-    public Task<IExecutionResult> HandleAsync(
-        IRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        Task<IExecutionResult> result = decorators
-            .Reverse()
-            .Aggregate<IPipelineDecorator<TRequest, IExecutionResult>,
-            RequestHandler<IExecutionResult>>(
-                Handler,
-                (next, decorator) => () => decorator.HandleAsync(
-                    (TRequest)request,
-                    next,
-                    cancellationToken))();
+    /// <param name="cancellationToken">A token to monitor for cancellation
+    /// requests.</param>
+    /// <returns>The response of the request.</returns>
+    TResponse Handle(
+        TRequest request,
+        CancellationToken cancellationToken = default);
 
-        return result;
-
-        Task<IExecutionResult> Handler() =>
-            decoratee.HandleAsync((TRequest)request, cancellationToken);
-    }
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    TResponse IPipelineRequestHandler<TResponse>.Handle(
+        object request,
+        CancellationToken cancellationToken) =>
+        Handle((TRequest)request, cancellationToken);
 }

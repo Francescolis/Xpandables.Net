@@ -27,9 +27,9 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDeciderRequest, IApplyAggregate
-    where TResponse : IExecutionResult
+    where TResponse : class
 {
-    protected override async Task<TResponse> HandleCoreAsync(
+    protected override TResponse HandleCore(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
@@ -38,7 +38,7 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
         {
             try
             {
-                TResponse result = await next().ConfigureAwait(false);
+                TResponse result = next();
                 return result;
             }
             finally
@@ -51,9 +51,9 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
                     IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
                         .GetRequiredService(aggregateStoreType);
 
-                    await aggregateStore
-                        .AppendAsync((IAggregate)request.Dependency, cancellationToken)
-                        .ConfigureAwait(false);
+                    aggregateStore.AppendAsync((IAggregate)request.Dependency, cancellationToken)
+                        .GetAwaiter()
+                        .GetResult();
                 }
             }
         }

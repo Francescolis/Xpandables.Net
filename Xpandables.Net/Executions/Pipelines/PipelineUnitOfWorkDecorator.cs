@@ -31,49 +31,25 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
     IUnitOfWork unitOfWork) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IApplyUnitOfWork
-    where TResponse : IExecutionResult
+    where TResponse : class
 {
     /// <inheritdoc/>
-    protected override async Task<TResponse> HandleCoreAsync(
+    protected override TResponse HandleCore(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            TResponse response = await next().ConfigureAwait(false);
-
-            try
-            {
-                _ = await unitOfWork
-                    .SaveChangesAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (InvalidOperationException exception)
-            {
-                return MatchResponse(exception.ToExecutionResult());
-            }
+            TResponse response = next();
 
             return response;
         }
-        catch (Exception exception)
+        finally
         {
-            try
-            {
-                _ = await unitOfWork
-                    .SaveChangesAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                return MatchResponse(exception.ToExecutionResult());
-
-            }
-            catch (Exception ex)
-            {
-                AggregateException aggregateException = new(exception, ex);
-                return MatchResponse(aggregateException.ToExecutionResult());
-            }
+            _ = unitOfWork.SaveChangesAsync(cancellationToken)
+                .GetAwaiter()
+                .GetResult();
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 }

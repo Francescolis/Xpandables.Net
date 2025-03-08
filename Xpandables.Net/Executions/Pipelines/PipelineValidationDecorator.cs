@@ -20,7 +20,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
 /// A decorator that validates the request before passing it to the next 
-/// handler in the pipeline.
+/// delegate in the pipeline.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
@@ -28,22 +28,21 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IApplyValidation
-    where TResponse : IExecutionResult
+    where TResponse : class
 {
     /// <inheritdoc/>
-    protected override async Task<TResponse> HandleCoreAsync(
+    protected override TResponse HandleCore(
         TRequest query,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        IExecutionResult result = await validators.ValidateAsync(query)
-            .ConfigureAwait(false);
+        IExecutionResult result = validators.Validate(query);
 
-        if (!result.IsSuccessStatusCode)
+        if (result.IsFailureStatusCode())
         {
-            return MatchResponse(result);
+            throw new ExecutionResultException(result);
         }
 
-        return await next().ConfigureAwait(false);
+        return next();
     }
 }

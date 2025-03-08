@@ -32,10 +32,10 @@ public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
     IDeciderDependencyManager dependencyManager) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDeciderRequest
-    where TResponse : IExecutionResult
+    where TResponse : class
 {
     /// <inheritdoc/>
-    protected override async Task<TResponse> HandleCoreAsync(
+    protected override TResponse HandleCore(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
@@ -45,13 +45,14 @@ public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
             IDeciderDependencyProvider dependencyProvider = dependencyManager
                 .GetDependencyProvider(request.Type);
 
-            object dependency = await dependencyProvider
+            object dependency = dependencyProvider
                 .GetDependencyAsync(request, cancellationToken)
-                .ConfigureAwait(false);
+                .GetAwaiter()
+                .GetResult();
 
             request.Dependency = dependency;
 
-            TResponse result = await next().ConfigureAwait(false);
+            TResponse result = next();
 
             return result;
         }

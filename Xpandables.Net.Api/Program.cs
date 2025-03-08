@@ -18,7 +18,6 @@ builder.Services.Configure<EventOptions>(EventOptions.Default);
 builder.Services.AddXEndpointRoutes();
 builder.Services.AddXMinimalApi();
 builder.Services.AddXDispatcher();
-builder.Services.AddXHandlerPipelines();
 builder.Services.AddXHandlers();
 builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();

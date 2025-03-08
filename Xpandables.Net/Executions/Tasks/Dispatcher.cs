@@ -21,7 +21,7 @@ namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// Represents a dispatcher that handles various operations such as fetching, 
-/// sending request and queries.
+/// sending requests.
 /// </summary>
 internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
 {
@@ -32,14 +32,14 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     {
         try
         {
-            Type commandWrapperType = typeof(PipelineRequestHandler<>)
-                .MakeGenericType(request.GetType());
+            Type pipelineRequestHandlerType = typeof(PipelineRequestHandler<,>)
+                .MakeGenericType(request.GetType(), typeof(Task<IExecutionResult>));
 
-            IPipelineRequestHandler handler =
-                (IPipelineRequestHandler)provider
-                .GetRequiredService(commandWrapperType);
+            IPipelineRequestHandler<Task<IExecutionResult>> handler =
+                (IPipelineRequestHandler<Task<IExecutionResult>>)provider
+                .GetRequiredService(pipelineRequestHandlerType);
 
-            return handler.HandleAsync(request, cancellationToken);
+            return handler.Handle(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
@@ -55,14 +55,14 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     {
         try
         {
-            Type requestWrapperType = typeof(PipelineQueryAsyncHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(TResult));
+            Type pipelineRequestHandlerType = typeof(PipelineRequestHandler<,>)
+                .MakeGenericType(request.GetType(), typeof(IAsyncEnumerable<TResult>));
 
-            IPipelineStreamRequestHandler<TResult> handler =
-                (IPipelineStreamRequestHandler<TResult>)provider
-                .GetRequiredService(requestWrapperType);
+            IPipelineRequestHandler<IAsyncEnumerable<TResult>> handler =
+                (IPipelineRequestHandler<IAsyncEnumerable<TResult>>)provider
+                .GetRequiredService(pipelineRequestHandlerType);
 
-            return handler.HandleAsync(request, cancellationToken);
+            return handler.Handle(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
@@ -79,14 +79,14 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     {
         try
         {
-            Type requestWrapperType = typeof(PipelineQueryHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(TResult));
+            Type pipelineRequestHandlerType = typeof(PipelineRequestHandler<,>)
+                .MakeGenericType(request.GetType(), typeof(Task<IExecutionResult<TResult>>));
 
-            IPipelineRequestHandler<TResult> handler =
-                (IPipelineRequestHandler<TResult>)provider
-                .GetRequiredService(requestWrapperType);
+            IPipelineRequestHandler<Task<IExecutionResult<TResult>>> handler =
+                (IPipelineRequestHandler<Task<IExecutionResult<TResult>>>)provider
+                .GetRequiredService(pipelineRequestHandlerType);
 
-            return handler.HandleAsync(request, cancellationToken);
+            return handler.Handle(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)

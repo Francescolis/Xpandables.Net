@@ -48,6 +48,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Executions\Pipelines\PipelineExceptionAsyncDecorator.cs" />
+	  <Compile Remove="Executions\Pipelines\PipelineLoggingDecorator.cs" />
+	  <Compile Remove="Executions\Tasks\IPipelineStreamRequestHandler.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 

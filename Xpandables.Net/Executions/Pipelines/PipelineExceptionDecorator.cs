@@ -25,23 +25,22 @@ namespace Xpandables.Net.Executions.Pipelines;
 public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : IExecutionResult
+    where TResponse : class
 {
     /// <inheritdoc/>
-    protected override async Task<TResponse> HandleCoreAsync(
+    protected override TResponse HandleCore(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            return await next().ConfigureAwait(false);
+            return next();
         }
         catch (Exception exception)
+            when (exception is not ExecutionResultException)
         {
-            return MatchResponse(exception.ToExecutionResult());
+            throw new ExecutionResultException(exception.ToExecutionResult());
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 }

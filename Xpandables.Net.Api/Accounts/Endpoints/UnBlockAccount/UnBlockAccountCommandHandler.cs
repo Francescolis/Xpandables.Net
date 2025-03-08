@@ -5,15 +5,13 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
 public sealed class UnBlockAccountCommandHandler : IDeciderRequestHandler<UnBlockAccountCommand, Account>
 {
-    public async Task<IExecutionResult> HandleAsync(
+    public Task<IExecutionResult> HandleAsync(
         UnBlockAccountCommand command,
         Account dependency,
         CancellationToken cancellationToken = default)
     {
-        await Task.Yield();
-
         dependency.UnBlock();
 
-        return ExecutionResults.Success();
+        return Task.FromResult(ExecutionResults.Success());
     }
 }

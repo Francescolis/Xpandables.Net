@@ -17,12 +17,33 @@
 using System.ComponentModel;
 
 namespace Xpandables.Net.Executions.Tasks;
+
+/// <summary>
+/// Defines the base interface method to handle a request that returns a result.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+public interface IHandler<in TRequest, TResponse>
+    where TRequest : class
+    where TResponse : class
+{
+    /// <summary>
+    /// Handles the request.
+    /// </summary>
+    /// <param name="request">The request to handle.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>The response of the request.</returns>
+    TResponse Handle(
+        TRequest request,
+        CancellationToken cancellationToken = default);
+}
+
 /// <summary>
 /// Defines a handler for a request of type <typeparamref name="TRequest"/>.
 /// </summary>
 /// <remarks>This can also be enhanced with some useful decorators.</remarks>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
-public interface IRequestHandler<in TRequest>
+public interface IRequestHandler<in TRequest> : IHandler<TRequest, Task<IExecutionResult>>
     where TRequest : class, IRequest
 {
     /// <summary>
@@ -36,6 +57,14 @@ public interface IRequestHandler<in TRequest>
     Task<IExecutionResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+    Task<IExecutionResult> IHandler<TRequest, Task<IExecutionResult>>.Handle(
+#pragma warning restore CA1033 // Interface methods should be callable by child types
+        TRequest request,
+        CancellationToken cancellationToken) =>
+        HandleAsync(request, cancellationToken);
 }
 
 /// <summary>
@@ -44,7 +73,7 @@ public interface IRequestHandler<in TRequest>
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IRequestHandler<in TRequest, TResult>
+public interface IRequestHandler<in TRequest, TResult> : IHandler<TRequest, Task<IExecutionResult<TResult>>>
     where TRequest : class, IRequest<TResult>
 {
     /// <summary>
@@ -58,6 +87,14 @@ public interface IRequestHandler<in TRequest, TResult>
     Task<IExecutionResult<TResult>> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+    Task<IExecutionResult<TResult>> IHandler<TRequest, Task<IExecutionResult<TResult>>>.Handle(
+#pragma warning restore CA1033 // Interface methods should be callable by child types
+        TRequest request,
+        CancellationToken cancellationToken) =>
+        HandleAsync(request, cancellationToken);
 }
 
 /// <summary>
@@ -65,7 +102,7 @@ public interface IRequestHandler<in TRequest, TResult>
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IStreamRequestHandler<in TRequest, TResult>
+public interface IStreamRequestHandler<in TRequest, TResult> : IHandler<TRequest, IAsyncEnumerable<TResult>>
     where TRequest : class, IStreamRequest<TResult>
 {
     /// <summary>
@@ -77,6 +114,14 @@ public interface IStreamRequestHandler<in TRequest, TResult>
     IAsyncEnumerable<TResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+    IAsyncEnumerable<TResult> IHandler<TRequest, IAsyncEnumerable<TResult>>.Handle(
+#pragma warning restore CA1033 // Interface methods should be callable by child types
+        TRequest request,
+        CancellationToken cancellationToken) =>
+        HandleAsync(request, cancellationToken);
 }
 
 /// <summary>
