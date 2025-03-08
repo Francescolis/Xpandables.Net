@@ -65,6 +65,9 @@ public abstract class Aggregate : IAggregate
     public void MarkEventsAsCommitted() => _uncommittedEvents.Clear();
 
     /// <inheritdoc/>
+    public void ClearHandlers() => _eventHandlers.Clear();
+
+    /// <inheritdoc/>
     public void PushEvent(IEventDomain @event)
     {
         ArgumentNullException.ThrowIfNull(@event);

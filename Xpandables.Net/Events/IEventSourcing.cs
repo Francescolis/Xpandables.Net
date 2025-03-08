@@ -27,6 +27,11 @@ public interface IEventSourcing
     void MarkEventsAsCommitted();
 
     /// <summary>
+    /// Clears all registered event handlers.
+    /// </summary>
+    void ClearHandlers();
+
+    /// <summary>
     /// Gets the collection of uncommitted events.
     /// </summary>
     /// <returns>A read-only collection of uncommitted events.</returns>
