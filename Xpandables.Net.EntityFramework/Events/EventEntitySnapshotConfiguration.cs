@@ -18,7 +18,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Events.Converters;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events;
@@ -36,10 +35,7 @@ public sealed class EventEntitySnapshotConfiguration :
 
         _ = builder.HasKey(p => p.KeyId);
         _ = builder.HasIndex(e => new { e.KeyId, e.OwnerId, e.EventName, e.EventVersion });
-        _ = builder.Property(e => e.EventData)
-            .HasColumnType("VARBINARY(MAX)")
-            .HasReadOnlyMemoryToByteArrayConversion()
-            .IsRequired();
+        _ = builder.Property(e => e.EventData).IsRequired();
         _ = builder.Property(p => p.EventName).IsRequired();
         _ = builder.Property(p => p.EventFullName).IsRequired();
         _ = builder.Property(p => p.EventVersion).IsRequired();

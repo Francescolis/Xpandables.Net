@@ -14,12 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Text.Json;
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents an event entity that contains event-related data.
 /// </summary>
-public interface IEventEntity : IEntity<Guid>
+public interface IEventEntity : IEntity<Guid>, IDisposable
 {
     /// <summary>
     /// Gets the name of the event.
@@ -39,5 +41,16 @@ public interface IEventEntity : IEntity<Guid>
     /// <summary>
     /// Gets the data associated with the event.
     /// </summary>
-    ReadOnlyMemory<byte> EventData { get; }
+    JsonDocument EventData { get; }
+
+    /// <summary>
+    /// Disposes the event data.
+    /// </summary>
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+    void IDisposable.Dispose()
+#pragma warning restore CA1033 // Interface methods should be callable by child types
+    {
+        EventData?.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

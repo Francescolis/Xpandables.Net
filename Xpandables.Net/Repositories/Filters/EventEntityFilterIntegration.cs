@@ -16,6 +16,8 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
+using System.Text.Json;
 
 using Xpandables.Net.Events;
 
@@ -34,4 +36,7 @@ public sealed record EventEntityFilterIntegration :
 
     /// <inheritdoc/>
     public Type EventType => typeof(IEventIntegration);
+
+    /// <inheritdoc/>
+    public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
 }
