@@ -33,13 +33,13 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
         try
         {
             Type pipelineRequestHandlerType = typeof(PipelineRequestHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(Task<IExecutionResult>));
+                .MakeGenericType(request.GetType(), typeof(IExecutionResult));
 
-            IPipelineRequestHandler<Task<IExecutionResult>> handler =
-                (IPipelineRequestHandler<Task<IExecutionResult>>)provider
+            IPipelineRequestHandler<IExecutionResult> handler =
+                (IPipelineRequestHandler<IExecutionResult>)provider
                 .GetRequiredService(pipelineRequestHandlerType);
 
-            return handler.Handle(request, cancellationToken);
+            return handler.HandleAsync(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
@@ -55,14 +55,14 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     {
         try
         {
-            Type pipelineRequestHandlerType = typeof(PipelineRequestHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(IAsyncEnumerable<TResult>));
+            Type pipelineRequestHandlerType = typeof(PipelineStreamRequestHandler<,>)
+                .MakeGenericType(request.GetType(), typeof(TResult));
 
-            IPipelineRequestHandler<IAsyncEnumerable<TResult>> handler =
-                (IPipelineRequestHandler<IAsyncEnumerable<TResult>>)provider
+            IPipelineStreamRequestHandler<TResult> handler =
+                (IPipelineStreamRequestHandler<TResult>)provider
                 .GetRequiredService(pipelineRequestHandlerType);
 
-            return handler.Handle(request, cancellationToken);
+            return handler.HandleAsync(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
@@ -80,13 +80,13 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
         try
         {
             Type pipelineRequestHandlerType = typeof(PipelineRequestHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(Task<IExecutionResult<TResult>>));
+                .MakeGenericType(request.GetType(), typeof(IExecutionResult<TResult>));
 
-            IPipelineRequestHandler<Task<IExecutionResult<TResult>>> handler =
-                (IPipelineRequestHandler<Task<IExecutionResult<TResult>>>)provider
+            IPipelineRequestHandler<IExecutionResult<TResult>> handler =
+                (IPipelineRequestHandler<IExecutionResult<TResult>>)provider
                 .GetRequiredService(pipelineRequestHandlerType);
 
-            return handler.Handle(request, cancellationToken);
+            return handler.HandleAsync(request, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)

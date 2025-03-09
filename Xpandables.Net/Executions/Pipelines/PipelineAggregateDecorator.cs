@@ -29,7 +29,7 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
     where TRequest : class, IDeciderRequest, IAggregateAppender
     where TResponse : class
 {
-    protected override TResponse HandleCore(
+    protected override async Task<TResponse> HandleAsyncCore(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
@@ -38,12 +38,7 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
         {
             try
             {
-                TResponse response = next();
-
-                if (response is Task task)
-                {
-                    task.GetAwaiter().GetResult();
-                }
+                TResponse response = await next().ConfigureAwait(false);
 
                 return response;
             }
@@ -57,9 +52,9 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
                     IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
                         .GetRequiredService(aggregateStoreType);
 
-                    aggregateStore.AppendAsync((IAggregate)request.Dependency, cancellationToken)
-                        .GetAwaiter()
-                        .GetResult();
+                    await aggregateStore
+                        .AppendAsync((IAggregate)request.Dependency, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
         }

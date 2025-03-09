@@ -34,27 +34,31 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
     where TResponse : class
 {
     /// <inheritdoc/>
-    protected override TResponse HandleCore(
+    protected override async Task<TResponse> HandleAsyncCore(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            TResponse response = next();
+            TResponse response = await next().ConfigureAwait(false);
 
-            if (response is Task task)
-            {
-                task.GetAwaiter().GetResult();
-            }
+            await unitOfWork
+                .SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             return response;
         }
-        finally
+        catch (Exception exception)
+            when (!exception.Message.Contains(
+                "An error occurred while saving the changes.",
+                StringComparison.InvariantCulture))
         {
-            _ = unitOfWork.SaveChangesAsync(cancellationToken)
-                .GetAwaiter()
-                .GetResult();
+            await unitOfWork
+                .SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            throw;
         }
     }
 }

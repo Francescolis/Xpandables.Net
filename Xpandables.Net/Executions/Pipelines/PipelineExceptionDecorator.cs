@@ -28,14 +28,14 @@ public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
     where TResponse : class
 {
     /// <inheritdoc/>
-    protected override TResponse HandleCore(
+    protected override async Task<TResponse> HandleAsyncCore(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return next();
+            return await next().ConfigureAwait(false);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)

@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Runtime.CompilerServices;
+
 using Xpandables.Net.DataAnnotations;
 
 namespace Xpandables.Net.Executions.Pipelines;
@@ -24,6 +26,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
+/// <param name="validators">The composite validator instance.</param>
 public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineDecorator<TRequest, TResponse>
@@ -31,18 +34,59 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     where TResponse : class
 {
     /// <inheritdoc/>
-    protected override TResponse HandleCore(
+    protected override async Task<TResponse> HandleAsyncCore(
         TRequest query,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        IExecutionResult result = validators.Validate(query);
+        IExecutionResult result = await validators
+            .ValidateAsync(query)
+            .ConfigureAwait(false);
 
         if (result.IsFailureStatusCode())
         {
             throw new ExecutionResultException(result);
         }
 
-        return next();
+        return await next().ConfigureAwait(false);
+    }
+}
+
+/// <summary>
+/// A decorator that validates the request before passing it to the next
+/// next delegate in the pipeline.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+/// <param name="validators">The composite validator instance.</param>
+public sealed class PipelineStreamValidationDecorator<TRequest, TResponse>(
+    ICompositeValidator<TRequest> validators) :
+    PipelineStreamDecorator<TRequest, TResponse>
+    where TRequest : class, IValidationEnabled
+{
+    /// <inheritdoc/>
+    protected override async IAsyncEnumerable<TResponse> HandleAsyncCore(
+        TRequest query,
+        RequestStreamHandler<TResponse> next,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        IExecutionResult result = await validators
+            .ValidateAsync(query)
+            .ConfigureAwait(false);
+
+        if (result.IsFailureStatusCode())
+        {
+            throw new ExecutionResultException(result);
+        }
+
+        await foreach (var item in next().ConfigureAwait(false))
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                yield break;
+            }
+
+            yield return item;
+        }
     }
 }

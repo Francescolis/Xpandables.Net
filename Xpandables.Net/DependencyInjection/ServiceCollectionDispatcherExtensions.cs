@@ -50,7 +50,8 @@ public static class ServiceCollectionDispatcherExtensions
         this IServiceCollection services) =>
         services
             .AddXDispatcher<Dispatcher>()
-            .AddTransient(typeof(PipelineRequestHandler<,>));
+            .AddTransient(typeof(PipelineRequestHandler<,>))
+            .AddTransient(typeof(PipelineStreamRequestHandler<,>));
 
     internal readonly record struct HandlerType(
         Type Type,
@@ -181,9 +182,9 @@ public static class ServiceCollectionDispatcherExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineValidationDecorator(
         this IServiceCollection services) =>
-        services.AddScoped(
-            typeof(IPipelineDecorator<,>),
-            typeof(PipelineValidationDecorator<,>));
+        services
+            .AddScoped(typeof(IPipelineDecorator<,>), typeof(PipelineValidationDecorator<,>))
+            .AddScoped(typeof(IPipelineStreamDecorator<,>), typeof(PipelineStreamValidationDecorator<,>));
 
     /// <summary>
     /// Adds an exception pipeline decorator to the <see cref="IServiceCollection"/>.

@@ -24,29 +24,61 @@ namespace Xpandables.Net.Executions.Tasks;
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public sealed class PipelineRequestHandler<TRequest, TResponse>(
-    IHandler<TRequest, TResponse> decoratee,
+    IHandler<TRequest, Task<TResponse>> decoratee,
     IEnumerable<IPipelineDecorator<TRequest, TResponse>> decorators) :
     IPipelineRequestHandler<TRequest, TResponse>
     where TRequest : class
     where TResponse : class
 {
     /// <inheritdoc/>
-    public TResponse Handle(
+    public Task<TResponse> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default)
     {
-        TResponse result = decorators
+        Task<TResponse> result = decorators
+           .Reverse()
+           .Aggregate<IPipelineDecorator<TRequest, TResponse>,
+           RequestHandler<TResponse>>(
+               Handler,
+               (next, decorator) => () => decorator.HandleAsync(
+                   request,
+                   next,
+                   cancellationToken))();
+
+        return result;
+
+        Task<TResponse> Handler() => decoratee.Handle(request, cancellationToken);
+    }
+}
+
+/// <summary>
+/// A wrapper for applying pipeline on stream requests.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TResponse">The type of the response.</typeparam>
+public sealed class PipelineStreamRequestHandler<TRequest, TResponse>(
+    IHandler<TRequest, IAsyncEnumerable<TResponse>> decoratee,
+    IEnumerable<IPipelineStreamDecorator<TRequest, TResponse>> decorators) :
+    IPipelineStreamRequestHandler<TRequest, TResponse>
+    where TRequest : class, IStreamRequest<TResponse>
+{
+    /// <inheritdoc/>
+    public IAsyncEnumerable<TResponse> HandleAsync(
+        TRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        IAsyncEnumerable<TResponse> result = decorators
             .Reverse()
-            .Aggregate<IPipelineDecorator<TRequest, TResponse>,
-            RequestHandler<TResponse>>(
+            .Aggregate<IPipelineStreamDecorator<TRequest, TResponse>,
+            RequestStreamHandler<TResponse>>(
                 Handler,
-                (next, decorator) => () => decorator.Handle(
+                (next, decorator) => () => decorator.HandleAsync(
                     request,
                     next,
                     cancellationToken))();
 
         return result;
 
-        TResponse Handler() => decoratee.Handle(request, cancellationToken);
+        IAsyncEnumerable<TResponse> Handler() => decoratee.Handle(request, cancellationToken);
     }
 }
