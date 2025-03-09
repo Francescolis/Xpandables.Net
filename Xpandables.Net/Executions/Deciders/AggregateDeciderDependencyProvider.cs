@@ -33,8 +33,6 @@ internal sealed class AggregateDeciderDependencyProvider(
     public async Task<object> GetDependencyAsync(
         IDeciderRequest decider, CancellationToken cancellationToken = default)
     {
-        await Task.Yield();
-
         try
         {
             Type aggregateStoreType = typeof(IAggregateStore<>)

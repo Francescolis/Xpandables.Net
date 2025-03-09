@@ -34,35 +34,59 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
+        bool appenderIsStarted = false;
         try
         {
-            try
+            TResponse response = await next().ConfigureAwait(false);
+
+            appenderIsStarted = true;
+
+            if (request.Dependency is not null)
             {
-                TResponse response = await next().ConfigureAwait(false);
+                Type aggregateStoreType = typeof(IAggregateStore<>)
+                    .MakeGenericType(request.Type);
 
-                return response;
+                IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+                    .GetRequiredService(aggregateStoreType);
+
+                await aggregateStore
+                    .AppendAsync((IAggregate)request.Dependency, cancellationToken)
+                    .ConfigureAwait(false);
             }
-            finally
-            {
-                if (request.Dependency is not null)
-                {
-                    Type aggregateStoreType = typeof(IAggregateStore<>)
-                        .MakeGenericType(request.Type);
 
-                    IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
-                        .GetRequiredService(aggregateStoreType);
-
-                    await aggregateStore
-                        .AppendAsync((IAggregate)request.Dependency, cancellationToken)
-                        .ConfigureAwait(false);
-                }
-            }
+            return response;
         }
         catch (Exception exception)
-            when (exception is not ValidationException
-                and not InvalidOperationException
-                and not UnauthorizedAccessException)
         {
+            if (!appenderIsStarted)
+            {
+                try
+                {
+                    if (request.Dependency is not null)
+                    {
+                        Type aggregateStoreType = typeof(IAggregateStore<>)
+                            .MakeGenericType(request.Type);
+
+                        IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+                            .GetRequiredService(aggregateStoreType);
+
+                        await aggregateStore
+                            .AppendAsync((IAggregate)request.Dependency, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                }
+                catch (Exception appenderException)
+                    when (exception is not ValidationException
+                        and not InvalidOperationException
+                        and not UnauthorizedAccessException)
+                {
+                    throw new InvalidOperationException(
+                        $"An error occurred when appending aggregate " +
+                        $"with the key '{request.KeyId}'.",
+                        new AggregateException(exception, appenderException));
+                }
+            }
+
             throw new InvalidOperationException(
                 $"An error occurred when appending aggregate " +
                 $"with the key '{request.KeyId}'.",
