@@ -31,7 +31,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default) =>
-        HandleAsyncCore(request, next, cancellationToken);
+        HandleCoreAsync(request, next, cancellationToken);
 
     /// <summary>
     /// Handles the core logic of the pipeline decorator.
@@ -41,7 +41,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation.
     /// the task result contains the response.</returns>
-    protected abstract Task<TResponse> HandleAsyncCore(
+    protected abstract Task<TResponse> HandleCoreAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default);
@@ -87,7 +87,7 @@ public abstract class PipelineStreamDecorator<TRequest, TResponse> :
         TRequest request,
         RequestStreamHandler<TResponse> next,
         CancellationToken cancellationToken = default) =>
-        HandleAsyncCore(request, next, cancellationToken);
+        HandleCoreAsync(request, next, cancellationToken);
 
     /// <summary>
     /// Handles the core logic of the pipeline stream decorator.
@@ -96,7 +96,7 @@ public abstract class PipelineStreamDecorator<TRequest, TResponse> :
     /// <param name="next">The next delegate in the pipeline.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An asynchronous enumerable that represents the asynchronous operation.</returns>
-    protected abstract IAsyncEnumerable<TResponse> HandleAsyncCore(
+    protected abstract IAsyncEnumerable<TResponse> HandleCoreAsync(
         TRequest request,
         RequestStreamHandler<TResponse> next,
         CancellationToken cancellationToken = default);

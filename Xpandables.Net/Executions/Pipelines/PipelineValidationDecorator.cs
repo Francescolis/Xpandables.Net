@@ -34,7 +34,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     where TResponse : notnull
 {
     /// <inheritdoc/>
-    protected override async Task<TResponse> HandleAsyncCore(
+    protected override async Task<TResponse> HandleCoreAsync(
         TRequest query,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
@@ -66,7 +66,7 @@ public sealed class PipelineStreamValidationDecorator<TRequest, TResponse>(
     where TResponse : notnull
 {
     /// <inheritdoc/>
-    protected override async IAsyncEnumerable<TResponse> HandleAsyncCore(
+    protected override async IAsyncEnumerable<TResponse> HandleCoreAsync(
         TRequest query,
         RequestStreamHandler<TResponse> next,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
