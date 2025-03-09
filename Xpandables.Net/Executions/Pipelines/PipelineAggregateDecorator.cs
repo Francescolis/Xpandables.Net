@@ -38,8 +38,14 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
         {
             try
             {
-                TResponse result = next();
-                return result;
+                TResponse response = next();
+
+                if (response is Task task)
+                {
+                    task.GetAwaiter().GetResult();
+                }
+
+                return response;
             }
             finally
             {

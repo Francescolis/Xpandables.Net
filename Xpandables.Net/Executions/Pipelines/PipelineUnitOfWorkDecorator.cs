@@ -43,6 +43,11 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
         {
             TResponse response = next();
 
+            if (response is Task task)
+            {
+                task.GetAwaiter().GetResult();
+            }
+
             return response;
         }
         finally

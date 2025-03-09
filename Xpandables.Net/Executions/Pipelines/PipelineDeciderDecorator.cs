@@ -52,9 +52,14 @@ public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
 
             request.Dependency = dependency;
 
-            TResponse result = next();
+            TResponse response = next();
 
-            return result;
+            if (response is Task task)
+            {
+                task.GetAwaiter().GetResult();
+            }
+
+            return response;
         }
         catch (Exception exception)
             when (exception is not ValidationException
