@@ -52,6 +52,7 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     public IAsyncEnumerable<TResult> SendAsync<TResult>(
         IStreamRequest<TResult> request,
         CancellationToken cancellationToken = default)
+        where TResult : notnull
     {
         try
         {
@@ -76,6 +77,7 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     public Task<IExecutionResult<TResult>> SendAsync<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default)
+        where TResult : notnull
     {
         try
         {

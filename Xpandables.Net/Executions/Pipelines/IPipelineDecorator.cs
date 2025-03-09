@@ -22,7 +22,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public delegate Task<TResponse> RequestHandler<TResponse>()
-    where TResponse : class;
+    where TResponse : notnull;
 
 /// <summary>
 /// Defines a method to handle a request in a pipeline process.
@@ -31,7 +31,7 @@ public delegate Task<TResponse> RequestHandler<TResponse>()
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public interface IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : class
+    where TResponse : notnull
 {
     /// <summary>
     /// Handles the request in the pipeline.
@@ -51,7 +51,8 @@ public interface IPipelineDecorator<TRequest, TResponse>
 /// Represents the next delegate to be executed on a pipeline.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate IAsyncEnumerable<TResponse> RequestStreamHandler<TResponse>();
+public delegate IAsyncEnumerable<TResponse> RequestStreamHandler<TResponse>()
+    where TResponse : notnull;
 
 /// <summary>
 /// Defines a decorator for handling stream request.
@@ -60,6 +61,7 @@ public delegate IAsyncEnumerable<TResponse> RequestStreamHandler<TResponse>();
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public interface IPipelineStreamDecorator<TRequest, TResponse>
     where TRequest : class
+    where TResponse : notnull
 {
     /// <summary>
     /// Handles the stream request.

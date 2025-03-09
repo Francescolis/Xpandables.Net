@@ -31,7 +31,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IValidationEnabled
-    where TResponse : class
+    where TResponse : notnull
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleAsyncCore(
@@ -63,6 +63,7 @@ public sealed class PipelineStreamValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineStreamDecorator<TRequest, TResponse>
     where TRequest : class, IValidationEnabled
+    where TResponse : notnull
 {
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResponse> HandleAsyncCore(

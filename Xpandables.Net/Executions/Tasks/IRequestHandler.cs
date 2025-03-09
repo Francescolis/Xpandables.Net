@@ -104,6 +104,7 @@ public interface IRequestHandler<in TRequest, TResult> : IHandler<TRequest, Task
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public interface IStreamRequestHandler<in TRequest, TResult> : IHandler<TRequest, IAsyncEnumerable<TResult>>
     where TRequest : class, IStreamRequest<TResult>
+    where TResult : notnull
 {
     /// <summary>
     /// Handles the stream query.

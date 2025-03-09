@@ -39,7 +39,8 @@ public interface IDispatcher
     /// <returns>The result of the operation.</returns>
     Task<IExecutionResult<TResult>> SendAsync<TResult>(
         IRequest<TResult> request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+        where TResult : notnull;
 
     /// <summary>
     /// Sends a stream request asynchronously.
@@ -50,5 +51,6 @@ public interface IDispatcher
     /// <returns>An asynchronous enumerable of results.</returns>
     IAsyncEnumerable<TResult> SendAsync<TResult>(
         IStreamRequest<TResult> request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+        where TResult : notnull;
 }

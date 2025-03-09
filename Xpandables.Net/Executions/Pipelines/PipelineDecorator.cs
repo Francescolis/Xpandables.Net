@@ -24,7 +24,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 public abstract class PipelineDecorator<TRequest, TResponse> :
     IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : class
+    where TResponse : notnull
 {
     /// <inheritdoc/>
     public Task<TResponse> HandleAsync(
@@ -55,7 +55,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
     /// <returns>The matched response of type TResponse.</returns>
     /// <exception cref="InvalidOperationException">The response type must be of 
     /// type IExecutionResult or IExecutionResult{T}.</exception>"
-    protected TResponse MatchResponse(IExecutionResult executionResult)
+    protected Task<TResponse> MatchResponseAsync(IExecutionResult executionResult)
     {
         if (!typeof(IExecutionResult).IsAssignableFrom(typeof(IExecutionResult))
             && !typeof(IExecutionResult).IsAssignableFrom(typeof(IExecutionResult<>)))
@@ -65,10 +65,10 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
         if (typeof(TResponse).IsGenericType)
         {
             Type resultType = typeof(TResponse).GetGenericArguments()[0];
-            return (TResponse)executionResult.ToExecutionResult(resultType);
+            return Task.FromResult((TResponse)executionResult.ToExecutionResult(resultType));
         }
 
-        return (TResponse)executionResult;
+        return Task.FromResult((TResponse)executionResult);
     }
 }
 
@@ -80,6 +80,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
 public abstract class PipelineStreamDecorator<TRequest, TResponse> :
     IPipelineStreamDecorator<TRequest, TResponse>
     where TRequest : class
+    where TResponse : notnull
 {
     /// <inheritdoc/>
     public IAsyncEnumerable<TResponse> HandleAsync(

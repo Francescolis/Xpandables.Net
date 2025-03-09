@@ -22,7 +22,7 @@ namespace Xpandables.Net.Executions.Tasks;
 /// Applies pipeline when handling requests.
 /// </summary>
 public interface IPipelineRequestHandler<TResponse>
-    where TResponse : class
+    where TResponse : notnull
 {
     /// <summary>
     /// Handles the specified request on a pipeline.
@@ -41,7 +41,7 @@ public interface IPipelineRequestHandler<TResponse>
 /// </summary>
 public interface IPipelineRequestHandler<TRequest, TResponse> : IPipelineRequestHandler<TResponse>
     where TRequest : class
-    where TResponse : class
+    where TResponse : notnull
 {
     /// <summary>
     /// Handles the specified request on a pipeline.
@@ -66,6 +66,7 @@ public interface IPipelineRequestHandler<TRequest, TResponse> : IPipelineRequest
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public interface IPipelineStreamRequestHandler<TResponse>
+    where TResponse : notnull
 {
     /// <summary>
     /// Handles the specified request on a pipeline.
@@ -87,6 +88,7 @@ public interface IPipelineStreamRequestHandler<TResponse>
 public interface IPipelineStreamRequestHandler<TRequest, TResponse> :
     IPipelineStreamRequestHandler<TResponse>
     where TRequest : class, IStreamRequest<TResponse>
+    where TResponse : notnull
 {
     /// <summary>
     /// Handles the specified request on a pipeline.

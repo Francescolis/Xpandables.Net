@@ -25,7 +25,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : class
+    where TResponse : notnull
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleAsyncCore(
