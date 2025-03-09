@@ -621,6 +621,17 @@ public static partial class ExecutionResultExtensions
     public static bool IsServiceUnavailable(this IExecutionResult executionResult) =>
         executionResult.StatusCode.IsServiceUnavailable();
 
+    /// <summary>    
+    /// Determines whether the specified HTTP status code is a validation problem
+    /// status code.
+    /// </summary>    
+    /// <param name="statusCode">The HTTP status code to check.</param>    
+    /// <returns><see langword="true"/> if the status code is a validation problem
+    /// status code;     
+    /// otherwise, <see langword="false"/>.</returns>    
+    public static bool IsValidationProblemRequest(this HttpStatusCode statusCode) =>
+        (int)statusCode is >= (int)HttpStatusCode.BadRequest and <= (int)HttpStatusCode.InternalServerError;
+
     /// <summary>
     /// Converts an <see cref="Action"/> to an <see cref="IExecutionResult"/>.
     /// </summary>

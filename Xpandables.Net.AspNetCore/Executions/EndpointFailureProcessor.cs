@@ -43,7 +43,7 @@ public sealed class EndpointFailureProcessor : IEndpointProcessor
             .GetRequiredService<IWebHostEnvironment>()
             .IsDevelopment();
 
-        ProblemDetails problemDetails = executionResult.StatusCode.IsBadRequest()
+        ProblemDetails problemDetails = executionResult.StatusCode.IsValidationProblemRequest()
             ? new ValidationProblemDetails(executionResult.ToModelStateDictionary())
             {
                 Title = executionResult.Title ?? executionResult.StatusCode.GetTitle(),
