@@ -39,9 +39,12 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
+        bool isUowStarted = false;
         try
         {
             TResponse response = await next().ConfigureAwait(false);
+
+            isUowStarted = true;
 
             await unitOfWork
                 .SaveChangesAsync(cancellationToken)
@@ -49,10 +52,8 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
 
             return response;
         }
-        catch (Exception exception)
-            when (!exception.Message.Contains(
-                "An error occurred while saving the changes.",
-                StringComparison.InvariantCulture))
+        catch (Exception)
+            when (!isUowStarted)
         {
             await unitOfWork
                 .SaveChangesAsync(cancellationToken)
