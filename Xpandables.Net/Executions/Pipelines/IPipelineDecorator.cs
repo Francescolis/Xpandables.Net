@@ -48,7 +48,7 @@ public interface IPipelineDecorator<TRequest, TResponse>
 }
 
 /// <summary>
-/// Represents the next delegate to be executed on a pipeline.
+/// Represents the next delegate to be executed on a stream pipeline.
 /// </summary>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public delegate IAsyncEnumerable<TResponse> RequestStreamHandler<TResponse>()

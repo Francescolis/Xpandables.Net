@@ -144,47 +144,45 @@ public static class ServiceCollectionDispatcherExtensions
 
     /// <summary>
     /// Adds an aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineAggregateDecorator(
         this IServiceCollection services) =>
-        services.AddScoped(
-            typeof(IPipelineDecorator<,>),
-            typeof(PipelineAggregateDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineAggregateDecorator<,>));
 
     /// <summary>
     /// Adds a command pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineDeciderDecorator(
         this IServiceCollection services) =>
-        services.AddScoped(
-            typeof(IPipelineDecorator<,>),
-            typeof(PipelineDeciderDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineDeciderDecorator<,>));
 
     /// <summary>
     /// Adds a unit of work pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineUnitOfWorkDecorator(
         this IServiceCollection services) =>
-        services.AddScoped(
-            typeof(IPipelineDecorator<,>),
-            typeof(PipelineUnitOfWorkDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<,>));
 
     /// <summary>
     /// Adds a validation pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineValidationDecorator(
         this IServiceCollection services) =>
         services
-            .AddScoped(typeof(IPipelineDecorator<,>), typeof(PipelineValidationDecorator<,>))
-            .AddScoped(typeof(IPipelineStreamDecorator<,>), typeof(PipelineStreamValidationDecorator<,>));
+            .AddXPipelineDecorator(typeof(PipelineValidationDecorator<,>))
+            .AddXPipelineStreamDecorator(typeof(PipelineStreamValidationDecorator<,>));
 
     /// <summary>
     /// Adds an exception pipeline decorator to the <see cref="IServiceCollection"/>.
@@ -193,7 +191,49 @@ public static class ServiceCollectionDispatcherExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineExceptionDecorator(
         this IServiceCollection services) =>
-        services.AddScoped(
-            typeof(IPipelineDecorator<,>),
-            typeof(PipelineExceptionDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineExceptionDecorator<,>));
+
+    /// <summary>
+    /// Registers a pipeline decorator of the specified type to the <see cref="IServiceCollection"/>.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
+    /// </summary>
+    /// <remarks>The pipeline decorator must implement the 
+    /// <see cref="IPipelineDecorator{TRequest, TResponse}"/> interface.</remarks>
+    /// <param name="pipelineType">The type of the pipeline decorator to register.</param>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineDecorator(
+        this IServiceCollection services, Type pipelineType)
+    {
+        if (!pipelineType.GetInterfaces().Any(i =>
+            i.IsGenericType
+            && i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<,>)))
+        {
+            throw new InvalidOperationException(
+                $"{pipelineType.Name} does not implement IPipelineDecorator<,> interface.");
+        }
+
+        return services.AddScoped(typeof(IPipelineDecorator<,>), pipelineType);
+    }
+
+    /// <summary>
+    /// Registers a pipeline stream decorator of the specified type to 
+    /// the <see cref="IServiceCollection"/>.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
+    /// </summary>
+    /// <param name="pipelineType">The type of the pipeline decorator to register.</param>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineStreamDecorator(
+        this IServiceCollection services, Type pipelineType)
+    {
+        if (!pipelineType.GetInterfaces().Any(i =>
+            i.IsGenericType
+            && i.GetGenericTypeDefinition() == typeof(IPipelineStreamDecorator<,>)))
+        {
+            throw new InvalidOperationException(
+                $"{pipelineType.Name} does not implement IPipelineStreamDecorator<,> interface.");
+        }
+        return services.AddScoped(typeof(IPipelineStreamDecorator<,>), pipelineType);
+    }
 }
