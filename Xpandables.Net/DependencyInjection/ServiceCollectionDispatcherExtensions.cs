@@ -42,7 +42,75 @@ public static class ServiceCollectionDispatcherExtensions
         services.AddScoped<IDispatcher, TDispatcher>();
 
     /// <summary>
-    /// Adds a default dispatcher to the <see cref="IServiceCollection"/>.
+    /// Registers a pipeline request handler of the specified type to the
+    /// service collection.
+    /// <para>The pipeline request handler is used to handle requests with a pipeline.</para>
+    /// </summary>
+    /// <param name="type">The type of the pipeline request handler to register.</param>
+    /// <param name="services">The service collection to add the handler to.</param>
+    /// <returns>The updated service collection.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the specified type does not
+    /// match the <see cref="IPipelineRequestHandler{TRequest, TResponse}"/> interface.</exception>
+    public static IServiceCollection AddXPipelineRequestHandler(
+        this IServiceCollection services, Type type)
+    {
+        if (!type.GetInterfaces().Any(i =>
+            i.IsGenericType &&
+            i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<,>)))
+        {
+            throw new InvalidOperationException(
+                $"{type.Name} does not implement IPipelineRequestHandler<,> interface.");
+        }
+
+        return services.AddTransient(typeof(IPipelineRequestHandler<,>), type);
+    }
+
+    /// <summary>
+    /// Registers the default pipeline request handler to the service collection.
+    /// <para>The pipeline request handler is used to handle requests with a pipeline.</para>
+    /// </summary>
+    /// <param name="services">The service collection to add the handler to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineRequestHandler(
+        this IServiceCollection services)
+        => services.AddXPipelineRequestHandler(typeof(PipelineRequestHandler<,>));
+
+    /// <summary>
+    /// Registers a pipeline stream request handler of the specified type to the
+    /// service collection.
+    /// <para>The pipeline stream request handler is used to handle stream requests with a pipeline.</para>
+    /// </summary>
+    /// <param name="type">The type of the pipeline stream request handler to register.</param>
+    /// <param name="services">The service collection to add the handler to.</param>
+    /// <returns>The updated service collection.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the specified type does not
+    /// match the <see cref="IPipelineStreamRequestHandler{TRequest, TResponse}"/> interface.</exception>
+    public static IServiceCollection AddXPipelineStreamRequestHandler(
+        this IServiceCollection services, Type type)
+    {
+        if (!type.GetInterfaces().Any(i =>
+            i.IsGenericType &&
+            i.GetGenericTypeDefinition() == typeof(IPipelineStreamRequestHandler<,>)))
+        {
+            throw new InvalidOperationException(
+                $"{type.Name} does not implement IPipelineStreamRequestHandler<,> interface.");
+        }
+
+        return services.AddTransient(typeof(IPipelineStreamRequestHandler<,>), type);
+    }
+
+    /// <summary>
+    /// Registers the default pipeline stream request handler to the service collection.
+    /// <para>The pipeline stream request handler is used to handle stream requests with a pipeline.</para>
+    /// </summary>
+    /// <param name="services">The service collection to add the handler to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineStreamRequestHandler(
+        this IServiceCollection services) =>
+        services.AddXPipelineStreamRequestHandler(typeof(PipelineStreamRequestHandler<,>));
+
+    /// <summary>
+    /// Adds a defaults dispatcher and pipeline request handler to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to add the dispatcher to.</param>
     /// <returns>The updated service collection.</returns>
@@ -50,8 +118,8 @@ public static class ServiceCollectionDispatcherExtensions
         this IServiceCollection services) =>
         services
             .AddXDispatcher<Dispatcher>()
-            .AddTransient(typeof(PipelineRequestHandler<,>))
-            .AddTransient(typeof(PipelineStreamRequestHandler<,>));
+            .AddXPipelineRequestHandler()
+            .AddXPipelineStreamRequestHandler();
 
     internal readonly record struct HandlerType(
         Type Type,
@@ -202,6 +270,8 @@ public static class ServiceCollectionDispatcherExtensions
     /// <param name="pipelineType">The type of the pipeline decorator to register.</param>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the specified type does not
+    /// match the <see cref="IPipelineDecorator{TRequest, TResponse}"/> interface.</exception>
     public static IServiceCollection AddXPipelineDecorator(
         this IServiceCollection services, Type pipelineType)
     {
@@ -224,6 +294,8 @@ public static class ServiceCollectionDispatcherExtensions
     /// <param name="pipelineType">The type of the pipeline decorator to register.</param>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the specified type does not
+    /// match the <see cref="IPipelineStreamDecorator{TRequest, TResponse}"/> interface.</exception>
     public static IServiceCollection AddXPipelineStreamDecorator(
         this IServiceCollection services, Type pipelineType)
     {

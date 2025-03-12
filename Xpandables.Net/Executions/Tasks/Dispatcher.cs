@@ -32,7 +32,7 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     {
         try
         {
-            Type pipelineRequestHandlerType = typeof(PipelineRequestHandler<,>)
+            Type pipelineRequestHandlerType = typeof(IPipelineRequestHandler<,>)
                 .MakeGenericType(request.GetType(), typeof(IExecutionResult));
 
             IPipelineRequestHandler<IExecutionResult> handler =
@@ -56,7 +56,7 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     {
         try
         {
-            Type pipelineRequestHandlerType = typeof(PipelineStreamRequestHandler<,>)
+            Type pipelineRequestHandlerType = typeof(IPipelineStreamRequestHandler<,>)
                 .MakeGenericType(request.GetType(), typeof(TResult));
 
             IPipelineStreamRequestHandler<TResult> handler =
@@ -81,7 +81,7 @@ internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
     {
         try
         {
-            Type pipelineRequestHandlerType = typeof(PipelineRequestHandler<,>)
+            Type pipelineRequestHandlerType = typeof(IPipelineRequestHandler<,>)
                 .MakeGenericType(request.GetType(), typeof(IExecutionResult<TResult>));
 
             IPipelineRequestHandler<IExecutionResult<TResult>> handler =

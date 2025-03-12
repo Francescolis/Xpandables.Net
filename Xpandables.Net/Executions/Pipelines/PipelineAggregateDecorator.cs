@@ -87,10 +87,17 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
                 }
             }
 
-            throw new InvalidOperationException(
-                $"An error occurred when appending aggregate " +
-                $"with the key '{request.KeyId}'.",
-                exception);
+            if (exception is not ValidationException
+                and not InvalidOperationException
+                and not UnauthorizedAccessException)
+            {
+                throw new InvalidOperationException(
+                    $"An error occurred when appending aggregate " +
+                    $"with the key '{request.KeyId}'.",
+                    exception);
+            }
+
+            throw;
         }
     }
 }
