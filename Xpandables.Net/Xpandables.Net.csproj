@@ -23,10 +23,10 @@
 		<PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi</PackageTags>
 		<PackageReleaseNotes>Fix IPipelineDecorator implementation</PackageReleaseNotes>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>9.1.1</Version>
-		<AssemblyVersion>9.1.1</AssemblyVersion>
-		<FileVersion>9.1.1</FileVersion>
-		<PackageVersion>9.1.1</PackageVersion>
+		<Version>9.1.2</Version>
+		<AssemblyVersion>9.1.2</AssemblyVersion>
+		<FileVersion>9.1.2</FileVersion>
+		<PackageVersion>9.1.2</PackageVersion>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
