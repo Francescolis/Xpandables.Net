@@ -3,36 +3,25 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.RequestDefinitions;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestBasicAuthBuilderUnitTest
 {
-    private readonly HttpClientBasicAuthRequestBuilder _builder;
+    private readonly RequestHttpBasicAuthenticationBuilder _builder;
 
     public HttpClientRequestBasicAuthBuilderUnitTest() =>
-        _builder = new HttpClientBasicAuthRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeFive()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(5);
-    }
+        _builder = new RequestHttpBasicAuthenticationBuilder();
 
     [Fact]
     public void Build_ShouldSetAuthorizationHeader_WhenLocationIsBasicAuth()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.BasicAuth
             },
@@ -53,9 +42,9 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
     public void Build_ShouldNotSetAuthorizationHeader_WhenLocationIsNotBasicAuth()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.Body
             },
@@ -70,7 +59,7 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
         context.Message.Headers.Authorization.Should().BeNull();
     }
 
-    private class TestHttpRequestBasicAuth : IHttpClientRequest, IBasicAuthRequest
+    private class TestHttpRequestBasicAuth : IRequestHttp, IRequestBasicAuthentication
     {
         public AuthenticationHeaderValue GetAuthenticationHeaderValue() =>
             new("Basic", "dGVzdDp0ZXN0");

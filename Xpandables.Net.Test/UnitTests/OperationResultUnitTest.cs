@@ -4,7 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.Test.UnitTests;
 

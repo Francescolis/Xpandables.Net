@@ -1,8 +1,8 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
 
@@ -26,7 +26,7 @@ public sealed class BlockAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("BlockAccount")
-        .WithXExecutionResultMinimalApi()
+        .WithXMinimalApi()
         .AllowAnonymous()
         .Accepts<BlockAccountRequest>()
         .Produces(StatusCodes.Status200OK)

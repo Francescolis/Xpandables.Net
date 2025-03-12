@@ -16,9 +16,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.Configure<EventOptions>(EventOptions.Default);
 builder.Services.AddXEndpointRoutes();
-builder.Services.AddXExecutionResultMinimalApi();
+builder.Services.AddXMinimalApi();
 builder.Services.AddXDispatcher();
-builder.Services.AddXHandlerWrappers();
 builder.Services.AddXHandlers();
 builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();
@@ -57,7 +56,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseXExecutionResultMiddleware();
+app.UseXMinimalMiddleware();
 app.UseHttpsRedirection();
 app.UseSwagger()
     .UseSwaggerUI(options =>

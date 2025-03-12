@@ -1,9 +1,9 @@
-﻿using Xpandables.Net.Commands;
-using Xpandables.Net.DataAnnotations;
+﻿using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
-public sealed record DepositAccountCommand : Command<Account>, IApplyUnitOfWork, IApplyAggregate
+public sealed record DepositAccountCommand : DeciderRequest<Account>, IUnitOfWorkApplier, IAggregateAppender
 {
     public required decimal Amount { get; init; }
 }

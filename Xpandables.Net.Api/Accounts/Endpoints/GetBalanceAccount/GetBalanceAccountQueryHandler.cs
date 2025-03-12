@@ -1,12 +1,12 @@
-﻿using Xpandables.Net.Commands;
-using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.Operations;
+﻿using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
 public sealed class GetBalanceAccountQueryHandler(
     IAggregateStore<Account> aggregateStore) :
-    IQueryHandler<GetBalanceAccountQuery, decimal>
+    IRequestHandler<GetBalanceAccountQuery, decimal>
 {
     public async Task<IExecutionResult<decimal>> HandleAsync(
         GetBalanceAccountQuery query,

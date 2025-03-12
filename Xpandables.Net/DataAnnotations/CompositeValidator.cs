@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.DataAnnotations;
 
@@ -26,8 +26,8 @@ namespace Xpandables.Net.DataAnnotations;
 /// <param name="validators">The validators to use for the validation.</param>
 public sealed class CompositeValidator<TArgument>(
     IEnumerable<IValidator<TArgument>> validators) :
-    AbstractValidator<TArgument>, ICompositeValidator<TArgument>
-    where TArgument : class, IApplyValidation
+    Validator<TArgument>, ICompositeValidator<TArgument>
+    where TArgument : class, IValidationEnabled
 {
     private readonly IEnumerable<IValidator<TArgument>> _validators = validators
         ?? throw new ArgumentNullException(nameof(validators));
@@ -35,7 +35,7 @@ public sealed class CompositeValidator<TArgument>(
     /// <inheritdoc/>
     public override IExecutionResult Validate(TArgument instance)
     {
-        IFailureBuilder failureBuilder =
+        IExecutionResultFailureBuilder failureBuilder =
             ExecutionResults.Failure(System.Net.HttpStatusCode.BadRequest);
 
         foreach (IValidator<TArgument> validator in _validators
@@ -57,7 +57,7 @@ public sealed class CompositeValidator<TArgument>(
     /// <inheritdoc/>
     public override async ValueTask<IExecutionResult> ValidateAsync(TArgument instance)
     {
-        IFailureBuilder failureBuilder =
+        IExecutionResultFailureBuilder failureBuilder =
             ExecutionResults.Failure(System.Net.HttpStatusCode.BadRequest);
 
         foreach (IValidator<TArgument> validator in _validators

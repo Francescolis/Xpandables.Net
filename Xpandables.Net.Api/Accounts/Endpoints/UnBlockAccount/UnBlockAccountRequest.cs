@@ -2,16 +2,15 @@
 
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
-[HttpClient(Path = "/accounts/unblock",
+[RequestDefinition(Path = "/accounts/unblock",
     IsNullable = false,
     IsSecured = false,
-    Location = HttpClientParameters.Location.Body,
-    Method = HttpClientParameters.Method.POST)]
-public sealed record UnBlockAccountRequest : IApplyValidation
+    Location = RequestDefinitions.Location.Body,
+    Method = RequestDefinitions.Method.POST)]
+public sealed record UnBlockAccountRequest : IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }

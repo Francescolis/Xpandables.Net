@@ -65,6 +65,9 @@ public abstract class Aggregate : IAggregate
     public void MarkEventsAsCommitted() => _uncommittedEvents.Clear();
 
     /// <inheritdoc/>
+    public void ClearHandlers() => _eventHandlers.Clear();
+
+    /// <inheritdoc/>
     public void PushEvent(IEventDomain @event)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -76,7 +79,7 @@ public abstract class Aggregate : IAggregate
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="handler">The event handler.</param>
-    protected void On<TEvent>(Action<TEvent> handler)
+    public void On<TEvent>(Action<TEvent> handler)
         where TEvent : notnull, IEventDomain => On(typeof(TEvent), handler);
 
     /// <summary>
@@ -84,7 +87,7 @@ public abstract class Aggregate : IAggregate
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="handler">The event handler.</param>
-    protected void On<TEvent>(Delegate handler)
+    public void On<TEvent>(Delegate handler)
         where TEvent : notnull, IEventDomain => On(typeof(TEvent), handler);
 
     /// <summary>
@@ -94,7 +97,7 @@ public abstract class Aggregate : IAggregate
     /// <param name="handler">The event handler.</param>
     /// <exception cref="ArgumentException">Thrown when the event type is 
     /// not an event domain.</exception>
-    protected void On(Type eventType, Delegate handler)
+    public void On(Type eventType, Delegate handler)
     {
         ArgumentNullException.ThrowIfNull(eventType);
         ArgumentNullException.ThrowIfNull(handler);
@@ -129,6 +132,11 @@ public abstract class Aggregate : IAggregate
         {
             KeyId = @event.AggregateId;
             _ = handler.DynamicInvoke(@event);
+        }
+        else
+        {
+            throw new UnauthorizedAccessException(
+                $"The submitted action {@event.GetType().Name} is not authorized.");
         }
     }
 }

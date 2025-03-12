@@ -2,16 +2,15 @@
 
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
-[HttpClient(Path = "/accounts/deposit",
+[RequestDefinition(Path = "/accounts/deposit",
     IsNullable = false,
     IsSecured = false,
-    Location = HttpClientParameters.Location.Body,
-    Method = HttpClientParameters.Method.POST)]
-public sealed record DepositAccountRequest : IApplyValidation
+    Location = RequestDefinitions.Location.Body,
+    Method = RequestDefinitions.Method.POST)]
+public sealed record DepositAccountRequest : IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }

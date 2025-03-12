@@ -1,9 +1,9 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Http.Interfaces;
+using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
@@ -27,9 +27,9 @@ public sealed class UnBlockAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("UnBlockAccount")
-        .WithXExecutionResultMinimalApi()
+        .WithXMinimalApi()
         .AllowAnonymous()
-        .Accepts<UnBlockAccountRequest>(HttpClientParameters.ContentType.Json)
+        .Accepts<UnBlockAccountRequest>(RequestDefinitions.ContentType.Json)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
 }

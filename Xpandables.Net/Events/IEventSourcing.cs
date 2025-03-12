@@ -27,6 +27,11 @@ public interface IEventSourcing
     void MarkEventsAsCommitted();
 
     /// <summary>
+    /// Clears all registered event handlers.
+    /// </summary>
+    void ClearHandlers();
+
+    /// <summary>
     /// Gets the collection of uncommitted events.
     /// </summary>
     /// <returns>A read-only collection of uncommitted events.</returns>
@@ -45,7 +50,7 @@ public interface IEventSourcing
     void LoadFromHistory(IEventDomain @event);
 
     /// <summary>
-    /// Pushes a new event.
+    /// Pushes an event to the handler.
     /// </summary>
     /// <param name="event">The event to push.</param>
     void PushEvent(IEventDomain @event);

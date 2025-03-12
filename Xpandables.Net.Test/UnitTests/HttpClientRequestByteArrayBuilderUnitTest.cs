@@ -1,36 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.RequestDefinitions;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestByteArrayBuilderUnitTest
 {
-    private readonly HttpClientByteArrayRequestBuilder _builder;
+    private readonly RequestHttpByteArrayBuilder _builder;
 
     public HttpClientRequestByteArrayBuilderUnitTest() =>
-        _builder = new HttpClientByteArrayRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeSix()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(6);
-    }
+        _builder = new RequestHttpByteArrayBuilder();
 
     [Fact]
     public void Build_ShouldSetByteArrayContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -52,9 +41,9 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
     public void Build_ShouldNotSetByteArrayContent_WhenIsNullableIsTrue()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = true,
                 Location = Location.Body,
@@ -75,9 +64,9 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
     public void Build_ShouldNotSetByteArrayContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Header,
@@ -98,9 +87,9 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
     public void Build_ShouldNotSetByteArrayContent_WhenBodyFormatIsNotByteArray()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -117,7 +106,7 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         context.Message.Content.Should().BeNull();
     }
 
-    private class TestHttpRequestByteArray : IHttpClientRequest, IByteArrayRequest
+    private class TestHttpRequestByteArray : IRequestHttp, IRequestByteArray
     {
         public ByteArrayContent GetByteArrayContent() => new([1, 2, 3, 4]);
     }

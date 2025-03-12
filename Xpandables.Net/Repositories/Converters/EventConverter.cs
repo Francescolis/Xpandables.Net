@@ -44,22 +44,24 @@ public abstract class EventConverter : IEventConverter
         JsonSerializerOptions? options = default);
 
     /// <summary>
-    /// Serializes the given event to a JSON document.
+    /// Serializes the given event to <see cref="JsonDocument"/>.
     /// </summary>
     /// <param name="event">The event to serialize.</param>
     /// <param name="jsonOptions">Optional JSON serializer options.</param>
+    /// <param name="documentOptions">Optional JSON document options.</param>
     /// <returns>A JSON document representing the serialized event.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the event cannot be serialized.
     /// </exception>
-    protected static ReadOnlyMemory<byte> SerializeEvent(
+    protected static JsonDocument SerializeEvent(
         IEvent @event,
-        JsonSerializerOptions? jsonOptions = default)
+        JsonSerializerOptions? jsonOptions = default,
+        JsonDocumentOptions documentOptions = default)
     {
         try
         {
             byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), jsonOptions);
-            return json;
+            return JsonDocument.Parse(json, documentOptions);
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -71,7 +73,7 @@ public abstract class EventConverter : IEventConverter
     }
 
     /// <summary>
-    /// Deserializes the given JSON document to an event of the specified type.
+    /// Deserializes the given <see cref="JsonDocument"/>> to an event of the specified type.
     /// </summary>
     /// <param name="eventData">The JSON document representing the event data.</param>
     /// <param name="eventType">The type of the event to deserialize to.</param>
@@ -81,13 +83,13 @@ public abstract class EventConverter : IEventConverter
     /// Thrown when the event data cannot be deserialized.
     /// </exception>
     protected static IEvent DeserializeEvent(
-        ReadOnlyMemory<byte> eventData,
+        JsonDocument eventData,
         Type eventType,
         JsonSerializerOptions? options = default)
     {
         try
         {
-            object? @event = JsonSerializer.Deserialize(eventData.Span, eventType, options)
+            object? @event = JsonSerializer.Deserialize(eventData, eventType, options)
                 ?? throw new InvalidOperationException(
                     $"Failed to deserialize the event data to {eventType.Name}.");
 

@@ -14,15 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.DataAnnotations;
 /// <summary>
 /// A validator that does nothing and always returns a successful result.
 /// </summary>
 /// <typeparam name="TArgument">The type of the argument to validate.</typeparam>
-public sealed class NullValidator<TArgument> : AbstractValidator<TArgument>
-    where TArgument : class, IApplyValidation
+public sealed class NullValidator<TArgument> : Validator<TArgument>
+    where TArgument : class, IValidationEnabled
 {
     /// <inheritdoc/>
     /// Does nothing and returns an <see cref="ExecutionResults.Ok"/>.

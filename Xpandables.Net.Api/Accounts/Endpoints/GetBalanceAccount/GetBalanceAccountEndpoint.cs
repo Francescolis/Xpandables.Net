@@ -1,5 +1,5 @@
-﻿using Xpandables.Net.Commands;
-using Xpandables.Net.DependencyInjection;
+﻿using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
@@ -23,7 +23,7 @@ public sealed class GetBalanceAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("GetBalanceAccount")
-        .WithXExecutionResultMinimalApi()
+        .WithXMinimalApi()
         .AllowAnonymous()
         .Produces(StatusCodes.Status200OK);
 }

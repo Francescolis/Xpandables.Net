@@ -1,36 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.RequestDefinitions;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestCookieBuilderUnitTest
 {
-    private readonly HttpClientCookieRequestBuilder _builder;
+    private readonly RequestHttpCookieBuilder _builder;
 
     public HttpClientRequestCookieBuilderUnitTest() =>
-        _builder = new HttpClientCookieRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeThree()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(3);
-    }
+        _builder = new RequestHttpCookieBuilder();
 
     [Fact]
     public void Build_ShouldSetCookieHeader_WhenLocationIsCookie()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.Cookie
             },
@@ -58,9 +47,9 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
     public void Build_ShouldNotSetCookieHeader_WhenLocationIsNotCookie()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.Body
             },
@@ -75,7 +64,7 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
         context.Message.Options.Should().BeEmpty();
     }
 
-    private class TestHttpRequestCookie : IHttpClientRequest, ICookieRequest
+    private class TestHttpRequestCookie : IRequestHttp, IRequestCookie
     {
         public IDictionary<string, object?> GetCookieHeaderValue() =>
             new Dictionary<string, object?>

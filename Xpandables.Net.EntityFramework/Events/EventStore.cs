@@ -35,12 +35,13 @@ namespace Xpandables.Net.Events;
 /// <param name="options">The event options.</param>
 public sealed class EventStore(
     IOptions<EventOptions> options,
-    DataContextEvent context) : IEventStore
+    DataContextEvent context) : Disposable, IEventStore
 {
     private readonly EventOptions _options = options.Value;
 #pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly DataContextEvent _context = context;
 #pragma warning restore CA2213 // Disposable fields should be disposed
+    private readonly List<IEventEntity> _disposableEntities = [];
 
     /// <inheritdoc/>
     public Task AppendAsync(
@@ -58,17 +59,17 @@ public sealed class EventStore(
             IEventConverter eventConverter =
                 _options.GetEventConverterFor(eventsList.First());
 
-            List<IEventEntity> _eventEntities = new(eventsList.Count);
+            //List<IEventEntity> _eventEntities = new(eventsList.Count);
 
             foreach (IEvent @event in eventsList)
             {
                 IEventEntity eventEntity = eventConverter
                     .ConvertTo(@event, _options.SerializerOptions);
 
-                _eventEntities.Add(eventEntity);
+                _disposableEntities.Add(eventEntity);
             }
 
-            return _context.AddRangeAsync(_eventEntities, cancellationToken);
+            return _context.AddRangeAsync(_disposableEntities, cancellationToken);
         }
         catch (Exception exception)
             when (exception is not ValidationException and not InvalidOperationException)
@@ -106,7 +107,16 @@ public sealed class EventStore(
                 filter.FetchAsync(queryable, cancellationToken);
 
             return entities.Select(entity =>
-                eventConverter.ConvertFrom(entity, _options.SerializerOptions));
+            {
+                try
+                {
+                    return eventConverter.ConvertFrom(entity, _options.SerializerOptions);
+                }
+                finally
+                {
+                    entity.Dispose();
+                }
+            });
         }
         catch (Exception exception)
             when (exception is not ValidationException and not InvalidOperationException)
@@ -154,8 +164,8 @@ public sealed class EventStore(
 
     /// <inheritdoc/>
     public async Task MarkAsPublishedAsync(
-    IEnumerable<EventPublished> events,
-    CancellationToken cancellationToken = default)
+        IEnumerable<EventPublished> events,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -173,6 +183,7 @@ public sealed class EventStore(
                 string? errorMessage = publishedEvents[entity.KeyId].ErrorMessage;
                 entity.SetStatus(errorMessage is null
                     ? EntityStatus.PUBLISHED : EntityStatus.ONERROR);
+                entity.SetUpdatedOn();
                 entity.ErrorMessage = errorMessage;
             });
 
@@ -188,5 +199,17 @@ public sealed class EventStore(
                 "An error occurred while marking the events as published.",
                 exception);
         }
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _disposableEntities.ForEach(entity => entity.Dispose());
+            _disposableEntities.Clear();
+        }
+
+        base.Dispose(disposing);
     }
 }

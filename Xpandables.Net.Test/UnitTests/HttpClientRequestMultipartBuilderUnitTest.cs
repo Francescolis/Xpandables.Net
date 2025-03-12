@@ -1,36 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.RequestDefinitions;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestMultipartBuilderUnitTest
 {
-    private readonly HttpClientMultipartRequestBuilder _builder;
+    private readonly RequestHttpMultipartBuilder _builder;
 
     public HttpClientRequestMultipartBuilderUnitTest() =>
-        _builder = new HttpClientMultipartRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeEight()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(8);
-    }
+        _builder = new RequestHttpMultipartBuilder();
 
     [Fact]
     public void Build_ShouldSetMultipartContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -52,9 +41,9 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
     public void Build_ShouldNotSetMultipartContent_WhenIsNullableIsTrue()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = true,
                 Location = Location.Body,
@@ -75,9 +64,9 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
     public void Build_ShouldNotSetMultipartContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Header,
@@ -98,9 +87,9 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
     public void Build_ShouldNotSetMultipartContent_WhenBodyFormatIsNotMultipart()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -117,7 +106,7 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         context.Message.Content.Should().BeNull();
     }
 
-    private class TestHttpRequestMultipart : IHttpClientRequest, IMultipartRequest
+    private class TestHttpRequestMultipart : IRequestHttp, IRequestMultipart
     {
         public MultipartFormDataContent GetMultipartContent()
         {

@@ -2,16 +2,15 @@
 
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
 
-[HttpClient(Path = "/accounts/block",
+[RequestDefinition(Path = "/accounts/block",
     IsNullable = false,
     IsSecured = false,
-    Location = HttpClientParameters.Location.Body,
-    Method = HttpClientParameters.Method.POST)]
-public sealed record BlockAccountRequest : IApplyValidation
+    Location = RequestDefinitions.Location.Body,
+    Method = RequestDefinitions.Method.POST)]
+public sealed record BlockAccountRequest : IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }

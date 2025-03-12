@@ -2,36 +2,25 @@
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.Interfaces.HttpClientParameters;
+using static Xpandables.Net.Http.RequestDefinitions;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestHeaderBuilderUnitTest
 {
-    private readonly HttpClientHeaderRequestBuilder _builder;
+    private readonly RequestHttpHeaderBuilder _builder;
 
     public HttpClientRequestHeaderBuilderUnitTest() =>
-        _builder = new HttpClientHeaderRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeFour()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(4);
-    }
+        _builder = new RequestHttpHeaderBuilder();
 
     [Fact]
     public void Build_ShouldSetHeaders_WhenLocationIsHeader()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.Header
             },
@@ -53,9 +42,9 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
     public void Build_ShouldNotSetHeaders_WhenLocationIsNotHeader()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.Body
             },
@@ -74,9 +63,9 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
     public void Build_ShouldSetModelNameHeader_WhenModelNameIsProvided()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 Location = Location.Header
             },
@@ -93,7 +82,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
             .Should().Contain("header1,value1;header2,value2");
     }
 
-    private class TestHttpRequestHeader : IHttpClientRequest, IHeaderRequest
+    private class TestHttpRequestHeader : IRequestHttp, IRequestHeader
     {
         public ElementCollection GetHeaders()
         {
@@ -109,7 +98,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
     }
 
     private class TestHttpRequestHeaderWithModelName :
-        IHttpClientRequest, IHeaderRequest
+        IRequestHttp, IRequestHeader
     {
         public ElementCollection GetHeaders()
         {

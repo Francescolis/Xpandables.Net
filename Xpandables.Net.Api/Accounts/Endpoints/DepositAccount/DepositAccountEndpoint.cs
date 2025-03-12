@@ -1,9 +1,9 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Http.Interfaces;
+using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
@@ -28,9 +28,9 @@ public sealed class DepositAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("DepositAccount")
-        .WithXExecutionResultMinimalApi()
+        .WithXMinimalApi()
         .AllowAnonymous()
-        .Accepts<DepositAccountRequest>(HttpClientParameters.ContentType.Json)
+        .Accepts<DepositAccountRequest>(RequestDefinitions.ContentType.Json)
         .Produces(StatusCodes.Status200OK)
         .ProducesValidationProblem(StatusCodes.Status401Unauthorized);
 }

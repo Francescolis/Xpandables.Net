@@ -1,9 +1,9 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Commands;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Http.Interfaces;
+using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 
@@ -27,8 +27,8 @@ public sealed class CreateAccountEndpoint : IEndpointRoute
             })
             .WithTags("Accounts")
             .WithName("CreateAccount")
-            .WithXExecutionResultMinimalApi()
+            .WithXMinimalApi()
             .AllowAnonymous()
-            .Accepts<CreateAccountRequest>(HttpClientParameters.ContentType.Json)
+            .Accepts<CreateAccountRequest>(RequestDefinitions.ContentType.Json)
             .Produces(StatusCodes.Status200OK);
 }

@@ -34,10 +34,10 @@ public static class ServiceCollectionCompositionExtensions
     /// <param name="services">The service collection to add the exports to.</param>
     /// <param name="configuration">The configuration to use for the services.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection InvokeXAddServicesFromAssemblies(
+    public static IServiceCollection AddXServiceExports(
         this IServiceCollection services,
         IConfiguration configuration) =>
-        services.InvokeXAddServicesFromAssemblies(configuration, _ => { });
+        services.AddXServiceExports(configuration, _ => { });
 
     /// <summary>
     /// Scans with export options for types that implement the 
@@ -47,7 +47,7 @@ public static class ServiceCollectionCompositionExtensions
     /// <param name="configuration">The configuration to use for the services.</param>
     /// <param name="configureOptions">The action to configure the export options.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection InvokeXAddServicesFromAssemblies(
+    public static IServiceCollection AddXServiceExports(
         this IServiceCollection services,
         IConfiguration configuration,
         Action<ExportOptions> configureOptions)
@@ -78,7 +78,7 @@ public static class ServiceCollectionCompositionExtensions
     /// <param name="assemblies">The assemblies to scan for services to add.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls 
     /// can be chained.</returns>
-    public static IServiceCollection InvokeXAddServicesFromAssemblies(
+    public static IServiceCollection AddXServiceExports(
         this IServiceCollection services,
         IConfiguration configuration,
         params Assembly[] assemblies)

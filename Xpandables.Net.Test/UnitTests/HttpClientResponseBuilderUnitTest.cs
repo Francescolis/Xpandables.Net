@@ -13,7 +13,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task FailureAsyncResult_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new HttpClientResponseFailureAsyncResultBuilder();
+        var builder = new ResponseHttpFailureStreamBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Version = new Version(1, 1),
@@ -22,14 +22,14 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new HttpClientResponseContext
+        var context = new ResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpClientResponse<IAsyncEnumerable<string>>>(context);
+        var response = await builder.BuildAsync<ResponseHttp<IAsyncEnumerable<string>>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -43,7 +43,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task Failure_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new HttpClientResponseFailureBuilder();
+        var builder = new ResponseHttpFailureBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Version = new Version(1, 1),
@@ -52,14 +52,14 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new HttpClientResponseContext
+        var context = new ResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpClientResponse>(context);
+        var response = await builder.BuildAsync<ResponseHttp>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -73,7 +73,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task FailureResult_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new HttpClientResponseFailureResultBuilder();
+        var builder = new ResponseHttpFailureResultBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Version = new Version(1, 1),
@@ -82,14 +82,14 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new HttpClientResponseContext
+        var context = new ResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpClientResponse<string>>(context);
+        var response = await builder.BuildAsync<ResponseHttp<string>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -103,7 +103,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task SuccessAsyncResult_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new HttpClientResponseSuccessAsyncResultBuilder();
+        var builder = new ResponseHttpSuccessStreamBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),
@@ -112,14 +112,14 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new HttpClientResponseContext
+        var context = new ResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpClientResponse<IAsyncEnumerable<string>>>(context);
+        var response = await builder.BuildAsync<ResponseHttp<IAsyncEnumerable<string>>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -134,7 +134,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task Success_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new HttpClientResponseSuccessBuilder();
+        var builder = new ResponseHttpSuccessBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),
@@ -143,14 +143,14 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new HttpClientResponseContext
+        var context = new ResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpClientResponse>(context);
+        var response = await builder.BuildAsync<ResponseHttp>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -165,7 +165,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task SuccessResult_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new HttpClientResponseSuccessResultBuilder();
+        var builder = new ResponseHttpSuccessResultBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),
@@ -174,7 +174,7 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new HttpClientResponseContext
+        var context = new ResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
@@ -186,7 +186,7 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpClientResponse<TestResponse>>(context);
+        var response = await builder.BuildAsync<ResponseHttp<TestResponse>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

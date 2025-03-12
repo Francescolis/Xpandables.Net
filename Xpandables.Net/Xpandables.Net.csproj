@@ -20,13 +20,13 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageOutputPath>D:\Nugets</PackageOutputPath>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-		<PackageTags>Optional</PackageTags>
-		<PackageReleaseNotes>Optional</PackageReleaseNotes>
+		<PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi</PackageTags>
+		<PackageReleaseNotes>Fix IPipelineDecorator implementation</PackageReleaseNotes>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>9.0.2</Version>
-		<AssemblyVersion>9.0.2</AssemblyVersion>
-		<FileVersion>9.0.2</FileVersion>
-		<PackageVersion>9.0.2</PackageVersion>
+		<Version>9.1.1</Version>
+		<AssemblyVersion>9.1.1</AssemblyVersion>
+		<FileVersion>9.1.1</FileVersion>
+		<PackageVersion>9.1.1</PackageVersion>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
@@ -48,6 +48,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Executions\Pipelines\PipelineExceptionAsyncDecorator.cs" />
+	  <Compile Remove="Executions\Pipelines\PipelineLoggingDecorator.cs" />
+	  <Compile Remove="Executions\Tasks\IPipelineStreamRequestHandler.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
@@ -63,10 +69,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.1" />
-	  <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.1" />
-	  <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.1" />
-	  <PackageReference Include="System.ComponentModel.Composition" Version="9.0.1" />
+	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.2" />
+	  <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
+	  <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
+	  <PackageReference Include="System.ComponentModel.Composition" Version="9.0.2" />
 	  <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1" />
 	</ItemGroup>
 

@@ -1,30 +1,19 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Interfaces;
 using Xpandables.Net.Http.RequestBuilders;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestCompleteBuilderUnitTest
 {
-    private readonly HttpClientCompleteRequestBuilder _builder;
+    private readonly RequestHttpCompletionBuilder _builder;
 
     public HttpClientRequestCompleteBuilderUnitTest() =>
-        _builder = new HttpClientCompleteRequestBuilder();
-
-    [Fact]
-    public void Order_ShouldBeIntMaxValue()
-    {
-        // Act
-        var order = _builder.Order;
-
-        // Assert
-        order.Should().Be(int.MaxValue);
-    }
+        _builder = new RequestHttpCompletionBuilder();
 
     [Theory]
-    [InlineData(typeof(IDefinitionCompleteRequest), true)]
-    [InlineData(typeof(IHttpClientRequest), true)]
+    [InlineData(typeof(IRequestHttpCompletion), true)]
+    [InlineData(typeof(IRequestHttp), true)]
     [InlineData(typeof(object), false)]
     public void CanBuild_ShouldReturnExpectedResult(Type targetType, bool expectedResult)
     {
@@ -39,11 +28,11 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     public void Build_ShouldSetContentType_WhenContentIsNotNullAndContentTypeIsNull()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
-                ContentType = HttpClientParameters.ContentType.Json
+                ContentType = RequestDefinitions.ContentType.Json
             },
             Request = new TestHttpRequestDefinitionComplete(),
             Message = new HttpRequestMessage
@@ -58,18 +47,18 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Assert
         context.Message.Content.Headers.ContentType.Should().NotBeNull();
         context.Message.Content.Headers.ContentType!.MediaType
-            .Should().Be(HttpClientParameters.ContentType.Json);
+            .Should().Be(RequestDefinitions.ContentType.Json);
     }
 
     [Fact]
     public void Build_ShouldNotSetContentType_WhenContentIsNull()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
-                ContentType = HttpClientParameters.ContentType.Json
+                ContentType = RequestDefinitions.ContentType.Json
             },
             Request = new TestHttpRequestDefinitionComplete(),
             Message = new HttpRequestMessage()
@@ -86,9 +75,9 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     public void Build_ShouldSetAuthorizationHeader_WhenIsSecuredIsTrueAndAuthorizationHeaderIsNull()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsSecured = true,
                 Scheme = "Bearer"
@@ -109,9 +98,9 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     public void Build_ShouldNotSetAuthorizationHeader_WhenIsSecuredIsFalse()
     {
         // Arrange
-        var context = new HttpClientRequestContext
+        var context = new RequestContext
         {
-            Attribute = new HttpClientAttribute
+            Attribute = new RequestDefinitionAttribute
             {
                 IsSecured = false
             },
@@ -127,7 +116,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
     }
 
     private class TestHttpRequestDefinitionComplete :
-        IHttpClientRequest, IDefinitionCompleteRequest
+        IRequestHttp, IRequestHttpCompletion
     {
     }
 }

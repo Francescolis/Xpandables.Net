@@ -17,27 +17,45 @@
 
 using System.ComponentModel.DataAnnotations;
 
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.DataAnnotations;
+
 /// <summary>
 /// Provides validation for instances of type <typeparamref name="TArgument"/>.
 /// </summary>
 /// <typeparam name="TArgument">The type of the instance to validate.</typeparam>
-/// <remarks>The behavior uses <see cref="Validator.TryValidateObject(
+/// <remarks>The default behavior uses <see cref="Validator.TryValidateObject(
 /// object, ValidationContext, ICollection{ValidationResult}?, bool)"/>.</remarks>
-public sealed class Validator<TArgument>(IServiceProvider provider) : AbstractValidator<TArgument>
-    where TArgument : class, IApplyValidation
+public class Validator<TArgument> : IValidator<TArgument>
+    where TArgument : class, IValidationEnabled
 {
-    private readonly IServiceProvider _provider = provider
-        ?? throw new ArgumentNullException(nameof(provider));
+    /// <summary>
+    /// Contains the service provider.
+    /// </summary>
+    protected IServiceProvider? ServiceProvider { get; set; }
 
     /// <inheritdoc/>
-    public override IExecutionResult Validate(TArgument instance)
+    public virtual int Order => 0;
+
+    /// <summary>
+    /// Creates a default instance of the validator.
+    /// </summary>
+    public Validator() { }
+
+    /// <summary>
+    /// Creates a new instance of the validator with the specified service provider.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider to use.</param>
+    public Validator(IServiceProvider serviceProvider) =>
+        ServiceProvider = serviceProvider;
+
+    /// <inheritdoc/>
+    public virtual IExecutionResult Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
         ValidationContext validationContext =
-            new(instance, _provider, null);
+            new(instance, ServiceProvider, null);
 
         if (Validator.TryValidateObject(
             instance,
@@ -51,5 +69,12 @@ public sealed class Validator<TArgument>(IServiceProvider provider) : AbstractVa
         }
 
         return validationResults.ToExecutionResult();
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<IExecutionResult> ValidateAsync(TArgument instance)
+    {
+        IExecutionResult result = Validate(instance);
+        return new ValueTask<IExecutionResult>(result);
     }
 }

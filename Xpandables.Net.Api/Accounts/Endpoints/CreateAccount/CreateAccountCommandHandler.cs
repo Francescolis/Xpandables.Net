@@ -1,13 +1,12 @@
-﻿
-using Xpandables.Net.Commands;
-using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.Operations;
+﻿using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 
 public sealed class CreateAccountCommandHandler(
     IAggregateStore<Account> aggregateStore) :
-    ICommandHandler<CreateAccountCommand>
+    IRequestHandler<CreateAccountCommand>
 {
     public async Task<IExecutionResult> HandleAsync(
         CreateAccountCommand command,

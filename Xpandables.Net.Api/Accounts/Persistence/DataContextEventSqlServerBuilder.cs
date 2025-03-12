@@ -27,8 +27,7 @@ public static class DataContextEventSqlServerBuilder
 
         modelBuilder.Entity<EventEntityDomain>()
             .Property(p => p.EventData)
-            .HasColumnType("VARBINARY(MAX)")
-            .HasReadOnlyMemoryToByteArrayConversion()
+            .HasJsonDocumentConversion()
             .IsRequired();
 
         modelBuilder.Entity<EventEntityIntegration>()
@@ -38,8 +37,7 @@ public static class DataContextEventSqlServerBuilder
 
         modelBuilder.Entity<EventEntityIntegration>()
             .Property(p => p.EventData)
-            .HasReadOnlyMemoryToByteArrayConversion()
-            .HasColumnType("VARBINARY(MAX)")
+            .HasJsonDocumentConversion()
             .IsRequired();
 
 
@@ -55,8 +53,7 @@ public static class DataContextEventSqlServerBuilder
 
         modelBuilder.Entity<EventEntitySnapshot>()
             .Property(p => p.EventData)
-            .HasColumnType("VARBINARY(MAX)")
-            .HasReadOnlyMemoryToByteArrayConversion()
+            .HasJsonDocumentConversion()
             .IsRequired();
 
 
