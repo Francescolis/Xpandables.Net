@@ -35,17 +35,17 @@ public sealed class MinimalResult(IExecutionResult executionResult) : IResult
     private readonly IExecutionResult _executionResult = executionResult
         ?? throw new ArgumentNullException(nameof(executionResult));
 
-    /// <summary>
-    /// Executes the execution result asynchronously.
-    /// </summary>
-    /// <param name="httpContext">The HTTP context.</param>
-    /// <returns>A task that represents the asynchronous execution.</returns>
-    public Task ExecuteAsync(HttpContext httpContext)
+    ///<inheritdoc/>
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
-        IEndpointExecute execute = httpContext
-            .RequestServices
-            .GetRequiredService<IEndpointExecute>();
+        IEndpointExecutionResultHandler handler = httpContext.RequestServices
+            .GetServices<IEndpointExecutionResultHandler>()
+            .FirstOrDefault(handler => handler.CanProcess(_executionResult))
+            ?? throw new InvalidOperationException(
+                "No endpoint handler found for the execution result.");
 
-        return execute.ExecuteAsync(httpContext, _executionResult);
+        await handler
+            .HandleAsync(httpContext, _executionResult)
+            .ConfigureAwait(false);
     }
 }

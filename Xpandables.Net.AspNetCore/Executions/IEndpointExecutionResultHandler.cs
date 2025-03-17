@@ -22,7 +22,7 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// Defines a contract for processing execution results.
 /// </summary>
-public interface IEndpointProcessor
+public interface IEndpointExecutionResultHandler
 {
     /// <summary>
     /// Determines whether the specified execution result can be processed by the
@@ -39,7 +39,7 @@ public interface IEndpointProcessor
     /// <param name="context">The HTTP context.</param>
     /// <param name="executionResult">The execution result to process.</param>
     /// <returns>A task that represents the asynchronous execution.</returns>
-    Task ProcessAsync(
+    Task HandleAsync(
         HttpContext context,
         IExecutionResult executionResult);
 }

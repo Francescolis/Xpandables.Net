@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,23 +14,24 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Http;
-
-namespace Xpandables.Net.Executions;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Defines a method to execute an execution result within the given HTTP context.
+/// Provides methods to get a validator for a given type.
 /// </summary>
-public interface IEndpointExecute
+public interface IValidatorProvider
 {
     /// <summary>
-    /// Executes the execution result asynchronously within the given HTTP context.
+    /// Returns a validator for the specified type.
     /// </summary>
-    /// <param name="httpContext">The HTTP context in which to execute the 
-    /// execution result.</param>
-    /// <param name="executionResult">The execution result to execute.</param>
-    /// <returns>A task that represents the asynchronous execution.</returns>
-    Task ExecuteAsync(
-        HttpContext httpContext,
-        IExecutionResult executionResult);
+    /// <param name="type">The type to get a validator for.</param>
+    /// <returns>The validator for the specified type.</returns>
+    IValidator? GetValidator(Type type);
+
+    /// <summary>
+    /// Returns a validator for the specified type.
+    /// </summary>
+    /// <typeparam name="TArgument">The type to get a validator for.</typeparam>
+    /// <returns>The validator for the specified type.</returns>
+    IValidator? GetValidator<TArgument>();
 }
