@@ -28,26 +28,21 @@ namespace Xpandables.Net.Executions.Controllers;
 public sealed class ControllerFilter : IAsyncAlwaysRunResultFilter
 {
     /// <inheritdoc/>
-    public async Task OnResultExecutionAsync(
+    public Task OnResultExecutionAsync(
         ResultExecutingContext context,
         ResultExecutionDelegate next)
     {
         if (context.Result is ObjectResult objectResult
             && objectResult.Value is IExecutionResult executionResult)
         {
-            IEndpointExecutionResultHandler handler = context.HttpContext.RequestServices
-                .GetServices<IEndpointExecutionResultHandler>()
-                .FirstOrDefault(handler => handler.CanProcess(executionResult))
-                ?? throw new InvalidOperationException(
-                    "No endpoint handler found for the execution result.");
+            IEndpointExecute execute = context
+                .HttpContext
+                .RequestServices
+                .GetRequiredService<IEndpointExecute>();
 
-            await handler
-                .HandleAsync(context.HttpContext, executionResult)
-                .ConfigureAwait(false);
+            return execute.ExecuteAsync(context.HttpContext, executionResult);
         }
-        else
-        {
-            await next().ConfigureAwait(false);
-        }
+
+        return next();
     }
 }

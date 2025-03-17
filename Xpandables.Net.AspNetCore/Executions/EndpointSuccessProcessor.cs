@@ -21,21 +21,17 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// Processes the execution result when the result indicates a successful execution.
 /// </summary>
-public sealed class EndpointExecutionResultSuccessHandler : IEndpointExecutionResultHandler
+public sealed class EndpointSuccessProcessor : IEndpointProcessor
 {
     ///<inheritdoc/>
     public bool CanProcess(IExecutionResult executionResult) =>
         executionResult.IsSuccessStatusCode();
 
     ///<inheritdoc/>
-    public async Task HandleAsync(
+    public async Task ProcessAsync(
         HttpContext context,
         IExecutionResult executionResult)
     {
-        await context
-            .MetadataSetter(executionResult)
-            .ConfigureAwait(false);
-
         if (executionResult.IsCreated())
         {
             IResult resultCreated = (executionResult.Result is not null) switch

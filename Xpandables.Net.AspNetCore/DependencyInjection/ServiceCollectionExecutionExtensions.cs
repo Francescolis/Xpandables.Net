@@ -46,20 +46,21 @@ public static class ServiceCollectionExecutionExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXMinimalApi(
         this IServiceCollection services) =>
-        services
-            .AddXMinimalExecutionResultHandlers(typeof(IEndpointExecutionResultHandler).Assembly)
+        services.AddXEndpointProcessors(typeof(IEndpointProcessor).Assembly)
             .AddXMinimalJsonOptions()
+            .AddXEndpointExecute()
+            .AddXEndpointValidator()
             .AddXMinimalMiddleware()
             .AddXValidatorDefault();
 
     /// <summary>
-    /// Adds <see cref="IEndpointExecutionResultHandler"/>s to the service collection.
+    /// Adds <see cref="IEndpointProcessor"/> to the service collection.
     /// </summary>
     /// <param name="services">The service collection to add the executors to.</param>
-    /// <param name="assemblies">The assemblies to scan for handlers. 
+    /// <param name="assemblies">The assemblies to scan for processors. 
     /// If none are provided, the calling assembly is used.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXMinimalExecutionResultHandlers(
+    public static IServiceCollection AddXEndpointProcessors(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -68,18 +69,78 @@ public static class ServiceCollectionExecutionExtensions
             assemblies = [Assembly.GetCallingAssembly()];
         }
 
-        List<Type> handlerTypes = [.. assemblies
+        List<Type> executorTypes = [.. assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.IsSealed
-                && type.IsAssignableTo(typeof(IEndpointExecutionResultHandler)))];
+                && type.IsAssignableTo(typeof(IEndpointProcessor)))];
 
-        foreach (Type handlerType in handlerTypes)
+        foreach (Type executorType in executorTypes)
         {
-            _ = services.AddScoped(typeof(IEndpointExecutionResultHandler), handlerType);
+            _ = services.AddScoped(typeof(IEndpointProcessor), executorType);
         }
 
         return services;
     }
+
+    /// <summary>
+    /// Adds a scoped service of the type specified in 
+    /// <typeparamref name="TEndpointExecute"/> 
+    /// with an implementation type of 
+    /// <see cref="IEndpointExecute"/> to the specified 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TEndpointExecute">The type of the service to add. 
+    /// This class must implement <see cref="IEndpointExecute"/>.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add 
+    /// the service to.</param>
+    /// <returns>A reference to this instance after the execution has 
+    /// completed.</returns>
+    public static IServiceCollection AddXEndpointExecute<TEndpointExecute>(
+        this IServiceCollection services)
+        where TEndpointExecute : class, IEndpointExecute =>
+        services.AddScoped<IEndpointExecute, TEndpointExecute>();
+
+    /// <summary>
+    /// Adds a scoped service of the type <see cref="EndpointExecute"/> 
+    /// to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add 
+    /// the service to.</param>
+    /// <returns>A reference to this instance after the execution has 
+    /// completed.</returns>
+    public static IServiceCollection AddXEndpointExecute(
+        this IServiceCollection services) =>
+        services.AddXEndpointExecute<EndpointExecute>();
+
+    /// <summary>
+    /// Adds a scoped service of the type specified in 
+    /// <typeparamref name="TEndpointValidator"/> 
+    /// with an implementation type of 
+    /// <see cref="IEndpointValidator"/> to the specified 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TEndpointValidator">The type of the service to add. 
+    /// This class must implement <see cref="IEndpointValidator"/>.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add 
+    /// the service to.</param>
+    /// <returns>A reference to this instance after the execution has 
+    /// completed.</returns>
+    public static IServiceCollection AddXEndpointValidator<TEndpointValidator>(
+        this IServiceCollection services)
+        where TEndpointValidator : class, IEndpointValidator =>
+        services.AddScoped<IEndpointValidator, TEndpointValidator>();
+
+    /// <summary>
+    /// Adds a scoped service of the type <see cref="EndpointValidator"/> 
+    /// to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add 
+    /// the service to.</param>
+    /// <returns>A reference to this instance after the execution has 
+    /// completed.</returns>
+    public static IServiceCollection AddXEndpointValidator(
+        this IServiceCollection services) =>
+        services.AddXEndpointValidator<EndpointValidator>();
 
     /// <summary>
     /// Adds a scoped service of the type <see cref="MinimalMiddleware"/> 
@@ -125,6 +186,31 @@ public static class ServiceCollectionExecutionExtensions
         builder.AddEndpointFilter<TBuilder, MinimalFilter>();
 
     /// <summary>
+    /// Applies the validation filter factory to the request of the target route(s),
+    /// adding the <see cref="MinimalValidationFilterFactory"/> to the endpoint 
+    /// convention builder.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the endpoint convention 
+    /// builder.</typeparam>
+    /// <param name="builder">The endpoint convention builder to configure.</param>
+    /// <returns>A reference to the <typeparamref name="TBuilder"/> after the 
+    /// execution has completed.</returns>
+    /// <remarks>To be applied on many routes, please use 
+    /// <see langword="MapGroup"/> with empty prefix 
+    /// (<see cref="string.Empty"/>).
+    /// <para>The request must implement the <see cref="IValidationEnabled"/>.
+    /// You can implement the <see cref="IValidator{TArgument}"/> specific
+    /// to your request, otherwise you must use the built in one : Register the
+    /// generic validator using <see langword="AddXValidatorGenerics"/> method.</para>
+    /// <para>You may register the <see cref="IProblemDetailsService"/> in 
+    /// order to customize the response.</para></remarks>
+    public static TBuilder WithXValidationFilterFactory<TBuilder>(
+        this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.AddEndpointFilterFactory(
+            MinimalValidationFilterFactory.FilterFactory);
+
+    /// <summary>
     /// Applies the validation filter to the request of the target route(s),
     /// adding the <see cref="MinimalValidationFilter"/> to the endpoint 
     /// convention builder.
@@ -139,40 +225,14 @@ public static class ServiceCollectionExecutionExtensions
     /// <para>The request must implement the <see cref="IValidationEnabled"/>.
     /// You can implement the <see cref="IValidator{TArgument}"/> specific
     /// to your request, otherwise you must use the built in one : Register the
-    /// generic validator using 
-    /// <see cref="ServiceCollectionValidatorExtensions.AddXValidatorDefault(IServiceCollection)"/> method.</para>
+    /// generic validator using <see langword="AddXValidatorGenerics"/> method.</para>
     /// <para>You can register the <see cref="IProblemDetailsService"/> in 
     /// order to customize the response.</para></remarks>
     public static TBuilder WithXValidationFilter<TBuilder>(
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter<TBuilder, MinimalValidationFilter>();
-
-    /// <summary>
-    /// Applies the validation filter to the request of the target route(s),
-    /// adding the <see cref="MinimalValidationFilter"/> to the endpoint 
-    /// convention builder for the specified argument type.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the endpoint convention builder.</typeparam>
-    /// <typeparam name="TArgument">The type of the argument to validate.</typeparam>
-    /// <param name="builder">The endpoint convention builder to configure.</param>
-    /// <returns>A reference to the <typeparamref name="TBuilder"/> after the 
-    /// execution has completed.</returns>
-    /// <remarks>To be applied on many routes, please use 
-    /// <see langword="MapGroup"/> with empty prefix 
-    /// (<see cref="string.Empty"/>).
-    /// <para>The request must implement the <see cref="IValidationEnabled"/>.
-    /// You can implement the <see cref="IValidator{TArgument}"/> specific
-    /// to your request, otherwise you must use the built in one : Register the
-    /// generic validator using 
-    /// <see cref="ServiceCollectionValidatorExtensions.AddXValidatorDefault(IServiceCollection)"/> method.</para>
-    /// <para>You can register the <see cref="IProblemDetailsService"/> in 
-    /// order to customize the response.</para></remarks>
-    public static TBuilder WithXValidationFilter<TBuilder, TArgument>(
-        this TBuilder builder)
-        where TBuilder : IEndpointConventionBuilder
-        where TArgument : class, IValidationEnabled =>
-        builder.AddEndpointFilter<TBuilder, MinimalValidationFilter<TArgument>>();
+        builder.AddEndpointFilter(
+            new MinimalValidationFilter().InvokeAsync);
 
     /// <summary>
     /// Applies the execution result filter and validation filter to the 

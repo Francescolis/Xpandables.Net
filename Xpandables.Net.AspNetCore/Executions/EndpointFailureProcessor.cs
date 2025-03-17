@@ -26,21 +26,17 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// Processes for handling execution results that indicate failure.
 /// </summary>
-public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionResultHandler
+public sealed class EndpointFailureProcessor : IEndpointProcessor
 {
     ///<inheritdoc/>
     public bool CanProcess(IExecutionResult executionResult) =>
         executionResult.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public async Task HandleAsync(
+    public Task ProcessAsync(
         HttpContext context,
         IExecutionResult executionResult)
     {
-        await context
-            .MetadataSetter(executionResult)
-            .ConfigureAwait(false);
-
         context.Response.StatusCode = (int)executionResult.StatusCode;
 
         bool isDevelopment = context.RequestServices
@@ -70,17 +66,14 @@ public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionRe
         if (context.RequestServices
             .GetService<IProblemDetailsService>() is { } problemDetailsService)
         {
-            await problemDetailsService.WriteAsync(new ProblemDetailsContext
+            return problemDetailsService.WriteAsync(new ProblemDetailsContext
             {
                 HttpContext = context,
                 ProblemDetails = problemDetails
-            })
-                .AsTask()
-                .ConfigureAwait(false);
+            }).AsTask();
         }
 
         IResult result = Results.Problem(problemDetails);
-
-        await result.ExecuteAsync(context).ConfigureAwait(false);
+        return result.ExecuteAsync(context);
     }
 }

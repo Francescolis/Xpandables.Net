@@ -45,17 +45,15 @@ public sealed class MinimalMiddleware : IMiddleware
                 exception = targetInvocation.InnerException ?? targetInvocation;
             }
 
+            IEndpointExecute execute = context
+                .RequestServices
+                .GetRequiredService<IEndpointExecute>();
+
             IExecutionResult executionResult =
                 exception.ToExecutionResultForProblemDetails();
 
-            IEndpointExecutionResultHandler handler = context.RequestServices
-               .GetServices<IEndpointExecutionResultHandler>()
-               .FirstOrDefault(handler => handler.CanProcess(executionResult))
-               ?? throw new InvalidOperationException(
-                   "No endpoint handler found for the execution result.");
-
-            await handler
-                .HandleAsync(context, executionResult)
+            await execute
+                .ExecuteAsync(context, executionResult)
                 .ConfigureAwait(false);
         }
     }

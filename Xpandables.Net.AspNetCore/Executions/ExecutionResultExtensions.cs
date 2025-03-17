@@ -16,14 +16,10 @@
 ********************************************************************************/
 using System.Net;
 
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.Executions.Minimals;
@@ -153,64 +149,4 @@ public static class ExecutionResultExtensions
     /// <returns>An <see cref="IResult"/> representing the execution result.</returns>  
     public static IResult ToMinimalResult(this IExecutionResult executionResult) =>
         new MinimalResult(executionResult);
-
-    /// <summary>
-    /// Sets the metadata for the HTTP response based on the execution result.
-    /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <param name="executionResult">The execution result.</param>
-    /// <returns>A task that represents the asynchronous execution.</returns>
-    public static async Task MetadataSetter(
-        this HttpContext context,
-        IExecutionResult executionResult)
-    {
-        if (executionResult.Location is not null)
-        {
-            context.Response.Headers.Location =
-                new StringValues(executionResult.Location.ToString());
-        }
-
-        context.Response.StatusCode = (int)executionResult.StatusCode;
-
-        foreach (ElementEntry header in executionResult.Headers)
-        {
-            context.Response.Headers.Append(
-                header.Key,
-                new StringValues([.. header.Values]));
-        }
-
-        if (executionResult.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            if (context.RequestServices.GetService<IAuthenticationSchemeProvider>()
-                is { } schemeProvider)
-            {
-                IEnumerable<AuthenticationScheme> requestSchemes =
-                    await schemeProvider
-                    .GetRequestHandlerSchemesAsync()
-                    .ConfigureAwait(false);
-
-                AuthenticationScheme? defaultScheme =
-                    await schemeProvider
-                    .GetDefaultAuthenticateSchemeAsync()
-                    .ConfigureAwait(false);
-
-                IEnumerable<AuthenticationScheme> allSchemes =
-                    await schemeProvider
-                    .GetAllSchemesAsync()
-                    .ConfigureAwait(false);
-
-                AuthenticationScheme? scheme =
-                     requestSchemes.FirstOrDefault() ??
-                     defaultScheme ??
-                     allSchemes.FirstOrDefault();
-
-                if (scheme is not null)
-                {
-                    context.Response.Headers.Append(
-                        HeaderNames.WWWAuthenticate,
-                        scheme.Name);
-                }
-            }
-        }
-    }
 }

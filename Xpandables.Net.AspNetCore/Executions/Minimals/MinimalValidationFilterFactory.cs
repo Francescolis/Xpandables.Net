@@ -23,29 +23,25 @@ using Xpandables.Net.DataAnnotations;
 namespace Xpandables.Net.Executions.Minimals;
 
 /// <summary>
-/// Represents a filter that validates endpoints in a minimal API.
+/// Provides a factory for creating endpoint filters for validation.
 /// </summary>
-public sealed class MinimalValidationFilter : IEndpointFilter
+public static class MinimalValidationFilterFactory
 {
-    /// <summary>
-    /// Invokes the filter asynchronously.
-    /// </summary>
-    /// <param name="context">The context for the endpoint filter invocation.</param>
-    /// <param name="next">The delegate to invoke the next filter in the pipeline.</param>
-    /// <returns>A task that represents the asynchronous execution, containing 
-    /// the result of the filter invocation.</returns>
-    public ValueTask<object?> InvokeAsync(
-        EndpointFilterInvocationContext context,
+    /// <summary>  
+    /// Creates an endpoint filter delegate that validates the request.  
+    /// </summary>  
+    /// <param name="context">The context for the endpoint filter factory.</param>  
+    /// <param name="next">The next endpoint filter delegate in the pipeline.</param>  
+    /// <returns>An endpoint filter delegate that validates the execution result.</returns>  
+    public static EndpointFilterDelegate FilterFactory(
+        EndpointFilterFactoryContext context,
         EndpointFilterDelegate next)
     {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(next);
-
         IEndpointValidator validator = context
-            .HttpContext
-            .RequestServices
+            .ApplicationServices
             .GetRequiredService<IEndpointValidator>();
 
-        return validator.ValidateAsync(context, next);
+        return invocationContext =>
+            validator.ValidateAsync(invocationContext, next);
     }
 }
