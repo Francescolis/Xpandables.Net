@@ -42,9 +42,9 @@ public sealed class MinimalResult(IExecutionResult executionResult) : IResult
     /// <returns>A task that represents the asynchronous execution.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        IEndpointExecute execute = httpContext
+        IEndpointProcessor execute = httpContext
             .RequestServices
-            .GetRequiredService<IEndpointExecute>();
+            .GetRequiredService<IEndpointProcessor>();
 
         return execute.ExecuteAsync(httpContext, _executionResult);
     }

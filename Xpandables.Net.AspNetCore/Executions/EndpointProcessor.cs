@@ -32,7 +32,7 @@ namespace Xpandables.Net.Executions;
 /// Processes an execution result by setting the appropriate metadata and 
 /// invoking the corresponding executor.
 /// </summary>
-public sealed class EndpointExecute : IEndpointExecute
+public sealed class EndpointProcessor : IEndpointProcessor
 {
     /// <summary>
     /// Executes the execution result asynchronously.
@@ -40,21 +40,19 @@ public sealed class EndpointExecute : IEndpointExecute
     /// <param name="httpContext">The HTTP context.</param>
     /// <param name="executionResult">The execution result to execute.</param>
     /// <returns>A task that represents the asynchronous execution.</returns>
-    public async Task ExecuteAsync(
-        HttpContext httpContext,
-        IExecutionResult executionResult)
+    public async Task ExecuteAsync(HttpContext httpContext, IExecutionResult executionResult)
     {
         await MetadataSetter(httpContext, executionResult)
             .ConfigureAwait(false);
 
-        IEndpointProcessor executor = httpContext.RequestServices
-            .GetServices<IEndpointProcessor>()
-            .FirstOrDefault(executor => executor.CanProcess(executionResult))
+        IEndpointExecutionResultHandler handler = httpContext.RequestServices
+            .GetServices<IEndpointExecutionResultHandler>()
+            .FirstOrDefault(h => h.CanProcess(executionResult))
             ?? throw new InvalidOperationException(
                 "No executor found for the execution result.");
 
-        await executor
-            .ProcessAsync(httpContext, executionResult)
+        await handler
+            .HandleAsync(httpContext, executionResult)
             .ConfigureAwait(false);
     }
 

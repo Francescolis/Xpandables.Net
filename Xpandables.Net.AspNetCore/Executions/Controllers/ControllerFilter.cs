@@ -35,10 +35,10 @@ public sealed class ControllerFilter : IAsyncAlwaysRunResultFilter
         if (context.Result is ObjectResult objectResult
             && objectResult.Value is IExecutionResult executionResult)
         {
-            IEndpointExecute execute = context
+            IEndpointProcessor execute = context
                 .HttpContext
                 .RequestServices
-                .GetRequiredService<IEndpointExecute>();
+                .GetRequiredService<IEndpointProcessor>();
 
             return execute.ExecuteAsync(context.HttpContext, executionResult);
         }

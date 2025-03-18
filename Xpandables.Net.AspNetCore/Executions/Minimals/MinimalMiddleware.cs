@@ -45,9 +45,9 @@ public sealed class MinimalMiddleware : IMiddleware
                 exception = targetInvocation.InnerException ?? targetInvocation;
             }
 
-            IEndpointExecute execute = context
+            IEndpointProcessor execute = context
                 .RequestServices
-                .GetRequiredService<IEndpointExecute>();
+                .GetRequiredService<IEndpointProcessor>();
 
             IExecutionResult executionResult =
                 exception.ToExecutionResultForProblemDetails();

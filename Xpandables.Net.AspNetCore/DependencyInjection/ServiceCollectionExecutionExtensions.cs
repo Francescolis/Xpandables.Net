@@ -46,21 +46,23 @@ public static class ServiceCollectionExecutionExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXMinimalApi(
         this IServiceCollection services) =>
-        services.AddXEndpointProcessors(typeof(IEndpointProcessor).Assembly)
+        services
+            .AddXEndpointExecutionResultHandlers(typeof(IEndpointExecutionResultHandler).Assembly)
             .AddXMinimalJsonOptions()
-            .AddXEndpointExecute()
+            .AddXEndpointProcessor()
+            .AddXValidatorProvider()
             .AddXEndpointValidator()
             .AddXMinimalMiddleware()
             .AddXValidatorDefault();
 
     /// <summary>
-    /// Adds <see cref="IEndpointProcessor"/> to the service collection.
+    /// Adds <see cref="IEndpointExecutionResultHandler"/> to the service collection.
     /// </summary>
     /// <param name="services">The service collection to add the executors to.</param>
     /// <param name="assemblies">The assemblies to scan for processors. 
     /// If none are provided, the calling assembly is used.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXEndpointProcessors(
+    public static IServiceCollection AddXEndpointExecutionResultHandlers(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -72,11 +74,11 @@ public static class ServiceCollectionExecutionExtensions
         List<Type> executorTypes = [.. assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.IsSealed
-                && type.IsAssignableTo(typeof(IEndpointProcessor)))];
+                && type.IsAssignableTo(typeof(IEndpointExecutionResultHandler)))];
 
         foreach (Type executorType in executorTypes)
         {
-            _ = services.AddScoped(typeof(IEndpointProcessor), executorType);
+            _ = services.AddScoped(typeof(IEndpointExecutionResultHandler), executorType);
         }
 
         return services;
@@ -84,33 +86,33 @@ public static class ServiceCollectionExecutionExtensions
 
     /// <summary>
     /// Adds a scoped service of the type specified in 
-    /// <typeparamref name="TEndpointExecute"/> 
+    /// <typeparamref name="TEndpointProcessor"/> 
     /// with an implementation type of 
-    /// <see cref="IEndpointExecute"/> to the specified 
+    /// <see cref="IEndpointProcessor"/> to the specified 
     /// <see cref="IServiceCollection"/>.
     /// </summary>
-    /// <typeparam name="TEndpointExecute">The type of the service to add. 
-    /// This class must implement <see cref="IEndpointExecute"/>.</typeparam>
+    /// <typeparam name="TEndpointProcessor">The type of the service to add. 
+    /// This class must implement <see cref="IEndpointProcessor"/>.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
     /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
-    public static IServiceCollection AddXEndpointExecute<TEndpointExecute>(
+    public static IServiceCollection AddXEndpointProcessor<TEndpointProcessor>(
         this IServiceCollection services)
-        where TEndpointExecute : class, IEndpointExecute =>
-        services.AddScoped<IEndpointExecute, TEndpointExecute>();
+        where TEndpointProcessor : class, IEndpointProcessor =>
+        services.AddScoped<IEndpointProcessor, TEndpointProcessor>();
 
     /// <summary>
-    /// Adds a scoped service of the type <see cref="EndpointExecute"/> 
+    /// Adds a scoped service of the type <see cref="EndpointProcessor"/> 
     /// to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
     /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
-    public static IServiceCollection AddXEndpointExecute(
+    public static IServiceCollection AddXEndpointProcessor(
         this IServiceCollection services) =>
-        services.AddXEndpointExecute<EndpointExecute>();
+        services.AddXEndpointProcessor<EndpointProcessor>();
 
     /// <summary>
     /// Adds a scoped service of the type specified in 

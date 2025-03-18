@@ -26,16 +26,14 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// Processes for handling execution results that indicate failure.
 /// </summary>
-public sealed class EndpointFailureProcessor : IEndpointProcessor
+public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionResultHandler
 {
     ///<inheritdoc/>
     public bool CanProcess(IExecutionResult executionResult) =>
         executionResult.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public Task ProcessAsync(
-        HttpContext context,
-        IExecutionResult executionResult)
+    public Task HandleAsync(HttpContext context, IExecutionResult executionResult)
     {
         context.Response.StatusCode = (int)executionResult.StatusCode;
 
