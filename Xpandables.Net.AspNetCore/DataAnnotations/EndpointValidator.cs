@@ -96,29 +96,15 @@ public sealed class EndpointValidator : IEndpointValidator
 
         IEnumerable<ValidatorDescriptor> GetValidatorDescriptors()
         {
+            IValidatorProvider provider = context
+                .HttpContext
+                .RequestServices
+                .GetRequiredService<IValidatorProvider>();
+
             foreach (ArgumentDescriptor argument in arguments)
             {
-                Type validatorType = typeof(IValidator<>)
-                    .MakeGenericType(argument.ParameterType);
-
-                List<IValidator> validators = [.. context
-                    .HttpContext
-                    .RequestServices
-                    .GetServices(validatorType)
-                    .OfType<IValidator>()];
-
-                // remove the built-in validator if a specific validator
-                // is registered.
-
-                if (validators.Count > 1)
-                {
-                    Type builtinType = typeof(Validator<>)
-                        .MakeGenericType(argument.ParameterType);
-
-                    validators = [.. validators.Where(validator => validator.GetType() != builtinType)];
-                }
-
-                foreach (IValidator validator in validators)
+                IValidator? validator = provider.GetValidator(argument.ParameterType);
+                if (validator is not null)
                 {
                     yield return new ValidatorDescriptor
                     {
