@@ -42,6 +42,27 @@ public static class ServiceCollectionValidatorExtensions
         .AddTransient(typeof(ICompositeValidator<>), typeof(CompositeValidator<>));
 
     /// <summary>
+    /// Adds the specified validator provider to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the validator to.</param>
+    /// <typeparam name="TValidatorProvider">The type of the validator provider
+    /// to add.</typeparam>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXValidatorProvider<TValidatorProvider>(
+        this IServiceCollection services)
+        where TValidatorProvider : class, IValidatorProvider =>
+        services.AddScoped<IValidatorProvider, TValidatorProvider>();
+
+    /// <summary>
+    /// Adds the default validator provider to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the validator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXValidatorProvider(
+        this IServiceCollection services) =>
+        services.AddXValidatorProvider<ValidatorProvider>();
+
+    /// <summary>
     /// Adds validators from the specified assemblies to the service collection.
     /// </summary>
     /// <param name="services">The service collection to add the validators to.</param>
