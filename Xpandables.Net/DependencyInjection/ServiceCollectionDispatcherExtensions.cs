@@ -169,7 +169,7 @@ public static class ServiceCollectionDispatcherExtensions
         {
             foreach (Type interfaceType in handlerType.Interfaces)
             {
-                _ = services.AddScoped(interfaceType, handlerType.Type);
+                _ = services.AddTransient(interfaceType, handlerType.Type);
             }
         }
 
@@ -283,7 +283,7 @@ public static class ServiceCollectionDispatcherExtensions
                 $"{pipelineType.Name} does not implement IPipelineDecorator<,> interface.");
         }
 
-        return services.AddScoped(typeof(IPipelineDecorator<,>), pipelineType);
+        return services.AddTransient(typeof(IPipelineDecorator<,>), pipelineType);
     }
 
     /// <summary>
@@ -306,6 +306,6 @@ public static class ServiceCollectionDispatcherExtensions
             throw new InvalidOperationException(
                 $"{pipelineType.Name} does not implement IPipelineStreamDecorator<,> interface.");
         }
-        return services.AddScoped(typeof(IPipelineStreamDecorator<,>), pipelineType);
+        return services.AddTransient(typeof(IPipelineStreamDecorator<,>), pipelineType);
     }
 }
