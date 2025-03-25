@@ -21,8 +21,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
-using Xpandables.Net.Events;
-using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.States;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -41,7 +41,7 @@ public static class ServiceCollectionEventExtensions
         this IServiceCollection services) =>
         services.XTryDecorate(
             typeof(IAggregateStore<>),
-            typeof(AggregateSnapshotStore<>),
+            typeof(SnapshotStore<>),
             typeof(IOriginator));
 
     /// <summary>
@@ -110,11 +110,11 @@ public static class ServiceCollectionEventExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventPublisher<TEventPublisher>(
         this IServiceCollection services)
-        where TEventPublisher : class, IEventPublisher
+        where TEventPublisher : class, IPublisher
     {
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IEventPublisher),
+                typeof(IPublisher),
                 typeof(TEventPublisher),
                 ServiceLifetime.Scoped));
 
@@ -130,7 +130,7 @@ public static class ServiceCollectionEventExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventPublisher(
         this IServiceCollection services) =>
-        services.AddXEventPublisher<EventPublisherSubscriber>();
+        services.AddXEventPublisher<PublisherSubscriber>();
 
     /// <summary>
     /// Adds the specified event subscriber implementation to the 
@@ -143,11 +143,11 @@ public static class ServiceCollectionEventExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventSubscriber<TEventSubscriber>(
         this IServiceCollection services)
-        where TEventSubscriber : class, IEventSubscriber
+        where TEventSubscriber : class, ISubscriber
     {
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IEventSubscriber),
+                typeof(ISubscriber),
                 typeof(TEventSubscriber),
                 ServiceLifetime.Scoped));
 
@@ -163,7 +163,7 @@ public static class ServiceCollectionEventExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventSubscriber(
         this IServiceCollection services) =>
-        services.AddXEventSubscriber<EventPublisherSubscriber>();
+        services.AddXEventSubscriber<PublisherSubscriber>();
 
     /// <summary>
     /// Adds the specified event scheduler implementation to the 
@@ -176,11 +176,11 @@ public static class ServiceCollectionEventExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventScheduler<TEventScheduler>(
         this IServiceCollection services)
-        where TEventScheduler : class, IEventScheduler
+        where TEventScheduler : class, IScheduler
     {
         services.TryAdd(
             new ServiceDescriptor(
-                typeof(IEventScheduler),
+                typeof(IScheduler),
                 typeof(TEventScheduler),
                 ServiceLifetime.Singleton));
 
@@ -196,7 +196,7 @@ public static class ServiceCollectionEventExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventScheduler(
         this IServiceCollection services) =>
-        services.AddXEventScheduler<EventScheduler>();
+        services.AddXEventScheduler<Scheduler>();
 
     /// <summary>
     /// Adds the specified event scheduler implementation that also implements
@@ -210,11 +210,11 @@ public static class ServiceCollectionEventExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventSchedulerHosted<TEventScheduler>(
         this IServiceCollection services)
-        where TEventScheduler : class, IEventScheduler, IHostedService =>
+        where TEventScheduler : class, IScheduler, IHostedService =>
         services
             .AddXEventScheduler<TEventScheduler>()
             .AddHostedService(provider =>
-                provider.GetRequiredService<IEventScheduler>());
+                provider.GetRequiredService<IScheduler>());
 
     /// <summary>
     /// Adds the default event scheduler implementation that also implements
@@ -226,7 +226,7 @@ public static class ServiceCollectionEventExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventSchedulerHosted(
         this IServiceCollection services) =>
-        services.AddXEventSchedulerHosted<EventScheduler>();
+        services.AddXEventSchedulerHosted<Scheduler>();
 
     /// <summary>
     /// Adds the specified event handler implementation to the 

@@ -14,25 +14,24 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
-
+namespace Xpandables.Net.Executions.Tasks;
 /// <summary>
-/// Represents an event with a timestamp, version, and unique identifier.
+/// Defines a contract for publishing events.
 /// </summary>
-public interface IEvent
+public interface IPublisher
 {
     /// <summary>
-    /// Gets the date and time when the event occurred.
+    /// Publishes the specified event asynchronously.
     /// </summary>
-    DateTimeOffset OccurredOn { get; init; }
-
-    /// <summary>
-    /// Gets the version of the event.
-    /// </summary>
-    ulong EventVersion { get; init; }
-
-    /// <summary>
-    /// Gets the unique identifier of the event.
-    /// </summary>
-    Guid EventId { get; init; }
+    /// <typeparam name="TEvent">The type of event to publish.</typeparam>
+    /// <param name="event">The event to publish.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation 
+    /// requests.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Publishing the event failed.
+    /// See inner exception for details.</exception>
+    Task PublishAsync<TEvent>(
+        TEvent @event,
+        CancellationToken cancellationToken = default)
+        where TEvent : notnull, IEvent;
 }

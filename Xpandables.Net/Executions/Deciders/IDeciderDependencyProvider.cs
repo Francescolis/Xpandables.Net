@@ -30,15 +30,15 @@ public interface IDeciderDependencyProvider
     bool CanProvideDependency(Type dependencyType);
 
     /// <summary>
-    /// Gets the dependency of the specified type asynchronously.
+    /// Gets the dependency from the request asynchronously.
     /// </summary>
-    /// <param name="decider">The decider of the dependency.</param>
+    /// <param name="request">The request that needs the dependency.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
     /// requests.</param>
-    /// <returns>The dependency of the specified type.</returns>
+    /// <returns>The dependency expected.</returns>
     /// <exception cref="InvalidOperationException"></exception>
     Task<object> GetDependencyAsync(
-        IDeciderRequest decider,
+        IDeciderRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>

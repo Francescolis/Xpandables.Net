@@ -14,9 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories.Filters;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Represents a store for events that can be appended, fetched, 
@@ -60,14 +61,35 @@ public interface IEventStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Marks a collection of events as published in the store.
+    /// Marks the event represented by the publish information as published.
     /// </summary>
-    /// <param name="events">The events to mark as published.</param>
+    /// <param name="eventPublished">The publish information of the event.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="InvalidOperationException">Thrown when marking events
     /// fails.</exception>
     Task MarkAsPublishedAsync(
-        IEnumerable<EventPublished> events,
+        EventPublished eventPublished,
         CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Represents an event that has been published.
+/// </summary>
+public readonly record struct EventPublished
+{
+    /// <summary>
+    /// Gets the unique identifier of the event.
+    /// </summary>
+    public required Guid EventId { get; init; }
+
+    /// <summary>
+    /// Gets the date and time when the event was published.
+    /// </summary>
+    public required DateTimeOffset PublishedOn { get; init; }
+
+    /// <summary>
+    /// Gets the error message if the event failed to publish.
+    /// </summary>
+    public required string? ErrorMessage { get; init; }
 }

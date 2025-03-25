@@ -14,7 +14,29 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Tasks;
+
+/// <summary>
+/// Represents an event with a timestamp, version, and unique identifier.
+/// </summary>
+public interface IEvent
+{
+    /// <summary>
+    /// Gets the date and time when the event occurred.
+    /// </summary>
+    DateTimeOffset OccurredOn { get; init; }
+
+    /// <summary>
+    /// Gets the version of the event.
+    /// </summary>
+    ulong EventVersion { get; init; }
+
+    /// <summary>
+    /// Gets the unique identifier of the event.
+    /// </summary>
+    Guid EventId { get; init; }
+}
+
 
 /// <summary>
 /// Represents an abstract base class for events.

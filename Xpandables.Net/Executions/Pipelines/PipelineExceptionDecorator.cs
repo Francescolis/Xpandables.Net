@@ -18,7 +18,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
 /// A pipeline decorator that handles exceptions thrown during the execution 
-/// of a request.
+/// of a request and transforms them into an <see cref="ExecutionResultException"/>.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>

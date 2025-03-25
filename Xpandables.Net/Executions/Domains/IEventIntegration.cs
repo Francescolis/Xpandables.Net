@@ -14,19 +14,33 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.Extensions.Hosting;
+using Xpandables.Net.Executions.Tasks;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Domains;
+/// <summary>
+/// Represents an integration event that is part of the event-driven architecture.
+/// </summary>
+public interface IEventIntegration : IEvent
+{
+}
 
 /// <summary>
-/// Defines a scheduler for events.
+/// Represents an integration event with a specific event domain.
 /// </summary>
-public interface IEventScheduler : IHostedService, IDisposable
+/// <typeparam name="TEventDomain">The type of the event domain.</typeparam>
+public interface IEventIntegration<TEventDomain> : IEventIntegration
+    where TEventDomain : notnull, IEventDomain
 {
     /// <summary>
-    /// Schedules events asynchronously.
+    /// Gets the event domain.
     /// </summary>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task ScheduleAsync(CancellationToken cancellationToken = default);
+    TEventDomain EventDomain { get; }
+}
+
+/// <summary>
+/// Represents an integration event that is used to communicate between 
+/// different systems.
+/// </summary>
+public record EventIntegration : Event, IEventIntegration
+{
 }

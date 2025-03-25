@@ -4,7 +4,7 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 
 using Xpandables.Net.Api.Accounts.Persistence;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Events;
+using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);

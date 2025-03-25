@@ -21,16 +21,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Collections;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// Provides a mechanism for publishing and subscribing to events.
 /// </summary>
 /// <param name="serviceProvider">The service provider to resolve event 
 /// handlers.</param>
-public sealed class EventPublisherSubscriber(
-    IServiceProvider serviceProvider) :
-    Disposable, IEventPublisher, IEventSubscriber
+public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
+    Disposable, IPublisher, ISubscriber
 {
     private readonly ConcurrentDictionary<Type, ConcurrentBag<object>> _subscribers = [];
     private readonly IServiceProvider _serviceProvider = serviceProvider;
@@ -66,53 +65,15 @@ public sealed class EventPublisherSubscriber(
                 exception);
         }
     }
-    /// <inheritdoc/>
-    public async Task<IEnumerable<EventPublished>> PublishAsync(
-        IEnumerable<IEvent> events,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            List<IEvent> eventList = [.. events];
-            if (eventList.Count == 0)
-            {
-                return [];
-            }
-
-            ConcurrentBag<EventPublished> eventPublished = [];
-
-            Task[] tasks = [.. eventList
-                .Select(@event => ((Task)PublishAsync((dynamic)@event, cancellationToken))
-                    .ContinueWith(t => eventPublished.Add(new EventPublished
-                    {
-                        EventId = @event.EventId,
-                        PublishedOn = DateTimeOffset.UtcNow,
-                        ErrorMessage = t.IsFaulted ? t.Exception?.ToString() : null
-                    }), TaskScheduler.Current))];
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return eventPublished;
-        }
-        catch (Exception exception)
-            when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "Unable to publish the events. See inner exception for details.",
-                exception);
-        }
-    }
 
     /// <inheritdoc/>
-    public void Subscribe<TEvent>(
-        Action<TEvent> subscriber)
+    public void Subscribe<TEvent>(Action<TEvent> subscriber)
         where TEvent : notnull, IEvent =>
         GetHandlersOf<TEvent>()
         .Add(subscriber);
 
     /// <inheritdoc/>
-    public void Subscribe<TEvent>(
-        Func<TEvent, Task> subscriber)
+    public void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
         where TEvent : notnull, IEvent =>
         GetHandlersOf<TEvent>()
         .Add(subscriber);
@@ -133,20 +94,11 @@ public sealed class EventPublisherSubscriber(
         base.Dispose(disposing);
     }
 
-    /// <summary>
-    /// Gets the handlers of the specified event type.
-    /// </summary>
-    /// <typeparam name="TEvent">The type of the event.</typeparam>
-    /// <returns>A concurrent bag of event handlers.</returns>
-    public ConcurrentBag<object> GetHandlersOf<TEvent>()
-        where TEvent : notnull, IEvent => GetHandlersOf(typeof(TEvent));
+    private ConcurrentBag<object> GetHandlersOf<TEvent>()
+        where TEvent : notnull, IEvent =>
+        GetHandlersOf(typeof(TEvent));
 
-    /// <summary>
-    /// Gets the handlers of the specified event type.
-    /// </summary>
-    /// <param name="eventType">The type of the event.</param>
-    /// <returns>A concurrent bag of event handlers.</returns>
-    public ConcurrentBag<object> GetHandlersOf(Type eventType)
+    private ConcurrentBag<object> GetHandlersOf(Type eventType)
     {
         ConcurrentBag<object> handlers = _subscribers.GetOrAdd(eventType, _ => []);
 

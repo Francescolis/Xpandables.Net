@@ -7,7 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Events;
+using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Repositories.Filters;
@@ -37,8 +38,8 @@ public sealed class EventSchedulerUnitTest
     {
         // Arrange
         var eventStore = _serviceProvider.GetRequiredService<IEventStore>();
-        var eventPublisher = _serviceProvider.GetRequiredService<IEventPublisher>();
-        var eventScheduler = _serviceProvider.GetRequiredService<IEventScheduler>();
+        var eventPublisher = _serviceProvider.GetRequiredService<IPublisher>();
+        var eventScheduler = _serviceProvider.GetRequiredService<IScheduler>();
 
         var testEvent = new TestEventIntegration
         {
@@ -115,12 +116,12 @@ public class InMemoryEventStore : IEventStore
     }
 
     public Task MarkAsPublishedAsync(
-        IEnumerable<EventPublished> events,
+        EventPublished eventPublished,
         CancellationToken cancellationToken = default)
     {
         var entities = _eventEntities
             .OfType<IEventEntityIntegration>()
-            .Where(e => events.Any(ep => ep.EventId == e.KeyId));
+            .Where(e => e.KeyId == eventPublished.EventId);
 
         entities.ForEach(e => e.SetStatus(EntityStatus.PUBLISHED));
 

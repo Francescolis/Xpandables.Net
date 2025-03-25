@@ -14,21 +14,28 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.States;
+namespace Xpandables.Net.Executions.Tasks;
 
-namespace Xpandables.Net.Events;
 /// <summary>
-/// Represents a snapshot of an event with its associated memento and owner.
+/// Defines a subscriber for events.
 /// </summary>
-public sealed record EventSnapshot : Event, IEventSnapshot
+public interface ISubscriber : IDisposable
 {
     /// <summary>
-    /// Gets the memento associated with the event snapshot.
+    /// Subscribes to an event with a specified action.
     /// </summary>
-    public required IMemento Memento { get; init; }
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">The action to be executed when the event 
+    /// is published.</param>
+    void Subscribe<TEvent>(Action<TEvent> subscriber)
+        where TEvent : notnull, IEvent;
 
     /// <summary>
-    /// Gets the owner of the event snapshot.
+    /// Subscribes to an event with a specified asynchronous function.
     /// </summary>
-    public required Guid OwnerId { get; init; }
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">The asynchronous function to be executed 
+    /// when the event is published.</param>
+    void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
+        where TEvent : notnull, IEvent;
 }

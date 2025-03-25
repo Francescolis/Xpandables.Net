@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Text.Json;
 
-using Xpandables.Net.Events;
+using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Repositories.Filters;

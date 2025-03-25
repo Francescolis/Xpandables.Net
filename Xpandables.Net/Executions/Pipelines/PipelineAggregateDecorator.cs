@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DataAnnotations;
-using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Pipelines;

@@ -14,22 +14,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+using Microsoft.Extensions.Hosting;
+
+namespace Xpandables.Net.Executions.Tasks;
+
 /// <summary>
-/// Represents a domain event that includes versioning and an aggregate identifier.
+/// Defines a scheduler for events.
 /// </summary>
-public interface IEventDomain : IEvent
+public interface IScheduler : IHostedService, IDisposable
 {
     /// <summary>
-    /// Sets the version of the event.
+    /// Schedules events asynchronously.
     /// </summary>
-    /// <param name="version">The version to set.</param>
-    /// <returns>The event domain with the specified version.</returns>
-    IEventDomain WithVersion(ulong version);
-
-    /// <summary>
-    /// Gets the aggregate identifier associated with the event.
-    /// </summary>
-    /// <remarks>It's based on the <see cref="Guid.NewGuid"/>.</remarks>
-    Guid AggregateId { get; init; }
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ScheduleAsync(CancellationToken cancellationToken = default);
 }

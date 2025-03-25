@@ -17,7 +17,7 @@
 
 using Xpandables.Net.States;
 
-namespace Xpandables.Net.Events.Aggregates;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Represents an abstract base class for aggregates with a specific state context.

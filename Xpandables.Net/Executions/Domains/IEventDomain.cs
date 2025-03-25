@@ -17,9 +17,27 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Executions.Tasks;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Domains;
+/// <summary>
+/// Represents a domain event that includes versioning and an aggregate identifier.
+/// </summary>
+public interface IEventDomain : IEvent
+{
+    /// <summary>
+    /// Sets the version of the event.
+    /// </summary>
+    /// <param name="version">The version to set.</param>
+    /// <returns>The event domain with the specified version.</returns>
+    IEventDomain WithVersion(ulong version);
+
+    /// <summary>
+    /// Gets the aggregate identifier associated with the event.
+    /// </summary>
+    /// <remarks>It's based on the <see cref="Guid.NewGuid"/>.</remarks>
+    Guid AggregateId { get; init; }
+}
 
 /// <summary>
 /// Represents a domain event that is associated with an aggregate.

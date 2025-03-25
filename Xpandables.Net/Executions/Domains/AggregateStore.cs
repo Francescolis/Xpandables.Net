@@ -17,10 +17,11 @@
 
 using System.ComponentModel.DataAnnotations;
 
+using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Filters;
 
-namespace Xpandables.Net.Events.Aggregates;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Represents a store for aggregates that handles appending and peeking operations.
@@ -33,15 +34,15 @@ namespace Xpandables.Net.Events.Aggregates;
 /// The <see cref="IUnitOfWork"/> must be registered with the key "Aggregate".
 /// </remarks>
 /// <param name="eventStore">The event store.</param>
-/// <param name="eventPublisher">The event publisher.</param>
+/// <param name="publisher">The event publisher.</param>
 public sealed class AggregateStore<TAggregate>(
     IEventStore eventStore,
-    IEventPublisher eventPublisher) :
+    IPublisher publisher) :
     IAggregateStore<TAggregate>
     where TAggregate : class, IAggregate, new()
 {
     private readonly IEventStore _eventStore = eventStore;
-    private readonly IEventPublisher _eventPublisher = eventPublisher;
+    private readonly IPublisher _publisher = publisher;
 
     /// <inheritdoc/>
     public async Task AppendAsync(
@@ -63,7 +64,7 @@ public sealed class AggregateStore<TAggregate>(
                 .ConfigureAwait(false);
 
             Task[] tasks = [.. uncommittedEvents
-                .Select(async @event => await _eventPublisher
+                .Select(async @event => await _publisher
                     .PublishAsync(@event, cancellationToken)
                     .ConfigureAwait(false))];
 

@@ -58,7 +58,8 @@ public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
         catch (Exception exception)
             when (exception is not ValidationException
                 and not InvalidOperationException
-                and not UnauthorizedAccessException)
+                and not UnauthorizedAccessException
+                and not ExecutionResultException)
         {
             throw new InvalidOperationException(
                 $"An error occurred getting dependency of the object " +

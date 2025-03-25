@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +15,35 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.States;
+
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents an aggregate with an identifier and version.
+/// Represents an event snapshot that includes a memento and its owner.
 /// </summary>
-public interface IAggregate : IEventSourcing
+public interface IEventSnapshot : IEvent
 {
     /// <summary>
-    /// Gets the unique identifier of the aggregate.
+    /// Gets the memento associated with the event snapshot.
     /// </summary>
-    Guid KeyId { get; }
+    IMemento Memento { get; }
 
     /// <summary>
-    /// Gets the version of the aggregate.
+    /// Gets the owner of the event snapshot.
     /// </summary>
-    ulong Version { get; }
+    Guid OwnerId { get; }
+}
 
-    /// <summary>
-    /// Gets a value indicating whether the aggregate is empty.
-    /// </summary>
-    bool IsEmpty { get; }
+/// <summary>
+/// Represents a snapshot of an event with its associated memento and owner.
+/// </summary>
+public sealed record EventSnapshot : Event, IEventSnapshot
+{
+    ///<inheritdoc/>
+    public required IMemento Memento { get; init; }
+
+    ///<inheritdoc/>
+    public required Guid OwnerId { get; init; }
 }

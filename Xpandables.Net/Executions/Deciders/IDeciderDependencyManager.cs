@@ -29,3 +29,25 @@ public interface IDeciderDependencyManager
     /// <exception cref="InvalidOperationException"></exception>
     IDeciderDependencyProvider GetDependencyProvider(Type dependencyType);
 }
+
+internal sealed class DeciderDependencyManager : IDeciderDependencyManager
+{
+    private readonly HashSet<IDeciderDependencyProvider> _dependencyProviders = [];
+    public DeciderDependencyManager(IEnumerable<IDeciderDependencyProvider> dependencyProviders)
+    {
+        foreach (var dependencyProvider in dependencyProviders)
+        {
+            if (_dependencyProviders.Contains(dependencyProvider))
+            {
+                throw new InvalidOperationException(
+                    $"The dependency provider for the type {dependencyProvider.GetType().Name} is already registered.");
+            }
+
+            _dependencyProviders.Add(dependencyProvider);
+        }
+    }
+    public IDeciderDependencyProvider GetDependencyProvider(Type dependencyType) =>
+        _dependencyProviders.FirstOrDefault(provider => provider.CanProvideDependency(dependencyType))
+            ?? throw new InvalidOperationException(
+                $"The dependency provider for the type {dependencyType.Name} is not registered.");
+}

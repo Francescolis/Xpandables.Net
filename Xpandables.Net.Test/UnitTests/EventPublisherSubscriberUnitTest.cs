@@ -3,8 +3,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Events;
 using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Test.UnitTests;
@@ -22,14 +22,14 @@ public sealed class TestQueryHander : IRequestHandler<TestQuery, string>
 public sealed class EventPublisherSubscriberUnitTest
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly EventPublisherSubscriber _eventPublisherSubscriber;
+    private readonly PublisherSubscriber _publisherSubscriber;
 
     public EventPublisherSubscriberUnitTest()
     {
         var services = new ServiceCollection();
         services.AddXHandlers();
         _serviceProvider = services.BuildServiceProvider();
-        _eventPublisherSubscriber = new EventPublisherSubscriber(_serviceProvider);
+        _publisherSubscriber = new PublisherSubscriber(_serviceProvider);
     }
 
     [Fact]
@@ -37,10 +37,10 @@ public sealed class EventPublisherSubscriberUnitTest
     {
         // Arrange
         TestEvent testEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
-        _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
+        _publisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
 
         // Act
-        await _eventPublisherSubscriber.PublishAsync(testEvent);
+        await _publisherSubscriber.PublishAsync(testEvent);
 
         // Assert
         // No exception should be thrown
@@ -51,75 +51,15 @@ public sealed class EventPublisherSubscriberUnitTest
     {
         // Arrange
         TestEvent testEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
-        _eventPublisherSubscriber
+        _publisherSubscriber
             .Subscribe<TestEvent>(e =>
                 throw new InvalidOperationException("Test exception"));
 
         // Act
-        var result = () => _eventPublisherSubscriber.PublishAsync(testEvent);
+        var result = () => _publisherSubscriber.PublishAsync(testEvent);
 
         // Assert
         await result.Should().ThrowAsync<InvalidOperationException>();
-    }
-
-    [Fact]
-    public async Task PublishAsync_MultipleEvents_ShouldReturnSuccess_WhenHandlersAreExecutedSuccessfully()
-    {
-        // Arrange
-        var testEvents = new List<TestEvent>
-            {
-                new() { EventId = Guid.CreateVersion7(),EventVersion=1 },
-                new() { EventId = Guid.CreateVersion7(), EventVersion = 1 }
-            };
-        _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
-
-        // Act
-        var result = await _eventPublisherSubscriber.PublishAsync(testEvents);
-
-        // Assert
-        result.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public void Subscribe_ShouldAddActionHandler()
-    {
-        // Arrange
-        Action<TestEvent> handler = e => { /* Handler logic */ };
-
-        // Act
-        _eventPublisherSubscriber.Subscribe(handler);
-
-        // Assert
-        var handlers = _eventPublisherSubscriber.GetHandlersOf<TestEvent>();
-        handlers.Should().Contain(handler);
-    }
-
-    [Fact]
-    public void Subscribe_ShouldAddFuncHandler()
-    {
-        // Arrange
-        Func<TestEvent, Task> handler = e => Task.CompletedTask;
-
-        // Act
-        _eventPublisherSubscriber.Subscribe(handler);
-
-        // Assert
-        var handlers = _eventPublisherSubscriber.GetHandlersOf<TestEvent>();
-        handlers.Should().Contain(handler);
-    }
-
-    [Fact]
-    public void Dispose_ShouldClearHandlers()
-    {
-        // Arrange
-        _eventPublisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
-
-        // Act
-        _eventPublisherSubscriber.Dispose();
-
-        // Assert
-        var handlers = _eventPublisherSubscriber.GetHandlersOf<TestEvent>();
-        handlers.Should().BeEmpty();
     }
 
     private record TestEvent : EventIntegration

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Interface for event sourcing, providing methods to handle events.
@@ -50,7 +50,7 @@ public interface IEventSourcing
     void LoadFromHistory(IEventDomain @event);
 
     /// <summary>
-    /// Pushes an event to the handler.
+    /// Pushes an event to the event store.
     /// </summary>
     /// <param name="event">The event to push.</param>
     void PushEvent(IEventDomain @event);

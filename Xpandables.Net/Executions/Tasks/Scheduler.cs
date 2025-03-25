@@ -21,35 +21,39 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Filters;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// Represents a background service that schedules and publishes events.
 /// </summary>
-public sealed class EventScheduler : BackgroundService, IEventScheduler
+public sealed class Scheduler : BackgroundService, IScheduler
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IDisposable? _optionsMonitor;
     private EventOptions _options;
-    private readonly ILogger<EventScheduler> _logger;
+    private readonly ILogger<Scheduler> _logger;
 
     private uint _retryCount;
 
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
+#pragma warning disable CA1031 // Do not catch general exception types
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventScheduler"/> class.
+    /// Initializes a new instance of the <see cref="Scheduler"/> class.
     /// </summary>
     /// <param name="serviceScopeFactory">The service scope factory to create 
     /// service scopes.</param>
     /// <param name="options">The options monitor to track changes in 
     /// event options.</param>
     /// <param name="logger">The logger to log information and errors.</param>
-    public EventScheduler(
+    public Scheduler(
         IServiceScopeFactory serviceScopeFactory,
         IOptionsMonitor<EventOptions> options,
-        ILogger<EventScheduler> logger)
+        ILogger<Scheduler> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _options = options.CurrentValue;
@@ -64,18 +68,16 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
     {
         if (!_options.IsEventSchedulerEnabled)
         {
-#pragma warning disable CA1848 // Use the LoggerMessage delegates
             _logger.LogWarning("Event scheduler is disabled.");
-#pragma warning restore CA1848 // Use the LoggerMessage delegates
             return;
         }
 
         using AsyncServiceScope serviceScope =
             _serviceScopeFactory.CreateAsyncScope();
 
-        IEventPublisher eventPublisher = serviceScope
+        IPublisher eventPublisher = serviceScope
             .ServiceProvider
-            .GetRequiredService<IEventPublisher>();
+            .GetRequiredService<IPublisher>();
 
         IEventStore eventStore = serviceScope
             .ServiceProvider
@@ -97,20 +99,45 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
 
         if (!events.Any())
         {
-#pragma warning disable CA1848 // Use the LoggerMessage delegates
             _logger.LogInformation("No events to schedule.");
-#pragma warning restore CA1848 // Use the LoggerMessage delegates
             return;
         }
 
-        IEnumerable<EventPublished> results =
-            await eventPublisher
-                .PublishAsync(events, cancellationToken)
-                .ConfigureAwait(false);
+        var tasks = events.Select(async @event =>
+        {
+            try
+            {
+                await eventPublisher
+                    .PublishAsync(@event, cancellationToken)
+                    .ConfigureAwait(false);
 
-        await eventStore
-            .MarkAsPublishedAsync(results, cancellationToken)
-            .ConfigureAwait(false);
+                EventPublished eventPublished = new()
+                {
+                    EventId = @event.EventId,
+                    PublishedOn = DateTime.UtcNow,
+                    ErrorMessage = string.Empty
+                };
+
+                await eventStore
+                    .MarkAsPublishedAsync(eventPublished, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                EventPublished eventPublished = new()
+                {
+                    EventId = @event.EventId,
+                    PublishedOn = DateTime.UtcNow,
+                    ErrorMessage = exception.ToString()
+                };
+
+                await eventStore
+                    .MarkAsPublishedAsync(eventPublished, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        });
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -125,7 +152,6 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
             && await timer.WaitForNextTickAsync(stoppingToken)
                 .ConfigureAwait(false))
         {
-#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
                 await ScheduleAsync(stoppingToken).ConfigureAwait(false);
@@ -133,18 +159,14 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
             catch (Exception exception)
             {
                 _retryCount++;
-#pragma warning disable CA1848 // Use the LoggerMessage delegates
                 _logger.LogError(exception,
                     "An error occurred while scheduling events. " +
                     "Retry count: {RetryCount}", _retryCount);
-#pragma warning restore CA1848 // Use the LoggerMessage delegates
 
                 if (_retryCount >= _options.MaxSchedulerRetries)
                 {
-#pragma warning disable CA1848 // Use the LoggerMessage delegates
                     _logger.LogError("Maximum retry count reached. " +
                         "Stopping the event scheduler.");
-#pragma warning restore CA1848 // Use the LoggerMessage delegates
 
                     using CancellationTokenSource cts =
                         CancellationTokenSource.CreateLinkedTokenSource(
@@ -159,7 +181,6 @@ public sealed class EventScheduler : BackgroundService, IEventScheduler
                     break;
                 }
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
     }
 

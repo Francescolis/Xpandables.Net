@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// Defines a handler for events of type <see cref="IEvent"/>.

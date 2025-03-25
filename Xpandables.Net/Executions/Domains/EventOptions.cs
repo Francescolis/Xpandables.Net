@@ -16,10 +16,11 @@
 ********************************************************************************/
 using System.Text.Json;
 
+using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Text;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Domains;
 /// <summary>
 /// Represents the options for configuring event handling.
 /// </summary>

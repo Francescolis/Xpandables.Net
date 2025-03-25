@@ -17,7 +17,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Xpandables.Net.Events.Aggregates;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Represents a store for aggregates.

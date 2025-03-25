@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Repositories.Filters;
@@ -164,31 +166,21 @@ public sealed class EventStore(
 
     /// <inheritdoc/>
     public async Task MarkAsPublishedAsync(
-        IEnumerable<EventPublished> events,
+        EventPublished eventPublished,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            Dictionary<Guid, EventPublished> publishedEvents =
-                events.ToDictionary(e => e.EventId, e => e);
+            string status = eventPublished.ErrorMessage is null
+                ? EntityStatus.PUBLISHED : EntityStatus.ONERROR;
 
-            List<EventEntityIntegration> entitiesToUpdate =
-                await _context.Integrations
-                .Where(e => publishedEvents.Keys.Contains(e.KeyId))
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            entitiesToUpdate.ForEach(entity =>
-            {
-                string? errorMessage = publishedEvents[entity.KeyId].ErrorMessage;
-                entity.SetStatus(errorMessage is null
-                    ? EntityStatus.PUBLISHED : EntityStatus.ONERROR);
-                entity.SetUpdatedOn();
-                entity.ErrorMessage = errorMessage;
-            });
-
-            _ = await _context
-                .SaveChangesAsync(cancellationToken)
+            await _context.Integrations
+                .Where(e => e.KeyId == eventPublished.EventId)
+                .ExecuteUpdateAsync(entity =>
+                    entity
+                    .SetProperty(e => e.Status, status)
+                    .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -196,7 +188,7 @@ public sealed class EventStore(
             and not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                "An error occurred while marking the events as published.",
+                "An error occurred while marking the event as published.",
                 exception);
         }
     }

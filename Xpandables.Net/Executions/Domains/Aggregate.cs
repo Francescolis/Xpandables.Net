@@ -19,7 +19,7 @@ using System.Collections.Concurrent;
 
 using Xpandables.Net.Collections;
 
-namespace Xpandables.Net.Events.Aggregates;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Represents an abstract base class for aggregates that handle domain events.
@@ -83,7 +83,7 @@ public abstract class Aggregate : IAggregate
         where TEvent : notnull, IEventDomain => On(typeof(TEvent), handler);
 
     /// <summary>
-    /// Registers an event handler for a specific event type.
+    /// Registers the delegate for the specific event type.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="handler">The event handler.</param>
@@ -91,7 +91,7 @@ public abstract class Aggregate : IAggregate
         where TEvent : notnull, IEventDomain => On(typeof(TEvent), handler);
 
     /// <summary>
-    /// Registers an event handler for a specific event type.
+    /// Registers the delegate for the specified event type.
     /// </summary>
     /// <param name="eventType">The type of the event.</param>
     /// <param name="handler">The event handler.</param>

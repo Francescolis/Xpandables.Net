@@ -23,13 +23,13 @@ using Microsoft.Extensions.Options;
 using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.States;
 
-namespace Xpandables.Net.Events.Aggregates;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Represents a store for aggregate snapshots.
 /// </summary>
 /// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public sealed class AggregateSnapshotStore<TAggregate>(
+public sealed class SnapshotStore<TAggregate>(
     IAggregateStore<TAggregate> aggregateStore,
     IEventStore eventStore,
     IOptions<EventOptions> options) :
