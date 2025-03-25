@@ -159,6 +159,7 @@ public sealed class MapGetAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.GET;
+        IsNullable = true;
     }
 }
 
@@ -191,6 +192,7 @@ public sealed class MapDeleteAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.DELETE;
+        IsSecured = true;
     }
 }
 
@@ -207,6 +209,7 @@ public sealed class MapPatchAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.PATCH;
+        IsSecured = true;
     }
 }
 
@@ -223,6 +226,7 @@ public sealed class MapHeadAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.HEAD;
+        IsNullable = true;
     }
 }
 
@@ -239,6 +243,7 @@ public sealed class MapOptionsAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.OPTIONS;
+        IsNullable = true;
     }
 }
 
@@ -255,6 +260,7 @@ public sealed class MapTraceAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.TRACE;
+        IsNullable = true;
     }
 }
 

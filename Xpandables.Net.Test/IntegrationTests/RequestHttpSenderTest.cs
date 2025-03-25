@@ -18,8 +18,7 @@ public sealed record Monkey(
     double Latitude,
     double Longitude);
 
-[MapRequest(Path = "monkeys.json", Method = Method.GET,
-    Location = Location.Body, IsNullable = true, IsSecured = false)]
+[MapGet("monkeys.json")]
 public sealed record Query : IRequestHttpAsync<Monkey>;
 
 public sealed class RequestHttpSenderTest
