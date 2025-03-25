@@ -29,7 +29,7 @@ public record RequestContext
     /// <summary>
     /// Gets the attribute associated with the HTTP client request.
     /// </summary>
-    public required RequestDefinitionAttribute Attribute { get; init; }
+    public required MapRequestAttribute Attribute { get; init; }
 
     /// <summary>
     /// Gets the client request.

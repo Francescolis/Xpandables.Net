@@ -133,26 +133,26 @@ public sealed record RequestOptions
         => PeekResponseBuilder(typeof(TResponse), statusCode);
 
     /// <summary>  
-    /// Gets the request definition for the specified request.  
+    /// Gets the map request for the specified request.  
     /// </summary>  
     /// <param name="request">The HTTP client request.</param>  
-    /// <returns>The request options attribute for the specified request.</returns>  
+    /// <returns>The map request attribute for the specified request.</returns>  
     /// <exception cref="InvalidOperationException">Thrown when the request is 
-    /// not decorated with <see cref="RequestDefinitionAttribute"/> or 
-    /// does not implement <see cref="IRequestDefinitionBuilder"/>.</exception>  
-    public RequestDefinitionAttribute GetRequestDefinition(
+    /// not decorated with <see cref="MapRequestAttribute"/> or 
+    /// does not implement <see cref="IMapRequestBuilder"/>.</exception>  
+    public MapRequestAttribute GetMapRequest(
        IRequestHttp request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        return request is IRequestDefinitionBuilder builder
+        return request is IMapRequestBuilder builder
             ? builder.Build(this)
             : request
                 .GetType()
-                .GetCustomAttribute<RequestDefinitionAttribute>(true)
+                .GetCustomAttribute<MapRequestAttribute>(true)
                 ?? throw new InvalidOperationException(
-                    $"Request must be decorated with {nameof(RequestDefinitionAttribute)} " +
-                    $"or implement {nameof(IRequestDefinitionBuilder)}");
+                    $"Request must be decorated with one of the {nameof(MapRequestAttribute)} " +
+                    $"or implement {nameof(IMapRequestBuilder)}");
     }
 
     /// <summary>

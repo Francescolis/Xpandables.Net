@@ -29,8 +29,8 @@ namespace Xpandables.Net.Http;
 /// <see cref="IRequestCookie"/>,
 /// <see cref="IRequestHeader"/>, <see cref="IRequestPatch"/>
 /// or <see cref="IRequestPathString"/>, and must be decorated 
-/// with <see cref="RequestDefinitionAttribute"/> 
-/// or implement <see cref="IRequestDefinitionBuilder"/>.
+/// with <see cref="MapRequestAttribute"/> 
+/// or implement <see cref="IMapRequestBuilder"/>.
 /// </summary>
 public interface IRequestHttpSender
 {
@@ -46,8 +46,8 @@ public interface IRequestHttpSender
     /// </summary>
     /// <param name="request">The request to act with. The request 
     /// must be decorated with 
-    /// the <see cref="RequestDefinitionAttribute"/> or implements the 
-    /// <see cref="IRequestDefinitionBuilder"/> interface.</param>
+    /// the <see cref="MapRequestAttribute"/> or implements the 
+    /// <see cref="IMapRequestBuilder"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken to 
     /// observe while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="ResponseHttp"/>.</returns>
@@ -67,8 +67,8 @@ public interface IRequestHttpSender
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="request">The request to act with. 
     /// The request must be decorated with
-    /// the <see cref="RequestDefinitionAttribute"/> or implements 
-    /// the <see cref="IRequestDefinitionBuilder"/> interface.</param>
+    /// the <see cref="MapRequestAttribute"/> or implements 
+    /// the <see cref="IMapRequestBuilder"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken 
     /// to observe while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="ResponseHttp{TResult}"/>
@@ -88,8 +88,8 @@ public interface IRequestHttpSender
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="request">The request to act with. The request
     /// must be decorated with 
-    /// the <see cref="RequestDefinitionAttribute"/> or implements the 
-    /// <see cref="IRequestDefinitionBuilder"/> interface.</param>
+    /// the <see cref="MapRequestAttribute"/> or implements the 
+    /// <see cref="IMapRequestBuilder"/> interface.</param>
     /// <param name="cancellationToken">A CancellationToken to observe 
     /// while waiting for the task to complete.</param>
     /// <returns>Returns a task <see cref="ResponseHttp{TResult}"/>

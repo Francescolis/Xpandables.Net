@@ -30,7 +30,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 ContentType = RequestDefinitions.ContentType.Json
             },
@@ -56,7 +56,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 ContentType = RequestDefinitions.ContentType.Json
             },
@@ -77,7 +77,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 IsSecured = true,
                 Scheme = "Bearer"
@@ -100,7 +100,7 @@ public sealed class HttpClientRequestCompleteBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 IsSecured = false
             },

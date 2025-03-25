@@ -18,16 +18,16 @@ namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines a builder for creating
-/// <see cref="RequestDefinitionAttribute"/> at runtime.
+/// <see cref="MapRequestAttribute"/> at runtime.
 /// </summary>
 /// <remarks>This interface take priority over the static
-/// <see cref="RequestDefinitionAttribute"/>.</remarks>
-public interface IRequestDefinitionBuilder
+/// <see cref="MapRequestAttribute"/>.</remarks>
+public interface IMapRequestBuilder
 {
     /// <summary>
-    /// Builds the <see cref="RequestDefinitionAttribute"/>.
+    /// Builds the <see cref="MapRequestAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RequestOptions"/>.</param>
-    /// <returns>The built <see cref="RequestDefinitionAttribute"/>.</returns>
-    RequestDefinitionAttribute Build(RequestOptions options);
+    /// <returns>The built <see cref="MapRequestAttribute"/>.</returns>
+    MapRequestAttribute Build(RequestOptions options);
 }

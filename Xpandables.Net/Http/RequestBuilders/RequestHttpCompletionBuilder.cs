@@ -40,7 +40,7 @@ public sealed class RequestHttpCompletionBuilder : RequestHttpBuilder<IRequestHt
         {
             context.Message.Options
                 .Set(new(nameof(
-                    RequestDefinitionAttribute.IsSecured)),
+                    MapRequestAttribute.IsSecured)),
                     context.Attribute.IsSecured);
 
             if (context.Message.Headers.Authorization is null)

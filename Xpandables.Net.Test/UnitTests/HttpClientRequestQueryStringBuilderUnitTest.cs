@@ -19,7 +19,7 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.Query,
                 Path = "http://example.com"
@@ -46,7 +46,7 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.Body,
                 Path = "http://example.com"

@@ -21,7 +21,7 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.BasicAuth
             },
@@ -44,7 +44,7 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.Body
             },

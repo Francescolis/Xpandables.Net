@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 
-[RequestDefinition(Path = "/accounts",
+[MapRequest(Path = "/accounts",
     IsNullable = false,
     IsSecured = false,
     Location = RequestDefinitions.Location.Body,

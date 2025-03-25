@@ -50,7 +50,7 @@ public abstract class RequestHttpAuthorizationHandler : HttpClientHandler
 
         if (!request.Options
             .TryGetValue(
-                new(nameof(RequestDefinitionAttribute.IsSecured)),
+                new(nameof(MapRequestAttribute.IsSecured)),
                 out bool? isSecured) || !isSecured.GetValueOrDefault())
         {
             return await base

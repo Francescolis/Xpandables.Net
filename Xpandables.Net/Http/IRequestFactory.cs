@@ -54,10 +54,13 @@ internal sealed class RequestFactory : Disposable, IRequestFactory
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        RequestDefinitionAttribute attribute = _requestOptions.GetRequestDefinition(request);
+        MapRequestAttribute attribute = _requestOptions.GetMapRequest(request);
 
-        List<IRequestHttpBuilder> builders =
-            [.. _requestOptions.PeekRequestBuilders(request.GetType())];
+        List<IRequestHttpBuilder> builders = attribute.RequestBuilder switch
+        {
+            not null => [attribute.RequestBuilder],
+            _ => [.. _requestOptions.PeekRequestBuilders(request.GetType())]
+        };
 
         if (builders.Count == 0)
             throw new InvalidOperationException(

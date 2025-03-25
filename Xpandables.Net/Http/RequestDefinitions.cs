@@ -19,7 +19,7 @@ using System.Collections.Immutable;
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Provides with <see cref="RequestDefinitionAttribute"/> definitions.
+/// Provides with <see cref="MapRequestAttribute"/> definitions.
 /// </summary>
 public static class RequestDefinitions
 {

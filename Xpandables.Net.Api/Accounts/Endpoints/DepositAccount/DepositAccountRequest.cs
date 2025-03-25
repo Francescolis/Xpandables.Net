@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
-[RequestDefinition(Path = "/accounts/deposit",
+[MapRequest(Path = "/accounts/deposit",
     IsNullable = false,
     IsSecured = false,
     Location = RequestDefinitions.Location.Body,

@@ -18,7 +18,7 @@ public sealed record Monkey(
     double Latitude,
     double Longitude);
 
-[RequestDefinition(Path = "monkeys.json", Method = Method.GET,
+[MapRequest(Path = "monkeys.json", Method = Method.GET,
     Location = Location.Body, IsNullable = true, IsSecured = false)]
 public sealed record Query : IRequestHttpAsync<Monkey>;
 

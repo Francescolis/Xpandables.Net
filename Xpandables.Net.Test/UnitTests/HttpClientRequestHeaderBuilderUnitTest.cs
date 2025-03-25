@@ -20,7 +20,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.Header
             },
@@ -44,7 +44,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.Body
             },
@@ -65,7 +65,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.Header
             },

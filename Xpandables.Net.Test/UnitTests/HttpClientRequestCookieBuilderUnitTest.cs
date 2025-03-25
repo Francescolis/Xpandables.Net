@@ -19,7 +19,7 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.Cookie
             },
@@ -49,7 +49,7 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 Location = Location.Body
             },

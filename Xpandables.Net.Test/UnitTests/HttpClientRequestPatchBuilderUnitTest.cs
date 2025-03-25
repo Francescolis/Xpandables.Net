@@ -22,7 +22,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -56,7 +56,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 IsNullable = true,
                 Location = Location.Body,
@@ -86,7 +86,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 IsNullable = false,
                 Location = Location.Header,
@@ -117,7 +117,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,
@@ -147,7 +147,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new RequestDefinitionAttribute
+            Attribute = new MapRequestAttribute
             {
                 IsNullable = false,
                 Location = Location.Body,

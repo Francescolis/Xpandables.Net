@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
-[RequestDefinition(Path = "/accounts/balance",
+[MapRequest(Path = "/accounts/balance",
     IsNullable = false,
     IsSecured = false,
     Location = RequestDefinitions.Location.Query,
