@@ -160,6 +160,7 @@ public sealed class MapGetAttribute : MapRequestAttribute
         Path = path;
         Method = Method.GET;
         IsNullable = true;
+        Location = Location.Query;
     }
 }
 
