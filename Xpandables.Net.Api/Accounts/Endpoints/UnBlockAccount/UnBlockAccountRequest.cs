@@ -5,11 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
-[MapRequest(Path = "/accounts/unblock",
-    IsNullable = false,
-    IsSecured = false,
-    Location = RequestDefinitions.Location.Body,
-    Method = RequestDefinitions.Method.POST)]
+[MapPost("/accounts/unblock")]
 public sealed record UnBlockAccountRequest : IValidationEnabled
 {
     [Required]

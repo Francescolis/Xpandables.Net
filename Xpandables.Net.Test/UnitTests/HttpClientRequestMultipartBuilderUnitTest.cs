@@ -21,7 +21,6 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Multipart
             },
@@ -38,29 +37,6 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
     }
 
     [Fact]
-    public void Build_ShouldNotSetMultipartContent_WhenIsNullableIsTrue()
-    {
-        // Arrange
-        var context = new RequestContext
-        {
-            Attribute = new MapRequestAttribute
-            {
-                IsNullable = true,
-                Location = Location.Body,
-                BodyFormat = BodyFormat.Multipart
-            },
-            Request = new TestHttpRequestMultipart(),
-            Message = new HttpRequestMessage()
-        };
-
-        // Act
-        _builder.Build(context);
-
-        // Assert
-        context.Message.Content.Should().BeNull();
-    }
-
-    [Fact]
     public void Build_ShouldNotSetMultipartContent_WhenLocationIsNotBody()
     {
         // Arrange
@@ -68,7 +44,6 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Header,
                 BodyFormat = BodyFormat.Multipart
             },
@@ -91,7 +66,6 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
             },

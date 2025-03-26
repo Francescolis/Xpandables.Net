@@ -5,11 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 
-[MapRequest(Path = "/accounts",
-    IsNullable = false,
-    IsSecured = false,
-    Location = RequestDefinitions.Location.Body,
-    Method = RequestDefinitions.Method.POST)]
+[MapPost("/accounts")]
 public sealed record CreateAccountRequest : IValidationEnabled
 {
     [Required]

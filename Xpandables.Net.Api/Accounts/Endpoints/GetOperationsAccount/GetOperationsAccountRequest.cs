@@ -5,11 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
 
-[MapRequest(Path = "/accounts/operations",
-    IsNullable = false,
-    IsSecured = false,
-    Location = RequestDefinitions.Location.Query,
-    Method = RequestDefinitions.Method.GET)]
+[MapGet("/accounts/operations")]
 public sealed record GetOperationsAccountRequest : IValidationEnabled
 {
     [Required]

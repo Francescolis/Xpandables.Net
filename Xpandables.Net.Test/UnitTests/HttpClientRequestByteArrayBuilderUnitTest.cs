@@ -21,7 +21,6 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.ByteArray
             },
@@ -38,29 +37,6 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
     }
 
     [Fact]
-    public void Build_ShouldNotSetByteArrayContent_WhenIsNullableIsTrue()
-    {
-        // Arrange
-        var context = new RequestContext
-        {
-            Attribute = new MapRequestAttribute
-            {
-                IsNullable = true,
-                Location = Location.Body,
-                BodyFormat = BodyFormat.ByteArray
-            },
-            Request = new TestHttpRequestByteArray(),
-            Message = new HttpRequestMessage()
-        };
-
-        // Act
-        _builder.Build(context);
-
-        // Assert
-        context.Message.Content.Should().BeNull();
-    }
-
-    [Fact]
     public void Build_ShouldNotSetByteArrayContent_WhenLocationIsNotBody()
     {
         // Arrange
@@ -68,7 +44,6 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Header,
                 BodyFormat = BodyFormat.ByteArray
             },
@@ -91,7 +66,6 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
             },

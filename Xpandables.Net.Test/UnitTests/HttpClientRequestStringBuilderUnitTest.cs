@@ -23,7 +23,6 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
                 ContentType = "application/json"
@@ -44,31 +43,6 @@ public sealed class HttpClientRequestStringBuilderUnitTest
     }
 
     [Fact]
-    public void Build_ShouldNotSetStringContent_WhenIsNullableIsTrue()
-    {
-        // Arrange
-        var context = new RequestContext
-        {
-            Attribute = new MapRequestAttribute
-            {
-                IsNullable = true,
-                Location = Location.Body,
-                BodyFormat = BodyFormat.String,
-                ContentType = "application/json"
-            },
-            Request = new TestHttpRequestString(),
-            Message = new HttpRequestMessage(),
-            SerializerOptions = new JsonSerializerOptions()
-        };
-
-        // Act
-        _builder.Build(context);
-
-        // Assert
-        context.Message.Content.Should().BeNull();
-    }
-
-    [Fact]
     public void Build_ShouldNotSetStringContent_WhenLocationIsNotBody()
     {
         // Arrange
@@ -76,7 +50,6 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Header,
                 BodyFormat = BodyFormat.String,
                 ContentType = "application/json"
@@ -101,7 +74,6 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Multipart,
                 ContentType = "application/json"
@@ -126,7 +98,6 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
                 ContentType = "application/json"

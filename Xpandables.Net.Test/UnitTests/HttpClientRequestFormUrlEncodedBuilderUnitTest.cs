@@ -21,7 +21,6 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.FormUrlEncoded
             },
@@ -38,29 +37,6 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     }
 
     [Fact]
-    public void Build_ShouldNotSetFormUrlEncodedContent_WhenIsNullableIsTrue()
-    {
-        // Arrange
-        var context = new RequestContext
-        {
-            Attribute = new MapRequestAttribute
-            {
-                IsNullable = true,
-                Location = Location.Body,
-                BodyFormat = BodyFormat.FormUrlEncoded
-            },
-            Request = new TestHttpRequestFormUrlEncoded(),
-            Message = new HttpRequestMessage()
-        };
-
-        // Act
-        _builder.Build(context);
-
-        // Assert
-        context.Message.Content.Should().BeNull();
-    }
-
-    [Fact]
     public void Build_ShouldNotSetFormUrlEncodedContent_WhenLocationIsNotBody()
     {
         // Arrange
@@ -68,7 +44,6 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Header,
                 BodyFormat = BodyFormat.FormUrlEncoded
             },
@@ -91,7 +66,6 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
             },

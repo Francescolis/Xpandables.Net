@@ -176,7 +176,8 @@ public interface IRequestString : IRequestHttpDefinition
     /// Returns the string content.
     /// </summary>
     /// <returns>The string content.</returns>
-    object GetStringContent();
+    /// <remarks>By default, the method returns the current instance.</remarks>
+    public object GetStringContent() => this;
 }
 
 /// <summary>

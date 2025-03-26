@@ -21,7 +21,6 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream
             },
@@ -38,29 +37,6 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
     }
 
     [Fact]
-    public void Build_ShouldNotSetStreamContent_WhenIsNullableIsTrue()
-    {
-        // Arrange
-        var context = new RequestContext
-        {
-            Attribute = new MapRequestAttribute
-            {
-                IsNullable = true,
-                Location = Location.Body,
-                BodyFormat = BodyFormat.Stream
-            },
-            Request = new TestHttpRequestStream(),
-            Message = new HttpRequestMessage()
-        };
-
-        // Act
-        _builder.Build(context);
-
-        // Assert
-        context.Message.Content.Should().BeNull();
-    }
-
-    [Fact]
     public void Build_ShouldNotSetStreamContent_WhenLocationIsNotBody()
     {
         // Arrange
@@ -68,7 +44,6 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Header,
                 BodyFormat = BodyFormat.Stream
             },
@@ -91,7 +66,6 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
             },
@@ -114,7 +88,6 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream
             },

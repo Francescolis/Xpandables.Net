@@ -29,8 +29,7 @@ public sealed class RequestHttpPatchBuilder : RequestHttpBuilder<IRequestPatch>
     ///<inheritdoc/>
     public override void Build(RequestContext context)
     {
-        if (context.Attribute.IsNullable
-            || (context.Attribute.Location & Location.Body) != Location.Body
+        if ((context.Attribute.Location & Location.Body) != Location.Body
             || context.Attribute.BodyFormat != BodyFormat.String)
         {
             return;

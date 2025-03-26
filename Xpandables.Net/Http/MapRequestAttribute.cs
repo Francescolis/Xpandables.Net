@@ -99,16 +99,6 @@ public class MapRequestAttribute : Attribute
     public bool IsSecured { get; set; }
 
     /// <summary>
-    /// Gets the value indicating whether or not the target 
-    /// class should be added to the request body.
-    /// If <see langword="true"/> the target class will not be added.
-    /// The default value is <see langword="false"/>.
-    /// Be aware of the fact that, setting this value to <see langword="true"/>
-    /// will disable all parameters linked to <see cref="Location.Body"/>.
-    /// </summary>
-    public bool IsNullable { get; set; }
-
-    /// <summary>
     /// Gets or sets the authorization scheme.
     /// The default value is "Bearer".
     /// </summary>
@@ -159,7 +149,6 @@ public sealed class MapGetAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.GET;
-        IsNullable = true;
         Location = Location.Query;
     }
 }
@@ -227,7 +216,6 @@ public sealed class MapHeadAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.HEAD;
-        IsNullable = true;
     }
 }
 
@@ -244,7 +232,6 @@ public sealed class MapOptionsAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.OPTIONS;
-        IsNullable = true;
     }
 }
 
@@ -261,7 +248,6 @@ public sealed class MapTraceAttribute : MapRequestAttribute
     {
         Path = path;
         Method = Method.TRACE;
-        IsNullable = true;
     }
 }
 

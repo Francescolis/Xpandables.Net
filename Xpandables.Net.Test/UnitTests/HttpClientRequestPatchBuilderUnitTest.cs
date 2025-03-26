@@ -24,7 +24,6 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
                 ContentType = ContentType.Json
@@ -51,36 +50,6 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     }
 
     [Fact]
-    public void Build_ShouldNotSetStringContent_WhenIsNullableIsTrue()
-    {
-        // Arrange
-        var context = new RequestContext
-        {
-            Attribute = new MapRequestAttribute
-            {
-                IsNullable = true,
-                Location = Location.Body,
-                BodyFormat = BodyFormat.String,
-                ContentType = ContentType.Json
-            },
-            Request = new TestHttpRequestPatch()
-            {
-                PatchOperationsBuilder = req =>
-                [
-                    Replace("/name", "newName")
-                ]
-            },
-            Message = new HttpRequestMessage()
-        };
-
-        // Act
-        _builder.Build(context);
-
-        // Assert
-        context.Message.Content.Should().BeNull();
-    }
-
-    [Fact]
     public void Build_ShouldNotSetStringContent_WhenLocationIsNotBody()
     {
         // Arrange
@@ -88,7 +57,6 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Header,
                 BodyFormat = BodyFormat.String,
                 ContentType = ContentType.Json
@@ -119,7 +87,6 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream,
                 ContentType = ContentType.Json
@@ -149,7 +116,6 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         {
             Attribute = new MapRequestAttribute
             {
-                IsNullable = false,
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
                 ContentType = ContentType.Json

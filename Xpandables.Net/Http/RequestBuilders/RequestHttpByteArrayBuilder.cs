@@ -25,15 +25,21 @@ public sealed class RequestHttpByteArrayBuilder : RequestHttpBuilder<IRequestByt
     /// <inheritdoc/>
     public override void Build(RequestContext context)
     {
-        if (!context.Attribute.IsNullable
-             && (context.Attribute.Location & Location.Body) == Location.Body
+        if ((context.Attribute.Location & Location.Body) == Location.Body
              && context.Attribute.BodyFormat == BodyFormat.ByteArray)
         {
             IRequestByteArray request = (IRequestByteArray)context.Request;
 
             ByteArrayContent byteArray = request.GetByteArrayContent();
 
-            context.Message.Content = byteArray;
+            if (context.Message.Content is MultipartFormDataContent multipart)
+            {
+                multipart.Add(byteArray);
+            }
+            else
+            {
+                context.Message.Content = byteArray;
+            }
         }
     }
 }

@@ -5,11 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
-[MapRequest(Path = "/accounts/balance",
-    IsNullable = false,
-    IsSecured = false,
-    Location = RequestDefinitions.Location.Query,
-    Method = RequestDefinitions.Method.GET)]
+[MapGet("/accounts/balance")]
 public sealed record GetBalanceAccountRequest : IValidationEnabled
 {
     [Required]

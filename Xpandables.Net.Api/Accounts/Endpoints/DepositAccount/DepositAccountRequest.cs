@@ -5,11 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
-[MapRequest(Path = "/accounts/deposit",
-    IsNullable = false,
-    IsSecured = false,
-    Location = RequestDefinitions.Location.Body,
-    Method = RequestDefinitions.Method.POST)]
+[MapPost("/accounts/deposit")]
 public sealed record DepositAccountRequest : IValidationEnabled
 {
     [Required]

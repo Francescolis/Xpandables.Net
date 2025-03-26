@@ -26,8 +26,7 @@ public sealed class RequestHttpStreamBuilder : RequestHttpBuilder<IRequestStream
     ///<inheritdoc/>
     public override void Build(RequestContext context)
     {
-        if (context.Attribute.IsNullable
-            || (context.Attribute.Location & Location.Body) != Location.Body
+        if ((context.Attribute.Location & Location.Body) != Location.Body
             || context.Attribute.BodyFormat != BodyFormat.Stream)
         {
             return;

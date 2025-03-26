@@ -26,8 +26,7 @@ public sealed class RequestHttpFormUrlEncodedBuilder : RequestHttpBuilder<IReque
     ///<inheritdoc/>  
     public override void Build(RequestContext context)
     {
-        if (!context.Attribute.IsNullable
-            && (context.Attribute.Location & Location.Body) == Location.Body
+        if ((context.Attribute.Location & Location.Body) == Location.Body
             && context.Attribute.BodyFormat == BodyFormat.FormUrlEncoded)
         {
             IRequestFormUrlEncoded request =
@@ -35,7 +34,14 @@ public sealed class RequestHttpFormUrlEncodedBuilder : RequestHttpBuilder<IReque
 
             FormUrlEncodedContent content = request.GetFormUrlEncodedContent();
 
-            context.Message.Content = content;
+            if (context.Message.Content is MultipartFormDataContent multipart)
+            {
+                multipart.Add(content);
+            }
+            else
+            {
+                context.Message.Content = content;
+            }
         }
     }
 }
