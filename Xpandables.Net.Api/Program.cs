@@ -22,7 +22,7 @@ builder.Services.AddXHandlers();
 builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();
 builder.Services.AddXEventUnitOfWork();
-builder.Services.AddXEventPublisher();
+builder.Services.AddXPublisher();
 builder.Services.AddXAggregateDependencyProvider();
 builder.Services.AddXDeciderDependencyManager();
 builder.Services.AddXPipelineUnitOfWorkDecorator();

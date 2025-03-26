@@ -17,10 +17,14 @@
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Executions.Deciders;
+using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Pipelines;
 using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.States;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
@@ -39,7 +43,19 @@ public static class ServiceCollectionDispatcherExtensions
     public static IServiceCollection AddXDispatcher<TDispatcher>(
         this IServiceCollection services)
         where TDispatcher : class, IDispatcher =>
-        services.AddScoped<IDispatcher, TDispatcher>();
+        services
+            .AddScoped<IDispatcher, TDispatcher>()
+            .AddXPipelineRequestHandler()
+            .AddXPipelineStreamRequestHandler();
+
+    /// <summary>
+    /// Adds a defaults dispatcher and pipeline request handler to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the dispatcher to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXDispatcher(
+        this IServiceCollection services) =>
+        services.AddXDispatcher<Dispatcher>();
 
     /// <summary>
     /// Registers a pipeline request handler of the specified type to the
@@ -108,18 +124,6 @@ public static class ServiceCollectionDispatcherExtensions
     public static IServiceCollection AddXPipelineStreamRequestHandler(
         this IServiceCollection services) =>
         services.AddXPipelineStreamRequestHandler(typeof(PipelineStreamRequestHandler<,>));
-
-    /// <summary>
-    /// Adds a defaults dispatcher and pipeline request handler to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The service collection to add the dispatcher to.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXDispatcher(
-        this IServiceCollection services) =>
-        services
-            .AddXDispatcher<Dispatcher>()
-            .AddXPipelineRequestHandler()
-            .AddXPipelineStreamRequestHandler();
 
     internal readonly record struct HandlerType(
         Type Type,
@@ -307,5 +311,293 @@ public static class ServiceCollectionDispatcherExtensions
                 $"{pipelineType.Name} does not implement IPipelineStreamDecorator<,> interface.");
         }
         return services.AddTransient(typeof(IPipelineStreamDecorator<,>), pipelineType);
+    }
+
+    /// <summary>
+    /// Adds the aggregate snapshot store to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the aggregate 
+    /// snapshot store to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXSnapshotStore(
+        this IServiceCollection services) =>
+        services.XTryDecorate(
+            typeof(IAggregateStore<>),
+            typeof(SnapshotStore<>),
+            typeof(IOriginator));
+
+    /// <summary>
+    /// Adds the specified aggregate store implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the
+    /// aggregate store to.</param>
+    /// <param name="aggregateStoreType">The type of the aggregate store 
+    /// implementation.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXAggregateStore(
+        this IServiceCollection services,
+        Type aggregateStoreType)
+    {
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IAggregateStore<>),
+                aggregateStoreType,
+                ServiceLifetime.Scoped));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the default aggregate store implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the
+    /// aggregate store to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXAggregateStore(
+        this IServiceCollection services) =>
+        services.AddXAggregateStore(typeof(AggregateStore<>));
+
+    /// <summary>
+    /// Adds the specified event store implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TEventStore">The type of the event store 
+    /// implementation.</typeparam>
+    /// <param name="services">The service collection to add the
+    /// event store to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXEventStore<TEventStore>(
+        this IServiceCollection services)
+        where TEventStore : class, IEventStore
+    {
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IEventStore),
+                typeof(TEventStore),
+                ServiceLifetime.Scoped));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the specified publisher implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TPublisher">The type of the publisher 
+    /// implementation.</typeparam>
+    /// <param name="services">The service collection to add the
+    /// publisher to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPublisher<TPublisher>(
+        this IServiceCollection services)
+        where TPublisher : class, IPublisher
+    {
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IPublisher),
+                typeof(TPublisher),
+                ServiceLifetime.Scoped));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the default publisher implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the
+    /// publisher to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPublisher(
+        this IServiceCollection services) =>
+        services.AddXPublisher<PublisherSubscriber>();
+
+    /// <summary>
+    /// Adds the specified subscriber implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TSubscriber">The type of the subscriber 
+    /// implementation.</typeparam>
+    /// <param name="services">The service collection to add the
+    /// subscriber to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXSubscriber<TSubscriber>(
+        this IServiceCollection services)
+        where TSubscriber : class, ISubscriber
+    {
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(ISubscriber),
+                typeof(TSubscriber),
+                ServiceLifetime.Scoped));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the default subscriber implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the
+    /// subscriber to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXSubscriber(
+        this IServiceCollection services) =>
+        services.AddXSubscriber<PublisherSubscriber>();
+
+    /// <summary>
+    /// Adds the specified scheduler implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TScheduler">The type of the event scheduler 
+    /// implementation.</typeparam>
+    /// <param name="services">The service collection to add the
+    /// scheduler to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXScheduler<TScheduler>(
+        this IServiceCollection services)
+        where TScheduler : class, IScheduler
+    {
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IScheduler),
+                typeof(TScheduler),
+                ServiceLifetime.Singleton));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the default scheduler implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the
+    /// scheduler to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXScheduler(
+        this IServiceCollection services) =>
+        services.AddXScheduler<Scheduler>();
+
+    /// <summary>
+    /// Adds the specified scheduler implementation that also implements
+    /// <see cref="IHostedService"/> to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TScheduler">The type of the scheduler 
+    /// implementation.</typeparam>
+    /// <param name="services">The service collection to add the
+    /// scheduler to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXSchedulerHosted<TScheduler>(
+        this IServiceCollection services)
+        where TScheduler : class, IScheduler, IHostedService =>
+        services
+            .AddXScheduler<TScheduler>()
+            .AddHostedService(provider =>
+                provider.GetRequiredService<IScheduler>());
+
+    /// <summary>
+    /// Adds the default hosted scheduler implementation that also implements
+    /// <see cref="IHostedService"/> to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the hosted
+    /// scheduler to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXSchedulerHosted(
+        this IServiceCollection services) =>
+        services.AddXSchedulerHosted<Scheduler>();
+
+    /// <summary>
+    /// Adds the specified event handler implementation to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <typeparam name="TEventHandler">The type of the event handler 
+    /// implementation.</typeparam>
+    /// <param name="services">The service collection to add the
+    /// event handler to.</param>
+    /// <param name="factory">The factory method to create the event handler 
+    /// instance.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXEventHandler<TEvent, TEventHandler>(
+        this IServiceCollection services,
+        Func<IServiceProvider, TEventHandler>? factory)
+        where TEvent : notnull, IEvent
+        where TEventHandler : class, IEventHandler<TEvent>
+    {
+        if (factory is not null)
+        {
+            services.Add(
+                new ServiceDescriptor(
+                    typeof(IEventHandler<TEvent>),
+                    factory,
+                    ServiceLifetime.Scoped));
+        }
+        else
+        {
+            services.Add(
+                new ServiceDescriptor(
+                    typeof(IEventHandler<TEvent>),
+                    typeof(TEventHandler),
+                    ServiceLifetime.Scoped));
+        }
+
+        return services;
+    }
+
+    internal static readonly MethodInfo AddEventHandlerMethod =
+        typeof(ServiceCollectionDispatcherExtensions)
+        .GetMethod(nameof(AddXEventHandler))!;
+
+    /// <summary>
+    /// Adds event handlers from the specified assemblies 
+    /// to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to add the event 
+    /// handlers to.</param>
+    /// <param name="assemblies">The assemblies to scan for event handlers.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXEventHandlers(
+        this IServiceCollection services,
+        params Assembly[] assemblies)
+    {
+        if (assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
+
+        var eventHandlerTypes = assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type =>
+                type is { IsClass: true, IsAbstract: false, IsSealed: true }
+                && type.GetInterfaces().Any(@interface =>
+                    @interface.IsGenericType
+                    && @interface.GetGenericTypeDefinition() == typeof(IEventHandler<>)))
+            .Select(type => new
+            {
+                InterfaceTypes = type.GetInterfaces()
+                    .Where(@interface =>
+                        @interface.IsGenericType
+                        && @interface.GetGenericTypeDefinition() == typeof(IEventHandler<>)),
+                EventHandlerType = type
+            });
+
+        foreach (var eventHandlerType in eventHandlerTypes)
+        {
+            foreach (Type interfaceType in eventHandlerType.InterfaceTypes)
+            {
+                MethodInfo addEventHandlerMethod = AddEventHandlerMethod
+                    .MakeGenericMethod(
+                        interfaceType.GetGenericArguments()[0],
+                        eventHandlerType.EventHandlerType);
+
+                _ = addEventHandlerMethod.Invoke(null, [services, null]);
+            }
+        }
+
+        return services;
     }
 }

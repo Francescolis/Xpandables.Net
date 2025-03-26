@@ -24,9 +24,9 @@ public sealed class EventSchedulerUnitTest
         var services = new ServiceCollection();
 
         services.AddSingleton<IEventStore, InMemoryEventStore>();
-        services.AddXEventPublisher();
-        services.AddXEventSubscriber();
-        services.AddXEventScheduler();
+        services.AddXPublisher();
+        services.AddXSubscriber();
+        services.AddXScheduler();
         services.Configure<EventOptions>(EventOptions.Default);
         services.AddLogging();
 
