@@ -13,7 +13,7 @@ public sealed class UnBlockAccountEndpoint : IEndpointRoute
         app.MapPost("/accounts/unblock",
             async (
                 [FromBody] UnBlockAccountRequest request,
-                IDispatcher dispatcher,
+                IMediator dispatcher,
                 CancellationToken cancellationToken) =>
             {
                 UnBlockAccountCommand command = new()

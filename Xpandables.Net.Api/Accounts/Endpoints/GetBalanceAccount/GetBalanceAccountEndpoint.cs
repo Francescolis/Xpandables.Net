@@ -9,7 +9,7 @@ public sealed class GetBalanceAccountEndpoint : IEndpointRoute
         app.MapGet("/accounts/balance",
             async (
                 [AsParameters] GetBalanceAccountRequest request,
-                IDispatcher dispatcher,
+                IMediator dispatcher,
                 CancellationToken cancellationToken) =>
             {
                 GetBalanceAccountQuery command = new()

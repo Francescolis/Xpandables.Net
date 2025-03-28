@@ -13,7 +13,7 @@ public sealed class DepositAccountEndpoint : IEndpointRoute
         app.MapPost("/accounts/deposit",
             async (
                 [FromBody] DepositAccountRequest request,
-                IDispatcher dispatcher,
+                IMediator dispatcher,
                 CancellationToken cancellationToken) =>
             {
                 DepositAccountCommand command = new()

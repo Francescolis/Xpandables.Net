@@ -28,34 +28,34 @@ using Xpandables.Net.States;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
-/// Provides extension methods for adding dispatcher services to the 
+/// Provides extension methods for adding mediator services to the 
 /// <see cref="IServiceCollection"/>.
 /// </summary>
 public static class ServiceCollectionDispatcherExtensions
 {
     /// <summary>
-    /// Adds a dispatcher of type <typeparamref name="TDispatcher"/> to 
+    /// Adds a mediator of type <typeparamref name="TMediator"/> to 
     /// the <see cref="IServiceCollection"/>.
     /// </summary>
-    /// <typeparam name="TDispatcher">The type of the dispatcher to add.</typeparam>
-    /// <param name="services">The service collection to add the dispatcher to.</param>
+    /// <typeparam name="TMediator">The type of the mediator to add.</typeparam>
+    /// <param name="services">The service collection to add the mediator to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXDispatcher<TDispatcher>(
+    public static IServiceCollection AddXMediator<TMediator>(
         this IServiceCollection services)
-        where TDispatcher : class, IDispatcher =>
+        where TMediator : class, IMediator =>
         services
-            .AddScoped<IDispatcher, TDispatcher>()
+            .AddScoped<IMediator, TMediator>()
             .AddXPipelineRequestHandler()
             .AddXPipelineStreamRequestHandler();
 
     /// <summary>
-    /// Adds a defaults dispatcher and pipeline request handler to the <see cref="IServiceCollection"/>.
+    /// Adds a defaults mediator and pipeline request handler to the <see cref="IServiceCollection"/>.
     /// </summary>
-    /// <param name="services">The service collection to add the dispatcher to.</param>
+    /// <param name="services">The service collection to add the mediator to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXDispatcher(
+    public static IServiceCollection AddXMediator(
         this IServiceCollection services) =>
-        services.AddXDispatcher<Dispatcher>();
+        services.AddXMediator<Mediator>();
 
     /// <summary>
     /// Registers a pipeline request handler of the specified type to the
@@ -132,7 +132,7 @@ public static class ServiceCollectionDispatcherExtensions
     /// <summary>
     /// Adds handlers to the <see cref="IServiceCollection"/> with scoped lifetime.
     /// </summary>
-    /// <param name="services">The service collection to add the dispatcher 
+    /// <param name="services">The service collection to add the mediator 
     /// handlers to.</param>
     /// <param name="assemblies">The assemblies to scan for handlers.</param>
     /// <returns>The updated service collection.</returns>
@@ -258,6 +258,7 @@ public static class ServiceCollectionDispatcherExtensions
 
     /// <summary>
     /// Adds an exception pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>

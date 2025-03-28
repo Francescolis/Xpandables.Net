@@ -20,10 +20,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Represents a dispatcher that handles various operations such as fetching, 
+/// Represents a mediator that handles various operations such as fetching, 
 /// sending requests.
 /// </summary>
-internal sealed class Dispatcher(IServiceProvider provider) : IDispatcher
+internal sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc/>
     public Task<IExecutionResult> SendAsync(

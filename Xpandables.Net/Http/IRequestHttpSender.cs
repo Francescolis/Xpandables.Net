@@ -36,7 +36,7 @@ public interface IRequestHttpSender
 {
     /// <summary>
     /// Contains the <see cref="System.Net.Http.HttpClient"/> 
-    /// instance for the current dispatcher.
+    /// instance for the current mediator.
     /// </summary>
     HttpClient HttpClient { get; }
 

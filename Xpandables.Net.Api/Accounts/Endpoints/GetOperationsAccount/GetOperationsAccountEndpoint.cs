@@ -9,7 +9,7 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
         app.MapGet("/accounts/operations",
             (
                 [AsParameters] GetOperationsAccountRequest request,
-                IDispatcher dispatcher,
+                IMediator dispatcher,
                 CancellationToken cancellationToken) =>
             {
                 GetOperationsAccountQuery command = new()

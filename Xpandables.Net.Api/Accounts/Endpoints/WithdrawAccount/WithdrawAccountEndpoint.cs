@@ -13,7 +13,7 @@ public sealed class WithdrawAccountEndpoint : IEndpointRoute
         app.MapPost("/accounts/withdraw",
             async (
                 [FromBody] WithdrawAccountRequest request,
-                IDispatcher dispatcher,
+                IMediator dispatcher,
                 CancellationToken cancellationToken) =>
             {
                 WithdrawAccountCommand command = new()

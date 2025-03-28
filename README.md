@@ -352,9 +352,9 @@ public class GetDataRequest : IHttpClientRequest { }
 public class SampleUsage 
 { 
     private readonly IHttpClientDispatcher _dispatcher;
-    public SampleUsage(IHttpClientDispatcher dispatcher)
+    public SampleUsage(IHttpClientDispatcher mediator)
     {
-        _dispatcher = dispatcher;
+        _dispatcher = mediator;
     }
 
     public async Task SendRequestAsync()
@@ -392,9 +392,9 @@ public class GetDataRequest : IHttpClientRequest<string> { }
 public class SampleUsage 
 { 
     private readonly IHttpClientDispatcher _dispatcher;
-    public SampleUsage(IHttpClientDispatcher dispatcher)
+    public SampleUsage(IHttpClientDispatcher mediator)
     {
-        _dispatcher = dispatcher;
+        _dispatcher = mediator;
     }
 
     public async Task SendRequestWithResponseAsync()
@@ -443,9 +443,9 @@ public class CustomRequest : CustomRequestAttributeBuilder;
 public class SampleUsage 
 { 
     private readonly IHttpClientDispatcher _dispatcher;
-    public SampleUsage(IHttpClientDispatcher dispatcher)
+    public SampleUsage(IHttpClientDispatcher mediator)
     {
-        _dispatcher = dispatcher;
+        _dispatcher = mediator;
     }
 
     public async Task SendCustomRequestAsync()

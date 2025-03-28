@@ -12,7 +12,7 @@ public sealed class BlockAccountEndpoint : IEndpointRoute
         app.MapPost("/accounts/block",
             async (
                 [FromBody] BlockAccountRequest request,
-                IDispatcher dispatcher,
+                IMediator dispatcher,
                 CancellationToken cancellationToken) =>
             {
                 BlockAccountCommand command = new()

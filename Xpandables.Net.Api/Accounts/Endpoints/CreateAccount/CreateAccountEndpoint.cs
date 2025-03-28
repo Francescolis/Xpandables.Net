@@ -13,7 +13,7 @@ public sealed class CreateAccountEndpoint : IEndpointRoute
         app.MapPost("/accounts",
             async (
                 [FromBody] CreateAccountRequest request,
-                IDispatcher dispatcher,
+                IMediator dispatcher,
                 CancellationToken cancellationToken) =>
             {
                 CreateAccountCommand command = new()

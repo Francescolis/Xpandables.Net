@@ -15,10 +15,11 @@
  *
 ********************************************************************************/
 namespace Xpandables.Net.Executions.Tasks;
+
 /// <summary>
-/// Defines a dispatcher interface for sending requests and queries.
+/// Defines a mediator interface for sending requests and queries.
 /// </summary>
-public interface IDispatcher
+public interface IMediator
 {
     /// <summary>
     /// Sends a request asynchronously.
