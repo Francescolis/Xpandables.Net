@@ -13,7 +13,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task FailureAsyncResult_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new ResponseHttpFailureStreamBuilder();
+        var builder = new HttpResponseFailureStreamBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Version = new Version(1, 1),
@@ -43,7 +43,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task Failure_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new ResponseHttpFailureBuilder();
+        var builder = new HttpResponseFailureBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Version = new Version(1, 1),
@@ -59,7 +59,7 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
 
         // Act
-        var response = await builder.BuildAsync<ResponseHttp>(context);
+        var response = await builder.BuildAsync<HttpResponse>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -73,7 +73,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task FailureResult_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new ResponseHttpFailureResultBuilder();
+        var builder = new HttpResponseFailureResultBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Version = new Version(1, 1),
@@ -103,7 +103,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task SuccessAsyncResult_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new ResponseHttpSuccessStreamBuilder();
+        var builder = new HttpResponseSuccessStreamBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),
@@ -134,7 +134,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task Success_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new ResponseHttpSuccessBuilder();
+        var builder = new HttpResponseSuccessBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),
@@ -150,7 +150,7 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
 
         // Act
-        var response = await builder.BuildAsync<ResponseHttp>(context);
+        var response = await builder.BuildAsync<HttpResponse>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -165,7 +165,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task SuccessResult_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new ResponseHttpSuccessResultBuilder();
+        var builder = new HttpResponseSuccessResultBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),

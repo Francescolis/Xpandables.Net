@@ -4,15 +4,15 @@ using Xpandables.Net.Collections;
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.RequestDefinitions;
+using static Xpandables.Net.Http.MapRequest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestHeaderBuilderUnitTest
 {
-    private readonly RequestHttpHeaderBuilder _builder;
+    private readonly HttpRequestHeaderBuilder _builder;
 
     public HttpClientRequestHeaderBuilderUnitTest() =>
-        _builder = new RequestHttpHeaderBuilder();
+        _builder = new HttpRequestHeaderBuilder();
 
     [Fact]
     public void Build_ShouldSetHeaders_WhenLocationIsHeader()
@@ -20,7 +20,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Header
             },
@@ -44,7 +44,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body
             },
@@ -65,7 +65,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Header
             },
@@ -82,7 +82,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
             .Should().Contain("header1,value1;header2,value2");
     }
 
-    private class TestHttpRequestHeader : IRequestHttp, IRequestHeader
+    private class TestHttpRequestHeader : IHttpRequest, IHttpRequestContentHeader
     {
         public ElementCollection GetHeaders()
         {
@@ -98,7 +98,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
     }
 
     private class TestHttpRequestHeaderWithModelName :
-        IRequestHttp, IRequestHeader
+        IHttpRequest, IHttpRequestContentHeader
     {
         public ElementCollection GetHeaders()
         {

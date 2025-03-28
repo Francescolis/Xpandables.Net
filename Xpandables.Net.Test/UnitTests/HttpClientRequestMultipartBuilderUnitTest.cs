@@ -3,15 +3,15 @@
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.RequestDefinitions;
+using static Xpandables.Net.Http.MapRequest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestMultipartBuilderUnitTest
 {
-    private readonly RequestHttpMultipartBuilder _builder;
+    private readonly HttpRequestMultipartBuilder _builder;
 
     public HttpClientRequestMultipartBuilderUnitTest() =>
-        _builder = new RequestHttpMultipartBuilder();
+        _builder = new HttpRequestMultipartBuilder();
 
     [Fact]
     public void Build_ShouldSetMultipartContent_WhenConditionsAreMet()
@@ -19,7 +19,7 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Multipart
@@ -42,7 +42,7 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.Multipart
@@ -64,7 +64,7 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
@@ -80,7 +80,7 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         context.Message.Content.Should().BeNull();
     }
 
-    private class TestHttpRequestMultipart : IRequestHttp, IRequestMultipart
+    private class TestHttpRequestMultipart : IHttpRequest, IHttpRequestContentMultipart
     {
         public MultipartFormDataContent GetMultipartContent()
         {

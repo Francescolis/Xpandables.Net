@@ -5,16 +5,16 @@ using FluentAssertions;
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.RequestDefinitions;
-using static Xpandables.Net.Http.RequestDefinitions.Patch;
+using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRequest.Patch;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestPatchBuilderUnitTest
 {
-    private readonly RequestHttpPatchBuilder _builder;
+    private readonly HttpRequestPatchBuilder _builder;
 
     public HttpClientRequestPatchBuilderUnitTest() =>
-        _builder = new RequestHttpPatchBuilder();
+        _builder = new HttpRequestPatchBuilder();
 
     [Fact]
     public void Build_ShouldSetStringContent_WhenConditionsAreMet()
@@ -22,7 +22,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
@@ -55,7 +55,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.String,
@@ -85,7 +85,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream,
@@ -114,7 +114,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
@@ -144,7 +144,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     }
 
     private record TestHttpRequestPatch :
-        HttpRequestPatch<TestHttpRequestPatch>, IRequestHttp
+        HttpRequestPatch<TestHttpRequestPatch>, IHttpRequest
     {
     }
 }

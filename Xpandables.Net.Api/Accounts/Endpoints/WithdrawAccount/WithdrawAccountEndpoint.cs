@@ -30,7 +30,7 @@ public sealed class WithdrawAccountEndpoint : IEndpointRoute
         .WithName("WithdrawAccount")
         .WithXMinimalApi()
         .AllowAnonymous()
-        .Accepts<WithdrawAccountRequest>(RequestDefinitions.ContentType.Json)
+        .Accepts<WithdrawAccountRequest>(MapRequest.ContentType.Json)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
 }

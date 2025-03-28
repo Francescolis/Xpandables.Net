@@ -15,35 +15,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
-using Xpandables.Net.Text;
+using Microsoft.Extensions.Options;
 
 namespace Xpandables.Net.Http;
 /// <summary>
-/// Represents the context for an HTTP client request used to build
-/// a <see cref="HttpRequestMessage"/>.
+/// Configures the <see cref="MapHttpOptions"/> for the application.
 /// </summary>
-public record RequestContext
+/// <remarks>
+/// Initializes a new instance of the <see cref="MapHttpOptionsConfiguration"/> class.
+/// </remarks>
+/// <param name="provider">The service provider.</param>
+public sealed class MapHttpOptionsConfiguration(IServiceProvider provider) :
+    IConfigureOptions<MapHttpOptions>
 {
-    /// <summary>
-    /// Gets the attribute associated with the HTTP client request.
-    /// </summary>
-    public required MapHttpAttribute Attribute { get; init; }
+    private readonly IServiceProvider _provider = provider;
 
-    /// <summary>
-    /// Gets the client request.
-    /// </summary>
-    public required IHttpRequest Request { get; init; }
-
-    /// <summary>
-    /// Gets the HTTP request message.
-    /// </summary>
-    public required HttpRequestMessage Message { get; init; }
-
-    /// <summary>
-    /// Gets the JSON serializer options.
-    /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; init; }
-        = DefaultSerializerOptions.Defaults;
+    /// <inheritdoc/>
+    public void Configure(MapHttpOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        options.Resolver = _provider.GetService;
+    }
 }

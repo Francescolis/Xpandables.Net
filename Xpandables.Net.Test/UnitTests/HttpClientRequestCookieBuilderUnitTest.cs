@@ -3,15 +3,15 @@
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.RequestDefinitions;
+using static Xpandables.Net.Http.MapRequest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestCookieBuilderUnitTest
 {
-    private readonly RequestHttpCookieBuilder _builder;
+    private readonly HttpRequestCookieBuilder _builder;
 
     public HttpClientRequestCookieBuilderUnitTest() =>
-        _builder = new RequestHttpCookieBuilder();
+        _builder = new HttpRequestCookieBuilder();
 
     [Fact]
     public void Build_ShouldSetCookieHeader_WhenLocationIsCookie()
@@ -19,7 +19,7 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Cookie
             },
@@ -49,7 +49,7 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body
             },
@@ -64,7 +64,7 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
         context.Message.Options.Should().BeEmpty();
     }
 
-    private class TestHttpRequestCookie : IRequestHttp, IRequestCookie
+    private class TestHttpRequestCookie : IHttpRequest, IHttpRequestContentCookie
     {
         public IDictionary<string, object?> GetCookieHeaderValue() =>
             new Dictionary<string, object?>

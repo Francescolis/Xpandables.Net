@@ -3,15 +3,15 @@
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.RequestDefinitions;
+using static Xpandables.Net.Http.MapRequest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestStreamBuilderUnitTest
 {
-    private readonly RequestHttpStreamBuilder _builder;
+    private readonly HttpRequestStreamBuilder _builder;
 
     public HttpClientRequestStreamBuilderUnitTest() =>
-        _builder = new RequestHttpStreamBuilder();
+        _builder = new HttpRequestStreamBuilder();
 
     [Fact]
     public void Build_ShouldSetStreamContent_WhenConditionsAreMet()
@@ -19,7 +19,7 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream
@@ -42,7 +42,7 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.Stream
@@ -64,7 +64,7 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
@@ -86,7 +86,7 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream
@@ -107,7 +107,7 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         multipart!.Should().ContainSingle();
     }
 
-    private class TestHttpRequestStream : IRequestHttp, IRequestStream
+    private class TestHttpRequestStream : IHttpRequest, IHttpRequestContentStream
     {
         public StreamContent GetStreamContent()
         {

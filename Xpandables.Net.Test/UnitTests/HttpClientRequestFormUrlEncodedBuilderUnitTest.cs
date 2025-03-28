@@ -3,15 +3,15 @@
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.RequestDefinitions;
+using static Xpandables.Net.Http.MapRequest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
 {
-    private readonly RequestHttpFormUrlEncodedBuilder _builder;
+    private readonly HttpRequestFormUrlEncodedBuilder _builder;
 
     public HttpClientRequestFormUrlEncodedBuilderUnitTest() =>
-        _builder = new RequestHttpFormUrlEncodedBuilder();
+        _builder = new HttpRequestFormUrlEncodedBuilder();
 
     [Fact]
     public void Build_ShouldSetFormUrlEncodedContent_WhenConditionsAreMet()
@@ -19,7 +19,7 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.FormUrlEncoded
@@ -42,7 +42,7 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.FormUrlEncoded
@@ -64,7 +64,7 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
@@ -81,7 +81,7 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     }
 
     private class TestHttpRequestFormUrlEncoded :
-        IRequestHttp, IRequestFormUrlEncoded
+        IHttpRequest, IHttpRequestContentFormUrlEncoded
     {
         public FormUrlEncodedContent GetFormUrlEncodedContent()
         {

@@ -3,15 +3,15 @@
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.RequestDefinitions;
+using static Xpandables.Net.Http.MapRequest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestByteArrayBuilderUnitTest
 {
-    private readonly RequestHttpByteArrayBuilder _builder;
+    private readonly HttpRequestByteArrayBuilder _builder;
 
     public HttpClientRequestByteArrayBuilderUnitTest() =>
-        _builder = new RequestHttpByteArrayBuilder();
+        _builder = new HttpRequestByteArrayBuilder();
 
     [Fact]
     public void Build_ShouldSetByteArrayContent_WhenConditionsAreMet()
@@ -19,7 +19,7 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.ByteArray
@@ -42,7 +42,7 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.ByteArray
@@ -64,7 +64,7 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
@@ -80,7 +80,7 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         context.Message.Content.Should().BeNull();
     }
 
-    private class TestHttpRequestByteArray : IRequestHttp, IRequestByteArray
+    private class TestHttpRequestByteArray : IHttpRequest, IHttpRequestContentByteArray
     {
         public ByteArrayContent GetByteArrayContent() => new([1, 2, 3, 4]);
     }

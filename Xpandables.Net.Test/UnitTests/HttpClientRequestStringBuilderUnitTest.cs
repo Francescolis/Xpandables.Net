@@ -5,15 +5,15 @@ using FluentAssertions;
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.RequestBuilders;
 
-using static Xpandables.Net.Http.RequestDefinitions;
+using static Xpandables.Net.Http.MapRequest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestStringBuilderUnitTest
 {
-    private readonly RequestHttpStringBuilder _builder;
+    private readonly HttpRequestStringBuilder _builder;
 
     public HttpClientRequestStringBuilderUnitTest() =>
-        _builder = new RequestHttpStringBuilder();
+        _builder = new HttpRequestStringBuilder();
 
     [Fact]
     public void Build_ShouldSetStringContent_WhenConditionsAreMet()
@@ -21,7 +21,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
@@ -48,7 +48,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.String,
@@ -72,7 +72,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Multipart,
@@ -96,7 +96,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         // Arrange
         var context = new RequestContext
         {
-            Attribute = new MapRequestAttribute
+            Attribute = new MapHttpAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
@@ -119,7 +119,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         multipart!.Should().ContainSingle();
     }
 
-    private class TestHttpRequestString : IRequestHttp, IRequestString
+    private class TestHttpRequestString : IHttpRequest, IHttpRequestContentString
     {
         public object GetStringContent() => new { Key = "value" };
     }
