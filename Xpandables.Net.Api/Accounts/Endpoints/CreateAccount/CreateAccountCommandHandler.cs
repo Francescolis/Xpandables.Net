@@ -18,6 +18,6 @@ public sealed class CreateAccountCommandHandler(
             .AppendAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
-        return ExecutionResults.Success();
+        return ExecutionResults.Created().Build();
     }
 }

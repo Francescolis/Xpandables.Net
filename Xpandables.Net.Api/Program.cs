@@ -80,3 +80,5 @@ await eventContext.Database.EnsureDeletedAsync();
 await eventContext.Database.EnsureCreatedAsync();
 
 app.Run();
+
+public partial class Program { }

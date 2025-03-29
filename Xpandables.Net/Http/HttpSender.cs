@@ -148,7 +148,13 @@ public abstract class HttpSender(
     }
 }
 
-internal sealed class HttpSenderDefault(
+/// <summary>
+/// The default implementation of the <see cref="HttpSender"/> class.
+/// </summary>
+/// <param name="httpClient">The HTTP client instance.</param>
+/// <param name="requestFactory">The request factory instance.</param>
+/// <param name="responseFactory">The response factory instance.</param>
+public sealed class HttpSenderDefault(
     IHttpRequestFactory requestFactory,
     IHttpResponseFactory responseFactory,
     HttpClient httpClient) :

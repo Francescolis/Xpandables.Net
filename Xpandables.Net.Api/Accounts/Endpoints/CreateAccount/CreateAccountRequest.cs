@@ -5,8 +5,8 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 
-[MapPost("/accounts")]
-public sealed record CreateAccountRequest : IValidationEnabled
+[MapPost("/accounts", IsSecured = false)]
+public sealed record CreateAccountRequest : IHttpRequest, IHttpRequestContentString, IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }

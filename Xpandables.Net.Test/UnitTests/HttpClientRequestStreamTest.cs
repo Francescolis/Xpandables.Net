@@ -7,7 +7,7 @@ using Xpandables.Net.Http;
 
 using static Xpandables.Net.Http.MapRequest;
 
-namespace Xpandables.Net.Test.IntegrationTests;
+namespace Xpandables.Net.Test.UnitTests;
 
 public sealed record Monkey(
     string Name,
@@ -21,7 +21,7 @@ public sealed record Monkey(
 [MapGet("monkeys.json")]
 public sealed record Query : IHttpStreamRequest<Monkey>, IHttpRequestContentString;
 
-public sealed class HttpSenderTest
+public sealed class HttpClientRequestStreamTest
 {
     [Fact]
     public async Task RequestHttpSender_Should_Return_Valid_Monkeys()

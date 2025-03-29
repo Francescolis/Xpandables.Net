@@ -112,4 +112,15 @@ public static class ServiceCollectionHttpExtensions
         Action<IServiceProvider, HttpClient> configureClient) =>
         services
         .AddXHttpSender<HttpSenderDefault>(configureClient);
+
+    /// <summary>
+    /// Registers the default <see cref="HttpSenderDefault"/> 
+    /// implementation to the services.
+    /// </summary>
+    /// <param name="services">The collection of services.</param>
+    /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+    public static IServiceCollection AddXHttpSender(
+        this IServiceCollection services) =>
+        services
+        .AddTransient<IHttpSender, HttpSenderDefault>();
 }
