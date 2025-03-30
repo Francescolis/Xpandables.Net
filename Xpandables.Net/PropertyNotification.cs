@@ -580,29 +580,8 @@ public abstract class PropertyNotification<TModel> : PropertyNotification
         TValue value,
         TModel model,
         Action<string, TModel, TValue> updater,
-        Expression<Func<TModel, TProperty>> selector)
-    {
-        ArgumentNullException.ThrowIfNull(selector);
-        ArgumentNullException.ThrowIfNull(model);
-        ArgumentNullException.ThrowIfNull(updater);
-
-        string propertyName = selector.GetMemberNameFromExpression();
-
-        if (EqualityComparer<TValue>.Default.Equals(old, value))
-        {
-            return false;
-        }
-
-        OnPropertyChanging(propertyName);
-
-        updater(propertyName, model, value);
-
-        OnPropertyChanged(propertyName);
-
-        PropagatePropertyChangedOnDependents(propertyName);
-
-        return true;
-    }
+        Expression<Func<TModel, TProperty>> selector) =>
+        SetProperty(old, value, model, updater, EqualityComparer<TValue>.Default, selector);
 
     /// <summary>
     /// Checks if the property does not match the old one.
@@ -676,7 +655,7 @@ public abstract class PropertyNotification<TModel> : PropertyNotification
         TModel model,
         Action<string, TModel, TValue> updater,
         IEqualityComparer<TValue> comparer,
-         Expression<Func<TModel, TProperty>> selector)
+        Expression<Func<TModel, TProperty>> selector)
     {
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(model);
