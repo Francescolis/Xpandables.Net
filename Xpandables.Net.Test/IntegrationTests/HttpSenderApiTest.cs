@@ -48,11 +48,11 @@ public sealed class HttpSenderApiTest : IClassFixture<WebApplicationFactory<Prog
         // Deposit
         var deposit = new DepositAccountRequest { KeyId = _keyId, Amount = 100 };
 
-        var despositResponse = await _sender.SendAsync(deposit);
+        var depositResponse = await _sender.SendAsync(deposit);
 
-        despositResponse.IsSuccessStatusCode.Should().BeTrue();
+        depositResponse.IsSuccessStatusCode.Should().BeTrue();
 
-        despositResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        depositResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Balance
         var balance = new GetBalanceAccountRequest { KeyId = _keyId };
