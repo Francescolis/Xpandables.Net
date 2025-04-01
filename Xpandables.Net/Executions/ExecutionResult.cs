@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Text.Json.Serialization;
 
 using Xpandables.Net.Collections;
 
@@ -27,6 +28,9 @@ namespace Xpandables.Net.Executions;
 /// </summary>
 public record ExecutionResult : IExecutionResult
 {
+    [JsonConstructor]
+    internal ExecutionResult() { }
+
     /// <inheritdoc/>
     public required HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
 
@@ -64,6 +68,9 @@ public record ExecutionResult : IExecutionResult
 /// <typeparam name="TResult">The type of the result object.</typeparam>  
 public record ExecutionResult<TResult> : ExecutionResult, IExecutionResult<TResult>
 {
+    [JsonConstructor]
+    internal ExecutionResult() { }
+
     /// <inheritdoc/>
     [MaybeNull, AllowNull]
     public new TResult Result

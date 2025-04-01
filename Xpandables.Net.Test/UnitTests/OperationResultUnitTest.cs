@@ -62,50 +62,55 @@ public sealed class OperationResultUnitTest
     public void OperationResult_ShouldSerializeAndDeserializeCorrectly()
     {
         // Arrange
-        var operationResult = new ExecutionResult
-        {
-            StatusCode = HttpStatusCode.OK,
-            Title = "Test Title",
-            Detail = "Test Detail",
-            Location = new Uri("http://example.com"),
-            Errors = ElementCollection.With("ErrorKey", "ErrorValue"),
-            Headers = ElementCollection.With("HeaderKey", "HeaderValue"),
-            Extensions = ElementCollection.With("ExtensionKey", "ExtensionValue")
-        };
+        var successResult = ExecutionResults.Ok()
+            .WithLocation(new Uri("http://example.com"))
+            .WithHeaders(ElementCollection.With("HeaderKey", "HeaderValue"))
+            .WithExtensions(ElementCollection.With("ExtensionKey", "ExtensionValue"))
+            .Build();
+        var failureResult = ExecutionResults.BadRequest()
+            .WithTitle("Test Title")
+            .WithDetail("Test Detail")
+            .WithErrors(ElementCollection.With("ErrorKey", "ErrorValue"))
+            .Build();
 
         // Act
         JsonSerializerOptions options = new()
         { Converters = { new ExecutionResultJsonConverterFactory() } };
-        var json = JsonSerializer.Serialize(operationResult, options);
-        var deserializedResult = JsonSerializer.Deserialize<ExecutionResult>(json, options);
+        var succesJson = JsonSerializer.Serialize(successResult, options);
+        var deserializedSuccess = JsonSerializer.Deserialize<ExecutionResult>(succesJson, options);
+        var failureJson = JsonSerializer.Serialize(failureResult, options);
+        var deserializedFailure = JsonSerializer.Deserialize<ExecutionResult>(failureJson, options);
 
         // Assert
-        deserializedResult.Should().BeEquivalentTo(operationResult);
+        deserializedSuccess.Should().BeEquivalentTo(successResult);
+        deserializedFailure.Should().BeEquivalentTo(failureResult);
     }
 
     [Fact]
     public void OperationResult_WithGenericResult_ShouldSerializeAndDeserializeCorrectly()
     {
         // Arrange
-        var operationResult = new ExecutionResult<string>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Title = "Test Title",
-            Detail = "Test Detail",
-            Location = new Uri("http://example.com"),
-            Result = "Test Result",
-            Errors = ElementCollection.With("ErrorKey", "ErrorValue"),
-            Headers = ElementCollection.With("HeaderKey", "HeaderValue"),
-            Extensions = ElementCollection.With("ExtensionKey", "ExtensionValue")
-        };
+        var successResult = ExecutionResults.Ok("Test Result")
+            .WithLocation(new Uri("http://example.com"))
+            .WithHeaders(ElementCollection.With("HeaderKey", "HeaderValue"))
+            .WithExtensions(ElementCollection.With("ExtensionKey", "ExtensionValue"))
+            .Build();
+        var failureResult = ExecutionResults.BadRequest<string>()
+            .WithTitle("Test Title")
+            .WithDetail("Test Detail")
+            .WithErrors(ElementCollection.With("ErrorKey", "ErrorValue"))
+            .Build();
 
         // Act
         JsonSerializerOptions options = new()
         { Converters = { new ExecutionResultJsonConverterFactory() } };
-        var json = JsonSerializer.Serialize(operationResult, options);
-        var deserializedResult = JsonSerializer.Deserialize<ExecutionResult<string>>(json, options);
+        var successJson = JsonSerializer.Serialize(successResult, options);
+        var deserializedSuccess = JsonSerializer.Deserialize<ExecutionResult<string>>(successJson, options);
+        var failureJson = JsonSerializer.Serialize(failureResult, options);
+        var deserializedFailure = JsonSerializer.Deserialize<ExecutionResult<string>>(failureJson, options);
 
         // Assert
-        deserializedResult.Should().BeEquivalentTo(operationResult);
+        deserializedSuccess.Should().BeEquivalentTo(successResult);
+        deserializedFailure.Should().BeEquivalentTo(failureResult);
     }
 }
