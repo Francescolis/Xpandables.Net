@@ -26,7 +26,7 @@ namespace Xpandables.Net.Executions;
 /// Represents the result of an execution, including status code, title, detail,
 /// location, result, errors, headers, extensions, and status.
 /// </summary>
-public record ExecutionResult : IExecutionResult
+internal record ExecutionResult : IExecutionResult
 {
     [JsonConstructor]
     internal ExecutionResult() { }
@@ -66,7 +66,7 @@ public record ExecutionResult : IExecutionResult
 /// and status.  
 /// </summary>  
 /// <typeparam name="TResult">The type of the result object.</typeparam>  
-public record ExecutionResult<TResult> : ExecutionResult, IExecutionResult<TResult>
+internal record ExecutionResult<TResult> : ExecutionResult, IExecutionResult<TResult>
 {
     [JsonConstructor]
     internal ExecutionResult() { }
