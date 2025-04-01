@@ -40,12 +40,14 @@
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
 		<NoWarn>1701;1702;CA1812;CA1062;</NoWarn>
+		<WarningLevel>9999</WarningLevel>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
 		<NoWarn>1701;1702;CA1812;CA1062;</NoWarn>
+		<WarningLevel>9999</WarningLevel>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -64,7 +66,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
