@@ -41,18 +41,8 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
 
             appenderIsStarted = true;
 
-            if (request.Dependency is not null)
-            {
-                Type aggregateStoreType = typeof(IAggregateStore<>)
-                    .MakeGenericType(request.Type);
-
-                IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
-                    .GetRequiredService(aggregateStoreType);
-
-                await aggregateStore
-                    .AppendAsync((IAggregate)request.Dependency, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            await AggregateAppendAsync(request, cancellationToken)
+                .ConfigureAwait(false);
 
             return response;
         }
@@ -62,18 +52,8 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
             {
                 try
                 {
-                    if (request.Dependency is not null)
-                    {
-                        Type aggregateStoreType = typeof(IAggregateStore<>)
-                            .MakeGenericType(request.Type);
-
-                        IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
-                            .GetRequiredService(aggregateStoreType);
-
-                        await aggregateStore
-                            .AppendAsync((IAggregate)request.Dependency, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
+                    await AggregateAppendAsync(request, cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception appenderException)
                     when (exception is not ValidationException
@@ -98,6 +78,22 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
             }
 
             throw;
+        }
+
+        async Task AggregateAppendAsync(TRequest request, CancellationToken cancellationToken)
+        {
+            if (request.Dependency is not null)
+            {
+                Type aggregateStoreType = typeof(IAggregateStore<>)
+                    .MakeGenericType(request.Type);
+
+                IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+                    .GetRequiredService(aggregateStoreType);
+
+                await aggregateStore
+                    .AppendAsync((IAggregate)request.Dependency, cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

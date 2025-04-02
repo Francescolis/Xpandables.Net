@@ -37,6 +37,8 @@ public interface IValidator
     /// <param name="instance">The instance to validate.</param>
     /// <returns>An <see cref="IExecutionResult"/> representing the result of 
     /// the validation.</returns>
+    /// <exception cref="ExecutionResultException">thrown when unable to return
+    /// IExecutionResult.</exception>
     IExecutionResult Validate(object instance);
 
     /// <summary>
@@ -46,6 +48,8 @@ public interface IValidator
     /// <param name="instance">The instance to validate.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the result of 
     /// the validation.</returns>
+    /// <exception cref="ExecutionResultException">thrown when unable to return
+    /// IExecutionResult.</exception>
     public ValueTask<IExecutionResult> ValidateAsync(object instance)
     {
         IExecutionResult result = Validate(instance);
@@ -67,6 +71,8 @@ public interface IValidator<in TArgument> : IValidator
     /// <param name="instance">The instance to validate.</param>
     /// <returns>An <see cref="IExecutionResult"/> representing the result of 
     /// the validation.</returns>
+    /// <exception cref="ExecutionResultException">thrown when unable to return
+    /// IExecutionResult.</exception>
     IExecutionResult Validate(TArgument instance);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -80,6 +86,8 @@ public interface IValidator<in TArgument> : IValidator
     /// <param name="instance">The instance to validate.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the result of 
     /// the validation.</returns>
+    /// <exception cref="ExecutionResultException">thrown when unable to return
+    /// IExecutionResult.</exception>
     ValueTask<IExecutionResult> ValidateAsync(TArgument instance);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
