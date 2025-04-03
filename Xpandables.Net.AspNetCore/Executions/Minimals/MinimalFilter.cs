@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.Http;
 namespace Xpandables.Net.Executions.Minimals;
 /// <summary>  
 /// Represents a filter that processes the result of an endpoint invocation and 
-/// converts it to a minimal result if it implements <see cref="IExecutionResult"/>.  
+/// converts it to a minimal result if it implements <see cref="ExecutionResult"/>.  
 /// </summary>  
 public sealed class MinimalFilter : IEndpointFilter
 {
@@ -34,7 +34,7 @@ public sealed class MinimalFilter : IEndpointFilter
 
         object? result = await next(context).ConfigureAwait(false);
 
-        if (result is IExecutionResult executionResult)
+        if (result is ExecutionResult executionResult)
         {
             return executionResult.ToMinimalResult();
         }

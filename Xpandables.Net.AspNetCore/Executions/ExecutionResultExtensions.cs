@@ -38,10 +38,11 @@ public static class ExecutionResultExtensions
     /// <returns>A <see cref="ModelStateDictionary"/> containing the converted  
     /// elements.</returns>  
     public static ModelStateDictionary ToModelStateDictionary(
-        this IExecutionResult executionResult)
+        this ExecutionResult executionResult)
     {
         ModelStateDictionary modelState = new();
-        foreach (ElementEntry entry in executionResult.Errors)
+        foreach (ElementEntry entry in executionResult.Errors
+            .Where(e => e.Key != ExecutionResultAbstract.ExceptionKey))
         {
             foreach (string value in entry.Values)
             {
@@ -53,14 +54,14 @@ public static class ExecutionResultExtensions
     }
 
     /// <summary>  
-    /// Converts a <see cref="ModelStateDictionary"/> to an <see cref="IExecutionResult"/>.  
+    /// Converts a <see cref="ModelStateDictionary"/> to an <see cref="ExecutionResult"/>.  
     /// </summary>  
     /// <param name="modelState">The model state dictionary to convert.</param>  
     /// <param name="statusCode">The HTTP status code to use for the execution 
     /// result. Defaults to <see cref="HttpStatusCode.BadRequest"/>.</param>  
-    /// <returns>An <see cref="IExecutionResult"/> representing the execution 
+    /// <returns>An <see cref="ExecutionResult"/> representing the execution 
     /// result.</returns>  
-    public static IExecutionResult ToExecutionResult(
+    public static ExecutionResult ToExecutionResult(
         this ModelStateDictionary modelState,
         HttpStatusCode statusCode = HttpStatusCode.BadRequest) =>
         ExecutionResults
@@ -77,12 +78,12 @@ public static class ExecutionResultExtensions
 
     /// <summary>  
     /// Converts a <see cref="BadHttpRequestException"/> to an 
-    /// <see cref="IExecutionResult"/>.  
+    /// <see cref="ExecutionResult"/>.  
     /// </summary>  
     /// <param name="exception">The exception to convert.</param>  
-    /// <returns>An <see cref="IExecutionResult"/> representing the 
+    /// <returns>An <see cref="ExecutionResult"/> representing the 
     /// execution result.</returns>  
-    public static IExecutionResult ToExecutionResult(
+    public static ExecutionResult ToExecutionResult(
         this BadHttpRequestException exception)
     {
         bool isDevelopment = (Environment.GetEnvironmentVariable(
@@ -114,13 +115,13 @@ public static class ExecutionResultExtensions
     }
 
     /// <summary>  
-    /// Converts an <see cref="Exception"/> to an <see cref="IExecutionResult"/> 
+    /// Converts an <see cref="Exception"/> to an <see cref="ExecutionResult"/> 
     /// for problem details.
     /// </summary>  
     /// <param name="exception">The exception to convert.</param>  
-    /// <returns>An <see cref="IExecutionResult"/> representing the execution 
+    /// <returns>An <see cref="ExecutionResult"/> representing the execution 
     /// result.</returns>  
-    public static IExecutionResult ToExecutionResultForProblemDetails(
+    public static ExecutionResult ToExecutionResultForProblemDetails(
         this Exception exception) =>
         exception switch
         {
@@ -130,23 +131,22 @@ public static class ExecutionResultExtensions
         };
 
     /// <summary>  
-    /// Converts an <see cref="IExecutionResult"/> to an <see cref="IActionResult"/>.  
+    /// Converts an <see cref="ExecutionResult"/> to an <see cref="IActionResult"/>.  
     /// </summary>  
     /// <param name="executionResult">The execution result to convert.</param>  
     /// <returns>An <see cref="IActionResult"/> representing the execution
     /// result.</returns>  
-    public static IActionResult ToActionResult(
-        this IExecutionResult executionResult) =>
+    public static IActionResult ToActionResult(this ExecutionResult executionResult) =>
         new ObjectResult(executionResult)
         {
             StatusCode = (int)executionResult.StatusCode,
         };
 
     /// <summary>  
-    /// Converts an <see cref="IExecutionResult"/> to an <see cref="IResult"/>.  
+    /// Converts an <see cref="ExecutionResult"/> to an <see cref="IResult"/>.  
     /// </summary>  
     /// <param name="executionResult">The execution result to convert.</param>  
     /// <returns>An <see cref="IResult"/> representing the execution result.</returns>  
-    public static IResult ToMinimalResult(this IExecutionResult executionResult) =>
+    public static IResult ToMinimalResult(this ExecutionResult executionResult) =>
         new MinimalResult(executionResult);
 }

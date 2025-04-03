@@ -7,7 +7,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 public sealed class WithdrawAccountCommandHandler(
     IAggregateStore<Account> aggregateStore) : IRequestHandler<WithdrawAccountCommand>
 {
-    public async Task<IExecutionResult> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         WithdrawAccountCommand command,
         CancellationToken cancellationToken = default)
     {

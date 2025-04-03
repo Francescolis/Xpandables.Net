@@ -24,11 +24,11 @@ namespace Xpandables.Net.Executions;
 public sealed class EndpointExecutionResultSuccessHandler : IEndpointExecutionResultHandler
 {
     ///<inheritdoc/>
-    public bool CanProcess(IExecutionResult executionResult) =>
+    public bool CanProcess(ExecutionResult executionResult) =>
         executionResult.IsSuccessStatusCode();
 
     ///<inheritdoc/>
-    public async Task HandleAsync(HttpContext context, IExecutionResult executionResult)
+    public async Task HandleAsync(HttpContext context, ExecutionResult executionResult)
     {
         if (executionResult.IsCreated())
         {

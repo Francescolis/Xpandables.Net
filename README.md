@@ -206,19 +206,19 @@ else
 
 ```
 
-## IExecutionResult and ExecutionResults
+## ExecutionResult and ExecutionResults
 
 ### Overview
 
-The `IExecutionResult` and `ExecutionResults` classes are part of the `Xpandables.Net.Operations` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
+The `ExecutionResult` and `ExecutionResults` classes are part of the `Xpandables.Net.Operations` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
 
-#### IExecutionResult
+#### ExecutionResult
 
-The `IExecutionResult` interface represents the result of an execution. It includes properties for status code, title, detail, location, result, errors, headers, and extensions. It also provides methods to check if the execution was successful and to retrieve any associated exceptions.
+The `ExecutionResult` interface represents the result of an execution. It includes properties for status code, title, detail, location, result, errors, headers, and extensions. It also provides methods to check if the execution was successful and to retrieve any associated exceptions.
 
 #### ExecutionResults
 
-The `ExecutionResults` class provides static methods to create instances of `IExecutionResult` for both success and failure scenarios. It includes methods to set various HTTP status codes and to include additional details like titles, details, locations, and errors.
+The `ExecutionResults` class provides static methods to create instances of `ExecutionResult` for both success and failure scenarios. It includes methods to set various HTTP status codes and to include additional details like titles, details, locations, and errors.
 
 ### Usage
 
@@ -233,7 +233,7 @@ using Xpandables.Net.Operations;
 
 public class SampleUsage
 {
-    public IExecutionResult CreateSuccessResult()
+    public ExecutionResult CreateSuccessResult()
     {
         return ExecutionResults.Success(HttpStatusCode.OK)
             .WithTitle("Execution Successful")
@@ -242,7 +242,7 @@ public class SampleUsage
             .Build();
     }
 
-    public IExecutionResult<string> CreateSuccessResultWithData()
+    public ExecutionResult<string> CreateSuccessResultWithData()
     {
         return ExecutionResults.Success("Success Data", HttpStatusCode.OK)
             .WithTitle("Execution Successful")
@@ -265,7 +265,7 @@ using Xpandables.Net.Operations;
 
 public class SampleUsage
 {
-    public IExecutionResult CreateFailureResult()
+    public ExecutionResult CreateFailureResult()
     {
         return ExecutionResults.Failure(HttpStatusCode.BadRequest)
             .WithTitle("Execution Failed")
@@ -274,7 +274,7 @@ public class SampleUsage
             .Build();
     }
 
-    public IExecutionResult<string> CreateFailureResultWithData()
+    public ExecutionResult<string> CreateFailureResultWithData()
     {
         return ExecutionResults.Failure<string>(HttpStatusCode.BadRequest)
             .WithTitle("Execution Failed")
@@ -296,7 +296,7 @@ using Xpandables.Net.Operations;
 
 public class SampleUsage
 {
-    public IExecutionResult CreateOkResult()
+    public ExecutionResult CreateOkResult()
     {
         return ExecutionResults.Ok()
             .WithTitle("Execution Successful")
@@ -304,7 +304,7 @@ public class SampleUsage
             .Build();
     }
 
-    public IExecutionResult<string> CreateNotFoundResult()
+    public ExecutionResult<string> CreateNotFoundResult()
     {
         return ExecutionResults.NotFound<string>()
             .WithTitle("Resource Not Found")
@@ -315,7 +315,7 @@ public class SampleUsage
 
 ```
 
-The `IExecutionResult` and `ExecutionResults` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
+The `ExecutionResult` and `ExecutionResults` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
 
 ## IHttpClientDispatcher and Related Classes
 

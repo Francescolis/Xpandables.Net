@@ -27,7 +27,7 @@ public interface IMediator
     /// <param name="request">The request to send.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
-    Task<IExecutionResult> SendAsync(
+    Task<ExecutionResult> SendAsync(
         IRequest request,
         CancellationToken cancellationToken = default);
 
@@ -38,7 +38,7 @@ public interface IMediator
     /// <param name="request">The request to execute.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
-    Task<IExecutionResult<TResult>> SendAsync<TResult>(
+    Task<ExecutionResult<TResult>> SendAsync<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default)
         where TResult : notnull;

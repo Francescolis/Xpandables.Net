@@ -58,7 +58,7 @@ public sealed class EndpointValidator : IEndpointValidator
         {
             try
             {
-                IExecutionResult executionResult = await descriptor.Validator
+                ExecutionResult executionResult = await descriptor.Validator
                     .ValidateAsync(descriptor.Argument)
                     .ConfigureAwait(false);
 
@@ -85,7 +85,7 @@ public sealed class EndpointValidator : IEndpointValidator
             }
         }
 
-        IExecutionResult result = failureBuilder.Build();
+        ExecutionResult result = failureBuilder.Build();
 
         if (result.Errors.Any())
         {

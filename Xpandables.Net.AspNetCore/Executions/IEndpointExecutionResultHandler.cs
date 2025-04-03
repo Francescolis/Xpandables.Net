@@ -30,7 +30,7 @@ public interface IEndpointExecutionResultHandler
     /// <param name="executionResult">The execution result to check.</param>
     /// <returns><see langword="true"/> if the execution result can be processed
     /// by the executor; otherwise, <see langword="false"/>.</returns>
-    bool CanProcess(IExecutionResult executionResult);
+    bool CanProcess(ExecutionResult executionResult);
 
     /// <summary>
     /// Handles the execution result asynchronously with the context.
@@ -38,5 +38,5 @@ public interface IEndpointExecutionResultHandler
     /// <param name="context">The HTTP context.</param>
     /// <param name="executionResult">The execution result to process.</param>
     /// <returns>A task that represents the asynchronous execution.</returns>
-    Task HandleAsync(HttpContext context, IExecutionResult executionResult);
+    Task HandleAsync(HttpContext context, ExecutionResult executionResult);
 }

@@ -5,7 +5,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.UnBlockAccount;
 
 public sealed class UnBlockAccountCommandHandler : IDeciderRequestHandler<UnBlockAccountCommand, Account>
 {
-    public Task<IExecutionResult> HandleAsync(
+    public Task<ExecutionResult> HandleAsync(
         UnBlockAccountCommand command,
         Account dependency,
         CancellationToken cancellationToken = default)

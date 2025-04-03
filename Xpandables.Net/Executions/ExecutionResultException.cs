@@ -32,7 +32,7 @@ public sealed class ExecutionResultException : Exception
     /// <summary>
     /// Gets the executionResult associated with this exception.
     /// </summary>
-    public IExecutionResult ExecutionResult { get; }
+    public ExecutionResult ExecutionResult { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
@@ -43,7 +43,7 @@ public sealed class ExecutionResultException : Exception
     /// <paramref name="executionResult"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code of the <paramref name="executionResult"/> is between 200 and 299.</exception>
-    public ExecutionResultException(IExecutionResult executionResult)
+    public ExecutionResultException(ExecutionResult executionResult)
         : base($"Execution failed with status code: {executionResult.StatusCode}")
     {
         ArgumentNullException.ThrowIfNull(executionResult);
@@ -65,7 +65,7 @@ public sealed class ExecutionResultException : Exception
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
     /// <param name="executionResult">The execution result that caused the exception.</param>
-    public ExecutionResultException(string message, IExecutionResult executionResult)
+    public ExecutionResultException(string message, ExecutionResult executionResult)
         : base(message) =>
         ExecutionResult = executionResult;
 
@@ -78,7 +78,7 @@ public sealed class ExecutionResultException : Exception
     /// <param name="executionResult">The execution result that caused the exception.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
     public ExecutionResultException(
-        string message, IExecutionResult executionResult, Exception innerException)
+        string message, ExecutionResult executionResult, Exception innerException)
         : base(message, innerException) =>
         ExecutionResult = executionResult;
 
@@ -90,8 +90,8 @@ public sealed class ExecutionResultException : Exception
         : base(serializationInfo, streamingContext)
     {
         ArgumentNullException.ThrowIfNull(serializationInfo);
-        ExecutionResult = (IExecutionResult)serializationInfo
-            .GetValue(nameof(ExecutionResult), typeof(IExecutionResult))!;
+        ExecutionResult = (ExecutionResult)serializationInfo
+            .GetValue(nameof(ExecutionResult), typeof(ExecutionResult))!;
     }
 
     /// <summary>
@@ -104,12 +104,12 @@ public sealed class ExecutionResultException : Exception
     public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {
         base.GetObjectData(info, context);
-        info.AddValue(nameof(ExecutionResult), ExecutionResult, typeof(IExecutionResult));
+        info.AddValue(nameof(ExecutionResult), ExecutionResult, typeof(ExecutionResult));
     }
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="IExecutionResult"/> parameter</remarks>
+    ///<see cref="ExecutionResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ExecutionResultException() => throw new NotSupportedException();
 

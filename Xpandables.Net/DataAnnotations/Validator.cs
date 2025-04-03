@@ -51,7 +51,7 @@ public class Validator<TArgument> : IValidator<TArgument>
         ServiceProvider = serviceProvider;
 
     /// <inheritdoc/>
-    public virtual IExecutionResult Validate(TArgument instance)
+    public virtual ExecutionResult Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
         ValidationContext validationContext =
@@ -63,18 +63,16 @@ public class Validator<TArgument> : IValidator<TArgument>
             validationResults,
             true))
         {
-            return ExecutionResults
-                .Ok()
-                .Build();
+            return ExecutionResults.Success();
         }
 
         return validationResults.ToExecutionResult();
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<IExecutionResult> ValidateAsync(TArgument instance)
+    public virtual ValueTask<ExecutionResult> ValidateAsync(TArgument instance)
     {
-        IExecutionResult result = Validate(instance);
-        return new ValueTask<IExecutionResult>(result);
+        ExecutionResult result = Validate(instance);
+        return new ValueTask<ExecutionResult>(result);
     }
 }

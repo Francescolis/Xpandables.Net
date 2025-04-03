@@ -24,52 +24,52 @@ namespace Xpandables.Net.Executions;
 public readonly record struct ExecutionResults
 {
     /// <summary>
-    /// Returns an implementation of <see cref="IExecutionResult"/> with the 
+    /// Returns an implementation of <see cref="ExecutionResult"/> with the 
     /// status code OK.
     /// </summary>
-    /// <returns>An implementation of <see cref="IExecutionResult"/>.</returns>
-    public static IExecutionResult Success() => Success(HttpStatusCode.OK).Build();
+    /// <returns>An implementation of <see cref="ExecutionResult"/>.</returns>
+    public static ExecutionResult Success() => Success(HttpStatusCode.OK).Build();
 
     /// <summary>
-    /// Returns an implementation of <see cref="IExecutionResult{TResult}"/> with the
+    /// Returns an implementation of <see cref="ExecutionResult{TResult}"/> with the
     /// status code OK and the specified result.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="result">The result of the execution.</param>
-    /// <returns>An implementation of <see cref="IExecutionResult{TResult}"/>.</returns>
-    public static IExecutionResult<TResult> Success<TResult>(TResult result) =>
+    /// <returns>An implementation of <see cref="ExecutionResult{TResult}"/>.</returns>
+    public static ExecutionResult<TResult> Success<TResult>(TResult result) =>
         Success(result, HttpStatusCode.OK).Build();
 
     /// <summary>
-    /// Returns an implementation of <see cref="IExecutionResult"/> with the
+    /// Returns an implementation of <see cref="ExecutionResult"/> with the
     /// status code BadRequest and the specified error.
     /// </summary>
     /// <param name="key">The key of the error.</param>
     /// <param name="message">The message of the error.</param>
-    /// <returns>An implementation of <see cref="IExecutionResult"/>.</returns>
-    public static IExecutionResult Failure(string key, string message) =>
+    /// <returns>An implementation of <see cref="ExecutionResult"/>.</returns>
+    public static ExecutionResult Failure(string key, string message) =>
         Failure(HttpStatusCode.BadRequest)
         .WithError(key, message)
         .Build();
 
     /// <summary>
-    /// Returns an implementation of <see cref="IExecutionResult"/> with the
+    /// Returns an implementation of <see cref="ExecutionResult"/> with the
     /// failure status code and the specified exception.
     /// </summary>
     /// <param name="exception">The exception of the error.</param>
-    /// <returns>An implementation of <see cref="IExecutionResult"/>.</returns>
-    public static IExecutionResult Failure(Exception exception) =>
+    /// <returns>An implementation of <see cref="ExecutionResult"/>.</returns>
+    public static ExecutionResult Failure(Exception exception) =>
         Failure(HttpStatusCode.BadRequest)
         .Merge(exception.ToExecutionResult())
         .Build();
 
     /// <summary>
-    /// Returns an implementation of <see cref="IExecutionResult"/> with the
+    /// Returns an implementation of <see cref="ExecutionResult"/> with the
     /// failure status code and the specified exception.
     /// </summary>
     /// <param name="exception">The exception of the error.</param>
-    /// <returns>An implementation of <see cref="IExecutionResult"/>.</returns>
-    public static IExecutionResult<TResult> Failure<TResult>(Exception exception) =>
+    /// <returns>An implementation of <see cref="ExecutionResult"/>.</returns>
+    public static ExecutionResult<TResult> Failure<TResult>(Exception exception) =>
         Failure<TResult>(HttpStatusCode.BadRequest)
         .Merge(exception.ToExecutionResult())
         .Build();

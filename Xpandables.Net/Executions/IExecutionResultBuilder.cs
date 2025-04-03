@@ -22,19 +22,19 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Represents a method for building an <see cref="IExecutionResult"/>.
+/// Represents a method for building an <see cref="ExecutionResult"/>.
 /// </summary>
 public interface IExecutionResultBuilder
 {
     /// <summary>
     /// Builds an instance that matches the builder information.
     /// </summary>
-    /// <returns>An instance of <see cref="IExecutionResult"/>.</returns>
-    IExecutionResult Build();
+    /// <returns>An instance of <see cref="ExecutionResult"/>.</returns>
+    ExecutionResult Build();
 }
 
 /// <summary>
-/// Represents a method for building an <see cref="IExecutionResult{TResult}"/>.
+/// Represents a method for building an <see cref="ExecutionResult{TResult}"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public interface IExecutionResultBuilder<TResult> : IExecutionResultBuilder
@@ -42,11 +42,11 @@ public interface IExecutionResultBuilder<TResult> : IExecutionResultBuilder
     /// <summary>
     /// Builds an instance that matches the builder information.
     /// </summary>
-    /// <returns>An instance of <see cref="IExecutionResult{TResult}"/>.</returns>
-    new IExecutionResult<TResult> Build();
+    /// <returns>An instance of <see cref="ExecutionResult{TResult}"/>.</returns>
+    new ExecutionResult<TResult> Build();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    IExecutionResult IExecutionResultBuilder.Build() => Build();
+    ExecutionResult IExecutionResultBuilder.Build() => Build();
 }
 
 /// <summary>
@@ -61,7 +61,7 @@ public interface IExecutionResultMergeBuilder<out TBuilder>
     /// </summary>
     /// <param name="execution">The execution to merge with.</param>
     /// <returns>The current builder instance.</returns>
-    TBuilder Merge(IExecutionResult execution);
+    TBuilder Merge(ExecutionResult execution);
 }
 
 /// <summary>
@@ -191,7 +191,7 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
 
 /**
  * <summary>
- * Represents a method for building an <see cref="IExecutionResult"/> with error details.
+ * Represents a method for building an <see cref="ExecutionResult"/> with error details.
  * </summary>
  * <typeparam name="TBuilder">The type of the builder.</typeparam>
  */
@@ -244,7 +244,7 @@ public interface IExecutionResultErrorBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Represents a method for building an <see cref="IExecutionResult"/> with extensions.
+/// Represents a method for building an <see cref="ExecutionResult"/> with extensions.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IExecutionResultExtensionBuilder<out TBuilder>

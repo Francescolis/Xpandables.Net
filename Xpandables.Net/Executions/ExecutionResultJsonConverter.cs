@@ -21,9 +21,9 @@ using System.Text.Json.Serialization;
 namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// A JSON converter for <see cref="IExecutionResult"/>.
+/// A JSON converter for <see cref="ExecutionResult"/>.
 /// </summary>
-public sealed class ExecutionResultJsonConverter : JsonConverter<IExecutionResult>
+public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult>
 {
     /// <summary>
     /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
@@ -34,7 +34,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<IExecutionResul
     public bool UseAspNetCoreCompatibility { get; set; }
 
     /// <inheritdoc/>
-    public override IExecutionResult? Read(
+    public override ExecutionResult? Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options) =>
@@ -45,7 +45,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<IExecutionResul
     /// <inheritdoc/>
     public override void Write(
         Utf8JsonWriter writer,
-        IExecutionResult value,
+        ExecutionResult value,
         JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -63,11 +63,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<IExecutionResul
         }
         else
         {
-            JsonSerializer.Serialize(
-                writer,
-                value,
-                typeof(ExecutionResult),
-                options);
+            JsonSerializer.Serialize(writer, value, options);
         }
     }
 }
@@ -77,7 +73,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<IExecutionResul
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public sealed class ExecutionResultJsonConverter<TResult> :
-    JsonConverter<IExecutionResult<TResult>>
+    JsonConverter<ExecutionResult<TResult>>
 {
     /// <summary>
     /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
@@ -88,7 +84,7 @@ public sealed class ExecutionResultJsonConverter<TResult> :
     public bool UseAspNetCoreCompatibility { get; set; }
 
     /// <inheritdoc/>
-    public override IExecutionResult<TResult>? Read(
+    public override ExecutionResult<TResult>? Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options) =>
@@ -100,7 +96,7 @@ public sealed class ExecutionResultJsonConverter<TResult> :
     /// <inheritdoc/>
     public override void Write(
         Utf8JsonWriter writer,
-        IExecutionResult<TResult> value,
+        ExecutionResult<TResult> value,
         JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -118,11 +114,7 @@ public sealed class ExecutionResultJsonConverter<TResult> :
         }
         else
         {
-            JsonSerializer.Serialize(
-                writer,
-                value,
-                typeof(ExecutionResult<TResult>),
-                options);
+            JsonSerializer.Serialize(writer, value, options);
         }
     }
 }
@@ -148,16 +140,16 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
 
     /// <inheritdoc/>
     public override bool CanConvert(Type typeToConvert) =>
-        typeToConvert == typeof(IExecutionResult)
+        typeToConvert == typeof(ExecutionResult)
         || (typeToConvert.IsGenericType
-            && typeToConvert.GetGenericTypeDefinition() == typeof(IExecutionResult<>));
+            && typeToConvert.GetGenericTypeDefinition() == typeof(ExecutionResult<>));
 
     /// <inheritdoc/>
     public override JsonConverter CreateConverter(
         Type typeToConvert,
         JsonSerializerOptions options)
     {
-        if (typeToConvert == typeof(IExecutionResult))
+        if (typeToConvert == typeof(ExecutionResult))
         {
             return new ExecutionResultJsonConverter()
             {

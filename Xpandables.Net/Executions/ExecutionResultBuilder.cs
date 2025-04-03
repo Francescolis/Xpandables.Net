@@ -79,8 +79,8 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     protected Uri? Location { get; set; }
 
     /// <inheritdoc/>
-    public IExecutionResult Build() =>
-        new ExecutionResult
+    public ExecutionResult Build() =>
+        new()
         {
             StatusCode = StatusCode,
             Title = Title,
@@ -129,7 +129,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     }
 
     /// <inheritdoc/>
-    public TBuilder Merge(IExecutionResult execution)
+    public TBuilder Merge(ExecutionResult execution)
     {
         ArgumentNullException.ThrowIfNull(execution);
 
@@ -196,7 +196,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <inheritdoc/>
     public TBuilder WithException(Exception exception)
     {
-        ElementEntry? entry = Errors[ExecutionResultExtensions.ExceptionKey];
+        ElementEntry? entry = Errors[ExecutionResultAbstract.ExceptionKey];
         if (entry.HasValue)
         {
             _ = Errors.Remove(entry.Value.Key);
@@ -208,7 +208,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
         else
         {
             entry = new ElementEntry(
-                ExecutionResultExtensions.ExceptionKey,
+                ExecutionResultAbstract.ExceptionKey,
                 BuildErrorMessage(exception));
         }
 
@@ -353,8 +353,8 @@ public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode s
     }
 
     /// <inheritdoc/>
-    public new IExecutionResult<TResult> Build() =>
-        new ExecutionResult<TResult>
+    public new ExecutionResult<TResult> Build() =>
+        new()
         {
             StatusCode = StatusCode,
             Title = Title,

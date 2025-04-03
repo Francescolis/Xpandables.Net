@@ -40,7 +40,7 @@ public sealed class EndpointProcessor : IEndpointProcessor
     /// <param name="httpContext">The HTTP context.</param>
     /// <param name="executionResult">The execution result to execute.</param>
     /// <returns>A task that represents the asynchronous execution.</returns>
-    public async Task ExecuteAsync(HttpContext httpContext, IExecutionResult executionResult)
+    public async Task ExecuteAsync(HttpContext httpContext, ExecutionResult executionResult)
     {
         await MetadataSetter(httpContext, executionResult)
             .ConfigureAwait(false);
@@ -64,7 +64,7 @@ public sealed class EndpointProcessor : IEndpointProcessor
     /// <returns>A task that represents the asynchronous execution.</returns>
     private static async Task MetadataSetter(
         HttpContext context,
-        IExecutionResult executionResult)
+        ExecutionResult executionResult)
     {
         if (executionResult.Location is not null)
         {

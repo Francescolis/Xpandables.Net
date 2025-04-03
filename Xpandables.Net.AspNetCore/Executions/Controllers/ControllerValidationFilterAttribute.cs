@@ -36,7 +36,7 @@ public sealed class ControllerValidationFilterAttribute : ActionFilterAttribute
             return;
         }
 
-        IExecutionResult executionResult =
+        ExecutionResult executionResult =
             context.ModelState.ToExecutionResult();
 
         context.Result = new BadRequestObjectResult(executionResult);

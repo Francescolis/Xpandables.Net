@@ -5,7 +5,7 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
 
 public sealed class BlockAccountCommandHandler : IDeciderRequestHandler<BlockAccountCommand, Account>
 {
-    public Task<IExecutionResult> HandleAsync(
+    public Task<ExecutionResult> HandleAsync(
         BlockAccountCommand command,
         Account dependency,
         CancellationToken cancellationToken = default)

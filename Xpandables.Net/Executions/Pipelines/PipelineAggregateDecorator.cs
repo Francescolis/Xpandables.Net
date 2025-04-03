@@ -27,7 +27,7 @@ internal sealed class PipelineAggregateDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDeciderRequest, IAggregateAppender
-    where TResponse : notnull
+    where TResponse : class
 {
     protected override async Task<TResponse> HandleCoreAsync(
         TRequest request,

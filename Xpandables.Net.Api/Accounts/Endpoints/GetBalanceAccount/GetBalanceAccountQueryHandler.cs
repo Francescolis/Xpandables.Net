@@ -8,7 +8,7 @@ public sealed class GetBalanceAccountQueryHandler(
     IAggregateStore<Account> aggregateStore) :
     IRequestHandler<GetBalanceAccountQuery, decimal>
 {
-    public async Task<IExecutionResult<decimal>> HandleAsync(
+    public async Task<ExecutionResult<decimal>> HandleAsync(
         GetBalanceAccountQuery query,
         CancellationToken cancellationToken)
     {

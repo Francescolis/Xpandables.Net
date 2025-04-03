@@ -29,11 +29,11 @@ namespace Xpandables.Net.Executions;
 public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionResultHandler
 {
     ///<inheritdoc/>
-    public bool CanProcess(IExecutionResult executionResult) =>
+    public bool CanProcess(ExecutionResult executionResult) =>
         executionResult.IsFailureStatusCode();
 
     ///<inheritdoc/>
-    public Task HandleAsync(HttpContext context, IExecutionResult executionResult)
+    public Task HandleAsync(HttpContext context, ExecutionResult executionResult)
     {
         context.Response.StatusCode = (int)executionResult.StatusCode;
 
@@ -49,7 +49,7 @@ public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionRe
                 Status = (int)executionResult.StatusCode,
                 Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
                 Type = isDevelopment ? executionResult.GetType().Name : null,
-                Extensions = executionResult.ToElementExtensions()
+                Extensions = executionResult.Extensions.ToDictionary()
             }
             : new ProblemDetails()
             {
@@ -58,7 +58,7 @@ public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionRe
                 Status = (int)executionResult.StatusCode,
                 Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
                 Type = isDevelopment ? executionResult.GetType().Name : null,
-                Extensions = executionResult.ToElementExtensions()
+                Extensions = executionResult.Extensions.ToDictionary()
             };
 
         if (context.RequestServices

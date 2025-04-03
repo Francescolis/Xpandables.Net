@@ -43,7 +43,7 @@ public interface IHandler<in TRequest, TResponse>
 /// </summary>
 /// <remarks>This can also be enhanced with some useful decorators.</remarks>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
-public interface IRequestHandler<in TRequest> : IHandler<TRequest, Task<IExecutionResult>>
+public interface IRequestHandler<in TRequest> : IHandler<TRequest, Task<ExecutionResult>>
     where TRequest : class, IRequest
 {
     /// <summary>
@@ -54,13 +54,13 @@ public interface IRequestHandler<in TRequest> : IHandler<TRequest, Task<IExecuti
     /// requests.</param>
     /// <returns>A task that represents the asynchronous operation. 
     /// The task result contains the operation result.</returns>
-    Task<IExecutionResult> HandleAsync(
+    Task<ExecutionResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CA1033 // Interface methods should be callable by child types
-    Task<IExecutionResult> IHandler<TRequest, Task<IExecutionResult>>.Handle(
+    Task<ExecutionResult> IHandler<TRequest, Task<ExecutionResult>>.Handle(
 #pragma warning restore CA1033 // Interface methods should be callable by child types
         TRequest request,
         CancellationToken cancellationToken) =>
@@ -73,7 +73,7 @@ public interface IRequestHandler<in TRequest> : IHandler<TRequest, Task<IExecuti
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IRequestHandler<in TRequest, TResult> : IHandler<TRequest, Task<IExecutionResult<TResult>>>
+public interface IRequestHandler<in TRequest, TResult> : IHandler<TRequest, Task<ExecutionResult<TResult>>>
     where TRequest : class, IRequest<TResult>
 {
     /// <summary>
@@ -84,13 +84,13 @@ public interface IRequestHandler<in TRequest, TResult> : IHandler<TRequest, Task
     /// requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task 
     /// result contains the operation result.</returns>
-    Task<IExecutionResult<TResult>> HandleAsync(
+    Task<ExecutionResult<TResult>> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CA1033 // Interface methods should be callable by child types
-    Task<IExecutionResult<TResult>> IHandler<TRequest, Task<IExecutionResult<TResult>>>.Handle(
+    Task<ExecutionResult<TResult>> IHandler<TRequest, Task<ExecutionResult<TResult>>>.Handle(
 #pragma warning restore CA1033 // Interface methods should be callable by child types
         TRequest request,
         CancellationToken cancellationToken) =>
@@ -144,13 +144,13 @@ public interface IDeciderRequestHandler<in TRequest, in TDependency> : IRequestH
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. 
     /// The task result contains the operation result.</returns>
-    Task<IExecutionResult> HandleAsync(
+    Task<ExecutionResult> HandleAsync(
         TRequest request,
         TDependency dependency,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    Task<IExecutionResult> IRequestHandler<TRequest>.HandleAsync(
+    Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
         TRequest request,
         CancellationToken cancellationToken)
     {

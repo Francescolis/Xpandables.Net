@@ -26,17 +26,17 @@ namespace Xpandables.Net.Executions.Tasks;
 internal sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc/>
-    public Task<IExecutionResult> SendAsync(
+    public Task<ExecutionResult> SendAsync(
         IRequest request,
         CancellationToken cancellationToken = default)
     {
         try
         {
             Type pipelineRequestHandlerType = typeof(IPipelineRequestHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(IExecutionResult));
+                .MakeGenericType(request.GetType(), typeof(ExecutionResult));
 
-            IPipelineRequestHandler<IExecutionResult> handler =
-                (IPipelineRequestHandler<IExecutionResult>)provider
+            IPipelineRequestHandler<ExecutionResult> handler =
+                (IPipelineRequestHandler<ExecutionResult>)provider
                 .GetRequiredService(pipelineRequestHandlerType);
 
             return handler.HandleAsync(request, cancellationToken);
@@ -68,13 +68,13 @@ internal sealed class Mediator(IServiceProvider provider) : IMediator
         catch (Exception exception)
             when (exception is not ExecutionResultException)
         {
-            IExecutionResult execution = exception.ToExecutionResult();
+            ExecutionResult execution = exception.ToExecutionResult();
             throw new ExecutionResultException(execution);
         }
     }
 
     /// <inheritdoc/>
-    public Task<IExecutionResult<TResult>> SendAsync<TResult>(
+    public Task<ExecutionResult<TResult>> SendAsync<TResult>(
         IRequest<TResult> request,
         CancellationToken cancellationToken = default)
         where TResult : notnull
@@ -82,10 +82,10 @@ internal sealed class Mediator(IServiceProvider provider) : IMediator
         try
         {
             Type pipelineRequestHandlerType = typeof(IPipelineRequestHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(IExecutionResult<TResult>));
+                .MakeGenericType(request.GetType(), typeof(ExecutionResult<TResult>));
 
-            IPipelineRequestHandler<IExecutionResult<TResult>> handler =
-                (IPipelineRequestHandler<IExecutionResult<TResult>>)provider
+            IPipelineRequestHandler<ExecutionResult<TResult>> handler =
+                (IPipelineRequestHandler<ExecutionResult<TResult>>)provider
                 .GetRequiredService(pipelineRequestHandlerType);
 
             return handler.HandleAsync(request, cancellationToken);

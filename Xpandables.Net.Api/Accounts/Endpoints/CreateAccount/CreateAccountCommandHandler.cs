@@ -8,7 +8,7 @@ public sealed class CreateAccountCommandHandler(
     IAggregateStore<Account> aggregateStore) :
     IRequestHandler<CreateAccountCommand>
 {
-    public async Task<IExecutionResult> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         CreateAccountCommand command,
         CancellationToken cancellationToken = default)
     {

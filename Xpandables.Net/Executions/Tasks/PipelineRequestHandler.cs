@@ -28,7 +28,7 @@ public sealed class PipelineRequestHandler<TRequest, TResponse>(
     IEnumerable<IPipelineDecorator<TRequest, TResponse>> decorators) :
     IPipelineRequestHandler<TRequest, TResponse>
     where TRequest : class
-    where TResponse : notnull
+    where TResponse : class
 {
     /// <inheritdoc/>
     public Task<TResponse> HandleAsync(
@@ -61,7 +61,7 @@ public sealed class PipelineStreamRequestHandler<TRequest, TResponse>(
     IEnumerable<IPipelineStreamDecorator<TRequest, TResponse>> decorators) :
     IPipelineStreamRequestHandler<TRequest, TResponse>
     where TRequest : class, IStreamRequest<TResponse>
-    where TResponse : notnull
+    where TResponse : class
 {
     /// <inheritdoc/>
     public IAsyncEnumerable<TResponse> HandleAsync(

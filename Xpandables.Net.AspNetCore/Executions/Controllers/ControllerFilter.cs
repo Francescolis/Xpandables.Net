@@ -22,7 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Executions.Controllers;
 
 /// <summary>
-/// A filter that executes an <see cref="IExecutionResult"/> if the result 
+/// A filter that executes an <see cref="ExecutionResult"/> if the result 
 /// is of type <see cref="ObjectResult"/>.
 /// </summary>
 public sealed class ControllerFilter : IAsyncAlwaysRunResultFilter
@@ -33,7 +33,7 @@ public sealed class ControllerFilter : IAsyncAlwaysRunResultFilter
         ResultExecutionDelegate next)
     {
         if (context.Result is ObjectResult objectResult
-            && objectResult.Value is IExecutionResult executionResult)
+            && objectResult.Value is ExecutionResult executionResult)
         {
             IEndpointProcessor execute = context
                 .HttpContext

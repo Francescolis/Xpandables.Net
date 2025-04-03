@@ -131,12 +131,12 @@ public static class HttpRequestSenderExtensions
     }
 
     /// <summary>
-    /// Converts the <see cref="HttpResponse"/> to an <see cref="IExecutionResult"/>.
+    /// Converts the <see cref="HttpResponse"/> to an <see cref="ExecutionResult"/>.
     /// </summary>
     /// <param name="response">The HTTP client response to convert.</param>
     /// <param name="options">The JSON serializer options.</param>
-    /// <returns>An instance of <see cref="IExecutionResult"/>.</returns>
-    public static IExecutionResult ToExecutionResult(
+    /// <returns>An instance of <see cref="ExecutionResult"/>.</returns>
+    public static ExecutionResult ToExecutionResult(
         this HttpResponse response,
         JsonSerializerOptions? options = default)
     {
@@ -182,13 +182,13 @@ public static class HttpRequestSenderExtensions
     }
 
     /// <summary>
-    /// Converts the <see cref="HttpResponse"/> to an <see cref="IExecutionResult"/>.
+    /// Converts the <see cref="HttpResponse"/> to an <see cref="ExecutionResult"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="response">The HTTP client response to convert.</param>
     /// <param name="options">The JSON serializer options.</param>
-    /// <returns>An instance of <see cref="IExecutionResult"/>.</returns>
-    public static IExecutionResult<TResult> ToExecutionResult<TResult>(
+    /// <returns>An instance of <see cref="ExecutionResult"/>.</returns>
+    public static ExecutionResult<TResult> ToExecutionResult<TResult>(
         this ResponseHttp<TResult> response,
         JsonSerializerOptions? options = default)
     {

@@ -31,7 +31,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IValidationEnabled
-    where TResponse : notnull
+    where TResponse : class
 {
     /// <inheritdoc/>
     protected override async Task<TResponse> HandleCoreAsync(
@@ -39,7 +39,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        IExecutionResult result = await validators
+        ExecutionResult result = await validators
             .ValidateAsync(query)
             .ConfigureAwait(false);
 
@@ -63,7 +63,7 @@ public sealed class PipelineStreamValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineStreamDecorator<TRequest, TResponse>
     where TRequest : class, IValidationEnabled
-    where TResponse : notnull
+    where TResponse : class
 {
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResponse> HandleCoreAsync(
@@ -71,7 +71,7 @@ public sealed class PipelineStreamValidationDecorator<TRequest, TResponse>(
         RequestStreamHandler<TResponse> next,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IExecutionResult result = await validators
+        ExecutionResult result = await validators
             .ValidateAsync(query)
             .ConfigureAwait(false);
 

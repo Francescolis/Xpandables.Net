@@ -31,5 +31,5 @@ public interface IEndpointProcessor
     /// execution result.</param>
     /// <param name="executionResult">The execution result to execute.</param>
     /// <returns>A task that represents the asynchronous execution.</returns>
-    Task ExecuteAsync(HttpContext httpContext, IExecutionResult executionResult);
+    Task ExecuteAsync(HttpContext httpContext, ExecutionResult executionResult);
 }

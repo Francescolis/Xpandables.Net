@@ -49,7 +49,7 @@ public sealed class MinimalMiddleware : IMiddleware
                 .RequestServices
                 .GetRequiredService<IEndpointProcessor>();
 
-            IExecutionResult executionResult =
+            ExecutionResult executionResult =
                 exception.ToExecutionResultForProblemDetails();
 
             await execute

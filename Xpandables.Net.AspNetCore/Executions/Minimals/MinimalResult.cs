@@ -30,9 +30,9 @@ namespace Xpandables.Net.Executions.Minimals;
 /// <param name="executionResult">The execution result to be executed.</param>
 /// <exception cref="ArgumentNullException">Thrown when the execution result 
 /// is null.</exception>
-public sealed class MinimalResult(IExecutionResult executionResult) : IResult
+public sealed class MinimalResult(ExecutionResult executionResult) : IResult
 {
-    private readonly IExecutionResult _executionResult = executionResult
+    private readonly ExecutionResult _executionResult = executionResult
         ?? throw new ArgumentNullException(nameof(executionResult));
 
     /// <summary>
