@@ -24,7 +24,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 public abstract class PipelineDecorator<TRequest, TResponse> :
     IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : class
+    where TResponse : notnull
 {
     /// <inheritdoc/>
     public Task<TResponse> HandleAsync(
@@ -45,31 +45,6 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Matches the provided operation result to the expected response type.
-    /// </summary>
-    /// <remarks><typeparamref name="TResponse"/> must be of type
-    /// <see cref="ExecutionResult"/> or <see cref="ExecutionResult{TResult}"/>.</remarks>
-    /// <param name="executionResult">The operation result to match.</param>
-    /// <returns>The matched response of type TResponse.</returns>
-    /// <exception cref="InvalidOperationException">The response type must be of 
-    /// type ExecutionResult or ExecutionResult{T}.</exception>"
-    protected Task<TResponse> MatchResponseAsync(ExecutionResult executionResult)
-    {
-        if (!typeof(ExecutionResult).IsAssignableFrom(typeof(ExecutionResult))
-            && !typeof(ExecutionResult).IsAssignableFrom(typeof(ExecutionResult<>)))
-            throw new InvalidOperationException(
-                $"The response type must be of type ExecutionResult or ExecutionResult<T>.");
-
-        if (typeof(TResponse).IsGenericType)
-        {
-            Type resultType = typeof(TResponse).GetGenericArguments()[0];
-            return Task.FromResult((executionResult.ToExecutionResult(resultType) as TResponse)!);
-        }
-
-        return Task.FromResult((executionResult as TResponse)!);
-    }
 }
 
 /// <summary>
@@ -80,7 +55,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
 public abstract class PipelineStreamDecorator<TRequest, TResponse> :
     IPipelineStreamDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : class
+    where TResponse : notnull
 {
     /// <inheritdoc/>
     public IAsyncEnumerable<TResponse> HandleAsync(
