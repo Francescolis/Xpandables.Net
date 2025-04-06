@@ -139,8 +139,23 @@ public interface IExecutionResultLocationBuilder<out TBuilder>
 /// Represents a method for setting the result of an execution being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
+public interface IExecutionResultObjectBuilder<out TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
+{
+    /// <summary>
+    /// Sets the result of the execution being built.
+    /// </summary>
+    /// <param name="result">The result of the execution.</param>
+    /// <returns>The current builder instance.</returns>
+    TBuilder WithResult(object? result);
+}
+
+/// <summary>
+/// Represents a method for setting the result of an execution being built.
+/// </summary>
+/// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IExecutionResultResultBuilder<out TBuilder, in TResult>
+public interface IExecutionResultResultBuilder<out TBuilder, in TResult> : IExecutionResultObjectBuilder<TBuilder>
     where TBuilder : class, IExecutionResultBuilder
 {
     /// <summary>
@@ -149,6 +164,21 @@ public interface IExecutionResultResultBuilder<out TBuilder, in TResult>
     /// <param name="result">The result of the execution.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithResult(TResult result);
+
+    /// <summary>
+    /// Sets the result of the operation with a specified value, ensuring it is of the correct type.
+    /// </summary>
+    /// <param name="result">The provided value must match the expected type for successful processing.</param>
+    /// <returns>Returns an instance of the builder with the updated result.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided value does not match the expected type.</exception>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    new TBuilder WithResult(object result)
+    {
+        if (result is not TResult typedResult)
+            throw new ArgumentException($"The result must be of type {typeof(TResult)}.", nameof(result));
+
+        return WithResult(typedResult);
+    }
 }
 
 /// <summary>

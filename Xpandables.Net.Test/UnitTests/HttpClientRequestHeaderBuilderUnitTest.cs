@@ -2,25 +2,25 @@
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestHeaderBuilderUnitTest
 {
-    private readonly HttpRequestHeaderBuilder _builder;
+    private readonly RestRequestHeaderBuilder _builder;
 
     public HttpClientRequestHeaderBuilderUnitTest() =>
-        _builder = new HttpRequestHeaderBuilder();
+        _builder = new RestRequestHeaderBuilder();
 
     [Fact]
     public void Build_ShouldSetHeaders_WhenLocationIsHeader()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Header
             },
@@ -42,9 +42,9 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
     public void Build_ShouldNotSetHeaders_WhenLocationIsNotHeader()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body
             },
@@ -63,9 +63,9 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
     public void Build_ShouldSetModelNameHeader_WhenModelNameIsProvided()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Header
             },
@@ -82,7 +82,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
             .Should().Contain("header1,value1;header2,value2");
     }
 
-    private class TestHttpRequestHeader : IHttpRequest, IHttpRequestContentHeader
+    private class TestHttpRequestHeader : IRestRequest, IRestContentHeader
     {
         public ElementCollection GetHeaders()
         {
@@ -98,7 +98,7 @@ public sealed class HttpClientRequestHeaderBuilderUnitTest
     }
 
     private class TestHttpRequestHeaderWithModelName :
-        IHttpRequest, IHttpRequestContentHeader
+        IRestRequest, IRestContentHeader
     {
         public ElementCollection GetHeaders()
         {

@@ -19,9 +19,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Xpandables.Net.Collections;
+
 /// <summary>
-/// Provides extension methods for converting collections of 
-/// <see cref="ElementEntry"/> to <see cref="ElementCollection"/>.
+/// Provides extension methods for collections, including conversion to ElementCollection, async enumeration, and type
+/// checks. Supports operations like ForEach and Exists on various collection types.
 /// </summary>
 public static class ElementCollectionExtensions
 {
@@ -33,22 +34,22 @@ public static class ElementCollectionExtensions
     /// to convert.</param>
     /// <returns>An <see cref="ElementCollection"/> containing the provided 
     /// entries.</returns>
-    public static ElementCollection ToElementCollection(
-        this IEnumerable<ElementEntry> entries)
-        => ElementCollection.With([.. entries]);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ElementCollection ToElementCollection(this IEnumerable<ElementEntry> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
 
-    /// <summary>
-    /// Converts an <see cref="ElementCollection"/> to a dictionary where the 
-    /// keys are the element keys and the values are arrays of element values.
-    /// </summary>
-    /// <param name="elementCollection">The <see cref="ElementCollection"/> 
-    /// to convert.</param>
-    /// <returns>A dictionary with keys and values from the 
-    /// <see cref="ElementCollection"/>.</returns>
-    public static IDictionary<string, string[]> ToElementDictionary(
-        this ElementCollection elementCollection)
-        => elementCollection
-            .ToDictionary(entry => entry.Key, entry => entry.Values.ToArray());
+        if (entries is ICollection<ElementEntry> collection)
+        {
+            // If we know the count, we can create a list with the right capacity
+            List<ElementEntry> entryList = [.. collection];
+            return ElementCollection.With(entryList);
+        }
+
+        // Otherwise we need to materialize the list first
+        List<ElementEntry> list = [.. entries];
+        return ElementCollection.With(list);
+    }
 
     /// <summary>
     /// Contains the public <see cref="Array.Empty"/> method.
@@ -92,8 +93,20 @@ public static class ElementCollectionExtensions
     /// predicate; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="array"/> 
     /// or <paramref name="match"/> is null.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Exists<T>(this T[] array, Predicate<T> match)
-        => Array.Exists(array, match);
+    {
+        ArgumentNullException.ThrowIfNull(array);
+        ArgumentNullException.ThrowIfNull(match);
+
+        // Inline the Array.Exists logic for better performance
+        for (int i = 0; i < array.Length; i++)
+        {
+            if (match(array[i]))
+                return true;
+        }
+        return false;
+    }
 
     /// <summary>
     /// Converts the collection to exposes an enumerator that provides 
@@ -105,8 +118,8 @@ public static class ElementCollectionExtensions
     /// <returns>An async-enumerable sequence.</returns>
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
     /// is null.</exception>
-    public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(
-        this IEnumerable<T> source)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -135,10 +148,30 @@ public static class ElementCollectionExtensions
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(action);
 
-        using IEnumerator<T> enumerator = source.GetEnumerator();
-        while (enumerator.MoveNext())
+        // Optimize for arrays and List<T> which are common types
+        if (source is T[] array)
         {
-            action(enumerator.Current);
+            for (int i = 0; i < array.Length; i++)
+            {
+                action(array[i]);
+            }
+            return;
+        }
+
+        if (source is List<T> list)
+        {
+            int count = list.Count;
+            for (int i = 0; i < count; i++)
+            {
+                action(list[i]);
+            }
+            return;
+        }
+
+        // Fall back to using enumerator for other collection types
+        foreach (T item in source)
+        {
+            action(item);
         }
     }
 
@@ -154,18 +187,24 @@ public static class ElementCollectionExtensions
     /// <remarks>Items should not be added or removed from the 
     /// <see cref="List{T}"/> while
     /// the <see cref="Span{T}"/> is in use.</remarks>
-    public static void ForEach<T>(
-        this List<T> source,
-        ForEachRefAction<T> action)
+    public static void ForEach<T>(this List<T> source, ForEachRefAction<T> action)
         where T : struct
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(action);
 
+        if (source.Count == 0)
+            return;
+
         Span<T> spanSource = CollectionsMarshal.AsSpan(source);
-        foreach (ref T item in spanSource)
+        ref T firstElement = ref MemoryMarshal.GetReference(spanSource);
+
+        // Manually iterate through span for better performance
+        int length = spanSource.Length;
+        for (int i = 0; i < length; i++)
         {
-            action(ref item);
+            ref T current = ref Unsafe.Add(ref firstElement, i);
+            action(ref current);
         }
     }
 
@@ -184,17 +223,18 @@ public static class ElementCollectionExtensions
     /// <exception cref="OperationCanceledException">The operation has been 
     /// canceled.</exception>
     public static async Task ForEachAsync<T>(
-        this IAsyncEnumerable<T> source,
-        Action<T> action,
-        CancellationToken cancellationToken = default)
+        this IAsyncEnumerable<T> source, Action<T> action, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(action);
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         await foreach (T item in source
             .WithCancellation(cancellationToken)
             .ConfigureAwait(false))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             action(item);
         }
     }
@@ -213,17 +253,19 @@ public static class ElementCollectionExtensions
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
     /// or <paramref name="action"/> is null.</exception>
     public static async Task ForEachAsync<T>(
-        this IAsyncEnumerable<T> source,
-        Func<T, CancellationToken, Task> action,
+        this IAsyncEnumerable<T> source, Func<T, CancellationToken, Task> action,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(action);
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         await foreach (T item in source
             .WithCancellation(cancellationToken)
             .ConfigureAwait(false))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await action(item, cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -239,55 +281,69 @@ public static class ElementCollectionExtensions
     /// </returns>
     /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
     /// is null.</exception>
-    public static IReadOnlyCollection<T> ToReadOnlyCollection<T>(
-        this IEnumerable<T> source)
+    public static IReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> source)
     {
         ArgumentNullException.ThrowIfNull(source);
+
+        // Optimize for already read-only collections
+        if (source is IReadOnlyCollection<T> readOnlyCollection)
+            return readOnlyCollection;
+
         return new ReadOnlyCollectionBuilder<T>(source)
             .ToReadOnlyCollection();
     }
 
     /// <summary>
-    /// Determines whether the current type implements or it's 
-    /// <see cref="IEnumerable{T}"/>.
+    /// Determines whether the current type implements or it's <see cref="IEnumerable{T}"/>.
     /// </summary>
     /// <param name="type">The type to act on.</param>
-    /// <returns><see langword="true"/> if found, otherwise 
-    /// <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="type"/> is null.</exception>
+    /// <returns><see langword="true"/> if found, otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="type"/> is null.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsEnumerable(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
-        return !type.IsPrimitive
-            && type != typeof(string)
-            && type.GetInterfaces()
-                .Exists(i => i.IsGenericType
-                    && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+        // Fast checks for common types
+        if (type.IsPrimitive || type == typeof(string))
+            return false;
+
+        Type[] interfaces = type.GetInterfaces();
+        for (int i = 0; i < interfaces.Length; i++)
+        {
+            Type iface = interfaces[i];
+            if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
-    /// Determines whether the current type implements or it's 
-    /// <see cref="IAsyncEnumerable{T}"/>.
+    /// Determines whether the current type implements or it's <see cref="IAsyncEnumerable{T}"/>.
     /// </summary>
     /// <param name="type">The type to act on.</param>
-    /// <returns><see langword="true"/> if Ok, otherwise 
-    /// <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException">The 
-    /// <paramref name="type"/> is null.</exception>
+    /// <returns><see langword="true"/> if Ok, otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="type"/> is null.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsAsyncEnumerable(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
-        return type.IsInterface switch
+        // Direct check if type is IAsyncEnumerable<T>
+        if (type.IsInterface && type.IsGenericType &&
+            string.Equals(type.Name, typeof(IAsyncEnumerable<>).Name, StringComparison.Ordinal))
+            return true;
+
+        // Check implemented interfaces
+        Type[] interfaces = type.GetInterfaces();
+        for (int i = 0; i < interfaces.Length; i++)
         {
-            true => type.IsGenericType && type.Name
-                .Equals(typeof(IAsyncEnumerable<>).Name,
-                    StringComparison.OrdinalIgnoreCase),
-            _ => type.GetInterfaces()
-                .Exists(i => i.IsGenericType
-                    && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
-        };
+            Type iface = interfaces[i];
+            if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
+                return true;
+        }
+
+        return false;
     }
 }

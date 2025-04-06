@@ -4,7 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.ResponseBuilders;
+using Xpandables.Net.Http.Builders.Responses;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientResponseBuilderUnitTest
@@ -13,29 +13,30 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task FailureAsyncResult_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new HttpResponseFailureStreamBuilder();
+        var builder = new RestResponseFailureBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
+            StatusCode = HttpStatusCode.BadRequest,
             Version = new Version(1, 1),
             ReasonPhrase = "Bad Request",
             Content = new StringContent("Error content")
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new ResponseContext
+        var context = new RestResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<ResponseHttp<IAsyncEnumerable<string>>>(context);
+        var response = await builder.BuildAsync<RestResponse<IAsyncEnumerable<string>>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         response.Version.Should().Be(new Version(1, 1));
         response.ReasonPhrase.Should().Be("Bad Request");
-        response.Headers["Custom-Header"].Should().Be("HeaderValue");
+        response.Headers.Should().Contain(p => p.Key == "Custom-Header" && p.Values.Contains("HeaderValue"));
         response.Exception.Should().NotBeNull();
     }
 
@@ -43,7 +44,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task Failure_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new HttpResponseFailureBuilder();
+        var builder = new RestResponseFailureBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Version = new Version(1, 1),
@@ -52,20 +53,20 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new ResponseContext
+        var context = new RestResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpResponse>(context);
+        var response = await builder.BuildAsync<RestResponse>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         response.Version.Should().Be(new Version(1, 1));
         response.ReasonPhrase.Should().Be("Bad Request");
-        response.Headers["Custom-Header"].Should().Be("HeaderValue");
+        response.Headers.Should().Contain(p => p.Key == "Custom-Header" && p.Values.Contains("HeaderValue"));
         response.Exception.Should().NotBeNull();
     }
 
@@ -73,7 +74,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task FailureResult_ShouldReturnFailureResponse()
     {
         // Arrange
-        var builder = new HttpResponseFailureResultBuilder();
+        var builder = new RestResponseFailureBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Version = new Version(1, 1),
@@ -82,20 +83,20 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new ResponseContext
+        var context = new RestResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<ResponseHttp<string>>(context);
+        var response = await builder.BuildAsync<RestResponse<string>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         response.Version.Should().Be(new Version(1, 1));
         response.ReasonPhrase.Should().Be("Bad Request");
-        response.Headers["Custom-Header"].Should().Be("HeaderValue");
+        response.Headers.Should().Contain(p => p.Key == "Custom-Header" && p.Values.Contains("HeaderValue"));
         response.Exception.Should().NotBeNull();
     }
 
@@ -103,7 +104,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task SuccessAsyncResult_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new HttpResponseSuccessStreamBuilder();
+        var builder = new RestResponseSuccessStreamBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),
@@ -112,21 +113,21 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new ResponseContext
+        var context = new RestResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<ResponseHttp<IAsyncEnumerable<string>>>(context);
+        var response = await builder.BuildAsync<RestResponse<IAsyncEnumerable<string>>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Version.Should().Be(new Version(1, 1));
         response.Result.Should().NotBeNull();
         response.ReasonPhrase.Should().Be("OK");
-        response.Headers["Custom-Header"].Should().Be("HeaderValue");
+        response.Headers.Should().Contain(p => p.Key == "Custom-Header" && p.Values.Contains("HeaderValue"));
         response.Exception.Should().BeNull();
     }
 
@@ -134,7 +135,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task Success_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new HttpResponseSuccessBuilder();
+        var builder = new RestResponseSuccessBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),
@@ -143,20 +144,20 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new ResponseContext
+        var context = new RestResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions()
         };
 
         // Act
-        var response = await builder.BuildAsync<HttpResponse>(context);
+        var response = await builder.BuildAsync<RestResponse>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Version.Should().Be(new Version(1, 1));
         response.ReasonPhrase.Should().Be("OK");
-        response.Headers["Custom-Header"].Should().Be("HeaderValue");
+        response.Headers.Should().Contain(p => p.Key == "Custom-Header" && p.Values.Contains("HeaderValue"));
         response.Exception.Should().BeNull();
     }
 
@@ -165,7 +166,7 @@ public sealed class HttpClientResponseBuilderUnitTest
     public async Task SuccessResult_ShouldReturnSuccessResponse()
     {
         // Arrange
-        var builder = new HttpResponseSuccessResultBuilder();
+        var builder = new RestResponseSuccessResultBuilder();
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Version = new Version(1, 1),
@@ -174,7 +175,7 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
-        var context = new ResponseContext
+        var context = new RestResponseContext
         {
             Message = responseMessage,
             SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
@@ -186,13 +187,13 @@ public sealed class HttpClientResponseBuilderUnitTest
         };
 
         // Act
-        var response = await builder.BuildAsync<ResponseHttp<TestResponse>>(context);
+        RestResponse<TestResponse> response = await builder.BuildAsync<RestResponse<TestResponse>>(context);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Version.Should().Be(new Version(1, 1));
         response.ReasonPhrase.Should().Be("OK");
-        response.Headers["Custom-Header"].Should().Be("HeaderValue");
+        response.Headers.Should().Contain(p => p.Key == "Custom-Header" && p.Values.Contains("HeaderValue"));
         response.Exception.Should().BeNull();
     }
 }

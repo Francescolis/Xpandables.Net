@@ -17,6 +17,8 @@
 
 using System.Net;
 
+using Microsoft.Extensions.Primitives;
+
 using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Executions;
@@ -26,6 +28,7 @@ namespace Xpandables.Net.Executions;
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode) :
+    IExecutionResultObjectBuilder<TBuilder>,
     IExecutionResultHeaderBuilder<TBuilder>,
     IExecutionResultLocationBuilder<TBuilder>,
     IExecutionResultErrorBuilder<TBuilder>,
@@ -152,6 +155,13 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     }
 
     /// <inheritdoc/>
+    public TBuilder WithResult(object? result)
+    {
+        Result = result;
+        return (this as TBuilder)!;
+    }
+
+    /// <inheritdoc/>
     public TBuilder WithDetail(string detail)
     {
         Detail = detail;
@@ -202,21 +212,21 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
             _ = Errors.Remove(entry.Value.Key);
             entry = entry.Value with
             {
-                Values = [.. new string[] { BuildErrorMessage(exception) }.Union(entry.Value.Values)]
+                Values = StringValues.Concat(entry.Value.Values, new StringValues(AggregateExceptionValues(exception)))
             };
         }
         else
         {
             entry = new ElementEntry(
                 ExecutionResultAbstract.ExceptionKey,
-                BuildErrorMessage(exception));
+                AggregateExceptionValues(exception));
         }
 
         Errors.Add(entry.Value);
 
         return (this as TBuilder)!;
 
-        static string BuildErrorMessage(Exception exception)
+        static string AggregateExceptionValues(Exception exception)
         {
             ArgumentNullException.ThrowIfNull(exception);
 

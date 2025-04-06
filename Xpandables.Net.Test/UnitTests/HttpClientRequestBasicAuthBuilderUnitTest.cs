@@ -3,25 +3,25 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestBasicAuthBuilderUnitTest
 {
-    private readonly HttpRequestBasicAuthenticationBuilder _builder;
+    private readonly RestRequestBasicAuthenticationBuilder _builder;
 
     public HttpClientRequestBasicAuthBuilderUnitTest() =>
-        _builder = new HttpRequestBasicAuthenticationBuilder();
+        _builder = new RestRequestBasicAuthenticationBuilder();
 
     [Fact]
     public void Build_ShouldSetAuthorizationHeader_WhenLocationIsBasicAuth()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.BasicAuth
             },
@@ -42,9 +42,9 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
     public void Build_ShouldNotSetAuthorizationHeader_WhenLocationIsNotBasicAuth()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body
             },
@@ -59,7 +59,7 @@ public sealed class HttpClientRequestBasicAuthBuilderUnitTest
         context.Message.Headers.Authorization.Should().BeNull();
     }
 
-    private class TestHttpRequestBasicAuth : IHttpRequest, IHttpRequestContentBasicAuthentication
+    private class TestHttpRequestBasicAuth : IRestRequest, IRestContentBasicAuthentication
     {
         public AuthenticationHeaderValue GetAuthenticationHeaderValue() =>
             new("Basic", "dGVzdDp0ZXN0");

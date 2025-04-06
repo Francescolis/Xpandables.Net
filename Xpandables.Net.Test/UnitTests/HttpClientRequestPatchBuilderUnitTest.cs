@@ -3,26 +3,26 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
-using static Xpandables.Net.Http.MapRequest.Patch;
+using static Xpandables.Net.Http.MapRest;
+using static Xpandables.Net.Http.MapRest.Patch;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestPatchBuilderUnitTest
 {
-    private readonly HttpRequestPatchBuilder _builder;
+    private readonly RestRequestPatchBuilder _builder;
 
     public HttpClientRequestPatchBuilderUnitTest() =>
-        _builder = new HttpRequestPatchBuilder();
+        _builder = new RestRequestPatchBuilder();
 
     [Fact]
     public void Build_ShouldSetStringContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
@@ -53,9 +53,9 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.String,
@@ -83,9 +83,9 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenBodyFormatIsNotString()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream,
@@ -112,9 +112,9 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     public void Build_ShouldAddStringContentToMultipart_WhenContentIsMultipart()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
@@ -144,7 +144,7 @@ public sealed class HttpClientRequestPatchBuilderUnitTest
     }
 
     private record TestHttpRequestPatch :
-        HttpRequestPatch<TestHttpRequestPatch>, IHttpRequest
+        RestContentPatch<TestHttpRequestPatch>, IRestRequest
     {
     }
 }

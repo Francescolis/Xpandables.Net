@@ -1,25 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestByteArrayBuilderUnitTest
 {
-    private readonly HttpRequestByteArrayBuilder _builder;
+    private readonly RestRequestByteArrayBuilder _builder;
 
     public HttpClientRequestByteArrayBuilderUnitTest() =>
-        _builder = new HttpRequestByteArrayBuilder();
+        _builder = new RestRequestByteArrayBuilder();
 
     [Fact]
     public void Build_ShouldSetByteArrayContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.ByteArray
@@ -40,9 +40,9 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
     public void Build_ShouldNotSetByteArrayContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.ByteArray
@@ -62,9 +62,9 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
     public void Build_ShouldNotSetByteArrayContent_WhenBodyFormatIsNotByteArray()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
@@ -80,7 +80,7 @@ public sealed class HttpClientRequestByteArrayBuilderUnitTest
         context.Message.Content.Should().BeNull();
     }
 
-    private class TestHttpRequestByteArray : IHttpRequest, IHttpRequestContentByteArray
+    private class TestHttpRequestByteArray : IRestRequest, IRestContentByteArray
     {
         public ByteArrayContent GetByteArrayContent() => new([1, 2, 3, 4]);
     }

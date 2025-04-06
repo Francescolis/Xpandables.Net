@@ -20,6 +20,7 @@ using System.Net;
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Executions;
 
@@ -101,20 +102,23 @@ public static class ExecutionResultExceptionExtensions
     /// <summary>  
     /// Converts a <see cref="Exception"/> to an <see cref="ExecutionResult"/>.  
     /// </summary>  
-    /// <param name="exception">The exception to convert.</param>  
+    /// <param name="exception">The exception to convert.</param> 
+    /// <param name="statusCode">Optional HTTP status code to use.</param>
+    /// <param name="reason">Optional reason phrase for the status code.</param>
     /// <returns>An <see cref="ExecutionResult"/> representing the exception.</returns>  
-    public static ExecutionResult ToExecutionResult(this Exception exception)
+    public static ExecutionResult ToExecutionResult(
+        this Exception exception, HttpStatusCode? statusCode = null, string? reason = default)
     {
         bool isDevelopment = (Environment.GetEnvironmentVariable(
             "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
             Environments.Development;
 
-        HttpStatusCode statusCode = exception.GetAppropriatStatusCode();
+        statusCode ??= exception.GetAppropriatStatusCode();
 
         return ExecutionResults
-            .Failure(statusCode)
-            .WithTitle(isDevelopment ? exception.Message : statusCode.GetTitle())
-            .WithDetail(isDevelopment ? $"{exception}" : statusCode.GetDetail())
+            .Failure(statusCode.Value)
+            .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.GetTitle())
+            .WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.GetDetail())
             .WithErrors(GetValidationExceptionErrors(exception))
             .WithException(exception)
             .Build();
@@ -154,7 +158,7 @@ public static class ExecutionResultExceptionExtensions
         return element
             .ToDictionary(
             entry => entry.Key,
-            entry => (object?)string.Join(" ", entry.Values));
+            entry => (object?)entry.Values.StringJoin(" "));
     }
 
     private static ElementCollection GetValidationExceptionErrors(Exception exception)
@@ -165,10 +169,32 @@ public static class ExecutionResultExceptionExtensions
         while (stack.Count > 0)
         {
             Exception currentException = stack.Pop();
+
             if (currentException is ValidationException validationException)
             {
                 return validationException.ValidationResult.ToElementCollection();
             }
+
+            var anonymousType = new { Errors = default(Dictionary<string, IEnumerable<string>>) };
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                var errors = currentException.Message.DeserializeAnonymousType(anonymousType, DefaultSerializerOptions.Defaults);
+                if (errors is not null && errors.Errors is not null && errors.Errors.Count > 0)
+                {
+                    ElementCollection collection = [];
+                    foreach (var error in errors.Errors)
+                    {
+                        collection.Add(error.Key, [.. error.Value]);
+                    }
+
+                    return collection;
+                }
+            }
+            catch
+            {
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
 
             if (currentException.InnerException is not null)
             {

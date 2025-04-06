@@ -6,11 +6,11 @@ using Xpandables.Net.Http;
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
 [MapGet("/accounts/balance")]
-public sealed record GetBalanceAccountRequest : IHttpRequest<int>, IHttpRequestContentQueryString, IValidationEnabled
+public sealed record GetBalanceAccountRequest : IRestRequest<int>, IRestContentQueryString, IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }
 
-    IDictionary<string, string?>? IHttpRequestContentQueryString.GetQueryString() =>
+    IDictionary<string, string?>? IRestContentQueryString.GetQueryString() =>
         new Dictionary<string, string?> { [nameof(KeyId)] = KeyId.ToString() };
 }

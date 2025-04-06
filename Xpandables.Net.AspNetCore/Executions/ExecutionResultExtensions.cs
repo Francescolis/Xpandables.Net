@@ -44,8 +44,13 @@ public static class ExecutionResultExtensions
         foreach (ElementEntry entry in executionResult.Errors
             .Where(e => e.Key != ExecutionResultAbstract.ExceptionKey))
         {
-            foreach (string value in entry.Values)
+            foreach (string? value in entry.Values)
             {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    continue;
+                }
+
                 modelState.AddModelError(entry.Key, value);
             }
         }

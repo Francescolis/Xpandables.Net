@@ -79,6 +79,18 @@ public abstract record ExecutionResultAbstract
     /// Gets the collection of extensions associated with the execution.
     /// </summary>
     public ElementCollection Extensions { get; init; } = [];
+
+    /// <summary>
+    /// Converts an ExecutionResultAbstract instance to an HttpStatusCode.
+    /// </summary>
+    /// <param name="result">Represents the status code associated with the execution result.</param>
+    public static implicit operator HttpStatusCode(ExecutionResultAbstract result) => result.ToHttpStatusCode();
+
+    /// <summary>
+    /// Converts the current status code to an HTTP status code.
+    /// </summary>
+    /// <returns>Returns the corresponding HttpStatusCode value.</returns>
+    public HttpStatusCode ToHttpStatusCode() => StatusCode;
 }
 
 /// <summary>
@@ -101,8 +113,7 @@ public sealed record ExecutionResult : ExecutionResultAbstract
     /// Gets a value indicating whether the execution's status code 
     /// is a success status code.
     /// </summary>
-    public bool IsSuccessStatusCode =>
-        (int)StatusCode is >= 200 and <= 299;
+    public bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
 
     /// <summary>
     /// Ensures that the execution result has a success status code.
@@ -151,8 +162,7 @@ public sealed record ExecutionResult<TResult> : ExecutionResultAbstract
     /// is a success status code.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Result))]
-    public bool IsSuccessStatusCode =>
-        (int)StatusCode is >= 200 and <= 299;
+    public bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
 
     /// <summary>
     /// Ensures that the execution result has a success status code.

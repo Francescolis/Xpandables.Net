@@ -1,25 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestStreamBuilderUnitTest
 {
-    private readonly HttpRequestStreamBuilder _builder;
+    private readonly RestRequestStreamBuilder _builder;
 
     public HttpClientRequestStreamBuilderUnitTest() =>
-        _builder = new HttpRequestStreamBuilder();
+        _builder = new RestRequestStreamBuilder();
 
     [Fact]
     public void Build_ShouldSetStreamContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream
@@ -40,9 +40,9 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
     public void Build_ShouldNotSetStreamContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.Stream
@@ -62,9 +62,9 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
     public void Build_ShouldNotSetStreamContent_WhenBodyFormatIsNotStream()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
@@ -84,9 +84,9 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
     public void Build_ShouldAddStreamContentToMultipart_WhenContentIsMultipart()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Stream
@@ -107,7 +107,7 @@ public sealed class HttpClientRequestStreamBuilderUnitTest
         multipart!.Should().ContainSingle();
     }
 
-    private class TestHttpRequestStream : IHttpRequest, IHttpRequestContentStream
+    private class TestHttpRequestStream : IRestRequest, IRestContentStream
     {
         public StreamContent GetStreamContent()
         {

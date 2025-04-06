@@ -1,25 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestQueryStringBuilderUnitTest
 {
-    private readonly HttpRequestQueryStringBuilder _builder;
+    private readonly RestRequestQueryStringBuilder _builder;
 
     public HttpClientRequestQueryStringBuilderUnitTest() =>
-        _builder = new HttpRequestQueryStringBuilder();
+        _builder = new RestRequestQueryStringBuilder();
 
     [Fact]
     public void Build_ShouldSetQueryString_WhenLocationIsQuery()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Query,
                 Path = "http://example.com"
@@ -44,9 +44,9 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
     public void Build_ShouldNotSetQueryString_WhenLocationIsNotQuery()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 Path = "http://example.com"
@@ -137,7 +137,7 @@ public sealed class HttpClientRequestQueryStringBuilderUnitTest
         result.Should().Be("http://example.com?param1=value1&param2=value2#anchor");
     }
 
-    private class TestHttpRequestQueryString : IHttpRequest, IHttpRequestContentQueryString
+    private class TestHttpRequestQueryString : IRestRequest, IRestContentQueryString
     {
         public IDictionary<string, string?>? GetQueryString() =>
             new Dictionary<string, string?>

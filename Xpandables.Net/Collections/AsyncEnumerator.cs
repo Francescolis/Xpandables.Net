@@ -28,11 +28,9 @@ namespace Xpandables.Net.Collections;
 /// <param name="inner">The enumerator to act on.</param>
 /// <exception cref="ArgumentNullException">The 
 /// <paramref name="inner"/> is null.</exception>
-public sealed class AsyncEnumerator<T>(IEnumerator<T> inner) :
-    IAsyncEnumerator<T>
+public sealed class AsyncEnumerator<T>(IEnumerator<T> inner) : IAsyncEnumerator<T>
 {
-    private readonly IEnumerator<T> _inner = inner
-        ?? throw new ArgumentNullException(nameof(inner));
+    private readonly IEnumerator<T> _inner = inner ?? throw new ArgumentNullException(nameof(inner));
 
     /// <summary>
     /// Gets the element in the collection at the current position of 

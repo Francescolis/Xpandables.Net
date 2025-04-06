@@ -29,7 +29,7 @@ public sealed class UnBlockAccountEndpoint : IEndpointRoute
         .WithName("UnBlockAccount")
         .WithXMinimalApi()
         .AllowAnonymous()
-        .Accepts<UnBlockAccountRequest>(MapRequest.ContentType.Json)
+        .Accepts<UnBlockAccountRequest>(MapRest.ContentType.Json)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
 }

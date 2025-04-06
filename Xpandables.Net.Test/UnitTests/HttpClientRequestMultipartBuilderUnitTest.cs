@@ -1,25 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestMultipartBuilderUnitTest
 {
-    private readonly HttpRequestMultipartBuilder _builder;
+    private readonly RestRequestMultipartBuilder _builder;
 
     public HttpClientRequestMultipartBuilderUnitTest() =>
-        _builder = new HttpRequestMultipartBuilder();
+        _builder = new RestRequestMultipartBuilder();
 
     [Fact]
     public void Build_ShouldSetMultipartContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Multipart
@@ -40,9 +40,9 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
     public void Build_ShouldNotSetMultipartContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.Multipart
@@ -62,9 +62,9 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
     public void Build_ShouldNotSetMultipartContent_WhenBodyFormatIsNotMultipart()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
@@ -80,7 +80,7 @@ public sealed class HttpClientRequestMultipartBuilderUnitTest
         context.Message.Content.Should().BeNull();
     }
 
-    private class TestHttpRequestMultipart : IHttpRequest, IHttpRequestContentMultipart
+    private class TestHttpRequestMultipart : IRestRequest, IRestContentMultipart
     {
         public MultipartFormDataContent GetMultipartContent()
         {

@@ -1,25 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestCookieBuilderUnitTest
 {
-    private readonly HttpRequestCookieBuilder _builder;
+    private readonly RestRequestCookieBuilder _builder;
 
     public HttpClientRequestCookieBuilderUnitTest() =>
-        _builder = new HttpRequestCookieBuilder();
+        _builder = new RestRequestCookieBuilder();
 
     [Fact]
     public void Build_ShouldSetCookieHeader_WhenLocationIsCookie()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Cookie
             },
@@ -47,9 +47,9 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
     public void Build_ShouldNotSetCookieHeader_WhenLocationIsNotCookie()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body
             },
@@ -64,7 +64,7 @@ public sealed class HttpClientRequestCookieBuilderUnitTest
         context.Message.Options.Should().BeEmpty();
     }
 
-    private class TestHttpRequestCookie : IHttpRequest, IHttpRequestContentCookie
+    private class TestHttpRequestCookie : IRestRequest, IRestContentCookie
     {
         public IDictionary<string, object?> GetCookieHeaderValue() =>
             new Dictionary<string, object?>

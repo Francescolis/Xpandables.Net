@@ -17,6 +17,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
+using Microsoft.Extensions.Primitives;
+
 namespace Xpandables.Net.Collections;
 
 /// <summary>
@@ -32,22 +34,20 @@ public readonly record struct ElementEntry
     /// <summary>
     /// Gets the values associated with the key.
     /// </summary>
-    public required IReadOnlyCollection<string> Values { get; init; }
+    public required StringValues Values { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ElementEntry"/> struct.
     /// </summary>
     /// <param name="key">The key of the entry.</param>
     /// <param name="values">The values associated with the key.</param>
-    /// <exception cref="ArgumentException">Thrown when values are empty.</exception>
+    /// <exception cref="ArgumentException">Thrown when values are empty or null.</exception>
     [SetsRequiredMembers]
     public ElementEntry(string key, params string[] values)
     {
-        if (values.Length == 0)
+        if (values is null || values.Length == 0)
         {
-            throw new ArgumentException(
-                "Values cannot be empty.",
-                nameof(values));
+            throw new ArgumentException("Values cannot be empty.", nameof(values));
         }
 
         Key = key;

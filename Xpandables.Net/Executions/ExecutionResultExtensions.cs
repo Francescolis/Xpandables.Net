@@ -49,8 +49,7 @@ public static partial class ExecutionResultExtensions
     /// <param name="genericType">The underlying type.</param>
     /// <returns>A new instance of <see cref="ExecutionResult{TResult}"/>
     /// .</returns>
-    public static dynamic ToExecutionResult(
-        this ExecutionResult executionResult, Type genericType)
+    public static dynamic ToExecutionResult(this ExecutionResult executionResult, Type genericType)
     {
         ArgumentNullException.ThrowIfNull(executionResult);
         ArgumentNullException.ThrowIfNull(genericType);

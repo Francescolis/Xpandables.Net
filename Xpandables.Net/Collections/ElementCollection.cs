@@ -16,117 +16,21 @@
 ********************************************************************************/
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
+
+using Microsoft.Extensions.Primitives;
 
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Represents a collection of <see cref="ElementEntry"/> objects.
+/// Represents a collection of ElementEntry objects, allowing for addition, removal, and merging of entries. Provides
+/// methods to create, clear, and convert the collection.
 /// </summary>
 [JsonConverter(typeof(ElementCollectionJsonConverter))]
 public readonly record struct ElementCollection : IEnumerable<ElementEntry>
 {
-    private readonly List<ElementEntry> _entries = [];
-
-    /// <summary>
-    /// Adds an <see cref="ElementEntry"/> to the <see cref="ElementCollection"/>.
-    /// </summary>
-    /// <param name="collection">The collection to which the entry will be added.</param>
-    /// <param name="entry">The entry to add to the collection.</param>
-    /// <returns>A new <see cref="ElementCollection"/> with the specified entry 
-    /// added.</returns>
-    public static ElementCollection operator +(
-        ElementCollection collection,
-        ElementEntry entry)
-    {
-        collection.Add(entry);
-        return collection;
-    }
-
-    /// <summary>
-    /// Merges two <see cref="ElementCollection"/> instances.
-    /// </summary>
-    /// <param name="collection">The first collection to merge.</param>
-    /// <param name="other">The second collection to merge.</param>
-    /// <returns>A new <see cref="ElementCollection"/> that contains the 
-    /// entries from both collections.</returns>
-    public static ElementCollection operator +(
-        ElementCollection collection,
-        ElementCollection other)
-    {
-        collection.Merge(other);
-        return collection;
-    }
-
-    /// <summary>
-    /// Removes the <see cref="ElementEntry"/> with the specified key from 
-    /// the collection.
-    /// </summary>
-    /// <param name="collection">The collection from which to remove the entry.</param>
-    /// <param name="key">The key of the entry to remove.</param>
-    /// <returns>A new <see cref="ElementCollection"/> with the specified entry 
-    /// removed.</returns>
-#pragma warning disable CA2225 // Operator overloads have named alternates
-    public static ElementCollection operator -(
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        ElementCollection collection,
-        string key)
-    {
-        _ = collection.Remove(key);
-        return collection;
-    }
-
-    /// <summary>
-    /// Removes the specified <see cref="ElementEntry"/> from the collection.
-    /// </summary>
-    /// <param name="collection">The collection from which to remove the entry.</param>
-    /// <param name="entry">The entry to remove.</param>
-    /// <returns>A new <see cref="ElementCollection"/> with the specified entry 
-    /// removed.</returns>
-#pragma warning disable CA2225 // Operator overloads have named alternates
-    public static ElementCollection operator -(
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        ElementCollection collection,
-        ElementEntry entry)
-    {
-        _ = collection.Remove(entry.Key);
-        return collection;
-    }
-
-    /// <summary>
-    /// Removes the specified <see cref="ElementEntry"/> objects from the collection.
-    /// </summary>
-    /// <param name="collection">The collection from which to remove the entries.</param>
-    /// <param name="other">The collection containing the entries to remove.</param>
-    /// <returns>A new <see cref="ElementCollection"/> with the specified entries removed.</returns>
-#pragma warning disable CA2225 // Operator overloads have named alternates
-    public static ElementCollection operator -(
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        ElementCollection collection,
-        ElementCollection other)
-    {
-        foreach (ElementEntry entry in other)
-        {
-            _ = collection.Remove(entry.Key);
-        }
-
-        return collection;
-    }
-
-    /// <summary>
-    /// Implicitly converts an <see cref="ElementCollection"/> to 
-    /// a <see cref="ReadOnlyDictionary{TKey, TValue}"/>.
-    /// </summary>
-    /// <param name="collection">The <see cref="ElementCollection"/> to convert.</param>
-    /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> that contains 
-    /// the entries from the collection.</returns>
-    public static implicit operator
-#pragma warning disable CA2225 // Operator overloads have named alternates
-        ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        ElementCollection collection) =>
-        new(collection._entries.ToDictionary(
-            entry => entry.Key, entry => entry.Values));
+    private readonly List<ElementEntry> _entries;
 
     /// <summary>
     /// Gets an empty <see cref="ElementCollection"/>.
@@ -141,8 +45,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="values">The values of the element to add.</param>  
     /// <returns>A new <see cref="ElementCollection"/> with the specified key 
     /// and values.</returns>  
-    public static ElementCollection With(string key, params string[] values) =>
-       new(key, values);
+    public static ElementCollection With(string key, params string[] values) => new(key, values);
 
     /// <summary>
     /// Creates a new <see cref="ElementCollection"/> with the specified key 
@@ -152,8 +55,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="value">The value of the element to add.</param>
     /// <returns>A new <see cref="ElementCollection"/> with the specified key 
     /// and value.</returns>
-    public static ElementCollection With(string key, string value) =>
-        new(key, value);
+    public static ElementCollection With(string key, string value) => new(key, value);
 
     /// <summary>
     /// Creates a new <see cref="ElementCollection"/> with the specified 
@@ -171,8 +73,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="entries">The list of <see cref="ElementEntry"/> to add.</param>
     /// <returns>A new <see cref="ElementCollection"/> with the specified list 
     /// of <see cref="ElementEntry"/>.</returns>
-    public static ElementCollection With(IList<ElementEntry> entries) =>
-        [.. entries];
+    public static ElementCollection With(IList<ElementEntry> entries) => [.. entries];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ElementCollection"/> struct.
@@ -185,10 +86,23 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <param name="key">The key of the element to get.</param>
     /// <returns>The <see cref="ElementEntry"/> associated with the specified 
     /// key, or <c>null</c> if the key is not found.</returns>
-    public ElementEntry? this[string key] =>
-        _entries.Find(entry => entry.Key == key) is { Key: not null } entry
-            ? entry
-            : null;
+    public ElementEntry? this[string key]
+    {
+        get
+        {
+            ArgumentException.ThrowIfNullOrEmpty(key);
+
+            for (int i = 0; i < _entries.Count; i++)
+            {
+                if (string.Equals(_entries[i].Key, key, StringComparison.Ordinal))
+                {
+                    return _entries[i];
+                }
+            }
+
+            return null;
+        }
+    }
 
     /// <summary>
     /// Adds an <see cref="ElementEntry"/> to the collection. 
@@ -201,11 +115,22 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
         ElementEntry? existingEntry = this[entry.Key];
         if (existingEntry.HasValue)
         {
-            _ = _entries.Remove(existingEntry.Value);
-            entry = existingEntry.Value with
+            for (int i = 0; i < _entries.Count; i++)
             {
-                Values = [.. existingEntry.Value.Values.Union(entry.Values)]
-            };
+                if (string.Equals(_entries[i].Key, entry.Key, StringComparison.Ordinal))
+                {
+                    _entries.RemoveAt(i);
+                    break;
+                }
+            }
+
+            // Calculate union manually to avoid LINQ overhead
+            HashSet<string> unionValues = [.. existingEntry.Value.Values, .. entry.Values];
+
+            string[] combinedValues = new string[unionValues.Count];
+            unionValues.CopyTo(combinedValues);
+
+            entry = existingEntry.Value with { Values = combinedValues };
         }
 
         _entries.Add(entry);
@@ -219,8 +144,8 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// </summary>
     /// <param name="key">The key of the element to add.</param>
     /// <param name="values">The values of the element to add.</param>
-    public void Add(string key, params string[] values) =>
-        Add(new ElementEntry(key, values));
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add(string key, params string[] values) => Add(new ElementEntry(key, values));
 
     /// <summary>
     /// Adds a range of key-value pairs to the collection.
@@ -231,6 +156,8 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     public void AddRange(IDictionary<string, string> values)
     {
         ArgumentNullException.ThrowIfNull(values);
+
+        _entries.EnsureCapacity(_entries.Count + values.Count);
 
         foreach (KeyValuePair<string, string> value in values)
         {
@@ -244,8 +171,22 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// </summary>
     /// <param name="key">The key of the element to remove.</param>
     /// <returns>The number of elements removed from the collection.</returns>
-    public int Remove(string key) =>
-        _entries.RemoveAll(entry => entry.Key == key);
+    public int Remove(string key)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        int removed = 0;
+        for (int i = _entries.Count - 1; i >= 0; i--)
+        {
+            if (string.Equals(_entries[i].Key, key, StringComparison.Ordinal))
+            {
+                _entries.RemoveAt(i);
+                removed++;
+            }
+        }
+
+        return removed;
+    }
 
     /// <summary>
     /// Merges the specified <see cref="ElementCollection"/> with the current 
@@ -257,6 +198,8 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// with the current collection.</param>
     public void Merge(ElementCollection collection)
     {
+        _entries.EnsureCapacity(_entries.Count + collection._entries.Count);
+
         foreach (ElementEntry entry in collection)
         {
             Add(entry);
@@ -266,26 +209,148 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     /// <summary>  
     /// Clears all the entries from the collection.  
     /// </summary>  
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear() => _entries.Clear();
 
     /// <inheritdoc/>
-    public IEnumerator<ElementEntry> GetEnumerator() =>
-        _entries.GetEnumerator();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IEnumerator<ElementEntry> GetEnumerator() => _entries.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator() =>
-        GetEnumerator();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    internal ElementCollection(ElementEntry entry) => Add(entry);
+    internal ElementCollection(ElementEntry entry)
+    {
+        _entries = [];
+        Add(entry);
+    }
+
     internal ElementCollection(string key, params string[] values)
         : this(new ElementEntry(key, values)) { }
+
     [JsonConstructor]
     internal ElementCollection(IList<ElementEntry> entries)
     {
-        _entries ??= [];
+        _entries = [];
+
+        if (entries == null) return;
+
+        _entries.EnsureCapacity(entries.Count);
 
         foreach (ElementEntry entry in entries)
         {
             Add(entry);
         }
+    }
+
+    /// <summary>
+    /// Adds an <see cref="ElementEntry"/> to the <see cref="ElementCollection"/>.
+    /// </summary>
+    /// <param name="collection">The collection to which the entry will be added.</param>
+    /// <param name="entry">The entry to add to the collection.</param>
+    /// <returns>A new <see cref="ElementCollection"/> with the specified entry 
+    /// added.</returns>
+    public static ElementCollection operator +(ElementCollection collection, ElementEntry entry)
+    {
+        collection.Add(entry);
+        return collection;
+    }
+
+    /// <summary>
+    /// Merges two <see cref="ElementCollection"/> instances.
+    /// </summary>
+    /// <param name="left">The first collection to merge.</param>
+    /// <param name="right">The second collection to merge.</param>
+    /// <returns>A new <see cref="ElementCollection"/> that contains the 
+    /// entries from both collections.</returns>
+    public static ElementCollection operator +(ElementCollection left, ElementCollection right)
+    {
+        left.Merge(right);
+        return left;
+    }
+
+    /// <summary>
+    /// Removes the <see cref="ElementEntry"/> with the specified key from 
+    /// the collection.
+    /// </summary>
+    /// <param name="collection">The collection from which to remove the entry.</param>
+    /// <param name="key">The key of the entry to remove.</param>
+    /// <returns>A new <see cref="ElementCollection"/> with the specified entry 
+    /// removed.</returns>
+    public static ElementCollection operator -(ElementCollection collection, string key)
+    {
+        _ = collection.Remove(key);
+        return collection;
+    }
+
+    /// <summary>
+    /// Removes the specified <see cref="ElementEntry"/> from the collection.
+    /// </summary>
+    /// <param name="collection">The collection from which to remove the entry.</param>
+    /// <param name="entry">The entry to remove.</param>
+    /// <returns>A new <see cref="ElementCollection"/> with the specified entry 
+    /// removed.</returns>
+    public static ElementCollection operator -(ElementCollection collection, ElementEntry entry)
+    {
+        _ = collection.Remove(entry.Key);
+        return collection;
+    }
+
+    /// <summary>
+    /// Removes the specified <see cref="ElementEntry"/> objects from the collection.
+    /// </summary>
+    /// <param name="left">The collection from which to remove the entries.</param>
+    /// <param name="right">The collection containing the entries to remove.</param>
+    /// <returns>A new <see cref="ElementCollection"/> with the specified entries removed.</returns>
+    public static ElementCollection operator -(ElementCollection left, ElementCollection right) =>
+        Subtract(left, right);
+
+    /// <summary>
+    /// Converts an ElementCollection into a ReadOnlyDictionary with string keys and StringValues.
+    /// </summary>
+    /// <param name="collection">Holds a collection of entries that are transformed into a dictionary format.</param>
+    public static implicit operator ReadOnlyDictionary<string, StringValues>(ElementCollection collection)
+    {
+        Dictionary<string, StringValues> dict = new(collection._entries.Count);
+
+        foreach (var entry in collection._entries)
+        {
+            dict[entry.Key] = entry.Values;
+        }
+
+        return new ReadOnlyDictionary<string, StringValues>(dict);
+    }
+
+    /// <summary>
+    /// Removes elements from a collection based on another collection's entries. The modified collection is returned
+    /// after the operation.
+    /// </summary>
+    /// <param name="left">The collection from which elements will be removed.</param>
+    /// <param name="right">The collection containing entries that specify which elements to remove.</param>
+    /// <returns>The updated collection after specified elements have been removed.</returns>
+    public static ElementCollection Subtract(ElementCollection left, ElementCollection right)
+    {
+        foreach (ElementEntry entry in right)
+        {
+            _ = left.Remove(entry.Key);
+        }
+
+        return left;
+    }
+
+    /// <summary>
+    /// Converts a collection of entries into a read-only dictionary with string keys and StringValues.
+    /// </summary>
+    /// <returns>Returns a ReadOnlyDictionary containing the entries.</returns>
+    public ReadOnlyDictionary<string, StringValues> ToReadOnlyDictionary()
+    {
+        Dictionary<string, StringValues> dict = new(_entries.Count);
+
+        foreach (var entry in _entries)
+        {
+            dict[entry.Key] = entry.Values;
+        }
+
+        return new ReadOnlyDictionary<string, StringValues>(dict);
     }
 }

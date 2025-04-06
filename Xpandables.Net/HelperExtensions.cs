@@ -403,5 +403,4 @@ public static class HelperExtensions
         => string.Join(
             separator.ToString(CultureInfo.InvariantCulture),
             collection);
-
 }

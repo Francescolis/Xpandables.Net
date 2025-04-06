@@ -20,6 +20,7 @@ namespace Xpandables.Net.Executions;
 /// Interface for building a success execution result.
 /// </summary>
 public interface IExecutionResultSuccessBuilder :
+    IExecutionResultObjectBuilder<IExecutionResultSuccessBuilder>,
     IExecutionResultHeaderBuilder<IExecutionResultSuccessBuilder>,
     IExecutionResultLocationBuilder<IExecutionResultSuccessBuilder>,
     IExecutionResultStatusBuilder<IExecutionResultSuccessBuilder>,

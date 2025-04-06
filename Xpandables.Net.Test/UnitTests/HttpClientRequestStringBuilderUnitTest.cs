@@ -3,25 +3,25 @@
 using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestStringBuilderUnitTest
 {
-    private readonly HttpRequestStringBuilder _builder;
+    private readonly RestRequestStringBuilder _builder;
 
     public HttpClientRequestStringBuilderUnitTest() =>
-        _builder = new HttpRequestStringBuilder();
+        _builder = new RestRequestStringBuilder();
 
     [Fact]
     public void Build_ShouldSetStringContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
@@ -46,9 +46,9 @@ public sealed class HttpClientRequestStringBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.String,
@@ -70,9 +70,9 @@ public sealed class HttpClientRequestStringBuilderUnitTest
     public void Build_ShouldNotSetStringContent_WhenBodyFormatIsNotString()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.Multipart,
@@ -94,9 +94,9 @@ public sealed class HttpClientRequestStringBuilderUnitTest
     public void Build_ShouldAddStringContentToMultipart_WhenContentIsMultipart()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String,
@@ -119,7 +119,7 @@ public sealed class HttpClientRequestStringBuilderUnitTest
         multipart!.Should().ContainSingle();
     }
 
-    private class TestHttpRequestString : IHttpRequest, IHttpRequestContentString
+    private class TestHttpRequestString : IRestRequest, IRestContentString
     {
         public object GetStringContent() => new { Key = "value" };
     }

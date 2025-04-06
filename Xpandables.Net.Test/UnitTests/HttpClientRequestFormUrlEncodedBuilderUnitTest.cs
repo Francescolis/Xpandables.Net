@@ -1,25 +1,25 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.RequestBuilders;
+using Xpandables.Net.Http.Builders.Requests;
 
-using static Xpandables.Net.Http.MapRequest;
+using static Xpandables.Net.Http.MapRest;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
 {
-    private readonly HttpRequestFormUrlEncodedBuilder _builder;
+    private readonly RestRequestFormUrlEncodedBuilder _builder;
 
     public HttpClientRequestFormUrlEncodedBuilderUnitTest() =>
-        _builder = new HttpRequestFormUrlEncodedBuilder();
+        _builder = new RestRequestFormUrlEncodedBuilder();
 
     [Fact]
     public void Build_ShouldSetFormUrlEncodedContent_WhenConditionsAreMet()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.FormUrlEncoded
@@ -40,9 +40,9 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     public void Build_ShouldNotSetFormUrlEncodedContent_WhenLocationIsNotBody()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Header,
                 BodyFormat = BodyFormat.FormUrlEncoded
@@ -62,9 +62,9 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     public void Build_ShouldNotSetFormUrlEncodedContent_WhenBodyFormatIsNotFormUrlEncoded()
     {
         // Arrange
-        var context = new RequestContext
+        var context = new RestRequestContext
         {
-            Attribute = new MapHttpAttribute
+            Attribute = new MapRestAttribute
             {
                 Location = Location.Body,
                 BodyFormat = BodyFormat.String
@@ -81,7 +81,7 @@ public sealed class HttpClientRequestFormUrlEncodedBuilderUnitTest
     }
 
     private class TestHttpRequestFormUrlEncoded :
-        IHttpRequest, IHttpRequestContentFormUrlEncoded
+        IRestRequest, IRestContentFormUrlEncoded
     {
         public FormUrlEncodedContent GetFormUrlEncodedContent()
         {
