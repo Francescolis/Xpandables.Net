@@ -26,76 +26,24 @@ namespace Xpandables.Net.Executions.Tasks;
 internal sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc/>
-    public async Task<ExecutionResult> SendAsync(
-        IRequest request,
+    public async Task<ExecutionResult> SendAsync<TRequest>(
+        TRequest request,
         CancellationToken cancellationToken = default)
+        where TRequest : class, IRequest
     {
         try
         {
-            Type pipelineRequestHandlerType = typeof(IPipelineRequestHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(ExecutionResult));
+            IPipelineRequestHandler<TRequest> handler =
+                provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
 
-            IPipelineRequestHandler<ExecutionResult> handler =
-                (IPipelineRequestHandler<ExecutionResult>)provider
-                .GetRequiredService(pipelineRequestHandlerType);
-
-            return await handler.HandleAsync(request, cancellationToken)
+            return await handler
+                .HandleAsync(request, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
         {
             return exception.ToExecutionResult();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<ExecutionResult<TResult>> SendAsync<TResult>(
-        IRequest<TResult> request,
-        CancellationToken cancellationToken = default)
-        where TResult : notnull
-    {
-        try
-        {
-            Type pipelineRequestHandlerType = typeof(IPipelineRequestHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(ExecutionResult<TResult>));
-
-            IPipelineRequestHandler<ExecutionResult<TResult>> handler =
-                (IPipelineRequestHandler<ExecutionResult<TResult>>)provider
-                .GetRequiredService(pipelineRequestHandlerType);
-
-            return await handler.HandleAsync(request, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (Exception exception)
-            when (exception is not ExecutionResultException)
-        {
-            return exception.ToExecutionResult();
-        }
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<TResult> SendAsync<TResult>(
-        IStreamRequest<TResult> request,
-        CancellationToken cancellationToken = default)
-        where TResult : notnull
-    {
-        try
-        {
-            Type pipelineRequestHandlerType = typeof(IPipelineStreamRequestHandler<,>)
-                .MakeGenericType(request.GetType(), typeof(TResult));
-
-            IPipelineStreamRequestHandler<TResult> handler =
-                (IPipelineStreamRequestHandler<TResult>)provider
-                .GetRequiredService(pipelineRequestHandlerType);
-
-            return handler.HandleAsync(request, cancellationToken);
-        }
-        catch (Exception exception)
-            when (exception is not ExecutionResultException)
-        {
-            ExecutionResult execution = exception.ToExecutionResult();
-            throw new ExecutionResultException(execution);
         }
     }
 }

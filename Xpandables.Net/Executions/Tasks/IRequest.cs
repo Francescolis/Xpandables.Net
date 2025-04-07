@@ -31,12 +31,12 @@ public interface IRequest
 
 /// <summary>
 /// Provides a way to define a request that returns a result.
-/// Class implementation is used with the <see cref="IRequestHandler{TRequest, TResult}"/> 
+/// Class implementation is used with the <see cref="IRequestHandler{TRequest}"/> 
 /// where "TRequest" is a class that implements <see cref="IRequest{TResult}"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequest<out TResult>
+public interface IRequest<out TResult> : IRequest
 #pragma warning restore CA1040 // Avoid empty interfaces
 {
 }
@@ -45,13 +45,13 @@ public interface IRequest<out TResult>
 /// Provides a way to define a stream request that returns a result asynchronously.
 /// <see cref="IAsyncEnumerable{TResult}"/> of specific-type response.
 /// Class implementation is used with the 
-/// <see cref="IStreamRequestHandler{TRequest, TResult}"/> where
+/// <see cref="IRequestHandler{TRequest}"/> where
 /// "TRequest" is a class that implements the 
 /// <see cref="IStreamRequest{TResult}"/> interface. 
 /// </summary>
 /// <typeparam name="TResult">Type of the result of the request.</typeparam>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IStreamRequest<out TResult>
+public interface IStreamRequest<out TResult> : IRequest
 #pragma warning restore CA1040 // Avoid empty interfaces
 {
 }

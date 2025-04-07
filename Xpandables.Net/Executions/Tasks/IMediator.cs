@@ -22,36 +22,15 @@ namespace Xpandables.Net.Executions.Tasks;
 public interface IMediator
 {
     /// <summary>
-    /// Sends a request asynchronously.
+    /// Sends a request asynchronously and returns the result of the execution.
     /// </summary>
-    /// <param name="request">The request to send.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The result of the operation.</returns>
-    Task<ExecutionResult> SendAsync(
-        IRequest request,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Sends a request asynchronously.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="request">The request to execute.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The result of the operation.</returns>
-    Task<ExecutionResult<TResult>> SendAsync<TResult>(
-        IRequest<TResult> request,
+    /// <typeparam name="TRequest">Represents the type of the request being sent, which must 
+    /// implement a specific interface.</typeparam>
+    /// <param name="request">Contains the data needed to perform the operation specified by the request.</param>
+    /// <param name="cancellationToken">Allows the operation to be canceled if needed.</param>
+    /// <returns>Provides the outcome of the execution as an asynchronous result.</returns>
+    Task<ExecutionResult> SendAsync<TRequest>(
+        TRequest request,
         CancellationToken cancellationToken = default)
-        where TResult : notnull;
-
-    /// <summary>
-    /// Sends a stream request asynchronously.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="request">The request to execute.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An asynchronous enumerable of results.</returns>
-    IAsyncEnumerable<TResult> SendAsync<TResult>(
-        IStreamRequest<TResult> request,
-        CancellationToken cancellationToken = default)
-        where TResult : notnull;
+        where TRequest : class, IRequest;
 }

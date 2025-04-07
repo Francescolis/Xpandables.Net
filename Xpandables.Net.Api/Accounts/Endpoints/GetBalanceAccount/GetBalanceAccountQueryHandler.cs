@@ -6,9 +6,9 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
 public sealed class GetBalanceAccountQueryHandler(
     IAggregateStore<Account> aggregateStore) :
-    IRequestHandler<GetBalanceAccountQuery, decimal>
+    IRequestHandler<GetBalanceAccountQuery>
 {
-    public async Task<ExecutionResult<decimal>> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         GetBalanceAccountQuery query,
         CancellationToken cancellationToken)
     {

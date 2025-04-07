@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Runtime.CompilerServices;
-
 using Xpandables.Net.DataAnnotations;
 
 namespace Xpandables.Net.Executions.Pipelines;
@@ -49,45 +47,5 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
         }
 
         return await next().ConfigureAwait(false);
-    }
-}
-
-/// <summary>
-/// A decorator that validates the request before passing it to the next
-/// next delegate in the pipeline.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-/// <param name="validators">The composite validator instance.</param>
-public sealed class PipelineStreamValidationDecorator<TRequest, TResponse>(
-    ICompositeValidator<TRequest> validators) :
-    PipelineStreamDecorator<TRequest, TResponse>
-    where TRequest : class, IValidationEnabled
-    where TResponse : notnull
-{
-    /// <inheritdoc/>
-    protected override async IAsyncEnumerable<TResponse> HandleCoreAsync(
-        TRequest query,
-        RequestStreamHandler<TResponse> next,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        ExecutionResult result = await validators
-            .ValidateAsync(query)
-            .ConfigureAwait(false);
-
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new ExecutionResultException(result);
-        }
-
-        await foreach (var item in next().ConfigureAwait(false))
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                yield break;
-            }
-
-            yield return item;
-        }
     }
 }

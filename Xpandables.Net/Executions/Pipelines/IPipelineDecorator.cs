@@ -46,32 +46,3 @@ public interface IPipelineDecorator<TRequest, TResponse>
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }
-
-/// <summary>
-/// Represents the next delegate to be executed on a stream pipeline.
-/// </summary>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate IAsyncEnumerable<TResponse> RequestStreamHandler<TResponse>()
-    where TResponse : notnull;
-
-/// <summary>
-/// Defines a decorator for handling stream request.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public interface IPipelineStreamDecorator<TRequest, TResponse>
-    where TRequest : class
-    where TResponse : notnull
-{
-    /// <summary>
-    /// Handles the stream request.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="next">The next delegate in the chain.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An asynchronous enumerable of the response.</returns>
-    IAsyncEnumerable<TResponse> HandleAsync(
-        TRequest request,
-        RequestStreamHandler<TResponse> next,
-        CancellationToken cancellationToken = default);
-}

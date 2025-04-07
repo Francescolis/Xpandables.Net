@@ -46,33 +46,3 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default);
 }
-
-/// <summary>
-/// Represents an abstract base class for pipeline stream decorators.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public abstract class PipelineStreamDecorator<TRequest, TResponse> :
-    IPipelineStreamDecorator<TRequest, TResponse>
-    where TRequest : class
-    where TResponse : notnull
-{
-    /// <inheritdoc/>
-    public IAsyncEnumerable<TResponse> HandleAsync(
-        TRequest request,
-        RequestStreamHandler<TResponse> next,
-        CancellationToken cancellationToken = default) =>
-        HandleCoreAsync(request, next, cancellationToken);
-
-    /// <summary>
-    /// Handles the core logic of the pipeline stream decorator.
-    /// </summary>
-    /// <param name="request">The request object.</param>
-    /// <param name="next">The next delegate in the pipeline.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An asynchronous enumerable that represents the asynchronous operation.</returns>
-    protected abstract IAsyncEnumerable<TResponse> HandleCoreAsync(
-        TRequest request,
-        RequestStreamHandler<TResponse> next,
-        CancellationToken cancellationToken = default);
-}

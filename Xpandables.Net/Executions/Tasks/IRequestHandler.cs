@@ -19,110 +19,20 @@ using System.ComponentModel;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines the base interface method to handle a request that returns a result.
+/// An interface for handling requests asynchronously, requiring a specific request type that implements a request
+/// interface.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public interface IHandler<in TRequest, TResponse>
-    where TRequest : class
-    where TResponse : class
-{
-    /// <summary>
-    /// Handles the request.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>The response of the request.</returns>
-    TResponse Handle(
-        TRequest request,
-        CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Defines a handler for a request of type <typeparamref name="TRequest"/>.
-/// </summary>
-/// <remarks>This can also be enhanced with some useful decorators.</remarks>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-public interface IRequestHandler<in TRequest> : IHandler<TRequest, Task<ExecutionResult>>
+/// <typeparam name="TRequest">This type parameter represents a specific request that the handler will process.</typeparam>
+public interface IRequestHandler<in TRequest>
     where TRequest : class, IRequest
 {
     /// <summary>
-    /// Handles the specified request asynchronously.
+    /// Handles an asynchronous operation based on the provided request and returns the result of the execution.
     /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation 
-    /// requests.</param>
-    /// <returns>A task that represents the asynchronous operation. 
-    /// The task result contains the operation result.</returns>
-    Task<ExecutionResult> HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken = default);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CA1033 // Interface methods should be callable by child types
-    Task<ExecutionResult> IHandler<TRequest, Task<ExecutionResult>>.Handle(
-#pragma warning restore CA1033 // Interface methods should be callable by child types
-        TRequest request,
-        CancellationToken cancellationToken) =>
-        HandleAsync(request, cancellationToken);
-}
-
-/// <summary>
-/// Defines a handler for processing requests of type <typeparamref name="TRequest"/> 
-/// and returning a result of type <typeparamref name="TResult"/>.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IRequestHandler<in TRequest, TResult> : IHandler<TRequest, Task<ExecutionResult<TResult>>>
-    where TRequest : class, IRequest<TResult>
-{
-    /// <summary>
-    /// Handles the specified query that returns a result asynchronously.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation
-    /// requests.</param>
-    /// <returns>A task that represents the asynchronous operation. The task 
-    /// result contains the operation result.</returns>
-    Task<ExecutionResult<TResult>> HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken = default);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CA1033 // Interface methods should be callable by child types
-    Task<ExecutionResult<TResult>> IHandler<TRequest, Task<ExecutionResult<TResult>>>.Handle(
-#pragma warning restore CA1033 // Interface methods should be callable by child types
-        TRequest request,
-        CancellationToken cancellationToken) =>
-        HandleAsync(request, cancellationToken);
-}
-
-/// <summary>
-/// Defines a handler for processing stream requests.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IStreamRequestHandler<in TRequest, TResult> : IHandler<TRequest, IAsyncEnumerable<TResult>>
-    where TRequest : class, IStreamRequest<TResult>
-    where TResult : notnull
-{
-    /// <summary>
-    /// Handles the stream query.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>An asynchronous enumerable of the result.</returns>
-    IAsyncEnumerable<TResult> HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken = default);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CA1033 // Interface methods should be callable by child types
-    IAsyncEnumerable<TResult> IHandler<TRequest, IAsyncEnumerable<TResult>>.Handle(
-#pragma warning restore CA1033 // Interface methods should be callable by child types
-        TRequest request,
-        CancellationToken cancellationToken) =>
-        HandleAsync(request, cancellationToken);
+    /// <param name="request">The input data required to perform the operation.</param>
+    /// <param name="cancellationToken">Used to signal the cancellation of the operation if needed.</param>
+    /// <returns>An asynchronous task that yields the result of the execution.</returns>
+    Task<ExecutionResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

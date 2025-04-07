@@ -10,13 +10,14 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Test.UnitTests;
 
 public sealed record TestQuery : IRequest<string> { public required string Query { get; set; } }
-public sealed class TestQueryHander : IRequestHandler<TestQuery, string>
+public sealed class TestQueryHander : IRequestHandler<TestQuery>
 {
-    public Task<ExecutionResult<string>> HandleAsync(
-        TestQuery query, CancellationToken cancellationToken) =>
-        Task.FromResult(ExecutionResults
-            .Ok(query.Query)
-            .Build());
+    public async Task<ExecutionResult> HandleAsync(
+        TestQuery query, CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        return ExecutionResults.Ok(query.Query).Build();
+    }
 }
 
 public sealed class EventPublisherSubscriberUnitTest

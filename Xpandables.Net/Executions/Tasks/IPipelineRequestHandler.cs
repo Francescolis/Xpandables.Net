@@ -14,95 +14,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Applies pipeline when handling requests.
+/// An interface for handling asynchronous operations based on a specific request type.
 /// </summary>
-public interface IPipelineRequestHandler<TResponse>
-    where TResponse : notnull
+/// <typeparam name="TRequest">Represents the input data required to perform the operation, 
+/// constrained to a class implementing a request interface.</typeparam>
+public interface IPipelineRequestHandler<TRequest>
+    where TRequest : class, IRequest
 {
     /// <summary>
-    /// Handles the specified request on a pipeline.
+    /// Handles an asynchronous operation based on the provided request and returns the result of the execution.
     /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation
-    /// requests.</param>
-    /// <returns>The response of the request.</returns>
-    Task<TResponse> HandleAsync(
-        object request,
-        CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Applies pipeline when handling requests with specific request type.
-/// </summary>
-public interface IPipelineRequestHandler<TRequest, TResponse> : IPipelineRequestHandler<TResponse>
-    where TRequest : class
-    where TResponse : notnull
-{
-    /// <summary>
-    /// Handles the specified request on a pipeline.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation
-    /// requests.</param>
-    /// <returns>The response of the request.</returns>
-    Task<TResponse> HandleAsync(
+    /// <param name="request">The input data required to perform the operation.</param>
+    /// <param name="cancellationToken">Used to signal the cancellation of the operation if needed.</param>
+    /// <returns>An asynchronous task that yields the result of the execution.</returns>
+    Task<ExecutionResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Task<TResponse> IPipelineRequestHandler<TResponse>.HandleAsync(
-        object request,
-        CancellationToken cancellationToken) =>
-        HandleAsync((TRequest)request, cancellationToken);
-}
-
-/// <summary>
-/// Applies pipeline when handling stream requests.
-/// </summary>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public interface IPipelineStreamRequestHandler<TResponse>
-    where TResponse : notnull
-{
-    /// <summary>
-    /// Handles the specified request on a pipeline.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation
-    /// requests.</param>
-    /// <returns>The response of the request.</returns>
-    IAsyncEnumerable<TResponse> HandleAsync(
-        object request,
-        CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Applies pipeline when handling stream requests with specific request type.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public interface IPipelineStreamRequestHandler<TRequest, TResponse> :
-    IPipelineStreamRequestHandler<TResponse>
-    where TRequest : class, IStreamRequest<TResponse>
-    where TResponse : notnull
-{
-    /// <summary>
-    /// Handles the specified request on a pipeline.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation
-    /// requests.</param>
-    /// <returns>The response of the request.</returns>
-    IAsyncEnumerable<TResponse> HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken = default);
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    IAsyncEnumerable<TResponse> IPipelineStreamRequestHandler<TResponse>.HandleAsync(
-        object request,
-        CancellationToken cancellationToken) =>
-        HandleAsync((TRequest)request, cancellationToken);
 }
