@@ -42,7 +42,7 @@ public static class ExecutionResultExtensions
     {
         ModelStateDictionary modelState = new();
         foreach (ElementEntry entry in executionResult.Errors
-            .Where(e => e.Key != ExecutionResultAbstract.ExceptionKey))
+            .Where(e => e.Key != _ExecutionResult.ExceptionKey))
         {
             foreach (string? value in entry.Values)
             {
@@ -112,8 +112,8 @@ public static class ExecutionResultExtensions
 
         return ExecutionResults
             .BadRequest()
-            .WithTitle(((HttpStatusCode)exception.StatusCode).GetTitle())
-            .WithDetail(isDevelopment ? exception.Message : ((HttpStatusCode)exception.StatusCode).GetDetail())
+            .WithTitle(((HttpStatusCode)exception.StatusCode).GetAppropriateTitle())
+            .WithDetail(isDevelopment ? exception.Message : ((HttpStatusCode)exception.StatusCode).GetAppropriateDetail())
             .WithStatusCode((HttpStatusCode)exception.StatusCode)
             .WithError(parameterName, errorMessage)
             .Build();

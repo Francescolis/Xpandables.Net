@@ -14,8 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Reflection;
+
+using Microsoft.Extensions.Hosting;
+
+using Xpandables.Net.Collections;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Executions;
 
@@ -24,343 +29,304 @@ namespace Xpandables.Net.Executions;
 /// </summary>
 public static partial class ExecutionResultExtensions
 {
-    private const int _minSuccessStatusCode = 200;
-    private const int _maxSuccessStatusCode = 299;
-
-    private static readonly MethodInfo ToExecutionResultMethod =
-        typeof(ExecutionResultExtensions).GetMethod(nameof(ToExecutionResult),
-            BindingFlags.Static | BindingFlags.Public,
-            [typeof(ExecutionResult)])!;
-
-    /// <summary>  
-    /// Converts the specified execution result to an <see cref="ExecutionResult{TResult}"/>.  
-    /// </summary>  
-    /// <typeparam name="TResult">The type of the result.</typeparam>  
-    /// <param name="executionResult">The execution result to convert.</param>  
-    /// <returns>An <see cref="ExecutionResult{TResult}"/> representing the generic
-    /// execution result.</returns>  
-    public static ExecutionResult<TResult> ToExecutionResult<TResult>(
-        this ExecutionResult executionResult) => executionResult;
-
     /// <summary>
-    /// Converts the current instance to a generic one with the specified type.
+    /// Converts the specified <see cref="ValidationResult"/> to an <see cref="ElementCollection"/>.
     /// </summary>
-    /// <param name="executionResult">The current instance.</param>
-    /// <param name="genericType">The underlying type.</param>
-    /// <returns>A new instance of <see cref="ExecutionResult{TResult}"/>
-    /// .</returns>
-    public static dynamic ToExecutionResult(this ExecutionResult executionResult, Type genericType)
+    /// <param name="validationResult">The validation result to convert.</param>
+    /// <returns>An <see cref="ElementCollection"/> representing the 
+    /// validation result.</returns>
+    public static ElementCollection ToElementCollection(this ValidationResult validationResult)
     {
-        ArgumentNullException.ThrowIfNull(executionResult);
-        ArgumentNullException.ThrowIfNull(genericType);
-
-        if (executionResult.IsGeneric)
+        if (validationResult.ErrorMessage is null
+            || !validationResult.MemberNames.Any())
         {
-            return executionResult;
+            return ElementCollection.Empty;
         }
 
-        return ToExecutionResultMethod
-            .MakeGenericMethod(genericType)
-            .Invoke(null, [executionResult])!;
+        return ElementCollection.With([.. validationResult
+            .MemberNames
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => new ElementEntry(s, validationResult.ErrorMessage))]);
     }
 
-
     /// <summary>
-    /// Gets the title of the operation result based on its status code.
+    /// Converts the specified collection of <see cref="ValidationResult"/>s to an 
+    /// <see cref="ElementCollection"/>.
     /// </summary>
-    /// <param name="statusCode">The status code to get the title for.</param>
-    /// <returns>The title of the operation result.</returns>
-    public static string GetTitle(this HttpStatusCode statusCode) =>
-        statusCode switch
+    /// <param name="validationResults">The collection of validation results 
+    /// to convert.</param>
+    /// <returns>An <see cref="ElementCollection"/> representing the 
+    /// validation results.</returns>
+    public static ElementCollection ToElementCollection(this IEnumerable<ValidationResult> validationResults)
+    {
+        List<ValidationResult> validations = [.. validationResults];
+        if (validations.Count == 0)
         {
-            HttpStatusCode.OK => "Success",
-            HttpStatusCode.Created => "Created",
-            HttpStatusCode.Accepted => "Accepted",
-            HttpStatusCode.NoContent => "No Content",
-            HttpStatusCode.MovedPermanently => "Moved Permanently",
-            HttpStatusCode.Found => "Found",
-            HttpStatusCode.SeeOther => "See Other",
-            HttpStatusCode.NotModified => "Not Modified",
-            HttpStatusCode.TemporaryRedirect => "Temporary Redirect",
-            HttpStatusCode.PermanentRedirect => "Permanent Redirect",
-            HttpStatusCode.BadRequest => "Bad Request",
-            HttpStatusCode.Unauthorized => "Unauthorized",
-            HttpStatusCode.Forbidden => "Forbidden",
-            HttpStatusCode.NotFound => "Not Found",
-            HttpStatusCode.MethodNotAllowed => "Method Not Allowed",
-            HttpStatusCode.NotAcceptable => "Not Acceptable",
-            HttpStatusCode.ProxyAuthenticationRequired => "Proxy Authentication Required",
-            HttpStatusCode.RequestTimeout => "Request Timeout",
-            HttpStatusCode.Conflict => "Conflict",
-            HttpStatusCode.Gone => "Gone",
-            HttpStatusCode.LengthRequired => "Length Required",
-            HttpStatusCode.PreconditionFailed => "Precondition Failed",
-            HttpStatusCode.RequestEntityTooLarge => "Request Entity Too Large",
-            HttpStatusCode.RequestUriTooLong => "Request-URI Too Long",
-            HttpStatusCode.UnsupportedMediaType => "Unsupported Media Type",
-            HttpStatusCode.RequestedRangeNotSatisfiable => "Requested Range Not Satisfiable",
-            HttpStatusCode.ExpectationFailed => "Expectation Failed",
-            HttpStatusCode.UpgradeRequired => "Upgrade Required",
-            HttpStatusCode.InternalServerError => "Internal Server Error",
-            HttpStatusCode.NotImplemented => "Not Implemented",
-            HttpStatusCode.BadGateway => "Bad Gateway",
-            HttpStatusCode.ServiceUnavailable => "Service Unavailable",
-            HttpStatusCode.GatewayTimeout => "Gateway Timeout",
-            HttpStatusCode.HttpVersionNotSupported => "HTTP Version Not Supported",
-            HttpStatusCode.VariantAlsoNegotiates => "Variant Also Negotiates",
-            HttpStatusCode.InsufficientStorage => "Insufficient Storage",
-            HttpStatusCode.LoopDetected => "Loop Detected",
-            HttpStatusCode.NotExtended => "Not Extended",
-            HttpStatusCode.NetworkAuthenticationRequired => "Network Authentication Required",
-            HttpStatusCode.PartialContent => "Partial Content",
-            HttpStatusCode.MultipleChoices => "Multiple Choices",
-            HttpStatusCode.UnprocessableEntity => "Unprocessable Entity",
-            HttpStatusCode.Locked => "Locked",
-            HttpStatusCode.FailedDependency => "Failed Dependency",
-            HttpStatusCode.PreconditionRequired => "Precondition Required",
-            HttpStatusCode.TooManyRequests => "Too Many Requests",
-            HttpStatusCode.RequestHeaderFieldsTooLarge => "Request Header Fields Too Large",
-            HttpStatusCode.UnavailableForLegalReasons => "Unavailable For Legal Reasons",
-            HttpStatusCode.Continue => "Continue",
-            HttpStatusCode.SwitchingProtocols => "Switching Protocols",
-            HttpStatusCode.Processing => "Processing",
-            HttpStatusCode.EarlyHints => "Early Hints",
-            HttpStatusCode.IMUsed => "IM Used",
-            HttpStatusCode.NonAuthoritativeInformation => "Non-Authoritative Information",
-            HttpStatusCode.ResetContent => "Reset Content",
-            HttpStatusCode.AlreadyReported => "Already Reported",
-            HttpStatusCode.MisdirectedRequest => "Misdirected Request",
-            HttpStatusCode.Unused => "Unused",
-            HttpStatusCode.MultiStatus => "Multi-Status",
-            HttpStatusCode.UseProxy => "Use Proxy",
-            HttpStatusCode.PaymentRequired => "Payment Required",
-            _ => "Unknown"
-        };
+            return ElementCollection.Empty;
+        }
 
-#pragma warning disable IDE0072 // Add missing cases
+        return ElementCollection.With([.. validations
+            .Where(s => s.ErrorMessage is not null && s.MemberNames.Any())
+            .SelectMany(s => s.MemberNames
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Select(m => new ElementEntry(m, s.ErrorMessage ?? string.Empty))
+            )]);
+    }
+
     /// <summary>
-    /// Gets the detail of the operation result based on its status code.
+    /// Converts the specified collection of validation results to an <see cref="ExecutionResult"/>.
     /// </summary>
-    /// <param name="statusCode">The status code to get the detail for.</param>
-    /// <returns>The detail of the operation result.</returns>
-    public static string GetDetail(this HttpStatusCode statusCode) =>
-            statusCode switch
-            {
-                HttpStatusCode.InternalServerError or HttpStatusCode.Unauthorized
-                => "Please refer to the errors/or contact administrator for additional details",
-                _ => "Please refer to the errors property for additional details",
-            };
-#pragma warning restore IDE0072 // Add missing cases
+    /// <param name="validationResults">The collection of validation results 
+    /// to convert.</param>
+    /// <returns>An <see cref="ExecutionResult"/> representing the validation results.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the validation 
+    /// results are not valid.</exception>
+    public static ExecutionResult ToExecutionResult(this IEnumerable<ValidationResult> validationResults)
+    {
+        if (!validationResults.Any())
+        {
+            throw new InvalidOperationException(
+                "The validation results is empty.");
+        }
 
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is a success status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is a success status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsSuccessStatusCode(this HttpStatusCode statusCode) =>
-        (int)statusCode is >= _minSuccessStatusCode and <= _maxSuccessStatusCode;
+        ElementCollection errors = validationResults.ToElementCollection();
 
-    /// <summary>    
-    /// Determines whether the status code of the specified execution result     
-    /// is a success status code.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the execution     
-    /// result is a success status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsSuccessStatusCode(this ExecutionResult executionResult) =>
-        executionResult.StatusCode.IsSuccessStatusCode();
-
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is a failure status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is a failure status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsFailureStatusCode(this HttpStatusCode statusCode) =>
-        !statusCode.IsSuccessStatusCode();
-
-    /// <summary>    
-    /// Determines whether the status code of the specified execution result     
-    /// is a failure status code.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the execution     
-    /// result is a failure status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsFailureStatusCode(this ExecutionResult executionResult) =>
-        !executionResult.StatusCode.IsSuccessStatusCode();
-
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is a Created status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is a Created status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsCreated(this HttpStatusCode statusCode) =>
-        statusCode == HttpStatusCode.Created;
-
-    /// <summary>    
-    /// Determines whether the status code of the specified execution result     
-    /// is a Created status code.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the execution     
-    /// result is a Created status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsCreated(this ExecutionResult executionResult) =>
-        executionResult.StatusCode.IsCreated();
-
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is a Not Found 
-    /// status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is a Not Found 
-    /// status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsNotFound(this HttpStatusCode statusCode) =>
-        statusCode == HttpStatusCode.NotFound;
-
-    /// <summary>    
-    /// Determines whether the status code of the specified execution result     
-    /// is a Not Found status code.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the execution     
-    /// result is a Not Found status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsNotFound(this ExecutionResult executionResult) =>
-        executionResult.StatusCode.IsNotFound();
-
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is a No Content 
-    /// status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is a No Content 
-    /// status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsNoContent(this HttpStatusCode statusCode) =>
-        statusCode == HttpStatusCode.NoContent;
-
-    /// <summary>    
-    /// Determines whether the status code of the specified execution result     
-    /// is a No Content status code.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the execution     
-    /// result is a No Content status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsNoContent(this ExecutionResult executionResult) =>
-        executionResult.StatusCode.IsNoContent();
-
-    /// <summary>    
-    /// Determines whether the result of the specified execution result is a file.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the result of the execution result is a file;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsResultFile(this ExecutionResult executionResult) =>
-       executionResult.Result is ResultFile;
-
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is a Bad Request 
-    /// status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is a Bad Request
-    /// status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsBadRequest(this HttpStatusCode statusCode) =>
-        statusCode == HttpStatusCode.BadRequest;
-
-    /// <summary>    
-    /// Determines whether the status code of the specified execution result     
-    /// is a Bad Request status code.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the execution     
-    /// result is a Bad Request status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsBadRequest(this ExecutionResult executionResult) =>
-        executionResult.StatusCode.IsBadRequest();
-
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is an Unauthorized   
-    /// status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is an Unauthorized   
-    /// status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsUnauthorized(this HttpStatusCode statusCode) =>
-       statusCode == HttpStatusCode.Unauthorized;
+        return ExecutionResults
+            .BadRequest()
+            .WithTitle(HttpStatusCode.BadRequest.GetAppropriateTitle())
+            .WithDetail(HttpStatusCode.BadRequest.GetAppropriateDetail())
+            .WithErrors(errors)
+            .Build();
+    }
 
     /// <summary>  
-    /// Determines whether the status code of the specified execution result  
-    /// is an Unauthorized status code.  
+    /// Converts a <see cref="Exception"/> to an <see cref="ExecutionResult"/>.  
     /// </summary>  
-    /// <param name="executionResult">The execution result to check.</param>  
-    /// <returns><see langword="true"/> if the status code of the execution  
-    /// result is an Unauthorized status code;  
-    /// otherwise, <see langword="false"/>.</returns>  
-    public static bool IsUnauthorized(this ExecutionResult executionResult) =>
-        executionResult.StatusCode.IsUnauthorized();
+    /// <param name="exception">The exception to convert.</param> 
+    /// <param name="statusCode">Optional HTTP status code to use.</param>
+    /// <param name="reason">Optional reason phrase for the status code.</param>
+    /// <returns>An <see cref="ExecutionResult"/> representing the exception.</returns>  
+    public static ExecutionResult ToExecutionResult(
+        this Exception exception, HttpStatusCode? statusCode = null, string? reason = default)
+    {
+        bool isDevelopment = (Environment.GetEnvironmentVariable(
+            "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
+            Environments.Development;
 
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is an Internal 
-    /// Server Error status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is an Internal 
-    /// Server Error status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsInternalServerError(this HttpStatusCode statusCode) =>
-        statusCode == HttpStatusCode.InternalServerError;
+        statusCode ??= exception.GetAppropriatStatusCode();
 
-    /// <summary>    
-    /// Determines whether the status code of the specified execution result     
-    /// is an Internal Server Error status code.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the execution     
-    /// result is an Internal Server Error status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsInternalServerError(this ExecutionResult executionResult) =>
-        executionResult.StatusCode.IsInternalServerError();
+        return ExecutionResults
+            .Failure(statusCode.Value)
+            .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.GetAppropriateTitle())
+            .WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.GetAppropriateDetail())
+            .WithErrors(GetValidationExceptionErrors(exception))
+            .WithException(exception)
+            .Build();
+    }
 
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is a Service Unavailable 
-    /// status code.    
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is a Service Unavailable 
-    /// status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsServiceUnavailable(this HttpStatusCode statusCode) =>
-        statusCode == HttpStatusCode.ServiceUnavailable;
+    /// <summary>
+    /// Converts the specified <see cref="ExecutionResult"/> to an <see cref="ExecutionResultException"/>.
+    /// </summary>
+    /// <param name="executionResult">The execution result to convert.</param>
+    /// <returns>An <see cref="ExecutionResultException"/> representing the 
+    /// execution result.</returns>
+    public static ExecutionResultException ToExecutionResultException(this ExecutionResult executionResult)
+    {
+        ArgumentNullException.ThrowIfNull(executionResult);
 
-    /// <summary>    
-    /// Determines whether the status code of the specified execution result     
-    /// is a Service Unavailable status code.    
-    /// </summary>    
-    /// <param name="executionResult">The execution result to check.</param>    
-    /// <returns><see langword="true"/> if the status code of the execution     
-    /// result is a Service Unavailable status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsServiceUnavailable(this ExecutionResult executionResult) =>
-        executionResult.StatusCode.IsServiceUnavailable();
+        return new ExecutionResultException(executionResult);
+    }
 
-    /// <summary>    
-    /// Determines whether the specified HTTP status code is a validation problem
-    /// status code.
-    /// </summary>    
-    /// <param name="statusCode">The HTTP status code to check.</param>    
-    /// <returns><see langword="true"/> if the status code is a validation problem
-    /// status code;     
-    /// otherwise, <see langword="false"/>.</returns>    
-    public static bool IsValidationProblemRequest(this HttpStatusCode statusCode) =>
-        (int)statusCode is >= (int)HttpStatusCode.BadRequest and <= (int)HttpStatusCode.InternalServerError;
+    /// <summary>
+    /// Converts the specified <see cref="ElementCollection"/> to a <see cref="Dictionary{TKey, TValue}"/>.
+    /// </summary>
+    /// <param name="element">The element collection to convert.</param>
+    /// <returns>A dictionary of items representing the element collection.</returns>
+    public static IDictionary<string, object?> ToDictionary(this ElementCollection element)
+    {
+        if (!element.Any())
+        {
+            return new Dictionary<string, object?>();
+        }
+
+        return element
+            .ToDictionary(
+            entry => entry.Key,
+            entry => (object?)entry.Values.StringJoin(" "));
+    }
+
+    /// <summary>
+    /// Converts an <see cref="Action"/> to an <see cref="ExecutionResult"/>.
+    /// </summary>
+    /// <param name="action">The action to execute.</param>
+    /// <returns>An <see cref="ExecutionResult"/> representing the result of 
+    /// the action.</returns>
+    public static ExecutionResult ToExecutionResult(this Action action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        try
+        {
+            action();
+            return ExecutionResults.Success();
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception.ToExecutionResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts an <see cref="Action{T}"/> to an <see cref="ExecutionResult"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the argument passed to the action.</typeparam>
+    /// <param name="action">The action to execute.</param>
+    /// <param name="args">The argument to pass to the action.</param>
+    /// <returns>An <see cref="ExecutionResult"/> representing the result 
+    /// of the action.</returns>
+    public static ExecutionResult ToExecutionResult<T>(this Action<T> action, T args)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        try
+        {
+            action(args);
+            return ExecutionResults.Ok().Build();
+        }
+        catch (ValidationException validationException)
+        {
+            return validationException.ToExecutionResult();
+        }
+        catch (ExecutionResultException executionException)
+        {
+            return executionException.ExecutionResult;
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception.ToExecutionResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Task"/> to an <see cref="ExecutionResult"/>
+    /// asynchronously.
+    /// </summary>
+    /// <param name="task">The task to execute.</param>
+    /// <returns>A <see cref="Task{IOperationResult}"/> representing the result
+    /// of the task.</returns>
+    public static async Task<ExecutionResult> ToExecutionResultAsync(this Task task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        try
+        {
+            await task.ConfigureAwait(false);
+            return ExecutionResults.Ok().Build();
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception.ToExecutionResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Task{TResult}"/> to an 
+    /// <see cref="ExecutionResult{TResult}"/>
+    /// asynchronously.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result produced by the task.</typeparam>
+    /// <param name="task">The task to execute.</param>
+    /// <returns>A <see cref="Task{T}"/> representing the result of the task.</returns>
+    public static async Task<ExecutionResult<TResult>> ToExecutionResultAsync<TResult>(
+        this Task<TResult> task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        try
+        {
+            TResult result = await task.ConfigureAwait(false);
+            return ExecutionResults
+                .Ok(result)
+                .Build();
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception.ToExecutionResult();
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Func{TResult}"/> to an 
+    /// <see cref="ExecutionResult{TResult}"/>.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result produced by the 
+    /// function.</typeparam>
+    /// <param name="func">The function to execute.</param>
+    /// <returns>An <see cref="ExecutionResult{TResult}"/> representing the 
+    /// result of the function.</returns>
+    public static ExecutionResult<TResult> ToExecutionResult<TResult>(this Func<TResult> func)
+    {
+        ArgumentNullException.ThrowIfNull(func);
+
+        try
+        {
+            TResult result = func();
+            return ExecutionResults
+                .Ok(result)
+                .Build();
+        }
+        catch (Exception exception)
+            when (exception is not ExecutionResultException)
+        {
+            return exception.ToExecutionResult();
+        }
+    }
+    private static ElementCollection GetValidationExceptionErrors(Exception exception)
+    {
+        Stack<Exception> stack = new();
+        stack.Push(exception);
+
+        while (stack.Count > 0)
+        {
+            Exception currentException = stack.Pop();
+
+            if (currentException is ValidationException validationException)
+            {
+                return validationException.ValidationResult.ToElementCollection();
+            }
+
+            var anonymousType = new { Errors = default(Dictionary<string, IEnumerable<string>>) };
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                var errors = currentException.Message.DeserializeAnonymousType(anonymousType, DefaultSerializerOptions.Defaults);
+                if (errors is not null && errors.Errors is not null && errors.Errors.Count > 0)
+                {
+                    ElementCollection collection = [];
+                    foreach (var error in errors.Errors)
+                    {
+                        collection.Add(error.Key, [.. error.Value]);
+                    }
+
+                    return collection;
+                }
+            }
+            catch
+            {
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+            if (currentException.InnerException is not null)
+            {
+                stack.Push(currentException.InnerException);
+            }
+        }
+
+        return ElementCollection.Empty;
+    }
+
 }

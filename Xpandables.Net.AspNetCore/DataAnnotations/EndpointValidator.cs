@@ -62,7 +62,7 @@ public sealed class EndpointValidator : IEndpointValidator
                     .ValidateAsync(descriptor.Argument)
                     .ConfigureAwait(false);
 
-                if (executionResult.IsFailureStatusCode())
+                if (!executionResult.IsSuccessStatusCode)
                 {
                     _ = failureBuilder
                         .Merge(executionResult);

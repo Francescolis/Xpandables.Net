@@ -17,6 +17,8 @@
 ********************************************************************************/
 using System.Net;
 
+using Xpandables.Net.Executions;
+
 namespace Xpandables.Net.Http.Builders.Responses;
 
 /// <summary>

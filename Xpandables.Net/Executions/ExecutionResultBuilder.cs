@@ -24,6 +24,83 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Executions;
 
 /// <summary>
+/// Represents a builder for creating successful execution results.
+/// </summary>
+public sealed class ExecutionResultSuccessBuilder :
+    ExecutionResultBuilder<IExecutionResultSuccessBuilder>, IExecutionResultSuccessBuilder
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExecutionResultSuccessBuilder"/> class 
+    /// with the specified status code.
+    /// </summary>
+    /// <param name="statusCode">The HTTP status code indicating a 
+    /// successful execution.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
+    /// code is not between 200 and 299.</exception>
+    public ExecutionResultSuccessBuilder(HttpStatusCode statusCode) :
+        base(statusCode) => statusCode.AssertStatusCodeIsSuccess();
+}
+
+/// <summary>
+/// Represents a builder for creating successful execution results with a 
+/// specified result type.
+/// </summary>
+/// <typeparam name="TResult">The type of the result.</typeparam>
+public sealed class ExecutionResultSuccessBuilder<TResult> :
+    ExecutionResultBuilder<IExecutionResultSuccessBuilder<TResult>, TResult>,
+    IExecutionResultSuccessBuilder<TResult>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExecutionResultSuccessBuilder{TResult}"/> class 
+    /// with the specified status code.
+    /// </summary>
+    /// <param name="statusCode">The HTTP status code indicating a 
+    /// successful execution.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
+    /// code is not between 200 and 299.</exception>
+    public ExecutionResultSuccessBuilder(HttpStatusCode statusCode) :
+        base(statusCode) => statusCode.AssertStatusCodeIsSuccess();
+}
+
+/// <summary>  
+/// Represents a builder for creating failure execution results.  
+/// </summary>  
+public sealed class ExecutionResultFailureBuilder :
+    ExecutionResultBuilder<IExecutionResultFailureBuilder>, IExecutionResultFailureBuilder
+{
+    /// <summary>  
+    /// Initializes a new instance of the <see cref="ExecutionResultFailureBuilder"/> class 
+    /// with the specified status code.  
+    /// </summary>  
+    /// <param name="statusCode">The HTTP status code for the failure.</param>  
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
+    /// code is between 200 and 299.</exception>  
+    public ExecutionResultFailureBuilder(HttpStatusCode statusCode) :
+        base(statusCode) => statusCode.AssertStatusCodeIsFailure();
+}
+
+/// <summary>  
+/// Represents a builder for creating failure execution results with a specific 
+/// result type.  
+/// </summary>  
+/// <typeparam name="TResult">The type of the result.</typeparam>  
+public sealed class ExecutionResultFailureBuilder<TResult> :
+   ExecutionResultBuilder<IExecutionResultFailureBuilder<TResult>, TResult>,
+   IExecutionResultFailureBuilder<TResult>
+{
+    /// <summary>  
+    /// Initializes a new instance of the <see cref="ExecutionResultFailureBuilder{TResult}"/> class  
+    /// with the specified status code.  
+    /// </summary>  
+    /// <param name="statusCode">The HTTP status code for the failure.</param>  
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status  
+    /// code is between 200 and 299.</exception>  
+    public ExecutionResultFailureBuilder(HttpStatusCode statusCode) :
+        base(statusCode) => statusCode.AssertStatusCodeIsFailure();
+}
+
+
+/// <summary>
 /// Represents a builder for creating execution results with various properties.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
@@ -206,7 +283,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <inheritdoc/>
     public TBuilder WithException(Exception exception)
     {
-        ElementEntry? entry = Errors[ExecutionResultAbstract.ExceptionKey];
+        ElementEntry? entry = Errors[_ExecutionResult.ExceptionKey];
         if (entry.HasValue)
         {
             _ = Errors.Remove(entry.Value.Key);
@@ -218,7 +295,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
         else
         {
             entry = new ElementEntry(
-                ExecutionResultAbstract.ExceptionKey,
+                _ExecutionResult.ExceptionKey,
                 AggregateExceptionValues(exception));
         }
 

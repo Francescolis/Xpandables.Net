@@ -43,7 +43,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
             .ValidateAsync(query)
             .ConfigureAwait(false);
 
-        if (result.IsFailureStatusCode())
+        if (!result.IsSuccessStatusCode)
         {
             throw new ExecutionResultException(result);
         }
@@ -75,7 +75,7 @@ public sealed class PipelineStreamValidationDecorator<TRequest, TResponse>(
             .ValidateAsync(query)
             .ConfigureAwait(false);
 
-        if (result.IsFailureStatusCode())
+        if (!result.IsSuccessStatusCode)
         {
             throw new ExecutionResultException(result);
         }

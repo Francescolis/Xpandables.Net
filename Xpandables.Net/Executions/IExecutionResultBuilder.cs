@@ -21,6 +21,67 @@ using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Executions;
 
+/// <summary>  
+/// Provides a builder interface for constructing failure execution results.  
+/// </summary>  
+public interface IExecutionResultFailureBuilder :
+   IExecutionResultErrorBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultHeaderBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultLocationBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultDetailBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultTitleBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultMergeBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultStatusBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultExtensionBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultClearBuilder<IExecutionResultFailureBuilder>,
+   IExecutionResultBuilder
+{ }
+
+/// <summary>  
+/// Provides a builder interface for constructing failure execution results 
+/// with a specific result type.  
+/// </summary>  
+/// <typeparam name="TResult">The type of the result.</typeparam>  
+public interface IExecutionResultFailureBuilder<TResult> :
+   IExecutionResultErrorBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultHeaderBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultLocationBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultDetailBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultTitleBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultMergeBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultStatusBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultExtensionBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultClearBuilder<IExecutionResultFailureBuilder<TResult>>,
+   IExecutionResultBuilder<TResult>
+{ }
+
+/// <summary>
+/// Interface for building a success execution result.
+/// </summary>
+public interface IExecutionResultSuccessBuilder :
+    IExecutionResultObjectBuilder<IExecutionResultSuccessBuilder>,
+    IExecutionResultHeaderBuilder<IExecutionResultSuccessBuilder>,
+    IExecutionResultLocationBuilder<IExecutionResultSuccessBuilder>,
+    IExecutionResultStatusBuilder<IExecutionResultSuccessBuilder>,
+    IExecutionResultExtensionBuilder<IExecutionResultSuccessBuilder>,
+    IExecutionResultClearBuilder<IExecutionResultSuccessBuilder>,
+    IExecutionResultBuilder
+{ }
+
+/// <summary>
+/// Interface for building a success execution result with a specific result type.
+/// </summary>
+/// <typeparam name="TResult">The type of the result.</typeparam>
+public interface IExecutionResultSuccessBuilder<TResult> :
+    IExecutionResultHeaderBuilder<IExecutionResultSuccessBuilder<TResult>>,
+    IExecutionResultLocationBuilder<IExecutionResultSuccessBuilder<TResult>>,
+    IExecutionResultStatusBuilder<IExecutionResultSuccessBuilder<TResult>>,
+    IExecutionResultExtensionBuilder<IExecutionResultSuccessBuilder<TResult>>,
+    IExecutionResultResultBuilder<IExecutionResultSuccessBuilder<TResult>, TResult>,
+    IExecutionResultClearBuilder<IExecutionResultSuccessBuilder<TResult>>,
+    IExecutionResultBuilder<TResult>
+{ }
+
 /// <summary>
 /// Represents a method for building an <see cref="ExecutionResult"/>.
 /// </summary>

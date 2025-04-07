@@ -42,7 +42,7 @@ public sealed class CompositeValidator<TArgument>(
             .OrderBy(o => o.Order))
         {
             ExecutionResult result = validator.Validate(instance);
-            if (result.IsFailureStatusCode())
+            if (!result.IsSuccessStatusCode)
             {
                 failureBuilder = failureBuilder.Merge(result);
             }
@@ -67,7 +67,7 @@ public sealed class CompositeValidator<TArgument>(
                 .ValidateAsync(instance)
                 .ConfigureAwait(false);
 
-            if (result.IsFailureStatusCode())
+            if (!result.IsSuccessStatusCode)
             {
                 failureBuilder = failureBuilder.Merge(result);
             }

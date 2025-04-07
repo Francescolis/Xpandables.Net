@@ -23,9 +23,14 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Defines the base class for execution results.
+/// Abstract record representing the result of an execution, including status code, title, detail, location, result,
+/// errors, headers, and extensions. It provides methods to convert to an HTTP status code.
 /// </summary>
-public abstract record ExecutionResultAbstract
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming Styles
+public abstract record _ExecutionResult
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore CA1707 // Identifiers should not contain underscores
 {
     /// <summary>
     /// Contains the key for the exception in the <see cref="ElementCollection"/>.
@@ -33,7 +38,7 @@ public abstract record ExecutionResultAbstract
     public const string ExceptionKey = "Exception";
 
     [JsonConstructor]
-    internal ExecutionResultAbstract() { }
+    internal _ExecutionResult() { }
 
     /// <summary>
     /// Gets the status code of the execution.
@@ -43,27 +48,23 @@ public abstract record ExecutionResultAbstract
     /// <summary>
     /// Gets the title of the execution result.
     /// </summary>
-    [MaybeNull, AllowNull]
-    public string Title { get; init; }
+    public string? Title { get; init; }
 
     /// <summary>
     /// Gets the detail of the execution result.
     /// </summary>
-    [MaybeNull, AllowNull]
-    public string Detail { get; init; }
+    public string? Detail { get; init; }
 
     /// <summary>
     /// Gets the location URI of the execution result.
     /// </summary>
-    [MaybeNull, AllowNull]
-    public Uri Location { get; init; }
+    public Uri? Location { get; init; }
 
     /// <summary>
     /// Gets the result object of the execution.
     /// </summary>
     /// <remarks>May be null if the execution has no result.</remarks>
-    [MaybeNull, AllowNull]
-    public object Result { get; init; }
+    public object? Result { get; init; }
 
     /// <summary>
     /// Gets the collection of errors associated with the execution.
@@ -81,10 +82,34 @@ public abstract record ExecutionResultAbstract
     public ElementCollection Extensions { get; init; } = [];
 
     /// <summary>
+    /// Gets a value indicating whether the execution result is generic.
+    /// </summary>
+    public abstract bool IsGeneric { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the execution's status code 
+    /// is a success status code.
+    /// </summary>
+    public abstract bool IsSuccessStatusCode { get; }
+
+    /// <summary>
+    /// Ensures that the execution result has a success status code.
+    /// </summary>
+    /// <exception cref="ExecutionResultException">Thrown if the status code 
+    /// is not a success status code.</exception>
+    public abstract void EnsureSuccessStatusCode();
+
+    /// <summary>
+    /// Gets the exception associated with the execution result, if any.
+    /// </summary>
+    /// <returns>The exception entry if available; otherwise, null.</returns>
+    public ElementEntry? Exception => Errors[ExceptionKey];
+
+    /// <summary>
     /// Converts an ExecutionResultAbstract instance to an HttpStatusCode.
     /// </summary>
     /// <param name="result">Represents the status code associated with the execution result.</param>
-    public static implicit operator HttpStatusCode(ExecutionResultAbstract result) => result.ToHttpStatusCode();
+    public static implicit operator HttpStatusCode(_ExecutionResult result) => result.ToHttpStatusCode();
 
     /// <summary>
     /// Converts the current status code to an HTTP status code.
@@ -98,29 +123,19 @@ public abstract record ExecutionResultAbstract
 /// location, result, errors, headers, extensions, and status.
 /// </summary>
 [Serializable]
-public sealed record ExecutionResult : ExecutionResultAbstract
+public sealed record ExecutionResult : _ExecutionResult
 {
     [JsonConstructor]
     internal ExecutionResult() { }
 
-    /// <summary>
-    /// Gets a value indicating whether the execution result is generic.
-    /// </summary>
-    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
-    public bool IsGeneric => false;
+    /// <inheritdoc/>
+    public override bool IsGeneric => false;
 
-    /// <summary>
-    /// Gets a value indicating whether the execution's status code 
-    /// is a success status code.
-    /// </summary>
-    public bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
+    /// <inheritdoc/>
+    public override bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
 
-    /// <summary>
-    /// Ensures that the execution result has a success status code.
-    /// </summary>
-    /// <exception cref="ExecutionResultException">Thrown if the status code 
-    /// is not a success status code.</exception>
-    public void EnsureSuccessStatusCode()
+    /// <inheritdoc/>
+    public override void EnsureSuccessStatusCode()
     {
         if (!IsSuccessStatusCode)
         {
@@ -129,10 +144,28 @@ public sealed record ExecutionResult : ExecutionResultAbstract
     }
 
     /// <summary>
-    /// Gets the exception associated with the execution result, if any.
+    /// Converts an ExecutionResult to an ExecutionResult of a generic object type.
     /// </summary>
-    /// <returns>The exception entry if available; otherwise, null.</returns>
-    public ElementEntry? Exception => Errors[ExceptionKey];
+    /// <param name="result">The conversion provides a more specific type for the execution result.</param>
+    public static implicit operator ExecutionResult<object>(ExecutionResult result) =>
+        result.ToExecutionResult();
+
+    /// <summary>
+    /// Creates an ExecutionResult object containing various properties such as Detail, Errors, and StatusCode.
+    /// </summary>
+    /// <returns>Returns an ExecutionResult object encapsulating the current state and data.</returns>
+    public ExecutionResult<object> ToExecutionResult() =>
+        new()
+        {
+            Detail = Detail,
+            Errors = Errors,
+            Extensions = Extensions,
+            Headers = Headers,
+            Location = Location,
+            Result = Result,
+            StatusCode = StatusCode,
+            Title = Title
+        };
 }
 
 /// <summary>  
@@ -141,7 +174,7 @@ public sealed record ExecutionResult : ExecutionResultAbstract
 /// and status.  
 /// </summary>  
 /// <typeparam name="TResult">The type of the result object.</typeparam>  
-public sealed record ExecutionResult<TResult> : ExecutionResultAbstract
+public sealed record ExecutionResult<TResult> : _ExecutionResult
 {
     [JsonConstructor]
     internal ExecutionResult() { }
@@ -157,20 +190,13 @@ public sealed record ExecutionResult<TResult> : ExecutionResultAbstract
         init => base.Result = value;
     }
 
-    /// <summary>
-    /// Gets a value indicating whether the execution's status code 
-    /// is a success status code.
-    /// </summary>
+    /// <inheritdoc/>>
     [MemberNotNullWhen(true, nameof(Result))]
-    public bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
+    public override bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
 
-    /// <summary>
-    /// Ensures that the execution result has a success status code.
-    /// </summary>
-    /// <exception cref="ExecutionResultException">Thrown if the status code 
-    /// is not a success status code.</exception>
+    /// <inheritdoc/>
     [MemberNotNull([nameof(Result)])]
-    public void EnsureSuccessStatusCode()
+    public override void EnsureSuccessStatusCode()
     {
         if (!IsSuccessStatusCode)
         {
@@ -178,10 +204,8 @@ public sealed record ExecutionResult<TResult> : ExecutionResultAbstract
         }
     }
 
-    /// <summary>  
-    /// Gets a value indicating whether the execution is generic.  
-    /// </summary>  
-    public bool IsGeneric => true;
+    /// <inheritdoc/>
+    public override bool IsGeneric => true;
 
     /// <summary>
     /// Converts the current instance to an <see cref="ExecutionResult"/> object.

@@ -29,8 +29,7 @@ namespace Xpandables.Net.Executions;
 public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionResultHandler
 {
     ///<inheritdoc/>
-    public bool CanProcess(ExecutionResult executionResult) =>
-        executionResult.IsFailureStatusCode();
+    public bool CanProcess(ExecutionResult executionResult) => !executionResult.IsSuccessStatusCode;
 
     ///<inheritdoc/>
     public Task HandleAsync(HttpContext context, ExecutionResult executionResult)
@@ -41,11 +40,11 @@ public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionRe
             .GetRequiredService<IWebHostEnvironment>()
             .IsDevelopment();
 
-        ProblemDetails problemDetails = executionResult.StatusCode.IsValidationProblemRequest()
+        ProblemDetails problemDetails = executionResult.StatusCode.IsValidationProblem()
             ? new ValidationProblemDetails(executionResult.ToModelStateDictionary())
             {
-                Title = executionResult.Title ?? executionResult.StatusCode.GetTitle(),
-                Detail = executionResult.Detail ?? executionResult.StatusCode.GetDetail(),
+                Title = executionResult.Title ?? executionResult.StatusCode.GetAppropriateTitle(),
+                Detail = executionResult.Detail ?? executionResult.StatusCode.GetAppropriateDetail(),
                 Status = (int)executionResult.StatusCode,
                 Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
                 Type = isDevelopment ? executionResult.GetType().Name : null,
@@ -53,8 +52,8 @@ public sealed class EndpointExecutionResultFailureHandler : IEndpointExecutionRe
             }
             : new ProblemDetails()
             {
-                Title = executionResult.Title ?? executionResult.StatusCode.GetTitle(),
-                Detail = executionResult.Detail ?? executionResult.StatusCode.GetDetail(),
+                Title = executionResult.Title ?? executionResult.StatusCode.GetAppropriateTitle(),
+                Detail = executionResult.Detail ?? executionResult.StatusCode.GetAppropriateDetail(),
                 Status = (int)executionResult.StatusCode,
                 Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
                 Type = isDevelopment ? executionResult.GetType().Name : null,
