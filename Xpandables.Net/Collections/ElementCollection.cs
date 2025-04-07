@@ -353,4 +353,40 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
 
         return new ReadOnlyDictionary<string, StringValues>(dict);
     }
+
+    /// <summary>
+    /// Returns a string representation of the collection, where entries are formatted as "key=value1,value2" 
+    /// and separated by semicolons.
+    /// </summary>
+    /// <returns>A string representation of the collection. Returns an empty string if the collection is empty.</returns>
+    public override string ToString()
+    {
+        if (_entries == null || _entries.Count == 0)
+            return string.Empty;
+
+        var builder = new System.Text.StringBuilder();
+
+        for (int i = 0; i < _entries.Count; i++)
+        {
+            var entry = _entries[i];
+
+            if (i > 0)
+                builder.Append(';');
+
+            builder.Append(entry.Key);
+            builder.Append('=');
+
+            if (entry.Values.Count > 0)
+            {
+                for (int j = 0; j < entry.Values.Count; j++)
+                {
+                    if (j > 0)
+                        builder.Append(',');
+                    builder.Append(entry.Values[j]);
+                }
+            }
+        }
+
+        return builder.ToString();
+    }
 }
