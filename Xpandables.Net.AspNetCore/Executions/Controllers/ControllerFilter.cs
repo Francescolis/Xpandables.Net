@@ -40,7 +40,7 @@ public sealed class ControllerFilter : IAsyncAlwaysRunResultFilter
                 .RequestServices
                 .GetRequiredService<IEndpointProcessor>();
 
-            return execute.ExecuteAsync(context.HttpContext, executionResult);
+            return execute.ProcessAsync(context.HttpContext, executionResult);
         }
 
         return next();

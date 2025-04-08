@@ -53,7 +53,7 @@ public sealed class MinimalMiddleware : IMiddleware
                 exception.ToExecutionResultForProblemDetails();
 
             await execute
-                .ExecuteAsync(context, executionResult)
+                .ProcessAsync(context, executionResult)
                 .ConfigureAwait(false);
         }
     }

@@ -21,13 +21,12 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Repositories.Filters;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Represents a store for events, providing methods to append, fetch, 

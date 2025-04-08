@@ -19,8 +19,11 @@
 using System.Net;
 
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -29,42 +32,30 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Processes an execution result by setting the appropriate metadata and 
-/// invoking the corresponding executor.
+/// Processes the execution result asynchronously, setting metadata for the HTTP response based on the execution
+/// result.
 /// </summary>
 public sealed class EndpointProcessor : IEndpointProcessor
 {
-    /// <summary>
-    /// Executes the execution result asynchronously.
-    /// </summary>
-    /// <param name="httpContext">The HTTP context.</param>
-    /// <param name="executionResult">The execution result to execute.</param>
-    /// <returns>A task that represents the asynchronous execution.</returns>
-    public async Task ExecuteAsync(HttpContext httpContext, ExecutionResult executionResult)
+    /// <inheritdoc/>
+    public async Task ProcessAsync(HttpContext httpContext, ExecutionResult executionResult)
     {
         await MetadataSetter(httpContext, executionResult)
             .ConfigureAwait(false);
 
-        IEndpointExecutionResultHandler handler = httpContext.RequestServices
-            .GetServices<IEndpointExecutionResultHandler>()
-            .FirstOrDefault(h => h.CanProcess(executionResult))
-            ?? throw new InvalidOperationException(
-                "No executor found for the execution result.");
+        if (executionResult.IsSuccessStatusCode)
+        {
+            await SuccessHandleAsync(httpContext, executionResult)
+                .ConfigureAwait(false);
 
-        await handler
-            .HandleAsync(httpContext, executionResult)
+            return;
+        }
+
+        await FailureHandleAsync(httpContext, executionResult)
             .ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Sets the metadata for the HTTP response based on the execution result.
-    /// </summary>
-    /// <param name="context">The HTTP context.</param>
-    /// <param name="executionResult">The execution result.</param>
-    /// <returns>A task that represents the asynchronous execution.</returns>
-    private static async Task MetadataSetter(
-        HttpContext context,
-        ExecutionResult executionResult)
+    private static async Task MetadataSetter(HttpContext context, ExecutionResult executionResult)
     {
         if (executionResult.Location is not null)
         {
@@ -114,5 +105,113 @@ public sealed class EndpointProcessor : IEndpointProcessor
                 }
             }
         }
+    }
+
+    private static Task FailureHandleAsync(HttpContext context, ExecutionResult executionResult)
+    {
+        context.Response.StatusCode = (int)executionResult.StatusCode;
+
+        bool isDevelopment = context.RequestServices
+            .GetRequiredService<IWebHostEnvironment>()
+            .IsDevelopment();
+
+        ProblemDetails problemDetails = executionResult.StatusCode.IsValidationProblem()
+            ? new ValidationProblemDetails(executionResult.ToModelStateDictionary())
+            {
+                Title = executionResult.Title ?? executionResult.StatusCode.GetAppropriateTitle(),
+                Detail = executionResult.Detail ?? executionResult.StatusCode.GetAppropriateDetail(),
+                Status = (int)executionResult.StatusCode,
+                Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
+                Type = isDevelopment ? executionResult.GetType().Name : null,
+                Extensions = executionResult.Extensions.ToDictionary()
+            }
+            : new ProblemDetails()
+            {
+                Title = executionResult.Title ?? executionResult.StatusCode.GetAppropriateTitle(),
+                Detail = executionResult.Detail ?? executionResult.StatusCode.GetAppropriateDetail(),
+                Status = (int)executionResult.StatusCode,
+                Instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}",
+                Type = isDevelopment ? executionResult.GetType().Name : null,
+                Extensions = executionResult.Extensions.ToDictionary()
+            };
+
+        if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+        {
+            return problemDetailsService.WriteAsync(new ProblemDetailsContext
+            {
+                HttpContext = context,
+                ProblemDetails = problemDetails
+            }).AsTask();
+        }
+
+        IResult result = Results.Problem(problemDetails);
+
+        return result.ExecuteAsync(context);
+    }
+
+    private static async Task SuccessHandleAsync(HttpContext context, ExecutionResult executionResult)
+    {
+        if (executionResult.StatusCode.IsCreated())
+        {
+            IResult resultCreated = (executionResult.Result is not null) switch
+            {
+                true => Results.Created(
+                    executionResult.Location,
+                    executionResult.Result),
+                _ => Results.Created(executionResult.Location, null)
+            };
+
+            await resultCreated
+                .ExecuteAsync(context)
+                .ConfigureAwait(false);
+
+            return;
+        }
+
+        if (executionResult.Result is Stream stream)
+        {
+            string fileName = executionResult.Headers
+                .FirstOrDefault(h => h.Key.Equals("FileName", StringComparison.OrdinalIgnoreCase))
+                .Values.FirstOrDefault() ?? "download";
+
+            string contentType = executionResult.Headers
+                .FirstOrDefault(h => h.Key.Equals("ContentType", StringComparison.OrdinalIgnoreCase))
+                .Values.FirstOrDefault() ?? "application/octet-stream";
+
+            bool inline = executionResult.Headers
+                .FirstOrDefault(h => h.Key.Equals("Inline", StringComparison.OrdinalIgnoreCase))
+                .Values.FirstOrDefault()?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
+
+            string disposition = inline ? "inline" : "attachment";
+            context.Response.Headers
+                .Append(
+                    "Content-Disposition",
+                    $"{disposition}; filename={fileName}");
+
+            IResult result = Results.Stream(
+                stream,
+                contentType,
+                fileName);
+
+            await result
+                .ExecuteAsync(context)
+                .ConfigureAwait(false);
+
+            return;
+        }
+
+        if (executionResult.Result is not null)
+        {
+            await context.Response.WriteAsJsonAsync(
+                executionResult.Result,
+                executionResult.Result.GetType())
+                .ConfigureAwait(false);
+
+            return;
+        }
+
+        await context.Response
+            .CompleteAsync()
+            .ConfigureAwait(false);
     }
 }

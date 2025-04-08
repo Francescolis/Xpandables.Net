@@ -46,6 +46,6 @@ public sealed class MinimalResult(ExecutionResult executionResult) : IResult
             .RequestServices
             .GetRequiredService<IEndpointProcessor>();
 
-        return execute.ExecuteAsync(httpContext, _executionResult);
+        return execute.ProcessAsync(httpContext, _executionResult);
     }
 }

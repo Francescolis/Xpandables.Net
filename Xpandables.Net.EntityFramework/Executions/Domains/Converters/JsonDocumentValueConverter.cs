@@ -15,33 +15,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Text.Json;
+
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-using Xpandables.Net.Text;
+namespace Xpandables.Net.Executions.Domains.Converters;
 
-namespace Xpandables.Net.Events.Converters;
 /// <summary>
-/// Converts a primitive type to a value type and vice versa.
+/// Converts a <see cref="JsonDocument"/> to a <see cref="string"/> and vice versa.
 /// </summary>
-/// <typeparam name="TPrimitive">The primitive type.</typeparam>
-/// <typeparam name="TValue">The value type.</typeparam>
-public sealed class PrimitiveValueConverter<TPrimitive, TValue>
-    : ValueConverter<TPrimitive, TValue>
-    where TValue : notnull
-    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
+public sealed class JsonDocumentValueConverter : ValueConverter<JsonDocument, string>
 {
     /// <summary>
-    /// Constructs a new instance of 
-    /// <see cref="PrimitiveValueConverter{TPrimitive, TValue}"/>.
+    /// Initializes a new instance of the <see cref="JsonDocumentValueConverter"/> class.
     /// </summary>
-    public PrimitiveValueConverter()
-        : base(v => PrimitiveToValue(v),
-            v => ValueToPrimitive(v))
+    public JsonDocumentValueConverter() :
+        base(
+        jsonDocument => jsonDocument.RootElement.GetRawText(),
+        json => JsonDocument.Parse(json, default))
     { }
-
-    private static TPrimitive ValueToPrimitive(TValue value)
-        => TPrimitive.Create(value);
-
-    private static TValue PrimitiveToValue(TPrimitive primitive)
-        => primitive.Value;
 }

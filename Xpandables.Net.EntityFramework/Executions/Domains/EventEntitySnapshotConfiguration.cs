@@ -20,7 +20,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events;
+namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
 /// Configuration class for the <see cref="EventEntitySnapshot"/> entity.

@@ -20,16 +20,16 @@ using Microsoft.AspNetCore.Http;
 namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Defines a method to process an execution result within the given HTTP context.
+/// Executes an execution result asynchronously in a specified HTTP context. 
+/// Returns a task representing the asynchronous operation.
 /// </summary>
 public interface IEndpointProcessor
 {
     /// <summary>
-    /// Executes the execution result asynchronously within the given HTTP context.
+    /// Processes an asynchronous operation using the provided context and execution result.
     /// </summary>
-    /// <param name="httpContext">The HTTP context in which to execute the 
-    /// execution result.</param>
-    /// <param name="executionResult">The execution result to execute.</param>
-    /// <returns>A task that represents the asynchronous execution.</returns>
-    Task ExecuteAsync(HttpContext httpContext, ExecutionResult executionResult);
+    /// <param name="httpContext">Provides the current HTTP context for the operation.</param>
+    /// <param name="executionResult">Contains the result of the execution to be processed.</param>
+    /// <returns>Returns a task representing the asynchronous operation.</returns>
+    Task ProcessAsync(HttpContext httpContext, ExecutionResult executionResult);
 }

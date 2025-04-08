@@ -31,14 +31,12 @@ namespace Xpandables.Net.Executions;
 /// </summary>  
 public static class ExecutionResultExtensions
 {
-    /// <summary>  
-    /// Converts the specified execution result to an <see cref="ModelStateDictionary"/>.
-    /// </summary>  
-    /// <param name="executionResult">The execution result to convert.</param>
-    /// <returns>A <see cref="ModelStateDictionary"/> containing the converted  
-    /// elements.</returns>  
-    public static ModelStateDictionary ToModelStateDictionary(
-        this ExecutionResult executionResult)
+    /// <summary>
+    /// Converts an execution result containing errors into a model state dictionary for validation purposes.
+    /// </summary>
+    /// <param name="executionResult">Contains the errors that will be processed to populate the model state dictionary.</param>
+    /// <returns>A model state dictionary populated with errors extracted from the execution result.</returns>
+    public static ModelStateDictionary ToModelStateDictionary(this ExecutionResult executionResult)
     {
         ModelStateDictionary modelState = new();
         foreach (ElementEntry entry in executionResult.Errors
@@ -58,14 +56,12 @@ public static class ExecutionResultExtensions
         return modelState;
     }
 
-    /// <summary>  
-    /// Converts a <see cref="ModelStateDictionary"/> to an <see cref="ExecutionResult"/>.  
-    /// </summary>  
-    /// <param name="modelState">The model state dictionary to convert.</param>  
-    /// <param name="statusCode">The HTTP status code to use for the execution 
-    /// result. Defaults to <see cref="HttpStatusCode.BadRequest"/>.</param>  
-    /// <returns>An <see cref="ExecutionResult"/> representing the execution 
-    /// result.</returns>  
+    /// <summary>
+    /// Converts a model state dictionary into an execution result indicating failure with associated errors.
+    /// </summary>
+    /// <param name="modelState">Contains the validation errors that need to be included in the execution result.</param>
+    /// <param name="statusCode">Specifies the HTTP status code to be returned in the execution result.</param>
+    /// <returns>An execution result object that encapsulates the failure status and validation errors.</returns>
     public static ExecutionResult ToExecutionResult(
         this ModelStateDictionary modelState,
         HttpStatusCode statusCode = HttpStatusCode.BadRequest) =>
@@ -81,15 +77,12 @@ public static class ExecutionResultExtensions
                             [.. modelState[key]!.Errors.Select(error => error.ErrorMessage)]))]))
             .Build();
 
-    /// <summary>  
-    /// Converts a <see cref="BadHttpRequestException"/> to an 
-    /// <see cref="ExecutionResult"/>.  
-    /// </summary>  
-    /// <param name="exception">The exception to convert.</param>  
-    /// <returns>An <see cref="ExecutionResult"/> representing the 
-    /// execution result.</returns>  
-    public static ExecutionResult ToExecutionResult(
-        this BadHttpRequestException exception)
+    /// <summary>
+    /// Converts a BadHttpRequestException into an ExecutionResult object, providing detailed error information.
+    /// </summary>
+    /// <param name="exception">The exception provides context for generating the execution result.</param>
+    /// <returns>An ExecutionResult object containing the status code, title, detail, and error information.</returns>
+    public static ExecutionResult ToExecutionResult(this BadHttpRequestException exception)
     {
         bool isDevelopment = (Environment.GetEnvironmentVariable(
             "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
@@ -119,39 +112,34 @@ public static class ExecutionResultExtensions
             .Build();
     }
 
-    /// <summary>  
-    /// Converts an <see cref="Exception"/> to an <see cref="ExecutionResult"/> 
-    /// for problem details.
-    /// </summary>  
-    /// <param name="exception">The exception to convert.</param>  
-    /// <returns>An <see cref="ExecutionResult"/> representing the execution 
-    /// result.</returns>  
-    public static ExecutionResult ToExecutionResultForProblemDetails(
-        this Exception exception) =>
+    /// <summary>
+    /// Converts an exception into an execution result, handling specific types of exceptions differently.
+    /// </summary>
+    /// <param name="exception">Handles an error that occurs during the execution of a request.</param>
+    /// <returns>An execution result representing the outcome of the exception.</returns>
+    public static ExecutionResult ToExecutionResultForProblemDetails(this Exception exception) =>
         exception switch
         {
-            BadHttpRequestException badHttpRequestException =>
-                badHttpRequestException.ToExecutionResult(),
+            BadHttpRequestException badHttpRequestException => badHttpRequestException.ToExecutionResult(),
             _ => exception.ToExecutionResult()
         };
 
-    /// <summary>  
-    /// Converts an <see cref="ExecutionResult"/> to an <see cref="IActionResult"/>.  
-    /// </summary>  
-    /// <param name="executionResult">The execution result to convert.</param>  
-    /// <returns>An <see cref="IActionResult"/> representing the execution
-    /// result.</returns>  
+    /// <summary>
+    /// Converts an execution result into an action result for web responses.
+    /// </summary>
+    /// <param name="executionResult">Contains the outcome and status code of an operation.</param>
+    /// <returns>Returns an object result with the specified status code.</returns>
     public static IActionResult ToActionResult(this ExecutionResult executionResult) =>
         new ObjectResult(executionResult)
         {
             StatusCode = (int)executionResult.StatusCode,
         };
 
-    /// <summary>  
-    /// Converts an <see cref="ExecutionResult"/> to an <see cref="IResult"/>.  
-    /// </summary>  
-    /// <param name="executionResult">The execution result to convert.</param>  
-    /// <returns>An <see cref="IResult"/> representing the execution result.</returns>  
+    /// <summary>
+    /// Converts an execution result into a minimal result format.
+    /// </summary>
+    /// <param name="executionResult">Represents the result of an execution that will be transformed into a minimal format.</param>
+    /// <returns>Returns a minimal result object based on the provided execution result.</returns>
     public static IResult ToMinimalResult(this ExecutionResult executionResult) =>
         new MinimalResult(executionResult);
 }

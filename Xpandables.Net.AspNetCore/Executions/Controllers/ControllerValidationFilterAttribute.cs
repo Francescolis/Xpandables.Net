@@ -20,10 +20,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Xpandables.Net.Executions.Controllers;
 
-/// <summary>  
-/// Represents an action filter attribute that validates the model state before 
-/// executing the action.  
-/// </summary>  
+/// <summary>
+/// Validates the model state before an action executes. If the model state is invalid, it sets the result to a
+/// BadRequest response.
+/// </summary>
 public sealed class ControllerValidationFilterAttribute : ActionFilterAttribute
 {
     /// <inheritdoc/>  

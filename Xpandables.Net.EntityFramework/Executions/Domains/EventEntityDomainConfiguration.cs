@@ -20,21 +20,23 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Repositories;
 
-namespace Xpandables.Net.Events;
-/// <summary>
-/// Provides configuration for the <see cref="EventEntityIntegration"/> entity.
-/// </summary>
-public sealed class EventEntityIntegrationConfiguration :
-    IEntityTypeConfiguration<EventEntityIntegration>
+namespace Xpandables.Net.Executions.Domains;
+
+/// <summary>  
+/// Provides configuration for the <see cref="EventEntityDomain"/> entity type.  
+/// </summary>  
+public sealed class EventEntityDomainConfiguration :
+   IEntityTypeConfiguration<EventEntityDomain>
 {
-    /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<EventEntityIntegration> builder)
+    /// <inheritdoc/>  
+    public void Configure(EntityTypeBuilder<EventEntityDomain> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         _ = builder.HasKey(e => e.KeyId);
-        _ = builder.HasIndex(e => new { e.KeyId, e.EventName, e.EventVersion });
+        _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.EventName, e.EventVersion });
         _ = builder.Property(e => e.KeyId).IsRequired();
+        _ = builder.Property(e => e.AggregateId).IsRequired();
         _ = builder.Property(e => e.EventName).IsRequired().HasMaxLength(100);
         _ = builder.Property(e => e.EventFullName).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.EventVersion).IsRequired();

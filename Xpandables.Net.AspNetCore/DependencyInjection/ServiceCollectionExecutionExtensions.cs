@@ -15,8 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Reflection;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,42 +45,12 @@ public static class ServiceCollectionExecutionExtensions
     public static IServiceCollection AddXMinimalApi(
         this IServiceCollection services) =>
         services
-            .AddXEndpointExecutionResultHandlers(typeof(IEndpointExecutionResultHandler).Assembly)
             .AddXMinimalJsonOptions()
             .AddXEndpointProcessor()
             .AddXValidatorProvider()
             .AddXEndpointValidator()
             .AddXMinimalMiddleware()
             .AddXValidatorDefault();
-
-    /// <summary>
-    /// Adds <see cref="IEndpointExecutionResultHandler"/> to the service collection.
-    /// </summary>
-    /// <param name="services">The service collection to add the executors to.</param>
-    /// <param name="assemblies">The assemblies to scan for processors. 
-    /// If none are provided, the calling assembly is used.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXEndpointExecutionResultHandlers(
-        this IServiceCollection services,
-        params Assembly[] assemblies)
-    {
-        if (assemblies.Length == 0)
-        {
-            assemblies = [Assembly.GetCallingAssembly()];
-        }
-
-        List<Type> executorTypes = [.. assemblies
-            .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.IsSealed
-                && type.IsAssignableTo(typeof(IEndpointExecutionResultHandler)))];
-
-        foreach (Type executorType in executorTypes)
-        {
-            _ = services.AddScoped(typeof(IEndpointExecutionResultHandler), executorType);
-        }
-
-        return services;
-    }
 
     /// <summary>
     /// Adds a scoped service of the type specified in 

@@ -18,19 +18,18 @@
 using Microsoft.AspNetCore.Http;
 
 namespace Xpandables.Net.DataAnnotations;
+
 /// <summary>
-/// Defines a validator for endpoints.
+/// Validates an endpoint asynchronously and returns the validation result. 
+/// The process involves the context of the invocation and a delegate.
 /// </summary>
 public interface IEndpointValidator
 {
     /// <summary>
-    /// Validates the endpoint asynchronously.
+    /// Validates an asynchronous operation within an endpoint filter context.
     /// </summary>
-    /// <param name="context">The context of the endpoint filter invocation.</param>
-    /// <param name="next">The next delegate to invoke.</param>
-    /// <returns>A task that represents the asynchronous validation execution. 
-    /// The task result contains the validation result.</returns>
-    ValueTask<object?> ValidateAsync(
-        EndpointFilterInvocationContext context,
-        EndpointFilterDelegate next);
+    /// <param name="context">Provides the context for the current endpoint filter invocation.</param>
+    /// <param name="next">Represents the next delegate in the endpoint filter pipeline to be invoked.</param>
+    /// <returns>Returns a ValueTask that resolves to an object or null after validation.</returns>
+    ValueTask<object?> ValidateAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next);
 }

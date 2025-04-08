@@ -15,23 +15,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Xpandables.Net.Events.Converters;
+namespace Xpandables.Net.Executions.Domains.Converters;
 
 /// <summary>
-/// Converts a <see cref="JsonDocument"/> to a <see cref="string"/> and vice versa.
+/// Converts a <see cref="ReadOnlyMemory{T}"/> of byte to a byte array and vice versa.
 /// </summary>
-public sealed class JsonDocumentValueConverter : ValueConverter<JsonDocument, string>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ReadOnlyMemoryToByteArrayConverter"/> class.
+/// </remarks>
+public sealed class ReadOnlyMemoryToByteArrayConverter() :
+    ValueConverter<ReadOnlyMemory<byte>, byte[]>(
+        v => v.ToArray(),
+        v => new ReadOnlyMemory<byte>(v))
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="JsonDocumentValueConverter"/> class.
-    /// </summary>
-    public JsonDocumentValueConverter() :
-        base(
-        jsonDocument => jsonDocument.RootElement.GetRawText(),
-        json => JsonDocument.Parse(json, default))
-    { }
 }

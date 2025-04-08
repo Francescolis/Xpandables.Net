@@ -15,19 +15,21 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Validates the execution result by using the provided validators.
+/// Validates endpoint arguments asynchronously using registered validators. 
+/// Returns validation results or proceeds to the next delegate if valid.
 /// </summary>
-public sealed class EndpointValidator : IEndpointValidator
+/// <param name="validatorProvider">The validator provider.</param>
+public sealed class EndpointValidator(IValidatorProvider validatorProvider) : IEndpointValidator
 {
     /// <inheritdoc/>
     public async ValueTask<object?> ValidateAsync(
@@ -37,24 +39,30 @@ public sealed class EndpointValidator : IEndpointValidator
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        List<ArgumentDescriptor> arguments = [.. context
-            .Arguments
-            .OfType<IValidationEnabled>()
-            .Select((parameter, index) => new ArgumentDescriptor
-            {
-                Index = index,
-                Parameter = parameter,
-                ParameterType = parameter.GetType()
-            })];
+        ImmutableHashSet<ArgumentDescriptor> arguments = GetArgumentDescriptors(context);
 
         if (arguments.Count == 0)
         {
             return await next(context).ConfigureAwait(false);
         }
 
+        ImmutableHashSet<ValidatorDescriptor> validators = GetAppropriateValidators(arguments, validatorProvider);
+
+        ExecutionResult execution = await ApplyValidationAsync(validators).ConfigureAwait(false);
+
+        if (execution.Errors.Any())
+        {
+            return execution.ToMinimalResult();
+        }
+
+        return await next(context).ConfigureAwait(false);
+    }
+
+    static async Task<ExecutionResult> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
+    {
         IExecutionResultFailureBuilder failureBuilder = ExecutionResults.BadRequest();
 
-        foreach (ValidatorDescriptor descriptor in GetValidatorDescriptors())
+        foreach (ValidatorDescriptor descriptor in validators)
         {
             try
             {
@@ -85,37 +93,44 @@ public sealed class EndpointValidator : IEndpointValidator
             }
         }
 
-        ExecutionResult result = failureBuilder.Build();
+        return failureBuilder.Build();
+    }
 
-        if (result.Errors.Any())
-        {
-            return result.ToMinimalResult();
-        }
-
-        return await next(context).ConfigureAwait(false);
-
-        IEnumerable<ValidatorDescriptor> GetValidatorDescriptors()
-        {
-            IValidatorProvider provider = context
-                .HttpContext
-                .RequestServices
-                .GetRequiredService<IValidatorProvider>();
-
-            foreach (ArgumentDescriptor argument in arguments)
+    static ImmutableHashSet<ArgumentDescriptor> GetArgumentDescriptors(EndpointFilterInvocationContext context)
+    {
+        List<ArgumentDescriptor> arguments = [.. context
+            .Arguments
+            .OfType<IValidationEnabled>()
+            .Select((parameter, index) => new ArgumentDescriptor
             {
-                IValidator? validator = provider.GetValidator(argument.ParameterType);
-                if (validator is not null)
+                Index = index,
+                Parameter = parameter,
+                ParameterType = parameter.GetType()
+            })];
+
+        return [.. arguments];
+    }
+
+    static ImmutableHashSet<ValidatorDescriptor> GetAppropriateValidators(
+        ImmutableHashSet<ArgumentDescriptor> arguments, IValidatorProvider provider)
+    {
+        List<ValidatorDescriptor> validators = [];
+        foreach (ArgumentDescriptor argument in arguments)
+        {
+            IValidator? validator = provider.GetValidator(argument.ParameterType);
+            if (validator is not null)
+            {
+                validators.Add(new ValidatorDescriptor
                 {
-                    yield return new ValidatorDescriptor
-                    {
-                        ArgumentIndex = argument.Index,
-                        ArgumentType = argument.ParameterType,
-                        Argument = argument.Parameter,
-                        Validator = validator
-                    };
-                }
+                    ArgumentIndex = argument.Index,
+                    ArgumentType = argument.ParameterType,
+                    Argument = argument.Parameter,
+                    Validator = validator
+                });
             }
         }
+
+        return [.. validators];
     }
 }
 

@@ -17,7 +17,7 @@
 ********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 
-using Xpandables.Net.Events;
+using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Repositories;
 /// <summary>
