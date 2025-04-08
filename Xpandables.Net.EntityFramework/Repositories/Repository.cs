@@ -42,7 +42,8 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        IQueryable<TEntity> query = filter.Apply(Context.Set<TEntity>())
+        IQueryable<TEntity> query = filter
+            .Apply(Context.Set<TEntity>())
             .OfType<TEntity>();
 
         Context.RemoveRange(query);

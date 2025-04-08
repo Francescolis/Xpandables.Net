@@ -34,9 +34,7 @@ namespace Xpandables.Net.Executions.Domains;
 /// </summary>
 /// <param name="context">The data context for the event store.</param>
 /// <param name="options">The event options.</param>
-public sealed class EventStore(
-    IOptions<EventOptions> options,
-    DataContextEvent context) : Disposable, IEventStore
+public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent context) : Disposable, IEventStore
 {
     private readonly EventOptions _options = options.Value;
 #pragma warning disable CA2213 // Disposable fields should be disposed
@@ -57,15 +55,11 @@ public sealed class EventStore(
                 return Task.CompletedTask;
             }
 
-            IEventConverter eventConverter =
-                _options.GetEventConverterFor(eventsList.First());
-
-            //List<IEventEntity> _eventEntities = new(eventsList.Count);
+            IEventConverter eventConverter = _options.GetEventConverterFor(eventsList.First());
 
             foreach (IEvent @event in eventsList)
             {
-                IEventEntity eventEntity = eventConverter
-                    .ConvertTo(@event, _options.SerializerOptions);
+                IEventEntity eventEntity = eventConverter.ConvertTo(@event, _options.SerializerOptions);
 
                 _disposableEntities.Add(eventEntity);
             }
