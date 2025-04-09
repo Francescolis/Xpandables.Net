@@ -55,7 +55,7 @@ internal sealed class RestResponseHandler : Disposable, IRestResponseHandler
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        using RestResponseContext context = new()
+        RestResponseContext context = new()
         {
             Message = response,
             SerializerOptions = _requestOptions.SerializerOptions

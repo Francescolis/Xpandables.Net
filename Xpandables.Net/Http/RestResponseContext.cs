@@ -21,7 +21,7 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Represents the context for an HTTP response, including the response message and JSON serializer options.
 /// </summary>
-public sealed class RestResponseContext : Disposable
+public sealed class RestResponseContext
 {
     /// <summary>
     /// Represents an HTTP response message. It is a required property that must be initialized.
@@ -32,18 +32,4 @@ public sealed class RestResponseContext : Disposable
     /// Specifies the options for JSON serialization. It is a required property that must be initialized.
     /// </summary>
     public required JsonSerializerOptions SerializerOptions { get; init; }
-
-    /// <summary>
-    /// Releases resources used by the object, optionally disposing of managed resources.
-    /// </summary>
-    /// <param name="disposing">Indicates whether to release both managed and unmanaged resources.</param>
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            Message.Dispose();
-        }
-
-        base.Dispose(disposing);
-    }
 }

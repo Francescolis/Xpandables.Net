@@ -25,7 +25,7 @@ namespace Xpandables.Net.Http;
 /// </summary>
 /// <typeparam name="TRestRequest">Defines the type of HTTP request being processed, 
 /// ensuring it adheres to the required interface.</typeparam>
-public sealed class RestRequestContext<TRestRequest> : Disposable
+public sealed class RestRequestContext<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
     /// <summary>
@@ -50,18 +50,4 @@ public sealed class RestRequestContext<TRestRequest> : Disposable
     /// It is a required property that must be initialized.
     /// </summary>
     public required JsonSerializerOptions SerializerOptions { get; init; }
-
-    /// <summary>
-    /// Cleans up resources used by the object when called. It conditionally disposes of managed resources if specified.
-    /// </summary>
-    /// <param name="disposing">Indicates whether to release both managed and unmanaged resources.</param>
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            Message.Dispose();
-        }
-
-        base.Dispose(disposing);
-    }
 }

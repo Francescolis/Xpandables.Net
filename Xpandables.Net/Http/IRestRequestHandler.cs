@@ -70,7 +70,7 @@ internal sealed class RestRequestHandler<TRestRequest> : Disposable, IRestReques
             throw new InvalidOperationException(
                 $"No request builder found for the request type {request.GetType()}.");
 
-        using RestRequestContext<TRestRequest> context = new()
+        RestRequestContext<TRestRequest> context = new()
         {
             Attribute = attribute,
             Message = _message,
