@@ -22,8 +22,8 @@ using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;
 /// <summary>
-/// Represents the options for to manage <see cref="IRestResponseHandler"/>
-/// and <see cref="IRestResponseHandler"/> and its associated services.
+/// Represents the options for to manage <see cref="IRestResponseHandler{TRestRequest}"/>
+/// and <see cref="IRestRequestHandler{TRestRequest}"/> and its associated services.
 /// </summary>
 public sealed record RestOptions
 {

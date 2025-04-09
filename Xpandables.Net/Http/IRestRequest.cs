@@ -38,6 +38,22 @@ public interface IRestRequest
 }
 
 /// <summary>
+/// Defines a contract for REST requests that return a specific response type.
+/// </summary>
+/// <typeparam name="TResponse">Represents the class type of the response expected from the REST request.</typeparam>
+public interface IRestRequest<TResponse> : IRestRequest
+    where TResponse : class;
+
+/// <summary>
+/// Defines a contract for a request that streams data and returns a result of a specified type.
+/// </summary>
+/// <typeparam name="TResult">Specifies the type of result that must not be null.</typeparam>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+public interface IRestRequestStream<TResult> : IRestRequest
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+    where TResult : notnull;
+
+/// <summary>
 /// Define the base contract for all REST contexts.
 /// </summary>
 public interface IRestContext : IRestRequest

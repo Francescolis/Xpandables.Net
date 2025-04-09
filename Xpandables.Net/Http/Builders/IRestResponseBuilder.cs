@@ -19,7 +19,9 @@ namespace Xpandables.Net.Http.Builders;
 /// <summary>
 /// Defines method to build <see cref="RestResponse"/> and <see cref="RestResponse{TResult}"/>.
 /// </summary>
-public interface IRestResponseBuilder
+/// <typeparam name="TRestRequest"> The type of the REST request.</typeparam>
+public interface IRestResponseBuilder<TRestRequest>
+    where TRestRequest : class, IRestRequest
 {
     /// <summary>
     /// Asynchronously builds a response based on the provided context.
@@ -29,5 +31,5 @@ public interface IRestResponseBuilder
     /// <returns>The method returns a task that resolves to the generated response.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="context"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the operation fails.</exception>
-    Task<RestResponse> BuildAsync(RestResponseContext context, CancellationToken cancellationToken = default);
+    Task<RestResponse> BuildAsync(RestResponseContext<TRestRequest> context, CancellationToken cancellationToken = default);
 }

@@ -24,7 +24,9 @@ namespace Xpandables.Net.Http;
 /// Asynchronously builds a response from an HTTP response message. It returns a task containing the constructed
 /// response.
 /// </summary>
-public interface IRestResponseHandler
+/// <typeparam name="TRestRequest"> The type of the REST request.</typeparam>
+public interface IRestResponseHandler<TRestRequest>
+    where TRestRequest : class, IRestRequest
 {
     /// <summary>
     /// Asynchronously builds a response based on the provided HTTP response message.
@@ -37,12 +39,13 @@ public interface IRestResponseHandler
     Task<RestResponse> BuildResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken = default);
 }
 
-internal sealed class RestResponseHandler : Disposable, IRestResponseHandler
+internal sealed class RestResponseHandler<TRestRequest> : Disposable, IRestResponseHandler<TRestRequest>
+    where TRestRequest : class, IRestRequest
 {
     private RestOptions _requestOptions;
     private readonly IDisposable? _disposable;
-    private readonly IRestResponseBuilder _responseBuilder;
-    public RestResponseHandler(IOptionsMonitor<RestOptions> options, IRestResponseBuilder responseBuilder)
+    private readonly IRestResponseBuilder<TRestRequest> _responseBuilder;
+    public RestResponseHandler(IOptionsMonitor<RestOptions> options, IRestResponseBuilder<TRestRequest> responseBuilder)
     {
         _requestOptions = options.CurrentValue;
         _disposable = options.OnChange(newOptions => _requestOptions = newOptions);
@@ -55,7 +58,7 @@ internal sealed class RestResponseHandler : Disposable, IRestResponseHandler
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        RestResponseContext context = new()
+        RestResponseContext<TRestRequest> context = new()
         {
             Message = response,
             SerializerOptions = _requestOptions.SerializerOptions
@@ -83,6 +86,7 @@ internal sealed class RestResponseHandler : Disposable, IRestResponseHandler
         {
             _disposable?.Dispose();
         }
+
         base.Dispose(disposing);
     }
 }

@@ -24,11 +24,13 @@ namespace Xpandables.Net.Http.Builders.Responses;
 /// <summary>
 /// Builds a RestResponse asynchronously using the provided RestResponseContext. Supports cancellation through a token.
 /// </summary>
-public sealed class RestResponseBuilder : IRestResponseBuilder
+/// <typeparam name="TRestRequest"> The type of the REST request.</typeparam> 
+public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRestRequest>
+    where TRestRequest : class, IRestRequest
 {
     /// <inheritdoc/>
     public async Task<RestResponse> BuildAsync(
-        RestResponseContext context, CancellationToken cancellationToken = default)
+        RestResponseContext<TRestRequest> context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -37,9 +39,9 @@ public sealed class RestResponseBuilder : IRestResponseBuilder
 
         try
         {
+            // Handle unsuccessful response
             if (!response.IsSuccessStatusCode)
             {
-                // Handle unsuccessful response
                 string? errorContent = default;
                 if (response.Content is not null)
                 {
@@ -73,34 +75,17 @@ public sealed class RestResponseBuilder : IRestResponseBuilder
                 };
             }
 
-            // Content exists
-            string contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+            // Determine request type
+            bool isRestRequestResult = typeof(TRestRequest).GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRestRequest<>));
+            bool isRestRequestStreamResult = typeof(TRestRequest).GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRestRequestStream<>));
 
-            // stream content
-            if (contentType.Contains("application/octet-stream", StringComparison.OrdinalIgnoreCase))
+            if (isRestRequestResult)
             {
-                Stream stream = await response.Content
-                    .ReadAsStreamAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                return new RestResponse
-                {
-                    StatusCode = response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase,
-                    Headers = response.Headers.ToElementCollection(),
-                    Version = response.Version,
-                    Result = stream
-                };
-            }
-
-            // json content
-            if (contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase))
-            {
-                string json = await response.Content
+                string stringContent = await response.Content
                     .ReadAsStringAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                if (string.IsNullOrEmpty(json))
+                if (string.IsNullOrEmpty(stringContent))
                 {
                     return new RestResponse
                     {
@@ -111,7 +96,12 @@ public sealed class RestResponseBuilder : IRestResponseBuilder
                     };
                 }
 
-                object? result = JsonSerializer.Deserialize<object>(json, options);
+                // Deserialize to the specific type requested
+                Type resultType = typeof(TRestRequest)
+                    .GetInterfaces()
+                    .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRestRequest<>))
+                    .GetGenericArguments()[0];
+                object? typedResult = JsonSerializer.Deserialize(stringContent, resultType, options);
 
                 return new RestResponse
                 {
@@ -119,12 +109,46 @@ public sealed class RestResponseBuilder : IRestResponseBuilder
                     ReasonPhrase = response.ReasonPhrase,
                     Headers = response.Headers.ToElementCollection(),
                     Version = response.Version,
-                    Result = result
+                    Result = typedResult
                 };
             }
 
-            // other content types
-            string content = await response.Content
+            if (isRestRequestStreamResult)
+            {
+                Stream stream = await response.Content
+                    .ReadAsStreamAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (stream is null)
+                {
+                    return new RestResponse
+                    {
+                        StatusCode = response.StatusCode,
+                        ReasonPhrase = response.ReasonPhrase,
+                        Headers = response.Headers.ToElementCollection(),
+                        Version = response.Version
+                    };
+                }
+
+                // Deserialize to the specific type requested
+                Type resultType = typeof(TRestRequest)
+                    .GetInterfaces()
+                    .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRestRequestStream<>))
+                    .GetGenericArguments()[0];
+
+                object typedResult = stream.DeserializeAsyncEnumerableAsync(resultType, options, cancellationToken);
+
+                return new RestResponse
+                {
+                    StatusCode = response.StatusCode,
+                    ReasonPhrase = response.ReasonPhrase,
+                    Headers = response.Headers.ToElementCollection(),
+                    Version = response.Version,
+                    Result = typedResult
+                };
+            }
+
+            string generalContent = await response.Content
                 .ReadAsStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -134,7 +158,7 @@ public sealed class RestResponseBuilder : IRestResponseBuilder
                 ReasonPhrase = response.ReasonPhrase,
                 Headers = response.Headers.ToElementCollection(),
                 Version = response.Version,
-                Result = content
+                Result = generalContent
             };
         }
         catch (Exception exception)
@@ -148,10 +172,6 @@ public sealed class RestResponseBuilder : IRestResponseBuilder
                 Version = response.Version,
                 Exception = exception
             };
-        }
-        finally
-        {
-            response.Dispose();
         }
     }
 }

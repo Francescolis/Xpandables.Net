@@ -78,16 +78,16 @@ public static class ServiceCollectionRestExtensions
     public static IServiceCollection AddXRestResponseBuilders(
         this IServiceCollection services) =>
         services
-            .AddScoped<IRestResponseBuilder, RestResponseBuilder>();
+            .AddScoped(typeof(IRestResponseBuilder<>), typeof(RestResponseBuilder<>));
 
     /// <summary>
-    /// Registers the default <see cref="RestResponseHandler"/> implementation to the services.
+    /// Registers the default <see cref="RestResponseHandler{TRestRequest}"/> implementation to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
     public static IServiceCollection AddXRestResponseHandler(
         this IServiceCollection services) =>
-        services.AddScoped<IRestResponseHandler, RestResponseHandler>();
+        services.AddScoped(typeof(IRestResponseHandler<>), typeof(RestResponseHandler<>));
 
     /// <summary>
     /// Registers the specified <typeparamref name="TRestClient"/> as

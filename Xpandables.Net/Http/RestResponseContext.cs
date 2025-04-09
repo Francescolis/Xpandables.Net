@@ -21,7 +21,8 @@ namespace Xpandables.Net.Http;
 /// <summary>
 /// Represents the context for an HTTP response, including the response message and JSON serializer options.
 /// </summary>
-public sealed class RestResponseContext
+public sealed class RestResponseContext<TRestRequest>
+    where TRestRequest : class, IRestRequest
 {
     /// <summary>
     /// Represents an HTTP response message. It is a required property that must be initialized.

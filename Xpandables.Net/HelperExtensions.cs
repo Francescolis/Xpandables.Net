@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -331,6 +332,47 @@ public static class HelperExtensions
         => JsonSerializer
             .DeserializeAsync<T>(stream, options, cancellationToken)
             .AsTask();
+
+    /// <summary>
+    /// Deserializes a stream into an asynchronous enumerable collection of a specified type.
+    /// </summary>
+    /// <typeparam name="T">Specifies the type of objects contained in the asynchronous enumerable collection.</typeparam>
+    /// <param name="stream">Represents the input stream from which data will be deserialized.</param>
+    /// <param name="_">An instance of the specified type used to guide the deserialization process.</param>
+    /// <param name="options">Provides options to customize the deserialization behavior.</param>
+    /// <param name="cancellationToken">Allows for the operation to be canceled if needed.</param>
+    /// <returns>An asynchronous enumerable collection of the deserialized objects.</returns>
+    public static IAsyncEnumerable<T?> DeserializeAsyncEnumerableAsync<T>(
+        this Stream stream,
+        T _,
+        JsonSerializerOptions? options = default,
+        CancellationToken cancellationToken = default)
+        => JsonSerializer.DeserializeAsyncEnumerable<T>(stream, options, cancellationToken);
+
+    private static readonly MethodInfo deserializeAsyncEnumerableMethod = typeof(JsonSerializer)
+                .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .FirstOrDefault(m => m.Name == "DeserializeAsyncEnumerable" && m.IsGenericMethod)!;
+
+    /// <summary>
+    /// Deserializes a stream into an asynchronous enumerable of a specified type using JSON serialization options.
+    /// </summary>
+    /// <param name="stream">The input stream containing the JSON data to be deserialized.</param>
+    /// <param name="type">Specifies the type of objects that the deserialized enumerable will contain.</param>
+    /// <param name="options">Provides additional settings for the JSON serialization process.</param>
+    /// <param name="cancellationToken">Allows for the operation to be canceled if needed.</param>
+    /// <returns>An asynchronous enumerable of the specified type populated with the deserialized data.</returns>
+    public static object DeserializeAsyncEnumerableAsync(
+        this Stream stream,
+        Type type,
+        JsonSerializerOptions? options = default,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(stream);
+        MethodInfo genericMethod = deserializeAsyncEnumerableMethod.MakeGenericMethod(type);
+
+        return genericMethod.Invoke(null, [stream, options, cancellationToken])!;
+    }
 
     /// <summary>
     /// Serializes the current instance to JSON string using 

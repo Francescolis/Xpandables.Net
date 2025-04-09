@@ -19,7 +19,7 @@ public sealed record Monkey(
     double Longitude);
 
 [RestGet("monkeys.json")]
-public sealed record Query : IRestString;
+public sealed record Query : IRestRequestStream<Monkey>, IRestString;
 
 public sealed class HttpClientRequestStreamTest
 {
@@ -52,7 +52,7 @@ public sealed class HttpClientRequestStreamTest
         var query = new Query();
 
         // Act
-        RestResponse<IAsyncEnumerable<Monkey>> response = await sender.SendAsync(query, CancellationToken.None);
+        using RestResponse<IAsyncEnumerable<Monkey>> response = await sender.SendAsync(query, CancellationToken.None);
         response.IsSuccess.Should().BeTrue();
         var monkeys = await response.Result!.ToListAsync();
 

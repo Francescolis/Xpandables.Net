@@ -27,6 +27,8 @@ namespace Xpandables.Net.Http;
 /// <param name="httpClient">Acts as the underlying client for sending HTTP requests and receiving responses.</param>
 public sealed class RestClient(IServiceProvider serviceProvider, HttpClient httpClient) : Disposable, IRestClient
 {
+    private HttpResponseMessage? response;
+
     /// <inheritdoc/>
     public HttpClient HttpClient => httpClient;
 
@@ -45,12 +47,12 @@ public sealed class RestClient(IServiceProvider serviceProvider, HttpClient http
                 .BuildRequestAsync(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            using HttpResponseMessage response = await httpClient
+            response = await httpClient
                 .SendAsync(httpRequest, cancellationToken)
                 .ConfigureAwait(false);
 
-            IRestResponseHandler responseHandler = serviceProvider
-                .GetRequiredService<IRestResponseHandler>();
+            IRestResponseHandler<TRestRequest> responseHandler = serviceProvider
+                .GetRequiredService<IRestResponseHandler<TRestRequest>>();
 
             return await responseHandler
                 .BuildResponseAsync(response, cancellationToken)
@@ -67,5 +69,20 @@ public sealed class RestClient(IServiceProvider serviceProvider, HttpClient http
                 Exception = exception
             };
         }
+    }
+
+    /// <summary>
+    /// Releases resources used by the object, optionally disposing of managed resources.
+    /// </summary>
+    /// <param name="disposing">Indicates whether to release both managed and unmanaged resources.</param>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            response?.Dispose();
+            response = null;
+        }
+
+        base.Dispose(disposing);
     }
 }
