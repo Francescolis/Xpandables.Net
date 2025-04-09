@@ -19,9 +19,9 @@ using System.Collections.Immutable;
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Provides with <see cref="MapRestAttribute"/> behaviors.
+/// Provides with <see cref="RestAttribute"/> behaviors.
 /// </summary>
-public static class MapRest
+public static class Rest
 {
     /// <summary>
     /// Represents the HTTP methods.
@@ -88,11 +88,11 @@ public static class MapRest
     {
         /// <summary>
         /// Used in the content of the request. 
-        /// You can use <see cref="IRestContentString"/>,
-        /// <see cref="IRestContentPatch"/>, <see cref="IRestContentStream"/>, 
-        /// <see cref="IRestContentByteArray"/>, 
-        /// <see cref="IRestContentMultipart"/> or
-        /// <see cref="IRestContentFormUrlEncoded"/>
+        /// You can use <see cref="IRestString"/>,
+        /// <see cref="IRestPatch"/>, <see cref="IRestStream"/>, 
+        /// <see cref="IRestByteArray"/>, 
+        /// <see cref="IRestMultipart"/> or
+        /// <see cref="IRestFormUrlEncoded"/>
         /// to customize the body content, otherwise the 
         /// whole class will be serialized.
         /// </summary>
@@ -100,34 +100,34 @@ public static class MapRest
 
         /// <summary>
         /// Parameters that are appended to the URL. You must implement 
-        /// <see cref="IRestContentQueryString"/> to provide with content.
+        /// <see cref="IRestQueryString"/> to provide with content.
         /// </summary>
         Query = 2,
 
         /// <summary>
         /// Used together with Path Templating, where the parameter 
         /// value is actually part of the operation's URL.
-        /// You must implement <see cref="IRestContentPathString"/> 
+        /// You must implement <see cref="IRestPathString"/> 
         /// to provide with content.
         /// </summary>
         Path = 4,
 
         /// <summary>
         /// Custom headers that are expected as part of the request. 
-        /// You must implement <see cref="IRestContentHeader"/> 
+        /// You must implement <see cref="IRestHeader"/> 
         /// to provide with content.
         /// </summary>
         Header = 8,
 
         /// <summary>
         /// Used to pass a specific cookie value to the API. 
-        /// You must <see cref="IRestContentCookie"/> to provide with content.
+        /// You must <see cref="IRestCookie"/> to provide with content.
         /// </summary>
         Cookie = 16,
 
         /// <summary>
         /// Used to pass basic auth information to the API.
-        /// You must implement <see cref="IRestContentBasicAuthentication"/>
+        /// You must implement <see cref="IRestBasicAuthentication"/>
         /// </summary> 
         BasicAuth = 32
     }
@@ -139,8 +139,8 @@ public static class MapRest
     {
         /// <summary>
         /// Body content matching the <see cref="StringContent"/>.
-        /// The target class should implement <see cref="IRestContentString"/> or
-        /// <see cref="IRestContentPatch"/>, otherwise the 
+        /// The target class should implement <see cref="IRestString"/> or
+        /// <see cref="IRestPatch"/>, otherwise the 
         /// whole class will be serialized.
         /// </summary>
 #pragma warning disable CA1720 // Identifier contains type name
@@ -149,26 +149,26 @@ public static class MapRest
 
         /// <summary>
         /// Body content matching the <see cref="ByteArrayContent"/>.
-        /// The target class should implement <see cref="IRestContentByteArray"/>.
+        /// The target class should implement <see cref="IRestByteArray"/>.
         /// </summary>
         ByteArray,
 
         /// <summary>
         /// Body content matching the <see cref="MultipartFormDataContent"/>.
-        /// The target class should implement <see cref="IRestContentMultipart"/>.
+        /// The target class should implement <see cref="IRestMultipart"/>.
         /// </summary>
         Multipart,
 
         /// <summary>
         /// Body content matching the <see cref="StreamContent"/>.
-        /// The target class should implement <see cref="IRestContentStream"/>.
+        /// The target class should implement <see cref="IRestStream"/>.
         /// </summary>
         Stream,
 
         /// <summary>
         /// Body content matching the <see cref="FormUrlEncodedContent"/>.
         /// The target class should implement 
-        /// <see cref="IRestContentFormUrlEncoded"/>.
+        /// <see cref="IRestFormUrlEncoded"/>.
         /// </summary>
         FormUrlEncoded
     }

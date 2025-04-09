@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Http;
 
-using static Xpandables.Net.Http.MapRest;
+using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Test.UnitTests;
 
@@ -18,8 +18,8 @@ public sealed record Monkey(
     double Latitude,
     double Longitude);
 
-[MapGet("monkeys.json")]
-public sealed record Query : IRestStreamRequest<Monkey>, IRestContentString;
+[RestGet("monkeys.json")]
+public sealed record Query : IRestString;
 
 public sealed class HttpClientRequestStreamTest
 {
@@ -31,8 +31,10 @@ public sealed class HttpClientRequestStreamTest
 
         services.Configure<RestOptions>(RestOptions.Default);
         services.AddXRestOptions();
-        services.AddXRestRequestFactory();
-        services.AddXRestResponseFactory();
+        services.AddXRestRequestBuilders();
+        services.AddXRestResponseBuilders();
+        services.AddXRestRequestHandler();
+        services.AddXRestResponseHandler();
         services.AddXRestClient((_, client) =>
         {
             client.BaseAddress = new Uri("https://www.montemagno.com/");
@@ -50,7 +52,7 @@ public sealed class HttpClientRequestStreamTest
         var query = new Query();
 
         // Act
-        var response = await sender.SendAsync(query, CancellationToken.None);
+        RestResponse<IAsyncEnumerable<Monkey>> response = await sender.SendAsync(query, CancellationToken.None);
         response.IsSuccess.Should().BeTrue();
         var monkeys = await response.Result!.ToListAsync();
 

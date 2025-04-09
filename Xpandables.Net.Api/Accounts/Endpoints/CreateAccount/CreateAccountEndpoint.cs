@@ -29,6 +29,6 @@ public sealed class CreateAccountEndpoint : IEndpointRoute
             .WithName("CreateAccount")
             .WithXMinimalApi()
             .AllowAnonymous()
-            .Accepts<CreateAccountRequest>(MapRest.ContentType.Json)
+            .Accepts<CreateAccountRequest>(Rest.ContentType.Json)
             .Produces(StatusCodes.Status200OK);
 }

@@ -17,29 +17,30 @@
 ********************************************************************************/
 using System.Net.Http.Headers;
 
-using Xpandables.Net.Http.Builders;
-
-using static Xpandables.Net.Http.MapRest;
+using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Abstract attribute to configure request definition.
-/// The derived attribute should decorate implementations of <see cref="IRestRequest"/>,
-/// <see cref="IRestStreamRequest{TResponse}"/> or <see cref="IRestRequest{TResponse}"/>
+/// The derived attribute should decorate implementations of <see cref="IRestRequest"/>
 /// in order to be used with <see cref="IRestClient"/>.
 /// </summary>
 /// <remarks>
-/// Your class can implement the <see cref="IMapRestBuilder"/>
-/// to dynamically return a <see cref="MapRestAbstractAttribute"/>.</remarks>
+/// Your class can implement the <see cref="IRestProvider"/>
+/// to dynamically return a <see cref="_RestAttribute"/>.</remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
     Inherited = false, AllowMultiple = false)]
-public abstract class MapRestAbstractAttribute : Attribute
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming Styles
+public abstract class _RestAttribute : Attribute
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore CA1707 // Identifiers should not contain underscores
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapRestAbstractAttribute"/>.
+    /// Initializes the default instance of <see cref="_RestAttribute"/>.
     /// </summary>
-    protected MapRestAbstractAttribute() { }
+    protected _RestAttribute() { }
 
     /// <summary>
     /// Gets or sets the Uri path. If null, the root path will be set.
@@ -74,13 +75,13 @@ public abstract class MapRestAbstractAttribute : Attribute
     /// Gets or sets the content type.
     /// The default value is <see cref="ContentType.Json"/>.
     /// </summary>
-    public string ContentType { get; set; } = MapRest.ContentType.Json;
+    public string ContentType { get; set; } = Rest.ContentType.Json;
 
     /// <summary>
     /// Gets or sets the accept content.
     /// The default value is <see cref="ContentType.Json"/>.
     /// </summary>
-    public string Accept { get; set; } = MapRest.ContentType.Json;
+    public string Accept { get; set; } = Rest.ContentType.Json;
 
     /// <summary>
     /// Gets the value indicating whether or not the request needs authorization.
@@ -102,48 +103,33 @@ public abstract class MapRestAbstractAttribute : Attribute
     /// </summary>
     public string Scheme { get; set; } = "Bearer";
 
-    /// <summary>
-    /// Gets or sets the request builder.
-    /// If set, the request builder will be used to build the request.
-    /// </summary>
-    /// <remarks>Not yet implemented.</remarks>
-    public IRestRequestBuilder? RequestBuilder { get; set; }
-
-    /// <summary>
-    /// Gets or sets the response builder.
-    /// If set, the response builder will be used to build the response.
-    /// </summary>
-    /// <remarks>Not yet implemented.</remarks>
-    public IRestResponseBuilder? ResponseBuilder { get; set; }
-
     // Gets or sets the built-in Uri.
     internal Uri Uri { get; set; } = null!;
 }
 
 /// <summary>
 /// Attribute to configure request definition.
-/// The attribute should decorate implementations of <see cref="IRestRequest"/>,
-/// <see cref="IRestStreamRequest{TResponse}"/> or <see cref="IRestRequest{TResponse}"/>
+/// The attribute should decorate implementations of <see cref="IRestRequest"/>
 /// in order to be used with <see cref="IRestClient"/>.
 /// </summary>
 /// <remarks>
-/// Your class can implement the <see cref="IMapRestBuilder"/>
-/// to dynamically return a <see cref="MapRestAttribute"/>.</remarks>
+/// Your class can implement the <see cref="IRestProvider"/>
+/// to dynamically return a <see cref="RestAttribute"/>.</remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
     Inherited = false, AllowMultiple = false)]
-public sealed class MapRestAttribute : MapRestAbstractAttribute { }
+public sealed class RestAttribute : _RestAttribute { }
 
 /// <summary>
 /// Maps the request to the specified Uri path with the POST method.
 /// </summary>
 /// <remarks>The method is secured by default.</remarks>
-public sealed class MapPostAttribute : MapRestAbstractAttribute
+public sealed class RestPostAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapPostAttribute"/>.
+    /// Initializes the default instance of <see cref="RestPostAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapPostAttribute(string path)
+    public RestPostAttribute(string path)
     {
         Path = path;
         Method = Method.POST;
@@ -154,13 +140,13 @@ public sealed class MapPostAttribute : MapRestAbstractAttribute
 /// <summary>
 /// Maps the request to the specified Uri path with the GET method.
 /// </summary>
-public sealed class MapGetAttribute : MapRestAbstractAttribute
+public sealed class RestGetAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapGetAttribute"/>.
+    /// Initializes the default instance of <see cref="RestGetAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapGetAttribute(string path)
+    public RestGetAttribute(string path)
     {
         Path = path;
         Method = Method.GET;
@@ -172,13 +158,13 @@ public sealed class MapGetAttribute : MapRestAbstractAttribute
 /// Maps the request to the specified Uri path with the PUT method.
 /// </summary>
 /// <remarks>The method is secured by default.</remarks>
-public sealed class MapPutAttribute : MapRestAbstractAttribute
+public sealed class RestPutAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapPutAttribute"/>.
+    /// Initializes the default instance of <see cref="RestPutAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapPutAttribute(string path)
+    public RestPutAttribute(string path)
     {
         Path = path;
         Method = Method.PUT;
@@ -190,13 +176,13 @@ public sealed class MapPutAttribute : MapRestAbstractAttribute
 /// Maps the request to the specified Uri path with the DELETE method.
 /// </summary>
 /// <remarks>The method is secured by default.</remarks>
-public sealed class MapDeleteAttribute : MapRestAbstractAttribute
+public sealed class RestDeleteAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapDeleteAttribute"/>.
+    /// Initializes the default instance of <see cref="RestDeleteAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapDeleteAttribute(string path)
+    public RestDeleteAttribute(string path)
     {
         Path = path;
         Method = Method.DELETE;
@@ -208,13 +194,13 @@ public sealed class MapDeleteAttribute : MapRestAbstractAttribute
 /// Maps the request to the specified Uri path with the PATCH method.
 /// </summary>
 /// <remarks>The method is secured by default.</remarks>
-public sealed class MapPatchAttribute : MapRestAbstractAttribute
+public sealed class RestPatchAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapPatchAttribute"/>.
+    /// Initializes the default instance of <see cref="RestPatchAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapPatchAttribute(string path)
+    public RestPatchAttribute(string path)
     {
         Path = path;
         Method = Method.PATCH;
@@ -225,13 +211,13 @@ public sealed class MapPatchAttribute : MapRestAbstractAttribute
 /// <summary>
 /// Maps the request to the specified Uri path with the HEAD method.
 /// </summary>
-public sealed class MapHeadAttribute : MapRestAbstractAttribute
+public sealed class RestHeadAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapHeadAttribute"/>.
+    /// Initializes the default instance of <see cref="RestHeadAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapHeadAttribute(string path)
+    public RestHeadAttribute(string path)
     {
         Path = path;
         Method = Method.HEAD;
@@ -241,13 +227,13 @@ public sealed class MapHeadAttribute : MapRestAbstractAttribute
 /// <summary>
 /// Maps the request to the specified Uri path with the OPTIONS method.
 /// </summary>
-public sealed class MapOptionsAttribute : MapRestAbstractAttribute
+public sealed class RestOptionsAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapOptionsAttribute"/>.
+    /// Initializes the default instance of <see cref="RestOptionsAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapOptionsAttribute(string path)
+    public RestOptionsAttribute(string path)
     {
         Path = path;
         Method = Method.OPTIONS;
@@ -257,13 +243,13 @@ public sealed class MapOptionsAttribute : MapRestAbstractAttribute
 /// <summary>
 /// Maps the request to the specified Uri path with the TRACE method.
 /// </summary>
-public sealed class MapTraceAttribute : MapRestAbstractAttribute
+public sealed class RestTraceAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapTraceAttribute"/>.
+    /// Initializes the default instance of <see cref="RestTraceAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapTraceAttribute(string path)
+    public RestTraceAttribute(string path)
     {
         Path = path;
         Method = Method.TRACE;
@@ -273,13 +259,13 @@ public sealed class MapTraceAttribute : MapRestAbstractAttribute
 /// <summary>
 /// Maps the request to the specified Uri path with the CONNECT method.
 /// </summary>
-public sealed class MapConnectAttribute : MapRestAbstractAttribute
+public sealed class RestConnectAttribute : _RestAttribute
 {
     /// <summary>
-    /// Initializes the default instance of <see cref="MapConnectAttribute"/>.
+    /// Initializes the default instance of <see cref="RestConnectAttribute"/>.
     /// </summary>
     /// <param name="path">The Uri path.</param>
-    public MapConnectAttribute(string path)
+    public RestConnectAttribute(string path)
     {
         Path = path;
         Method = Method.CONNECT;

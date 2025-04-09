@@ -19,6 +19,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Http;
+using Xpandables.Net.Http.Builders;
+using Xpandables.Net.Http.Builders.Requests;
+using Xpandables.Net.Http.Builders.Responses;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
@@ -38,46 +41,53 @@ public static class ServiceCollectionRestExtensions
         => services.AddTransient<IConfigureOptions<RestOptions>, RestOptionsConfiguration>();
 
     /// <summary>
-    /// Registers the specified <see cref="IRestRequestFactory"/> implementation to the services.
-    /// </summary>
-    /// <typeparam name="TRestRequestFactory">The type of the HTTP client 
-    /// requests factory.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXRestRequestFactory<TRestRequestFactory>(
-        this IServiceCollection services)
-        where TRestRequestFactory : class, IRestRequestFactory =>
-        services.AddScoped<IRestRequestFactory, TRestRequestFactory>();
-
-    /// <summary>
-    /// Registers the specified <see cref="IRestResponseFactory"/> implementation to the services.
-    /// </summary>
-    /// <typeparam name="TRestResponseFactory">The type of the HTTP client 
-    /// responses factory.</typeparam>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXRestResponseFactory<TRestResponseFactory>(
-        this IServiceCollection services)
-        where TRestResponseFactory : class, IRestResponseFactory =>
-        services.AddScoped<IRestResponseFactory, TRestResponseFactory>();
-
-    /// <summary>
-    /// Registers the default <see cref="RestRequestFactory"/> implementation to the services.
+    /// Registers the default <see cref="RestRequestHandler{TRestRequest}"/> implementation to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXRestRequestFactory(
+    public static IServiceCollection AddXRestRequestHandler(
         this IServiceCollection services) =>
-        services.AddXRestRequestFactory<RestRequestFactory>();
+        services.AddScoped(typeof(IRestRequestHandler<>), typeof(RestRequestHandler<>));
 
     /// <summary>
-    /// Registers the default <see cref="RestResponseFactory"/> implementation to the services.
+    /// Registers various implementations of a request builder interface with the service collection.
+    /// </summary>
+    /// <param name="services">The collection of services to which the request builders are added for dependency injection.</param>
+    /// <returns>The updated service collection with the new request builders registered.</returns>
+    public static IServiceCollection AddXRestRequestBuilders(
+        this IServiceCollection services) =>
+        services
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestContextBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestPatchBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestQueryStringBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestCookieBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestHeaderBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestBasicAuthBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestByteArrayBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestFormUrlEncodedBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestMultipartBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestStreamBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestPatchBuilder<>))
+            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestStringBuilder<>));
+
+    /// <summary>
+    /// Registers a scoped service for building REST responses within the service collection.
+    /// </summary>
+    /// <param name="services">The collection of services to which the REST response builder will be added.</param>
+    /// <returns>The updated service collection with the new service registration.</returns>
+    public static IServiceCollection AddXRestResponseBuilders(
+        this IServiceCollection services) =>
+        services
+            .AddScoped<IRestResponseBuilder, RestResponseBuilder>();
+
+    /// <summary>
+    /// Registers the default <see cref="RestResponseHandler"/> implementation to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
     /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXRestResponseFactory(
+    public static IServiceCollection AddXRestResponseHandler(
         this IServiceCollection services) =>
-        services.AddXRestResponseFactory<RestResponseFactory>();
+        services.AddScoped<IRestResponseHandler, RestResponseHandler>();
 
     /// <summary>
     /// Registers the specified <typeparamref name="TRestClient"/> as
@@ -104,7 +114,7 @@ public static class ServiceCollectionRestExtensions
         this IServiceCollection services,
         Action<IServiceProvider, HttpClient> configureClient) =>
         services
-            .AddXRestRequestFactory()
-            .AddXRestResponseFactory()
+            .AddXRestRequestHandler()
+            .AddXRestResponseHandler()
             .AddXRestClient<RestClient>(configureClient);
 }

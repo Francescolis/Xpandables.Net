@@ -17,15 +17,15 @@
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Defines a builder for creating <see cref="MapRestAttribute"/> at runtime.
+/// Defines a builder for creating <see cref="RestAttribute"/> at runtime.
 /// </summary>
-/// <remarks>This interface take priority over the static <see cref="MapRestAttribute"/>.</remarks>
-public interface IMapRestBuilder
+/// <remarks>This interface take priority over the static <see cref="RestAttribute"/>.</remarks>
+public interface IRestProvider
 {
     /// <summary>
-    /// Builds the <see cref="MapRestAttribute"/>.
+    /// Builds the <see cref="RestAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RestOptions"/>.</param>
-    /// <returns>The built <see cref="MapRestAttribute"/>.</returns>
-    MapRestAttribute Build(RestOptions options);
+    /// <returns>The built <see cref="RestAttribute"/>.</returns>
+    RestAttribute Build(RestOptions options);
 }

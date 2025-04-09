@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
 
-[MapGet("/accounts/operations")]
+[RestGet("/accounts/operations")]
 public sealed record GetOperationsAccountRequest : IValidationEnabled
 {
     [Required]

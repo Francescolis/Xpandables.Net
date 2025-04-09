@@ -14,54 +14,22 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Pipelines;
 
 namespace Xpandables.Net.Http.Builders;
 
 /// <summary>
-/// Builds the request for <see cref="IRestClient"/>.
-/// </summary>
-public interface IRestRequestBuilder
-{
-    /// <summary>
-    /// Gets the request type being built by the current builder instance.
-    /// </summary>
-    Type Type { get; }
-
-    /// <summary>
-    /// When overridden in a derived class, determines whether the builder
-    /// instance can build the specified request.
-    /// </summary>
-    /// <param name="targetType">The type of the target request.</param>
-    /// <returns><see langword="true"/> if the instance can build the
-    /// specified request; otherwise, <see langword="false"/>.</returns>
-    bool CanBuild(Type targetType);
-
-    /// <summary>
-    /// Builds the request for the <see cref="HttpClient"/>.
-    /// </summary>
-    /// <param name="context">The request context to act with.</param>
-    void Build(RestRequestContext context);
-}
-
-/// <summary>
-/// Builds the request for <see cref="IRestClient"/>.
+/// Defines a contract for building REST requests.
 /// </summary>
 /// <typeparam name="TRestRequest">The type of the interface
-/// implemented by the request source : <see cref="IRestContentBasicAuthentication"/>,
-/// <see cref="IRestContentByteArray"/>, <see cref="IRestContentCookie"/>,
-/// <see cref="IRestContentFormUrlEncoded"/>, <see cref="IRestContentHeader"/>,
-/// <see cref="IRestContentMultipart"/>, <see cref="IRestContentPatch"/>,
-/// <see cref="IRestContentPathString"/>, <see cref="IRestContentQueryString"/>,
-/// <see cref="IRestContentStream"/> and <see cref="IRestContentString"/>.</typeparam>
-public interface IRestRequestBuilder<TRestRequest> : IRestRequestBuilder
-    where TRestRequest : class, IRestContent
+/// implemented by the request source : <see cref="IRestBasicAuthentication"/>,
+/// <see cref="IRestByteArray"/>, <see cref="IRestCookie"/>,
+/// <see cref="IRestFormUrlEncoded"/>, <see cref="IRestHeader"/>,
+/// <see cref="IRestMultipart"/>, <see cref="IRestPatch"/>,
+/// <see cref="IRestPathString"/>, <see cref="IRestQueryString"/>,
+/// <see cref="IRestStream"/> and <see cref="IRestString"/>.</typeparam>
+public interface IRestRequestBuilder<TRestRequest> : IPipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>
+    where TRestRequest : class, IRestRequest
 {
-    /// <summary>
-    /// Gets the request type being built by the current builder instance.
-    /// </summary>
-    public new Type Type => typeof(TRestRequest);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Type IRestRequestBuilder.Type => Type;
 }

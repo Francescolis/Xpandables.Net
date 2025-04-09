@@ -16,7 +16,10 @@
 ********************************************************************************/
 using System.Net.Http.Headers;
 
-using static Xpandables.Net.Http.MapRest;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Pipelines;
+
+using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
@@ -24,20 +27,23 @@ namespace Xpandables.Net.Http.Builders.Requests;
 /// Builds the authorization header for basic authentication in a REST request. It checks the context for basic
 /// authentication location.
 /// </summary>
-public sealed class RestRequestBasicAuthenticationBuilder : RestRequestBuilder<IRestContentBasicAuthentication>
+public sealed class RestBasicAuthBuilder<TRestRequest> :
+    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+    where TRestRequest : class, IRestBasicAuthentication
 {
-    /// <inheritdoc/>         
-    public override void Build(RestRequestContext context)
+    /// <inheritdoc/>
+    protected override Task<ExecutionResult> HandleCoreAsync(
+        RestRequestContext<TRestRequest> request,
+        RequestHandler<ExecutionResult> next,
+        CancellationToken cancellationToken = default)
     {
-        if ((context.Attribute.Location & Location.BasicAuth) != Location.BasicAuth)
+        if ((request.Attribute.Location & Location.BasicAuth) == Location.BasicAuth)
         {
-            return;
+            AuthenticationHeaderValue value = request.Request.GetAuthenticationHeaderValue();
+
+            request.Message.Headers.Authorization = value;
         }
 
-        IRestContentBasicAuthentication request = (IRestContentBasicAuthentication)context.Request;
-
-        AuthenticationHeaderValue value = request.GetAuthenticationHeaderValue();
-
-        context.Message.Headers.Authorization = value;
+        return next();
     }
 }

@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
 
-[MapPost("/accounts/block")]
+[RestPost("/accounts/block")]
 public sealed record BlockAccountRequest : IValidationEnabled
 {
     [Required]

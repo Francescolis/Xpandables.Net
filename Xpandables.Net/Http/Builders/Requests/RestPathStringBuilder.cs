@@ -14,7 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using static Xpandables.Net.Http.MapRest;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Pipelines;
+
+using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
@@ -22,30 +25,29 @@ namespace Xpandables.Net.Http.Builders.Requests;
 /// Builds a request URI by adding path string parameters from the request context. It modifies the base path with
 /// provided parameters.
 /// </summary>
-public sealed class RestRequestPathStringBuilder : RestRequestBuilder<IRestContentPathString>
+public sealed class RestPathStringBuilder<TRestRequest> :
+    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+    where TRestRequest : class, IRestPathString
 {
-    ///<inheritdoc/>
-    public override void Build(RestRequestContext context)
+    /// <inheritdoc/>
+    protected override Task<ExecutionResult> HandleCoreAsync(
+        RestRequestContext<TRestRequest> request,
+        RequestHandler<ExecutionResult> next,
+        CancellationToken cancellationToken = default)
     {
-        if ((context.Attribute.Location & Location.Path) != Location.Path)
+        if ((request.Attribute.Location & Location.Path) == Location.Path)
         {
-            return;
+            IDictionary<string, string> pathString = request.Request.GetPathString();
+
+            if (pathString.Count > 0)
+            {
+                string path = AddPathString(request.Attribute.Path ?? request.Message.RequestUri!.AbsoluteUri, pathString);
+
+                request.Message.RequestUri = new Uri(path, UriKind.Relative);
+            }
         }
 
-        IRestContentPathString request = (IRestContentPathString)context.Request;
-
-        IDictionary<string, string> pathString = request.GetPathString();
-
-        if (pathString.Count > 0)
-        {
-            context.Message.RequestUri =
-                new Uri(AddPathString(
-                    context.Attribute.Path
-                    ?? context.Message
-                        .RequestUri!
-                        .AbsoluteUri, pathString),
-                        UriKind.Relative);
-        }
+        return next();
     }
 
     /// <summary>

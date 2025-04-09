@@ -5,8 +5,8 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
-[MapPost("/accounts/deposit", IsSecured = false)]
-public sealed record DepositAccountRequest : IRestRequest, IRestContentString, IValidationEnabled
+[RestPost("/accounts/deposit", IsSecured = false)]
+public sealed record DepositAccountRequest : IRestRequest, IRestString, IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }

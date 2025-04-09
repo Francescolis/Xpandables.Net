@@ -17,34 +17,51 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Text;
-
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Encapsulates the context of a request, including attributes, the request itself, the HTTP message, and JSON
-/// serializer options.
+/// Encapsulates the context for a REST request, including attributes, request details, response message, and
+/// serialization options.
 /// </summary>
-public sealed record RestRequestContext
+/// <typeparam name="TRestRequest">Defines the type of HTTP request being processed, 
+/// ensuring it adheres to the required interface.</typeparam>
+public sealed class RestRequestContext<TRestRequest> : Disposable
+    where TRestRequest : class, IRestRequest
 {
     /// <summary>
-    /// Gets the attribute associated with the <see cref="IRestRequest"/>.
+    /// Represents a required attribute of type _MapRestAttribute. 
+    /// It is initialized at the time of object creation.
     /// </summary>
-    public required MapRestAbstractAttribute Attribute { get; init; }
+    public required _RestAttribute Attribute { get; init; }
 
     /// <summary>
-    /// Gets the client request.
+    /// Represents a required HTTP request of type TRestRequest. 
+    /// It is initialized at the time of object creation.
     /// </summary>
-    public required IRestRequest Request { get; init; }
+    public required TRestRequest Request { get; init; }
 
     /// <summary>
-    /// Gets the HTTP request message.
+    /// Represents an HTTP request message. It is a required property that must be initialized.
     /// </summary>
     public required HttpRequestMessage Message { get; init; }
 
     /// <summary>
-    /// Gets the JSON serializer options.
+    /// Specifies the options for JSON serialization. 
+    /// It is a required property that must be initialized.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; init; }
-        = DefaultSerializerOptions.Defaults;
+    public required JsonSerializerOptions SerializerOptions { get; init; }
+
+    /// <summary>
+    /// Cleans up resources used by the object when called. It conditionally disposes of managed resources if specified.
+    /// </summary>
+    /// <param name="disposing">Indicates whether to release both managed and unmanaged resources.</param>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            Message.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
 }

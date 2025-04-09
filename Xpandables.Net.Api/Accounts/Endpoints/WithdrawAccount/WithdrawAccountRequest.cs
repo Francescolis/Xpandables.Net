@@ -5,7 +5,7 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 
-[MapPost("/accounts/withdraw")]
+[RestPost("/accounts/withdraw")]
 public sealed record WithdrawAccountRequest : IValidationEnabled
 {
     [Required]

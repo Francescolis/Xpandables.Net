@@ -30,7 +30,7 @@ public sealed class DepositAccountEndpoint : IEndpointRoute
         .WithName("DepositAccount")
         .WithXMinimalApi()
         .AllowAnonymous()
-        .Accepts<DepositAccountRequest>(MapRest.ContentType.Json)
+        .Accepts<DepositAccountRequest>(Rest.ContentType.Json)
         .Produces(StatusCodes.Status200OK)
         .ProducesValidationProblem(StatusCodes.Status401Unauthorized);
 }

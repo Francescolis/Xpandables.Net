@@ -15,7 +15,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using static Xpandables.Net.Http.MapRest;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Pipelines;
+
+using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
@@ -23,27 +26,31 @@ namespace Xpandables.Net.Http.Builders.Requests;
 /// Builds the HTTP request body as URL-encoded form data based on the request context. It adds the content to the
 /// message or a multipart form.
 /// </summary>
-public sealed class RestRequestFormUrlEncodedBuilder : RestRequestBuilder<IRestContentFormUrlEncoded>
+public sealed class RestFormUrlEncodedBuilder<TRestRequest> :
+    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+    where TRestRequest : class, IRestFormUrlEncoded
 {
-    ///<inheritdoc/>  
-    public override void Build(RestRequestContext context)
+    /// <inheritdoc/>
+    protected override Task<ExecutionResult> HandleCoreAsync(
+        RestRequestContext<TRestRequest> request,
+        RequestHandler<ExecutionResult> next,
+        CancellationToken cancellationToken = default)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-            && context.Attribute.BodyFormat == BodyFormat.FormUrlEncoded)
+        if ((request.Attribute.Location & Location.Body) == Location.Body
+            && request.Attribute.BodyFormat == BodyFormat.FormUrlEncoded)
         {
-            IRestContentFormUrlEncoded request =
-                (IRestContentFormUrlEncoded)context.Request;
+            FormUrlEncodedContent content = request.Request.GetFormUrlEncodedContent();
 
-            FormUrlEncodedContent content = request.GetFormUrlEncodedContent();
-
-            if (context.Message.Content is MultipartFormDataContent multipart)
+            if (request.Message.Content is MultipartFormDataContent multipart)
             {
                 multipart.Add(content);
             }
             else
             {
-                context.Message.Content = content;
+                request.Message.Content = content;
             }
         }
+
+        return next();
     }
 }

@@ -24,15 +24,13 @@ public sealed class RestClientApiTest : IClassFixture<WebApplicationFactory<Prog
 
         services.Configure<RestOptions>(RestOptions.Default);
         services.AddXRestOptions();
-        services.AddXRestRequestFactory();
-        services.AddXRestResponseFactory();
+        services.AddXRestRequestHandler();
+        services.AddXRestResponseHandler();
         services.AddSingleton(factory.CreateClient());
         services.AddScoped<IRestClient>(provider =>
         {
-            IRestRequestFactory requestFactory = provider.GetRequiredService<IRestRequestFactory>();
-            IRestResponseFactory responseFactory = provider.GetRequiredService<IRestResponseFactory>();
             HttpClient httpClient = provider.GetRequiredService<HttpClient>();
-            return new RestClient(requestFactory, responseFactory, httpClient);
+            return new RestClient(provider, httpClient);
         });
 
         var serviceProvider = services.BuildServiceProvider();

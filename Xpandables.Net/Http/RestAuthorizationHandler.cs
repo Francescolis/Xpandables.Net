@@ -29,7 +29,7 @@ namespace Xpandables.Net.Http;
 /// </remarks>
 public abstract class RestAuthorizationHandler : HttpClientHandler
 {
-    private static readonly HttpRequestOptionsKey<bool?> IsSecuredKey = new(nameof(MapRestAttribute.IsSecured));
+    private static readonly HttpRequestOptionsKey<bool?> IsSecuredKey = new(nameof(RestAttribute.IsSecured));
     /// <summary>
     /// Creates an instance of System.Net.Http.HttpResponseMessage 
     /// based on the information

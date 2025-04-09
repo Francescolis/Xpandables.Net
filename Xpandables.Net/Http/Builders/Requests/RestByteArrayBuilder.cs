@@ -14,7 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using static Xpandables.Net.Http.MapRest;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Pipelines;
+
+using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
@@ -22,26 +25,31 @@ namespace Xpandables.Net.Http.Builders.Requests;
 /// Builds the HTTP request body as a byte array based on the provided context. It handles both multipart and single
 /// content types.
 /// </summary>
-public sealed class RestRequestByteArrayBuilder : RestRequestBuilder<IRestContentByteArray>
+public sealed class RestByteArrayBuilder<TRestRequest> :
+    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+    where TRestRequest : class, IRestByteArray
 {
     /// <inheritdoc/>
-    public override void Build(RestRequestContext context)
+    protected override Task<ExecutionResult> HandleCoreAsync(
+        RestRequestContext<TRestRequest> request,
+        RequestHandler<ExecutionResult> next,
+        CancellationToken cancellationToken = default)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-             && context.Attribute.BodyFormat == BodyFormat.ByteArray)
+        if ((request.Attribute.Location & Location.Body) == Location.Body
+             && request.Attribute.BodyFormat == BodyFormat.ByteArray)
         {
-            IRestContentByteArray request = (IRestContentByteArray)context.Request;
+            ByteArrayContent byteArray = request.Request.GetByteArrayContent();
 
-            ByteArrayContent byteArray = request.GetByteArrayContent();
-
-            if (context.Message.Content is MultipartFormDataContent multipart)
+            if (request.Message.Content is MultipartFormDataContent multipart)
             {
                 multipart.Add(byteArray);
             }
             else
             {
-                context.Message.Content = byteArray;
+                request.Message.Content = byteArray;
             }
         }
+
+        return next();
     }
 }

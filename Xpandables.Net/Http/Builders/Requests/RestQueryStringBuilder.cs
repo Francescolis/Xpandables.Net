@@ -17,7 +17,10 @@
 using System.Text;
 using System.Text.Encodings.Web;
 
-using static Xpandables.Net.Http.MapRest;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Pipelines;
+
+using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
@@ -25,26 +28,29 @@ namespace Xpandables.Net.Http.Builders.Requests;
 /// Builds the query string for a REST request based on the provided context. Updates the request URI with the
 /// constructed query string.
 /// </summary>
-public sealed class RestRequestQueryStringBuilder : RestRequestBuilder<IRestContentQueryString>
+public sealed class RestQueryStringBuilder<TRestRequest> :
+    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+    where TRestRequest : class, IRestQueryString
 {
-    ///<inheritdoc/>
-    public override void Build(RestRequestContext context)
+    /// <inheritdoc/>
+    protected override Task<ExecutionResult> HandleCoreAsync(
+        RestRequestContext<TRestRequest> request,
+        RequestHandler<ExecutionResult> next,
+        CancellationToken cancellationToken = default)
     {
-        if ((context.Attribute.Location & Location.Query) != Location.Query)
+        if ((request.Attribute.Location & Location.Query) == Location.Query)
         {
-            return;
+            IDictionary<string, string?>? queryString = request.Request.GetQueryString();
+
+            string path = request.Attribute.Path
+                ?? request.Message.RequestUri!.AbsoluteUri;
+
+            string queryStringPath = path.AddQueryString(queryString);
+
+            request.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
         }
 
-        IRestContentQueryString request = (IRestContentQueryString)context.Request;
-
-        IDictionary<string, string?>? queryString = request.GetQueryString();
-
-        string path = context.Attribute.Path
-            ?? context.Message.RequestUri!.AbsoluteUri;
-
-        string queryStringPath = path.AddQueryString(queryString);
-
-        context.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
+        return next();
     }
 }
 

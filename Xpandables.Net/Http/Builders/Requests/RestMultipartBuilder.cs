@@ -15,7 +15,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using static Xpandables.Net.Http.MapRest;
+using Xpandables.Net.Executions;
+using Xpandables.Net.Executions.Pipelines;
+
+using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
@@ -23,17 +26,23 @@ namespace Xpandables.Net.Http.Builders.Requests;
 /// Builds a multipart HTTP request body if the context specifies a body location and multipart format. It sets the
 /// request content accordingly.
 /// </summary>
-public sealed class RestRequestMultipartBuilder : RestRequestBuilder<IRestContentMultipart>
+public sealed class RestMultipartBuilder<TRestRequest> :
+    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+    where TRestRequest : class, IRestMultipart
 {
-    ///<inheritdoc/>
-    public override void Build(RestRequestContext context)
+    /// <inheritdoc/>
+    protected override Task<ExecutionResult> HandleCoreAsync(
+        RestRequestContext<TRestRequest> request,
+        RequestHandler<ExecutionResult> next,
+        CancellationToken cancellationToken = default)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-            && context.Attribute.BodyFormat == BodyFormat.Multipart)
+        if ((request.Attribute.Location & Location.Body) == Location.Body
+            && request.Attribute.BodyFormat == BodyFormat.Multipart)
         {
-            IRestContentMultipart request = (IRestContentMultipart)context.Request;
-            MultipartFormDataContent content = request.GetMultipartContent();
-            context.Message.Content = content;
+            MultipartFormDataContent content = request.Request.GetMultipartContent();
+            request.Message.Content = content;
         }
+
+        return next();
     }
 }

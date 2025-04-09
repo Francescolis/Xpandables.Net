@@ -18,6 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.Http;
 
@@ -25,7 +26,11 @@ namespace Xpandables.Net.Http;
 /// Represents an abstract HTTP response with properties for status code, headers, result, exception, version, and
 /// reason phrase.Includes methods for checking success, failure, and equality.
 /// </summary>
-public class RestResponseAbstract : Disposable
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming Styles
+public abstract class _RestResponse : Disposable
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore CA1707 // Identifiers should not contain underscores
 {
     /// <summary>
     /// Represents the HTTP status code for a response. It is a required property that can only be set during
@@ -66,20 +71,17 @@ public class RestResponseAbstract : Disposable
     /// Indicates whether the operation was successful based on the StatusCode. Returns true for status codes in the
     /// range of 200 to 299.
     /// </summary>
-    [MemberNotNullWhen(false, nameof(Exception))]
-    public bool IsSuccess => (int)StatusCode is >= 200 and <= 299;
+    public abstract bool IsSuccess { get; }
 
     /// <summary>
     /// Indicates whether an operation has failed. It returns true if the operation was not successful.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(Exception))]
-    public bool IsFailure => !IsSuccess;
+    public abstract bool IsFailure { get; }
 
     /// <summary>
-    /// Indicates whether the Result is not null and is of a type other than object. This helps determine if the Result
-    /// is a generic type.
+    /// This helps determine if the Result is a generic type.
     /// </summary>
-    public bool IsGeneric => Result is not null && Result.GetType() != typeof(object);
+    public abstract bool IsGeneric { get; }
 
     private bool _isDisposed;
 
@@ -108,8 +110,28 @@ public class RestResponseAbstract : Disposable
 /// Represents the response from a RESTful service, including status code, headers, result, exception, version, and
 /// reason phrase.
 /// </summary>
-public class RestResponse : RestResponseAbstract, IEquatable<RestResponse>
+public class RestResponse : _RestResponse, IEquatable<RestResponse>
 {
+    /// <inheritdoc/>
+    public override bool IsGeneric => false;
+
+    /// <inheritdoc/>
+    [MemberNotNullWhen(false, nameof(Exception))]
+    public override bool IsSuccess => StatusCode.IsSuccessStatusCode();
+
+    /// <inheritdoc/>
+    [MemberNotNullWhen(true, nameof(Exception))]
+    public override bool IsFailure => !IsSuccess;
+
+    /// <summary>
+    /// Allows for initialization of the Exception value.
+    /// </summary>
+    public new Exception? Exception
+    {
+        get => base.Exception;
+        init => base.Exception = value;
+    }
+
     /// <summary>
     /// Compares the current instance with another object for equality based on various properties.
     /// </summary>
@@ -150,14 +172,40 @@ public class RestResponse : RestResponseAbstract, IEquatable<RestResponse>
             Exception,
             Version,
             ReasonPhrase);
+
+    /// <summary>
+    /// Converts a RestResponse to a RestResponse of type object using an implicit operator.
+    /// </summary>
+    /// <param name="response">The converted response is used to handle generic object types.</param>
+    public static implicit operator RestResponse<object>(RestResponse response) =>
+        response.ToRestResponse<object>();
+
+    /// <summary>
+    /// Creates a new RestResponse object with the current status code, headers, result, exception, version, and reason
+    /// phrase.
+    /// </summary>
+    /// <returns>Returns a RestResponse containing the current state of the object.</returns>
+    public RestResponse<object> ToRestResponse() =>
+       new()
+       {
+           StatusCode = StatusCode,
+           Headers = Headers,
+           Result = Result,
+           Exception = Exception,
+           Version = Version,
+           ReasonPhrase = ReasonPhrase
+       };
 }
 
 /// <summary>
 /// Represents a response from a REST operation, encapsulating a result and potential exceptions.
 /// </summary>
 /// <typeparam name="TResult">This type parameter defines the expected type of the result returned from the REST operation.</typeparam>
-public class RestResponse<TResult> : RestResponseAbstract, IEquatable<RestResponse<TResult>>
+public class RestResponse<TResult> : _RestResponse, IEquatable<RestResponse<TResult>>
 {
+    /// <inheritdoc/>
+    public override bool IsGeneric => true;
+
     /// <summary>
     /// Gets the result of type TResult or returns the default value if not available. Allows setting the result during
     /// initialization.
@@ -182,14 +230,14 @@ public class RestResponse<TResult> : RestResponseAbstract, IEquatable<RestRespon
     /// </summary>
     [MemberNotNullWhen(true, nameof(Result))]
     [MemberNotNullWhen(false, nameof(Exception))]
-    public new bool IsSuccess => base.IsSuccess;
+    public override bool IsSuccess => StatusCode.IsSuccessStatusCode();
 
     /// <summary>
     /// Indicates whether the operation has failed. Returns true if there is an exception, false if there is a result.
     /// </summary>
     [MemberNotNullWhen(false, nameof(Result))]
     [MemberNotNullWhen(true, nameof(Exception))]
-    public new bool IsFailure => base.IsFailure;
+    public override bool IsFailure => !IsSuccess;
 
     /// <summary>
     /// Compares the current instance with another object for equality.

@@ -5,12 +5,12 @@ using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
-[MapGet("/accounts/balance")]
-public sealed record GetBalanceAccountRequest : IRestRequest<int>, IRestContentQueryString, IValidationEnabled
+[RestGet("/accounts/balance")]
+public sealed record GetBalanceAccountRequest : IRestQueryString, IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }
 
-    IDictionary<string, string?>? IRestContentQueryString.GetQueryString() =>
+    IDictionary<string, string?>? IRestQueryString.GetQueryString() =>
         new Dictionary<string, string?> { [nameof(KeyId)] = KeyId.ToString() };
 }
