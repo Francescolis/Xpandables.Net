@@ -14,15 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.Extensions.Options;
-
 using Xpandables.Net.Http.Builders;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;
 
 /// <summary>
-/// Asynchronously builds a response from an HTTP response message. It returns a task containing the constructed
-/// response.
+/// Asynchronously builds a response from an HTTP response message. 
+/// It returns a task containing the constructed response.
 /// </summary>
 /// <typeparam name="TRestRequest"> The type of the REST request.</typeparam>
 public interface IRestResponseHandler<TRestRequest>
@@ -31,37 +30,32 @@ public interface IRestResponseHandler<TRestRequest>
     /// <summary>
     /// Asynchronously builds a response based on the provided HTTP response message.
     /// </summary>
+    /// <param name="request"> The REST request object used to create the response.</param>
     /// <param name="response">The HTTP response message used to create the response object.</param>
     /// <param name="cancellationToken">Used to signal the cancellation of the asynchronous operation.</param>
     /// <returns>Returns a task that represents the asynchronous operation, containing the constructed response.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="response"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the operation fails.</exception>
-    Task<RestResponse> BuildResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken = default);
+    Task<RestResponse> BuildResponseAsync(TRestRequest request, HttpResponseMessage response, CancellationToken cancellationToken = default);
 }
 
-internal sealed class RestResponseHandler<TRestRequest> : Disposable, IRestResponseHandler<TRestRequest>
+internal sealed class RestResponseHandler<TRestRequest>(IRestResponseBuilder<TRestRequest> responseBuilder) :
+    IRestResponseHandler<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
-    private RestOptions _requestOptions;
-    private readonly IDisposable? _disposable;
-    private readonly IRestResponseBuilder<TRestRequest> _responseBuilder;
-    public RestResponseHandler(IOptionsMonitor<RestOptions> options, IRestResponseBuilder<TRestRequest> responseBuilder)
-    {
-        _requestOptions = options.CurrentValue;
-        _disposable = options.OnChange(newOptions => _requestOptions = newOptions);
-        _responseBuilder = responseBuilder;
-    }
+    private readonly IRestResponseBuilder<TRestRequest> _responseBuilder = responseBuilder;
 
     ///<inheritdoc/>
     public async Task<RestResponse> BuildResponseAsync(
-        HttpResponseMessage response, CancellationToken cancellationToken = default)
+        TRestRequest request, HttpResponseMessage response, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(response);
 
         RestResponseContext<TRestRequest> context = new()
         {
+            Request = request,
             Message = response,
-            SerializerOptions = _requestOptions.SerializerOptions
+            SerializerOptions = DefaultSerializerOptions.Defaults
         };
 
         try
@@ -78,15 +72,5 @@ internal sealed class RestResponseHandler<TRestRequest> : Disposable, IRestRespo
                 "The response builder failed to build the response.",
                 exception);
         }
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _disposable?.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 }

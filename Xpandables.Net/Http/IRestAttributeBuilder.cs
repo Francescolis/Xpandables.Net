@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +14,18 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.Extensions.Options;
-
 namespace Xpandables.Net.Http;
-/// <summary>
-/// Configures the <see cref="RestOptions"/> for the application.
-/// </summary>
-/// <remarks>
-/// Initializes a new instance of the <see cref="RestOptionsConfiguration"/> class.
-/// </remarks>
-/// <param name="provider">The service provider.</param>
-public sealed class RestOptionsConfiguration(IServiceProvider provider) : IConfigureOptions<RestOptions>
-{
-    private readonly IServiceProvider _provider = provider;
 
-    /// <inheritdoc/>
-    public void Configure(RestOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-        options.Resolver = _provider.GetService;
-    }
+/// <summary>
+/// Defines a builder for creating <see cref="RestAttribute"/> at runtime.
+/// </summary>
+/// <remarks>This interface take priority over the static <see cref="RestAttribute"/>.</remarks>
+public interface IRestAttributeBuilder
+{
+    /// <summary>
+    /// Creates a RestAttribute instance using the provided service provider.
+    /// </summary>
+    /// <param name="serviceProvider">An object that provides access to application services.</param>
+    /// <returns>An instance of RestAttribute configured with the specified services.</returns>
+    RestAttribute Build(IServiceProvider serviceProvider);
 }

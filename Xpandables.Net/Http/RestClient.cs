@@ -55,7 +55,7 @@ public sealed class RestClient(IServiceProvider serviceProvider, HttpClient http
                 .GetRequiredService<IRestResponseHandler<TRestRequest>>();
 
             return await responseHandler
-                .BuildResponseAsync(response, cancellationToken)
+                .BuildResponseAsync(request, response, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)

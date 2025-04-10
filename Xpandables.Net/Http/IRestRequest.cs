@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 
@@ -35,14 +36,34 @@ public interface IRestRequest
     /// This is typically the class name.
     /// </summary>
     public string Name => GetType().Name;
+
+    /// <summary>
+    /// Returns the default value of the ResultType, which can be null. 
+    /// It indicates the type of the result.
+    /// </summary>
+    public Type? ResultType => default;
+
+    /// <summary>
+    /// Indicates whether the request is a stream.
+    /// </summary>
+    public bool IsRequestStream => false;
 }
 
 /// <summary>
-/// Defines a contract for REST requests that return a specific response type.
+/// Defines a contract for REST requests that return a specific result type.
 /// </summary>
-/// <typeparam name="TResponse">Represents the class type of the response expected from the REST request.</typeparam>
-public interface IRestRequest<TResponse> : IRestRequest
-    where TResponse : class;
+/// <typeparam name="TResult">Represents the class type of the result expected from the REST request.</typeparam>
+public interface IRestRequest<TResult> : IRestRequest
+    where TResult : class
+{   /// <summary>
+    /// Returns the default value of the ResultType, which can be null. 
+    /// It indicates the type of the result.
+    /// </summary>
+    public new Type? ResultType => typeof(TResult);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type? IRestRequest.ResultType => typeof(TResult);
+}
 
 /// <summary>
 /// Defines a contract for a request that streams data and returns a result of a specified type.
@@ -51,7 +72,25 @@ public interface IRestRequest<TResponse> : IRestRequest
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public interface IRestRequestStream<TResult> : IRestRequest
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TResult : notnull;
+    where TResult : notnull
+{
+    /// <summary>
+    /// Returns the default value of the ResultType, which can be null. 
+    /// It indicates the type of the result.
+    /// </summary>
+    public new Type? ResultType => typeof(TResult);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type? IRestRequest.ResultType => ResultType;
+
+    /// <summary>
+    /// Indicates whether the request stream is available.
+    /// </summary>
+    public new bool IsRequestStream => true;
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    bool IRestRequest.IsRequestStream => IsRequestStream;
+}
 
 /// <summary>
 /// Define the base contract for all REST contexts.

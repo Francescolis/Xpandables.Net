@@ -29,8 +29,7 @@ public sealed class HttpClientRequestStreamTest
         // Arrange
         var services = new ServiceCollection();
 
-        services.Configure<RestOptions>(RestOptions.Default);
-        services.AddXRestOptions();
+        services.AddXRestAttibuteProvider();
         services.AddXRestRequestBuilders();
         services.AddXRestResponseBuilders();
         services.AddXRestRequestHandler();

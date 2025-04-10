@@ -25,6 +25,11 @@ public sealed class RestResponseContext<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
     /// <summary>
+    /// Represents a required REST request object. It is initialized at the time of object creation.
+    /// </summary>
+    public required TRestRequest Request { get; init; }
+
+    /// <summary>
     /// Represents an HTTP response message. It is a required property that must be initialized.
     /// </summary>
     public required HttpResponseMessage Message { get; init; }

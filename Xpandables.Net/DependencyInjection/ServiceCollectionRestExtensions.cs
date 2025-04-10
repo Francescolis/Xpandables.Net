@@ -16,7 +16,6 @@
  *
 ********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Http;
 using Xpandables.Net.Http.Builders;
@@ -31,14 +30,13 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionRestExtensions
 {
     /// <summary>
-    /// Registers the <see cref="RestOptions"/> configuration to 
-    /// the services.
+    /// Registers a singleton implementation of IRestAttributeProvider in the service collection.
     /// </summary>
-    /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
-    public static IServiceCollection AddXRestOptions(
+    /// <param name="services">The collection of services to which the singleton implementation is added.</param>
+    /// <returns>The updated service collection with the new singleton service registered.</returns>
+    public static IServiceCollection AddXRestAttibuteProvider(
         this IServiceCollection services)
-        => services.AddTransient<IConfigureOptions<RestOptions>, RestOptionsConfiguration>();
+        => services.AddSingleton<IRestAttributeProvider, RestAttributeProvider>();
 
     /// <summary>
     /// Registers the default <see cref="RestRequestHandler{TRestRequest}"/> implementation to the services.

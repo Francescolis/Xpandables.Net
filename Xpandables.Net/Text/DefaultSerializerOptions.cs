@@ -25,9 +25,10 @@ namespace Xpandables.Net.Text;
 public static class DefaultSerializerOptions
 {
     /// <summary>
-    /// Gets the default <see cref="JsonSerializerOptions"/> to be used.
+    /// Provides default options for JSON serialization, including case insensitivity and indented formatting. It also
+    /// includes a converter for enum values.
     /// </summary>
-    public static readonly JsonSerializerOptions Defaults =
+    public static JsonSerializerOptions Defaults { get; set; } =
         new(JsonSerializerDefaults.Web)
         {
             PropertyNameCaseInsensitive = true,

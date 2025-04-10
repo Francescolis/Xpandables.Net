@@ -14,11 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.Extensions.Options;
-
 using Xpandables.Net.Executions;
 using Xpandables.Net.Executions.Pipelines;
 using Xpandables.Net.Http.Builders;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;
 
@@ -26,7 +25,7 @@ namespace Xpandables.Net.Http;
 /// Asynchronously builds an HTTP request message from a provided REST request. 
 /// It can be canceled using a cancellation token.
 /// </summary>
-public interface IRestRequestHandler<TRestRequest>
+public interface IRestRequestHandler<TRestRequest> : IDisposable
     where TRestRequest : class, IRestRequest
 {
     /// <summary>
@@ -40,28 +39,21 @@ public interface IRestRequestHandler<TRestRequest>
     Task<HttpRequestMessage> BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default);
 }
 
-internal sealed class RestRequestHandler<TRestRequest> : Disposable, IRestRequestHandler<TRestRequest>
+internal sealed class RestRequestHandler<TRestRequest>(
+    IRestAttributeProvider attributeProvider,
+    IEnumerable<IRestRequestBuilder<TRestRequest>> requestBuilders) : Disposable, IRestRequestHandler<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
-    private RestOptions _requestOptions;
-    private readonly IDisposable? _disposable;
     private readonly HttpRequestMessage _message = new();
-    private readonly IEnumerable<IRestRequestBuilder<TRestRequest>> _requestBuilders;
-    public RestRequestHandler(
-        IOptionsMonitor<RestOptions> options,
-        IEnumerable<IRestRequestBuilder<TRestRequest>> requestBuilders)
-    {
-        _requestOptions = options.CurrentValue;
-        _requestBuilders = requestBuilders;
-        _disposable = options.OnChange(newOptions => _requestOptions = newOptions);
-    }
+    private readonly IRestAttributeProvider _attributeProvider = attributeProvider;
+    private readonly IEnumerable<IRestRequestBuilder<TRestRequest>> _requestBuilders = requestBuilders;
 
     ///<inheritdoc/>
     public Task<HttpRequestMessage> BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        _RestAttribute attribute = _requestOptions.GetMapRestAttribute(request);
+        _RestAttribute attribute = _attributeProvider.GetRestAttribute(request);
 
         if (cancellationToken.IsCancellationRequested)
             return Task.FromCanceled<HttpRequestMessage>(cancellationToken);
@@ -75,7 +67,7 @@ internal sealed class RestRequestHandler<TRestRequest> : Disposable, IRestReques
             Attribute = attribute,
             Message = _message,
             Request = request,
-            SerializerOptions = _requestOptions.SerializerOptions
+            SerializerOptions = DefaultSerializerOptions.Defaults
         };
 
         try
@@ -108,7 +100,6 @@ internal sealed class RestRequestHandler<TRestRequest> : Disposable, IRestReques
     {
         if (disposing)
         {
-            _disposable?.Dispose();
             _message?.Dispose();
         }
 

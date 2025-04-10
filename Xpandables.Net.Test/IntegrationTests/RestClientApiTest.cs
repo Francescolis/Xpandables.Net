@@ -22,8 +22,7 @@ public sealed class RestClientApiTest : IClassFixture<WebApplicationFactory<Prog
     {
         var services = new ServiceCollection();
 
-        services.Configure<RestOptions>(RestOptions.Default);
-        services.AddXRestOptions();
+        services.AddXRestAttibuteProvider();
         services.AddXRestRequestHandler();
         services.AddXRestResponseHandler();
         services.AddSingleton(factory.CreateClient());

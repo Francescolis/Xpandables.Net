@@ -36,6 +36,7 @@ public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRe
 
         HttpResponseMessage response = context.Message;
         JsonSerializerOptions options = context.SerializerOptions;
+        TRestRequest request = context.Request;
 
         try
         {
@@ -75,11 +76,7 @@ public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRe
                 };
             }
 
-            // Determine request type
-            bool isRestRequestResult = typeof(TRestRequest).GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRestRequest<>));
-            bool isRestRequestStreamResult = typeof(TRestRequest).GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRestRequestStream<>));
-
-            if (isRestRequestResult)
+            if (request.ResultType is { } resultType && !request.IsRequestStream)
             {
                 string stringContent = await response.Content
                     .ReadAsStringAsync(cancellationToken)
@@ -97,10 +94,6 @@ public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRe
                 }
 
                 // Deserialize to the specific type requested
-                Type resultType = typeof(TRestRequest)
-                    .GetInterfaces()
-                    .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRestRequest<>))
-                    .GetGenericArguments()[0];
                 object? typedResult = JsonSerializer.Deserialize(stringContent, resultType, options);
 
                 return new RestResponse
@@ -113,7 +106,7 @@ public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRe
                 };
             }
 
-            if (isRestRequestStreamResult)
+            if (request.ResultType is { } streamType && request.IsRequestStream)
             {
                 Stream stream = await response.Content
                     .ReadAsStreamAsync(cancellationToken)
@@ -131,12 +124,7 @@ public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRe
                 }
 
                 // Deserialize to the specific type requested
-                Type resultType = typeof(TRestRequest)
-                    .GetInterfaces()
-                    .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRestRequestStream<>))
-                    .GetGenericArguments()[0];
-
-                object typedResult = stream.DeserializeAsyncEnumerableAsync(resultType, options, cancellationToken);
+                object typedResult = stream.DeserializeAsyncEnumerableAsync(streamType, options, cancellationToken);
 
                 return new RestResponse
                 {
@@ -145,6 +133,62 @@ public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRe
                     Headers = response.Headers.ToElementCollection(),
                     Version = response.Version,
                     Result = typedResult
+                };
+            }
+
+            string contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+
+            if (IsBinaryContentType(contentType))
+            {
+                Stream stream = await response.Content
+                    .ReadAsStreamAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (stream is null)
+                {
+                    return new RestResponse
+                    {
+                        StatusCode = response.StatusCode,
+                        ReasonPhrase = response.ReasonPhrase,
+                        Headers = response.Headers.ToElementCollection(),
+                        Version = response.Version
+                    };
+                }
+
+                return new RestResponse
+                {
+                    StatusCode = response.StatusCode,
+                    ReasonPhrase = response.ReasonPhrase,
+                    Headers = response.Headers.ToElementCollection(),
+                    Version = response.Version,
+                    Result = stream
+                };
+            }
+
+            if (IsTextContentType(contentType))
+            {
+                string stringContent = await response.Content
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (string.IsNullOrEmpty(stringContent))
+                {
+                    return new RestResponse
+                    {
+                        StatusCode = response.StatusCode,
+                        ReasonPhrase = response.ReasonPhrase,
+                        Headers = response.Headers.ToElementCollection(),
+                        Version = response.Version
+                    };
+                }
+
+                return new RestResponse
+                {
+                    StatusCode = response.StatusCode,
+                    ReasonPhrase = response.ReasonPhrase,
+                    Headers = response.Headers.ToElementCollection(),
+                    Version = response.Version,
+                    Result = stringContent
                 };
             }
 
@@ -174,4 +218,25 @@ public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRe
             };
         }
     }
+
+    private static bool IsBinaryContentType(string contentType) =>
+        contentType.Contains("application/octet-stream", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("image/", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("audio/", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("video/", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/pdf", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/zip", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/x-7z-compressed", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/x-msdownload", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/vnd.ms-", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/vnd.openxmlformats-", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsTextContentType(string contentType) =>
+        contentType.Contains("text/", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/xml", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/javascript", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/xhtml+xml", StringComparison.OrdinalIgnoreCase) ||
+        contentType.Contains("application/atom+xml", StringComparison.OrdinalIgnoreCase);
 }

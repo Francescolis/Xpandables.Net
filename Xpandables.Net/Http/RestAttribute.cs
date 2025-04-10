@@ -27,7 +27,7 @@ namespace Xpandables.Net.Http;
 /// in order to be used with <see cref="IRestClient"/>.
 /// </summary>
 /// <remarks>
-/// Your class can implement the <see cref="IRestProvider"/>
+/// Your class can implement the <see cref="IRestAttributeBuilder"/>
 /// to dynamically return a <see cref="_RestAttribute"/>.</remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
     Inherited = false, AllowMultiple = false)]
@@ -113,7 +113,7 @@ public abstract class _RestAttribute : Attribute
 /// in order to be used with <see cref="IRestClient"/>.
 /// </summary>
 /// <remarks>
-/// Your class can implement the <see cref="IRestProvider"/>
+/// Your class can implement the <see cref="IRestAttributeBuilder"/>
 /// to dynamically return a <see cref="RestAttribute"/>.</remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
     Inherited = false, AllowMultiple = false)]

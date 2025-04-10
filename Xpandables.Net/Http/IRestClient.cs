@@ -36,7 +36,7 @@ public interface IRestClient
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task representing the asynchronous operation, with a response as the result.</returns>
     /// <remarks>Make use of <see langword="using"/> keyword when calling this method.
-    /// The request must be decorated with one of the <see cref="RestAttribute"/> or implement the <see cref="IRestProvider"/> interface.</remarks>
+    /// The request must be decorated with one of the <see cref="RestAttribute"/> or implement the <see cref="IRestAttributeBuilder"/> interface.</remarks>
     Task<RestResponse> SendAsync<TRestRequest>(TRestRequest request, CancellationToken cancellationToken = default)
         where TRestRequest : class, IRestRequest;
 }
