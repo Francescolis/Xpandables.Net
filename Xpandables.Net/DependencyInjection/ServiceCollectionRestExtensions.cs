@@ -18,9 +18,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Http;
-using Xpandables.Net.Http.Builders;
-using Xpandables.Net.Http.Builders.Requests;
-using Xpandables.Net.Http.Builders.Responses;
+using Xpandables.Net.Http.Requests;
+using Xpandables.Net.Http.Responses;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>

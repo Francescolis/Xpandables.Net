@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.Net.Http.Headers;
 
-using Xpandables.Net.Http.Builders;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;

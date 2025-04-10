@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-namespace Xpandables.Net.Http.Builders.Responses;
+namespace Xpandables.Net.Http.Responses;
 
 /// <summary>
 /// Composes a a NoContent RestResponse asynchronously using the provided RestResponseContext.

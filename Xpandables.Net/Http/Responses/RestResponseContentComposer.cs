@@ -17,7 +17,7 @@
 
 using System.Text.Json;
 
-namespace Xpandables.Net.Http.Builders.Responses;
+namespace Xpandables.Net.Http.Responses;
 
 /// <summary>
 /// Compose a generic content RestResponse asynchronously using the provided RestResponseContext.

@@ -19,7 +19,7 @@ using System.Text.Encodings.Web;
 
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// Composes the query string for a REST request based on the provided context. Updates the request URI with the

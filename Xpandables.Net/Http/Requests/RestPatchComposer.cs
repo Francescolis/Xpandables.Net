@@ -20,7 +20,7 @@ using System.Text.Json;
 
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// Composes the HTTP request body for a PATCH operation based on the provided context. It serializes patch operations

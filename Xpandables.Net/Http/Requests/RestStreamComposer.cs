@@ -17,23 +17,39 @@
 ********************************************************************************/
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// Composes a multipart HTTP request body if the context specifies a body location and multipart format. It sets the
-/// request content accordingly.
+/// Composes the request content for HTTP requests based on the provided context. It handles stream content and multipart
+/// form data.
 /// </summary>
-public sealed class RestMultipartComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestMultipart
+public sealed class RestStreamComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
+    where TRestRequest : class, IRestStream
 {
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
         if ((context.Attribute.Location & Location.Body) == Location.Body
-            && context.Attribute.BodyFormat == BodyFormat.Multipart)
+            || context.Attribute.BodyFormat == BodyFormat.Stream)
         {
-            MultipartFormDataContent content = context.Request.GetMultipartContent();
-            context.Message.Content = content;
+            StreamContent streamContent = context.Request.GetStreamContent();
+
+            if (context.Message.Content is MultipartFormDataContent multiPartcontent)
+            {
+                if (context.Request is IRestMultipart)
+                {
+                    multiPartcontent.Add(streamContent);
+                }
+                else
+                {
+                    multiPartcontent.Add(streamContent);
+                    context.Message.Content = multiPartcontent;
+                }
+            }
+            else
+            {
+                context.Message.Content = streamContent;
+            }
         }
     }
 }

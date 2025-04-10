@@ -14,27 +14,31 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Http.Headers;
-
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// Composes the authorization header for basic authentication in a REST request. It checks the context for basic
-/// authentication location.
+/// Composes cookies from the request context if the location is set to Cookie. 
+/// It adds each cookie to the message options.
 /// </summary>
-public sealed class RestBasicAuthComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestBasicAuthentication
+public sealed class RestCookieComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
+    where TRestRequest : class, IRestCookie
 {
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.BasicAuth) == Location.BasicAuth)
+        if ((context.Attribute.Location & Location.Cookie) == Location.Cookie)
         {
-            AuthenticationHeaderValue value = context.Request.GetAuthenticationHeaderValue();
 
-            context.Message.Headers.Authorization = value;
+            IDictionary<string, object?> cookieSource
+                 = context.Request.GetCookieHeaderValue();
+
+            foreach (KeyValuePair<string, object?> parameter in cookieSource)
+            {
+                _ = context.Message.Options
+                    .TryAdd(parameter.Key, parameter.Value);
+            }
         }
     }
 }

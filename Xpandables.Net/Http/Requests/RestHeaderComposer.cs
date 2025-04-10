@@ -18,7 +18,7 @@ using Xpandables.Net.Collections;
 
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// Composes HTTP request headers from a given RestRequestContext. It adds headers based on the request's model name or

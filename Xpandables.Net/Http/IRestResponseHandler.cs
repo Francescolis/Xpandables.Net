@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Http.Builders;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Http;

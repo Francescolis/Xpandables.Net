@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +14,35 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Text;
+using System.Text.Json;
+
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// Composes the HTTP request body as URL-encoded form data based on the request context. It adds the content to the
-/// message or a multipart form.
+/// Composes the request content for a REST API call based on the provided context. It serializes string content and adds
+/// it to the request message.
 /// </summary>
-public sealed class RestFormUrlEncodedComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestFormUrlEncoded
+public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
+    where TRestRequest : class, IRestString
 {
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
         if ((context.Attribute.Location & Location.Body) == Location.Body
-            && context.Attribute.BodyFormat == BodyFormat.FormUrlEncoded)
+            || context.Attribute.BodyFormat == BodyFormat.String)
         {
-            FormUrlEncodedContent content = context.Request.GetFormUrlEncodedContent();
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            StringContent content = new(
+                JsonSerializer.Serialize(
+                    context.Request.GetStringContent(),
+                    context.SerializerOptions),
+                Encoding.UTF8,
+                context.Attribute.ContentType);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             if (context.Message.Content is MultipartFormDataContent multipart)
             {

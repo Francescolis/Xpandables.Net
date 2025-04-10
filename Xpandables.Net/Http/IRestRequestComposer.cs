@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Http.Builders;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines a contract to compose <see cref="HttpRequestMessage"/> from the request context.

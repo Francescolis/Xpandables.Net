@@ -14,33 +14,27 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net.Http.Headers;
+
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// Composes the HTTP request body as a byte array based on the provided context. It handles both multipart and single
-/// content types.
+/// Composes the authorization header for basic authentication in a REST request. It checks the context for basic
+/// authentication location.
 /// </summary>
-public sealed class RestByteArrayComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestByteArray
+public sealed class RestBasicAuthComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
+    where TRestRequest : class, IRestBasicAuthentication
 {
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-             && context.Attribute.BodyFormat == BodyFormat.ByteArray)
+        if ((context.Attribute.Location & Location.BasicAuth) == Location.BasicAuth)
         {
-            ByteArrayContent byteArray = context.Request.GetByteArrayContent();
+            AuthenticationHeaderValue value = context.Request.GetAuthenticationHeaderValue();
 
-            if (context.Message.Content is MultipartFormDataContent multipart)
-            {
-                multipart.Add(byteArray);
-            }
-            else
-            {
-                context.Message.Content = byteArray;
-            }
+            context.Message.Headers.Authorization = value;
         }
     }
 }

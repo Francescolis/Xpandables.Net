@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,29 +17,23 @@
 ********************************************************************************/
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// Composes cookies from the request context if the location is set to Cookie. 
-/// It adds each cookie to the message options.
+/// Composes a multipart HTTP request body if the context specifies a body location and multipart format. It sets the
+/// request content accordingly.
 /// </summary>
-public sealed class RestCookieComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestCookie
+public sealed class RestMultipartComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
+    where TRestRequest : class, IRestMultipart
 {
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Cookie) == Location.Cookie)
+        if ((context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.Multipart)
         {
-
-            IDictionary<string, object?> cookieSource
-                 = context.Request.GetCookieHeaderValue();
-
-            foreach (KeyValuePair<string, object?> parameter in cookieSource)
-            {
-                _ = context.Message.Options
-                    .TryAdd(parameter.Key, parameter.Value);
-            }
+            MultipartFormDataContent content = context.Request.GetMultipartContent();
+            context.Message.Content = content;
         }
     }
 }

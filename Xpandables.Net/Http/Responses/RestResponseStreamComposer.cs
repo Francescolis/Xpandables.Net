@@ -15,44 +15,56 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Executions;
+using System.Text.Json;
 
-namespace Xpandables.Net.Http.Builders.Responses;
+namespace Xpandables.Net.Http.Responses;
 
 /// <summary>
-/// Composes a failure RestResponse asynchronously using the provided RestResponseContext.
+/// Composes a stream RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
 /// <typeparam name="TRestRequest"> The type of the REST request.</typeparam> 
-public sealed class RestResponseFailureComposer<TRestRequest> : IRestResponseComposer<TRestRequest>
+public sealed class RestResponseStreamComposer<TRestRequest> : IRestResponseComposer<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public bool CanCompose(RestResponseContext<TRestRequest> context) =>
-        context.Message.IsSuccessStatusCode == false;
+            context.Message.IsSuccessStatusCode
+            && context.Request.ResultType is not null
+            && context.Request.IsRequestStream;
 
     /// <inheritdoc/>
     public async ValueTask<RestResponse> ComposeAsync(
         RestResponseContext<TRestRequest> context, CancellationToken cancellationToken = default)
     {
         HttpResponseMessage response = context.Message;
+        JsonSerializerOptions options = context.SerializerOptions;
+        TRestRequest request = context.Request;
 
         if (!CanCompose(context))
             throw new InvalidOperationException(
-                $"{nameof(ComposeAsync)}: The response is not a failure. " +
+                $"{nameof(ComposeAsync)}: The response is not a success. " +
                 $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
 
         try
         {
-            string? errorContent = default;
-            if (response.Content is not null)
+            Type streamType = request.ResultType!;
+
+            Stream stream = await response.Content
+                .ReadAsStreamAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (stream is null)
             {
-                errorContent = await response.Content
-                    .ReadAsStringAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                return new RestResponse
+                {
+                    StatusCode = response.StatusCode,
+                    ReasonPhrase = response.ReasonPhrase,
+                    Headers = response.Headers.ToElementCollection(),
+                    Version = response.Version
+                };
             }
 
-            errorContent = $"Response status code does not indicate success: " +
-                $"{(int)response.StatusCode} ({response.ReasonPhrase}). {errorContent}";
+            object typedResult = stream.DeserializeAsyncEnumerableAsync(streamType, options, cancellationToken);
 
             return new RestResponse
             {
@@ -60,7 +72,7 @@ public sealed class RestResponseFailureComposer<TRestRequest> : IRestResponseCom
                 ReasonPhrase = response.ReasonPhrase,
                 Headers = response.Headers.ToElementCollection(),
                 Version = response.Version,
-                Exception = response.StatusCode.GetAppropriateException(errorContent)
+                Result = typedResult
             };
         }
         catch (Exception exception)

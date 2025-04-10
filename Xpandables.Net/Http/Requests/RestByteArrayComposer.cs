@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,38 +16,30 @@
 ********************************************************************************/
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
-/// Composes the request content for HTTP requests based on the provided context. It handles stream content and multipart
-/// form data.
+/// Composes the HTTP request body as a byte array based on the provided context. It handles both multipart and single
+/// content types.
 /// </summary>
-public sealed class RestStreamComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestStream
+public sealed class RestByteArrayComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
+    where TRestRequest : class, IRestByteArray
 {
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
         if ((context.Attribute.Location & Location.Body) == Location.Body
-            || context.Attribute.BodyFormat == BodyFormat.Stream)
+             && context.Attribute.BodyFormat == BodyFormat.ByteArray)
         {
-            StreamContent streamContent = context.Request.GetStreamContent();
+            ByteArrayContent byteArray = context.Request.GetByteArrayContent();
 
-            if (context.Message.Content is MultipartFormDataContent multiPartcontent)
+            if (context.Message.Content is MultipartFormDataContent multipart)
             {
-                if (context.Request is IRestMultipart)
-                {
-                    multiPartcontent.Add(streamContent);
-                }
-                else
-                {
-                    multiPartcontent.Add(streamContent);
-                    context.Message.Content = multiPartcontent;
-                }
+                multipart.Add(byteArray);
             }
             else
             {
-                context.Message.Content = streamContent;
+                context.Message.Content = byteArray;
             }
         }
     }

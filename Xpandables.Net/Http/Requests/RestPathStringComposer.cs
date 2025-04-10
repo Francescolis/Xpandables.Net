@@ -16,7 +16,7 @@
 ********************************************************************************/
 using static Xpandables.Net.Http.Rest;
 
-namespace Xpandables.Net.Http.Builders.Requests;
+namespace Xpandables.Net.Http.Requests;
 
 /// <summary>
 /// Composes a request URI by adding path string parameters from the request context. It modifies the base path with

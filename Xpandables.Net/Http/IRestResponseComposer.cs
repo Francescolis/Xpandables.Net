@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Http.Builders;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines method to compose <see cref="RestResponse"/> and <see cref="RestResponse{TResult}"/>.
