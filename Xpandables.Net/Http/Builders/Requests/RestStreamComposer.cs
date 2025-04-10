@@ -15,50 +15,41 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
-
 using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
 /// <summary>
-/// Builds the request content for HTTP requests based on the provided context. It handles stream content and multipart
+/// Composes the request content for HTTP requests based on the provided context. It handles stream content and multipart
 /// form data.
 /// </summary>
-public sealed class RestStreamBuilder<TRestRequest> :
-    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+public sealed class RestStreamComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestStream
 {
     /// <inheritdoc/>
-    protected override Task<ExecutionResult> HandleCoreAsync(
-        RestRequestContext<TRestRequest> request,
-        RequestHandler<ExecutionResult> next,
-        CancellationToken cancellationToken = default)
+    public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((request.Attribute.Location & Location.Body) == Location.Body
-            || request.Attribute.BodyFormat == BodyFormat.Stream)
+        if ((context.Attribute.Location & Location.Body) == Location.Body
+            || context.Attribute.BodyFormat == BodyFormat.Stream)
         {
-            StreamContent streamContent = request.Request.GetStreamContent();
+            StreamContent streamContent = context.Request.GetStreamContent();
 
-            if (request.Message.Content is MultipartFormDataContent multiPartcontent)
+            if (context.Message.Content is MultipartFormDataContent multiPartcontent)
             {
-                if (request.Request is IRestMultipart)
+                if (context.Request is IRestMultipart)
                 {
                     multiPartcontent.Add(streamContent);
                 }
                 else
                 {
                     multiPartcontent.Add(streamContent);
-                    request.Message.Content = multiPartcontent;
+                    context.Message.Content = multiPartcontent;
                 }
             }
             else
             {
-                request.Message.Content = streamContent;
+                context.Message.Content = streamContent;
             }
         }
-
-        return next();
     }
 }

@@ -15,42 +15,33 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
-
 using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
 /// <summary>
-/// Builds the HTTP request body as URL-encoded form data based on the request context. It adds the content to the
+/// Composes the HTTP request body as URL-encoded form data based on the request context. It adds the content to the
 /// message or a multipart form.
 /// </summary>
-public sealed class RestFormUrlEncodedBuilder<TRestRequest> :
-    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+public sealed class RestFormUrlEncodedComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestFormUrlEncoded
 {
     /// <inheritdoc/>
-    protected override Task<ExecutionResult> HandleCoreAsync(
-        RestRequestContext<TRestRequest> request,
-        RequestHandler<ExecutionResult> next,
-        CancellationToken cancellationToken = default)
+    public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((request.Attribute.Location & Location.Body) == Location.Body
-            && request.Attribute.BodyFormat == BodyFormat.FormUrlEncoded)
+        if ((context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.FormUrlEncoded)
         {
-            FormUrlEncodedContent content = request.Request.GetFormUrlEncodedContent();
+            FormUrlEncodedContent content = context.Request.GetFormUrlEncodedContent();
 
-            if (request.Message.Content is MultipartFormDataContent multipart)
+            if (context.Message.Content is MultipartFormDataContent multipart)
             {
                 multipart.Add(content);
             }
             else
             {
-                request.Message.Content = content;
+                context.Message.Content = content;
             }
         }
-
-        return next();
     }
 }

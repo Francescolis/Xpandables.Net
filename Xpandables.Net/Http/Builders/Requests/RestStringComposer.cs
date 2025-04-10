@@ -17,50 +17,41 @@
 using System.Text;
 using System.Text.Json;
 
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
-
 using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
 /// <summary>
-/// Builds the request content for a REST API call based on the provided context. It serializes string content and adds
+/// Composes the request content for a REST API call based on the provided context. It serializes string content and adds
 /// it to the request message.
 /// </summary>
-public sealed class RestStringBuilder<TRestRequest> :
-    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestString
 {
     /// <inheritdoc/>
-    protected override Task<ExecutionResult> HandleCoreAsync(
-        RestRequestContext<TRestRequest> request,
-        RequestHandler<ExecutionResult> next,
-        CancellationToken cancellationToken = default)
+    public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((request.Attribute.Location & Location.Body) == Location.Body
-            || request.Attribute.BodyFormat == BodyFormat.String)
+        if ((context.Attribute.Location & Location.Body) == Location.Body
+            || context.Attribute.BodyFormat == BodyFormat.String)
         {
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
             StringContent content = new(
                 JsonSerializer.Serialize(
-                    request.Request.GetStringContent(),
-                    request.SerializerOptions),
+                    context.Request.GetStringContent(),
+                    context.SerializerOptions),
                 Encoding.UTF8,
-                request.Attribute.ContentType);
+                context.Attribute.ContentType);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-            if (request.Message.Content is MultipartFormDataContent multipart)
+            if (context.Message.Content is MultipartFormDataContent multipart)
             {
                 multipart.Add(content);
             }
             else
             {
-                request.Message.Content = content;
+                context.Message.Content = content;
             }
         }
-
-        return next();
     }
 }

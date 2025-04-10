@@ -15,39 +15,33 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Collections;
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
 
 using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
 /// <summary>
-/// Builds HTTP request headers from a given RestRequestContext. It adds headers based on the request's model name or
+/// Composes HTTP request headers from a given RestRequestContext. It adds headers based on the request's model name or
 /// directly from the header source.
 /// </summary>
-public sealed class RestHeaderBuilder<TRestRequest> :
-    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+public sealed class RestHeaderComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestHeader
 {
     /// <inheritdoc/>
-    protected override Task<ExecutionResult> HandleCoreAsync(
-        RestRequestContext<TRestRequest> request,
-        RequestHandler<ExecutionResult> next,
-        CancellationToken cancellationToken = default)
+    public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((request.Attribute.Location & Location.Header) == Location.Header)
+        if ((context.Attribute.Location & Location.Header) == Location.Header)
         {
-            ElementCollection headerSource = request.Request.GetHeaders();
+            ElementCollection headerSource = context.Request.GetHeaders();
 
-            if (request.Request.GetHeaderModelName() is string modelName)
+            if (context.Request.GetHeaderModelName() is string modelName)
             {
                 string headerValue = string.Join(
                     ";",
                     headerSource
                         .Select(x => $"{x.Key},{x.Values.StringJoin(",")}"));
 
-                request.Message
+                context.Message
                     .Headers
                     .Add(modelName, headerValue);
             }
@@ -55,17 +49,15 @@ public sealed class RestHeaderBuilder<TRestRequest> :
             {
                 foreach (ElementEntry parameter in headerSource)
                 {
-                    _ = request.Message
+                    _ = context.Message
                             .Headers
                             .Remove(parameter.Key);
 
-                    request.Message
+                    context.Message
                         .Headers
                         .Add(parameter.Key, values: parameter.Values);
                 }
             }
         }
-
-        return next();
     }
 }

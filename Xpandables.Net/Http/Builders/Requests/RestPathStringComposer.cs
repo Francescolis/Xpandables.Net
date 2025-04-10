@@ -14,40 +14,31 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
-
 using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
 /// <summary>
-/// Builds a request URI by adding path string parameters from the request context. It modifies the base path with
+/// Composes a request URI by adding path string parameters from the request context. It modifies the base path with
 /// provided parameters.
 /// </summary>
-public sealed class RestPathStringBuilder<TRestRequest> :
-    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+public sealed class RestPathStringComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestPathString
 {
     /// <inheritdoc/>
-    protected override Task<ExecutionResult> HandleCoreAsync(
-        RestRequestContext<TRestRequest> request,
-        RequestHandler<ExecutionResult> next,
-        CancellationToken cancellationToken = default)
+    public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((request.Attribute.Location & Location.Path) == Location.Path)
+        if ((context.Attribute.Location & Location.Path) == Location.Path)
         {
-            IDictionary<string, string> pathString = request.Request.GetPathString();
+            IDictionary<string, string> pathString = context.Request.GetPathString();
 
             if (pathString.Count > 0)
             {
-                string path = AddPathString(request.Attribute.Path ?? request.Message.RequestUri!.AbsoluteUri, pathString);
+                string path = AddPathString(context.Attribute.Path ?? context.Message.RequestUri!.AbsoluteUri, pathString);
 
-                request.Message.RequestUri = new Uri(path, UriKind.Relative);
+                context.Message.RequestUri = new Uri(path, UriKind.Relative);
             }
         }
-
-        return next();
     }
 
     /// <summary>

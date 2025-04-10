@@ -17,125 +17,35 @@
 
 using System.Text.Json;
 
-using Xpandables.Net.Executions;
-
 namespace Xpandables.Net.Http.Builders.Responses;
 
 /// <summary>
 /// Builds a RestResponse asynchronously using the provided RestResponseContext. Supports cancellation through a token.
 /// </summary>
 /// <typeparam name="TRestRequest"> The type of the REST request.</typeparam> 
-public sealed class RestResponseBuilder<TRestRequest> : IRestResponseBuilder<TRestRequest>
+public sealed class RestResponseContentComposer<TRestRequest> : IRestResponseComposer<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
     /// <inheritdoc/>
-    public async Task<RestResponse> BuildAsync(
+    public bool CanCompose(RestResponseContext<TRestRequest> context) =>
+            context.Message.IsSuccessStatusCode
+            && context.Request.ResultType is null
+            && !context.Request.IsRequestStream;
+
+    /// <inheritdoc/>
+    public async ValueTask<RestResponse> ComposeAsync(
         RestResponseContext<TRestRequest> context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context);
-
         HttpResponseMessage response = context.Message;
         JsonSerializerOptions options = context.SerializerOptions;
         TRestRequest request = context.Request;
 
+        if (!CanCompose(context))
+            throw new InvalidOperationException(
+                $"{nameof(ComposeAsync)}: The response is not a success. " +
+                $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
         try
         {
-            // Handle unsuccessful response
-            if (!response.IsSuccessStatusCode)
-            {
-                string? errorContent = default;
-                if (response.Content is not null)
-                {
-                    errorContent = await response.Content
-                        .ReadAsStringAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                }
-
-                errorContent = $"Response status code does not indicate success: " +
-                    $"{(int)response.StatusCode} ({response.ReasonPhrase}). {errorContent}";
-
-                return new RestResponse
-                {
-                    StatusCode = response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase,
-                    Headers = response.Headers.ToElementCollection(),
-                    Version = response.Version,
-                    Exception = response.StatusCode.GetAppropriateException(errorContent)
-                };
-            }
-
-            // No content case
-            if (response.Content is null || response.Content.Headers.ContentLength == 0)
-            {
-                return new RestResponse
-                {
-                    StatusCode = response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase,
-                    Headers = response.Headers.ToElementCollection(),
-                    Version = response.Version
-                };
-            }
-
-            if (request.ResultType is { } resultType && !request.IsRequestStream)
-            {
-                string stringContent = await response.Content
-                    .ReadAsStringAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (string.IsNullOrEmpty(stringContent))
-                {
-                    return new RestResponse
-                    {
-                        StatusCode = response.StatusCode,
-                        ReasonPhrase = response.ReasonPhrase,
-                        Headers = response.Headers.ToElementCollection(),
-                        Version = response.Version
-                    };
-                }
-
-                // Deserialize to the specific type requested
-                object? typedResult = JsonSerializer.Deserialize(stringContent, resultType, options);
-
-                return new RestResponse
-                {
-                    StatusCode = response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase,
-                    Headers = response.Headers.ToElementCollection(),
-                    Version = response.Version,
-                    Result = typedResult
-                };
-            }
-
-            if (request.ResultType is { } streamType && request.IsRequestStream)
-            {
-                Stream stream = await response.Content
-                    .ReadAsStreamAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (stream is null)
-                {
-                    return new RestResponse
-                    {
-                        StatusCode = response.StatusCode,
-                        ReasonPhrase = response.ReasonPhrase,
-                        Headers = response.Headers.ToElementCollection(),
-                        Version = response.Version
-                    };
-                }
-
-                // Deserialize to the specific type requested
-                object typedResult = stream.DeserializeAsyncEnumerableAsync(streamType, options, cancellationToken);
-
-                return new RestResponse
-                {
-                    StatusCode = response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase,
-                    Headers = response.Headers.ToElementCollection(),
-                    Version = response.Version,
-                    Result = typedResult
-                };
-            }
-
             string contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
 
             if (IsBinaryContentType(contentType))

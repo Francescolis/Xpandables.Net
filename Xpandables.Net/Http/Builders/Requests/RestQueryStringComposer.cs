@@ -17,40 +17,31 @@
 using System.Text;
 using System.Text.Encodings.Web;
 
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
-
 using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
 /// <summary>
-/// Builds the query string for a REST request based on the provided context. Updates the request URI with the
+/// Composes the query string for a REST request based on the provided context. Updates the request URI with the
 /// constructed query string.
 /// </summary>
-public sealed class RestQueryStringBuilder<TRestRequest> :
-    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+public sealed class RestQueryStringComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestQueryString
 {
     /// <inheritdoc/>
-    protected override Task<ExecutionResult> HandleCoreAsync(
-        RestRequestContext<TRestRequest> request,
-        RequestHandler<ExecutionResult> next,
-        CancellationToken cancellationToken = default)
+    public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((request.Attribute.Location & Location.Query) == Location.Query)
+        if ((context.Attribute.Location & Location.Query) == Location.Query)
         {
-            IDictionary<string, string?>? queryString = request.Request.GetQueryString();
+            IDictionary<string, string?>? queryString = context.Request.GetQueryString();
 
-            string path = request.Attribute.Path
-                ?? request.Message.RequestUri!.AbsoluteUri;
+            string path = context.Attribute.Path
+                ?? context.Message.RequestUri!.AbsoluteUri;
 
             string queryStringPath = path.AddQueryString(queryString);
 
-            request.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
+            context.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
         }
-
-        return next();
     }
 }
 

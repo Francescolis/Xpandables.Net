@@ -39,11 +39,11 @@ public interface IRestResponseHandler<TRestRequest>
     Task<RestResponse> BuildResponseAsync(TRestRequest request, HttpResponseMessage response, CancellationToken cancellationToken = default);
 }
 
-internal sealed class RestResponseHandler<TRestRequest>(IRestResponseBuilder<TRestRequest> responseBuilder) :
+internal sealed class RestResponseHandler<TRestRequest>(IEnumerable<IRestResponseComposer<TRestRequest>> composers) :
     IRestResponseHandler<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
-    private readonly IRestResponseBuilder<TRestRequest> _responseBuilder = responseBuilder;
+    private readonly IEnumerable<IRestResponseComposer<TRestRequest>> _composers = composers;
 
     ///<inheritdoc/>
     public async Task<RestResponse> BuildResponseAsync(
@@ -58,10 +58,15 @@ internal sealed class RestResponseHandler<TRestRequest>(IRestResponseBuilder<TRe
             SerializerOptions = DefaultSerializerOptions.Defaults
         };
 
+        IRestResponseComposer<TRestRequest>? composer = _composers
+            .FirstOrDefault(c => c.CanCompose(context))
+            ?? throw new InvalidOperationException(
+                $"{nameof(BuildResponseAsync)}: No composer found for the provided context.");
+
         try
         {
-            return await _responseBuilder
-                .BuildAsync(context, cancellationToken)
+            return await composer
+                .ComposeAsync(context, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)

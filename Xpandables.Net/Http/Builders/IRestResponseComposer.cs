@@ -17,19 +17,26 @@
 namespace Xpandables.Net.Http.Builders;
 
 /// <summary>
-/// Defines method to build <see cref="RestResponse"/> and <see cref="RestResponse{TResult}"/>.
+/// Defines method to compose <see cref="RestResponse"/> and <see cref="RestResponse{TResult}"/>.
 /// </summary>
 /// <typeparam name="TRestRequest"> The type of the REST request.</typeparam>
-public interface IRestResponseBuilder<TRestRequest>
+public interface IRestResponseComposer<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
     /// <summary>
-    /// Asynchronously builds a response based on the provided context.
+    /// Checks if the composer can handle the provided context.
+    /// </summary>
+    /// <param name="context"> This parameter provides the necessary context for building the response.</param>
+    /// <returns>true if the composer can handle the context; otherwise, false.</returns>
+    bool CanCompose(RestResponseContext<TRestRequest> context);
+
+    /// <summary>
+    /// Composes a response based on the provided context.
     /// </summary>
     /// <param name="context">This parameter provides the necessary context for building the response.</param>
     /// <param name="cancellationToken">This parameter allows the operation to be canceled if needed.</param>
     /// <returns>The method returns a task that resolves to the generated response.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="context"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the operation fails.</exception>
-    Task<RestResponse> BuildAsync(RestResponseContext<TRestRequest> context, CancellationToken cancellationToken = default);
+    ValueTask<RestResponse> ComposeAsync(RestResponseContext<TRestRequest> context, CancellationToken cancellationToken = default);
 }

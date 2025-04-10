@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
+using System.Net.Http.Headers;
+
 using Xpandables.Net.Http.Builders;
 using Xpandables.Net.Text;
 
@@ -36,31 +36,34 @@ public interface IRestRequestHandler<TRestRequest> : IDisposable
     /// <returns>Returns a task that represents the asynchronous operation, containing the constructed HTTP request message.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the operation fails.</exception>
-    Task<HttpRequestMessage> BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default);
+    ValueTask<HttpRequestMessage> BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default);
 }
 
 internal sealed class RestRequestHandler<TRestRequest>(
     IRestAttributeProvider attributeProvider,
-    IEnumerable<IRestRequestBuilder<TRestRequest>> requestBuilders) : Disposable, IRestRequestHandler<TRestRequest>
+    IEnumerable<IRestRequestComposer<TRestRequest>> composers) : Disposable, IRestRequestHandler<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
-    private readonly HttpRequestMessage _message = new();
+    private HttpRequestMessage _message = new();
     private readonly IRestAttributeProvider _attributeProvider = attributeProvider;
-    private readonly IEnumerable<IRestRequestBuilder<TRestRequest>> _requestBuilders = requestBuilders;
+    private readonly IEnumerable<IRestRequestComposer<TRestRequest>> _composers = composers;
 
     ///<inheritdoc/>
-    public Task<HttpRequestMessage> BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default)
+    public ValueTask<HttpRequestMessage> BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         _RestAttribute attribute = _attributeProvider.GetRestAttribute(request);
 
-        if (cancellationToken.IsCancellationRequested)
-            return Task.FromCanceled<HttpRequestMessage>(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        if (!_requestBuilders.Any())
+        if (!_composers.Any())
             throw new InvalidOperationException(
                 $"No request builder found for the request type {request.GetType()}.");
+
+        _message = InitializeHttpRequestMessage(attribute);
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         RestRequestContext<TRestRequest> context = new()
         {
@@ -70,30 +73,16 @@ internal sealed class RestRequestHandler<TRestRequest>(
             SerializerOptions = DefaultSerializerOptions.Defaults
         };
 
-        try
+        foreach (IRestRequestComposer<TRestRequest> composer in _composers)
         {
-            Task<ExecutionResult> result = _requestBuilders
-                 .Reverse()
-                 .Aggregate<IPipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>,
-                 RequestHandler<ExecutionResult>>(
-                     Handler,
-                     (next, builder) => () => builder.HandleAsync(
-                         context,
-                         next,
-                         cancellationToken))();
-
-            return Task.FromResult(context.Message);
-
-            static Task<ExecutionResult> Handler() => Task.FromResult(ExecutionResults.Success());
+            composer.Compose(context);
         }
-        catch (Exception exception)
-            when (exception is not ArgumentNullException
-                and not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "An error occurred while building the request message.",
-                exception);
-        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        _message = FinalizeHttpRequestMessage(context);
+
+        return new(_message);
     }
 
     protected override void Dispose(bool disposing)
@@ -104,5 +93,48 @@ internal sealed class RestRequestHandler<TRestRequest>(
         }
 
         base.Dispose(disposing);
+    }
+
+    private static HttpRequestMessage InitializeHttpRequestMessage(_RestAttribute attribute)
+    {
+        attribute.Path ??= "/";
+        HttpRequestMessage message = new()
+        {
+            Method = new(attribute.Method.ToString()),
+            RequestUri = new(attribute.Path, UriKind.Relative)
+        };
+
+        message.Headers.Accept
+            .Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
+        message.Headers.AcceptLanguage
+            .Add(new StringWithQualityHeaderValue(
+                Thread.CurrentThread.CurrentCulture.Name));
+
+        return message;
+    }
+
+    private static HttpRequestMessage FinalizeHttpRequestMessage(RestRequestContext<TRestRequest> context)
+    {
+        if (context.Message.Content is not null)
+        {
+            context.Message.Content.Headers.ContentType
+                = new MediaTypeHeaderValue(context.Attribute.ContentType);
+        }
+
+        if (context.Attribute.IsSecured)
+        {
+            context.Message.Options
+                .Set(new(nameof(
+                    RestAttribute.IsSecured)),
+                    context.Attribute.IsSecured);
+
+            if (context.Message.Headers.Authorization is null)
+            {
+                context.Message.Headers.Authorization =
+                    new AuthenticationHeaderValue(context.Attribute.Scheme);
+            }
+        }
+
+        return context.Message;
     }
 }

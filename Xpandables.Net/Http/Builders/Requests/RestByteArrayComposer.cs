@@ -14,42 +14,33 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
-
 using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
 /// <summary>
-/// Builds the HTTP request body as a byte array based on the provided context. It handles both multipart and single
+/// Composes the HTTP request body as a byte array based on the provided context. It handles both multipart and single
 /// content types.
 /// </summary>
-public sealed class RestByteArrayBuilder<TRestRequest> :
-    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+public sealed class RestByteArrayComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestByteArray
 {
     /// <inheritdoc/>
-    protected override Task<ExecutionResult> HandleCoreAsync(
-        RestRequestContext<TRestRequest> request,
-        RequestHandler<ExecutionResult> next,
-        CancellationToken cancellationToken = default)
+    public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((request.Attribute.Location & Location.Body) == Location.Body
-             && request.Attribute.BodyFormat == BodyFormat.ByteArray)
+        if ((context.Attribute.Location & Location.Body) == Location.Body
+             && context.Attribute.BodyFormat == BodyFormat.ByteArray)
         {
-            ByteArrayContent byteArray = request.Request.GetByteArrayContent();
+            ByteArrayContent byteArray = context.Request.GetByteArrayContent();
 
-            if (request.Message.Content is MultipartFormDataContent multipart)
+            if (context.Message.Content is MultipartFormDataContent multipart)
             {
                 multipart.Add(byteArray);
             }
             else
             {
-                request.Message.Content = byteArray;
+                context.Message.Content = byteArray;
             }
         }
-
-        return next();
     }
 }

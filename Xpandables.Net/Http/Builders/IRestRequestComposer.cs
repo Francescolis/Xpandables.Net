@@ -14,13 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
-
 namespace Xpandables.Net.Http.Builders;
 
 /// <summary>
-/// Defines a contract for building REST requests.
+/// Defines a contract to compose <see cref="HttpRequestMessage"/> from the request context.
 /// </summary>
 /// <typeparam name="TRestRequest">The type of the interface
 /// implemented by the request source : <see cref="IRestBasicAuthentication"/>,
@@ -29,7 +26,12 @@ namespace Xpandables.Net.Http.Builders;
 /// <see cref="IRestMultipart"/>, <see cref="IRestPatch"/>,
 /// <see cref="IRestPathString"/>, <see cref="IRestQueryString"/>,
 /// <see cref="IRestStream"/> and <see cref="IRestString"/>.</typeparam>
-public interface IRestRequestBuilder<TRestRequest> : IPipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>
+public interface IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
+    /// <summary>
+    /// Composes the <see cref="HttpRequestMessage"/> using the request context.
+    /// </summary>
+    /// <param name="context">This parameter provides the necessary context for building the http request.</param>
+    void Compose(RestRequestContext<TRestRequest> context);
 }

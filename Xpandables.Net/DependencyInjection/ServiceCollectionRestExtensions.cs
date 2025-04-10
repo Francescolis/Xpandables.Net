@@ -55,18 +55,17 @@ public static class ServiceCollectionRestExtensions
     public static IServiceCollection AddXRestRequestBuilders(
         this IServiceCollection services) =>
         services
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestContextBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestPatchBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestQueryStringBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestCookieBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestHeaderBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestBasicAuthBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestByteArrayBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestFormUrlEncodedBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestMultipartBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestStreamBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestPatchBuilder<>))
-            .AddScoped(typeof(IRestRequestBuilder<>), typeof(RestStringBuilder<>));
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestPatchComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestQueryStringComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestCookieComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestHeaderComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestBasicAuthComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestByteArrayComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestFormUrlEncodedComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestMultipartComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestStreamComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestPatchComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestStringComposer<>));
 
     /// <summary>
     /// Registers a scoped service for building REST responses within the service collection.
@@ -76,7 +75,11 @@ public static class ServiceCollectionRestExtensions
     public static IServiceCollection AddXRestResponseBuilders(
         this IServiceCollection services) =>
         services
-            .AddScoped(typeof(IRestResponseBuilder<>), typeof(RestResponseBuilder<>));
+            .AddTransient(typeof(IRestResponseComposer<>), typeof(RestResponseFailureComposer<>))
+            .AddTransient(typeof(IRestResponseComposer<>), typeof(RestResponseContentComposer<>))
+            .AddTransient(typeof(IRestResponseComposer<>), typeof(RestResponseResultComposer<>))
+            .AddTransient(typeof(IRestResponseComposer<>), typeof(RestResponseStreamComposer<>))
+            .AddTransient(typeof(IRestResponseComposer<>), typeof(RestResponseNoContentComposer<>));
 
     /// <summary>
     /// Registers the default <see cref="RestResponseHandler{TRestRequest}"/> implementation to the services.

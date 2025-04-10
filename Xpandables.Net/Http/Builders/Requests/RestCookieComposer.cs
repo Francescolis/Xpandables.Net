@@ -14,40 +14,31 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
-
 using static Xpandables.Net.Http.Rest;
 
 namespace Xpandables.Net.Http.Builders.Requests;
 
 /// <summary>
-/// Builds cookies from the request context if the location is set to Cookie. 
+/// Composes cookies from the request context if the location is set to Cookie. 
 /// It adds each cookie to the message options.
 /// </summary>
-public sealed class RestCookieBuilder<TRestRequest> :
-    PipelineDecorator<RestRequestContext<TRestRequest>, ExecutionResult>, IRestRequestBuilder<TRestRequest>
+public sealed class RestCookieComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestCookie
 {
     /// <inheritdoc/>
-    protected override Task<ExecutionResult> HandleCoreAsync(
-        RestRequestContext<TRestRequest> request,
-        RequestHandler<ExecutionResult> next,
-        CancellationToken cancellationToken = default)
+    public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((request.Attribute.Location & Location.Cookie) == Location.Cookie)
+        if ((context.Attribute.Location & Location.Cookie) == Location.Cookie)
         {
 
             IDictionary<string, object?> cookieSource
-                 = request.Request.GetCookieHeaderValue();
+                 = context.Request.GetCookieHeaderValue();
 
             foreach (KeyValuePair<string, object?> parameter in cookieSource)
             {
-                _ = request.Message.Options
+                _ = context.Message.Options
                     .TryAdd(parameter.Key, parameter.Value);
             }
         }
-
-        return next();
     }
 }
