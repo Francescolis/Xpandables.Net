@@ -20,7 +20,7 @@ using Xpandables.Net.Executions;
 namespace Xpandables.Net.Http.Builders.Responses;
 
 /// <summary>
-/// Builds a RestResponse asynchronously using the provided RestResponseContext. Supports cancellation through a token.
+/// Composes a failure RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
 /// <typeparam name="TRestRequest"> The type of the REST request.</typeparam> 
 public sealed class RestResponseFailureComposer<TRestRequest> : IRestResponseComposer<TRestRequest>

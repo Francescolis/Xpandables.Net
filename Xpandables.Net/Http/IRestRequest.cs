@@ -54,7 +54,7 @@ public interface IRestRequest
 /// </summary>
 /// <typeparam name="TResult">Represents the class type of the result expected from the REST request.</typeparam>
 public interface IRestRequest<TResult> : IRestRequest
-    where TResult : class
+    where TResult : notnull
 {   /// <summary>
     /// Returns the default value of the ResultType, which can be null. 
     /// It indicates the type of the result.

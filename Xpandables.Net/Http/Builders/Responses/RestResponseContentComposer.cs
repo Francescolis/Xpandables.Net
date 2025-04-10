@@ -20,7 +20,7 @@ using System.Text.Json;
 namespace Xpandables.Net.Http.Builders.Responses;
 
 /// <summary>
-/// Builds a RestResponse asynchronously using the provided RestResponseContext. Supports cancellation through a token.
+/// Compose a generic content RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
 /// <typeparam name="TRestRequest"> The type of the REST request.</typeparam> 
 public sealed class RestResponseContentComposer<TRestRequest> : IRestResponseComposer<TRestRequest>

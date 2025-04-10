@@ -6,7 +6,7 @@ using Xpandables.Net.Http;
 namespace Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 
 [RestPost("/accounts", IsSecured = false)]
-public sealed record CreateAccountRequest : IRestRequest, IRestString, IValidationEnabled
+public sealed record CreateAccountRequest : IRestString, IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }

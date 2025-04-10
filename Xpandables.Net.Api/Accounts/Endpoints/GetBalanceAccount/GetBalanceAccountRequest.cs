@@ -6,7 +6,7 @@ using Xpandables.Net.Http;
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 
 [RestGet("/accounts/balance")]
-public sealed record GetBalanceAccountRequest : IRestQueryString, IValidationEnabled
+public sealed record GetBalanceAccountRequest : IRestRequest<int>, IRestQueryString, IValidationEnabled
 {
     [Required]
     public required Guid KeyId { get; init; }
