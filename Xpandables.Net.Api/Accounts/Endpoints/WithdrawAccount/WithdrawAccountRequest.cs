@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.DataAnnotations;
-using Xpandables.Net.Http;
+using Xpandables.Net.Executions.Rests;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 

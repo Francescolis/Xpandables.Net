@@ -9,7 +9,7 @@ using Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 using Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 using Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Http;
+using Xpandables.Net.Executions.Rests;
 
 namespace Xpandables.Net.Test.IntegrationTests;
 

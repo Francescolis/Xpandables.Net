@@ -3,9 +3,9 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Http;
+using Xpandables.Net.Executions.Rests;
 
-using static Xpandables.Net.Http.Rest;
+using static Xpandables.Net.Executions.Rests.Rest;
 
 namespace Xpandables.Net.Test.UnitTests;
 

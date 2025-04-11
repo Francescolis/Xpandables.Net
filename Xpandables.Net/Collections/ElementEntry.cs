@@ -53,4 +53,10 @@ public readonly record struct ElementEntry
         Key = key;
         Values = values;
     }
+
+    /// <summary>
+    /// Returns a string representation of the <see cref="ElementEntry"/> instance.
+    /// </summary>
+    /// <returns> A string that represents the current <see cref="ElementEntry"/>.</returns>
+    public override string ToString() => $"{Key}: {Values.StringJoin(",")}";
 }
