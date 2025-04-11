@@ -317,52 +317,51 @@ public class SampleUsage
 
 The `ExecutionResult` and `ExecutionResults` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
 
-## IHttpClientDispatcher and Related Classes
+## IRestClient and Related Classes
 
 ### Overview
 
-The `IHttpClientDispatcher` interface and related classes in the `Xpandables.Net.Http` namespace provide a structured way to handle HTTP client requests and responses. These classes and interfaces allow you to configure, send, and process HTTP requests with detailed options and builders.
+The `IRestClient` interface and related classes in the `Xpandables.Net.Executions.Rests` namespace provide a structured way to handle HTTP client requests and responses. These classes and interfaces allow you to configure, send, and process HTTP requests with detailed options and builders.
 
-#### IHttpClientDispatcher
+#### IRestClient
 
-The `IHttpClientDispatcher` interface provides methods to handle HTTP client requests using a typed client HTTP client. It supports sending requests that do not return a response, requests that return a response of a specific type, and requests that return a stream that can be async-enumerated.
+The `IRestClient` interface provides methods to handle HTTP client requests using a typed client HTTP client. It supports sending requests that do not return a response, requests that return a response of a specific type, and requests that return a stream that can be async-enumerated.
 
-#### IHttpClientAttributeBuilder
+#### IRestAttributeBuilder
 
-The `IHttpClientAttributeBuilder` interface defines a builder for creating `HttpClientAttribute`. This interface takes priority over the `HttpClientAttribute`.
+The `IRestAttributeBuilder` interface defines a builder for creating `RestAttribute`. This interface takes priority over the `RestAttribute`.
 
-#### HttpClientAttribute
+#### RestAttribute
 
-The `HttpClientAttribute` class is an attribute used to configure options for HTTP client requests. It should decorate implementations of `IHttpClientRequest`, `IHttpClientAsyncRequest<TResponse>`, or `IHttpClientRequest<TResponse>` to be used with `IHttpClientDispatcher`.
+The `RestAttribute` class is an attribute used to configure options for HTTP client requests. It should decorate implementations of `IRestRequest`, `IRestRequest<TResponse>`, or `IRestRequestStream<TResponse>` to be used with `IRestClient`.
 
 ### Usage
 
 #### Creating and Sending a Simple Request
 
-To create and send a simple request using `IHttpClientDispatcher`, you can define a request class and decorate it with `HttpClientAttribute`.
+To create and send a simple request using `IRestClient`, you can define a request class and decorate it with `RestAttribute`.
 
 ```csharp
 
 using System.Net; 
 using Xpandables.Net.Http;
-[HttpClientRequestOptions(Path = "/api/data", 
-    Method = Method.GET)] 
-public class GetDataRequest : IHttpClientRequest { }
+[RestGet("/api/data")] 
+public class GetDataRequest : IRestRequest { }
 
 public class SampleUsage 
 { 
-    private readonly IHttpClientDispatcher _dispatcher;
-    public SampleUsage(IHttpClientDispatcher mediator)
+    private readonly IRestClient _restClient;
+    public SampleUsage(IRestClient restClient)
     {
-        _dispatcher = mediator;
+        _restClient = restClient;
     }
 
     public async Task SendRequestAsync()
     {
         var request = new GetDataRequest();
-        var response = await _dispatcher.SendAsync(request);
+        var response = await _restClient.SendAsync(request);
     
-        if (response.IsValid)
+        if (response.IsSuccess)
         {
             Console.WriteLine("Request was successful.");
         }
@@ -385,24 +384,23 @@ To create and send a request that returns a response of a specific type, you can
 using System.Net; 
 using Xpandables.Net.Http;
 
-[HttpClientRequestOptions(Path = "/api/data", 
-Method = Method.GET)] 
-public class GetDataRequest : IHttpClientRequest<string> { }
+[RestGet("/api/data")] 
+public class GetDataRequest : IRestRequest<string> { }
 
 public class SampleUsage 
 { 
-    private readonly IHttpClientDispatcher _dispatcher;
-    public SampleUsage(IHttpClientDispatcher mediator)
+    private readonly IRestClient _restClient;
+    public SampleUsage(IRestClient restClient)
     {
-        _dispatcher = mediator;
+        _restClient = restClient;
     }
 
     public async Task SendRequestWithResponseAsync()
     {
         var request = new GetDataRequest();
-        var response = await _dispatcher.SendAsync(request);
+        RestResponse<string> response = await _restClient.SendAsync(request);
     
-        if (response.IsValid)
+        if (response.IsSuccess)
         {
             Console.WriteLine($"Response data: {response.Result}");
         }
@@ -418,18 +416,18 @@ public class SampleUsage
 
 #### Using a Custom Request Options Builder
 
-To use a custom request options builder, implement the `IHttpClientAttributeBuilder` interface in your request class.
+To use a custom request options builder, implement the `IRestAttributeBuilder` interface in your request class.
 
 ```csharp
 
 using System.Net; 
 using Xpandables.Net.Http;
 
-public class CustomRequestAttributeBuilder : IHttpClientAttributeBuilder 
+public class CustomRequestAttributeBuilder : IRestAttributeBuilder 
 { 
-    public HttpClientAttribute Build(HttpClientOptions options) 
+    public _RestAttribute_ Build(IServiceProvider serviceProvider) 
     { 
-        return new HttpClientAttribute 
+        return new RestAttribute 
             { 
                 Path = "/api/custom", 
                 Method = Method.POST, 
@@ -438,22 +436,22 @@ public class CustomRequestAttributeBuilder : IHttpClientAttributeBuilder
     } 
 }
 
-public class CustomRequest : CustomRequestAttributeBuilder;
+public sealed record CustomRequest : IRestRequest, CustomRequestAttributeBuilder;
 
 public class SampleUsage 
 { 
-    private readonly IHttpClientDispatcher _dispatcher;
-    public SampleUsage(IHttpClientDispatcher mediator)
+    private readonly IRestClient _restClient;
+    public SampleUsage(IRestClient restClient)
     {
-        _dispatcher = mediator;
+        _restClient = restClient;
     }
 
     public async Task SendCustomRequestAsync()
     {
         var request = new CustomRequest();
-        var response = await _dispatcher.SendAsync(request);
+        var response = await _restClient.SendAsync(request);
     
-        if (response.IsValid)
+        if (response.IsSuccess)
         {
             Console.WriteLine("Custom request was successful.");
         }
@@ -467,4 +465,4 @@ public class SampleUsage
 ```
 
 
-The `IHttpClientDispatcher` interface and related classes provide a flexible and structured way to handle HTTP client requests and responses in your application. By using these classes, you can ensure that your HTTP operations are consistent and detailed, making it easier to handle various HTTP scenarios.
+The `IRestClient` interface and related classes provide a flexible and structured way to handle HTTP client requests and responses in your application. By using these classes, you can ensure that your HTTP operations are consistent and detailed, making it easier to handle various HTTP scenarios.
