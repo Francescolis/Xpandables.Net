@@ -52,15 +52,19 @@ public sealed class EventSchedulerUnitTest
         // Act
         await eventScheduler.ScheduleAsync();
 
-        // Assert
-        var events = await eventStore.FetchAsync(new EventEntityFilterIntegration
+        EventEntityFilterIntegration filter = new()
         {
             Predicate = x => x.Status == EntityStatus.PUBLISHED,
             PageIndex = 0,
             PageSize = 10
-        })
-        .ToListAsync();
+        };
 
+        // Assert
+        var events = await eventStore
+            .FetchAsync(filter)
+            .ToListAsync();
+
+        filter.TotalCount.Should().Be(1);
         events.Should().ContainSingle(e => e.EventId == testEvent.EventId);
     }
 
@@ -75,15 +79,21 @@ public class InMemoryEventStore : IEventStore
     private readonly ConcurrentBag<IEventEntity> _eventEntities = [];
     private readonly EventConverterIntegration _eventConverter = new();
     private readonly JsonSerializerOptions _options = DefaultSerializerOptions.Defaults;
+
+    public Task AppendAsync(
+        IEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        IEventEntity eventEntity = _eventConverter.ConvertTo(@event, _options);
+        _eventEntities.Add(eventEntity);
+
+        return Task.CompletedTask;
+    }
     public Task AppendAsync(
         IEnumerable<IEvent> events,
         CancellationToken cancellationToken = default)
     {
-        events.ForEach(@event =>
-        {
-            IEventEntity eventEntity = _eventConverter.ConvertTo(@event, _options);
-            _eventEntities.Add(eventEntity);
-        });
+        events.ForEach(@event => AppendAsync(@event, cancellationToken));
 
         return Task.CompletedTask;
     }

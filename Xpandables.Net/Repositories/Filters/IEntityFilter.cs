@@ -36,6 +36,11 @@ public interface IEntityFilter
     ushort PageSize { get; }
 
     /// <summary>
+    /// Gets the number of elements in a collection. Returns an integer representing the total count.
+    /// </summary>
+    int TotalCount { get; set; }
+
+    /// <summary>
     /// Applies the filter to the given queryable.
     /// </summary>
     /// <param name="queryable">The queryable to apply the filter to.</param>
@@ -96,6 +101,15 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
         if (OrderBy is not null)
         {
             query = OrderBy(query);
+        }
+
+        if (query.TryGetNonEnumeratedCount(out int count))
+        {
+            TotalCount = count;
+        }
+        else
+        {
+            TotalCount = query.Count();
         }
 
         if (PageIndex > 0 && PageSize > 0)

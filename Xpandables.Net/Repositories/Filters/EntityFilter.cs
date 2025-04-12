@@ -34,6 +34,9 @@ public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
     public ushort PageSize { get; init; }
 
     /// <inheritdoc/>
+    public int TotalCount { get; set; }
+
+    /// <inheritdoc/>
     public virtual required Expression<Func<TEntity, TResult>> Selector { get; init; }
 
     /// <inheritdoc/>

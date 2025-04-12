@@ -51,11 +51,9 @@ public abstract class Entity<TKey> : IEntity<TKey>
     public void SetStatus(string status)
     {
         Status = status;
-        DeletedOn = status switch
-        {
-            EntityStatus.DELETED => (DateTime?)DateTime.UtcNow,
-            _ => null,
-        };
+        DeletedOn = status == EntityStatus.DELETED
+            ? DateTime.UtcNow
+            : null;
     }
 
     /// <inheritdoc/>

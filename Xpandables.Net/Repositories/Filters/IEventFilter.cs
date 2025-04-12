@@ -40,6 +40,7 @@ public interface IEventFilter : IEntityFilter
     /// <summary>
     /// Gets the predicate expression used to filter event data.
     /// </summary>
+    /// <remarks>Only supported by PostgreSQL.</remarks>
     Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; }
 
     /// <summary>
@@ -98,6 +99,15 @@ public interface IEventFilter<TEventEntity> :
         if (OrderBy is not null)
         {
             query = OrderBy(query);
+        }
+
+        if (query.TryGetNonEnumeratedCount(out int count))
+        {
+            TotalCount = count;
+        }
+        else
+        {
+            TotalCount = query.Count();
         }
 
         if (PageIndex > 0 && PageSize > 0)

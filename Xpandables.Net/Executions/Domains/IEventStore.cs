@@ -26,6 +26,18 @@ namespace Xpandables.Net.Executions.Domains;
 public interface IEventStore
 {
     /// <summary>
+    /// Asynchronously appends events to a data source.
+    /// </summary>
+    /// <param name="event">The events to be appended to the data source.</param>
+    /// <param name="cancellationToken">Allows the operation to be canceled if needed.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when appending events 
+    /// fails.</exception>
+    Task AppendAsync(
+        IEvent @event,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Appends a collection of events to the store.
     /// </summary>
     /// <param name="events">The events to append.</param>

@@ -43,35 +43,36 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
     private readonly List<IEventEntity> _disposableEntities = [];
 
     /// <inheritdoc/>
-    public Task AppendAsync(
+    public async Task AppendAsync(
+        IEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        IEventConverter eventConverter = _options.GetEventConverterFor(@event);
+
+        IEventEntity eventEntity = eventConverter.ConvertTo(@event, _options.SerializerOptions);
+
+        _disposableEntities.Add(eventEntity);
+
+        await _context
+            .AddAsync(eventEntity, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task AppendAsync(
         IEnumerable<IEvent> events,
         CancellationToken cancellationToken = default)
     {
-        try
+        List<IEvent> eventsList = [.. events];
+        if (eventsList.Count == 0)
         {
-            List<IEvent> eventsList = [.. events];
-            if (eventsList.Count == 0)
-            {
-                return Task.CompletedTask;
-            }
-
-            IEventConverter eventConverter = _options.GetEventConverterFor(eventsList.First());
-
-            foreach (IEvent @event in eventsList)
-            {
-                IEventEntity eventEntity = eventConverter.ConvertTo(@event, _options.SerializerOptions);
-
-                _disposableEntities.Add(eventEntity);
-            }
-
-            return _context.AddRangeAsync(_disposableEntities, cancellationToken);
+            return;
         }
-        catch (Exception exception)
-            when (exception is not ValidationException and not InvalidOperationException)
+
+        foreach (IEvent @event in eventsList)
         {
-            throw new InvalidOperationException(
-                "An error occurred while appending the events.",
-                exception);
+            await AppendAsync(@event, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 
@@ -93,33 +94,23 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
             _ => throw new InvalidOperationException("The event type is not supported.")
         };
 
-        try
+        IEventConverter eventConverter =
+            _options.GetEventConverterFor(filter.EventType);
+
+        IAsyncEnumerable<IEventEntity> entities =
+            filter.FetchAsync(queryable, cancellationToken);
+
+        return entities.Select(entity =>
         {
-            IEventConverter eventConverter =
-                _options.GetEventConverterFor(filter.EventType);
-
-            IAsyncEnumerable<IEventEntity> entities =
-                filter.FetchAsync(queryable, cancellationToken);
-
-            return entities.Select(entity =>
+            try
             {
-                try
-                {
-                    return eventConverter.ConvertFrom(entity, _options.SerializerOptions);
-                }
-                finally
-                {
-                    entity.Dispose();
-                }
-            });
-        }
-        catch (Exception exception)
-            when (exception is not ValidationException and not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "An error occurred while fetching the events.",
-                exception);
-        }
+                return eventConverter.ConvertFrom(entity, _options.SerializerOptions);
+            }
+            finally
+            {
+                entity.Dispose();
+            }
+        });
     }
 
     /// <inheritdoc/>

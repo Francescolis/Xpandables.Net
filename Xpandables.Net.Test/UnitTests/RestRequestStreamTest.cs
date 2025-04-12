@@ -21,7 +21,7 @@ public sealed record Monkey(
 [RestGet("monkeys.json")]
 public sealed record Query : IRestRequestStream<Monkey>, IRestString;
 
-public sealed class HttpClientRequestStreamTest
+public sealed class RestRequestStreamTest
 {
     [Fact]
     public async Task RequestHttpSender_Should_Return_Valid_Monkeys()
