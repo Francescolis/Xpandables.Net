@@ -26,6 +26,12 @@ namespace Xpandables.Net.Repositories.Filters;
 public interface IEntityFilter
 {
     /// <summary>
+    /// A static boolean property that indicates whether to force a total count when applying the filter.
+    /// If set to true, the total count will be calculated even if the queryable does not support it.
+    /// </summary>
+    public static bool ForceTotalCount { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the index of the page.
     /// </summary>
     ushort PageIndex { get; }
@@ -38,6 +44,8 @@ public interface IEntityFilter
     /// <summary>
     /// Gets the number of elements in a collection. Returns an integer representing the total count.
     /// </summary>
+    /// <remarks>This value is set when the filter is applied to a queryable.
+    /// You can control the total count calculation using the <see cref="ForceTotalCount"/> property.</remarks>
     int TotalCount { get; set; }
 
     /// <summary>
@@ -109,7 +117,8 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
         }
         else
         {
-            TotalCount = query.Count();
+            if (ForceTotalCount)
+                TotalCount = query.Count();
         }
 
         if (PageIndex > 0 && PageSize > 0)

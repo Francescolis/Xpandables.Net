@@ -107,7 +107,8 @@ public interface IEventFilter<TEventEntity> :
         }
         else
         {
-            TotalCount = query.Count();
+            if (ForceTotalCount)
+                TotalCount = query.Count();
         }
 
         if (PageIndex > 0 && PageSize > 0)
