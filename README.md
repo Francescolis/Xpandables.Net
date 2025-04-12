@@ -210,7 +210,7 @@ else
 
 ### Overview
 
-The `ExecutionResult` and `ExecutionResults` classes are part of the `Xpandables.Net.Operations` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
+The `ExecutionResult` and `ExecutionResults` classes are part of the `Xpandables.Net.Executions` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
 
 #### ExecutionResult
 
@@ -229,15 +229,13 @@ To create a success execution result, you can use the `Success` method from the 
 ```csharp
 
 using System.Net;
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 public class SampleUsage
 {
     public ExecutionResult CreateSuccessResult()
     {
         return ExecutionResults.Success(HttpStatusCode.OK)
-            .WithTitle("Execution Successful")
-            .WithDetail("The execution completed successfully.")
             .WithLocation(new Uri("http://example.com"))
             .Build();
     }
@@ -245,8 +243,6 @@ public class SampleUsage
     public ExecutionResult<string> CreateSuccessResultWithData()
     {
         return ExecutionResults.Success("Success Data", HttpStatusCode.OK)
-            .WithTitle("Execution Successful")
-            .WithDetail("The execution completed successfully with data.")
             .WithLocation(new Uri("http://example.com"))
             .Build();
     }
@@ -261,7 +257,7 @@ To create a failure execution result, you can use the `Failure` method from the 
 ```csharp
 
 using System.Net;
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 public class SampleUsage
 {
@@ -292,15 +288,13 @@ The `ExecutionResults` class also provides predefined methods for common HTTP st
 
 ```csharp
 
-using Xpandables.Net.Operations;
+using Xpandables.Net.Executions;
 
 public class SampleUsage
 {
     public ExecutionResult CreateOkResult()
     {
         return ExecutionResults.Ok()
-            .WithTitle("Execution Successful")
-            .WithDetail("The execution completed successfully.")
             .Build();
     }
 
@@ -344,9 +338,11 @@ To create and send a simple request using `IRestClient`, you can define a reques
 ```csharp
 
 using System.Net; 
-using Xpandables.Net.Http;
+using Xpandables.Net.Executions.Rests;
+
 [RestGet("/api/data")] 
-public class GetDataRequest : IRestRequest { }
+public sealed record GetDataRequest : IRestString; // IRestString inherits IRestRequest
+
 
 public class SampleUsage 
 { 
@@ -359,7 +355,7 @@ public class SampleUsage
     public async Task SendRequestAsync()
     {
         var request = new GetDataRequest();
-        var response = await _restClient.SendAsync(request);
+        RestResponse response = await _restClient.SendAsync(request);
     
         if (response.IsSuccess)
         {
@@ -382,10 +378,10 @@ To create and send a request that returns a response of a specific type, you can
 ```csharp
 
 using System.Net; 
-using Xpandables.Net.Http;
+using Xpandables.Net.Executions.Rests;
 
 [RestGet("/api/data")] 
-public class GetDataRequest : IRestRequest<string> { }
+public sealed record GetDataRequest : IRestRequest<string>, IRestString;
 
 public class SampleUsage 
 { 
@@ -413,6 +409,45 @@ public class SampleUsage
 
 ```
 
+To create and send a request that returns a response of stream type, you can define a request class and a response class.
+
+```csharp
+
+using System.Net; 
+using Xpandables.Net.Executions.Rests;
+
+public sealed record Result(string Data);
+
+[RestGet("/api/data")] 
+public sealed record GetDataRequest : IRestRequestStream<Result>, IRestString;
+
+public class SampleUsage 
+{ 
+    private readonly IRestClient _restClient;
+    public SampleUsage(IRestClient restClient)
+    {
+        _restClient = restClient;
+    }
+
+    public async Task SendRequestWithResponseAsync()
+    {
+        var request = new GetDataRequest();
+        RestResponse<IAsyncEnumerable<Result>> response = await _restClient.SendAsync(request);
+        // response will be of type IAsyncEnumerable<Result>
+        // You can use response.Result to access the stream of results.
+
+        if (response.IsSuccess)
+        {
+            // iterate over the stream
+        }
+        else
+        {
+            Console.WriteLine("Request failed.");
+        }
+    }
+}
+
+```
 
 #### Using a Custom Request Options Builder
 
@@ -425,7 +460,7 @@ using Xpandables.Net.Http;
 
 public class CustomRequestAttributeBuilder : IRestAttributeBuilder 
 { 
-    public _RestAttribute_ Build(IServiceProvider serviceProvider) 
+    public RestAttribute Build(IServiceProvider serviceProvider) 
     { 
         return new RestAttribute 
             { 
@@ -449,7 +484,7 @@ public class SampleUsage
     public async Task SendCustomRequestAsync()
     {
         var request = new CustomRequest();
-        var response = await _restClient.SendAsync(request);
+        RestResponse response = await _restClient.SendAsync(request);
     
         if (response.IsSuccess)
         {
