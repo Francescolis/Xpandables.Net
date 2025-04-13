@@ -111,15 +111,7 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
             query = OrderBy(query);
         }
 
-        if (query.TryGetNonEnumeratedCount(out int count))
-        {
-            TotalCount = count;
-        }
-        else
-        {
-            if (ForceTotalCount)
-                TotalCount = query.Count();
-        }
+        var projectedQuery = query.Select(e => new { Entity = e, TotalCount = query.Count() });
 
         if (PageIndex > 0 && PageSize > 0)
         {
@@ -128,7 +120,12 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
                 .Take(PageSize);
         }
 
-        return query.Select(Selector);
+
+        var result = projectedQuery.ToList();
+
+        TotalCount = result.FirstOrDefault()?.TotalCount ?? 0;
+
+        return result.Select(r => r.Entity).AsQueryable();
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
