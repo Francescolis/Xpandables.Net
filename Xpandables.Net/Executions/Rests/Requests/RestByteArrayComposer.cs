@@ -28,19 +28,21 @@ public sealed class RestByteArrayComposer<TRestRequest> : IRestRequestComposer<T
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-             && context.Attribute.BodyFormat == BodyFormat.ByteArray)
+        if ((context.Attribute.Location & Location.Body) != Location.Body
+             || context.Attribute.BodyFormat != BodyFormat.ByteArray)
         {
-            ByteArrayContent byteArray = context.Request.GetByteArrayContent();
+            return;
+        }
 
-            if (context.Message.Content is MultipartFormDataContent multipart)
-            {
-                multipart.Add(byteArray);
-            }
-            else
-            {
-                context.Message.Content = byteArray;
-            }
+        ByteArrayContent byteArray = context.Request.GetByteArrayContent();
+
+        if (context.Message.Content is MultipartFormDataContent multipart)
+        {
+            multipart.Add(byteArray);
+        }
+        else
+        {
+            context.Message.Content = byteArray;
         }
     }
 }

@@ -28,16 +28,18 @@ public sealed class RestPathStringComposer<TRestRequest> : IRestRequestComposer<
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Path) == Location.Path)
+        if ((context.Attribute.Location & Location.Path) != Location.Path)
         {
-            IDictionary<string, string> pathString = context.Request.GetPathString();
+            return;
+        }
 
-            if (pathString.Count > 0)
-            {
-                string path = AddPathString(context.Attribute.Path ?? context.Message.RequestUri!.AbsoluteUri, pathString);
+        IDictionary<string, string> pathString = context.Request.GetPathString();
 
-                context.Message.RequestUri = new Uri(path, UriKind.Relative);
-            }
+        if (pathString.Count > 0)
+        {
+            string path = AddPathString(context.Attribute.Path ?? context.Message.RequestUri!.AbsoluteUri, pathString);
+
+            context.Message.RequestUri = new Uri(path, UriKind.Relative);
         }
     }
 

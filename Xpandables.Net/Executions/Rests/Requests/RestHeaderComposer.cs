@@ -30,33 +30,35 @@ public sealed class RestHeaderComposer<TRestRequest> : IRestRequestComposer<TRes
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Header) == Location.Header)
+        if ((context.Attribute.Location & Location.Header) != Location.Header)
         {
-            ElementCollection headerSource = context.Request.GetHeaders();
+            return;
+        }
 
-            if (context.Request.GetHeaderModelName() is string modelName)
+        ElementCollection headerSource = context.Request.GetHeaders();
+
+        if (context.Request.GetHeaderModelName() is string modelName)
+        {
+            string headerValue = string.Join(
+                ";",
+                headerSource
+                    .Select(x => $"{x.Key},{x.Values.StringJoin(",")}"));
+
+            context.Message
+                .Headers
+                .Add(modelName, headerValue);
+        }
+        else
+        {
+            foreach (ElementEntry parameter in headerSource)
             {
-                string headerValue = string.Join(
-                    ";",
-                    headerSource
-                        .Select(x => $"{x.Key},{x.Values.StringJoin(",")}"));
+                _ = context.Message
+                        .Headers
+                        .Remove(parameter.Key);
 
                 context.Message
                     .Headers
-                    .Add(modelName, headerValue);
-            }
-            else
-            {
-                foreach (ElementEntry parameter in headerSource)
-                {
-                    _ = context.Message
-                            .Headers
-                            .Remove(parameter.Key);
-
-                    context.Message
-                        .Headers
-                        .Add(parameter.Key, values: parameter.Values);
-                }
+                    .Add(parameter.Key, values: parameter.Values);
             }
         }
     }

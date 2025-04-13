@@ -28,17 +28,18 @@ public sealed class RestCookieComposer<TRestRequest> : IRestRequestComposer<TRes
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Cookie) == Location.Cookie)
+        if ((context.Attribute.Location & Location.Cookie) != Location.Cookie)
         {
+            return;
+        }
 
-            IDictionary<string, object?> cookieSource
-                 = context.Request.GetCookieHeaderValue();
+        IDictionary<string, object?> cookieSource
+             = context.Request.GetCookieHeaderValue();
 
-            foreach (KeyValuePair<string, object?> parameter in cookieSource)
-            {
-                _ = context.Message.Options
-                    .TryAdd(parameter.Key, parameter.Value);
-            }
+        foreach (KeyValuePair<string, object?> parameter in cookieSource)
+        {
+            _ = context.Message.Options
+                .TryAdd(parameter.Key, parameter.Value);
         }
     }
 }

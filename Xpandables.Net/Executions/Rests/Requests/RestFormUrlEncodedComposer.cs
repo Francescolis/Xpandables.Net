@@ -29,19 +29,21 @@ public sealed class RestFormUrlEncodedComposer<TRestRequest> : IRestRequestCompo
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-            && context.Attribute.BodyFormat == BodyFormat.FormUrlEncoded)
+        if ((context.Attribute.Location & Location.Body) != Location.Body
+            || context.Attribute.BodyFormat != BodyFormat.FormUrlEncoded)
         {
-            FormUrlEncodedContent content = context.Request.GetFormUrlEncodedContent();
+            return;
+        }
 
-            if (context.Message.Content is MultipartFormDataContent multipart)
-            {
-                multipart.Add(content);
-            }
-            else
-            {
-                context.Message.Content = content;
-            }
+        FormUrlEncodedContent content = context.Request.GetFormUrlEncodedContent();
+
+        if (context.Message.Content is MultipartFormDataContent multipart)
+        {
+            multipart.Add(content);
+        }
+        else
+        {
+            context.Message.Content = content;
         }
     }
 }

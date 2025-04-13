@@ -31,27 +31,28 @@ public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRes
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-            || context.Attribute.BodyFormat == BodyFormat.String)
+        if ((context.Attribute.Location & Location.Body) != Location.Body
+            && context.Attribute.BodyFormat != BodyFormat.String)
         {
+            return;
+        }
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            StringContent content = new(
-                JsonSerializer.Serialize(
-                    context.Request.GetStringContent(),
-                    context.SerializerOptions),
-                Encoding.UTF8,
-                context.Attribute.ContentType);
+        StringContent content = new(
+            JsonSerializer.Serialize(
+                context.Request.GetStringContent(),
+                context.SerializerOptions),
+            Encoding.UTF8,
+            context.Attribute.ContentType);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-            if (context.Message.Content is MultipartFormDataContent multipart)
-            {
-                multipart.Add(content);
-            }
-            else
-            {
-                context.Message.Content = content;
-            }
+        if (context.Message.Content is MultipartFormDataContent multipart)
+        {
+            multipart.Add(content);
+        }
+        else
+        {
+            context.Message.Content = content;
         }
     }
 }

@@ -31,17 +31,19 @@ public sealed class RestQueryStringComposer<TRestRequest> : IRestRequestComposer
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Query) == Location.Query)
+        if ((context.Attribute.Location & Location.Query) != Location.Query)
         {
-            IDictionary<string, string?>? queryString = context.Request.GetQueryString();
-
-            string path = context.Attribute.Path
-                ?? context.Message.RequestUri!.AbsoluteUri;
-
-            string queryStringPath = path.AddQueryString(queryString);
-
-            context.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
+            return;
         }
+
+        IDictionary<string, string?>? queryString = context.Request.GetQueryString();
+
+        string path = context.Attribute.Path
+            ?? context.Message.RequestUri!.AbsoluteUri;
+
+        string queryStringPath = path.AddQueryString(queryString);
+
+        context.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
     }
 }
 

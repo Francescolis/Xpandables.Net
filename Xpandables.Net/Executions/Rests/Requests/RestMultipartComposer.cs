@@ -29,11 +29,13 @@ public sealed class RestMultipartComposer<TRestRequest> : IRestRequestComposer<T
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-            && context.Attribute.BodyFormat == BodyFormat.Multipart)
+        if ((context.Attribute.Location & Location.Body) != Location.Body
+            || context.Attribute.BodyFormat != BodyFormat.Multipart)
         {
-            MultipartFormDataContent content = context.Request.GetMultipartContent();
-            context.Message.Content = content;
+            return;
         }
+
+        MultipartFormDataContent content = context.Request.GetMultipartContent();
+        context.Message.Content = content;
     }
 }

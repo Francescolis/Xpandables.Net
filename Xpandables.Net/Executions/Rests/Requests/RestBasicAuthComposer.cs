@@ -30,11 +30,13 @@ public sealed class RestBasicAuthComposer<TRestRequest> : IRestRequestComposer<T
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.BasicAuth) == Location.BasicAuth)
+        if ((context.Attribute.Location & Location.BasicAuth) != Location.BasicAuth)
         {
-            AuthenticationHeaderValue value = context.Request.GetAuthenticationHeaderValue();
-
-            context.Message.Headers.Authorization = value;
+            return;
         }
+
+        AuthenticationHeaderValue value = context.Request.GetAuthenticationHeaderValue();
+
+        context.Message.Headers.Authorization = value;
     }
 }

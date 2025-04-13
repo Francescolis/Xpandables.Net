@@ -29,27 +29,29 @@ public sealed class RestStreamComposer<TRestRequest> : IRestRequestComposer<TRes
     /// <inheritdoc/>
     public void Compose(RestRequestContext<TRestRequest> context)
     {
-        if ((context.Attribute.Location & Location.Body) == Location.Body
-            || context.Attribute.BodyFormat == BodyFormat.Stream)
+        if ((context.Attribute.Location & Location.Body) != Location.Body
+            && context.Attribute.BodyFormat != BodyFormat.Stream)
         {
-            StreamContent streamContent = context.Request.GetStreamContent();
+            return;
+        }
 
-            if (context.Message.Content is MultipartFormDataContent multiPartcontent)
+        StreamContent streamContent = context.Request.GetStreamContent();
+
+        if (context.Message.Content is MultipartFormDataContent multiPartcontent)
+        {
+            if (context.Request is IRestMultipart)
             {
-                if (context.Request is IRestMultipart)
-                {
-                    multiPartcontent.Add(streamContent);
-                }
-                else
-                {
-                    multiPartcontent.Add(streamContent);
-                    context.Message.Content = multiPartcontent;
-                }
+                multiPartcontent.Add(streamContent);
             }
             else
             {
-                context.Message.Content = streamContent;
+                multiPartcontent.Add(streamContent);
+                context.Message.Content = multiPartcontent;
             }
+        }
+        else
+        {
+            context.Message.Content = streamContent;
         }
     }
 }
