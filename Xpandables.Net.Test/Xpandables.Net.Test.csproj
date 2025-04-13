@@ -20,6 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="JetBrains.Annotations" Version="2025.1.0-eap1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
@@ -32,6 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Xpandables.Net.Api\Xpandables.Net.Api.csproj" />
+    <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
   </ItemGroup>
 
   <ItemGroup>
