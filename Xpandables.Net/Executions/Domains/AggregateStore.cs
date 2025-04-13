@@ -24,29 +24,28 @@ using Xpandables.Net.Repositories.Filters;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents a store for aggregates that handles appending and peeking operations.
-/// it uses a GUID as an identifier.
+/// Represents a store for aggregates root.
 /// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
+/// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
 /// <remarks>
 /// Initializes a new instance of the 
-/// <see cref="AggregateStore{TAggregate}"/> class.
+/// <see cref="AggregateStore{TAggregateRoot}"/> class.
 /// The <see cref="IUnitOfWork"/> must be registered with the key "Aggregate".
 /// </remarks>
 /// <param name="eventStore">The event store.</param>
 /// <param name="publisher">The event publisher.</param>
-public sealed class AggregateStore<TAggregate>(
+public sealed class AggregateStore<TAggregateRoot>(
     IEventStore eventStore,
     IPublisher publisher) :
-    IAggregateStore<TAggregate>
-    where TAggregate : class, IAggregate, new()
+    IAggregateStore<TAggregateRoot>
+    where TAggregateRoot : AggregateRoot, new()
 {
     private readonly IEventStore _eventStore = eventStore;
     private readonly IPublisher _publisher = publisher;
 
     /// <inheritdoc/>
     public async Task AppendAsync(
-        TAggregate aggregate,
+        TAggregateRoot aggregate,
         CancellationToken cancellationToken = default)
     {
         try
@@ -82,7 +81,7 @@ public sealed class AggregateStore<TAggregate>(
     }
 
     /// <inheritdoc/>
-    public async Task<TAggregate> PeekAsync(
+    public async Task<TAggregateRoot> ResolveAsync(
         Guid keyId,
         CancellationToken cancellationToken = default)
     {
@@ -94,25 +93,25 @@ public sealed class AggregateStore<TAggregate>(
                 OrderBy = x => x.OrderBy(o => o.EventVersion)
             };
 
-            TAggregate aggregate = new();
+            TAggregateRoot aggregateRoot = new();
 
-            List<IEventDomain> events = await _eventStore
+            await foreach (IEventDomain @event in _eventStore
                 .FetchAsync(filter, cancellationToken)
                 .OfType<IEventDomain>()
                 .OrderBy(x => x.EventVersion)
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
+                .ConfigureAwait(false))
+            {
+                aggregateRoot.LoadFromHistory(@event);
+            }
 
-            aggregate.LoadFromHistory(events);
-
-            if (aggregate.IsEmpty)
+            if (aggregateRoot.IsEmpty)
             {
                 throw new ValidationException(new ValidationResult(
                     "The object was not found.",
                     [nameof(keyId)]), null, keyId);
             }
 
-            return aggregate;
+            return aggregateRoot;
         }
         catch (Exception exception)
             when (exception is not ValidationException and not InvalidOperationException)

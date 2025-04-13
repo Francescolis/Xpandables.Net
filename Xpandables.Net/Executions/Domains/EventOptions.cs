@@ -14,13 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories.Converters;
-using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Executions.Domains;
+
 /// <summary>
 /// Represents the options for configuring event handling.
 /// </summary>
@@ -36,47 +34,6 @@ public sealed record EventOptions
             new EventConverterIntegration(),
             new EventConverterSnapshot()
         ];
-
-    /// <summary>
-    /// Gets the JSON serializer options.
-    /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; set; } =
-        DefaultSerializerOptions.Defaults;
-
-    /// <summary>
-    /// Gets a value indicating whether snapshot is enabled.
-    /// </summary>
-    public bool IsSnapshotEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Gets the frequency of snapshots.
-    /// </summary>
-    public ulong SnapshotFrequency { get; set; } = 50;
-
-    /// <summary>
-    /// Gets a value indicating whether the event scheduler is enabled.
-    /// </summary>
-    public bool IsEventSchedulerEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Gets the maximum number of retries for the scheduler.
-    /// </summary>
-    public uint MaxSchedulerRetries { get; set; } = 5;
-
-    /// <summary>
-    /// Gets the interval between scheduler retries in milliseconds.
-    /// </summary>
-    public uint SchedulerRetryInterval { get; set; } = 500;
-
-    /// <summary>
-    /// Gets the frequency of the scheduler in milliseconds.
-    /// </summary>
-    public uint SchedulerFrequency { get; set; } = 15000;
-
-    /// <summary>
-    /// Gets the maximum number of events per thread for the scheduler.
-    /// </summary>
-    public ushort MaxSchedulerEventPerThread { get; set; } = 100;
 
     /// <summary>
     /// Returns the <see cref="IEventConverter"/> instance for the specified type.
@@ -115,31 +72,4 @@ public sealed record EventOptions
             .FirstOrDefault(x => x.CanConvert(type))
             ?? throw new InvalidOperationException(
                 $"The converter for the type '{type}' was not found.");
-
-
-    /// <summary>
-    /// Returns the default <see cref="EventOptions"/>.
-    /// </summary>
-    /// <param name="options">The options to use as a base for the default values.</param>
-    /// <returns>The default <see cref="EventOptions"/>.</returns>
-    public static void Default(EventOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        options = options with
-        {
-            SerializerOptions = DefaultSerializerOptions.Defaults,
-            IsSnapshotEnabled = true,
-            SnapshotFrequency = 50,
-            IsEventSchedulerEnabled = true,
-            MaxSchedulerRetries = 5,
-            SchedulerRetryInterval = 500,
-            SchedulerFrequency = 15000,
-            MaxSchedulerEventPerThread = 100
-        };
-
-        options.Converters.Add(new EventConverterDomain());
-        options.Converters.Add(new EventConverterIntegration());
-        options.Converters.Add(new EventConverterSnapshot());
-    }
 }

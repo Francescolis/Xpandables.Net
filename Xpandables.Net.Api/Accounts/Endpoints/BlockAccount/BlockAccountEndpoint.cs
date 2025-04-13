@@ -17,7 +17,7 @@ public sealed class BlockAccountEndpoint : IEndpointRoute
             {
                 BlockAccountCommand command = new()
                 {
-                    KeyId = request.KeyId
+                    DependencyKeyId = request.KeyId
                 };
 
                 return await dispatcher

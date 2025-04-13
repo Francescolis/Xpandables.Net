@@ -43,7 +43,7 @@ public interface IRequestHandler<in TRequest>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
 public interface IDeciderRequestHandler<in TRequest, in TDependency> : IRequestHandler<TRequest>
-    where TRequest : class, IDeciderRequest<TDependency>
+    where TRequest : class, IDependencyRequest<TDependency>
     where TDependency : class
 {
     /// <summary>
@@ -64,9 +64,9 @@ public interface IDeciderRequestHandler<in TRequest, in TDependency> : IRequestH
         TRequest request,
         CancellationToken cancellationToken)
     {
-        if (request.Dependency is null)
+        if (request.DependencyInstance is null)
             throw new InvalidOperationException("The dependency is not set.");
 
-        return HandleAsync(request, (TDependency)request.Dependency, cancellationToken);
+        return HandleAsync(request, (TDependency)request.DependencyInstance, cancellationToken);
     }
 }

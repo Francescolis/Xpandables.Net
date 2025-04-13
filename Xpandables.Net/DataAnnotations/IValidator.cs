@@ -42,7 +42,7 @@ public interface IValidator
     ExecutionResult Validate(object instance);
 
     /// <summary>
-    /// Asynchronously validates the specified instance and returns the result 
+    /// Validates the specified instance and returns the result 
     /// of the validation.
     /// </summary>
     /// <param name="instance">The instance to validate.</param>
@@ -80,7 +80,7 @@ public interface IValidator<in TArgument> : IValidator
         Validate((TArgument)instance);
 
     /// <summary>
-    /// Asynchronously validates the specified instance and returns the result 
+    /// Validates the specified instance and returns the result 
     /// of the validation.
     /// </summary>
     /// <param name="instance">The instance to validate.</param>

@@ -25,6 +25,7 @@ using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Repositories.Filters;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Executions.Domains;
 
@@ -49,7 +50,7 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
     {
         IEventConverter eventConverter = _options.GetEventConverterFor(@event);
 
-        IEventEntity eventEntity = eventConverter.ConvertTo(@event, _options.SerializerOptions);
+        IEventEntity eventEntity = eventConverter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
 
         _disposableEntities.Add(eventEntity);
 
@@ -104,7 +105,7 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
         {
             try
             {
-                return eventConverter.ConvertFrom(entity, _options.SerializerOptions);
+                return eventConverter.ConvertFrom(entity, DefaultSerializerOptions.Defaults);
             }
             finally
             {
@@ -114,52 +115,17 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
     }
 
     /// <inheritdoc/>
-    public async Task DeleteAsync(
-        IEventFilter filter,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-
-        IQueryable<IEventEntity> queryable = filter.EventType switch
-        {
-            Type type when type == typeof(IEventDomain) =>
-                _context.Domains,
-            Type type when type == typeof(IEventIntegration) =>
-                _context.Integrations,
-            Type type when type == typeof(IEventSnapshot) =>
-            _context.Snapshots,
-            _ => throw new InvalidOperationException("The event type is not supported.")
-        };
-
-        try
-        {
-            await filter
-                .Apply(queryable)
-                .OfType<IEventEntity>()
-                .ExecuteDeleteAsync(cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (Exception exception)
-            when (exception is not ValidationException and not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "An error occurred while deleting the events.",
-                exception);
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task MarkAsPublishedAsync(
-        EventPublished eventPublished,
+    public async Task MarkAsProcessedAsync(
+        EventProcessed eventProcessed,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            string status = eventPublished.ErrorMessage is null
+            string status = eventProcessed.ErrorMessage is null
                 ? EntityStatus.PUBLISHED : EntityStatus.ONERROR;
 
             await _context.Integrations
-                .Where(e => e.KeyId == eventPublished.EventId)
+                .Where(e => e.KeyId == eventProcessed.EventId)
                 .ExecuteUpdateAsync(entity =>
                     entity
                     .SetProperty(e => e.Status, status)

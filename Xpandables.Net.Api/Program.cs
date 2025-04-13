@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-builder.Services.Configure<EventOptions>(EventOptions.Default);
+builder.Services.AddOptions<EventOptions>();
 builder.Services.AddXEndpointRoutes();
 builder.Services.AddXMinimalApi();
 builder.Services.AddXMediator();
@@ -23,11 +23,9 @@ builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();
 builder.Services.AddXEventUnitOfWork();
 builder.Services.AddXPublisher();
-builder.Services.AddXAggregateDependencyProvider();
-builder.Services.AddXDeciderDependencyManager();
+builder.Services.AddXPipelineResolverDecorator();
 builder.Services.AddXPipelineUnitOfWorkDecorator();
-builder.Services.AddXPipelineAggregateDecorator();
-builder.Services.AddXPipelineDeciderDecorator();
+builder.Services.AddXPipelineAppenderDecorator();
 
 builder.Services.AddDataContextEventForSqlServer(builder.Configuration);
 

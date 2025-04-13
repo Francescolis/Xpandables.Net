@@ -18,7 +18,7 @@ public sealed class UnBlockAccountEndpoint : IEndpointRoute
             {
                 UnBlockAccountCommand command = new()
                 {
-                    KeyId = request.KeyId
+                    DependencyKeyId = request.KeyId
                 };
 
                 return await dispatcher

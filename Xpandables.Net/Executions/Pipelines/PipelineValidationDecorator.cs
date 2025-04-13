@@ -32,7 +32,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     where TResponse : notnull
 {
     /// <inheritdoc/>
-    protected override async Task<TResponse> HandleCoreAsync(
+    public override async Task<TResponse> HandleAsync(
         TRequest query,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)

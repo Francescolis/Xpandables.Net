@@ -3,7 +3,7 @@ using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Api.Accounts;
 
-public sealed class Account : AggregateState<Account, AccountState>
+public sealed class Account : AggregateRootState<Account, AccountState>
 {
     public static Account Create(Guid keyId)
     {

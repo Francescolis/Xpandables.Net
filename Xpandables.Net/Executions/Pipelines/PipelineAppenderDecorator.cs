@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,25 +14,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.DependencyInjection;
+
 using Xpandables.Net.DataAnnotations;
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Pipelines;
-
-/// <summary>
-/// A decorator that ensures the unit of work pattern is applied to the 
-/// pipeline whatever the outcome of the request.
-/// </summary>
-/// <param name="unitOfWork">The unit of work instance.</param>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
-    IUnitOfWork unitOfWork) :
+internal sealed class PipelineAppenderDecorator<TRequest, TResponse>(
+    IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IUnitOfWorkApplier
+    where TRequest : class, IDependencyRequest, IAggregateAppender
     where TResponse : notnull
 {
-    /// <inheritdoc/>
     public override async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
@@ -47,9 +40,18 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
         }
         finally
         {
-            await unitOfWork
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            if (request.DependencyInstance is not null)
+            {
+                Type aggregateStoreType = typeof(IAggregateStore<>)
+                    .MakeGenericType(request.DependencyType);
+
+                IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+                    .GetRequiredService(aggregateStoreType);
+
+                await aggregateStore
+                    .AppendAsync((AggregateRoot)request.DependencyInstance, cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

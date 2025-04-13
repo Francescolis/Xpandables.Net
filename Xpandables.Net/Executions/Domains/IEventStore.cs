@@ -26,7 +26,7 @@ namespace Xpandables.Net.Executions.Domains;
 public interface IEventStore
 {
     /// <summary>
-    /// Asynchronously appends events to a data source.
+    /// Appends a single event to the store.
     /// </summary>
     /// <param name="event">The events to be appended to the data source.</param>
     /// <param name="cancellationToken">Allows the operation to be canceled if needed.</param>
@@ -62,33 +62,22 @@ public interface IEventStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes events from the store based on the specified filter.
+    /// Marks the event as processed.
     /// </summary>
-    /// <param name="filter">The filter to apply when deleting events.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <exception cref="InvalidOperationException">Thrown when deleting events
-    /// fails.</exception>
-    Task DeleteAsync(
-        IEventFilter filter,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Marks the event represented by the publish information as published.
-    /// </summary>
-    /// <param name="eventPublished">The publish information of the event.</param>
+    /// <param name="eventProcessed">The processed information of the event.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="InvalidOperationException">Thrown when marking events
     /// fails.</exception>
-    Task MarkAsPublishedAsync(
-        EventPublished eventPublished,
+    Task MarkAsProcessedAsync(
+        EventProcessed eventProcessed,
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Represents an event that has been published.
+/// Represents an event that has been processed.
 /// </summary>
-public readonly record struct EventPublished
+public readonly record struct EventProcessed
 {
     /// <summary>
     /// Gets the unique identifier of the event.

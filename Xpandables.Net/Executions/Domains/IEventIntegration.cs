@@ -14,6 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+
 using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Domains;
@@ -31,10 +34,6 @@ public interface IEventIntegration : IEvent
 public interface IEventIntegration<TEventDomain> : IEventIntegration
     where TEventDomain : notnull, IEventDomain
 {
-    /// <summary>
-    /// Gets the event domain.
-    /// </summary>
-    TEventDomain EventDomain { get; }
 }
 
 /// <summary>
@@ -43,4 +42,25 @@ public interface IEventIntegration<TEventDomain> : IEventIntegration
 /// </summary>
 public record EventIntegration : Event, IEventIntegration
 {
+}
+
+/// <summary>
+/// Represents an integration event with a specific event domain.
+/// </summary>
+/// <typeparam name="TEventDomain">The type of the event domain.</typeparam>
+public record EventIntegration<TEventDomain> : EventIntegration, IEventIntegration<TEventDomain>
+    where TEventDomain : notnull, IEventDomain
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventIntegration{TEventDomain}"/> class.
+    /// </summary>
+    [JsonConstructor]
+    protected EventIntegration() { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventIntegration{TEventDomain}"/> class.
+    /// </summary>
+    /// <param name="eventDomain">The event domain.</param>
+    [SetsRequiredMembers]
+    protected EventIntegration(TEventDomain eventDomain) => EventId = eventDomain.EventId;
 }

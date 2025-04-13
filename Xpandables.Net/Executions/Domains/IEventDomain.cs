@@ -53,13 +53,13 @@ public record EventDomain : Event, IEventDomain
 }
 
 /// <summary>
-/// Represents a domain event that is associated with an aggregate.
+/// Represents a domain event that is associated with an aggregate root.
 /// </summary>
 /// <remarks>Add a private parameterless constructor and decorate it 
 /// with the <see cref="JsonConstructorAttribute"/> attribute when you
-/// are using the base constructor with <typeparamref name="TAggregate"/>.</remarks>
-public record EventDomain<TAggregate> : EventDomain
-    where TAggregate : class, IAggregate
+/// are using the base constructor with <typeparamref name="TAggregateRoot"/>.</remarks>
+public record EventDomain<TAggregateRoot> : EventDomain
+    where TAggregateRoot : AggregateRoot
 {
     /// <summary>
     /// Initializes a new instance of the 
@@ -72,11 +72,11 @@ public record EventDomain<TAggregate> : EventDomain
     /// Initializes a new instance of the 
     /// <see cref="EventDomain"/> class.
     /// </summary>
-    /// <param name="aggregate">The aggregate associated with the event.</param>
+    /// <param name="aggregateRoot">The aggregate root associated with the event.</param>
     [SetsRequiredMembers]
-    protected EventDomain(TAggregate aggregate)
+    protected EventDomain(TAggregateRoot aggregateRoot)
     {
-        AggregateId = aggregate.KeyId;
-        EventVersion = aggregate.Version;
+        AggregateId = aggregateRoot.KeyId;
+        EventVersion = aggregateRoot.Version;
     }
 }

@@ -23,37 +23,35 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
-/// Decorator for handling <see cref="IDeciderRequest{TDependency}"/>> in a pipeline.
+/// Decorator for handling <see cref="IDependencyRequest{TDependency}"/>> in a pipeline.
 /// it provides a way to apply the decider pattern to the request object.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
-    IDeciderDependencyManager dependencyManager) :
+public sealed class PipelineDependencyDecorator<TRequest, TResponse>(
+    IDependencyManager dependencyManager) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IDeciderRequest
+    where TRequest : class, IDependencyRequest
     where TResponse : notnull
 {
     /// <inheritdoc/>
-    protected override async Task<TResponse> HandleCoreAsync(
+    public override async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            IDeciderDependencyProvider dependencyProvider = dependencyManager
-                .GetDependencyProvider(request.Type);
+            IDependencyProvider dependencyProvider = dependencyManager
+                .GetDependencyProvider(request.DependencyType);
 
             object dependency = await dependencyProvider
                 .GetDependencyAsync(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            request.Dependency = dependency;
+            request.DependencyInstance = dependency;
 
-            TResponse response = await next().ConfigureAwait(false);
-
-            return response;
+            return await next().ConfigureAwait(false);
         }
         catch (Exception exception)
             when (exception is not ValidationException
@@ -63,7 +61,7 @@ public sealed class PipelineDeciderDecorator<TRequest, TResponse>(
         {
             throw new InvalidOperationException(
                 $"An error occurred getting dependency of the object " +
-                $"with the key '{request.KeyId}'.",
+                $"with the key '{request.DependencyKeyId}'.",
                 exception);
         }
     }

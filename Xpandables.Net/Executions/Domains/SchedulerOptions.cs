@@ -17,36 +17,32 @@
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Interface for event sourcing in a domain-driven design.
+/// Represents the options for configuring the event scheduler.
 /// </summary>
-public interface IEventSourcing
+public sealed record SchedulerOptions
 {
     /// <summary>
-    /// Marks all events as committed.
+    /// Gets a value indicating whether the event scheduler is enabled.
     /// </summary>
-    void MarkEventsAsCommitted();
+    public bool IsEventSchedulerEnabled { get; set; } = true;
 
     /// <summary>
-    /// Gets the collection of uncommitted events.
+    /// Gets the maximum number of retries for the scheduler.
     /// </summary>
-    /// <returns>A read-only collection of uncommitted events.</returns>
-    IReadOnlyCollection<IEventDomain> GetUncommittedEvents();
+    public uint MaxSchedulerRetries { get; set; } = 5;
 
     /// <summary>
-    /// Loads a collection of events from history into the aggregate root.
+    /// Gets the interval between scheduler retries in milliseconds.
     /// </summary>
-    /// <param name="events">The collection of events to load.</param>
-    void LoadFromHistory(IEnumerable<IEventDomain> events);
+    public uint SchedulerRetryInterval { get; set; } = 500;
 
     /// <summary>
-    /// Loads a single event from history.
+    /// Gets the frequency of the scheduler in milliseconds.
     /// </summary>
-    /// <param name="event">The event to load.</param>
-    void LoadFromHistory(IEventDomain @event);
+    public uint SchedulerFrequency { get; set; } = 15000;
 
     /// <summary>
-    /// Pushes an event into the aggregate root for processing.
+    /// Gets the maximum number of events per thread for the scheduler.
     /// </summary>
-    /// <param name="event"> The event to push.</param>
-    void PushEvent(IEventDomain @event);
+    public ushort MaxSchedulerEventPerThread { get; set; } = 100;
 }

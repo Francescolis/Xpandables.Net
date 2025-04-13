@@ -19,7 +19,7 @@ namespace Xpandables.Net.Executions.Deciders;
 /// <summary>
 /// Provides a mechanism to get providers for a dependency.
 /// </summary>
-public interface IDeciderDependencyManager
+public interface IDependencyManager
 {
     /// <summary>
     /// Returns the dependency provider for the specified dependency type.
@@ -27,13 +27,13 @@ public interface IDeciderDependencyManager
     /// <param name="dependencyType">The dependency type.</param>
     /// <returns>The dependency provider for the specified dependency type.</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    IDeciderDependencyProvider GetDependencyProvider(Type dependencyType);
+    IDependencyProvider GetDependencyProvider(Type dependencyType);
 }
 
-internal sealed class DeciderDependencyManager : IDeciderDependencyManager
+internal sealed class DependencyManager : IDependencyManager
 {
-    private readonly HashSet<IDeciderDependencyProvider> _dependencyProviders = [];
-    public DeciderDependencyManager(IEnumerable<IDeciderDependencyProvider> dependencyProviders)
+    private readonly HashSet<IDependencyProvider> _dependencyProviders = [];
+    public DependencyManager(IEnumerable<IDependencyProvider> dependencyProviders)
     {
         foreach (var dependencyProvider in dependencyProviders)
         {
@@ -46,7 +46,7 @@ internal sealed class DeciderDependencyManager : IDeciderDependencyManager
             _dependencyProviders.Add(dependencyProvider);
         }
     }
-    public IDeciderDependencyProvider GetDependencyProvider(Type dependencyType) =>
+    public IDependencyProvider GetDependencyProvider(Type dependencyType) =>
         _dependencyProviders.FirstOrDefault(provider => provider.CanProvideDependency(dependencyType))
             ?? throw new InvalidOperationException(
                 $"The dependency provider for the type {dependencyType.Name} is not registered.");

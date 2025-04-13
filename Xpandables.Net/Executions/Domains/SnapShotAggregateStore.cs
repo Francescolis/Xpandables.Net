@@ -26,23 +26,23 @@ using Xpandables.Net.States;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents a store for aggregate snapshots.
+/// Represents a store for aggregate root snapshots.
 /// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public sealed class SnapshotStore<TAggregate>(
-    IAggregateStore<TAggregate> aggregateStore,
+/// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
+public sealed class SnapShotAggregateStore<TAggregateRoot>(
+    IAggregateStore<TAggregateRoot> aggregateStore,
     IEventStore eventStore,
-    IOptions<EventOptions> options) :
-    IAggregateStore<TAggregate>
-    where TAggregate : class, IAggregate, IOriginator, new()
+    IOptions<SnapShotOptions> options) :
+    IAggregateStore<TAggregateRoot>
+    where TAggregateRoot : AggregateRoot, IOriginator, new()
 {
-    private readonly IAggregateStore<TAggregate> _aggregateStore = aggregateStore;
+    private readonly IAggregateStore<TAggregateRoot> _aggregateStore = aggregateStore;
     private readonly IEventStore _eventStore = eventStore;
-    private readonly EventOptions _options = options.Value;
+    private readonly SnapShotOptions _options = options.Value;
 
     /// <inheritdoc/>
     public async Task AppendAsync(
-        TAggregate aggregate,
+        TAggregateRoot aggregate,
         CancellationToken cancellationToken = default)
     {
         try
@@ -60,7 +60,7 @@ public sealed class SnapshotStore<TAggregate>(
                 };
 
                 await _eventStore
-                    .AppendAsync([@event], cancellationToken)
+                    .AppendAsync(@event, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -78,14 +78,14 @@ public sealed class SnapshotStore<TAggregate>(
     }
 
     /// <inheritdoc/>
-    public async Task<TAggregate> PeekAsync(
+    public async Task<TAggregateRoot> ResolveAsync(
         Guid keyId,
         CancellationToken cancellationToken = default)
     {
         if (!_options.IsSnapshotEnabled)
         {
             return await _aggregateStore
-                .PeekAsync(keyId, cancellationToken)
+                .ResolveAsync(keyId, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -105,16 +105,16 @@ public sealed class SnapshotStore<TAggregate>(
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            TAggregate aggregate = new();
+            TAggregateRoot aggregateRoot = new();
 
             if (@event is not null)
             {
-                aggregate.Restore(@event.Memento);
+                aggregateRoot.Restore(@event.Memento);
             }
             else
             {
                 return await _aggregateStore
-                    .PeekAsync(keyId, cancellationToken)
+                    .ResolveAsync(keyId, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -124,26 +124,26 @@ public sealed class SnapshotStore<TAggregate>(
             filter = new EventEntityFilterDomain
             {
                 Predicate = x => x.AggregateId == keyId
-                    && x.EventVersion > aggregate.Version,
+                    && x.EventVersion > aggregateRoot.Version,
                 OrderBy = x => x.OrderBy(x => x.EventVersion)
             };
 
-            List<IEventDomain> events = await _eventStore
+            await foreach (IEventDomain ev in _eventStore
                 .FetchAsync(filter, cancellationToken)
                 .OfType<IEventDomain>()
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
+                .ConfigureAwait(false))
+            {
+                aggregateRoot.LoadFromHistory(ev);
+            }
 
-            aggregate.LoadFromHistory(events);
-
-            if (aggregate.IsEmpty)
+            if (aggregateRoot.IsEmpty)
             {
                 throw new ValidationException(new ValidationResult(
                     "The aggregate was not found.",
                     [nameof(keyId)]), null, keyId);
             }
 
-            return aggregate;
+            return aggregateRoot;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -154,8 +154,8 @@ public sealed class SnapshotStore<TAggregate>(
         }
     }
 
-    private bool CanSnapshot(IAggregate aggregate) =>
+    private bool CanSnapshot(AggregateRoot aggregateRoot) =>
       _options.IsSnapshotEnabled
-          && aggregate.Version % _options.SnapshotFrequency == 0
-          && aggregate.Version >= _options.SnapshotFrequency;
+          && aggregateRoot.Version % _options.SnapshotFrequency == 0
+          && aggregateRoot.Version >= _options.SnapshotFrequency;
 }

@@ -20,80 +20,78 @@ using System.ComponentModel.DataAnnotations;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents a store for aggregates.
+/// Represents a store for aggregates root.
 /// </summary>
 public interface IAggregateStore
 {
     /// <summary>
-    /// Appends the specified aggregate asynchronously.
+    /// Appends the specified aggregate root.
     /// </summary>
-    /// <param name="aggregate">The aggregate to append.</param>
+    /// <param name="aggregateRoot">The aggregate root to append.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation result.</returns>
     /// <exception cref="InvalidOperationException">Unable to append the 
     /// aggregate. See inner exception for details.</exception>
-    Task AppendAsync(
-        IAggregate aggregate,
-        CancellationToken cancellationToken = default);
+    Task AppendAsync(AggregateRoot aggregateRoot, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Peeks the specified aggregate asynchronously.
+    /// Resolves the aggregate root that matches the specified keyId.
     /// </summary>
-    /// <param name="keyId">The aggregate identifier.</param>
+    /// <param name="keyId">The aggregate root identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The operation result containing the aggregate.</returns>
-    /// <exception cref="ValidationException">The aggregate with the specified 
+    /// <returns>The operation result containing the aggregate root.</returns>
+    /// <exception cref="ValidationException">The aggregate root with the specified 
     /// keyId does not exist.</exception>
-    /// <exception cref="InvalidOperationException">Unable to peek the aggregate.
+    /// <exception cref="InvalidOperationException">Unable to resolve the aggregate.
     /// See inner exception for details.</exception>
-    Task<IAggregate> PeekAsync(
+    Task<AggregateRoot> ResolveAsync(
         Guid keyId,
         CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Represents a store for aggregates.
+/// Represents a store for aggregates root.
 /// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-public interface IAggregateStore<TAggregate> : IAggregateStore
-    where TAggregate : class, IAggregate, new()
+/// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
+public interface IAggregateStore<TAggregateRoot> : IAggregateStore
+    where TAggregateRoot : AggregateRoot, new()
 {
     /// <summary>
-    /// Appends the specified aggregate asynchronously.
+    /// Appends the specified aggregate root.
     /// </summary>
-    /// <param name="aggregate">The aggregate to append.</param>
+    /// <param name="aggregateRoot">The aggregate to append.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation result.</returns>
     /// <exception cref="InvalidOperationException">Unable to append the 
     /// aggregate. See inner exception for details.</exception>
     Task AppendAsync(
-        TAggregate aggregate,
+        TAggregateRoot aggregateRoot,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     Task IAggregateStore.AppendAsync(
-        IAggregate aggregate,
+        AggregateRoot aggregateRoot,
         CancellationToken cancellationToken) =>
-        AppendAsync((TAggregate)aggregate, cancellationToken);
+        AppendAsync((TAggregateRoot)aggregateRoot, cancellationToken);
 
     /// <summary>
-    /// Peeks the specified aggregate asynchronously.
+    /// Resolves the aggregate root that matches the specified keyId.
     /// </summary>
-    /// <param name="keyId">The aggregate identifier.</param>
+    /// <param name="keyId">The aggregate root identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The operation result containing the aggregate.</returns>
-    /// <exception cref="ValidationException">The aggregate with the specified 
+    /// <returns>The operation result containing the aggregate root.</returns>
+    /// <exception cref="ValidationException">The aggregate root with the specified 
     /// keyId does not exist.</exception>
-    /// <exception cref="InvalidOperationException">Unable to peek the aggregate.
+    /// <exception cref="InvalidOperationException">Unable to resolve the aggregate.
     /// See inner exception for details.</exception>
-    new Task<TAggregate> PeekAsync(
+    new Task<TAggregateRoot> ResolveAsync(
         Guid keyId,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    async Task<IAggregate> IAggregateStore.PeekAsync(
+    async Task<AggregateRoot> IAggregateStore.ResolveAsync(
         Guid keyId,
         CancellationToken cancellationToken) =>
-        await PeekAsync(keyId, cancellationToken)
+        await ResolveAsync(keyId, cancellationToken)
         .ConfigureAwait(false);
 }

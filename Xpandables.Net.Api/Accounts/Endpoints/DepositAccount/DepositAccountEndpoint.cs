@@ -18,7 +18,7 @@ public sealed class DepositAccountEndpoint : IEndpointRoute
             {
                 DepositAccountCommand command = new()
                 {
-                    KeyId = request.KeyId,
+                    DependencyKeyId = request.KeyId,
                     Amount = request.Amount
                 };
 

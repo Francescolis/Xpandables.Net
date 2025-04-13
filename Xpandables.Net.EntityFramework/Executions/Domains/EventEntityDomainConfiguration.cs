@@ -46,6 +46,6 @@ public sealed class EventEntityDomainConfiguration :
         _ = builder.Property(e => e.UpdatedOn).IsRequired(false);
         _ = builder.Property(e => e.DeletedOn).IsRequired(false);
 
-        _ = builder.HasQueryFilter(e => e.Status != EntityStatus.DELETED);
+        _ = builder.HasQueryFilter(e => e.Status != EntityStatus.DELETED.Value);
     }
 }

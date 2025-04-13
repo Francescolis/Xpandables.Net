@@ -31,7 +31,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// Provides extension methods for adding mediator services to the 
 /// <see cref="IServiceCollection"/>.
 /// </summary>
-public static class ServiceCollectionDispatcherExtensions
+public static class ServiceCollectionMediatorExtensions
 {
     /// <summary>
     /// Adds a mediator of type <typeparamref name="TMediator"/> to 
@@ -146,9 +146,9 @@ public static class ServiceCollectionDispatcherExtensions
     /// <param name="services">The service collection to add the decider 
     /// dependency provider to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXDeciderDependencyManager(
+    public static IServiceCollection AddXDependencyManager(
         this IServiceCollection services) =>
-        services.AddScoped<IDeciderDependencyManager, DeciderDependencyManager>();
+        services.AddScoped<IDependencyManager, DependencyManager>();
 
     /// <summary>
     /// Adds a decider dependency provider of type <typeparamref name="TService"/> to 
@@ -159,40 +159,41 @@ public static class ServiceCollectionDispatcherExtensions
     /// <param name="services">The service collection to add the decider 
     /// dependency provider to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXDeciderDependencyProvider<TService>(
+    public static IServiceCollection AddXDependencyProvider<TService>(
         this IServiceCollection services)
-        where TService : class, IDeciderDependencyProvider =>
-        services.AddScoped<IDeciderDependencyProvider, TService>();
+        where TService : class, IDependencyProvider =>
+        services.AddScoped<IDependencyProvider, TService>();
 
     /// <summary>
-    /// Adds the aggregate decider dependency provider to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The service collection to add the decider 
-    /// dependency provider to.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXAggregateDependencyProvider(
-        this IServiceCollection services) =>
-        services.AddXDeciderDependencyProvider<AggregateDeciderDependencyProvider>();
-
-    /// <summary>
-    /// Adds an aggregate pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// Adds an pipeline decorator to the <see cref="IServiceCollection"/> that append the ambient aggregate root.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXPipelineAggregateDecorator(
+    public static IServiceCollection AddXPipelineAppenderDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineAggregateDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineAppenderDecorator<,>));
 
     /// <summary>
-    /// Adds a command pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// Adds an pipeline decorator to the <see cref="IServiceCollection"/> that resolve
+    /// the ambient aggregate root before request is processed.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXPipelineDeciderDecorator(
+    public static IServiceCollection AddXPipelineResolverDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineDeciderDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineResolverDecorator<,>));
+
+    /// <summary>
+    /// Adds the dependency pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineDependencyDecorator(
+        this IServiceCollection services) =>
+        services.AddXPipelineDecorator(typeof(PipelineDependencyDecorator<,>));
 
     /// <summary>
     /// Adds a unit of work pipeline decorator to the <see cref="IServiceCollection"/>.
@@ -256,11 +257,11 @@ public static class ServiceCollectionDispatcherExtensions
     /// <param name="services">The service collection to add the aggregate 
     /// snapshot store to.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXSnapshotStore(
+    public static IServiceCollection AddXSnapshotAggregateStore(
         this IServiceCollection services) =>
         services.XTryDecorate(
             typeof(IAggregateStore<>),
-            typeof(SnapshotStore<>),
+            typeof(SnapShotAggregateStore<>),
             typeof(IOriginator));
 
     /// <summary>
@@ -486,7 +487,7 @@ public static class ServiceCollectionDispatcherExtensions
     }
 
     internal static readonly MethodInfo AddEventHandlerMethod =
-        typeof(ServiceCollectionDispatcherExtensions)
+        typeof(ServiceCollectionMediatorExtensions)
         .GetMethod(nameof(AddXEventHandler))!;
 
     /// <summary>

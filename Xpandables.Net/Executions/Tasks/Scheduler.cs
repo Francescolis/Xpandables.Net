@@ -34,7 +34,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IDisposable? _optionsMonitor;
-    private EventOptions _options;
+    private SchedulerOptions _options;
     private readonly ILogger<Scheduler> _logger;
 
     private uint _retryCount;
@@ -52,7 +52,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
     /// <param name="logger">The logger to log information and errors.</param>
     public Scheduler(
         IServiceScopeFactory serviceScopeFactory,
-        IOptionsMonitor<EventOptions> options,
+        IOptionsMonitor<SchedulerOptions> options,
         ILogger<Scheduler> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
@@ -91,13 +91,13 @@ public sealed class Scheduler : BackgroundService, IScheduler
             OrderBy = x => x.OrderBy(x => x.CreatedOn)
         };
 
-        IEnumerable<IEventIntegration> events = await eventStore
+        List<IEventIntegration> events = await eventStore
             .FetchAsync(eventFilter, cancellationToken)
             .OfType<IEventIntegration>()
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        if (!events.Any())
+        if (events.Count == 0)
         {
             _logger.LogInformation("No events to schedule.");
             return;
@@ -111,7 +111,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
                     .PublishAsync(@event, cancellationToken)
                     .ConfigureAwait(false);
 
-                EventPublished eventPublished = new()
+                EventProcessed eventPublished = new()
                 {
                     EventId = @event.EventId,
                     PublishedOn = DateTime.UtcNow,
@@ -119,12 +119,12 @@ public sealed class Scheduler : BackgroundService, IScheduler
                 };
 
                 await eventStore
-                    .MarkAsPublishedAsync(eventPublished, cancellationToken)
+                    .MarkAsProcessedAsync(eventPublished, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception exception)
             {
-                EventPublished eventPublished = new()
+                EventProcessed eventPublished = new()
                 {
                     EventId = @event.EventId,
                     PublishedOn = DateTime.UtcNow,
@@ -132,7 +132,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
                 };
 
                 await eventStore
-                    .MarkAsPublishedAsync(eventPublished, cancellationToken)
+                    .MarkAsProcessedAsync(eventPublished, cancellationToken)
                     .ConfigureAwait(false);
             }
         });

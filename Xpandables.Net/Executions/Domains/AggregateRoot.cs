@@ -22,26 +22,32 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents an abstract base class for aggregates that handle domain events.
+/// Represents the base class for an aggregate root in a domain-driven design.
 /// </summary>
-public abstract class Aggregate : IAggregate
+public abstract class AggregateRoot : IEventSourcing
 {
     private readonly ConcurrentQueue<IEventDomain> _uncommittedEvents = new();
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the unique identifier of the aggregate root.
+    /// </summary>
     public Guid KeyId { get; protected set; } = Guid.Empty;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the version of the aggregate root.
+    /// </summary>
     public ulong Version { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets a value indicating whether the aggregate root is empty.
+    /// </summary>
     public bool IsEmpty => KeyId == Guid.Empty;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Aggregate"/> class.
+    /// Initializes a new instance of the <see cref="AggregateRoot"/> class.
     /// </summary>
-    protected Aggregate() { }
+    protected AggregateRoot() { }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<IEventDomain> GetUncommittedEvents() =>

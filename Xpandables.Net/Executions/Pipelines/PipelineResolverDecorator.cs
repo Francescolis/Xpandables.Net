@@ -14,33 +14,33 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Executions.Pipelines;
+using Microsoft.Extensions.DependencyInjection;
 
-/// <summary>
-/// A pipeline decorator that handles exceptions thrown during the execution 
-/// of a request and transforms them into an <see cref="ExecutionResultException"/>.
-/// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
+using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Executions.Tasks;
+
+namespace Xpandables.Net.Executions.Pipelines;
+internal sealed class PipelineResolverDecorator<TRequest, TResponse>(
+    IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
-    where TRequest : class
+    where TRequest : class, IDependencyRequest
     where TResponse : notnull
 {
-    /// <inheritdoc/>
     public override async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            return await next().ConfigureAwait(false);
-        }
-        catch (Exception exception)
-            when (exception is not ExecutionResultException)
-        {
-            throw new ExecutionResultException(exception.ToExecutionResult());
-        }
+        Type aggregateStoreType = typeof(IAggregateStore<>)
+            .MakeGenericType(request.DependencyType);
+
+        IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+            .GetRequiredService(aggregateStoreType);
+
+        request.DependencyInstance = await aggregateStore
+            .ResolveAsync((Guid)request.DependencyKeyId, cancellationToken)
+            .ConfigureAwait(false);
+
+        return await next().ConfigureAwait(false);
     }
 }

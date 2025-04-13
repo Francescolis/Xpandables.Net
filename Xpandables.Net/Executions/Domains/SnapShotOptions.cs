@@ -17,22 +17,17 @@
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents an aggregate with an identifier and version.
+/// Represents the options for configuring the snapshot feature.
 /// </summary>
-public interface IAggregate : IEventSourcing
+public sealed record SnapShotOptions
 {
     /// <summary>
-    /// Gets the unique identifier of the aggregate.
+    /// Gets a value indicating whether snapshot is enabled.
     /// </summary>
-    Guid KeyId { get; }
+    public bool IsSnapshotEnabled { get; set; } = true;
 
     /// <summary>
-    /// Gets the version of the aggregate.
+    /// Gets the frequency of snapshots.
     /// </summary>
-    ulong Version { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether the aggregate is empty.
-    /// </summary>
-    bool IsEmpty { get; }
+    public ulong SnapshotFrequency { get; set; } = 50;
 }

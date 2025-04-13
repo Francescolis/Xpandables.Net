@@ -20,14 +20,14 @@ using Xpandables.Net.States;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents an abstract base class for aggregates with a specific state context.
+/// Represents the base class for an aggregate root with state management.
 /// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate.</typeparam>
-/// <typeparam name="TState">The type of the aggregate state.</typeparam>
-public abstract class AggregateState<TAggregate, TState> :
-    Aggregate,
+/// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
+/// <typeparam name="TState">The type of the state.</typeparam>
+public abstract class AggregateRootState<TAggregateRoot, TState> :
+    AggregateRoot,
     IStateContext<TState>
-    where TAggregate : AggregateState<TAggregate, TState>
+    where TAggregateRoot : AggregateRootState<TAggregateRoot, TState>
     where TState : class, IState
 {
     /// <inheritdoc/>
@@ -35,11 +35,11 @@ public abstract class AggregateState<TAggregate, TState> :
 
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="AggregateState{TAggregate, TAggregateId}"/> class.
+    /// <see cref="AggregateRootState{TAggregate, TAggregateId}"/> class.
     /// </summary>
-    /// <param name="startState">The initial state of the aggregate.</param>
-    protected AggregateState(TState startState) =>
-        TransitionToState(startState);
+    /// <param name="initialState">The initial state of the aggregate.</param>
+    protected AggregateRootState(TState initialState) =>
+        TransitionToState(initialState);
 
     /// <inheritdoc/>
     public void TransitionToState(TState state)

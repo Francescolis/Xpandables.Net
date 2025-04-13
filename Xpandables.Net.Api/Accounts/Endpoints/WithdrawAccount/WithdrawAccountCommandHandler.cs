@@ -12,7 +12,7 @@ public sealed class WithdrawAccountCommandHandler(
         CancellationToken cancellationToken = default)
     {
         Account account = await aggregateStore
-            .PeekAsync(command.KeyId, cancellationToken)
+            .ResolveAsync(command.KeyId, cancellationToken)
             .ConfigureAwait(false);
 
         account.Withdraw(command.Amount);

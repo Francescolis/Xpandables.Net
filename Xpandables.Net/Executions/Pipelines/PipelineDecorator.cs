@@ -27,21 +27,7 @@ public abstract class PipelineDecorator<TRequest, TResponse> :
     where TResponse : notnull
 {
     /// <inheritdoc/>
-    public Task<TResponse> HandleAsync(
-        TRequest request,
-        RequestHandler<TResponse> next,
-        CancellationToken cancellationToken = default) =>
-        HandleCoreAsync(request, next, cancellationToken);
-
-    /// <summary>
-    /// Handles the core logic of the pipeline decorator.
-    /// </summary>
-    /// <param name="request">The request object.</param>
-    /// <param name="next">The next delegate in the pipeline.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.
-    /// the task result contains the response.</returns>
-    protected abstract Task<TResponse> HandleCoreAsync(
+    public abstract Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default);

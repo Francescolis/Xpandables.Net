@@ -27,7 +27,7 @@ public sealed class EventSchedulerUnitTest
         services.AddXPublisher();
         services.AddXSubscriber();
         services.AddXScheduler();
-        services.Configure<EventOptions>(EventOptions.Default);
+        services.AddOptions<EventOptions>();
         services.AddLogging();
 
         _serviceProvider = services.BuildServiceProvider();
@@ -116,17 +116,8 @@ public class InMemoryEventStore : IEventStore
                     _eventConverter.ConvertFrom(entity, _options)));
     }
 
-    public Task DeleteAsync(
-        IEventFilter filter,
-        CancellationToken cancellationToken = default)
-    {
-        var entities = filter.Apply(_eventEntities.AsQueryable()).OfType<IEventEntity>();
-        entities.ForEach(e => e.SetStatus(EntityStatus.DELETED));
-        return Task.CompletedTask;
-    }
-
-    public Task MarkAsPublishedAsync(
-        EventPublished eventPublished,
+    public Task MarkAsProcessedAsync(
+        EventProcessed eventPublished,
         CancellationToken cancellationToken = default)
     {
         var entities = _eventEntities
