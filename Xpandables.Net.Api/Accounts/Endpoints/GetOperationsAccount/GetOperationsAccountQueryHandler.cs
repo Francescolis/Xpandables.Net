@@ -18,7 +18,8 @@ public sealed class GetOperationsAccountQueryHandler(
 
         IEventFilter filter = new EventEntityFilterDomain
         {
-            Predicate = e => e.AggregateId == query.KeyId,
+            Predicate = e => e.AggregateId == query.KeyId
+            && e.EventName == nameof(DepositMade) || e.EventName == nameof(WithdrawMade),
             //EventDataPredicate = e => e.RootElement
             //    .GetProperty(nameof(EventEntityDomain.EventName))
             //    .GetString()!
@@ -30,7 +31,9 @@ public sealed class GetOperationsAccountQueryHandler(
 
         var operations = GetOperations(events);
 
-        return ExecutionResults.Success(operations);
+        return ExecutionResults.Ok(operations)
+            .WithHeader("Count", $"{filter.TotalCount}")
+            .Build();
 
         static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events)
         {
