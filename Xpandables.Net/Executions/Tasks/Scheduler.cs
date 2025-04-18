@@ -115,7 +115,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
                 {
                     EventId = @event.EventId,
                     PublishedOn = DateTime.UtcNow,
-                    ErrorMessage = string.Empty
+                    ErrorMessage = null
                 };
 
                 await eventStore
