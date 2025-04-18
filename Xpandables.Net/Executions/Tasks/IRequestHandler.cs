@@ -42,7 +42,7 @@ public interface IRequestHandler<in TRequest>
 /// <remarks>This can also be enhanced with some useful decorators.</remarks>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TDependency">The type of the dependency.</typeparam>
-public interface IDeciderRequestHandler<in TRequest, in TDependency> : IRequestHandler<TRequest>
+public interface IDependencyRequestHandler<in TRequest, in TDependency> : IRequestHandler<TRequest>
     where TRequest : class, IDependencyRequest<TDependency>
     where TDependency : class
 {
