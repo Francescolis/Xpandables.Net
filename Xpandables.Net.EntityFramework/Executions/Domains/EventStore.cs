@@ -16,8 +16,6 @@
  *
 ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -119,28 +117,17 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
         EventProcessed eventProcessed,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            string status = eventProcessed.ErrorMessage is null
-                ? EntityStatus.PUBLISHED : EntityStatus.ONERROR;
+        string status = eventProcessed.ErrorMessage is null
+            ? EntityStatus.PUBLISHED : EntityStatus.ONERROR;
 
-            await _context.Integrations
-                .Where(e => e.KeyId == eventProcessed.EventId)
-                .ExecuteUpdateAsync(entity =>
-                    entity
-                    .SetProperty(e => e.Status, status)
-                    .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (Exception exception)
-            when (exception is not ValidationException
-            and not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "An error occurred while marking the event as published.",
-                exception);
-        }
+        await _context.Integrations
+            .Where(e => e.KeyId == eventProcessed.EventId)
+            .ExecuteUpdateAsync(entity =>
+                entity
+                .SetProperty(e => e.Status, status)
+                .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

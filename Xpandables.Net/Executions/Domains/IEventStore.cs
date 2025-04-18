@@ -31,8 +31,6 @@ public interface IEventStore
     /// <param name="event">The events to be appended to the data source.</param>
     /// <param name="cancellationToken">Allows the operation to be canceled if needed.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when appending events 
-    /// fails.</exception>
     Task AppendAsync(
         IEvent @event,
         CancellationToken cancellationToken = default);
@@ -43,8 +41,6 @@ public interface IEventStore
     /// <param name="events">The events to append.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when appending events 
-    /// fails.</exception>
     Task AppendAsync(
         IEnumerable<IEvent> events,
         CancellationToken cancellationToken = default);
@@ -55,8 +51,6 @@ public interface IEventStore
     /// <param name="filter">The filter to apply when fetching events.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of events.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when fetching events
-    /// fails.</exception>
     IAsyncEnumerable<IEvent> FetchAsync(
         IEventFilter filter,
         CancellationToken cancellationToken = default);
@@ -67,8 +61,6 @@ public interface IEventStore
     /// <param name="eventProcessed">The processed information of the event.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when marking events
-    /// fails.</exception>
     Task MarkAsProcessedAsync(
         EventProcessed eventProcessed,
         CancellationToken cancellationToken = default);
