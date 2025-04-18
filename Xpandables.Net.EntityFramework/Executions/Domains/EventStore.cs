@@ -125,6 +125,7 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
             .ExecuteUpdateAsync(entity =>
                 entity
                 .SetProperty(e => e.Status, status)
+                .SetProperty(e => e.ErrorMessage, eventProcessed.ErrorMessage)
                 .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
                 cancellationToken)
             .ConfigureAwait(false);
