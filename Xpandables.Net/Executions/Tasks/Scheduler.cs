@@ -85,7 +85,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
 
         IEventFilter eventFilter = new EventEntityFilterIntegration
         {
-            Predicate = x => x.Status == EntityStatus.ACTIVE,
+            Predicate = x => x.Status == EntityStatus.ACTIVE.Value,
             PageIndex = 0,
             PageSize = _options.MaxSchedulerEventPerThread,
             OrderBy = x => x.OrderBy(x => x.CreatedOn)
