@@ -29,7 +29,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IValidationEnabled
-    where TResponse : notnull
+    where TResponse : _ExecutionResult
 {
     /// <inheritdoc/>
     public override async Task<TResponse> HandleAsync(
@@ -43,7 +43,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(
 
         if (!result.IsSuccessStatusCode)
         {
-            throw new ExecutionResultException(result);
+            return (result as TResponse)!;
         }
 
         return await next().ConfigureAwait(false);

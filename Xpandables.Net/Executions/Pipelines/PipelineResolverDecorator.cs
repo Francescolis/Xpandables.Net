@@ -24,7 +24,7 @@ internal sealed class PipelineResolverDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest
-    where TResponse : notnull
+    where TResponse : _ExecutionResult
 {
     public override async Task<TResponse> HandleAsync(
         TRequest request,

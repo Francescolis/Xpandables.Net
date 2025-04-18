@@ -25,33 +25,28 @@ internal sealed class PipelineAppenderDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest, IAggregateAppender
-    where TResponse : notnull
+    where TResponse : _ExecutionResult
 {
     public override async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        try
+        TResponse response = await next().ConfigureAwait(false);
+
+        if (response.IsSuccessStatusCode && request.DependencyInstance is not null)
         {
-            TResponse response = await next().ConfigureAwait(false);
+            Type aggregateStoreType = typeof(IAggregateStore<>)
+                .MakeGenericType(request.DependencyType);
 
-            return response;
+            IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+                .GetRequiredService(aggregateStoreType);
+
+            await aggregateStore
+                .AppendAsync((AggregateRoot)request.DependencyInstance, cancellationToken)
+                .ConfigureAwait(false);
         }
-        finally
-        {
-            if (request.DependencyInstance is not null)
-            {
-                Type aggregateStoreType = typeof(IAggregateStore<>)
-                    .MakeGenericType(request.DependencyType);
 
-                IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
-                    .GetRequiredService(aggregateStoreType);
-
-                await aggregateStore
-                    .AppendAsync((AggregateRoot)request.DependencyInstance, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-        }
+        return response;
     }
 }

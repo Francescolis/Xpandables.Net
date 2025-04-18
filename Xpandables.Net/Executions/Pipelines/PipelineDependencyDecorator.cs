@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
-
 using Xpandables.Net.Executions.Deciders;
 using Xpandables.Net.Executions.Tasks;
 
@@ -40,29 +38,15 @@ public sealed class PipelineDependencyDecorator<TRequest, TResponse>(
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            IDependencyProvider dependencyProvider = dependencyManager
-                .GetDependencyProvider(request.DependencyType);
+        IDependencyProvider dependencyProvider = dependencyManager
+            .GetDependencyProvider(request.DependencyType);
 
-            object dependency = await dependencyProvider
-                .GetDependencyAsync(request, cancellationToken)
-                .ConfigureAwait(false);
+        object dependency = await dependencyProvider
+            .GetDependencyAsync(request, cancellationToken)
+            .ConfigureAwait(false);
 
-            request.DependencyInstance = dependency;
+        request.DependencyInstance = dependency;
 
-            return await next().ConfigureAwait(false);
-        }
-        catch (Exception exception)
-            when (exception is not ValidationException
-                and not InvalidOperationException
-                and not UnauthorizedAccessException
-                and not ExecutionResultException)
-        {
-            throw new InvalidOperationException(
-                $"An error occurred getting dependency of the object " +
-                $"with the key '{request.DependencyKeyId}'.",
-                exception);
-        }
+        return await next().ConfigureAwait(false);
     }
 }

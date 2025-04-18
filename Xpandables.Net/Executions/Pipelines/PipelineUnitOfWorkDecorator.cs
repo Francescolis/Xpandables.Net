@@ -31,7 +31,7 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
     IUnitOfWork unitOfWork) :
     PipelineDecorator<TRequest, TResponse>
     where TRequest : class, IUnitOfWorkApplier
-    where TResponse : notnull
+    where TResponse : _ExecutionResult
 {
     /// <inheritdoc/>
     public override async Task<TResponse> HandleAsync(
