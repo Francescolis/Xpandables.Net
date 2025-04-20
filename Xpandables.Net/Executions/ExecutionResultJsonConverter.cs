@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -39,8 +39,8 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
         Type typeToConvert,
         JsonSerializerOptions options) =>
         UseAspNetCoreCompatibility
-        ? throw new NotSupportedException()
-        : JsonSerializer.Deserialize<ExecutionResult>(ref reader, options);
+            ? throw new NotSupportedException()
+            : JsonSerializer.Deserialize<ExecutionResult>(ref reader);
 
     /// <inheritdoc/>
     public override void Write(
@@ -57,13 +57,12 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
                 JsonSerializer.Serialize(
                     writer,
                     value.Result,
-                    value.Result.GetType(),
-                    options);
+                    value.Result.GetType());
             }
         }
         else
         {
-            JsonSerializer.Serialize(writer, value, options);
+            JsonSerializer.Serialize(writer, value);
         }
     }
 }
@@ -72,8 +71,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
 /// A JSON converter for <see cref="ExecutionResult{TResult}"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class ExecutionResultJsonConverter<TResult> :
-    JsonConverter<ExecutionResult<TResult>>
+public sealed class ExecutionResultJsonConverter<TResult> : JsonConverter<ExecutionResult<TResult>>
 {
     /// <summary>
     /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
@@ -89,9 +87,8 @@ public sealed class ExecutionResultJsonConverter<TResult> :
         Type typeToConvert,
         JsonSerializerOptions options) =>
         UseAspNetCoreCompatibility
-        ? throw new NotSupportedException()
-        : JsonSerializer.Deserialize<ExecutionResult<TResult>>(
-            ref reader, options);
+            ? throw new NotSupportedException()
+            : JsonSerializer.Deserialize<ExecutionResult<TResult>>(ref reader);
 
     /// <inheritdoc/>
     public override void Write(
@@ -108,13 +105,12 @@ public sealed class ExecutionResultJsonConverter<TResult> :
                 JsonSerializer.Serialize(
                     writer,
                     value.Result,
-                    value.Result.GetType(),
-                    options);
+                    value.Result.GetType());
             }
         }
         else
         {
-            JsonSerializer.Serialize(writer, value, options);
+            JsonSerializer.Serialize(writer, value);
         }
     }
 }
@@ -151,10 +147,7 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
     {
         if (typeToConvert == typeof(ExecutionResult))
         {
-            return new ExecutionResultJsonConverter()
-            {
-                UseAspNetCoreCompatibility = UseAspNetCoreCompatibility
-            };
+            return new ExecutionResultJsonConverter() { UseAspNetCoreCompatibility = UseAspNetCoreCompatibility };
         }
 
         Type resultType = typeToConvert.GetGenericArguments()[0];

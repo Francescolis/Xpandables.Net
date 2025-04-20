@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
@@ -25,6 +26,7 @@ namespace Xpandables.Net.Collections;
 /// Represents an entry in a collection with a key and associated values.
 /// </summary>
 [StructLayout(LayoutKind.Auto)]
+[JsonConverter(typeof(ElementEntryJsonConverter))]
 public readonly record struct ElementEntry
 {
     /// <summary>
@@ -35,7 +37,7 @@ public readonly record struct ElementEntry
     /// Gets the values associated with the key.
     /// </summary>
     public required StringValues Values { get; init; }
-
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="ElementEntry"/> struct.
     /// </summary>

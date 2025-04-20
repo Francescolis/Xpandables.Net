@@ -103,6 +103,7 @@ public abstract record _ExecutionResult
     /// Gets the exception associated with the execution result, if any.
     /// </summary>
     /// <returns>The exception entry if available; otherwise, null.</returns>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ElementEntry? Exception => Errors[ExceptionKey];
 
     /// <summary>

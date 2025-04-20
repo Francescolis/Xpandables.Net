@@ -117,10 +117,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
         if (existingEntry.HasValue)
         {
             _ = _entries.Remove(existingEntry.Value);
-            entry = existingEntry.Value with
-            {
-                Values = StringValues.Concat(existingEntry.Value.Values, entry.Values)
-            };
+            entry = existingEntry.Value with { Values = StringValues.Concat(existingEntry.Value.Values, entry.Values) };
         }
 
         _entries.Add(entry);
@@ -164,18 +161,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     public int Remove(string key)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
-
-        int removed = 0;
-        for (int i = _entries.Count - 1; i >= 0; i--)
-        {
-            if (string.Equals(_entries[i].Key, key, StringComparison.Ordinal))
-            {
-                _entries.RemoveAt(i);
-                removed++;
-            }
-        }
-
-        return removed;
+        return _entries.RemoveAll(entry => entry.Key == key);
     }
 
     /// <summary>
