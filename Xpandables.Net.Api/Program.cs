@@ -2,6 +2,7 @@ using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
+using Xpandables.Net.Api;
 using Xpandables.Net.Api.Accounts.Persistence;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Executions.Domains;
@@ -20,14 +21,10 @@ builder.Services.AddXMinimalApi();
 builder.Services.AddXMediator();
 builder.Services.AddXHandlers();
 builder.Services.AddXAggregateStore();
-builder.Services.AddXEventStore();
-builder.Services.AddXEventUnitOfWork();
+builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
 builder.Services.AddXPublisher();
 builder.Services.AddXPipelineResolverDecorator();
-builder.Services.AddXPipelineUnitOfWorkDecorator();
 builder.Services.AddXPipelineAppenderDecorator();
-
-builder.Services.AddDataContextEventForSqlServer(builder.Configuration);
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -71,12 +68,8 @@ app.UseSwagger()
 
 app.UseXEndpointRoutes();
 
-// ensure the database is created and migrated
-using var scope = app.Services.CreateScope();
-var eventContext = scope.ServiceProvider.GetRequiredService<DataContextEvent>();
-await eventContext.Database.EnsureDeletedAsync();
-await eventContext.Database.EnsureCreatedAsync();
-
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}

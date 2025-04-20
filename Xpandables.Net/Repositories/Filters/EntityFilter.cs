@@ -37,7 +37,7 @@ public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
     public int TotalCount { get; set; }
 
     /// <inheritdoc/>
-    public virtual required Expression<Func<TEntity, TResult>> Selector { get; init; }
+    public required Expression<Func<TEntity, TResult>> Selector { get; init; }
 
     /// <inheritdoc/>
     public Expression<Func<TEntity, bool>>? Predicate { get; init; }
@@ -57,5 +57,7 @@ public record EntityFilter<TEntity> : EntityFilter<TEntity, TEntity>, IEntityFil
     /// Initializes a new instance of the <see cref="EntityFilter{TEntity}"/> class.
     /// </summary>
     [SetsRequiredMembers]
+#pragma warning disable CS8618, CS9264
     public EntityFilter() : base() => Selector = entity => entity;
+#pragma warning restore CS8618, CS9264
 }

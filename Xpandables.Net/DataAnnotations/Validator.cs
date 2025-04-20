@@ -25,8 +25,8 @@ namespace Xpandables.Net.DataAnnotations;
 /// Provides validation for instances of type <typeparamref name="TArgument"/>.
 /// </summary>
 /// <typeparam name="TArgument">The type of the instance to validate.</typeparam>
-/// <remarks>The default behavior uses <see cref="Validator.TryValidateObject(
-/// object, ValidationContext, ICollection{ValidationResult}?, bool)"/>.</remarks>
+/// <remarks>The default behavior uses Validator.TryValidateObject(
+/// object, ValidationContext, ICollection{ValidationResult}?, bool).</remarks>
 public class Validator<TArgument> : IValidator<TArgument>
     where TArgument : class, IValidationEnabled
 {

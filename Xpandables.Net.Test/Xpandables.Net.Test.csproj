@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <Platforms>x64</Platforms>
     <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>D:\Sources\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +38,12 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Xpandables.Net.snk">
+      <Link>Xpandables.Net.snk</Link>
+    </None>
   </ItemGroup>
 
 </Project>

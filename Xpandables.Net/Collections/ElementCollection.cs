@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
@@ -115,22 +116,11 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
         ElementEntry? existingEntry = this[entry.Key];
         if (existingEntry.HasValue)
         {
-            for (int i = 0; i < _entries.Count; i++)
+            _ = _entries.Remove(existingEntry.Value);
+            entry = existingEntry.Value with
             {
-                if (string.Equals(_entries[i].Key, entry.Key, StringComparison.Ordinal))
-                {
-                    _entries.RemoveAt(i);
-                    break;
-                }
-            }
-
-            // Calculate union manually to avoid LINQ overhead
-            HashSet<string> unionValues = [.. existingEntry.Value.Values, .. entry.Values];
-
-            string[] combinedValues = new string[unionValues.Count];
-            unionValues.CopyTo(combinedValues);
-
-            entry = existingEntry.Value with { Values = combinedValues };
+                Values = StringValues.Concat(existingEntry.Value.Values, entry.Values)
+            };
         }
 
         _entries.Add(entry);
@@ -226,14 +216,14 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>
     }
 
     internal ElementCollection(string key, params string[] values)
-        : this(new ElementEntry(key, values)) { }
+        : this(new ElementEntry(key, values))
+    {
+    }
 
     [JsonConstructor]
     internal ElementCollection(IList<ElementEntry> entries)
     {
         _entries = [];
-
-        if (entries == null) return;
 
         _entries.EnsureCapacity(entries.Count);
 

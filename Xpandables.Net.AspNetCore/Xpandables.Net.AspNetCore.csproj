@@ -10,7 +10,7 @@
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>D:\Sources\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>..\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<Title>Xpandables.Net.AspNetCore</Title>
 		<Authors>Francescolis</Authors>
 		<Company>Kamersoft.Net</Company>
@@ -70,6 +70,9 @@
 		<None Include="..\README.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\Xpandables.Net.snk">
+		  <Link>Xpandables.Net.snk</Link>
 		</None>
 	</ItemGroup>
 
