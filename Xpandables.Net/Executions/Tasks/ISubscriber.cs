@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
@@ -25,8 +26,10 @@ public interface ISubscriber : IDisposable
     /// Subscribes to an event with a specified action.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    /// <param name="subscriber">The action to be executed when the event 
-    /// is published.</param>
+    /// <param name="subscriber">
+    /// The action to be executed when the event
+    /// is published.
+    /// </param>
     void Subscribe<TEvent>(Action<TEvent> subscriber)
         where TEvent : notnull, IEvent;
 
@@ -34,8 +37,18 @@ public interface ISubscriber : IDisposable
     /// Subscribes to an event with a specified asynchronous function.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    /// <param name="subscriber">The asynchronous function to be executed 
-    /// when the event is published.</param>
+    /// <param name="subscriber">
+    /// The asynchronous function to be executed
+    /// when the event is published.
+    /// </param>
     void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
+        where TEvent : notnull, IEvent;
+
+    /// <summary>
+    /// Subscribes to an event with a specified event handler.
+    /// </summary>
+    /// <param name="subscriber">The event handler to be executed when the event is published.</param>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    void Subscribe<TEvent>(IEventHandler<TEvent> subscriber)
         where TEvent : notnull, IEvent;
 }

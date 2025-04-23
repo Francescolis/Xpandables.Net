@@ -13,60 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
-using System.ComponentModel;
+ ********************************************************************************/
 
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a handler for events of type <see cref="IEvent"/>.
-/// </summary>
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public interface IEventHandler
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-{
-    /// <summary>
-    /// Handles the specified event asynchronously.
-    /// </summary>
-    /// <param name="event">The event to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation 
-    /// requests.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="InvalidOperationException">Handling the event failed.
-    /// See inner exception for details.</exception>
-    Task Handle(
-        object @event,
-        CancellationToken cancellationToken = default);
-}
-
-
-/// <summary>
-/// Defines a handler for events of type <typeparamref name="TEvent"/>.
+///     Defines a contract for handling events.
 /// </summary>
 /// <typeparam name="TEvent">The type of event to handle.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public interface IEventHandler<TEvent> : IEventHandler
+public interface IEventHandler<in TEvent>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TEvent : notnull, IEvent
 {
     /// <summary>
-    /// Handles the specified event asynchronously.
+    ///     Handles the specified event asynchronously.
     /// </summary>
     /// <param name="event">The event to handle.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation 
-    /// requests.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="InvalidOperationException">Handling the event failed.
-    /// See inner exception for details.</exception>
-    Task HandleAsync(
-        TEvent @event,
-        CancellationToken cancellationToken = default);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CA1033 // Interface methods should be callable by child types
-    Task IEventHandler.Handle(
-#pragma warning restore CA1033 // Interface methods should be callable by child types
-        object @event,
-        CancellationToken cancellationToken) =>
-        HandleAsync((TEvent)@event, cancellationToken);
+    /// <exception cref="InvalidOperationException">Thrown when then event handler fails.</exception>
+    Task HandleAsync(TEvent @event, CancellationToken cancellationToken = default);
 }

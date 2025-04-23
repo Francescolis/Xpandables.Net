@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 using System.Collections.Concurrent;
 
@@ -26,15 +26,17 @@ namespace Xpandables.Net.Executions.Tasks;
 /// <summary>
 /// Provides a mechanism for publishing and subscribing to events.
 /// </summary>
-/// <param name="serviceProvider">The service provider to resolve event 
-/// handlers.</param>
+/// <param name="serviceProvider">
+/// The service provider to resolve event
+/// handlers.
+/// </param>
 public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
     Disposable, IPublisher, ISubscriber
 {
-    private readonly ConcurrentDictionary<Type, ConcurrentBag<object>> _subscribers = [];
     private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly ConcurrentDictionary<Type, ConcurrentBag<object>> _subscribers = [];
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task PublishAsync<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
@@ -44,15 +46,17 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
         {
             ConcurrentBag<object> handlers = GetHandlersOf(@event.GetType());
 
-            Task[] tasks = [.. handlers
-                .Select(handler => handler switch
-                {
-                    Action<TEvent> action => Task.Run(() => action(@event)),
-                    Func<TEvent, Task> func => func(@event),
-                    IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event, cancellationToken),
-                    IEventHandler eventHandler1 => eventHandler1.Handle(@event, cancellationToken),
-                    _ => Task.CompletedTask
-                })];
+            Task[] tasks =
+            [
+                .. handlers
+                    .Select(handler => handler switch
+                    {
+                        Action<TEvent> action => Task.Run(() => action(@event)),
+                        Func<TEvent, Task> func => func(@event),
+                        IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event, cancellationToken),
+                        _ => Task.CompletedTask
+                    })
+            ];
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
@@ -66,19 +70,25 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Subscribe<TEvent>(Action<TEvent> subscriber)
         where TEvent : notnull, IEvent =>
         GetHandlersOf<TEvent>()
-        .Add(subscriber);
+            .Add(subscriber);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
         where TEvent : notnull, IEvent =>
         GetHandlersOf<TEvent>()
-        .Add(subscriber);
+            .Add(subscriber);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public void Subscribe<TEvent>(IEventHandler<TEvent> subscriber)
+        where TEvent : notnull, IEvent =>
+        GetHandlersOf<TEvent>()
+            .Add(subscriber);
+
+    /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         if (disposing)
