@@ -42,6 +42,7 @@ internal sealed class RestAttributeProvider(IServiceProvider serviceProvider) : 
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // ReSharper disable once SuspiciousTypeConversion.Global
         if (request is IRestAttributeBuilder builder)
         {
             return builder.Build(serviceProvider);
