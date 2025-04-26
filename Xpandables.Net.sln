@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Api", "Xpand
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.EntityFramework", "Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj", "{22FDB470-3671-4330-B0AE-D6EE37FEFA5C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.RestGenerator", "Xpandables.Net.RestGenerator\Xpandables.Net.RestGenerator.csproj", "{C85296F9-9A34-4029-9267-AECCA33988BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,14 @@ Global
 		{22FDB470-3671-4330-B0AE-D6EE37FEFA5C}.Release|Any CPU.Build.0 = Release|x64
 		{22FDB470-3671-4330-B0AE-D6EE37FEFA5C}.Release|x64.ActiveCfg = Release|x64
 		{22FDB470-3671-4330-B0AE-D6EE37FEFA5C}.Release|x64.Build.0 = Release|x64
+		{C85296F9-9A34-4029-9267-AECCA33988BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C85296F9-9A34-4029-9267-AECCA33988BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C85296F9-9A34-4029-9267-AECCA33988BB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C85296F9-9A34-4029-9267-AECCA33988BB}.Debug|x64.Build.0 = Debug|Any CPU
+		{C85296F9-9A34-4029-9267-AECCA33988BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C85296F9-9A34-4029-9267-AECCA33988BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C85296F9-9A34-4029-9267-AECCA33988BB}.Release|x64.ActiveCfg = Release|Any CPU
+		{C85296F9-9A34-4029-9267-AECCA33988BB}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
