@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
@@ -27,14 +28,16 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// Provides extension methods for operation results.
 /// </summary>
-public static partial class ExecutionResultExtensions
+public static class ExecutionResultExtensions
 {
     /// <summary>
-    /// Converts the specified <see cref="ValidationResult"/> to an <see cref="ElementCollection"/>.
+    /// Converts the specified <see cref="ValidationResult" /> to an <see cref="ElementCollection" />.
     /// </summary>
     /// <param name="validationResult">The validation result to convert.</param>
-    /// <returns>An <see cref="ElementCollection"/> representing the 
-    /// validation result.</returns>
+    /// <returns>
+    /// An <see cref="ElementCollection" /> representing the
+    /// validation result.
+    /// </returns>
     public static ElementCollection ToElementCollection(this ValidationResult validationResult)
     {
         if (validationResult.ErrorMessage is null
@@ -43,20 +46,26 @@ public static partial class ExecutionResultExtensions
             return ElementCollection.Empty;
         }
 
-        return ElementCollection.With([.. validationResult
-            .MemberNames
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Select(s => new ElementEntry(s, validationResult.ErrorMessage))]);
+        return ElementCollection.With([
+            .. validationResult
+                .MemberNames
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => new ElementEntry(s, validationResult.ErrorMessage))
+        ]);
     }
 
     /// <summary>
-    /// Converts the specified collection of <see cref="ValidationResult"/>s to an 
-    /// <see cref="ElementCollection"/>.
+    /// Converts the specified collection of <see cref="ValidationResult" />s to an
+    /// <see cref="ElementCollection" />.
     /// </summary>
-    /// <param name="validationResults">The collection of validation results 
-    /// to convert.</param>
-    /// <returns>An <see cref="ElementCollection"/> representing the 
-    /// validation results.</returns>
+    /// <param name="validationResults">
+    /// The collection of validation results
+    /// to convert.
+    /// </param>
+    /// <returns>
+    /// An <see cref="ElementCollection" /> representing the
+    /// validation results.
+    /// </returns>
     public static ElementCollection ToElementCollection(this IEnumerable<ValidationResult> validationResults)
     {
         List<ValidationResult> validations = [.. validationResults];
@@ -65,22 +74,28 @@ public static partial class ExecutionResultExtensions
             return ElementCollection.Empty;
         }
 
-        return ElementCollection.With([.. validations
-            .Where(s => s.ErrorMessage is not null && s.MemberNames.Any())
-            .SelectMany(s => s.MemberNames
-                .Where(m => !string.IsNullOrWhiteSpace(m))
-                .Select(m => new ElementEntry(m, s.ErrorMessage ?? string.Empty))
-            )]);
+        return ElementCollection.With([
+            .. validations
+                .Where(s => s.ErrorMessage is not null && s.MemberNames.Any())
+                .SelectMany(s => s.MemberNames
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .Select(m => new ElementEntry(m, s.ErrorMessage ?? string.Empty))
+                )
+        ]);
     }
 
     /// <summary>
-    /// Converts the specified collection of validation results to an <see cref="ExecutionResult"/>.
+    /// Converts the specified collection of validation results to an <see cref="ExecutionResult" />.
     /// </summary>
-    /// <param name="validationResults">The collection of validation results 
-    /// to convert.</param>
-    /// <returns>An <see cref="ExecutionResult"/> representing the validation results.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the validation 
-    /// results are not valid.</exception>
+    /// <param name="validationResults">
+    /// The collection of validation results
+    /// to convert.
+    /// </param>
+    /// <returns>An <see cref="ExecutionResult" /> representing the validation results.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the validation
+    /// results are not valid.
+    /// </exception>
     public static ExecutionResult ToExecutionResult(this IEnumerable<ValidationResult> validationResults)
     {
         if (!validationResults.Any())
@@ -99,19 +114,19 @@ public static partial class ExecutionResultExtensions
             .Build();
     }
 
-    /// <summary>  
-    /// Converts a <see cref="Exception"/> to an <see cref="ExecutionResult"/>.  
-    /// </summary>  
-    /// <param name="exception">The exception to convert.</param> 
+    /// <summary>
+    /// Converts a <see cref="Exception" /> to an <see cref="ExecutionResult" />.
+    /// </summary>
+    /// <param name="exception">The exception to convert.</param>
     /// <param name="statusCode">Optional HTTP status code to use.</param>
     /// <param name="reason">Optional reason phrase for the status code.</param>
-    /// <returns>An <see cref="ExecutionResult"/> representing the exception.</returns>  
+    /// <returns>An <see cref="ExecutionResult" /> representing the exception.</returns>
     public static ExecutionResult ToExecutionResult(
         this Exception exception, HttpStatusCode? statusCode = null, string? reason = default)
     {
         bool isDevelopment = (Environment.GetEnvironmentVariable(
-            "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
-            Environments.Development;
+                                 "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
+                             Environments.Development;
 
         statusCode ??= exception.GetAppropriatStatusCode();
 
@@ -125,11 +140,10 @@ public static partial class ExecutionResultExtensions
     }
 
     /// <summary>
-    /// Converts the specified <see cref="ExecutionResult"/> to an <see cref="ExecutionResultException"/>.
+    /// Converts the specified <see cref="ExecutionResult" /> to an <see cref="ExecutionResultException" />.
     /// </summary>
     /// <param name="executionResult">The execution result to convert.</param>
-    /// <returns>An <see cref="ExecutionResultException"/> representing the 
-    /// execution result.</returns>
+    /// <returns> An <see cref="ExecutionResultException" /> representing the execution result. </returns>
     public static ExecutionResultException ToExecutionResultException(this ExecutionResult executionResult)
     {
         ArgumentNullException.ThrowIfNull(executionResult);
@@ -138,7 +152,22 @@ public static partial class ExecutionResultExtensions
     }
 
     /// <summary>
-    /// Converts the specified <see cref="ElementCollection"/> to a <see cref="Dictionary{TKey, TValue}"/>.
+    /// Converts the specified <see cref="ExecutionResult{TResult}" /> to an
+    /// <see cref="ExecutionResultException" />.
+    /// </summary>
+    /// <param name="executionResult">The execution result to convert.</param>
+    /// <typeparam name="TResult"> The type of the result produced by the execution result.</typeparam>
+    /// <returns> An <see cref="ExecutionResultException" /> representing the execution result. </returns>
+    public static ExecutionResultException ToExecutionResultException<TResult>(
+        this ExecutionResult<TResult> executionResult)
+    {
+        ArgumentNullException.ThrowIfNull(executionResult);
+
+        return new ExecutionResultException(executionResult);
+    }
+
+    /// <summary>
+    /// Converts the specified <see cref="ElementCollection" /> to a <see cref="Dictionary{TKey, TValue}" />.
     /// </summary>
     /// <param name="element">The element collection to convert.</param>
     /// <returns>A dictionary of items representing the element collection.</returns>
@@ -151,16 +180,18 @@ public static partial class ExecutionResultExtensions
 
         return element
             .ToDictionary(
-            entry => entry.Key,
-            entry => (object?)entry.Values.StringJoin(" "));
+                entry => entry.Key,
+                entry => (object?)entry.Values.StringJoin(" "));
     }
 
     /// <summary>
-    /// Converts an <see cref="Action"/> to an <see cref="ExecutionResult"/>.
+    /// Converts an <see cref="Action" /> to an <see cref="ExecutionResult" />.
     /// </summary>
     /// <param name="action">The action to execute.</param>
-    /// <returns>An <see cref="ExecutionResult"/> representing the result of 
-    /// the action.</returns>
+    /// <returns>
+    /// An <see cref="ExecutionResult" /> representing the result of
+    /// the action.
+    /// </returns>
     public static ExecutionResult ToExecutionResult(this Action action)
     {
         ArgumentNullException.ThrowIfNull(action);
@@ -178,13 +209,15 @@ public static partial class ExecutionResultExtensions
     }
 
     /// <summary>
-    /// Converts an <see cref="Action{T}"/> to an <see cref="ExecutionResult"/>.
+    /// Converts an <see cref="Action{T}" /> to an <see cref="ExecutionResult" />.
     /// </summary>
     /// <typeparam name="T">The type of the argument passed to the action.</typeparam>
     /// <param name="action">The action to execute.</param>
     /// <param name="args">The argument to pass to the action.</param>
-    /// <returns>An <see cref="ExecutionResult"/> representing the result 
-    /// of the action.</returns>
+    /// <returns>
+    /// An <see cref="ExecutionResult" /> representing the result
+    /// of the action.
+    /// </returns>
     public static ExecutionResult ToExecutionResult<T>(this Action<T> action, T args)
     {
         ArgumentNullException.ThrowIfNull(action);
@@ -210,12 +243,14 @@ public static partial class ExecutionResultExtensions
     }
 
     /// <summary>
-    /// Converts a <see cref="Task"/> to an <see cref="ExecutionResult"/>
+    /// Converts a <see cref="Task" /> to an <see cref="ExecutionResult" />
     /// asynchronously.
     /// </summary>
     /// <param name="task">The task to execute.</param>
-    /// <returns>A <see cref="Task{IOperationResult}"/> representing the result
-    /// of the task.</returns>
+    /// <returns>
+    /// A <see cref="Task{IOperationResult}" /> representing the result
+    /// of the task.
+    /// </returns>
     public static async Task<ExecutionResult> ToExecutionResultAsync(this Task task)
     {
         ArgumentNullException.ThrowIfNull(task);
@@ -233,13 +268,13 @@ public static partial class ExecutionResultExtensions
     }
 
     /// <summary>
-    /// Converts a <see cref="Task{TResult}"/> to an 
-    /// <see cref="ExecutionResult{TResult}"/>
+    /// Converts a <see cref="Task{TResult}" /> to an
+    /// <see cref="ExecutionResult{TResult}" />
     /// asynchronously.
     /// </summary>
     /// <typeparam name="TResult">The type of the result produced by the task.</typeparam>
     /// <param name="task">The task to execute.</param>
-    /// <returns>A <see cref="Task{T}"/> representing the result of the task.</returns>
+    /// <returns>A <see cref="Task{T}" /> representing the result of the task.</returns>
     public static async Task<ExecutionResult<TResult>> ToExecutionResultAsync<TResult>(
         this Task<TResult> task)
     {
@@ -260,14 +295,18 @@ public static partial class ExecutionResultExtensions
     }
 
     /// <summary>
-    /// Converts a <see cref="Func{TResult}"/> to an 
-    /// <see cref="ExecutionResult{TResult}"/>.
+    /// Converts a <see cref="Func{TResult}" /> to an
+    /// <see cref="ExecutionResult{TResult}" />.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result produced by the 
-    /// function.</typeparam>
+    /// <typeparam name="TResult">
+    /// The type of the result produced by the
+    /// function.
+    /// </typeparam>
     /// <param name="func">The function to execute.</param>
-    /// <returns>An <see cref="ExecutionResult{TResult}"/> representing the 
-    /// result of the function.</returns>
+    /// <returns>
+    /// An <see cref="ExecutionResult{TResult}" /> representing the
+    /// result of the function.
+    /// </returns>
     public static ExecutionResult<TResult> ToExecutionResult<TResult>(this Func<TResult> func)
     {
         ArgumentNullException.ThrowIfNull(func);
@@ -285,6 +324,7 @@ public static partial class ExecutionResultExtensions
             return exception.ToExecutionResult();
         }
     }
+
     private static ElementCollection GetValidationExceptionErrors(Exception exception)
     {
         Stack<Exception> stack = new();
@@ -303,11 +343,12 @@ public static partial class ExecutionResultExtensions
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                var errors = currentException.Message.DeserializeAnonymousType(anonymousType, DefaultSerializerOptions.Defaults);
+                var errors =
+                    currentException.Message.DeserializeAnonymousType(anonymousType, DefaultSerializerOptions.Defaults);
                 if (errors is not null && errors.Errors is not null && errors.Errors.Count > 0)
                 {
                     ElementCollection collection = [];
-                    foreach (var error in errors.Errors)
+                    foreach (KeyValuePair<string, IEnumerable<string>> error in errors.Errors)
                     {
                         collection.Add(error.Key, [.. error.Value]);
                     }
@@ -328,5 +369,4 @@ public static partial class ExecutionResultExtensions
 
         return ElementCollection.Empty;
     }
-
 }
