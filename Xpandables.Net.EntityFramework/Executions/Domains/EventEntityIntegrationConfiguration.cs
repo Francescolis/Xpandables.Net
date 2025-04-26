@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Executions.Domains;
+
 /// <summary>
-/// Provides configuration for the <see cref="EventEntityIntegration"/> entity.
+/// Provides configuration for the <see cref="EntityIntegrationEvent" /> entity.
 /// </summary>
 public sealed class EventEntityIntegrationConfiguration :
-    IEntityTypeConfiguration<EventEntityIntegration>
+    IEntityTypeConfiguration<EntityIntegrationEvent>
 {
-    /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<EventEntityIntegration> builder)
+    /// <inheritdoc />
+    public void Configure(EntityTypeBuilder<EntityIntegrationEvent> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

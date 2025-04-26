@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
@@ -30,23 +31,23 @@ public interface IEventSourcing
     /// Gets the collection of uncommitted events.
     /// </summary>
     /// <returns>A read-only collection of uncommitted events.</returns>
-    IReadOnlyCollection<IEventDomain> GetUncommittedEvents();
+    IReadOnlyCollection<IDomainEvent> GetUncommittedEvents();
 
     /// <summary>
     /// Loads a collection of events from history into the aggregate root.
     /// </summary>
     /// <param name="events">The collection of events to load.</param>
-    void LoadFromHistory(IEnumerable<IEventDomain> events);
+    void LoadFromHistory(IEnumerable<IDomainEvent> events);
 
     /// <summary>
     /// Loads a single event from history.
     /// </summary>
-    /// <param name="event">The event to load.</param>
-    void LoadFromHistory(IEventDomain @event);
+    /// <param name="domainEvent">The event to load.</param>
+    void LoadFromHistory(IDomainEvent domainEvent);
 
     /// <summary>
     /// Pushes an event into the aggregate root for processing.
     /// </summary>
-    /// <param name="event"> The event to push.</param>
-    void PushEvent(IEventDomain @event);
+    /// <param name="domainEvent"> The event to push.</param>
+    void PushEvent(IDomainEvent domainEvent);
 }

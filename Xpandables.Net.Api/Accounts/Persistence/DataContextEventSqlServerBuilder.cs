@@ -20,38 +20,38 @@ public static class DataContextEventSqlServerBuilder
         ModelBuilder modelBuilder = new(conventionSet);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContextEvent).Assembly);
 
-        modelBuilder.Entity<EventEntityDomain>()
+        modelBuilder.Entity<EntityDomainEvent>()
             .Property(p => p.KeyId)
             .ValueGeneratedOnAdd()
             .HasDefaultValueSql("NEWID()");
 
-        modelBuilder.Entity<EventEntityDomain>()
+        modelBuilder.Entity<EntityDomainEvent>()
             .Property(p => p.EventData)
             .HasJsonDocumentConversion()
             .IsRequired();
 
-        modelBuilder.Entity<EventEntityIntegration>()
+        modelBuilder.Entity<EntityIntegrationEvent>()
             .Property(p => p.KeyId)
             .ValueGeneratedOnAdd()
             .HasDefaultValueSql("NEWID()");
 
-        modelBuilder.Entity<EventEntityIntegration>()
+        modelBuilder.Entity<EntityIntegrationEvent>()
             .Property(p => p.EventData)
             .HasJsonDocumentConversion()
             .IsRequired();
 
 
-        modelBuilder.Entity<EventEntityIntegration>()
+        modelBuilder.Entity<EntityIntegrationEvent>()
             .Property<byte[]>("ConcurrencyToken")
             .IsRowVersion()
             .IsRequired();
 
-        modelBuilder.Entity<EventEntitySnapshot>()
+        modelBuilder.Entity<EntitySnapshotEvent>()
             .Property(p => p.KeyId)
             .ValueGeneratedOnAdd()
             .HasDefaultValueSql("NEWID()");
 
-        modelBuilder.Entity<EventEntitySnapshot>()
+        modelBuilder.Entity<EntitySnapshotEvent>()
             .Property(p => p.EventData)
             .HasJsonDocumentConversion()
             .IsRequired();
@@ -59,7 +59,7 @@ public static class DataContextEventSqlServerBuilder
 
         return services.AddXDataContextEvent(options =>
             options.UseSqlServer(
-                configuration.GetConnectionString(nameof(DataContextEvent)))
+                    configuration.GetConnectionString(nameof(DataContextEvent)))
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
                 .EnableServiceProviderCaching()

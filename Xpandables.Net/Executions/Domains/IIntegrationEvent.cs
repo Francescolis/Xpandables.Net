@@ -13,54 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Domains;
+
 /// <summary>
 /// Represents an integration event that is part of the event-driven architecture.
 /// </summary>
-public interface IEventIntegration : IEvent
+public interface IIntegrationEvent : IEvent
 {
 }
 
 /// <summary>
-/// Represents an integration event with a specific event domain.
+/// Represents an integration event with a specific domain event.
 /// </summary>
-/// <typeparam name="TEventDomain">The type of the event domain.</typeparam>
-public interface IEventIntegration<TEventDomain> : IEventIntegration
-    where TEventDomain : notnull, IEventDomain
+/// <typeparam name="TDomainEvent">The type of the domain event.</typeparam>
+public interface IIntegrationEvent<TDomainEvent> : IIntegrationEvent
+    where TDomainEvent : notnull, IDomainEvent
 {
 }
 
 /// <summary>
-/// Represents an integration event that is used to communicate between 
+/// Represents an integration event that is used to communicate between
 /// different systems.
 /// </summary>
-public record EventIntegration : Event, IEventIntegration
+public record IntegrationEvent : Event, IIntegrationEvent
 {
 }
 
 /// <summary>
-/// Represents an integration event with a specific event domain.
+/// Represents an integration event with a specific domain event.
 /// </summary>
-/// <typeparam name="TEventDomain">The type of the event domain.</typeparam>
-public record EventIntegration<TEventDomain> : EventIntegration, IEventIntegration<TEventDomain>
-    where TEventDomain : notnull, IEventDomain
+/// <typeparam name="TDomainEvent">The type of the domain event.</typeparam>
+public record IntegrationEvent<TDomainEvent> : IntegrationEvent, IIntegrationEvent<TDomainEvent>
+    where TDomainEvent : notnull, IDomainEvent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventIntegration{TEventDomain}"/> class.
+    /// Initializes a new instance of the <see cref="IntegrationEvent{TDomainEvent}" /> class.
     /// </summary>
     [JsonConstructor]
-    protected EventIntegration() { }
+    protected IntegrationEvent() { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventIntegration{TEventDomain}"/> class.
+    /// Initializes a new instance of the <see cref="IntegrationEvent{TDomainEvent}" /> class.
     /// </summary>
-    /// <param name="eventDomain">The event domain.</param>
+    /// <param name="domainEvent">The domain event.</param>
     [SetsRequiredMembers]
-    protected EventIntegration(TEventDomain eventDomain) => EventId = eventDomain.EventId;
+    protected IntegrationEvent(TDomainEvent domainEvent) => EventId = domainEvent.EventId;
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 using System.Collections.Concurrent;
 
@@ -26,8 +26,13 @@ namespace Xpandables.Net.Executions.Domains;
 /// </summary>
 public abstract class AggregateRoot : IEventSourcing
 {
-    private readonly ConcurrentQueue<IEventDomain> _uncommittedEvents = new();
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
+    private readonly ConcurrentQueue<IDomainEvent> _uncommittedEvents = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AggregateRoot" /> class.
+    /// </summary>
+    protected AggregateRoot() { }
 
     /// <summary>
     /// Gets the unique identifier of the aggregate root.
@@ -44,37 +49,32 @@ public abstract class AggregateRoot : IEventSourcing
     /// </summary>
     public bool IsEmpty => KeyId == Guid.Empty;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AggregateRoot"/> class.
-    /// </summary>
-    protected AggregateRoot() { }
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<IEventDomain> GetUncommittedEvents() =>
+    /// <inheritdoc />
+    public IReadOnlyCollection<IDomainEvent> GetUncommittedEvents() =>
         [.. _uncommittedEvents];
 
-    /// <inheritdoc/>
-    public void LoadFromHistory(IEnumerable<IEventDomain> events) =>
+    /// <inheritdoc />
+    public void LoadFromHistory(IEnumerable<IDomainEvent> events) =>
         events.ForEach(LoadFromHistory);
 
-    /// <inheritdoc/>
-    public void LoadFromHistory(IEventDomain @event)
+    /// <inheritdoc />
+    public void LoadFromHistory(IDomainEvent domainEvent)
     {
-        ArgumentNullException.ThrowIfNull(@event);
+        ArgumentNullException.ThrowIfNull(domainEvent);
 
-        Mutate(@event);
+        Mutate(domainEvent);
 
-        Version = @event.EventVersion;
+        Version = domainEvent.EventVersion;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void MarkEventsAsCommitted() => _uncommittedEvents.Clear();
 
-    /// <inheritdoc/>
-    public void PushEvent(IEventDomain @event)
+    /// <inheritdoc />
+    public void PushEvent(IDomainEvent domainEvent)
     {
-        ArgumentNullException.ThrowIfNull(@event);
-        Apply(@event);
+        ArgumentNullException.ThrowIfNull(domainEvent);
+        Apply(domainEvent);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public abstract class AggregateRoot : IEventSourcing
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="handler">The event handler.</param>
     protected void On<TEvent>(Action<TEvent> handler)
-        where TEvent : notnull, IEventDomain => On(typeof(TEvent), handler);
+        where TEvent : notnull, IDomainEvent => On(typeof(TEvent), handler);
 
     /// <summary>
     /// Registers the delegate for the specific event type.
@@ -91,21 +91,23 @@ public abstract class AggregateRoot : IEventSourcing
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="handler">The event handler.</param>
     protected void On<TEvent>(Delegate handler)
-        where TEvent : notnull, IEventDomain => On(typeof(TEvent), handler);
+        where TEvent : notnull, IDomainEvent => On(typeof(TEvent), handler);
 
     /// <summary>
     /// Registers the delegate for the specified event type.
     /// </summary>
     /// <param name="eventType">The type of the event.</param>
     /// <param name="handler">The event handler.</param>
-    /// <exception cref="ArgumentException">Thrown when the event type is 
-    /// not an event domain.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the event type is
+    /// not an event domain.
+    /// </exception>
     protected void On(Type eventType, Delegate handler)
     {
         ArgumentNullException.ThrowIfNull(eventType);
         ArgumentNullException.ThrowIfNull(handler);
 
-        if (typeof(IEventDomain).IsAssignableFrom(eventType))
+        if (typeof(IDomainEvent).IsAssignableFrom(eventType))
         {
             _ = _eventHandlers.TryAdd(eventType, handler);
             return;
@@ -115,31 +117,32 @@ public abstract class AggregateRoot : IEventSourcing
             $"The type {eventType.Name} is not an event domain.");
     }
 
-    private void Apply(IEventDomain @event)
+    private void Apply(IDomainEvent domainEvent)
     {
-        if (_uncommittedEvents.Any(e => e.EventId == @event.EventId))
+        if (_uncommittedEvents.Any(e => e.EventId == domainEvent.EventId))
         {
             return;
         }
 
         Version++;
-        @event = @event.WithVersion(Version);
+        domainEvent = domainEvent.WithVersion(Version);
 
-        Mutate(@event);
+        Mutate(domainEvent);
 
-        _uncommittedEvents.Enqueue(@event);
+        _uncommittedEvents.Enqueue(domainEvent);
     }
-    private void Mutate(IEventDomain @event)
+
+    private void Mutate(IDomainEvent domainEvent)
     {
-        if (_eventHandlers.TryGetValue(@event.GetType(), out Delegate? handler))
+        if (_eventHandlers.TryGetValue(domainEvent.GetType(), out Delegate? handler))
         {
-            KeyId = @event.AggregateId;
-            _ = handler.DynamicInvoke(@event);
+            KeyId = domainEvent.AggregateId;
+            _ = handler.DynamicInvoke(domainEvent);
         }
         else
         {
             throw new UnauthorizedAccessException(
-                $"The submitted action {@event.GetType().Name} is not authorized.");
+                $"The submitted action {domainEvent.GetType().Name} is not authorized.");
         }
     }
 }

@@ -1,0 +1,70 @@
+using System.Threading.Channels;
+
+using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Repositories;
+using Xpandables.Net.Repositories.Filters;
+
+namespace Xpandables.Net.Executions.Tasks;
+
+/// <summary>
+/// Defines a message queue for processing integration events.
+/// </summary>
+#pragma warning disable CA1711
+public interface IMessageQueue
+#pragma warning restore CA1711
+{
+    /// <summary>
+    /// The channel used for message queuing.
+    /// </summary>
+    Channel<IIntegrationEvent> Channel { get; }
+
+    /// <summary>
+    /// Enqueues a message for processing.
+    /// </summary>
+    /// <param name="message"> The message to enqueue.</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task EnqueueAsync(IIntegrationEvent message, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Dequeues messages for processing.
+    /// </summary>
+    /// <param name="capacity">The maximum number of messages to dequeue.</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default);
+}
+
+// ReSharper disable once ClassNeverInstantiated.Global
+internal sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
+{
+    public Channel<IIntegrationEvent> Channel { get; } =
+        System.Threading.Channels.Channel.CreateBounded<IIntegrationEvent>(new BoundedChannelOptions(100)
+        {
+            SingleReader = true,
+            SingleWriter = true,
+            AllowSynchronousContinuations = false,
+            FullMode = BoundedChannelFullMode.Wait
+        });
+
+    public async Task EnqueueAsync(IIntegrationEvent message, CancellationToken cancellationToken = default) =>
+        await eventStore.AppendAsync(message, cancellationToken).ConfigureAwait(false);
+
+    public async Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default)
+    {
+        IEventFilter eventFilter = new EntityIntegrationEventFilter
+        {
+            Predicate = x => x.Status == EntityStatus.PENDING.Value,
+            PageIndex = 0,
+            PageSize = capacity,
+            OrderBy = x => x.OrderBy(o => o.CreatedOn)
+        };
+
+        await foreach (IIntegrationEvent @event in eventStore.FetchAsync(eventFilter, cancellationToken)
+                           .OfType<IIntegrationEvent>()
+                           .WithCancellation(cancellationToken))
+        {
+            await Channel.Writer.WriteAsync(@event, cancellationToken).ConfigureAwait(false);
+        }
+    }
+}

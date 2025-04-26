@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Text.Json;
 
 using Xpandables.Net.Executions.Tasks;
@@ -22,29 +22,29 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
-/// Provides an abstract base class for converting events to and 
+/// Provides an abstract base class for converting events to and
 /// from event entities.
 /// </summary>
 public abstract class EventConverter : IEventConverter
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public abstract Type EventType { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public abstract bool CanConvert(Type type);
 
-    /// <inheritdoc/>
-    public abstract IEventEntity ConvertTo(
+    /// <inheritdoc />
+    public abstract IEntityEvent ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = default);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public abstract IEvent ConvertFrom(
-        IEventEntity entity,
+        IEntityEvent entity,
         JsonSerializerOptions? options = default);
 
     /// <summary>
-    /// Serializes the given event to <see cref="JsonDocument"/>.
+    /// Serializes the given event to <see cref="JsonDocument" />.
     /// </summary>
     /// <param name="event">The event to serialize.</param>
     /// <param name="jsonOptions">Optional JSON serializer options.</param>
@@ -73,7 +73,7 @@ public abstract class EventConverter : IEventConverter
     }
 
     /// <summary>
-    /// Deserializes the given <see cref="JsonDocument"/>> to an event of the specified type.
+    /// Deserializes the given <see cref="JsonDocument" />> to an event of the specified type.
     /// </summary>
     /// <param name="eventData">The JSON document representing the event data.</param>
     /// <param name="eventType">The type of the event to deserialize to.</param>
@@ -89,9 +89,9 @@ public abstract class EventConverter : IEventConverter
     {
         try
         {
-            object? @event = JsonSerializer.Deserialize(eventData, eventType, options)
-                ?? throw new InvalidOperationException(
-                    $"Failed to deserialize the event data to {eventType.Name}.");
+            object? @event = eventData.Deserialize(eventType, options)
+                             ?? throw new InvalidOperationException(
+                                 $"Failed to deserialize the event data to {eventType.Name}.");
 
             return (IEvent)@event;
         }

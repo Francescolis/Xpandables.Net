@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 namespace Xpandables.Net.Repositories;
+
 /// <summary>
-/// Represents an event entity domain that includes aggregate information.
+/// Represents a class for event entities in a domain context.
 /// </summary>
-public interface IEventEntityDomain : IEventEntity
+public sealed class EntityDomainEvent : EntityEvent, IEntityEventDomain
 {
-    /// <summary>
-    /// Gets the identifier of the aggregate.
-    /// </summary>
-    Guid AggregateId { get; }
+    /// <inheritdoc />
+    public required Guid AggregateId { get; init; }
 }

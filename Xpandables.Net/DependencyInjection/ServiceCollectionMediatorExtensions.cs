@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -26,16 +27,23 @@ using Xpandables.Net.Executions.Pipelines;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.States;
 
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace Xpandables.Net.DependencyInjection;
+
 /// <summary>
-/// Provides extension methods for adding mediator services to the 
-/// <see cref="IServiceCollection"/>.
+/// Provides extension methods for adding mediator services to the
+/// <see cref="IServiceCollection" />.
 /// </summary>
 public static class ServiceCollectionMediatorExtensions
 {
+    internal static readonly MethodInfo AddEventHandlerMethod =
+        typeof(ServiceCollectionMediatorExtensions)
+            .GetMethod(nameof(AddXEventHandler))!;
+
     /// <summary>
-    /// Adds a mediator of type <typeparamref name="TMediator"/> to 
-    /// the <see cref="IServiceCollection"/>.
+    /// Adds a mediator of type <typeparamref name="TMediator" /> to
+    /// the <see cref="IServiceCollection" />.
     /// </summary>
     /// <typeparam name="TMediator">The type of the mediator to add.</typeparam>
     /// <param name="services">The service collection to add the mediator to.</param>
@@ -48,7 +56,7 @@ public static class ServiceCollectionMediatorExtensions
             .AddXPipelineRequestHandler();
 
     /// <summary>
-    /// Adds a defaults mediator and pipeline request handler to the <see cref="IServiceCollection"/>.
+    /// Adds a defaults mediator and pipeline request handler to the <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The service collection to add the mediator to.</param>
     /// <returns>The updated service collection.</returns>
@@ -64,14 +72,16 @@ public static class ServiceCollectionMediatorExtensions
     /// <param name="type">The type of the pipeline request handler to register.</param>
     /// <param name="services">The service collection to add the handler to.</param>
     /// <returns>The updated service collection.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the specified type does not
-    /// match the <see cref="IPipelineRequestHandler{TRequest}"/> interface.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the specified type does not
+    /// match the <see cref="IPipelineRequestHandler{TRequest}" /> interface.
+    /// </exception>
     public static IServiceCollection AddXPipelineRequestHandler(
         this IServiceCollection services, Type type)
     {
         if (!type.GetInterfaces().Any(i =>
-            i.IsGenericType &&
-            i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>)))
+                i.IsGenericType &&
+                i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>)))
         {
             throw new InvalidOperationException(
                 $"{type.Name} does not implement IPipelineRequestHandler<,> interface.");
@@ -90,15 +100,13 @@ public static class ServiceCollectionMediatorExtensions
         this IServiceCollection services)
         => services.AddXPipelineRequestHandler(typeof(PipelineRequestHandler<>));
 
-    internal readonly record struct HandlerType(
-        Type Type,
-        IEnumerable<Type> Interfaces);
-
     /// <summary>
-    /// Adds handlers to the <see cref="IServiceCollection"/> with scoped lifetime.
+    /// Adds handlers to the <see cref="IServiceCollection" /> with scoped lifetime.
     /// </summary>
-    /// <param name="services">The service collection to add the mediator 
-    /// handlers to.</param>
+    /// <param name="services">
+    /// The service collection to add the mediator
+    /// handlers to.
+    /// </param>
     /// <param name="assemblies">The assemblies to scan for handlers.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXHandlers(
@@ -111,23 +119,23 @@ public static class ServiceCollectionMediatorExtensions
         }
 
         IEnumerable<HandlerType> handlerTypes = assemblies.SelectMany(assembly =>
-            assembly.GetTypes()
-                .Where(type =>
-                type is
-                {
-                    IsClass: true,
-                    IsAbstract: false,
-                    IsSealed: true,
-                    IsGenericType: false
-                }
-                && type.GetInterfaces().Any(i =>
-                    i.IsGenericType &&
-                    (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)))))
+                assembly.GetTypes()
+                    .Where(type =>
+                        type is
+                        {
+                            IsClass: true,
+                            IsAbstract: false,
+                            IsSealed: true,
+                            IsGenericType: false
+                        }
+                        && type.GetInterfaces().Any(i =>
+                            i.IsGenericType &&
+                            i.GetGenericTypeDefinition() == typeof(IRequestHandler<>))))
             .Select(type => new HandlerType(
-                Type: type,
-                Interfaces: type.GetInterfaces()
+                type,
+                type.GetInterfaces()
                     .Where(i => i.IsGenericType &&
-                    (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)))));
+                                i.GetGenericTypeDefinition() == typeof(IRequestHandler<>))));
 
         foreach (HandlerType handlerType in handlerTypes)
         {
@@ -141,23 +149,29 @@ public static class ServiceCollectionMediatorExtensions
     }
 
     /// <summary>
-    /// Adds a decider dependency manager to the <see cref="IServiceCollection"/>.
+    /// Adds a decider dependency manager to the <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the decider 
-    /// dependency provider to.</param>
+    /// <param name="services">
+    /// The service collection to add the decider
+    /// dependency provider to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXDependencyManager(
         this IServiceCollection services) =>
         services.AddScoped<IDependencyManager, DependencyManager>();
 
     /// <summary>
-    /// Adds a decider dependency provider of type <typeparamref name="TService"/> to 
-    /// the <see cref="IServiceCollection"/>.
+    /// Adds a decider dependency provider of type <typeparamref name="TService" /> to
+    /// the <see cref="IServiceCollection" />.
     /// </summary>
-    /// <typeparam name="TService">The type of the decider dependency 
-    /// provider to add.</typeparam>
-    /// <param name="services">The service collection to add the decider 
-    /// dependency provider to.</param>
+    /// <typeparam name="TService">
+    /// The type of the decider dependency
+    /// provider to add.
+    /// </typeparam>
+    /// <param name="services">
+    /// The service collection to add the decider
+    /// dependency provider to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXDependencyProvider<TService>(
         this IServiceCollection services)
@@ -165,7 +179,7 @@ public static class ServiceCollectionMediatorExtensions
         services.AddScoped<IDependencyProvider, TService>();
 
     /// <summary>
-    /// Adds an pipeline decorator to the <see cref="IServiceCollection"/> that append the ambient aggregate root.
+    /// Adds an pipeline decorator to the <see cref="IServiceCollection" /> that append the ambient aggregate root.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
@@ -175,7 +189,7 @@ public static class ServiceCollectionMediatorExtensions
         services.AddXPipelineDecorator(typeof(PipelineAppenderDecorator<,>));
 
     /// <summary>
-    /// Adds an pipeline decorator to the <see cref="IServiceCollection"/> that resolve
+    /// Adds an pipeline decorator to the <see cref="IServiceCollection" /> that resolve
     /// the ambient aggregate root before request is processed.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
@@ -186,7 +200,7 @@ public static class ServiceCollectionMediatorExtensions
         services.AddXPipelineDecorator(typeof(PipelineResolverDecorator<,>));
 
     /// <summary>
-    /// Adds the dependency pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// Adds the dependency pipeline decorator to the <see cref="IServiceCollection" />.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
@@ -196,7 +210,7 @@ public static class ServiceCollectionMediatorExtensions
         services.AddXPipelineDecorator(typeof(PipelineDependencyDecorator<,>));
 
     /// <summary>
-    /// Adds a unit of work pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// Adds a unit of work pipeline decorator to the <see cref="IServiceCollection" />.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
@@ -206,7 +220,7 @@ public static class ServiceCollectionMediatorExtensions
         services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<,>));
 
     /// <summary>
-    /// Adds a validation pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// Adds a validation pipeline decorator to the <see cref="IServiceCollection" />.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
@@ -217,7 +231,7 @@ public static class ServiceCollectionMediatorExtensions
             .AddXPipelineDecorator(typeof(PipelineValidationDecorator<,>));
 
     /// <summary>
-    /// Adds an exception pipeline decorator to the <see cref="IServiceCollection"/>.
+    /// Adds an exception pipeline decorator to the <see cref="IServiceCollection" />.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
     /// <param name="services">The service collection to add the decorator to.</param>
@@ -227,22 +241,26 @@ public static class ServiceCollectionMediatorExtensions
         services.AddXPipelineDecorator(typeof(PipelineExceptionDecorator<,>));
 
     /// <summary>
-    /// Registers a pipeline decorator of the specified type to the <see cref="IServiceCollection"/>.
+    /// Registers a pipeline decorator of the specified type to the <see cref="IServiceCollection" />.
     /// <para>The pipeline decorator is applied in the order of registration.</para>
     /// </summary>
-    /// <remarks>The pipeline decorator must implement the 
-    /// <see cref="IPipelineDecorator{TRequest, TResponse}"/> interface.</remarks>
+    /// <remarks>
+    /// The pipeline decorator must implement the
+    /// <see cref="IPipelineDecorator{TRequest,TResponse}" /> interface.
+    /// </remarks>
     /// <param name="pipelineType">The type of the pipeline decorator to register.</param>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the specified type does not
-    /// match the <see cref="IPipelineDecorator{TRequest, TResponse}"/> interface.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the specified type does not
+    /// match the <see cref="IPipelineDecorator{TRequest, TResponse}" /> interface.
+    /// </exception>
     public static IServiceCollection AddXPipelineDecorator(
         this IServiceCollection services, Type pipelineType)
     {
         if (!pipelineType.GetInterfaces().Any(i =>
-            i.IsGenericType
-            && i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<,>)))
+                i.IsGenericType
+                && i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<,>)))
         {
             throw new InvalidOperationException(
                 $"{pipelineType.Name} does not implement IPipelineDecorator<,> interface.");
@@ -252,10 +270,12 @@ public static class ServiceCollectionMediatorExtensions
     }
 
     /// <summary>
-    /// Adds the aggregate snapshot store to the <see cref="IServiceCollection"/>.
+    /// Adds the aggregate snapshot store to the <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the aggregate 
-    /// snapshot store to.</param>
+    /// <param name="services">
+    /// The service collection to add the aggregate
+    /// snapshot store to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXSnapshotAggregateStore(
         this IServiceCollection services) =>
@@ -265,13 +285,17 @@ public static class ServiceCollectionMediatorExtensions
             typeof(IOriginator));
 
     /// <summary>
-    /// Adds the specified aggregate store implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the specified aggregate store implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the
-    /// aggregate store to.</param>
-    /// <param name="aggregateStoreType">The type of the aggregate store 
-    /// implementation.</param>
+    /// <param name="services">
+    /// The service collection to add the
+    /// aggregate store to.
+    /// </param>
+    /// <param name="aggregateStoreType">
+    /// The type of the aggregate store
+    /// implementation.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXAggregateStore(
         this IServiceCollection services,
@@ -287,24 +311,30 @@ public static class ServiceCollectionMediatorExtensions
     }
 
     /// <summary>
-    /// Adds the default aggregate store implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the default aggregate store implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the
-    /// aggregate store to.</param>
+    /// <param name="services">
+    /// The service collection to add the
+    /// aggregate store to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXAggregateStore(
         this IServiceCollection services) =>
         services.AddXAggregateStore(typeof(AggregateStore<>));
 
     /// <summary>
-    /// Adds the specified event store implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the specified event store implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <typeparam name="TEventStore">The type of the event store 
-    /// implementation.</typeparam>
-    /// <param name="services">The service collection to add the
-    /// event store to.</param>
+    /// <typeparam name="TEventStore">
+    /// The type of the event store
+    /// implementation.
+    /// </typeparam>
+    /// <param name="services">
+    /// The service collection to add the
+    /// event store to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventStore<TEventStore>(
         this IServiceCollection services)
@@ -320,13 +350,17 @@ public static class ServiceCollectionMediatorExtensions
     }
 
     /// <summary>
-    /// Adds the specified publisher implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the specified publisher implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <typeparam name="TPublisher">The type of the publisher 
-    /// implementation.</typeparam>
-    /// <param name="services">The service collection to add the
-    /// publisher to.</param>
+    /// <typeparam name="TPublisher">
+    /// The type of the publisher
+    /// implementation.
+    /// </typeparam>
+    /// <param name="services">
+    /// The service collection to add the
+    /// publisher to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPublisher<TPublisher>(
         this IServiceCollection services)
@@ -342,24 +376,88 @@ public static class ServiceCollectionMediatorExtensions
     }
 
     /// <summary>
-    /// Adds the default publisher implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the default publisher implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the
-    /// publisher to.</param>
+    /// <param name="services">
+    /// The service collection to add the
+    /// publisher to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPublisher(
         this IServiceCollection services) =>
         services.AddXPublisher<PublisherSubscriber>();
 
     /// <summary>
-    /// Adds the specified subscriber implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Registers the specified event bus implementation to the
+    /// service collection.
     /// </summary>
-    /// <typeparam name="TSubscriber">The type of the subscriber 
-    /// implementation.</typeparam>
-    /// <param name="services">The service collection to add the
-    /// subscriber to.</param>
+    /// <param name="services">The service collection to add the event bus to.</param>
+    /// <typeparam name="TEventBus">The type of the event bus implementation.</typeparam>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXEventBus<TEventBus>(
+        this IServiceCollection services)
+        where TEventBus : class, IEventBus
+    {
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IEventBus),
+                typeof(TEventBus),
+                ServiceLifetime.Scoped));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the default event bus implementation to the
+    /// service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the event bus to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXEventBus(this IServiceCollection services) =>
+        services.AddXEventBus<EventBus>();
+
+    /// <summary>
+    /// Registers the specified message queue implementation to the
+    /// service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the message queue to.</param>
+    /// <typeparam name="TMessageQueue">The type of the message queue implementation.</typeparam>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXMessageQueue<TMessageQueue>(
+        this IServiceCollection services)
+        where TMessageQueue : class, IMessageQueue
+    {
+        services.TryAdd(
+            new ServiceDescriptor(
+                typeof(IMessageQueue),
+                typeof(TMessageQueue),
+                ServiceLifetime.Singleton));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the default message queue implementation to the
+    /// service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the message queue to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXMessageQueue(this IServiceCollection services) =>
+        services.AddXMessageQueue<MessageQueue>();
+
+    /// <summary>
+    /// Adds the specified subscriber implementation to the
+    /// <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <typeparam name="TSubscriber">
+    /// The type of the subscriber
+    /// implementation.
+    /// </typeparam>
+    /// <param name="services">
+    /// The service collection to add the
+    /// subscriber to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXSubscriber<TSubscriber>(
         this IServiceCollection services)
@@ -375,24 +473,30 @@ public static class ServiceCollectionMediatorExtensions
     }
 
     /// <summary>
-    /// Adds the default subscriber implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the default subscriber implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the
-    /// subscriber to.</param>
+    /// <param name="services">
+    /// The service collection to add the
+    /// subscriber to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXSubscriber(
         this IServiceCollection services) =>
         services.AddXSubscriber<PublisherSubscriber>();
 
     /// <summary>
-    /// Adds the specified scheduler implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the specified scheduler implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <typeparam name="TScheduler">The type of the event scheduler 
-    /// implementation.</typeparam>
-    /// <param name="services">The service collection to add the
-    /// scheduler to.</param>
+    /// <typeparam name="TScheduler">
+    /// The type of the event scheduler
+    /// implementation.
+    /// </typeparam>
+    /// <param name="services">
+    /// The service collection to add the
+    /// scheduler to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXScheduler<TScheduler>(
         this IServiceCollection services)
@@ -408,11 +512,13 @@ public static class ServiceCollectionMediatorExtensions
     }
 
     /// <summary>
-    /// Adds the default scheduler implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the default scheduler implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the
-    /// scheduler to.</param>
+    /// <param name="services">
+    /// The service collection to add the
+    /// scheduler to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXScheduler(
         this IServiceCollection services) =>
@@ -420,13 +526,17 @@ public static class ServiceCollectionMediatorExtensions
 
     /// <summary>
     /// Adds the specified scheduler implementation that also implements
-    /// <see cref="IHostedService"/> to the 
-    /// <see cref="IServiceCollection"/>.
+    /// <see cref="IHostedService" /> to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <typeparam name="TScheduler">The type of the scheduler 
-    /// implementation.</typeparam>
-    /// <param name="services">The service collection to add the
-    /// scheduler to.</param>
+    /// <typeparam name="TScheduler">
+    /// The type of the scheduler
+    /// implementation.
+    /// </typeparam>
+    /// <param name="services">
+    /// The service collection to add the
+    /// scheduler to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXSchedulerHosted<TScheduler>(
         this IServiceCollection services)
@@ -438,27 +548,35 @@ public static class ServiceCollectionMediatorExtensions
 
     /// <summary>
     /// Adds the default hosted scheduler implementation that also implements
-    /// <see cref="IHostedService"/> to the 
-    /// <see cref="IServiceCollection"/>.
+    /// <see cref="IHostedService" /> to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the hosted
-    /// scheduler to.</param>
+    /// <param name="services">
+    /// The service collection to add the hosted
+    /// scheduler to.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXSchedulerHosted(
         this IServiceCollection services) =>
         services.AddXSchedulerHosted<Scheduler>();
 
     /// <summary>
-    /// Adds the specified event handler implementation to the 
-    /// <see cref="IServiceCollection"/>.
+    /// Adds the specified event handler implementation to the
+    /// <see cref="IServiceCollection" />.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    /// <typeparam name="TEventHandler">The type of the event handler 
-    /// implementation.</typeparam>
-    /// <param name="services">The service collection to add the
-    /// event handler to.</param>
-    /// <param name="factory">The factory method to create the event handler 
-    /// instance.</param>
+    /// <typeparam name="TEventHandler">
+    /// The type of the event handler
+    /// implementation.
+    /// </typeparam>
+    /// <param name="services">
+    /// The service collection to add the
+    /// event handler to.
+    /// </param>
+    /// <param name="factory">
+    /// The factory method to create the event handler
+    /// instance.
+    /// </param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventHandler<TEvent, TEventHandler>(
         this IServiceCollection services,
@@ -486,16 +604,14 @@ public static class ServiceCollectionMediatorExtensions
         return services;
     }
 
-    internal static readonly MethodInfo AddEventHandlerMethod =
-        typeof(ServiceCollectionMediatorExtensions)
-        .GetMethod(nameof(AddXEventHandler))!;
-
     /// <summary>
-    /// Adds event handlers from the specified assemblies 
-    /// to the <see cref="IServiceCollection"/>.
+    /// Adds event handlers from the specified assemblies
+    /// to the <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The service collection to add the event 
-    /// handlers to.</param>
+    /// <param name="services">
+    /// The service collection to add the event
+    /// handlers to.
+    /// </param>
     /// <param name="assemblies">The assemblies to scan for event handlers.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXEventHandlers(
@@ -538,4 +654,8 @@ public static class ServiceCollectionMediatorExtensions
 
         return services;
     }
+
+    internal readonly record struct HandlerType(
+        Type Type,
+        IEnumerable<Type> Interfaces);
 }

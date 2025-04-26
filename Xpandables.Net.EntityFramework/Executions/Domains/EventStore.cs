@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -28,36 +27,34 @@ using Xpandables.Net.Text;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents a store for events, providing methods to append, fetch, 
+/// Represents a store for events, providing methods to append, fetch,
 /// and mark events as published.
 /// </summary>
 /// <param name="context">The data context for the event store.</param>
 /// <param name="options">The event options.</param>
+// ReSharper disable once ClassNeverInstantiated.Global
 public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent context) : Disposable, IEventStore
 {
+    private readonly List<IEntityEvent> _disposableEntities = [];
     private readonly EventOptions _options = options.Value;
-#pragma warning disable CA2213 // Disposable fields should be disposed
-    private readonly DataContextEvent _context = context;
-#pragma warning restore CA2213 // Disposable fields should be disposed
-    private readonly List<IEventEntity> _disposableEntities = [];
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task AppendAsync(
         IEvent @event,
         CancellationToken cancellationToken = default)
     {
         IEventConverter eventConverter = _options.GetEventConverterFor(@event);
 
-        IEventEntity eventEntity = eventConverter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
+        IEntityEvent entityEvent = eventConverter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
 
-        _disposableEntities.Add(eventEntity);
+        _disposableEntities.Add(entityEvent);
 
-        await _context
-            .AddAsync(eventEntity, cancellationToken)
+        await context
+            .AddAsync(entityEvent, cancellationToken)
             .ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task AppendAsync(
         IEnumerable<IEvent> events,
         CancellationToken cancellationToken = default)
@@ -75,28 +72,28 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IAsyncEnumerable<IEvent> FetchAsync(
         IEventFilter filter,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        IQueryable<IEventEntity> queryable = filter.EventType switch
+        IQueryable<IEntityEvent> queryable = filter.EventType switch
         {
-            Type type when type == typeof(IEventDomain) =>
-                _context.Domains.AsNoTracking(),
-            Type type when type == typeof(IEventIntegration) =>
-                _context.Integrations.AsNoTracking(),
-            Type type when type == typeof(IEventSnapshot) =>
-            _context.Snapshots.AsNoTracking(),
+            { } type when type == typeof(IDomainEvent) =>
+                context.Domains.AsNoTracking(),
+            { } type when type == typeof(IIntegrationEvent) =>
+                context.Integrations.AsNoTracking(),
+            { } type when type == typeof(ISnapshotEvent) =>
+                context.Snapshots.AsNoTracking(),
             _ => throw new InvalidOperationException("The event type is not supported.")
         };
 
         IEventConverter eventConverter =
             _options.GetEventConverterFor(filter.EventType);
 
-        IAsyncEnumerable<IEventEntity> entities =
+        IAsyncEnumerable<IEntityEvent> entities =
             filter.FetchAsync(queryable, cancellationToken);
 
         return entities.Select(entity =>
@@ -112,26 +109,27 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
         });
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task MarkAsProcessedAsync(
         EventProcessed eventProcessed,
         CancellationToken cancellationToken = default)
     {
         string status = eventProcessed.ErrorMessage is null
-            ? EntityStatus.PUBLISHED : EntityStatus.ONERROR;
+            ? EntityStatus.PUBLISHED
+            : EntityStatus.ONERROR;
 
-        await _context.Integrations
+        await context.Integrations
             .Where(e => e.KeyId == eventProcessed.EventId)
             .ExecuteUpdateAsync(entity =>
-                entity
-                .SetProperty(e => e.Status, status)
-                .SetProperty(e => e.ErrorMessage, eventProcessed.ErrorMessage)
-                .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
+                    entity
+                        .SetProperty(e => e.Status, status)
+                        .SetProperty(e => e.ErrorMessage, eventProcessed.ErrorMessage)
+                        .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
                 cancellationToken)
             .ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         if (disposing)

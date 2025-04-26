@@ -5,7 +5,7 @@ using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Api.Accounts.Events;
 
-public sealed record AccountBlocked : EventDomain<Account>
+public sealed record AccountBlocked : DomainEvent<Account>
 {
     [JsonConstructor]
     private AccountBlocked() { }

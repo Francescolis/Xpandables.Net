@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Text.Json;
 
 using Xpandables.Net.Executions.Domains;
@@ -23,20 +23,20 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
-/// Converts event entities to and from <see cref="IEventIntegration"/>.
+/// Converts event entities to and from <see cref="IIntegrationEvent" />.
 /// </summary>
 public sealed class EventConverterIntegration : EventConverter
 {
-    /// <inheritdoc/>
-    public override Type EventType => typeof(IEventIntegration);
+    /// <inheritdoc />
+    public override Type EventType => typeof(IIntegrationEvent);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override bool CanConvert(Type type) =>
         EventType.IsAssignableFrom(type);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override IEvent ConvertFrom(
-        IEventEntity entity,
+        IEntityEvent entity,
         JsonSerializerOptions? options = null)
     {
         try
@@ -45,8 +45,7 @@ public sealed class EventConverterIntegration : EventConverter
 
             IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
 
-            return (IEventIntegration)@event;
-
+            return (IIntegrationEvent)@event;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -57,22 +56,22 @@ public sealed class EventConverterIntegration : EventConverter
         }
     }
 
-    /// <inheritdoc/>
-    public override IEventEntity ConvertTo(
+    /// <inheritdoc />
+    public override IEntityEvent ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = null)
     {
         try
         {
-            IEventIntegration eventIntegration = (IEventIntegration)@event;
+            IIntegrationEvent integrationEvent = (IIntegrationEvent)@event;
 
-            return new EventEntityIntegration
+            return new EntityIntegrationEvent
             {
-                KeyId = eventIntegration.EventId,
-                EventName = eventIntegration.GetType().Name,
-                EventFullName = eventIntegration.GetType().AssemblyQualifiedName!,
-                EventVersion = eventIntegration.EventVersion,
-                EventData = SerializeEvent(eventIntegration, options)
+                KeyId = integrationEvent.EventId,
+                EventName = integrationEvent.GetType().Name,
+                EventFullName = integrationEvent.GetType().AssemblyQualifiedName!,
+                EventVersion = integrationEvent.EventVersion,
+                EventData = SerializeEvent(integrationEvent, options)
             };
         }
         catch (Exception exception)

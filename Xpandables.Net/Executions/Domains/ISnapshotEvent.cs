@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.States;
 
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents an event snapshot that includes a memento and its owner.
+/// Represents a snapshot event that includes a memento and its owner.
 /// </summary>
-public interface IEventSnapshot : IEvent
+public interface ISnapshotEvent : IEvent
 {
     /// <summary>
-    /// Gets the memento associated with the event snapshot.
+    /// Gets the memento associated with the snapshot event.
     /// </summary>
     IMemento Memento { get; }
 
     /// <summary>
-    /// Gets the owner of the event snapshot.
+    /// Gets the owner of the snapshot event.
     /// </summary>
     Guid OwnerId { get; }
 }
@@ -39,11 +39,11 @@ public interface IEventSnapshot : IEvent
 /// <summary>
 /// Represents a snapshot of an event with its associated memento and owner.
 /// </summary>
-public sealed record EventSnapshot : Event, IEventSnapshot
+public sealed record SnapshotEvent : Event, ISnapshotEvent
 {
-    ///<inheritdoc/>
+    /// <inheritdoc />
     public required IMemento Memento { get; init; }
 
-    ///<inheritdoc/>
+    /// <inheritdoc />
     public required Guid OwnerId { get; init; }
 }

@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Text.Json;
 
 using Xpandables.Net.Executions.Tasks;
@@ -34,8 +35,10 @@ public interface IEventConverter
     /// Determines whether this instance can convert the specified type.
     /// </summary>
     /// <param name="type">The type to check.</param>
-    /// <returns><see langword="true"/> if this instance can convert the specified 
-    /// type; otherwise, <see langword="false"/>.</returns>
+    /// <returns>
+    /// <see langword="true" /> if this instance can convert the specified
+    /// type; otherwise, <see langword="false" />.
+    /// </returns>
     bool CanConvert(Type type);
 
     /// <summary>
@@ -44,9 +47,11 @@ public interface IEventConverter
     /// <param name="event">The event to convert.</param>
     /// <param name="options">The JSON serializer options.</param>
     /// <returns>The converted event entity.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when conversion 
-    /// failed. See inner exception.</exception>
-    IEventEntity ConvertTo(
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when conversion
+    /// failed. See inner exception.
+    /// </exception>
+    IEntityEvent ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = default);
 
@@ -56,9 +61,11 @@ public interface IEventConverter
     /// <param name="entity">The event entity to convert.</param>
     /// <param name="options">The JSON serializer options.</param>
     /// <returns>The converted event.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when conversion
-    /// failed. See inner exception.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when conversion
+    /// failed. See inner exception.
+    /// </exception>
     IEvent ConvertFrom(
-        IEventEntity entity,
+        IEntityEvent entity,
         JsonSerializerOptions? options = default);
 }

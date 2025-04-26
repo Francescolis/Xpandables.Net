@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Text.Json;
 
 using Xpandables.Net.Executions.Domains;
@@ -27,16 +27,16 @@ namespace Xpandables.Net.Repositories.Converters;
 /// </summary>
 public sealed class EventConverterSnapshot : EventConverter
 {
-    /// <inheritdoc/>
-    public override Type EventType => typeof(IEventSnapshot);
+    /// <inheritdoc />
+    public override Type EventType => typeof(ISnapshotEvent);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override bool CanConvert(Type type) =>
         EventType.IsAssignableFrom(type);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override IEvent ConvertFrom(
-        IEventEntity entity,
+        IEntityEvent entity,
         JsonSerializerOptions? options = null)
     {
         try
@@ -45,7 +45,7 @@ public sealed class EventConverterSnapshot : EventConverter
 
             IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
 
-            return (IEventSnapshot)@event;
+            return (ISnapshotEvent)@event;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -56,16 +56,16 @@ public sealed class EventConverterSnapshot : EventConverter
         }
     }
 
-    /// <inheritdoc/>
-    public override IEventEntity ConvertTo(
+    /// <inheritdoc />
+    public override IEntityEvent ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = null)
     {
         try
         {
-            IEventSnapshot snapshot = (IEventSnapshot)@event;
+            ISnapshotEvent snapshot = (ISnapshotEvent)@event;
 
-            return new EventEntitySnapshot
+            return new EntitySnapshotEvent
             {
                 KeyId = snapshot.EventId,
                 OwnerId = snapshot.OwnerId,

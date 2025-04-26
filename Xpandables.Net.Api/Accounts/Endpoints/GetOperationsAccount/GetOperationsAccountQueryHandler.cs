@@ -16,10 +16,10 @@ public sealed class GetOperationsAccountQueryHandler(
     {
         await Task.Yield();
 
-        IEventFilter filter = new EventEntityFilterDomain
+        IEventFilter filter = new EntityDomainEventFilter
         {
-            Predicate = e => e.AggregateId == query.KeyId
-            && e.EventName == nameof(DepositMade) || e.EventName == nameof(WithdrawMade),
+            Predicate = e => (e.AggregateId == query.KeyId
+                              && e.EventName == nameof(DepositMade)) || e.EventName == nameof(WithdrawMade),
             //EventDataPredicate = e => e.RootElement
             //    .GetProperty(nameof(EventEntityDomain.EventName))
             //    .GetString()!
@@ -27,9 +27,9 @@ public sealed class GetOperationsAccountQueryHandler(
             OrderBy = e => e.OrderByDescending(o => o.CreatedOn)
         };
 
-        var events = eventStore.FetchAsync(filter, cancellationToken);
+        IAsyncEnumerable<IEvent> events = eventStore.FetchAsync(filter, cancellationToken);
 
-        var operations = GetOperations(events);
+        IAsyncEnumerable<OperationAccount> operations = GetOperations(events);
 
         return ExecutionResults.Ok(operations)
             .WithHeader("Count", $"{filter.TotalCount}")
@@ -37,9 +37,9 @@ public sealed class GetOperationsAccountQueryHandler(
 
         static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events)
         {
-            await foreach (var @event in events)
+            await foreach (IEvent @event in events)
             {
-                if ((@event is DepositMade deposit))
+                if (@event is DepositMade deposit)
                 {
                     yield return new OperationAccount
                     {
@@ -49,7 +49,7 @@ public sealed class GetOperationsAccountQueryHandler(
                         Type = "Deposit"
                     };
                 }
-                else if ((@event is WithdrawMade withdraw))
+                else if (@event is WithdrawMade withdraw)
                 {
                     yield return new OperationAccount
                     {

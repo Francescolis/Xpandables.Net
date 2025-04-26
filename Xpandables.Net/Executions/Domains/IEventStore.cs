@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents a store for events that can be appended, fetched, 
+/// Represents a store for events that can be appended, fetched,
 /// and marked as published.
 /// </summary>
 public interface IEventStore

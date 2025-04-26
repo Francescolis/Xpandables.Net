@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Text.Json;
 
 namespace Xpandables.Net.Repositories;
@@ -21,17 +22,39 @@ namespace Xpandables.Net.Repositories;
 /// <summary>
 /// Represents an abstract base class for event entities.
 /// </summary>
-public abstract class EventEntity : Entity<Guid>, IEventEntity
+public abstract class EntityEvent : Entity<Guid>, IEntityEvent
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public required string EventName { get; init; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public required string EventFullName { get; init; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public required JsonDocument EventData { get; init; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public required ulong EventVersion { get; init; }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes the resources used by the event entity.
+    /// </summary>
+    /// <param name="disposing">
+    /// True if the method is called directly or indirectly by user code; false if called by the
+    /// runtime from within the finalizer.
+    /// </param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            EventData?.Dispose();
+        }
+    }
 }

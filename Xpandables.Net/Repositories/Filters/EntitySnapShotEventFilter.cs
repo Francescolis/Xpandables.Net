@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
-namespace Xpandables.Net.Repositories;
+ ********************************************************************************/
+
+using Xpandables.Net.Executions.Domains;
+
+namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
-/// Represents a snapshot of an event entity with an owner.
+/// Represents a filter for event entity snapshots.
 /// </summary>
-public interface IEventEntitySnapshot : IEventEntity
-{
-    /// <summary>
-    /// Gets the owner of the event entity snapshot.
-    /// </summary>
-    Guid OwnerId { get; }
-}
+public sealed record class EntitySnapShotEventFilter : EntityEventFilter<IEntityEventSnapshot, ISnapshotEvent>;

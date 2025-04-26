@@ -13,31 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-using System.Text.Json;
+ ********************************************************************************/
 
 using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
-/// Represents a filter for event entity domains.
+/// Represents a filter for event entity integration.
 /// </summary>
-public sealed record EventEntityFilterDomain :
-    EntityFilter<IEventEntityDomain>,
-    IEventFilter<IEventEntityDomain>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventEntityFilterDomain"/> class.
-    /// </summary>
-    [SetsRequiredMembers]
-    public EventEntityFilterDomain() : base() { }
-
-    /// <inheritdoc/>
-    public Type EventType => typeof(IEventDomain);
-
-    /// <inheritdoc/>
-    public Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; init; }
-}
+public sealed record EntityIntegrationEventFilter : EntityEventFilter<IEntityEventIntegration, IIntegrationEvent>;

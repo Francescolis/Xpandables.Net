@@ -13,20 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Text;
 
+// ReSharper disable InconsistentNaming
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a read-only status string value for an entity. 
+/// Represents a read-only status string value for an entity.
 /// It provides methods for creation, comparison, and implicit conversions.
 /// </summary>
-public readonly partial record struct EntityStatus : IPrimitive<EntityStatus, string>, IComparable, IComparable<EntityStatus>
+public readonly partial record struct EntityStatus : IPrimitive<EntityStatus, string>, IComparable,
+    IComparable<EntityStatus>
 {
     private EntityStatus(string value) => Value = value;
+
+    /// <inheritdoc />
+    public int CompareTo(object? obj) => obj switch
+    {
+        null => 1,
+        EntityStatus other => string.Compare(Value, other.Value, StringComparison.Ordinal),
+        _ => throw new ArgumentException($"Object is not a {nameof(EntityStatus)}")
+    };
+
+    /// <inheritdoc />
+    public int CompareTo(EntityStatus other) =>
+        string.Compare(Value, other.Value, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Represents a status string value. It provides read-only access to the underlying string.
@@ -41,7 +57,7 @@ public readonly partial record struct EntityStatus : IPrimitive<EntityStatus, st
     public static EntityStatus Create(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return new(value);
+        return new EntityStatus(value);
     }
 
     /// <summary>
@@ -64,31 +80,19 @@ public readonly partial record struct EntityStatus : IPrimitive<EntityStatus, st
     public static implicit operator EntityStatus(string value) => Create(value);
 #pragma warning restore CA2225 // Operator overloads have named alternates
 
-    /// <inheritdoc/>
-    public int CompareTo(object? obj) => obj switch
-    {
-        null => 1,
-        EntityStatus other => string.Compare(Value, other.Value, StringComparison.Ordinal),
-        _ => throw new ArgumentException($"Object is not a {nameof(EntityStatus)}")
-    };
-
-    /// <inheritdoc/>
-    public int CompareTo(EntityStatus other) =>
-        string.Compare(Value, other.Value, StringComparison.OrdinalIgnoreCase);
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public static bool operator <(EntityStatus left, EntityStatus right) =>
-         left.CompareTo(right) < 0;
+        left.CompareTo(right) < 0;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public static bool operator <=(EntityStatus left, EntityStatus right) =>
         left.CompareTo(right) <= 0;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public static bool operator >(EntityStatus left, EntityStatus right) =>
         left.CompareTo(right) > 0;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public static bool operator >=(EntityStatus left, EntityStatus right) =>
         left.CompareTo(right) >= 0;
 }
@@ -99,6 +103,21 @@ public readonly partial record struct EntityStatus : IPrimitive<EntityStatus, st
 /// </summary>
 public readonly partial record struct EntityStatus
 {
+    /// <summary>
+    /// A dictionary that maps string representations of entity statuses to their corresponding EntityStatus values.
+    /// It includes statuses like ACTIVE, PENDING, and DELETED.
+    /// </summary>
+    public static readonly Dictionary<string, EntityStatus> All =
+        new()
+        {
+            { nameof(ACTIVE), ACTIVE },
+            { nameof(PENDING), PENDING },
+            { nameof(DELETED), DELETED },
+            { nameof(SUSPENDED), SUSPENDED },
+            { nameof(ONERROR), ONERROR },
+            { nameof(PUBLISHED), PUBLISHED }
+        };
+
     /// <summary>
     /// It is currently functioning (is available).
     /// </summary>
@@ -128,41 +147,24 @@ public readonly partial record struct EntityStatus
     /// It is published.
     /// </summary>
     public static EntityStatus PUBLISHED => Create(nameof(PUBLISHED));
-
-    /// <summary>
-    /// A dictionary that maps string representations of entity statuses to their corresponding EntityStatus values. 
-    /// It includes statuses like ACTIVE, PENDING, and DELETED.
-    /// </summary>
-    public static readonly Dictionary<string, EntityStatus> All =
-        new()
-        {
-            { nameof(ACTIVE), ACTIVE },
-            { nameof(PENDING), PENDING },
-            { nameof(DELETED), DELETED },
-            { nameof(SUSPENDED), SUSPENDED },
-            { nameof(ONERROR), ONERROR },
-            { nameof(PUBLISHED), PUBLISHED }
-        };
 }
 
 /// <summary>
 /// Validates entity statuses with an option to allow null values.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property
-    | AttributeTargets.Field
-    | AttributeTargets.Parameter,
-    AllowMultiple = false,
-    Inherited = true)]
+                | AttributeTargets.Field
+                | AttributeTargets.Parameter)]
 public sealed class EntityStatusFormatAttribute : ValidationAttribute
 {
     /// <summary>
-    /// Indicates whether null values are permitted. 
+    /// Indicates whether null values are permitted.
     /// It is a boolean property that can be set to true or false.
     /// </summary>
     public bool AllowNull { get; set; }
 
     /// <summary>
-    /// Indicates that a validation context is required for the operation. 
+    /// Indicates that a validation context is required for the operation.
     /// This property always returns true.
     /// </summary>
     public override bool RequiresValidationContext => true;

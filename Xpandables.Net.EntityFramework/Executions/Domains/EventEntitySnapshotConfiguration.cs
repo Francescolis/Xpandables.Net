@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,13 +23,13 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Configuration class for the <see cref="EventEntitySnapshot"/> entity.
+/// Configuration class for the <see cref="EntitySnapshotEvent" /> entity.
 /// </summary>
 public sealed class EventEntitySnapshotConfiguration :
-    IEntityTypeConfiguration<EventEntitySnapshot>
+    IEntityTypeConfiguration<EntitySnapshotEvent>
 {
-    /// <inheritdoc/>
-    public void Configure(EntityTypeBuilder<EventEntitySnapshot> builder)
+    /// <inheritdoc />
+    public void Configure(EntityTypeBuilder<EntitySnapshotEvent> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 

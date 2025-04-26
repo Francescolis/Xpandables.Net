@@ -2,6 +2,6 @@
 
 namespace Xpandables.Net.Api.Accounts.Events;
 
-public sealed record AccountCreated : EventDomain
+public sealed record AccountCreated : DomainEvent
 {
 }

@@ -5,7 +5,7 @@ using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Api.Accounts.Events;
 
-public sealed record WithdrawMade : EventDomain<Account>
+public sealed record WithdrawMade : DomainEvent<Account>
 {
     [JsonConstructor]
     private WithdrawMade() { }
@@ -13,5 +13,6 @@ public sealed record WithdrawMade : EventDomain<Account>
     [SetsRequiredMembers]
     public WithdrawMade(Account account, decimal amount) :
         base(account) => Amount = amount;
+
     public required decimal Amount { get; init; }
 }

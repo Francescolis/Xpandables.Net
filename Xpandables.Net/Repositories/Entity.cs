@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.ComponentModel.DataAnnotations;
 
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an abstract base class for entities with a specific key type 
+/// Represents an abstract base class for entities with a specific key type
 /// that are used in relational repositories.
 /// </summary>
 /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -27,27 +28,27 @@ public abstract class Entity<TKey> : IEntity<TKey>
     where TKey : notnull, IComparable
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="Entity{TKey}"/>.
+    /// Initializes a new instance of <see cref="Entity{TKey}" />.
     /// </summary>
     protected Entity() { }
 
-    /// <inheritdoc/>  
-    public string Status { get; protected set; } = EntityStatus.ACTIVE;
+    /// <inheritdoc />
+    public string Status { get; private set; } = EntityStatus.ACTIVE;
 
-    /// <inheritdoc/>  
+    /// <inheritdoc />
     public DateTime CreatedOn { get; protected set; } = DateTime.UtcNow;
 
-    /// <inheritdoc/>  
-    public DateTime? UpdatedOn { get; protected set; }
+    /// <inheritdoc />
+    public DateTime? UpdatedOn { get; private set; }
 
-    /// <inheritdoc/>  
-    public DateTime? DeletedOn { get; protected set; }
+    /// <inheritdoc />
+    public DateTime? DeletedOn { get; private set; }
 
-    /// <inheritdoc/>  
+    /// <inheritdoc />
     [Key]
-    public TKey KeyId { get; set; } = default!;
+    public TKey KeyId { get; init; } = default!;
 
-    /// <inheritdoc/>  
+    /// <inheritdoc />
     public void SetStatus(string status)
     {
         Status = status;
@@ -56,7 +57,7 @@ public abstract class Entity<TKey> : IEntity<TKey>
             : null;
     }
 
-    /// <inheritdoc/>
-    public void SetUpdatedOn(DateTime? updatedOn = default) =>
+    /// <inheritdoc />
+    public void SetUpdatedOn(DateTime? updatedOn = null) =>
         UpdatedOn = updatedOn ?? DateTime.UtcNow;
 }

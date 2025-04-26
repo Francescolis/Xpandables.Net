@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Text.Json;
 
 using Xpandables.Net.Executions.Domains;
@@ -27,19 +27,19 @@ namespace Xpandables.Net.Repositories.Converters;
 /// </summary>
 public sealed class EventConverterDomain : EventConverter
 {
-    /// <inheritdoc/>
-    public override Type EventType => typeof(IEventDomain);
+    /// <inheritdoc />
+    public override Type EventType => typeof(IDomainEvent);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override bool CanConvert(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
         return EventType.IsAssignableFrom(type);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override IEvent ConvertFrom(
-        IEventEntity entity,
+        IEntityEvent entity,
         JsonSerializerOptions? options = null)
     {
         try
@@ -48,7 +48,7 @@ public sealed class EventConverterDomain : EventConverter
 
             IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
 
-            return (IEventDomain)@event;
+            return (IDomainEvent)@event;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -59,23 +59,23 @@ public sealed class EventConverterDomain : EventConverter
         }
     }
 
-    /// <inheritdoc/>
-    public override IEventEntity ConvertTo(
+    /// <inheritdoc />
+    public override IEntityEvent ConvertTo(
         IEvent @event,
         JsonSerializerOptions? options = null)
     {
         try
         {
-            IEventDomain eventDomain = (IEventDomain)@event;
+            IDomainEvent domainEvent = (IDomainEvent)@event;
 
-            return new EventEntityDomain()
+            return new EntityDomainEvent
             {
-                KeyId = eventDomain.EventId,
-                AggregateId = Guid.Parse(eventDomain.AggregateId.ToString()!),
-                EventName = eventDomain.GetType().Name,
-                EventFullName = eventDomain.GetType().AssemblyQualifiedName!,
-                EventVersion = eventDomain.EventVersion,
-                EventData = SerializeEvent(eventDomain, options)
+                KeyId = domainEvent.EventId,
+                AggregateId = Guid.Parse(domainEvent.AggregateId.ToString()!),
+                EventName = domainEvent.GetType().Name,
+                EventFullName = domainEvent.GetType().AssemblyQualifiedName!,
+                EventVersion = domainEvent.EventVersion,
+                EventData = SerializeEvent(domainEvent, options)
             };
         }
         catch (Exception exception)

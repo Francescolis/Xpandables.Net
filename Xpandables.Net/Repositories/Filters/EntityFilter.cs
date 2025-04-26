@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
+ ********************************************************************************/
+
 using System.Linq.Expressions;
 
 namespace Xpandables.Net.Repositories.Filters;
@@ -27,22 +27,22 @@ namespace Xpandables.Net.Repositories.Filters;
 public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
     where TEntity : class, IEntity
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ushort PageIndex { get; init; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public ushort PageSize { get; init; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int TotalCount { get; set; }
 
-    /// <inheritdoc/>
-    public required Expression<Func<TEntity, TResult>> Selector { get; init; }
+    /// <inheritdoc />
+    public Expression<Func<TEntity, TResult>> Selector { get; init; } = null!;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public Expression<Func<TEntity, bool>>? Predicate { get; init; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? OrderBy { get; init; }
 }
 
@@ -54,10 +54,7 @@ public record EntityFilter<TEntity> : EntityFilter<TEntity, TEntity>, IEntityFil
     where TEntity : class, IEntity
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EntityFilter{TEntity}"/> class.
+    /// Initializes a new instance of the <see cref="EntityFilter{TEntity}" /> class.
     /// </summary>
-    [SetsRequiredMembers]
-#pragma warning disable CS8618, CS9264
-    public EntityFilter() : base() => Selector = entity => entity;
-#pragma warning restore CS8618, CS9264
+    public EntityFilter() => Selector = entity => entity;
 }

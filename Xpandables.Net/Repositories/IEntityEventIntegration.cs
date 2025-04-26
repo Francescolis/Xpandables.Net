@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents an integration event entity that includes an error message.
 /// </summary>
-public interface IEventEntityIntegration : IEventEntity
+public interface IEntityEventIntegration : IEntityEvent
 {
     /// <summary>
     /// Gets the error message associated with the event entity.

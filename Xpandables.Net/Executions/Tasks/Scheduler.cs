@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,48 +21,48 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Executions.Domains;
-using Xpandables.Net.Repositories;
-using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// Represents a background service that schedules and publishes events.
 /// </summary>
-public sealed class Scheduler : BackgroundService, IScheduler
+// ReSharper disable once ClassNeverInstantiated.Global
+internal sealed class Scheduler : BackgroundService, IScheduler
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IDisposable? _optionsMonitor;
-    private SchedulerOptions _options;
     private readonly ILogger<Scheduler> _logger;
+    private readonly IMessageQueue _messageQueue;
+    private readonly IDisposable? _optionsMonitor;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private SchedulerOptions _options;
 
     private uint _retryCount;
-
 #pragma warning disable CA1848 // Use the LoggerMessage delegates
 #pragma warning disable CA1031 // Do not catch general exception types
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Scheduler"/> class.
+    /// Initializes a new instance of the <see cref="Scheduler" /> class.
     /// </summary>
-    /// <param name="serviceScopeFactory">The service scope factory to create 
-    /// service scopes.</param>
-    /// <param name="options">The options monitor to track changes in 
-    /// event options.</param>
+    /// <param name="serviceScopeFactory"> The service scope factory to create service scopes. </param>
+    /// <param name="messageQueue">The message queue to enqueue and dequeue events.</param>
+    /// <param name="options"> The options monitor to track changes in event options. </param>
     /// <param name="logger">The logger to log information and errors.</param>
+    /// <remarks>This code is subject to change in future versions.</remarks>
     public Scheduler(
         IServiceScopeFactory serviceScopeFactory,
+        IMessageQueue messageQueue,
         IOptionsMonitor<SchedulerOptions> options,
         ILogger<Scheduler> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
+        _messageQueue = messageQueue;
         _options = options.CurrentValue;
         _logger = logger;
 
-        _optionsMonitor = options
-            .OnChange(updatedOptions => _options = updatedOptions);
+        _optionsMonitor = options.OnChange(updatedOptions => _options = updatedOptions);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task ScheduleAsync(CancellationToken cancellationToken = default)
     {
         if (!_options.IsEventSchedulerEnabled)
@@ -72,75 +71,47 @@ public sealed class Scheduler : BackgroundService, IScheduler
             return;
         }
 
-        using AsyncServiceScope serviceScope =
-            _serviceScopeFactory.CreateAsyncScope();
+        // ReSharper disable once UseAwaitUsing
+        using AsyncServiceScope serviceScope = _serviceScopeFactory.CreateAsyncScope();
 
-        IPublisher eventPublisher = serviceScope
-            .ServiceProvider
-            .GetRequiredService<IPublisher>();
-
-        IEventStore eventStore = serviceScope
-            .ServiceProvider
-            .GetRequiredService<IEventStore>();
-
-        IEventFilter eventFilter = new EventEntityFilterIntegration
-        {
-            Predicate = x => x.Status == EntityStatus.ACTIVE.Value,
-            PageIndex = 0,
-            PageSize = _options.MaxSchedulerEventPerThread,
-            OrderBy = x => x.OrderBy(x => x.CreatedOn)
-        };
-
-        List<IEventIntegration> events = await eventStore
-            .FetchAsync(eventFilter, cancellationToken)
-            .OfType<IEventIntegration>()
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (events.Count == 0)
+        await _messageQueue.DequeueAsync(_options.MaxSchedulerEventPerThread, cancellationToken).ConfigureAwait(false);
+        if (_messageQueue.Channel.Reader.Count == 0)
         {
             _logger.LogInformation("No events to schedule.");
             return;
         }
 
-        var tasks = events.Select(async @event =>
+        IPublisher eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IPublisher>();
+        IEventStore eventStore = serviceScope.ServiceProvider.GetRequiredService<IEventStore>();
+
+        while (_messageQueue.Channel.Reader.TryRead(out IIntegrationEvent? @event))
         {
             try
             {
-                await eventPublisher
-                    .PublishAsync(@event, cancellationToken)
-                    .ConfigureAwait(false);
+                await eventPublisher.PublishAsync(@event, cancellationToken).ConfigureAwait(false);
 
                 EventProcessed eventPublished = new()
                 {
-                    EventId = @event.EventId,
-                    PublishedOn = DateTime.UtcNow,
-                    ErrorMessage = null
+                    EventId = @event.EventId, PublishedOn = DateTime.UtcNow, ErrorMessage = null
                 };
 
-                await eventStore
-                    .MarkAsProcessedAsync(eventPublished, cancellationToken)
-                    .ConfigureAwait(false);
+                await eventStore.MarkAsProcessedAsync(eventPublished, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
                 EventProcessed eventPublished = new()
                 {
-                    EventId = @event.EventId,
-                    PublishedOn = DateTime.UtcNow,
-                    ErrorMessage = exception.ToString()
+                    EventId = @event.EventId, PublishedOn = DateTime.UtcNow, ErrorMessage = exception.ToString()
                 };
 
                 await eventStore
                     .MarkAsProcessedAsync(eventPublished, cancellationToken)
                     .ConfigureAwait(false);
             }
-        });
-
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _retryCount = 0;
@@ -149,9 +120,13 @@ public sealed class Scheduler : BackgroundService, IScheduler
         using PeriodicTimer timer = new(period);
 
         while (!stoppingToken.IsCancellationRequested
-            && await timer.WaitForNextTickAsync(stoppingToken)
-                .ConfigureAwait(false))
+               && await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false))
         {
+            if (!_options.IsEventSchedulerEnabled)
+            {
+                break;
+            }
+
             try
             {
                 await ScheduleAsync(stoppingToken).ConfigureAwait(false);
@@ -163,29 +138,30 @@ public sealed class Scheduler : BackgroundService, IScheduler
                     "An error occurred while scheduling events. " +
                     "Retry count: {RetryCount}", _retryCount);
 
-                if (_retryCount >= _options.MaxSchedulerRetries)
+                if (_retryCount < _options.MaxSchedulerRetries)
                 {
-                    _logger.LogError("Maximum retry count reached. " +
-                        "Stopping the event scheduler.");
-
-                    using CancellationTokenSource cts =
-                        CancellationTokenSource.CreateLinkedTokenSource(
-                            stoppingToken,
-                            new CancellationToken(true));
-
-                    stoppingToken = cts.Token;
-
-                    await StopAsync(stoppingToken)
-                        .ConfigureAwait(false);
-
-                    break;
+                    continue;
                 }
+
+                _logger.LogError("Maximum retry count reached. " +
+                                 "Stopping the event scheduler.");
+
+                using CancellationTokenSource cts =
+                    CancellationTokenSource.CreateLinkedTokenSource(
+                        stoppingToken,
+                        new CancellationToken(true));
+
+                stoppingToken = cts.Token;
+
+                await StopAsync(stoppingToken).ConfigureAwait(false);
+
+                break;
             }
         }
     }
 
-    /// <inheritdoc/>
-    public sealed override void Dispose()
+    /// <inheritdoc />
+    public override void Dispose()
     {
         _optionsMonitor?.Dispose();
         base.Dispose();

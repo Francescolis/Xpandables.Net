@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a class for event entities in a domain context.
+/// Represents a snapshot of an event entity with an owner.
 /// </summary>
-public sealed class EventEntityDomain : EventEntity, IEventEntityDomain
+public interface IEntityEventSnapshot : IEntityEvent
 {
-    /// <inheritdoc/>
-    public required Guid AggregateId { get; init; }
+    /// <summary>
+    /// Gets the owner of the event entity snapshot.
+    /// </summary>
+    Guid OwnerId { get; }
 }

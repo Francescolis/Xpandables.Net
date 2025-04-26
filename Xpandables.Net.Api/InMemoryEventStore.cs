@@ -9,18 +9,20 @@ using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.Text;
 
+using AsyncEnumerable = System.Linq.AsyncEnumerable;
+
 namespace Xpandables.Net.Api;
 
 public sealed class InMemoryEventStore : IEventStore
 {
-    private readonly ConcurrentBag<IEventEntity> _eventEntities = [];
     private readonly EventConverterDomain _eventConverter = new();
+    private readonly ConcurrentBag<IEntityEvent> _eventEntities = [];
     private readonly JsonSerializerOptions _options = DefaultSerializerOptions.Defaults;
 
     public Task AppendAsync(IEvent @event, CancellationToken cancellationToken = default)
     {
-        IEventEntity eventEntity = _eventConverter.ConvertTo(@event, _options);
-        _eventEntities.Add(eventEntity);
+        IEntityEvent entityEvent = _eventConverter.ConvertTo(@event, _options);
+        _eventEntities.Add(entityEvent);
 
         return Task.CompletedTask;
     }
@@ -34,15 +36,15 @@ public sealed class InMemoryEventStore : IEventStore
 
     public IAsyncEnumerable<IEvent> FetchAsync(IEventFilter filter, CancellationToken cancellationToken = default)
     {
-        IQueryable<IEventEntityDomain> integrations = _eventEntities
-            .OfType<IEventEntityDomain>()
+        IQueryable<IEntityEventDomain> integrations = _eventEntities
+            .OfType<IEntityEventDomain>()
             .AsQueryable();
 
-        IQueryable<IEventEntityDomain> filteredQuery = filter
+        IQueryable<IEntityEventDomain> filteredQuery = filter
             .Apply(integrations)
-            .OfType<IEventEntityDomain>();
+            .OfType<IEntityEventDomain>();
 
-        return System.Linq.AsyncEnumerable
+        return AsyncEnumerable
             .ToAsyncEnumerable(filteredQuery
                 .Select(entity =>
                     _eventConverter.ConvertFrom(entity, _options)));
@@ -50,8 +52,13 @@ public sealed class InMemoryEventStore : IEventStore
 
     public Task MarkAsProcessedAsync(EventProcessed eventPublished, CancellationToken cancellationToken = default)
     {
-        IEnumerable<IEventEntityIntegration> entities = _eventEntities
-            .OfType<IEventEntityIntegration>()
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled(cancellationToken);
+        }
+
+        IEnumerable<IEntityEventIntegration> entities = _eventEntities
+            .OfType<IEntityEventIntegration>()
             .Where(e => e.KeyId == eventPublished.EventId);
 
         entities.ForEach(e => e.SetStatus(EntityStatus.PUBLISHED));

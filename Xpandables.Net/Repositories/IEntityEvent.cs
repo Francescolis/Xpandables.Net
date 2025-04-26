@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Text.Json;
 
 namespace Xpandables.Net.Repositories;
@@ -21,7 +22,7 @@ namespace Xpandables.Net.Repositories;
 /// <summary>
 /// Represents an event entity that contains event-related data.
 /// </summary>
-public interface IEventEntity : IEntity<Guid>, IDisposable
+public interface IEntityEvent : IEntity<Guid>, IDisposable
 {
     /// <summary>
     /// Gets the name of the event.
@@ -42,15 +43,4 @@ public interface IEventEntity : IEntity<Guid>, IDisposable
     /// Gets the data associated with the event.
     /// </summary>
     JsonDocument EventData { get; }
-
-    /// <summary>
-    /// Disposes the event data.
-    /// </summary>
-#pragma warning disable CA1033 // Interface methods should be callable by child types
-    void IDisposable.Dispose()
-#pragma warning restore CA1033 // Interface methods should be callable by child types
-    {
-        EventData?.Dispose();
-        GC.SuppressFinalize(this);
-    }
 }

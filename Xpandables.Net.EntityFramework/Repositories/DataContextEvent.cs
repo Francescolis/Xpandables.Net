@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Repositories;
+
 /// <summary>
 /// Represents the data context for handling event entities.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="DataContextEvent"/> class.
+/// Initializes a new instance of the <see cref="DataContextEvent" /> class.
 /// </remarks>
-/// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+/// <param name="options">The options to be used by a <see cref="DbContext" />.</param>
 public sealed class DataContextEvent(
     DbContextOptions<DataContextEvent> options) :
     DataContext(options)
 {
+    /// <summary>
+    /// Gets or sets the DbSet for EventEntityDomain.
+    /// </summary>
+    public DbSet<EntityDomainEvent> Domains { get; set; } = default!;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets the DbSet for EventEntityIntegration.
+    /// </summary>
+    public DbSet<EntityIntegrationEvent> Integrations { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the DbSet for EventEntitySnapshot.
+    /// </summary>
+    public DbSet<EntitySnapshotEvent> Snapshots { get; set; } = default!;
+
+    /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
@@ -43,19 +58,4 @@ public sealed class DataContextEvent(
 
         base.OnModelCreating(modelBuilder);
     }
-
-    /// <summary>
-    /// Gets or sets the DbSet for EventEntityDomain.
-    /// </summary>
-    public DbSet<EventEntityDomain> Domains { get; set; } = default!;
-
-    /// <summary>
-    /// Gets or sets the DbSet for EventEntityIntegration.
-    /// </summary>
-    public DbSet<EventEntityIntegration> Integrations { get; set; } = default!;
-
-    /// <summary>
-    /// Gets or sets the DbSet for EventEntitySnapshot.
-    /// </summary>
-    public DbSet<EventEntitySnapshot> Snapshots { get; set; } = default!;
 }

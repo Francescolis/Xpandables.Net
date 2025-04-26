@@ -9,7 +9,11 @@ using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Test.UnitTests;
 
-public sealed record TestQuery : IRequest<string> { public required string Query { get; set; } }
+public sealed record TestQuery : IRequest<string>
+{
+    public required string Query { get; set; }
+}
+
 public sealed class TestQueryHander : IRequestHandler<TestQuery>
 {
     public async Task<ExecutionResult> HandleAsync(
@@ -22,12 +26,12 @@ public sealed class TestQueryHander : IRequestHandler<TestQuery>
 
 public sealed class EventPublisherSubscriberUnitTest
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly PublisherSubscriber _publisherSubscriber;
+    private readonly IServiceProvider _serviceProvider;
 
     public EventPublisherSubscriberUnitTest()
     {
-        var services = new ServiceCollection();
+        ServiceCollection services = new();
         services.AddXHandlers();
         _serviceProvider = services.BuildServiceProvider();
         _publisherSubscriber = new PublisherSubscriber(_serviceProvider);
@@ -37,11 +41,14 @@ public sealed class EventPublisherSubscriberUnitTest
     public async Task PublishAsync_ShouldReturnSuccess_WhenHandlersAreExecutedSuccessfully()
     {
         // Arrange
-        TestEvent testEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
-        _publisherSubscriber.Subscribe<TestEvent>(e => { /* Handler logic */ });
+        TestIntegrationEvent testIntegrationEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
+        _publisherSubscriber.Subscribe<TestIntegrationEvent>(e =>
+        {
+            /* Handler logic */
+        });
 
         // Act
-        await _publisherSubscriber.PublishAsync(testEvent);
+        await _publisherSubscriber.PublishAsync(testIntegrationEvent);
 
         // Assert
         // No exception should be thrown
@@ -51,20 +58,19 @@ public sealed class EventPublisherSubscriberUnitTest
     public async Task PublishAsync_ShouldReturnFailure_WhenHandlerThrowsException()
     {
         // Arrange
-        TestEvent testEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
+        TestIntegrationEvent testIntegrationEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
         _publisherSubscriber
-            .Subscribe<TestEvent>(e =>
+            .Subscribe<TestIntegrationEvent>(e =>
                 throw new InvalidOperationException("Test exception"));
 
         // Act
-        var result = () => _publisherSubscriber.PublishAsync(testEvent);
+        Func<Task> result = () => _publisherSubscriber.PublishAsync(testIntegrationEvent);
 
         // Assert
         await result.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    private record TestEvent : EventIntegration
+    private record TestIntegrationEvent : IntegrationEvent
     {
     }
-
 }

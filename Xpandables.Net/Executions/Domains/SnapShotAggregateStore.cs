@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
 
@@ -40,7 +39,7 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
     private readonly IEventStore _eventStore = eventStore;
     private readonly SnapShotOptions _options = options.Value;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task AppendAsync(
         TAggregateRoot aggregate,
         CancellationToken cancellationToken = default)
@@ -51,7 +50,7 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
             {
                 IMemento memento = aggregate.Save();
 
-                EventSnapshot @event = new()
+                SnapshotEvent snapshotEvent = new()
                 {
                     EventId = Guid.CreateVersion7(),
                     EventVersion = aggregate.Version,
@@ -60,7 +59,7 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
                 };
 
                 await _eventStore
-                    .AppendAsync(@event, cancellationToken)
+                    .AppendAsync(snapshotEvent, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -77,7 +76,7 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<TAggregateRoot> ResolveAsync(
         Guid keyId,
         CancellationToken cancellationToken = default)
@@ -91,7 +90,7 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
 
         try
         {
-            IEventFilter filter = new EventEntityFilterSnapshot
+            IEventFilter filter = new EntitySnapShotEventFilter
             {
                 Predicate = x => x.OwnerId == keyId,
                 OrderBy = x => x.OrderByDescending(x => x.EventVersion),
@@ -99,9 +98,9 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
                 PageSize = 1
             };
 
-            IEventSnapshot? @event = await _eventStore
+            ISnapshotEvent? @event = await _eventStore
                 .FetchAsync(filter, cancellationToken)
-                .OfType<IEventSnapshot>()
+                .OfType<ISnapshotEvent>()
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -121,17 +120,17 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
             // because the snapshot is not always up to date, we need to fetch the events
             // after the snapshot version to get the latest events.
 
-            filter = new EventEntityFilterDomain
+            filter = new EntityDomainEventFilter
             {
                 Predicate = x => x.AggregateId == keyId
-                    && x.EventVersion > aggregateRoot.Version,
+                                 && x.EventVersion > aggregateRoot.Version,
                 OrderBy = x => x.OrderBy(x => x.EventVersion)
             };
 
-            await foreach (IEventDomain ev in _eventStore
-                .FetchAsync(filter, cancellationToken)
-                .OfType<IEventDomain>()
-                .ConfigureAwait(false))
+            await foreach (IDomainEvent ev in _eventStore
+                               .FetchAsync(filter, cancellationToken)
+                               .OfType<IDomainEvent>()
+                               .ConfigureAwait(false))
             {
                 aggregateRoot.LoadFromHistory(ev);
             }
@@ -155,7 +154,7 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
     }
 
     private bool CanSnapshot(AggregateRoot aggregateRoot) =>
-      _options.IsSnapshotEnabled
-          && aggregateRoot.Version % _options.SnapshotFrequency == 0
-          && aggregateRoot.Version >= _options.SnapshotFrequency;
+        _options.IsSnapshotEnabled
+        && aggregateRoot.Version % _options.SnapshotFrequency == 0
+        && aggregateRoot.Version >= _options.SnapshotFrequency;
 }

@@ -5,7 +5,7 @@ using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Api.Accounts.Events;
 
-public sealed record DepositMade : EventDomain<Account>
+public sealed record DepositMade : DomainEvent<Account>
 {
     [JsonConstructor]
     private DepositMade() { }

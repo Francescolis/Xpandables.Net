@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
 
@@ -28,9 +28,9 @@ namespace Xpandables.Net.Executions.Domains;
 /// </summary>
 /// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
 /// <remarks>
-/// Initializes a new instance of the 
-/// <see cref="AggregateStore{TAggregateRoot}"/> class.
-/// The <see cref="IUnitOfWork"/> must be registered with the key "Aggregate".
+/// Initializes a new instance of the
+/// <see cref="AggregateStore{TAggregateRoot}" /> class.
+/// The <see cref="IUnitOfWork" /> must be registered with the key "Aggregate".
 /// </remarks>
 /// <param name="eventStore">The event store.</param>
 /// <param name="publisher">The event publisher.</param>
@@ -43,14 +43,14 @@ public sealed class AggregateStore<TAggregateRoot>(
     private readonly IEventStore _eventStore = eventStore;
     private readonly IPublisher _publisher = publisher;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task AppendAsync(
         TAggregateRoot aggregate,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            IReadOnlyCollection<IEventDomain> uncommittedEvents =
+            IReadOnlyCollection<IDomainEvent> uncommittedEvents =
                 aggregate.GetUncommittedEvents();
 
             if (uncommittedEvents.Count == 0)
@@ -62,10 +62,13 @@ public sealed class AggregateStore<TAggregateRoot>(
                 .AppendAsync(uncommittedEvents, cancellationToken)
                 .ConfigureAwait(false);
 
-            Task[] tasks = [.. uncommittedEvents
-                .Select(async @event => await _publisher
-                    .PublishAsync(@event, cancellationToken)
-                    .ConfigureAwait(false))];
+            Task[] tasks =
+            [
+                .. uncommittedEvents
+                    .Select(async @event => await _publisher
+                        .PublishAsync(@event, cancellationToken)
+                        .ConfigureAwait(false))
+            ];
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -80,26 +83,25 @@ public sealed class AggregateStore<TAggregateRoot>(
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<TAggregateRoot> ResolveAsync(
         Guid keyId,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            IEventFilter filter = new EventEntityFilterDomain
+            IEventFilter filter = new EntityDomainEventFilter
             {
-                Predicate = x => x.AggregateId == keyId,
-                OrderBy = x => x.OrderBy(o => o.EventVersion)
+                Predicate = x => x.AggregateId == keyId, OrderBy = x => x.OrderBy(o => o.EventVersion)
             };
 
             TAggregateRoot aggregateRoot = new();
 
-            await foreach (IEventDomain @event in _eventStore
-                .FetchAsync(filter, cancellationToken)
-                .OfType<IEventDomain>()
-                .OrderBy(x => x.EventVersion)
-                .ConfigureAwait(false))
+            await foreach (IDomainEvent @event in _eventStore
+                               .FetchAsync(filter, cancellationToken)
+                               .OfType<IDomainEvent>()
+                               .OrderBy(x => x.EventVersion)
+                               .ConfigureAwait(false))
             {
                 aggregateRoot.LoadFromHistory(@event);
             }

@@ -51,7 +51,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
                 .. handlers
                     .Select(handler => handler switch
                     {
-                        Action<TEvent> action => Task.Run(() => action(@event)),
+                        Action<TEvent> action => Task.Run(() => action(@event), cancellationToken),
                         Func<TEvent, Task> func => func(@event),
                         IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event, cancellationToken),
                         _ => Task.CompletedTask
