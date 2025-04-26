@@ -23,7 +23,7 @@ public interface IEventBus
 // ReSharper disable once ClassNeverInstantiated.Global
 internal sealed class EventBus(IMessageQueue messageQueue) : IEventBus
 {
-    public Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
+    public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
         where TEvent : class, IIntegrationEvent =>
-        messageQueue.EnqueueAsync(@event, cancellationToken);
+        await messageQueue.EnqueueAsync(@event, cancellationToken).ConfigureAwait(false);
 }

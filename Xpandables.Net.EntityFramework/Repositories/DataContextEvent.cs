@@ -28,33 +28,31 @@ namespace Xpandables.Net.Repositories;
 /// Initializes a new instance of the <see cref="DataContextEvent" /> class.
 /// </remarks>
 /// <param name="options">The options to be used by a <see cref="DbContext" />.</param>
-public sealed class DataContextEvent(
-    DbContextOptions<DataContextEvent> options) :
-    DataContext(options)
+public sealed class DataContextEvent(DbContextOptions<DataContextEvent> options) : DataContext(options)
 {
     /// <summary>
     /// Gets or sets the DbSet for EventEntityDomain.
     /// </summary>
-    public DbSet<EntityDomainEvent> Domains { get; set; } = default!;
+    public DbSet<EntityDomainEvent> Domains { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the DbSet for EventEntityIntegration.
     /// </summary>
-    public DbSet<EntityIntegrationEvent> Integrations { get; set; } = default!;
+    public DbSet<EntityIntegrationEvent> Integrations { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the DbSet for EventEntitySnapshot.
     /// </summary>
-    public DbSet<EntitySnapshotEvent> Snapshots { get; set; } = default!;
+    public DbSet<EntitySnapshotEvent> Snapshots { get; set; } = null!;
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
-        _ = modelBuilder.ApplyConfiguration(new EventEntityDomainConfiguration());
-        _ = modelBuilder.ApplyConfiguration(new EventEntityIntegrationConfiguration());
-        _ = modelBuilder.ApplyConfiguration(new EventEntitySnapshotConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityDomainEventTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityIntegrationEventTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntitySnapShotEventTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

@@ -1,7 +1,7 @@
 ﻿namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a unit of work that encapsulates a set of operations to be 
+/// Represents a unit of work that encapsulates a set of operations to be
 /// performed on a data context.
 /// </summary>
 public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
@@ -12,17 +12,15 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     /// <summary>
     /// Gets the data context associated with this unit of work.
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     protected DataContext Context { get; } = context;
 
-    /// <inheritdoc/>
-    public override async Task<int> SaveChangesAsync(
-        CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            return await Context
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            return await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -33,13 +31,13 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override IRepository GetRepositoryCore(Type repositoryType) =>
         _serviceProvider.GetService(repositoryType) as IRepository
-            ?? throw new InvalidOperationException(
-                $"The repository of type {repositoryType.Name} is not registered.");
+        ?? throw new InvalidOperationException(
+            $"The repository of type {repositoryType.Name} is not registered.");
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing)
@@ -52,14 +50,13 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 }
 
 /// <summary>
-/// Represents a unit of work that encapsulates a set of operations to be 
-/// performed on a data context of type <typeparamref name="TDataContext"/>.
+/// Represents a unit of work that encapsulates a set of operations to be
+/// performed on a data context of type <typeparamref name="TDataContext" />.
 /// </summary>
 /// <typeparam name="TDataContext">The type of the data context.</typeparam>
-public class UnitOfWork<TDataContext>(
-    TDataContext context, IServiceProvider serviceProvider) :
-    UnitOfWork(context, serviceProvider),
-    IUnitOfWork<TDataContext>
+// ReSharper disable once ClassNeverInstantiated.Global
+public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider serviceProvider) :
+    UnitOfWork(context, serviceProvider), IUnitOfWork<TDataContext>
     where TDataContext : DataContext
 {
 }

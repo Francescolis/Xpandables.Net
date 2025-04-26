@@ -23,19 +23,19 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Provides configuration for the <see cref="EntityIntegrationEvent" /> entity.
+/// Provides configuration for the <see cref="EntityDomainEvent" /> entity type.
 /// </summary>
-public sealed class EventEntityIntegrationConfiguration :
-    IEntityTypeConfiguration<EntityIntegrationEvent>
+public sealed class EntityDomainEventTypeConfiguration : IEntityTypeConfiguration<EntityDomainEvent>
 {
     /// <inheritdoc />
-    public void Configure(EntityTypeBuilder<EntityIntegrationEvent> builder)
+    public void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         _ = builder.HasKey(e => e.KeyId);
-        _ = builder.HasIndex(e => new { e.KeyId, e.EventName, e.EventVersion });
+        _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.EventName, e.EventVersion });
         _ = builder.Property(e => e.KeyId).IsRequired();
+        _ = builder.Property(e => e.AggregateId).IsRequired();
         _ = builder.Property(e => e.EventName).IsRequired().HasMaxLength(100);
         _ = builder.Property(e => e.EventFullName).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.EventVersion).IsRequired();

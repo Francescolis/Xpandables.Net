@@ -39,9 +39,7 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
     private readonly EventOptions _options = options.Value;
 
     /// <inheritdoc />
-    public async Task AppendAsync(
-        IEvent @event,
-        CancellationToken cancellationToken = default)
+    public async Task AppendAsync(IEvent @event, CancellationToken cancellationToken = default)
     {
         IEventConverter eventConverter = _options.GetEventConverterFor(@event);
 
@@ -55,9 +53,7 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
     }
 
     /// <inheritdoc />
-    public async Task AppendAsync(
-        IEnumerable<IEvent> events,
-        CancellationToken cancellationToken = default)
+    public async Task AppendAsync(IEnumerable<IEvent> events, CancellationToken cancellationToken = default)
     {
         List<IEvent> eventsList = [.. events];
         if (eventsList.Count == 0)
@@ -67,15 +63,12 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
 
         foreach (IEvent @event in eventsList)
         {
-            await AppendAsync(@event, cancellationToken)
-                .ConfigureAwait(false);
+            await AppendAsync(@event, cancellationToken).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<IEvent> FetchAsync(
-        IEventFilter filter,
-        CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IEvent> FetchAsync(IEventFilter filter, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
 
@@ -90,11 +83,9 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
             _ => throw new InvalidOperationException("The event type is not supported.")
         };
 
-        IEventConverter eventConverter =
-            _options.GetEventConverterFor(filter.EventType);
+        IEventConverter eventConverter = _options.GetEventConverterFor(filter.EventType);
 
-        IAsyncEnumerable<IEntityEvent> entities =
-            filter.FetchAsync(queryable, cancellationToken);
+        IAsyncEnumerable<IEntityEvent> entities = filter.FetchAsync(queryable, cancellationToken);
 
         return entities.Select(entity =>
         {
@@ -110,9 +101,7 @@ public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent 
     }
 
     /// <inheritdoc />
-    public async Task MarkAsProcessedAsync(
-        EventProcessed eventProcessed,
-        CancellationToken cancellationToken = default)
+    public async Task MarkAsProcessedAsync(EventProcessed eventProcessed, CancellationToken cancellationToken = default)
     {
         string status = eventProcessed.ErrorMessage is null
             ? EntityStatus.PUBLISHED

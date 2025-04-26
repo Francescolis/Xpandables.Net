@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.ComponentModel;
 
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// Provides a way to define a request.
-/// Class implementation is used with the <see cref="IRequestHandler{TRequest}"/> 
-/// where "TRequest" is a record that implements <see cref="IRequest"/>.
+/// Class implementation is used with the <see cref="IRequestHandler{TRequest}" />
+/// where "TRequest" is a record that implements <see cref="IRequest" />.
 /// </summary>
 public interface IRequest
 {
@@ -33,19 +34,19 @@ public interface IRequest
 
 /// <summary>
 /// Provides a way to define a request that returns a result.
-/// Class implementation is used with the <see cref="IRequestHandler{TRequest}"/> 
-/// where "TRequest" is a class that implements <see cref="IRequest{TResult}"/>.
+/// Class implementation is used with the <see cref="IRequestHandler{TRequest}" />
+/// where "TRequest" is a class that implements <see cref="IRequest{TResult}" />.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public interface IRequest<out TResult> : IRequest;
 
 /// <summary>
 /// Provides a way to define a stream request that returns a result asynchronously.
-/// <see cref="IAsyncEnumerable{TResult}"/> of specific-type response.
-/// Class implementation is used with the 
-/// <see cref="IRequestHandler{TRequest}"/> where
-/// "TRequest" is a class that implements the 
-/// <see cref="IStreamRequest{TResult}"/> interface. 
+/// <see cref="IAsyncEnumerable{TResult}" /> of specific-type response.
+/// Class implementation is used with the
+/// <see cref="IRequestHandler{TRequest}" /> where
+/// "TRequest" is a class that implements the
+/// <see cref="IStreamRequest{TResult}" /> interface.
 /// </summary>
 /// <typeparam name="TResult">Type of the result of the request.</typeparam>
 public interface IStreamRequest<out TResult> : IRequest;
@@ -83,6 +84,9 @@ public interface IDependencyRequest<TDependency> : IDependencyRequest
     /// The type of the dependency.
     /// </summary>
     public new Type DependencyType => typeof(TDependency);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type IDependencyRequest.DependencyType => DependencyType;
 }
 
 /// <summary>
@@ -92,12 +96,9 @@ public interface IDependencyRequest<TDependency> : IDependencyRequest
 public abstract record DependencyRequest<TDependency> : IDependencyRequest<TDependency>
     where TDependency : class
 {
-    /// <inheritdoc/>
-    public Type DependencyType => typeof(TDependency);
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public required object DependencyKeyId { get; init; }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    object IDependencyRequest.DependencyInstance { get; set; } = default!;
+    object IDependencyRequest.DependencyInstance { get; set; } = null!;
 }

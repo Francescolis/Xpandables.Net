@@ -581,7 +581,7 @@ public static class ServiceCollectionMediatorExtensions
     public static IServiceCollection AddXEventHandler<TEvent, TEventHandler>(
         this IServiceCollection services,
         Func<IServiceProvider, TEventHandler>? factory)
-        where TEvent : notnull, IEvent
+        where TEvent : class, IEvent
         where TEventHandler : class, IEventHandler<TEvent>
     {
         if (factory is not null)

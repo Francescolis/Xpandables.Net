@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +22,9 @@ using Microsoft.EntityFrameworkCore;
 using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Repositories;
+
 /// <summary>
-/// Represents a repository that provides data access functionality for a 
+/// Represents a repository that provides data access functionality for a
 /// specific data context.
 /// </summary>
 /// <typeparam name="TDataContext">The type of the data context.</typeparam>
@@ -32,25 +34,23 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
     /// <summary>
     /// Gets the data context associated with this repository.
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     protected TDataContext Context { get; } = context;
-    /// <inheritdoc/>
 
-    public virtual Task DeleteAsync<TEntity>(
-        IEntityFilter<TEntity> filter,
-        CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public virtual Task DeleteAsync<TEntity>(IEntityFilter<TEntity> filter, CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        IQueryable<TEntity> query = filter
-            .Apply(Context.Set<TEntity>())
-            .OfType<TEntity>();
+        IQueryable<TEntity> query = filter.Apply(Context.Set<TEntity>()).OfType<TEntity>();
 
         Context.RemoveRange(query);
 
         return Task.CompletedTask;
     }
-    /// <inheritdoc/>
+
+    /// <inheritdoc />
     public virtual IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
         IEntityFilter<TEntity, TResult> filter,
         CancellationToken cancellationToken)
@@ -61,24 +61,22 @@ public abstract class Repository<TDataContext>(TDataContext context) : IReposito
         IAsyncEnumerable<TResult> results =
             (typeof(TEntity) == typeof(TResult)) switch
             {
-                true => filter
-                    .FetchAsync<TResult>(Context.Set<TEntity>(), cancellationToken),
-                _ => filter
-                    .FetchAsync<TResult>(Context.Set<TEntity>().AsNoTracking(), cancellationToken)
+                true => filter.FetchAsync<TResult>(Context.Set<TEntity>(), cancellationToken),
+                _ => filter.FetchAsync<TResult>(Context.Set<TEntity>().AsNoTracking(), cancellationToken)
             };
 
         return results;
     }
-    /// <inheritdoc/>
-    public virtual Task InsertAsync<TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken)
+
+    /// <inheritdoc />
+    public virtual Task InsertAsync<TEntity>(IEnumerable<TEntity> entities, CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
         Context.AddRange(entities);
         return Task.CompletedTask;
     }
-    /// <inheritdoc/>
+
+    /// <inheritdoc />
     public virtual Task UpdateAsync<TEntity>(
         IEntityFilter<TEntity> filter,
         Expression<Func<TEntity, TEntity>> updateExpression,

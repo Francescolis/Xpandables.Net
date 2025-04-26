@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.ComponentModel;
 
 namespace Xpandables.Net.Executions.Tasks;
@@ -36,8 +37,8 @@ public interface IRequestHandler<in TRequest>
 }
 
 /// <summary>
-/// Defines a handler for a request of type <typeparamref name="TRequest"/> 
-/// with a dependency of type <typeparamref name="TDependency"/>.
+/// Defines a handler for a request of type <typeparamref name="TRequest" />
+/// with a dependency of type <typeparamref name="TDependency" />.
 /// </summary>
 /// <remarks>This can also be enhanced with some useful decorators.</remarks>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
@@ -46,27 +47,32 @@ public interface IDependencyRequestHandler<in TRequest, in TDependency> : IReque
     where TRequest : class, IDependencyRequest<TDependency>
     where TDependency : class
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    async Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
+        TRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request.DependencyInstance is null)
+        {
+            throw new InvalidOperationException("The dependency is not set.");
+        }
+
+        return await HandleAsync(request, (TDependency)request.DependencyInstance, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     /// <summary>
     /// Handles the specified request asynchronously with the given dependency.
     /// </summary>
     /// <param name="request">The request to handle.</param>
     /// <param name="dependency">The dependency required to handle the request.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation. 
-    /// The task result contains the operation result.</returns>
+    /// <returns>
+    /// A task that represents the asynchronous operation.
+    /// The task result contains the operation result.
+    /// </returns>
     Task<ExecutionResult> HandleAsync(
         TRequest request,
         TDependency dependency,
         CancellationToken cancellationToken = default);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken)
-    {
-        if (request.DependencyInstance is null)
-            throw new InvalidOperationException("The dependency is not set.");
-
-        return HandleAsync(request, (TDependency)request.DependencyInstance, cancellationToken);
-    }
 }

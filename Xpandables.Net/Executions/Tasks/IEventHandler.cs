@@ -18,16 +18,16 @@
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-///     Defines a contract for handling events.
+/// Defines a contract for handling events.
 /// </summary>
 /// <typeparam name="TEvent">The type of event to handle.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public interface IEventHandler<in TEvent>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
-    where TEvent : notnull, IEvent
+    where TEvent : class, IEvent
 {
     /// <summary>
-    ///     Handles the specified event asynchronously.
+    /// Handles the specified event asynchronously.
     /// </summary>
     /// <param name="event">The event to handle.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>

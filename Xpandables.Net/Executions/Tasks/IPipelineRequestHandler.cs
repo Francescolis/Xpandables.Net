@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
 /// An interface for handling asynchronous operations based on a specific request type.
 /// </summary>
-/// <typeparam name="TRequest">Represents the input data required to perform the operation, 
-/// constrained to a class implementing a request interface.</typeparam>
-public interface IPipelineRequestHandler<TRequest>
+/// <typeparam name="TRequest">
+/// Represents the input data required to perform the operation,
+/// constrained to a class implementing a request interface.
+/// </typeparam>
+public interface IPipelineRequestHandler<in TRequest>
     where TRequest : class, IRequest
 {
     /// <summary>

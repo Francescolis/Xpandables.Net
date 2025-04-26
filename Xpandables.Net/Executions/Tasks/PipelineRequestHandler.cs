@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Xpandables.Net.Executions.Pipelines;
 
 namespace Xpandables.Net.Executions.Tasks;
@@ -28,23 +29,26 @@ public sealed class PipelineRequestHandler<TRequest>(
     IPipelineRequestHandler<TRequest>
     where TRequest : class, IRequest
 {
-    /// <inheritdoc/>
-    public Task<ExecutionResult> HandleAsync(
+    /// <inheritdoc />
+    public async Task<ExecutionResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default)
     {
-        Task<ExecutionResult> result = decorators
-           .Reverse()
-           .Aggregate<IPipelineDecorator<TRequest, ExecutionResult>,
-           RequestHandler<ExecutionResult>>(
-               Handler,
-               (next, decorator) => () => decorator.HandleAsync(
-                   request,
-                   next,
-                   cancellationToken))();
+        ExecutionResult result = await decorators
+            .Reverse()
+            .Aggregate<IPipelineDecorator<TRequest, ExecutionResult>,
+                RequestHandler<ExecutionResult>>(
+                Handler,
+                (next, decorator) => async () => await decorator.HandleAsync(
+                    request,
+                    next,
+                    cancellationToken).ConfigureAwait(false))().ConfigureAwait(false);
 
         return result;
 
-        Task<ExecutionResult> Handler() => decoratee.HandleAsync(request, cancellationToken);
+        async Task<ExecutionResult> Handler()
+        {
+            return await decoratee.HandleAsync(request, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

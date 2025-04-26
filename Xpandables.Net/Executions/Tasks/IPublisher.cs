@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 namespace Xpandables.Net.Executions.Tasks;
+
 /// <summary>
 /// Defines a contract for publishing events.
 /// </summary>
@@ -25,13 +27,17 @@ public interface IPublisher
     /// </summary>
     /// <typeparam name="TEvent">The type of event to publish.</typeparam>
     /// <param name="event">The event to publish.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation 
-    /// requests.</param>
+    /// <param name="cancellationToken">
+    /// A token to monitor for cancellation
+    /// requests.
+    /// </param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="InvalidOperationException">Publishing the event failed.
-    /// See inner exception for details.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Publishing the event failed.
+    /// See inner exception for details.
+    /// </exception>
     Task PublishAsync<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
-        where TEvent : notnull, IEvent;
+        where TEvent : class, IEvent;
 }

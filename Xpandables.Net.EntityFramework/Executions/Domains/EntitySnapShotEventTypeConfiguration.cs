@@ -25,8 +25,7 @@ namespace Xpandables.Net.Executions.Domains;
 /// <summary>
 /// Configuration class for the <see cref="EntitySnapshotEvent" /> entity.
 /// </summary>
-public sealed class EventEntitySnapshotConfiguration :
-    IEntityTypeConfiguration<EntitySnapshotEvent>
+public sealed class EntitySnapShotEventTypeConfiguration : IEntityTypeConfiguration<EntitySnapshotEvent>
 {
     /// <inheritdoc />
     public void Configure(EntityTypeBuilder<EntitySnapshotEvent> builder)

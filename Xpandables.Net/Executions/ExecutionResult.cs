@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json.Serialization;
@@ -28,12 +29,13 @@ namespace Xpandables.Net.Executions;
 /// </summary>
 #pragma warning disable CA1707 // Identifiers should not contain underscores
 #pragma warning disable IDE1006 // Naming Styles
+// ReSharper disable once InconsistentNaming
 public abstract record _ExecutionResult
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 {
     /// <summary>
-    /// Contains the key for the exception in the <see cref="ElementCollection"/>.
+    /// Contains the key for the exception in the <see cref="ElementCollection" />.
     /// </summary>
     public const string ExceptionKey = "Exception";
 
@@ -87,17 +89,10 @@ public abstract record _ExecutionResult
     public abstract bool IsGeneric { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the execution's status code 
+    /// Gets a value indicating whether the execution's status code
     /// is a success status code.
     /// </summary>
     public abstract bool IsSuccessStatusCode { get; }
-
-    /// <summary>
-    /// Ensures that the execution result has a success status code.
-    /// </summary>
-    /// <exception cref="ExecutionResultException">Thrown if the status code 
-    /// is not a success status code.</exception>
-    public abstract void EnsureSuccessStatusCode();
 
     /// <summary>
     /// Gets the exception associated with the execution result, if any.
@@ -105,6 +100,15 @@ public abstract record _ExecutionResult
     /// <returns>The exception entry if available; otherwise, null.</returns>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ElementEntry? Exception => Errors[ExceptionKey];
+
+    /// <summary>
+    /// Ensures that the execution result has a success status code.
+    /// </summary>
+    /// <exception cref="ExecutionResultException">
+    /// Thrown if the status code
+    /// is not a success status code.
+    /// </exception>
+    public abstract void EnsureSuccessStatusCode();
 
     /// <summary>
     /// Converts an ExecutionResultAbstract instance to an HttpStatusCode.
@@ -123,19 +127,20 @@ public abstract record _ExecutionResult
 /// Represents the result of an execution, including status code, title, detail,
 /// location, result, errors, headers, extensions, and status.
 /// </summary>
+/// <remarks>Use the <see cref="ExecutionResults" /> class to create instances of this class.</remarks>
 [Serializable]
 public sealed record ExecutionResult : _ExecutionResult
 {
     [JsonConstructor]
     internal ExecutionResult() { }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override bool IsGeneric => false;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override void EnsureSuccessStatusCode()
     {
         if (!IsSuccessStatusCode)
@@ -169,12 +174,13 @@ public sealed record ExecutionResult : _ExecutionResult
         };
 }
 
-/// <summary>  
-/// Represents the result of an execution with a specific result type, including 
-/// status code, title, detail,  location, result, errors, headers, extensions, 
-/// and status.  
-/// </summary>  
-/// <typeparam name="TResult">The type of the result object.</typeparam>  
+/// <summary>
+/// Represents the result of an execution with a specific result type, including
+/// status code, title, detail,  location, result, errors, headers, extensions,
+/// and status.
+/// </summary>
+/// <typeparam name="TResult">The type of the result object.</typeparam>
+/// <remarks>Use the <see cref="ExecutionResults" /> class to create instances of this class.</remarks>
 public sealed record ExecutionResult<TResult> : _ExecutionResult
 {
     [JsonConstructor]
@@ -184,18 +190,23 @@ public sealed record ExecutionResult<TResult> : _ExecutionResult
     /// Gets the result object of the execution.
     /// </summary>
     /// <remarks>May be null if the execution has no result.</remarks>
-    [MaybeNull, AllowNull]
+    [MaybeNull]
+    [AllowNull]
     public new TResult Result
     {
         get => (TResult?)base.Result;
         init => base.Result = value;
     }
 
-    /// <inheritdoc/>>
+    /// <inheritdoc />
+    /// >
     [MemberNotNullWhen(true, nameof(Result))]
     public override bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public override bool IsGeneric => true;
+
+    /// <inheritdoc />
     [MemberNotNull([nameof(Result)])]
     public override void EnsureSuccessStatusCode()
     {
@@ -205,18 +216,15 @@ public sealed record ExecutionResult<TResult> : _ExecutionResult
         }
     }
 
-    /// <inheritdoc/>
-    public override bool IsGeneric => true;
-
     /// <summary>
-    /// Converts the current instance to an <see cref="ExecutionResult"/> object.
+    /// Converts the current instance to an <see cref="ExecutionResult" /> object.
     /// </summary>
     /// <param name="result"></param>
     public static implicit operator ExecutionResult(ExecutionResult<TResult> result) =>
         result.ToExecutionResult();
 
     /// <summary>
-    /// Converts the current instance to an <see cref="ExecutionResult{TResult}"/> object.
+    /// Converts the current instance to an <see cref="ExecutionResult{TResult}" /> object.
     /// </summary>
     /// <param name="result"></param>
     public static implicit operator ExecutionResult<TResult>(ExecutionResult result) =>
@@ -233,7 +241,7 @@ public sealed record ExecutionResult<TResult> : _ExecutionResult
         };
 
     /// <summary>
-    /// Converts the current instance to an <see cref="ExecutionResult"/> object.
+    /// Converts the current instance to an <see cref="ExecutionResult" /> object.
     /// </summary>
     /// <returns></returns>
     public ExecutionResult ToExecutionResult() => new()

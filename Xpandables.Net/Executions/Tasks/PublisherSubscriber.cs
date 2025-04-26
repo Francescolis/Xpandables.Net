@@ -40,7 +40,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
     public async Task PublishAsync<TEvent>(
         TEvent @event,
         CancellationToken cancellationToken = default)
-        where TEvent : notnull, IEvent
+        where TEvent : class, IEvent
     {
         try
         {
@@ -72,19 +72,19 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
 
     /// <inheritdoc />
     public void Subscribe<TEvent>(Action<TEvent> subscriber)
-        where TEvent : notnull, IEvent =>
+        where TEvent : class, IEvent =>
         GetHandlersOf<TEvent>()
             .Add(subscriber);
 
     /// <inheritdoc />
     public void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
-        where TEvent : notnull, IEvent =>
+        where TEvent : class, IEvent =>
         GetHandlersOf<TEvent>()
             .Add(subscriber);
 
     /// <inheritdoc />
     public void Subscribe<TEvent>(IEventHandler<TEvent> subscriber)
-        where TEvent : notnull, IEvent =>
+        where TEvent : class, IEvent =>
         GetHandlersOf<TEvent>()
             .Add(subscriber);
 
@@ -105,7 +105,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
     }
 
     private ConcurrentBag<object> GetHandlersOf<TEvent>()
-        where TEvent : notnull, IEvent =>
+        where TEvent : class, IEvent =>
         GetHandlersOf(typeof(TEvent));
 
     private ConcurrentBag<object> GetHandlersOf(Type eventType)

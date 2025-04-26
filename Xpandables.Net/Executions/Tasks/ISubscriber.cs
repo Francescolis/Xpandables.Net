@@ -31,7 +31,7 @@ public interface ISubscriber : IDisposable
     /// is published.
     /// </param>
     void Subscribe<TEvent>(Action<TEvent> subscriber)
-        where TEvent : notnull, IEvent;
+        where TEvent : class, IEvent;
 
     /// <summary>
     /// Subscribes to an event with a specified asynchronous function.
@@ -42,7 +42,7 @@ public interface ISubscriber : IDisposable
     /// when the event is published.
     /// </param>
     void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
-        where TEvent : notnull, IEvent;
+        where TEvent : class, IEvent;
 
     /// <summary>
     /// Subscribes to an event with a specified event handler.
@@ -50,5 +50,5 @@ public interface ISubscriber : IDisposable
     /// <param name="subscriber">The event handler to be executed when the event is published.</param>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     void Subscribe<TEvent>(IEventHandler<TEvent> subscriber)
-        where TEvent : notnull, IEvent;
+        where TEvent : class, IEvent;
 }

@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Represents a mediator that handles various operations such as fetching, 
+/// Represents a mediator that handles various operations such as fetching,
 /// sending requests.
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 internal sealed class Mediator(IServiceProvider provider) : IMediator
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<ExecutionResult> SendAsync<TRequest>(
         TRequest request,
         CancellationToken cancellationToken = default)
@@ -36,9 +37,7 @@ internal sealed class Mediator(IServiceProvider provider) : IMediator
             IPipelineRequestHandler<TRequest> handler =
                 provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
 
-            return await handler
-                .HandleAsync(request, cancellationToken)
-                .ConfigureAwait(false);
+            return await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
