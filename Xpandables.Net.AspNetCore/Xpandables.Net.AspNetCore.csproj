@@ -22,12 +22,12 @@
         <PackageOutputPath>../../Nugets</PackageOutputPath>
         <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
         <PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi</PackageTags>
-        <PackageReleaseNotes>Fix IPipelineDecorator implementation</PackageReleaseNotes>
+        <PackageReleaseNotes>Refactor publish handler logic in PublisherSubscriber.</PackageReleaseNotes>
         <NeutralLanguage>en-GB</NeutralLanguage>
-        <Version>9.3.4</Version>
-        <AssemblyVersion>9.3.4</AssemblyVersion>
-        <FileVersion>9.3.4</FileVersion>
-        <PackageVersion>9.3.4</PackageVersion>
+        <Version>9.3.4.1</Version>
+        <AssemblyVersion>9.3.4.1</AssemblyVersion>
+        <FileVersion>9.3.4.1</FileVersion>
+        <PackageVersion>9.3.4.1</PackageVersion>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
