@@ -16,6 +16,7 @@
  ********************************************************************************/
 
 using System.Collections.Concurrent;
+using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,7 +34,6 @@ namespace Xpandables.Net.Executions.Tasks;
 public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
     Disposable, IPublisher, ISubscriber
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ConcurrentDictionary<Type, ConcurrentBag<object>> _subscribers = [];
 
     /// <inheritdoc />
@@ -53,7 +53,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
                     {
                         Action<TEvent> action => Task.Run(() => action(@event), cancellationToken),
                         Func<TEvent, Task> func => func(@event),
-                        IEventHandler<TEvent> eventHandler => eventHandler.HandleAsync(@event, cancellationToken),
+                        DelHandler<IEvent> eventHandler => eventHandler.Invoke(@event, cancellationToken),
                         _ => Task.CompletedTask
                     })
             ];
@@ -110,14 +110,29 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
 
     private ConcurrentBag<object> GetHandlersOf(Type eventType)
     {
+        Type handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
         ConcurrentBag<object> handlers = _subscribers.GetOrAdd(eventType, _ => []);
 
-        _serviceProvider
-            .GetServices(typeof(IEventHandler<>).MakeGenericType(eventType))
+        serviceProvider
+            .GetServices(handlerType)
             .Cast<object>()
             .Where(handler => !handlers.Contains(handler))
-            .ForEach(handlers.Add);
+            .ForEach(handler =>
+            {
+                MethodInfo? method = handlerType.GetMethod(
+                    "HandleAsync",
+                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic,
+                    [eventType, typeof(CancellationToken)]);
+
+                DelHandler<IEvent> delHandler = (evt, token) =>
+                    (Task)method!.Invoke(handler, [evt, token])!;
+
+                handlers.Add(delHandler);
+            });
 
         return handlers;
     }
+
+    private delegate Task DelHandler<in TEvent>(TEvent @event, CancellationToken cancellationToken)
+        where TEvent : class, IEvent;
 }
