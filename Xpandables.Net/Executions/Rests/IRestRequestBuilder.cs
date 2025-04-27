@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Net.Http.Headers;
 
 using Xpandables.Net.Text;
@@ -21,10 +22,10 @@ using Xpandables.Net.Text;
 namespace Xpandables.Net.Executions.Rests;
 
 /// <summary>
-/// Asynchronously builds an HTTP request message from a provided REST request. 
+/// Asynchronously builds an HTTP request message from a provided REST request.
 /// It can be canceled using a cancellation token.
 /// </summary>
-public interface IRestRequestHandler<TRestRequest> : IDisposable
+public interface IRestRequestBuilder<in TRestRequest> : IDisposable
     where TRestRequest : class, IRestRequest
 {
     /// <summary>
@@ -33,22 +34,24 @@ public interface IRestRequestHandler<TRestRequest> : IDisposable
     /// <param name="request">The input that defines the details of the HTTP request to be created.</param>
     /// <param name="cancellationToken">Used to signal the cancellation of the asynchronous operation if needed.</param>
     /// <returns>Returns a task that represents the asynchronous operation, containing the constructed HTTP request message.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request" /> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the operation fails.</exception>
-    ValueTask<HttpRequestMessage> BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default);
+    ValueTask<HttpRequestMessage>
+        BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default);
 }
 
-internal sealed class RestRequestHandler<TRestRequest>(
+internal sealed class RestRequestBuilder<TRestRequest>(
     IRestAttributeProvider attributeProvider,
-    IEnumerable<IRestRequestComposer<TRestRequest>> composers) : Disposable, IRestRequestHandler<TRestRequest>
+    IEnumerable<IRestRequestComposer<TRestRequest>> composers) : Disposable, IRestRequestBuilder<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
-    private HttpRequestMessage _message = new();
     private readonly IRestAttributeProvider _attributeProvider = attributeProvider;
     private readonly IEnumerable<IRestRequestComposer<TRestRequest>> _composers = composers;
+    private HttpRequestMessage _message = new();
 
-    ///<inheritdoc/>
-    public ValueTask<HttpRequestMessage> BuildRequestAsync(TRestRequest request, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public ValueTask<HttpRequestMessage> BuildRequestAsync(TRestRequest request,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -57,8 +60,10 @@ internal sealed class RestRequestHandler<TRestRequest>(
         cancellationToken.ThrowIfCancellationRequested();
 
         if (!_composers.Any())
+        {
             throw new InvalidOperationException(
                 $"No request builder found for the request type {request.GetType()}.");
+        }
 
         _message = InitializeHttpRequestMessage(attribute);
 
@@ -74,6 +79,7 @@ internal sealed class RestRequestHandler<TRestRequest>(
 
         foreach (IRestRequestComposer<TRestRequest> composer in _composers)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             composer.Compose(context);
         }
 
@@ -81,7 +87,7 @@ internal sealed class RestRequestHandler<TRestRequest>(
 
         _message = FinalizeHttpRequestMessage(context);
 
-        return new(_message);
+        return new ValueTask<HttpRequestMessage>(_message);
     }
 
     protected override void Dispose(bool disposing)
@@ -99,8 +105,8 @@ internal sealed class RestRequestHandler<TRestRequest>(
         attribute.Path ??= "/";
         HttpRequestMessage message = new()
         {
-            Method = new(attribute.Method.ToString()),
-            RequestUri = new(attribute.Path, UriKind.Relative)
+            Method = new HttpMethod(attribute.Method.ToString()),
+            RequestUri = new Uri(attribute.Path, UriKind.Relative)
         };
 
         message.Headers.Accept
@@ -120,19 +126,15 @@ internal sealed class RestRequestHandler<TRestRequest>(
                 = new MediaTypeHeaderValue(context.Attribute.ContentType);
         }
 
-        if (context.Attribute.IsSecured)
+        if (!context.Attribute.IsSecured)
         {
-            context.Message.Options
-                .Set(new(nameof(
-                    RestAttribute.IsSecured)),
-                    context.Attribute.IsSecured);
-
-            if (context.Message.Headers.Authorization is null)
-            {
-                context.Message.Headers.Authorization =
-                    new AuthenticationHeaderValue(context.Attribute.Scheme);
-            }
+            return context.Message;
         }
+
+        context.Message.Options
+            .Set(new HttpRequestOptionsKey<bool>(nameof(RestAttribute.IsSecured)), context.Attribute.IsSecured);
+
+        context.Message.Headers.Authorization ??= new AuthenticationHeaderValue(context.Attribute.Scheme);
 
         return context.Message;
     }

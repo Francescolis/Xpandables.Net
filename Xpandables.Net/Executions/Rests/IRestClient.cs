@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 namespace Xpandables.Net.Executions.Rests;
 
@@ -21,10 +21,10 @@ namespace Xpandables.Net.Executions.Rests;
 /// Defines a contract for RESTful client operations. It serves as a blueprint for implementing REST client
 /// functionalities.
 /// </summary>
-public interface IRestClient
+public interface IRestClient : IDisposable
 {
     /// <summary>
-    /// Provides an instance of HttpClient for making HTTP requests. 
+    /// Provides an instance of HttpClient for making HTTP requests.
     /// It is typically used for sending and receiving data over the network.
     /// </summary>
     HttpClient HttpClient { get; }
@@ -36,8 +36,11 @@ public interface IRestClient
     /// <param name="request">The request to be sent.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task representing the asynchronous operation, with a response as the result.</returns>
-    /// <remarks>Make use of <see langword="using"/> keyword when calling this method.
-    /// The request must be decorated with one of the <see cref="RestAttribute"/> or implement the <see cref="IRestAttributeBuilder"/> interface.</remarks>
+    /// <remarks>
+    /// Make use of <see langword="using" /> keyword when calling this method.
+    /// The request must be decorated with one of the <see cref="RestAttribute" /> or implement the
+    /// <see cref="IRestAttributeBuilder" /> interface.
+    /// </remarks>
     Task<RestResponse> SendAsync<TRestRequest>(TRestRequest request, CancellationToken cancellationToken = default)
         where TRestRequest : class, IRestRequest;
 }

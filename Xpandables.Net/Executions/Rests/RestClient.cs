@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Net;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -27,35 +28,36 @@ namespace Xpandables.Net.Executions.Rests;
 /// <param name="httpClient">Acts as the underlying client for sending HTTP requests and receiving responses.</param>
 public sealed class RestClient(IServiceProvider serviceProvider, HttpClient httpClient) : Disposable, IRestClient
 {
-    private HttpResponseMessage? response;
+    private HttpResponseMessage? _response;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public HttpClient HttpClient => httpClient;
 
-    /// <inheritdoc/>
-    public async Task<RestResponse> SendAsync<TRestRequest>(TRestRequest request, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<RestResponse> SendAsync<TRestRequest>(TRestRequest request,
+        CancellationToken cancellationToken = default)
         where TRestRequest : class, IRestRequest
     {
         ArgumentNullException.ThrowIfNull(request);
 
         try
         {
-            IRestRequestHandler<TRestRequest> requestHandler = serviceProvider
-                .GetRequiredService<IRestRequestHandler<TRestRequest>>();
+            IRestRequestBuilder<TRestRequest> requestBuilder = serviceProvider
+                .GetRequiredService<IRestRequestBuilder<TRestRequest>>();
 
-            using HttpRequestMessage httpRequest = await requestHandler
+            using HttpRequestMessage httpRequest = await requestBuilder
                 .BuildRequestAsync(request, cancellationToken)
                 .ConfigureAwait(false);
 
-            response = await httpClient
+            _response = await httpClient
                 .SendAsync(httpRequest, cancellationToken)
                 .ConfigureAwait(false);
 
-            IRestResponseHandler<TRestRequest> responseHandler = serviceProvider
-                .GetRequiredService<IRestResponseHandler<TRestRequest>>();
+            IRestResponseBuilder<TRestRequest> responseBuilder = serviceProvider
+                .GetRequiredService<IRestResponseBuilder<TRestRequest>>();
 
-            return await responseHandler
-                .BuildResponseAsync(request, response, cancellationToken)
+            return await responseBuilder
+                .BuildResponseAsync(request, _response, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -79,8 +81,8 @@ public sealed class RestClient(IServiceProvider serviceProvider, HttpClient http
     {
         if (disposing)
         {
-            response?.Dispose();
-            response = null;
+            _response?.Dispose();
+            _response = null;
         }
 
         base.Dispose(disposing);

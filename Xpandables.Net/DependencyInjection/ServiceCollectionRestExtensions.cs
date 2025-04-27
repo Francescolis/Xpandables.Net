@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Executions.Rests;
@@ -22,8 +22,9 @@ using Xpandables.Net.Executions.Rests.Requests;
 using Xpandables.Net.Executions.Rests.Responses;
 
 namespace Xpandables.Net.DependencyInjection;
+
 /// <summary>
-/// Provides extension methods for registering <see cref="IRestClient"/> 
+/// Provides extension methods for registering <see cref="IRestClient" />
 /// services in the service collection.
 /// </summary>
 public static class ServiceCollectionRestExtensions
@@ -38,13 +39,13 @@ public static class ServiceCollectionRestExtensions
         => services.AddSingleton<IRestAttributeProvider, RestAttributeProvider>();
 
     /// <summary>
-    /// Registers the default <see cref="RestRequestHandler{TRestRequest}"/> implementation to the services.
+    /// Registers the default <see cref="RestRequestBuilder{TRestRequest}" /> implementation to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
+    /// <returns>The <see cref="IServiceCollection" /> services.</returns>
     public static IServiceCollection AddXRestRequestHandler(
         this IServiceCollection services) =>
-        services.AddScoped(typeof(IRestRequestHandler<>), typeof(RestRequestHandler<>));
+        services.AddScoped(typeof(IRestRequestBuilder<>), typeof(RestRequestBuilder<>));
 
     /// <summary>
     /// Registers various implementations of a request builder interface with the service collection.
@@ -81,22 +82,22 @@ public static class ServiceCollectionRestExtensions
             .AddTransient(typeof(IRestResponseComposer<>), typeof(RestResponseNoContentComposer<>));
 
     /// <summary>
-    /// Registers the default <see cref="RestResponseHandler{TRestRequest}"/> implementation to the services.
+    /// Registers the default <see cref="RestResponseBuilder{TRestRequest}" /> implementation to the services.
     /// </summary>
     /// <param name="services">The collection of services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> services.</returns>
+    /// <returns>The <see cref="IServiceCollection" /> services.</returns>
     public static IServiceCollection AddXRestResponseHandler(
         this IServiceCollection services) =>
-        services.AddScoped(typeof(IRestResponseHandler<>), typeof(RestResponseHandler<>));
+        services.AddScoped(typeof(IRestResponseBuilder<>), typeof(RestResponseBuilder<>));
 
     /// <summary>
-    /// Registers the specified <typeparamref name="TRestClient"/> as
-    /// <see cref="IRestClient"/> implementation to the services.
+    /// Registers the specified <typeparamref name="TRestClient" /> as
+    /// <see cref="IRestClient" /> implementation to the services.
     /// </summary>
-    /// <typeparam name="TRestClient">The type of the <see cref="IRestClient"/>.</typeparam>
+    /// <typeparam name="TRestClient">The type of the <see cref="IRestClient" />.</typeparam>
     /// <param name="services">The collection of services.</param>
     /// <param name="configureClient">The action to configure the HTTP client.</param>
-    /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+    /// <returns>The <see cref="IHttpClientBuilder" />.</returns>
     public static IHttpClientBuilder AddXRestClient<TRestClient>(
         this IServiceCollection services,
         Action<IServiceProvider, HttpClient> configureClient)
