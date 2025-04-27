@@ -1,4 +1,6 @@
-﻿using Xpandables.Net.Api.Accounts.Events;
+﻿using System.Runtime.CompilerServices;
+
+using Xpandables.Net.Api.Accounts.Events;
 using Xpandables.Net.Executions;
 using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
@@ -29,35 +31,37 @@ public sealed class GetOperationsAccountQueryHandler(
 
         IAsyncEnumerable<IEvent> events = eventStore.FetchAsync(filter, cancellationToken);
 
-        IAsyncEnumerable<OperationAccount> operations = GetOperations(events);
+        IAsyncEnumerable<OperationAccount> operations = GetOperations(events, cancellationToken);
 
         return ExecutionResults.Ok(operations)
             .WithHeader("Count", $"{filter.TotalCount}")
             .Build();
 
-        static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events)
+        static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (IEvent @event in events)
+            await foreach (IEvent @event in events.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                if (@event is DepositMade deposit)
+                switch (@event)
                 {
-                    yield return new OperationAccount
-                    {
-                        Id = deposit.EventId,
-                        Date = deposit.OccurredOn.DateTime,
-                        Amount = deposit.Amount,
-                        Type = "Deposit"
-                    };
-                }
-                else if (@event is WithdrawMade withdraw)
-                {
-                    yield return new OperationAccount
-                    {
-                        Id = withdraw.EventId,
-                        Date = withdraw.OccurredOn.DateTime,
-                        Amount = withdraw.Amount,
-                        Type = "Withdraw"
-                    };
+                    case DepositMade deposit:
+                        yield return new OperationAccount
+                        {
+                            Id = deposit.EventId,
+                            Date = deposit.OccurredOn.DateTime,
+                            Amount = deposit.Amount,
+                            Type = "Deposit"
+                        };
+                        break;
+                    case WithdrawMade withdraw:
+                        yield return new OperationAccount
+                        {
+                            Id = withdraw.EventId,
+                            Date = withdraw.OccurredOn.DateTime,
+                            Amount = withdraw.Amount,
+                            Type = "Withdraw"
+                        };
+                        break;
                 }
             }
         }
