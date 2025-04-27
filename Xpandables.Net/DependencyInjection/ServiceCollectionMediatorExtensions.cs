@@ -432,7 +432,7 @@ public static class ServiceCollectionMediatorExtensions
             new ServiceDescriptor(
                 typeof(IMessageQueue),
                 typeof(TMessageQueue),
-                ServiceLifetime.Singleton));
+                ServiceLifetime.Scoped));
 
         return services;
     }
