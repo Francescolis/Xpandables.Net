@@ -36,8 +36,15 @@ public interface IMessageQueue
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
+/// <summary>
+/// Implements a message queue for processing integration events.
+/// </summary>
+/// <param name="eventStore">The event store used for storing and retrieving events.</param>
+#pragma warning disable CA1711
+public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
+#pragma warning restore CA1711
 {
+    /// <inheritdoc />
     public Channel<IIntegrationEvent> Channel { get; } =
         System.Threading.Channels.Channel.CreateBounded<IIntegrationEvent>(new BoundedChannelOptions(100)
         {
@@ -47,9 +54,11 @@ internal sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
             FullMode = BoundedChannelFullMode.Wait
         });
 
+    /// <inheritdoc />
     public async Task EnqueueAsync(IIntegrationEvent message, CancellationToken cancellationToken = default) =>
         await eventStore.AppendAsync(message, cancellationToken).ConfigureAwait(false);
 
+    /// <inheritdoc />
     public async Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default)
     {
         IEventFilter eventFilter = new EntityIntegrationEventFilter

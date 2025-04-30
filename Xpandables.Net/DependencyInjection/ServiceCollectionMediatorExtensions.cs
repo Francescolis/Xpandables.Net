@@ -423,16 +423,17 @@ public static class ServiceCollectionMediatorExtensions
     /// </summary>
     /// <param name="services">The service collection to add the message queue to.</param>
     /// <typeparam name="TMessageQueue">The type of the message queue implementation.</typeparam>
+    /// <param name="serviceLifetime">The service lifetime of the message queue.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXMessageQueue<TMessageQueue>(
-        this IServiceCollection services)
+        this IServiceCollection services, ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
         where TMessageQueue : class, IMessageQueue
     {
         services.TryAdd(
             new ServiceDescriptor(
                 typeof(IMessageQueue),
                 typeof(TMessageQueue),
-                ServiceLifetime.Scoped));
+                serviceLifetime));
 
         return services;
     }
@@ -442,9 +443,11 @@ public static class ServiceCollectionMediatorExtensions
     /// service collection.
     /// </summary>
     /// <param name="services">The service collection to add the message queue to.</param>
+    /// <param name="serviceLifetime">The service lifetime of the message queue.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXMessageQueue(this IServiceCollection services) =>
-        services.AddXMessageQueue<MessageQueue>();
+    public static IServiceCollection AddXMessageQueue(this IServiceCollection services,
+        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped) =>
+        services.AddXMessageQueue<MessageQueue>(serviceLifetime);
 
     /// <summary>
     /// Adds the specified subscriber implementation to the

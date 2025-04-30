@@ -31,7 +31,6 @@ namespace Xpandables.Net.Executions.Tasks;
 internal sealed class Scheduler : BackgroundService, IScheduler
 {
     private readonly ILogger<Scheduler> _logger;
-    private readonly IMessageQueue _messageQueue;
     private readonly IDisposable? _optionsMonitor;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private SchedulerOptions _options;
@@ -44,18 +43,15 @@ internal sealed class Scheduler : BackgroundService, IScheduler
     /// Initializes a new instance of the <see cref="Scheduler" /> class.
     /// </summary>
     /// <param name="serviceScopeFactory"> The service scope factory to create service scopes. </param>
-    /// <param name="messageQueue">The message queue to enqueue and dequeue events.</param>
     /// <param name="options"> The options monitor to track changes in event options. </param>
     /// <param name="logger">The logger to log information and errors.</param>
     /// <remarks>This code is subject to change in future versions.</remarks>
     public Scheduler(
         IServiceScopeFactory serviceScopeFactory,
-        IMessageQueue messageQueue,
         IOptionsMonitor<SchedulerOptions> options,
         ILogger<Scheduler> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
-        _messageQueue = messageQueue;
         _options = options.CurrentValue;
         _logger = logger;
 
@@ -73,9 +69,10 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
         // ReSharper disable once UseAwaitUsing
         using AsyncServiceScope serviceScope = _serviceScopeFactory.CreateAsyncScope();
+        IMessageQueue messageQueue = serviceScope.ServiceProvider.GetRequiredService<IMessageQueue>();
 
-        await _messageQueue.DequeueAsync(_options.MaxSchedulerEventPerThread, cancellationToken).ConfigureAwait(false);
-        if (_messageQueue.Channel.Reader.Count == 0)
+        await messageQueue.DequeueAsync(_options.MaxSchedulerEventPerThread, cancellationToken).ConfigureAwait(false);
+        if (messageQueue.Channel.Reader.Count == 0)
         {
             _logger.LogInformation("No events to schedule.");
             return;
@@ -84,7 +81,7 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         IPublisher eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IPublisher>();
         IEventStore eventStore = serviceScope.ServiceProvider.GetRequiredService<IEventStore>();
 
-        while (_messageQueue.Channel.Reader.TryRead(out IIntegrationEvent? @event))
+        while (messageQueue.Channel.Reader.TryRead(out IIntegrationEvent? @event))
         {
             try
             {
