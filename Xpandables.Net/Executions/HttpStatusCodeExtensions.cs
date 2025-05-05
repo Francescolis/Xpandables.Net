@@ -12,36 +12,42 @@ namespace Xpandables.Net.Executions;
 public static class HttpStatusCodeExtensions
 {
     /// <summary>
-    /// Validates if the provided HTTP status code indicates a successful response.
+    /// Validates that the provided HTTP status code indicates a successful response. Throws an exception if the status code
+    /// is outside the success range of 200 to 299.
     /// </summary>
-    /// <param name="statusCode">Indicates the HTTP status code that is being checked for success.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status code is not within the range of 200 to 299.</exception>
+    /// <param name="statusCode">The HTTP status code being checked for a successful indication.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status code does not fall within the range of 200 to 299.</exception>
     public static void AssertStatusCodeIsSuccess(this HttpStatusCode statusCode)
     {
-        if ((int)statusCode is not >= 200 or not <= 299)
+        if (IsSuccessStatusCode(statusCode))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(statusCode),
-                statusCode,
-                "The status code for success must be between 200 and 299.");
+            return;
         }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(statusCode),
+            statusCode,
+            "The status code for success must be between 200 and 299.");
     }
 
     /// <summary>
-    /// Checks if the provided HTTP status code indicates a failure. Throws an exception if the status code is in the
-    /// success range.
+    /// Validates that the provided HTTP status code indicates a failed response. Throws an exception if the status code
+    /// indicates a successful response within the range of 200 to 299.
     /// </summary>
-    /// <param name="statusCode">Indicates the HTTP status code that is being validated for failure.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status code falls within the range that signifies a successful response.</exception>
+    /// <param name="statusCode">The HTTP status code being checked for a failed indication.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status code falls within the range of 200 to 299,
+    /// representing a successful response.</exception>
     public static void AssertStatusCodeIsFailure(this HttpStatusCode statusCode)
     {
-        if ((int)statusCode is >= 200 and <= 299)
+        if (IsFailureStatusCode(statusCode))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(statusCode),
-                statusCode,
-                "The status code for failure must not be between 200 and 299.");
+            return;
         }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(statusCode),
+            statusCode,
+            "The status code for failure must not be between 200 and 299.");
     }
 
     /// <summary>
@@ -56,6 +62,7 @@ public static class HttpStatusCodeExtensions
     /// </summary>
     /// <param name="statusCode">Represents the HTTP status code to evaluate for success or failure.</param>
     /// <returns>Returns true if the status code signifies a failure, otherwise false.</returns>
+    // ReSharper disable once MemberCanBePrivate.Global
     public static bool IsFailureStatusCode(this HttpStatusCode statusCode) => !IsSuccessStatusCode(statusCode);
 
     /// <summary>
@@ -63,7 +70,7 @@ public static class HttpStatusCodeExtensions
     /// </summary>
     /// <param name="exception">The exception to map.</param>
     /// <returns>The appropriate HTTP status code for the exception.</returns>
-    public static HttpStatusCode GetAppropriatStatusCode(this Exception exception) =>
+    public static HttpStatusCode GetAppropriateStatusCode(this Exception exception) =>
         exception switch
         {
             // 400 - Bad Request (Client errors)
@@ -93,6 +100,7 @@ public static class HttpStatusCodeExtensions
 
             // 409 - Conflict
             IOException => HttpStatusCode.Conflict,
+            DuplicateNameException => HttpStatusCode.Conflict,
 
             // 410 - Gone
             // No direct .NET exception maps well to Gone
@@ -276,7 +284,7 @@ public static class HttpStatusCodeExtensions
         statusCode switch
         {
             HttpStatusCode.InternalServerError or HttpStatusCode.Unauthorized
-            => "Please refer to the errors/or contact administrator for additional details",
+                => "Please refer to the errors/or contact administrator for additional details",
             _ => "Please refer to the errors property for additional details",
         };
 
@@ -285,7 +293,7 @@ public static class HttpStatusCodeExtensions
     /// </summary>
     /// <param name="statusCode">The HTTP status code to check.</param>
     /// <returns>True if the status code is OK; otherwise, false.</returns>
-    public static bool IsOK(this HttpStatusCode statusCode) => statusCode == HttpStatusCode.OK;
+    public static bool IsOk(this HttpStatusCode statusCode) => statusCode == HttpStatusCode.OK;
 
     /// <summary>
     /// Checks if the HTTP status code is 201 Created.
@@ -313,7 +321,8 @@ public static class HttpStatusCodeExtensions
     /// </summary>
     /// <param name="statusCode">The HTTP status code to check.</param>
     /// <returns>True if the status code is Moved Permanently; otherwise, false.</returns>
-    public static bool IsMovedPermanently(this HttpStatusCode statusCode) => statusCode == HttpStatusCode.MovedPermanently;
+    public static bool IsMovedPermanently(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.MovedPermanently;
 
     /// <summary>
     /// Checks if the HTTP status code is 302 Found.
@@ -362,7 +371,8 @@ public static class HttpStatusCodeExtensions
     /// </summary>
     /// <param name="statusCode">The HTTP status code to check.</param>
     /// <returns>True if the status code is Method Not Allowed; otherwise, false.</returns>
-    public static bool IsMethodNotAllowed(this HttpStatusCode statusCode) => statusCode == HttpStatusCode.MethodNotAllowed;
+    public static bool IsMethodNotAllowed(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.MethodNotAllowed;
 
     /// <summary>
     /// Checks if the HTTP status code is 409 Conflict.
@@ -376,14 +386,16 @@ public static class HttpStatusCodeExtensions
     /// </summary>
     /// <param name="statusCode">The HTTP status code to check.</param>
     /// <returns>True if the status code is Internal Server Error; otherwise, false.</returns>
-    public static bool IsInternalServerError(this HttpStatusCode statusCode) => statusCode == HttpStatusCode.InternalServerError;
+    public static bool IsInternalServerError(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.InternalServerError;
 
     /// <summary>
     /// Checks if the HTTP status code is 503 Service Unavailable.
     /// </summary>
     /// <param name="statusCode">The HTTP status code to check.</param>
     /// <returns>True if the status code is Service Unavailable; otherwise, false.</returns>
-    public static bool IsServiceUnavailable(this HttpStatusCode statusCode) => statusCode == HttpStatusCode.ServiceUnavailable;
+    public static bool IsServiceUnavailable(this HttpStatusCode statusCode) =>
+        statusCode == HttpStatusCode.ServiceUnavailable;
 
     /// <summary>
     /// Checks if the HTTP status code is 504 Gateway Timeout.

@@ -128,7 +128,7 @@ public static class ExecutionResultExtensions
                                  "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
                              Environments.Development;
 
-        statusCode ??= exception.GetAppropriatStatusCode();
+        statusCode ??= exception.GetAppropriateStatusCode();
 
         return ExecutionResults
             .Failure(statusCode.Value)

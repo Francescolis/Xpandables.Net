@@ -56,7 +56,7 @@ public readonly record struct ExecutionResults
     /// Returns an implementation of <see cref="ExecutionResult"/> with the
     /// failure status code and the specified exception.
     /// </summary>
-    /// <param name="exception">The exception of the error.</param>
+    /// <param name="exception">The exception to the error.</param>
     /// <returns>An implementation of <see cref="ExecutionResult"/>.</returns>
     public static ExecutionResult Failure(Exception exception) =>
         Failure(HttpStatusCode.BadRequest)
@@ -67,7 +67,7 @@ public readonly record struct ExecutionResults
     /// Returns an implementation of <see cref="ExecutionResult"/> with the
     /// failure status code and the specified exception.
     /// </summary>
-    /// <param name="exception">The exception of the error.</param>
+    /// <param name="exception">The exception to the error.</param>
     /// <returns>An implementation of <see cref="ExecutionResult"/>.</returns>
     public static ExecutionResult<TResult> Failure<TResult>(Exception exception) =>
         Failure<TResult>(HttpStatusCode.BadRequest)
@@ -90,6 +90,7 @@ public readonly record struct ExecutionResults
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    // ReSharper disable once MemberCanBePrivate.Global
     public static IExecutionResultSuccessBuilder<TResult> Success<TResult>(
         HttpStatusCode statusCode) =>
         new ExecutionResultSuccessBuilder<TResult>(statusCode);
@@ -102,6 +103,7 @@ public readonly record struct ExecutionResults
     /// <param name="result">The result of the execution.</param>  
     /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="IExecutionResultSuccessBuilder{TResult}"/>.</returns>  
+    // ReSharper disable once MemberCanBePrivate.Global
     public static IExecutionResultSuccessBuilder<TResult> Success<TResult>(
         TResult result, HttpStatusCode statusCode) =>
         new ExecutionResultSuccessBuilder<TResult>(statusCode).WithResult(result);
@@ -122,6 +124,7 @@ public readonly record struct ExecutionResults
     /// <typeparam name="TResult">The type of the result.</typeparam>  
     /// <param name="statusCode">The status code of the execution result.</param>  
     /// <returns>An instance of <see cref="IExecutionResultFailureBuilder{TResult}"/>.</returns>  
+    // ReSharper disable once MemberCanBePrivate.Global
     public static IExecutionResultFailureBuilder<TResult> Failure<TResult>(
         HttpStatusCode statusCode) =>
         new ExecutionResultFailureBuilder<TResult>(statusCode);

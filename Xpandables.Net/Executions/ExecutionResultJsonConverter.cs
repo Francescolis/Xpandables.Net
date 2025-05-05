@@ -31,7 +31,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
     /// <remarks>The default value is <see langword="false"/>.
     /// The ASP.NET Core compatibility is used to serialize only the result of 
     /// the operation.</remarks>
-    public bool UseAspNetCoreCompatibility { get; set; }
+    public bool UseAspNetCoreCompatibility { get; init; }
 
     /// <inheritdoc/>
     public override ExecutionResult? Read(
@@ -68,10 +68,11 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
 }
 
 /// <summary>
-/// A JSON converter for <see cref="ExecutionResult{TResult}"/>.
+/// A JSON converter for <see cref="ExecutionResult"/> and its generic variant,
+/// enabling custom serialization and deserialization logic.
 /// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class ExecutionResultJsonConverter<TResult> : JsonConverter<ExecutionResult<TResult>>
+public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreCompatibility)
+    : JsonConverter<ExecutionResult<TResult>>
 {
     /// <summary>
     /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
@@ -79,7 +80,8 @@ public sealed class ExecutionResultJsonConverter<TResult> : JsonConverter<Execut
     /// <remarks>The default value is <see langword="false"/>.
     /// The ASP.NET Core compatibility is used to serialize only the result of 
     /// the operation.</remarks>
-    public bool UseAspNetCoreCompatibility { get; set; }
+    // ReSharper disable once MemberCanBePrivate.Global
+    public bool UseAspNetCoreCompatibility { get; } = useAspNetCoreCompatibility;
 
     /// <inheritdoc/>
     public override ExecutionResult<TResult>? Read(
@@ -132,7 +134,7 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
     /// <remarks>The default value is <see langword="false"/>.
     /// The ASP.NET Core compatibility is used to serialize only the result of 
     /// the operation.</remarks>
-    public bool UseAspNetCoreCompatibility { get; set; }
+    public bool UseAspNetCoreCompatibility { get; init; }
 
     /// <inheritdoc/>
     public override bool CanConvert(Type typeToConvert) =>
@@ -153,9 +155,10 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
         Type resultType = typeToConvert.GetGenericArguments()[0];
         Type converterType = typeof(ExecutionResultJsonConverter<>).MakeGenericType(resultType);
 
-        dynamic converter = Activator.CreateInstance(converterType)!;
-        converter.UseAspNetCoreCompatibility = UseAspNetCoreCompatibility;
-
+        JsonConverter converter = (JsonConverter)Activator.CreateInstance(
+            converterType,
+            [UseAspNetCoreCompatibility])!;
+        
         return converter;
     }
 }

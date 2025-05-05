@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Text.Json;
@@ -48,13 +49,7 @@ public sealed class ExecutionResultException : Exception
     {
         ArgumentNullException.ThrowIfNull(executionResult);
 
-        if (executionResult.IsSuccessStatusCode)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(executionResult),
-                executionResult.StatusCode,
-                "The status code for exception must not be between 200 and 299.");
-        }
+        executionResult.StatusCode.AssertStatusCodeIsFailure();
 
         ExecutionResult = executionResult;
     }
@@ -130,5 +125,5 @@ public sealed class ExecutionResultException : Exception
     ///<inheritdoc/>
     public override string ToString() =>
         $"{base.ToString()}{Environment.NewLine}{JsonSerializer.Serialize(
-        ExecutionResult, ExecutionResult.GetType(), DefaultSerializerOptions.Defaults)}";
+            ExecutionResult, ExecutionResult.GetType(), DefaultSerializerOptions.Defaults)}";
 }

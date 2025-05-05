@@ -136,17 +136,17 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <summary>
     /// Gets or sets the HTTP status code for the execution result.
     /// </summary>
-    protected HttpStatusCode StatusCode { get; set; } = statusCode;
+    protected HttpStatusCode StatusCode { get; private set; } = statusCode;
 
     /// <summary>
     /// Gets or sets the title for the execution result.
     /// </summary>
-    protected string? Title { get; set; }
+    protected string? Title { get; private set; }
 
     /// <summary>  
     /// Gets or sets the detail for the execution result.  
     /// </summary>  
-    protected string? Detail { get; set; }
+    protected string? Detail { get; private set; }
 
     /// <summary>
     /// Gets or sets the result object of the execution.
@@ -156,7 +156,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <summary>
     /// Gets or sets the location URI for the execution result.
     /// </summary>
-    protected Uri? Location { get; set; }
+    protected Uri? Location { get; private set; }
 
     /// <inheritdoc/>
     public ExecutionResult Build() =>
@@ -180,10 +180,10 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
         _ = ClearHeaders();
 
         StatusCode = default;
-        Title = default;
-        Detail = default;
-        Location = default;
-        Result = default;
+        Title = null;
+        Detail = null;
+        Location = null;
+        Result = null;
 
         return (this as TBuilder)!;
     }
@@ -426,6 +426,7 @@ public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode s
     /// <summary>
     /// Gets or sets the result object of the execution.
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     protected new TResult? Result
     {
         get => base.Result is TResult value ? value : default;
