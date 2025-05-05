@@ -7,7 +7,7 @@ using Xpandables.Net.Repositories.Filters;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a message queue for processing integration events.
+/// Defines an interface for a message queue used in processing integration events.
 /// </summary>
 #pragma warning disable CA1711
 public interface IMessageQueue
@@ -37,9 +37,9 @@ public interface IMessageQueue
 
 // ReSharper disable once ClassNeverInstantiated.Global
 /// <summary>
-/// Implements a message queue for processing integration events.
+/// Provides a bounded message queue implementation that facilitates the enqueuing and dequeuing
+/// of integration events used within an event-driven system.
 /// </summary>
-/// <param name="eventStore">The event store used for storing and retrieving events.</param>
 #pragma warning disable CA1711
 public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
 #pragma warning restore CA1711

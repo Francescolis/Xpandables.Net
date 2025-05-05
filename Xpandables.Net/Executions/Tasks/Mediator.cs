@@ -20,9 +20,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Represents a mediator that handles various operations such as fetching,
-/// sending requests.
+/// Represents a mediator implementation that facilitates the sending of requests
+/// and the handling of execution results in a pipeline-based pattern.
 /// </summary>
+/// <remarks>
+/// This class retrieves an appropriate pipeline request handler for the given request type
+/// and invokes its processing logic. Any exceptions not derived from
+/// <see cref="ExecutionResultException"/> are converted into an <see cref="ExecutionResult"/>.
+/// </remarks>
 // ReSharper disable once ClassNeverInstantiated.Global
 internal sealed class Mediator(IServiceProvider provider) : IMediator
 {

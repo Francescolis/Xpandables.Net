@@ -35,14 +35,8 @@ internal sealed class DependencyManager : IDependencyManager
     private readonly HashSet<IDependencyProvider> _dependencyProviders = [];
     public DependencyManager(IEnumerable<IDependencyProvider> dependencyProviders)
     {
-        foreach (var dependencyProvider in dependencyProviders)
+        foreach (IDependencyProvider dependencyProvider in dependencyProviders)
         {
-            if (_dependencyProviders.Contains(dependencyProvider))
-            {
-                throw new InvalidOperationException(
-                    $"The dependency provider for the type {dependencyProvider.GetType().Name} is already registered.");
-            }
-
             _dependencyProviders.Add(dependencyProvider);
         }
     }

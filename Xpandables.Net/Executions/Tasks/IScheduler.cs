@@ -19,8 +19,12 @@ using Microsoft.Extensions.Hosting;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a scheduler for events.
+/// Provides an abstraction for a scheduler responsible for managing and executing scheduled events.
 /// </summary>
+/// <remarks>
+/// Implementing this interface allows a class to handle scheduling of tasks or events. It extends <see cref="IHostedService"/>
+/// to integrate with the application's hosted service infrastructure and <see cref="IDisposable"/> for resource cleanup.
+/// </remarks>
 public interface IScheduler : IHostedService, IDisposable
 {
     /// <summary>

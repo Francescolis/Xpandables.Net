@@ -25,12 +25,10 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Provides a mechanism for publishing and subscribing to events.
+/// Provides functionalities for event-based publish-subscribe communication.
+/// Manages subscriptions for various event types and facilitates publishing events
+/// to the subscribed handlers.
 /// </summary>
-/// <param name="serviceProvider">
-/// The service provider to resolve event
-/// handlers.
-/// </param>
 public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
     Disposable, IPublisher, ISubscriber
 {
@@ -124,6 +122,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
                     BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic,
                     [eventType, typeof(CancellationToken)]);
 
+                // ReSharper disable once ConvertToLocalFunction
                 DelHandler<IEvent> delHandler = (evt, token) =>
                     (Task)method!.Invoke(handler, [evt, token])!;
 

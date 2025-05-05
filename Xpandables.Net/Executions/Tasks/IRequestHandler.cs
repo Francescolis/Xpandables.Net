@@ -20,10 +20,9 @@ using System.ComponentModel;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// An interface for handling requests asynchronously, requiring a specific request type that implements a request
-/// interface.
+/// Represents a handler to process a request of type <typeparamref name="TRequest" />.
 /// </summary>
-/// <typeparam name="TRequest">This type parameter represents a specific request that the handler will process.</typeparam>
+/// <typeparam name="TRequest">The type of the request being handled.</typeparam>
 public interface IRequestHandler<in TRequest>
     where TRequest : class, IRequest
 {

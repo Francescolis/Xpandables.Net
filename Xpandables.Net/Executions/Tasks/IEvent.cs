@@ -17,7 +17,7 @@
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Represents an event with a timestamp, version, and unique identifier.
+/// Represents an event model that contains basic event details such as occurrence time, version, and unique identifier.
 /// </summary>
 public interface IEvent
 {
@@ -37,9 +37,9 @@ public interface IEvent
     Guid EventId { get; init; }
 }
 
-
 /// <summary>
-/// Represents an abstract base class for events.
+/// Provides an abstract base implementation for event models, encapsulating common properties such as
+/// occurrence time, version, and unique identifier.
 /// </summary>
 public abstract record Event : IEvent
 {

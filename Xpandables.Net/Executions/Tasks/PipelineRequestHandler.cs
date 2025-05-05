@@ -20,9 +20,10 @@ using Xpandables.Net.Executions.Pipelines;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// A wrapper for applying pipeline on requests.
+/// Represents a sealed class that implements the pipeline request handling mechanism for a given request type.
+/// This handler uses a series of decorators, applied in reverse order, to process the request and execute the operation.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
+/// <typeparam name="TRequest">The type of the request to be handled, which must implement <see cref="IRequest"/>.</typeparam>
 public sealed class PipelineRequestHandler<TRequest>(
     IRequestHandler<TRequest> decoratee,
     IEnumerable<IPipelineDecorator<TRequest, ExecutionResult>> decorators) :
@@ -46,9 +47,8 @@ public sealed class PipelineRequestHandler<TRequest>(
 
         return result;
 
-        async Task<ExecutionResult> Handler()
-        {
-            return await decoratee.HandleAsync(request, cancellationToken).ConfigureAwait(false);
-        }
+        async Task<ExecutionResult> Handler() => await decoratee
+            .HandleAsync(request, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

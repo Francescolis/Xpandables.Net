@@ -25,8 +25,13 @@ using Xpandables.Net.Executions.Domains;
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Represents a background service that schedules and publishes events.
+/// Represents a scheduled background service that implements the <see cref="IScheduler"/> interface.
+/// It is responsible for managing and executing scheduled asynchronous tasks in a hosted environment.
 /// </summary>
+/// <remarks>
+/// This class utilizes dependency injection for service scope creation, options monitoring, and logging.
+/// It derives from <see cref="BackgroundService"/>, which provides the infrastructure for implementing hosted background services.
+/// </remarks>
 // ReSharper disable once ClassNeverInstantiated.Global
 internal sealed class Scheduler : BackgroundService, IScheduler
 {

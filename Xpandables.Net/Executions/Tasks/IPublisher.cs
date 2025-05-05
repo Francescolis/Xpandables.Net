@@ -18,23 +18,19 @@
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a contract for publishing events.
+/// Represents a contract for publishing events asynchronously.
 /// </summary>
 public interface IPublisher
 {
     /// <summary>
-    /// Publishes the specified event asynchronously.
+    /// Publishes an event asynchronously to all subscribed handlers.
     /// </summary>
-    /// <typeparam name="TEvent">The type of event to publish.</typeparam>
-    /// <param name="event">The event to publish.</param>
-    /// <param name="cancellationToken">
-    /// A token to monitor for cancellation
-    /// requests.
-    /// </param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <typeparam name="TEvent">The type of the event being published.</typeparam>
+    /// <param name="event">The event to be published.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous publishing operation.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Publishing the event failed.
-    /// See inner exception for details.
+    /// Thrown when publishing the event fails. See inner exception for additional details.
     /// </exception>
     Task PublishAsync<TEvent>(
         TEvent @event,

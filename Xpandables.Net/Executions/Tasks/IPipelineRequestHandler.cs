@@ -18,21 +18,18 @@
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// An interface for handling asynchronous operations based on a specific request type.
+/// Defines the contract for a pipeline request handler that processes a request
+/// of a specified type and returns an execution result.
 /// </summary>
-/// <typeparam name="TRequest">
-/// Represents the input data required to perform the operation,
-/// constrained to a class implementing a request interface.
-/// </typeparam>
 public interface IPipelineRequestHandler<in TRequest>
     where TRequest : class, IRequest
 {
     /// <summary>
-    /// Handles an asynchronous operation based on the provided request and returns the result of the execution.
+    /// Processes the given request asynchronously and returns an execution result.
     /// </summary>
-    /// <param name="request">The input data required to perform the operation.</param>
-    /// <param name="cancellationToken">Used to signal the cancellation of the operation if needed.</param>
-    /// <returns>An asynchronous task that yields the result of the execution.</returns>
+    /// <param name="request">The request instance containing required information for processing.</param>
+    /// <param name="cancellationToken">A token that enables the operation to be cancelled, if requested.</param>
+    /// <returns>A task representing the asynchronous execution, providing an <see cref="ExecutionResult"/> upon completion.</returns>
     Task<ExecutionResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);

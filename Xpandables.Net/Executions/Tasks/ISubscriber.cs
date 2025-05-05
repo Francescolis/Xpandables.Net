@@ -18,8 +18,13 @@
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a subscriber for events.
+/// Represents a subscriber interface that defines methods to subscribe to events using different mechanisms.
 /// </summary>
+/// <remarks>
+/// This interface allows subscribing to events with an action, an asynchronous function,
+/// or an event handler of a specified event type. Implementations of this interface should
+/// handle the management of event subscriptions and disposal of resources.
+/// </remarks>
 public interface ISubscriber : IDisposable
 {
     /// <summary>

@@ -17,18 +17,17 @@
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
-/// Defines a mediator interface for sending requests and queries.
+/// Defines a mediator interface for sending requests and receiving execution results asynchronously.
 /// </summary>
 public interface IMediator
 {
     /// <summary>
-    /// Sends a request asynchronously and returns the result of the execution.
+    /// Sends a request asynchronously and returns an execution result.
     /// </summary>
-    /// <typeparam name="TRequest">Represents the type of the request being sent, which must 
-    /// implement a specific interface.</typeparam>
-    /// <param name="request">Contains the data needed to perform the operation specified by the request.</param>
-    /// <param name="cancellationToken">Allows the operation to be canceled if needed.</param>
-    /// <returns>Provides the outcome of the execution as an asynchronous result.</returns>
+    /// <typeparam name="TRequest">The type of the request to be sent. This type must implement the <see cref="IRequest"/> interface.</typeparam>
+    /// <param name="request">The request containing the data necessary to perform the operation.</param>
+    /// <param name="cancellationToken">An optional token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous operation, containing the execution result.</returns>
     Task<ExecutionResult> SendAsync<TRequest>(
         TRequest request,
         CancellationToken cancellationToken = default)
