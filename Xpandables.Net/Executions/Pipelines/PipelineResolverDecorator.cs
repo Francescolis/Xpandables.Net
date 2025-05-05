@@ -20,13 +20,23 @@ using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Pipelines;
-internal sealed class PipelineResolverDecorator<TRequest, TResponse>(
+
+/// <summary>
+/// A decorator implementation for pipeline processing of a specified request and response.
+/// This class resolves a dependency instance from a store based on the request's key,
+/// and enriches the request with the resolved dependency before proceeding with the pipeline.
+/// </summary>
+/// <param name="serviceProvider">The service provider used to resolve dependencies required by the pipeline.</param>
+/// <typeparam name="TRequest">The type of the request that implements IDependencyRequest.</typeparam>
+/// <typeparam name="TResponse">The type of the response that inherits from _ExecutionResult.</typeparam>
+public sealed class PipelineResolverDecorator<TRequest, TResponse>(
     IServiceProvider serviceProvider) :
-    PipelineDecorator<TRequest, TResponse>
+    IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest
     where TResponse : _ExecutionResult
 {
-    public override async Task<TResponse> HandleAsync(
+    /// <inheritdoc/>
+    public async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)

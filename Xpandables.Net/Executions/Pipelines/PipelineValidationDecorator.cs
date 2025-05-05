@@ -19,20 +19,24 @@ using Xpandables.Net.DataAnnotations;
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
-/// A decorator that validates the request before passing it to the next 
-/// delegate in the pipeline.
+/// Represents a pipeline decorator that performs validation on the incoming request
+/// using a composite validator before proceeding to the next pipeline component.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-/// <param name="validators">The composite validator instance.</param>
+/// <typeparam name="TRequest">The type of the request object, must be a class and implement <see cref="IValidationEnabled"/>.</typeparam>
+/// <typeparam name="TResponse">The type of the response object, must inherit from <see cref="_ExecutionResult"/>.</typeparam>
+/// <param name="validators">The instance of a composite validator responsible for validating the request.</param>
+/// <remarks>
+/// If the validation fails, the pipeline will short-circuit and return a validation error response.
+/// If the validation succeeds, the execution continues to the next component in the pipeline.
+/// </remarks>
 public sealed class PipelineValidationDecorator<TRequest, TResponse>(
     ICompositeValidator<TRequest> validators) :
-    PipelineDecorator<TRequest, TResponse>
+    IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IValidationEnabled
     where TResponse : _ExecutionResult
 {
     /// <inheritdoc/>
-    public override async Task<TResponse> HandleAsync(
+    public async Task<TResponse> HandleAsync(
         TRequest query,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)

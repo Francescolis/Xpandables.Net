@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DataAnnotations;
@@ -21,31 +22,41 @@ using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Pipelines;
-internal sealed class PipelineAppenderDecorator<TRequest, TResponse>(
-    IServiceProvider serviceProvider) :
-    PipelineDecorator<TRequest, TResponse>
+
+/// <summary>
+/// A pipeline decorator that appends dependency aggregates to the related store upon successful pipeline processing.
+/// </summary>
+/// <param name="serviceProvider">The service provider used to resolve required services.</param>
+/// <typeparam name="TRequest">The type of the request, which must implement <see cref="IDependencyRequest"/> and
+/// <see cref="IAggregateAppender"/>.</typeparam>
+/// <typeparam name="TResponse">The type of the response, which must inherit from <see cref="_ExecutionResult"/>.</typeparam>
+public sealed class PipelineAppenderDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) :
+    IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest, IAggregateAppender
     where TResponse : _ExecutionResult
 {
-    public override async Task<TResponse> HandleAsync(
+    /// <inheritdoc/>
+    public async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         TResponse response = await next().ConfigureAwait(false);
 
-        if (response.IsSuccessStatusCode && request.DependencyInstance is not null)
+        if (!response.IsSuccessStatusCode)
         {
-            Type aggregateStoreType = typeof(IAggregateStore<>)
-                .MakeGenericType(request.DependencyType);
-
-            IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
-                .GetRequiredService(aggregateStoreType);
-
-            await aggregateStore
-                .AppendAsync((AggregateRoot)request.DependencyInstance, cancellationToken)
-                .ConfigureAwait(false);
+            return response;
         }
+
+        Type aggregateStoreType = typeof(IAggregateStore<>)
+            .MakeGenericType(request.DependencyType);
+
+        IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
+            .GetRequiredService(aggregateStoreType);
+
+        await aggregateStore
+            .AppendAsync((AggregateRoot)request.DependencyInstance, cancellationToken)
+            .ConfigureAwait(false);
 
         return response;
     }

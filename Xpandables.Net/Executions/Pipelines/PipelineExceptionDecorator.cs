@@ -23,12 +23,12 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
-    PipelineDecorator<TRequest, TResponse>
+    IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
     where TResponse : notnull
 {
     /// <inheritdoc/>
-    public override async Task<TResponse> HandleAsync(
+    public async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)

@@ -21,19 +21,18 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
-/// Decorator for handling <see cref="IDependencyRequest{TDependency}"/>> in a pipeline.
-/// it provides a way to apply the decider pattern to the request object.
+/// Implements a pipeline decorator that resolves and injects dependencies into the request during pipeline execution.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
+/// <typeparam name="TRequest">The type of the request object, which must implement <see cref="IDependencyRequest"/>.</typeparam>
+/// <typeparam name="TResponse">The type of the response object, which must not be null.</typeparam>
 public sealed class PipelineDependencyDecorator<TRequest, TResponse>(
     IDependencyManager dependencyManager) :
-    PipelineDecorator<TRequest, TResponse>
+    IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest
     where TResponse : notnull
 {
     /// <inheritdoc/>
-    public override async Task<TResponse> HandleAsync(
+    public async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)

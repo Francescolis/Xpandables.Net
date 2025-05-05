@@ -21,20 +21,20 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
-/// A decorator that ensures the unit of work pattern is applied to the 
-/// pipeline whatever the outcome of the request.
+/// The PipelineUnitOfWorkDecorator class is a pipeline decorator that ensures
+/// changes are saved to the database context via the <see cref="IUnitOfWork"/>
+/// after processing the request and response in a pipeline execution.
 /// </summary>
-/// <param name="unitOfWork">The unit of work instance.</param>
-/// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
+/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IUnitOfWorkApplier"/>.</typeparam>
+/// <typeparam name="TResponse">The type of the response object that must derive from <see cref="_ExecutionResult"/>.</typeparam>
 public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
     IUnitOfWork unitOfWork) :
-    PipelineDecorator<TRequest, TResponse>
+    IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IUnitOfWorkApplier
     where TResponse : _ExecutionResult
 {
     /// <inheritdoc/>
-    public override async Task<TResponse> HandleAsync(
+    public async Task<TResponse> HandleAsync(
         TRequest request,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
