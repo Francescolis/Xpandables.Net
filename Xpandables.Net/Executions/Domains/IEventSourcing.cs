@@ -18,7 +18,8 @@
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Interface for event sourcing in a domain-driven design.
+/// Represents an interface that defines operations for event sourcing in an aggregate domain model.
+/// Event sourcing allows capturing domain changes (events) as a sequence, enabling replay and persistence of those events.
 /// </summary>
 public interface IEventSourcing
 {

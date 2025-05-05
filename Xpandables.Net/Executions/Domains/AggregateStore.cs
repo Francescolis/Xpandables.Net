@@ -24,28 +24,28 @@ using Xpandables.Net.Repositories.Filters;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents a store for aggregates root.
+/// Represents a store for managing aggregate by providing methods to append and resolve aggregates.
+/// This class is designed for use with event sourcing and domain-driven design concepts.
 /// </summary>
-/// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
+/// <typeparam name="TAggregate">
+/// The type of the aggregate, which must inherit from <see cref="Aggregate"/> and have a parameterless constructor.
+/// </typeparam>
 /// <remarks>
-/// Initializes a new instance of the
-/// <see cref="AggregateStore{TAggregateRoot}" /> class.
-/// The <see cref="IUnitOfWork" /> must be registered with the key "Aggregate".
+/// This class depends on an implementation of <see cref="IEventStore"/> for storing events and <see cref="IPublisher"/> for publishing those events.
+/// An <see cref="IUnitOfWork"/> must be registered with the key "Aggregate" to ensure proper transactional support.
 /// </remarks>
-/// <param name="eventStore">The event store.</param>
-/// <param name="publisher">The event publisher.</param>
-public sealed class AggregateStore<TAggregateRoot>(
+public sealed class AggregateStore<TAggregate>(
     IEventStore eventStore,
     IPublisher publisher) :
-    IAggregateStore<TAggregateRoot>
-    where TAggregateRoot : AggregateRoot, new()
+    IAggregateStore<TAggregate>
+    where TAggregate : Aggregate, new()
 {
     private readonly IEventStore _eventStore = eventStore;
     private readonly IPublisher _publisher = publisher;
 
     /// <inheritdoc />
     public async Task AppendAsync(
-        TAggregateRoot aggregate,
+        TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
         try
@@ -84,7 +84,7 @@ public sealed class AggregateStore<TAggregateRoot>(
     }
 
     /// <inheritdoc />
-    public async Task<TAggregateRoot> ResolveAsync(
+    public async Task<TAggregate> ResolveAsync(
         Guid keyId,
         CancellationToken cancellationToken = default)
     {
@@ -92,10 +92,11 @@ public sealed class AggregateStore<TAggregateRoot>(
         {
             IEventFilter filter = new EntityDomainEventFilter
             {
-                Predicate = x => x.AggregateId == keyId, OrderBy = x => x.OrderBy(o => o.EventVersion)
+                Predicate = x => x.AggregateId == keyId, 
+                OrderBy = x => x.OrderBy(o => o.EventVersion)
             };
 
-            TAggregateRoot aggregateRoot = new();
+            TAggregate aggregate = new();
 
             await foreach (IDomainEvent @event in _eventStore
                                .FetchAsync(filter, cancellationToken)
@@ -103,17 +104,17 @@ public sealed class AggregateStore<TAggregateRoot>(
                                .OrderBy(x => x.EventVersion)
                                .ConfigureAwait(false))
             {
-                aggregateRoot.LoadFromHistory(@event);
+                aggregate.LoadFromHistory(@event);
             }
 
-            if (aggregateRoot.IsEmpty)
+            if (aggregate.IsEmpty)
             {
                 throw new ValidationException(new ValidationResult(
                     "The object was not found.",
                     [nameof(keyId)]), null, keyId);
             }
 
-            return aggregateRoot;
+            return aggregate;
         }
         catch (Exception exception)
             when (exception is not ValidationException and not InvalidOperationException)

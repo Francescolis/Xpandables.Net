@@ -17,7 +17,8 @@
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents the options for configuring the snapshot feature.
+/// Represents the options used to configure the behavior of snapshots.
+/// Provides settings that control whether snapshots are enabled and the frequency of snapshot creation.
 /// </summary>
 public sealed record SnapShotOptions
 {

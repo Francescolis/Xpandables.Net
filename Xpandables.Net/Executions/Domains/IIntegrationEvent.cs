@@ -23,24 +23,22 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents an integration event that is part of the event-driven architecture.
+/// Represents an integration event that serves as a contract for domain-driven communication.
 /// </summary>
 public interface IIntegrationEvent : IEvent
 {
 }
 
 /// <summary>
-/// Represents an integration event with a specific domain event.
+/// Represents an integration event used for domain-driven communication and system integration.
 /// </summary>
-/// <typeparam name="TDomainEvent">The type of the domain event.</typeparam>
 public interface IIntegrationEvent<TDomainEvent> : IIntegrationEvent
     where TDomainEvent : notnull, IDomainEvent
 {
 }
 
 /// <summary>
-/// Represents an integration event that is used to communicate between
-/// different systems.
+/// Represents a base integration event for facilitating communication within a domain or between systems.
 /// </summary>
 public record IntegrationEvent : Event, IIntegrationEvent
 {

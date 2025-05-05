@@ -33,7 +33,7 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
     IEventStore eventStore,
     IOptions<SnapShotOptions> options) :
     IAggregateStore<TAggregateRoot>
-    where TAggregateRoot : AggregateRoot, IOriginator, new()
+    where TAggregateRoot : Aggregate, IOriginator, new()
 {
     private readonly IAggregateStore<TAggregateRoot> _aggregateStore = aggregateStore;
     private readonly IEventStore _eventStore = eventStore;
@@ -153,8 +153,8 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
         }
     }
 
-    private bool CanSnapshot(AggregateRoot aggregateRoot) =>
+    private bool CanSnapshot(Aggregate aggregate) =>
         _options.IsSnapshotEnabled
-        && aggregateRoot.Version % _options.SnapshotFrequency == 0
-        && aggregateRoot.Version >= _options.SnapshotFrequency;
+        && aggregate.Version % _options.SnapshotFrequency == 0
+        && aggregate.Version >= _options.SnapshotFrequency;
 }

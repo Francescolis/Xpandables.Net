@@ -21,7 +21,7 @@ using Xpandables.Net.States;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents a snapshot event that includes a memento and its owner.
+/// Defines a contract for a snapshot event, which includes its associated memento state and owner identifier.
 /// </summary>
 public interface ISnapshotEvent : IEvent
 {

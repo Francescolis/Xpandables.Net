@@ -17,7 +17,11 @@
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents the options for configuring the event scheduler.
+/// Represents the configuration options for the scheduler.
+/// This configuration controls the behavior of the scheduler,
+/// including enabling or disabling the event scheduler, setting the maximum
+/// retries for scheduler execution, controlling retry intervals, scheduler frequency,
+/// and the maximum number of events processed per thread.
 /// </summary>
 public sealed record SchedulerOptions
 {

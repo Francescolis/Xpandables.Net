@@ -21,8 +21,7 @@ using Xpandables.Net.Repositories.Filters;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents a store for events that can be appended, fetched,
-/// and marked as published.
+/// Defines the contract for an event store, which is responsible for persisting and managing events.
 /// </summary>
 public interface IEventStore
 {

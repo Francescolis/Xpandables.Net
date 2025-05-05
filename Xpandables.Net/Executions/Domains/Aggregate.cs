@@ -24,15 +24,15 @@ namespace Xpandables.Net.Executions.Domains;
 /// <summary>
 /// Represents the base class for an aggregate root in a domain-driven design.
 /// </summary>
-public abstract class AggregateRoot : IEventSourcing
+public abstract class Aggregate : IEventSourcing
 {
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
     private readonly ConcurrentQueue<IDomainEvent> _uncommittedEvents = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AggregateRoot" /> class.
+    /// Initializes a new instance of the <see cref="Aggregate" /> class.
     /// </summary>
-    protected AggregateRoot() { }
+    protected Aggregate() { }
 
     /// <summary>
     /// Gets the unique identifier of the aggregate root.
@@ -42,6 +42,7 @@ public abstract class AggregateRoot : IEventSourcing
     /// <summary>
     /// Gets the version of the aggregate root.
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     public ulong Version { get; protected set; }
 
     /// <summary>
@@ -102,19 +103,20 @@ public abstract class AggregateRoot : IEventSourcing
     /// Thrown when the event type is
     /// not an event domain.
     /// </exception>
+    // ReSharper disable once MemberCanBePrivate.Global
     protected void On(Type eventType, Delegate handler)
     {
         ArgumentNullException.ThrowIfNull(eventType);
         ArgumentNullException.ThrowIfNull(handler);
 
-        if (typeof(IDomainEvent).IsAssignableFrom(eventType))
+        if (!typeof(IDomainEvent).IsAssignableFrom(eventType))
         {
-            _ = _eventHandlers.TryAdd(eventType, handler);
-            return;
+            throw new ArgumentException(
+                $"The type {eventType.Name} is not an event domain.");
         }
 
-        throw new ArgumentException(
-            $"The type {eventType.Name} is not an event domain.");
+        _ = _eventHandlers.TryAdd(eventType, handler);
+        return;
     }
 
     private void Apply(IDomainEvent domainEvent)

@@ -63,7 +63,7 @@ public record DomainEvent : Event, IDomainEvent
 /// are using the base constructor with <typeparamref name="TAggregateRoot" />.
 /// </remarks>
 public record DomainEvent<TAggregateRoot> : DomainEvent
-    where TAggregateRoot : AggregateRoot
+    where TAggregateRoot : Aggregate
 {
     /// <summary>
     /// Initializes a new instance of the

@@ -22,23 +22,24 @@ namespace Xpandables.Net.Executions.Domains;
 /// <summary>
 /// Represents the base class for an aggregate root with state management.
 /// </summary>
-/// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
+/// <typeparam name="TAggregate">The type of the aggregate root.</typeparam>
 /// <typeparam name="TState">The type of the state.</typeparam>
-public abstract class AggregateRootState<TAggregateRoot, TState> :
-    AggregateRoot,
+public abstract class AggregateState<TAggregate, TState> :
+    Aggregate,
     IStateContext<TState>
-    where TAggregateRoot : AggregateRootState<TAggregateRoot, TState>
+    where TAggregate : AggregateState<TAggregate, TState>
     where TState : class, IState
 {
     /// <inheritdoc/>
-    public TState CurrentState { get; protected set; } = default!;
+    // ReSharper disable once MemberCanBePrivate.Global
+    public TState CurrentState { get; protected set; } = null!;
 
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="AggregateRootState{TAggregate, TAggregateId}"/> class.
+    /// <see cref="AggregateState{TAggregateRoot,TState}"/> class.
     /// </summary>
     /// <param name="initialState">The initial state of the aggregate.</param>
-    protected AggregateRootState(TState initialState) =>
+    protected AggregateState(TState initialState) =>
         TransitionToState(initialState);
 
     /// <inheritdoc/>

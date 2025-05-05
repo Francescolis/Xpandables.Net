@@ -20,13 +20,15 @@ using Xpandables.Net.Repositories.Converters;
 namespace Xpandables.Net.Executions.Domains;
 
 /// <summary>
-/// Represents the options for configuring event handling.
+/// Represents a set of event options and provides methods to retrieve relevant event converters for specific event types.
+/// This sealed record contains a list of <see cref="IEventConverter"/> implementations that determine whether they can convert specific event types.
 /// </summary>
 public sealed record EventOptions
 {
     /// <summary>
     /// Gets the list of user-defined converters that were registered.
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     public IList<IEventConverter> Converters { get; }
         =
         [

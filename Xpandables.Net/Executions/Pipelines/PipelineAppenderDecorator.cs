@@ -55,7 +55,7 @@ public sealed class PipelineAppenderDecorator<TRequest, TResponse>(IServiceProvi
             .GetRequiredService(aggregateStoreType);
 
         await aggregateStore
-            .AppendAsync((AggregateRoot)request.DependencyInstance, cancellationToken)
+            .AppendAsync((Aggregate)request.DependencyInstance, cancellationToken)
             .ConfigureAwait(false);
 
         return response;
