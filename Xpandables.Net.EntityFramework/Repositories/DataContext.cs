@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Xpandables.Net.Repositories;
 
@@ -32,26 +33,43 @@ public abstract class DataContext : DbContext
     /// <see cref="DbContext"/>.</param>  
     protected DataContext(DbContextOptions options) : base(options)
     {
-        ChangeTracker.Tracked += static (sender, e) =>
-        {
-            if (!e.FromQuery
-                && e.Entry.State == EntityState.Added
-                && e.Entry.Entity is IEntity entity)
-            {
-                if (entity.Status is null)
-                {
-                    entity.SetStatus(EntityStatus.ACTIVE);
-                }
-            }
-        };
+        // ReSharper disable once VirtualMemberCallInConstructor
+        ChangeTracker.Tracked += static (sender, e) => OnEntityTracked(e);
+        // ReSharper disable once VirtualMemberCallInConstructor
+        ChangeTracker.StateChanged += static (sender, e) => OnEntityStateChanged(e);
+    }
 
-        ChangeTracker.StateChanged += static (sender, e) =>
+    private static void OnEntityTracked(EntityTrackedEventArgs e)
+    {
+        if (e is { FromQuery: false, Entry: { State: EntityState.Added, Entity: IEntity entity } }
+            && entity.Status != EntityStatus.ACTIVE)
         {
-            if (e.NewState == EntityState.Modified
-                && e.Entry.Entity is IEntity entity)
-            {
-                entity.SetUpdatedOn();
-            }
-        };
+            entity.SetStatus(entity.Status);
+        }
+    }
+
+    private static void OnEntityStateChanged(EntityStateChangedEventArgs e)
+    {
+        if (e is { NewState: EntityState.Modified, Entry.Entity: IEntity entity })
+        {
+            entity.SetUpdatedOn();
+        }
+    }
+
+    /// <summary>
+    /// Releases the resources used by the current instance of <see cref="DataContext"/>
+    /// and unsubscribes from the tracked and state changed events to prevent memory leaks.
+    /// </summary>
+    public override void Dispose()
+    {
+        // Unsubscribe from events to prevent memory leaks
+        // ReSharper disable once EventUnsubscriptionViaAnonymousDelegate
+        ChangeTracker.Tracked -= static (sender, e) => OnEntityTracked(e);
+        // ReSharper disable once EventUnsubscriptionViaAnonymousDelegate
+        ChangeTracker.StateChanged -= static (sender, e) => OnEntityStateChanged(e);
+
+        base.Dispose();
+        
+        GC.SuppressFinalize(this);
     }
 }

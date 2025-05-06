@@ -15,9 +15,12 @@
  *
  ********************************************************************************/
 
+using System.Collections.Concurrent;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.Collections;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
@@ -35,7 +38,7 @@ namespace Xpandables.Net.Executions.Domains;
 // ReSharper disable once ClassNeverInstantiated.Global
 public sealed class EventStore(IOptions<EventOptions> options, DataContextEvent context) : Disposable, IEventStore
 {
-    private readonly List<IEntityEvent> _disposableEntities = [];
+    private readonly ConcurrentBag<IEntityEvent> _disposableEntities = [];
     private readonly EventOptions _options = options.Value;
 
     /// <inheritdoc />
