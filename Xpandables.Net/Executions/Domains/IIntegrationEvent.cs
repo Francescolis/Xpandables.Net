@@ -32,6 +32,7 @@ public interface IIntegrationEvent : IEvent
 /// <summary>
 /// Represents an integration event used for domain-driven communication and system integration.
 /// </summary>
+/// <typeparam name="TDomainEvent">The type of the domain event.</typeparam>
 public interface IIntegrationEvent<TDomainEvent> : IIntegrationEvent
     where TDomainEvent : notnull, IDomainEvent
 {
