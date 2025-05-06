@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 namespace Xpandables.Net.Optionals;
+
 /// <summary>
 /// Provides extension methods for optional types.
 /// </summary>
@@ -63,10 +65,11 @@ public static class OptionalExtensions
     /// The task result contains an optional containing the first element of the sequence, 
     /// or an empty optional if the sequence contains no elements.</returns>
     public static async Task<Optional<T>> FirstOrEmptyAsync<T>(
-        this IAsyncEnumerable<T> source) =>
-        await source.AnyAsync().ConfigureAwait(false)
-            ? Optional.Some(await source.FirstAsync().ConfigureAwait(false))
-            : Optional.Empty<T>();
+        this IAsyncEnumerable<T> source)
+    {
+        T? firstItem = await source.FirstOrDefaultAsync().ConfigureAwait(false);
+        return firstItem.ToOptional();
+    }
 
     /// <summary>
     /// Filters the optional value based on a predicate.
@@ -117,6 +120,7 @@ public static class OptionalExtensions
     /// <param name="optional">The optional value.</param>
     /// <param name="selector">A transform function to apply to the value.</param>
     /// <returns>An optional containing the transformed value.</returns>
+    // ReSharper disable once MemberCanBePrivate.Global
     public static Optional<TU> Select<T, TU>(
         this Optional<T> optional,
         Func<T, TU> selector) => optional.Bind(selector);
@@ -143,6 +147,7 @@ public static class OptionalExtensions
     /// <param name="optional">The optional value.</param>
     /// <param name="selector">A transform function to apply to the value.</param>
     /// <returns>An optional containing the transformed value.</returns>
+    // ReSharper disable once MemberCanBePrivate.Global
     public static Optional<TU> SelectMany<T, TU>(
         this Optional<T> optional,
         Func<T, Optional<TU>> selector) => optional.Bind(selector);

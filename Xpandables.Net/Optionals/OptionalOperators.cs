@@ -13,59 +13,105 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Diagnostics.CodeAnalysis;
 
 namespace Xpandables.Net.Optionals;
+
+[SuppressMessage("Usage", "CA2225:Operator overloads have named alternates")]
 public readonly partial record struct Optional<T>
 {
-    ///<inheritdoc/>
+    /// <summary>
+    /// Determines whether the left <see cref="Optional{T}"/> instance is less than the right <see cref="Optional{T}"/> instance.
+    /// </summary>
+    /// <param name="left">The left operand to compare.</param>
+    /// <param name="right">The right operand to compare.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator <(Optional<T> left, Optional<T> right)
         => left.CompareTo(right) < 0;
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Determines whether the left <see cref="Optional{T}"/> instance is less than the right <see cref="Optional{T}"/> instance.
+    /// </summary>
+    /// <param name="left">The left operand to compare.</param>
+    /// <param name="right">The right operand to compare.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator <(Optional<T> left, T right)
         => left.CompareTo(right) < 0;
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Determines whether the left <see cref="Optional{T}"/> instance is less than the right <see cref="Optional{T}"/> instance.
+    /// </summary>
+    /// <param name="left">The left operand to compare.</param>
+    /// <param name="right">The right operand to compare.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator <=(Optional<T> left, Optional<T> right)
         => left.CompareTo(right) <= 0;
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Determines whether the left <see cref="Optional{T}"/> instance is less than the right <see cref="Optional{T}"/> instance.
+    /// </summary>
+    /// <param name="left">The left operand to compare.</param>
+    /// <param name="right">The right operand to compare.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator <=(Optional<T> left, T right)
         => left.CompareTo(right) <= 0;
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Determines whether the left <see cref="Optional{T}"/> instance is less than the right <see cref="Optional{T}"/> instance.
+    /// </summary>
+    /// <param name="left">The left operand to compare.</param>
+    /// <param name="right">The right operand to compare.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator >(Optional<T> left, Optional<T> right)
         => left.CompareTo(right) > 0;
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Determines whether the left <see cref="Optional{T}"/> instance is less than the right <see cref="Optional{T}"/> instance.
+    /// </summary>
+    /// <param name="left">The left operand to compare.</param>
+    /// <param name="right">The right operand to compare.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator >(Optional<T> left, T right)
         => left.CompareTo(right) > 0;
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Determines whether the left <see cref="Optional{T}"/> instance is less than the right <see cref="Optional{T}"/> instance.
+    /// </summary>
+    /// <param name="left">The left operand to compare.</param>
+    /// <param name="right">The right operand to compare.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator >=(Optional<T> left, Optional<T> right)
         => left.CompareTo(right) >= 0;
 
-    ///<inheritdoc/>
+    /// <summary>
+    /// Determines whether the left <see cref="Optional{T}"/> instance is less than the right <see cref="Optional{T}"/> instance.
+    /// </summary>
+    /// <param name="left">The left operand to compare.</param>
+    /// <param name="right">The right operand to compare.</param>
+    /// <returns><see langword="true"/> if the left instance is less than the right instance; otherwise, <see langword="false"/>.</returns>
     public static bool operator >=(Optional<T> left, T right)
         => left.CompareTo(right) >= 0;
 
-    ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
+    /// <summary>
+    /// Converts a value to an optional.
+    /// </summary>
+    /// <param name="value">The value to be converted.</param>
+    // ReSharper disable once UseNullableAnnotationInsteadOfAttribute
     public static implicit operator Optional<T>([AllowNull] T value)
-#pragma warning restore CA2225 // Operator overloads have named alternates
         => value.ToOptional();
 
-    ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
+    /// <summary>
+    /// Converts the <see cref="Optional{OptionalT}"/> to <see cref="Optional{T}"/>.
+    /// </summary>
+    /// <param name="optional">The target optional.</param>
     public static implicit operator Optional<T>(Optional<Optional<T>> optional)
-#pragma warning restore CA2225 // Operator overloads have named alternates
         => optional.HasValue ? optional.Value : Optional.Empty<T>();
 
-    ///<inheritdoc/>
-#pragma warning disable CA2225 // Operator overloads have named alternates
-    public static implicit operator T(Optional<T> optional)
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        => optional.Value;
+    /// <summary>
+    /// Converts an optional to its value.
+    /// </summary>
+    /// <param name="optional">The optional to act with.</param>
+    public static implicit operator T(Optional<T> optional) => optional.Value;
 }
