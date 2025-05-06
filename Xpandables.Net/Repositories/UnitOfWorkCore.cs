@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Xpandables.Net.Repositories;
+
 /// <summary>
 /// Represents a unit of work that encapsulates a series of operations to be 
 /// executed as a single transaction.
@@ -63,22 +65,23 @@ public abstract class UnitOfWorkCore : AsyncDisposable, IUnitOfWork
     protected abstract IRepository GetRepositoryCore(Type repositoryType);
 }
 
+internal abstract class RepositoryProxy : DispatchProxy
+{
+    protected static readonly MethodBase MethodBaseType = typeof(object).GetMethod("GetType")!;
+}
+
 [SuppressMessage("Performance", "CA1852:Type 'RepositoryProxy' can be sealed " +
-    "because it has no subtypes in its containing assembly and is not " +
-    "externally visible",
+                                "because it has no subtypes in its containing assembly and is not " +
+                                "externally visible",
     Justification = "This class is a proxy and cannot be sealed.")]
-internal class RepositoryProxy<TRepository> : DispatchProxy
+internal class RepositoryProxy<TRepository> : RepositoryProxy
     where TRepository : class, IRepository
 {
-    private static readonly MethodBase _methodBaseType =
-        typeof(object).GetMethod("GetType")!;
-
-    private IUnitOfWork _unitOfWork = default!;
-    private TRepository _repositoryInstance = default!;
+    private IUnitOfWork _unitOfWork = null!;
+    private TRepository _repositoryInstance = null!;
     private Exception? _exception;
     private bool _writeOperation;
     private bool _disposed;
-    private MethodInfo _disposeMethod = default!;
 
     // Method to create an instance of the proxy, with both IUnitOfWork
     // and concrete IRepository
@@ -96,13 +99,12 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
         return (TRepository)proxy;
     }
 
-    internal void SetParameters(
+    private void SetParameters(
         IUnitOfWork unitOfWork,
         TRepository repositoryInstance)
     {
         _unitOfWork = unitOfWork;
         _repositoryInstance = repositoryInstance;
-        _disposeMethod = GetType().GetMethod(nameof(DisposeAsync))!;
     }
 
     // Overriding the Invoke method to handle method calls dynamically
@@ -112,7 +114,7 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
         // Forward the method calls to the provided IRepository instance
         try
         {
-            return ReferenceEquals(targetMethod, _methodBaseType)
+            return ReferenceEquals(targetMethod, MethodBaseType)
                 ? Bypass(targetMethod, args)
                 : DoInvoke(targetMethod, args);
         }
@@ -125,18 +127,17 @@ internal class RepositoryProxy<TRepository> : DispatchProxy
 
     private object? DoInvoke(MethodInfo targetMethod, object?[]? args)
     {
-        if (targetMethod.Name == nameof(DisposeAsync))
+        switch (targetMethod.Name)
         {
+            case nameof(DisposeAsync):
 #pragma warning disable CA2012 // Use ValueTasks correctly
-            return DisposeAsync();
+                return DisposeAsync();
 #pragma warning restore CA2012 // Use ValueTasks correctly
-        }
-
-        if (targetMethod.Name is (nameof(IRepository.InsertAsync)) or
-            (nameof(IRepository.UpdateAsync)) or
-            (nameof(IRepository.DeleteAsync)))
-        {
-            _writeOperation = true;
+            case (nameof(IRepository.InsertAsync)) or
+                (nameof(IRepository.UpdateAsync)) or
+                (nameof(IRepository.DeleteAsync)):
+                _writeOperation = true;
+                break;
         }
 
         return targetMethod.Invoke(_repositoryInstance, args);

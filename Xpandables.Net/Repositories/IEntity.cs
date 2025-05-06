@@ -60,7 +60,7 @@ public interface IEntity
     /// <param name="updatedOn">The updated date.</param>
     /// <remarks>If <paramref name="updatedOn"/> is not provided, the current 
     /// date and time will be used.</remarks>
-    void SetUpdatedOn(DateTime? updatedOn = default);
+    void SetUpdatedOn(DateTime? updatedOn = null);
 }
 
 /// <summary>

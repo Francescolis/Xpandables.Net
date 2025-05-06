@@ -28,7 +28,7 @@ namespace Xpandables.Net.Repositories;
 /// specific data context.
 /// </summary>
 /// <typeparam name="TDataContext">The type of the data context.</typeparam>
-public abstract class Repository<TDataContext>(TDataContext context) : IRepository
+public abstract class Repository<TDataContext>(TDataContext context) : AsyncDisposable, IRepository
     where TDataContext : DataContext
 {
     /// <summary>

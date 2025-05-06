@@ -18,6 +18,7 @@
 using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Text;
+// ReSharper disable InheritdocInvalidUsage
 
 // ReSharper disable InconsistentNaming
 

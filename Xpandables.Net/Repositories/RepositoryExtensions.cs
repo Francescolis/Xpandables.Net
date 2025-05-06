@@ -123,13 +123,13 @@ public static class RepositoryExtensions
        where TParam : notnull =>
        source.Where(propertyExpression.Compose(predicate));
 
-    internal static Expression Replace(
+    private static Expression Replace(
            this Expression expression,
            Expression searchEx,
            Expression replaceEx)
            => new ReplaceVisitor(searchEx, replaceEx).Visit(expression);
 
-    internal sealed class ReplaceVisitor(Expression from, Expression to) :
+    private sealed class ReplaceVisitor(Expression from, Expression to) :
         ExpressionVisitor
     {
         private readonly Expression from = from, to = to;

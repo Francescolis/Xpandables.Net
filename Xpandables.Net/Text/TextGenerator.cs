@@ -27,8 +27,9 @@ public static class TextGenerator
     /// <summary>  
     /// The lookup characters used to generate random string.  
     /// </summary>  
+    // ReSharper disable once MemberCanBePrivate.Global
     public const string LookupCharacters = "abcdefghijklmonpqrstuvwxyzABCDEFGH" +
-        "IJKLMNOPQRSTUVWXYZ0123456789,;!(-è_çàà)=@%µ£¨//?§/.?";
+                                           "IJKLMNOPQRSTUVWXYZ0123456789,;!(-è_çàà)=@%µ£¨//?§/.?";
 
     /// <summary>  
     /// Generates a random string of the specified length using the default   

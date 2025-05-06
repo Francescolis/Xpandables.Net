@@ -34,7 +34,7 @@ public interface IState
 /// Represents a state in a state machine with a specific context type.
 /// </summary>
 /// <typeparam name="TStateContext">The type of the state context.</typeparam>
-public interface IState<TStateContext> : IState
+public interface IState<in TStateContext> : IState
     where TStateContext : class, IStateContext
 {
     /// <summary>

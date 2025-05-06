@@ -36,12 +36,12 @@ public abstract class EventConverter : IEventConverter
     /// <inheritdoc />
     public abstract IEntityEvent ConvertTo(
         IEvent @event,
-        JsonSerializerOptions? options = default);
+        JsonSerializerOptions? options = null);
 
     /// <inheritdoc />
     public abstract IEvent ConvertFrom(
         IEntityEvent entity,
-        JsonSerializerOptions? options = default);
+        JsonSerializerOptions? options = null);
 
     /// <summary>
     /// Serializes the given event to <see cref="JsonDocument" />.
@@ -55,7 +55,7 @@ public abstract class EventConverter : IEventConverter
     /// </exception>
     protected static JsonDocument SerializeEvent(
         IEvent @event,
-        JsonSerializerOptions? jsonOptions = default,
+        JsonSerializerOptions? jsonOptions = null,
         JsonDocumentOptions documentOptions = default)
     {
         try
@@ -85,7 +85,7 @@ public abstract class EventConverter : IEventConverter
     protected static IEvent DeserializeEvent(
         JsonDocument eventData,
         Type eventType,
-        JsonSerializerOptions? options = default)
+        JsonSerializerOptions? options = null)
     {
         try
         {

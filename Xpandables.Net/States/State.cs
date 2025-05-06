@@ -27,7 +27,7 @@ public abstract class State<TStateContext> : IState<TStateContext>
     /// <summary>
     /// Gets the context associated with the state.
     /// </summary>
-    protected TStateContext Context { get; private set; } = default!;
+    protected TStateContext Context { get; private set; } = null!;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
     void IState<TStateContext>.EnterStateContext(TStateContext context)

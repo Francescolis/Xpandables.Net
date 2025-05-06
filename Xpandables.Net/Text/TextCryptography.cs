@@ -37,8 +37,8 @@ public static class TextCryptography
     /// value, key, and salt.</returns>
     public static EncryptedValue Encrypt(
         string value,
-        string? key = default,
-        string? salt = default)
+        string? key = null,
+        string? salt = null)
         => (EncryptedValue)EncryptDecrypt(value, key, salt);
 
     /// <summary>
@@ -112,10 +112,10 @@ public static class TextCryptography
     /// will be generated.</param>
     /// <param name="isEncryption">True to encrypt the value; false to decrypt.</param>
     /// <returns>An encrypted or decrypted value.</returns>
-    internal static object EncryptDecrypt(
+    private static object EncryptDecrypt(
         string value,
-        string? key = default,
-        string? salt = default,
+        string? key = null,
+        string? salt = null,
         bool isEncryption = true)
     {
         key ??= TextGenerator.Generate(12);

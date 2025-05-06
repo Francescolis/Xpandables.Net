@@ -25,7 +25,7 @@ public abstract class StateContext<TState> : IStateContext<TState>
     /// <summary>
     /// Gets the current state.
     /// </summary>
-    public TState CurrentState { get; private set; } = default!;
+    public TState CurrentState { get; private set; } = null!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StateContext{TState}"/> 
