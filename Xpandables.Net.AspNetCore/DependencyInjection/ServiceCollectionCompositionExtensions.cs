@@ -41,6 +41,7 @@ public static class ServiceCollectionCompositionExtensions
     /// <param name="application">The web application.</param>
     /// <param name="configureOptions">The action to configure export options.</param>
     /// <returns>The web application with applied service exports.</returns>
+    // ReSharper disable once MemberCanBePrivate.Global
     public static WebApplication UseXServiceExports(
         this WebApplication application,
         Action<ExportOptions> configureOptions)
