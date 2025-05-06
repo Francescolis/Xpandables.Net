@@ -22,10 +22,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.Executions.Rests;
 
 /// <summary>
-/// Handles sending HTTP requests and receiving responses asynchronously.
+/// Provides functionality for sending HTTP requests and receiving responses in a RESTful manner.
 /// </summary>
-/// <param name="serviceProvider">Provides access to application services.</param>
-/// <param name="httpClient">Acts as the underlying client for sending HTTP requests and receiving responses.</param>
+/// <remarks>
+/// RestClient acts as a sealed implementation of the <see cref="IRestClient"/> interface and derives from the <see cref="Disposable"/> base class.
+/// It utilizes an <see cref="IServiceProvider"/> for dependency resolution and an <see cref="HttpClient"/> for handling HTTP operations.
+/// The class supports the sending of requests adhering to the <see cref="IRestRequest"/> interface and processes responses into <see cref="RestResponse"/> objects.
+/// </remarks>
 public sealed class RestClient(IServiceProvider serviceProvider, HttpClient httpClient) : Disposable, IRestClient
 {
     private HttpResponseMessage? _response;

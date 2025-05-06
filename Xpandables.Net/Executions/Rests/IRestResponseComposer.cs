@@ -18,9 +18,9 @@
 namespace Xpandables.Net.Executions.Rests;
 
 /// <summary>
-/// Defines method to compose <see cref="RestResponse"/> and <see cref="RestResponse{TResult}"/>.
+/// Defines the contract for a composer responsible for creating REST responses.
 /// </summary>
-/// <typeparam name="TRestRequest"> The type of the REST request.</typeparam>
+/// <typeparam name="TRestRequest">The type of the REST request.</typeparam>
 public interface IRestResponseComposer<TRestRequest>
     where TRestRequest : class, IRestRequest
 {

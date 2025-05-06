@@ -44,18 +44,18 @@ public static class RestClientExtensions
     /// original response.
     /// </summary>
     /// <param name="response">The response object that contains the data to be converted.</param>
-    /// <param name="generciType">The type to which the response should be converted, which must be specified.</param>
+    /// <param name="genericType">The type to which the response should be converted, which must be specified.</param>
     /// <returns>Returns the converted response or the original response if the specified type is generic.</returns>
-    public static dynamic ToRestResponse(this RestResponse response, Type generciType)
+    public static dynamic ToRestResponse(this RestResponse response, Type genericType)
     {
         ArgumentNullException.ThrowIfNull(response);
-        ArgumentNullException.ThrowIfNull(generciType);
-        if (generciType.IsGenericType)
+        ArgumentNullException.ThrowIfNull(genericType);
+        if (genericType.IsGenericType)
         {
             return response;
         }
 
-        MethodInfo method = ToResponseResultMethod.MakeGenericMethod(generciType);
+        MethodInfo method = ToResponseResultMethod.MakeGenericMethod(genericType);
         return method.Invoke(null, [response])!;
     }
 
@@ -69,6 +69,7 @@ public static class RestClientExtensions
     {
         ArgumentNullException.ThrowIfNull(response);
 
+        // ReSharper disable once InvertIf
         if (response.IsFailure)
         {
             ExecutionResult executionResult = response.Exception

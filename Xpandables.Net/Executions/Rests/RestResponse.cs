@@ -27,6 +27,7 @@ namespace Xpandables.Net.Executions.Rests;
 /// </summary>
 #pragma warning disable CA1707 // Identifiers should not contain underscores
 #pragma warning disable IDE1006 // Naming Styles
+// ReSharper disable once InconsistentNaming
 public abstract class _RestResponse : Disposable
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore CA1707 // Identifiers should not contain underscores
@@ -52,6 +53,7 @@ public abstract class _RestResponse : Disposable
     /// <summary>
     /// Represents an optional exception that may have occurred. It can be null if no exception is present.
     /// </summary>
+    // ReSharper disable once MemberCanBeProtected.Global
     public Exception? Exception { get; init; }
 
     /// <summary>
@@ -97,7 +99,6 @@ public abstract class _RestResponse : Disposable
         if (disposing)
         {
             (Result as IDisposable)?.Dispose();
-            (Exception as IDisposable)?.Dispose();
         }
 
         _isDisposed = true;
@@ -251,6 +252,7 @@ public class RestResponse<TResult> : _RestResponse, IEquatable<RestResponse<TRes
         if (ReferenceEquals(this, other))
             return true;
 
+        // ReSharper disable once BaseObjectEqualsIsObjectEquals
         return base.Equals(other) && Equals(Result, other.Result);
     }
 
@@ -266,6 +268,7 @@ public class RestResponse<TResult> : _RestResponse, IEquatable<RestResponse<TRes
     /// property.
     /// </summary>
     /// <returns>Returns an integer that represents the hash code of the object.</returns>
+    // ReSharper disable once BaseObjectGetHashCodeCallInGetHashCode
     public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Result);
 
     /// <summary>
@@ -294,6 +297,7 @@ public class RestResponse<TResult> : _RestResponse, IEquatable<RestResponse<TRes
     /// </summary>
     /// <returns>Returns a new RestResponse object containing the status code, headers, result, exception, version, and reason
     /// phrase.</returns>
+    // ReSharper disable once MemberCanBePrivate.Global
     public RestResponse ToRestResponse() =>
         new()
         {

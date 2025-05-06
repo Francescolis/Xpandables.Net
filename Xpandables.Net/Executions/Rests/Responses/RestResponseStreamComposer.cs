@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
 
 using System.Text.Json;
 
@@ -28,9 +28,9 @@ public sealed class RestResponseStreamComposer<TRestRequest> : IRestResponseComp
 {
     /// <inheritdoc/>
     public bool CanCompose(RestResponseContext<TRestRequest> context) =>
-            context.Message.IsSuccessStatusCode
-            && context.Request.ResultType is not null
-            && context.Request.IsRequestStream;
+        context.Message.IsSuccessStatusCode
+        && context.Request.ResultType is not null
+        && context.Request.IsRequestStream;
 
     /// <inheritdoc/>
     public async ValueTask<RestResponse> ComposeAsync(
@@ -53,7 +53,7 @@ public sealed class RestResponseStreamComposer<TRestRequest> : IRestResponseComp
                 .ReadAsStreamAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            if (stream is null)
+            if (stream.Length == 0)
             {
                 return new RestResponse
                 {

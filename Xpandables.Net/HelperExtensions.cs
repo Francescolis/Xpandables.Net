@@ -125,7 +125,7 @@ public static class HelperExtensions
     public static object? ChangeTypeNullable(
         this object? value,
         Type conversionType,
-        IFormatProvider? formatProvider = default)
+        IFormatProvider? formatProvider = null)
     {
         if (value is null)
         {
@@ -163,7 +163,7 @@ public static class HelperExtensions
     /// value is null.</returns>
     public static T? ChangeTypeNullable<T>(
         this object? value,
-        IFormatProvider? formatProvider = default)
+        IFormatProvider? formatProvider = null)
     {
         if (value is null)
         {
@@ -215,7 +215,7 @@ public static class HelperExtensions
     /// <returns>The object cast to the specified type, or null if not 
     /// possible.</returns>
     public static T? As<T>(this object? obj)
-        where T : class => obj is T t ? t : default;
+        where T : class => obj is T t ? t : null;
 
     /// <summary>
     /// Attempts to cast the object to the specified type, returning null if
@@ -224,10 +224,10 @@ public static class HelperExtensions
     /// <typeparam name="T">The type to cast the object to.</typeparam>
     /// <param name="obj">The object to cast.</param>
     /// <param name="_">The type to cast the object to.</param>
-    /// <returns>The object cast to the specified type, or null if not
+    /// <returns>The object cast to the specified type, or null if
     /// not possible.</returns>
     public static T? As<T>(this object? obj, T _)
-        where T : class => obj is T t ? t : default;
+        where T : class => obj is T t ? t : null;
 
     /// <summary>
     /// Attempts to cast the object to the specified type, throwing an
@@ -268,6 +268,7 @@ public static class HelperExtensions
     /// or <paramref name="cultureInfo"/> or <paramref name="args"/> is null
     /// .</exception>    
     /// <exception cref="FormatException">The format is invalid.</exception>
+    // ReSharper disable once MemberCanBePrivate.Global
     public static string StringFormat(
         this string value,
         CultureInfo cultureInfo,
@@ -300,7 +301,7 @@ public static class HelperExtensions
     public static T? DeserializeAnonymousType<T>(
         this string json,
         T _,
-        JsonSerializerOptions? options = default)
+        JsonSerializerOptions? options = null)
          => JsonSerializer.Deserialize<T>(json, options);
 
     /// <summary>
@@ -327,7 +328,7 @@ public static class HelperExtensions
     public static Task<T?> DeserializeAnonymousTypeAsync<T>(
         this Stream stream,
         T _,
-        JsonSerializerOptions? options = default,
+        JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
         => JsonSerializer
             .DeserializeAsync<T>(stream, options, cancellationToken)
@@ -345,13 +346,13 @@ public static class HelperExtensions
     public static IAsyncEnumerable<T?> DeserializeAsyncEnumerableAsync<T>(
         this Stream stream,
         T _,
-        JsonSerializerOptions? options = default,
+        JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
         => JsonSerializer.DeserializeAsyncEnumerable<T>(stream, options, cancellationToken);
 
-    private static readonly MethodInfo deserializeAsyncEnumerableMethod = typeof(JsonSerializer)
+    private static readonly MethodInfo DeserializeAsyncEnumerableMethod = typeof(JsonSerializer)
                 .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .FirstOrDefault(m => m.Name == "DeserializeAsyncEnumerable" && m.IsGenericMethod)!;
+                .FirstOrDefault(m => m is { Name: "DeserializeAsyncEnumerable", IsGenericMethod: true })!;
 
     /// <summary>
     /// Deserializes a stream into an asynchronous enumerable of a specified type using JSON serialization options.
@@ -364,12 +365,12 @@ public static class HelperExtensions
     public static object DeserializeAsyncEnumerableAsync(
         this Stream stream,
         Type type,
-        JsonSerializerOptions? options = default,
+        JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(stream);
-        MethodInfo genericMethod = deserializeAsyncEnumerableMethod.MakeGenericMethod(type);
+        MethodInfo genericMethod = DeserializeAsyncEnumerableMethod.MakeGenericMethod(type);
 
         return genericMethod.Invoke(null, [stream, options, cancellationToken])!;
     }
@@ -393,7 +394,7 @@ public static class HelperExtensions
     /// serializable members.</exception>
     public static string ToJsonString<T>(
         this T source,
-        JsonSerializerOptions? options = default)
+        JsonSerializerOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(source);
 

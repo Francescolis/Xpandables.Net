@@ -59,7 +59,7 @@ public abstract class _RestAttribute : Attribute
     /// Gets or sets the method name.
     /// The default value is <see cref="Method.POST" />.
     /// </summary>
-    public Method Method { get; set; } = Method.POST;
+    public Method Method { get; protected init; } = Method.POST;
 
     /// <summary>
     /// Gets or sets the format of the data.
@@ -86,7 +86,7 @@ public abstract class _RestAttribute : Attribute
     public string Accept { get; set; } = Rest.ContentType.Json;
 
     /// <summary>
-    /// Gets the value indicating whether or not the request needs authorization.
+    /// Gets the value indicating whether the request needs authorization.
     /// The default value is <see langword="false" />. If <see langword="true" />,
     /// an <see cref="AuthenticationHeaderValue" />
     /// with the <see cref="Scheme" /> value will be initialized and filled

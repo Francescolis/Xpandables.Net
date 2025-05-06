@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 using System.Collections.Immutable;
+// ReSharper disable InconsistentNaming
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace Xpandables.Net.Executions.Rests;
 

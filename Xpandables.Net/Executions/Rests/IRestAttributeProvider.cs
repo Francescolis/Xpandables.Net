@@ -31,7 +31,7 @@ public interface IRestAttributeProvider
     /// <returns>Returns the corresponding RestAttribute for the provided request.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the request is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the request is not decorated with RestAttribute or 
-    /// does not implement IRestAttributeBuilder.</exception>"
+    /// does not implement IRestAttributeBuilder.</exception>
     _RestAttribute GetRestAttribute(IRestRequest request);
 }
 
