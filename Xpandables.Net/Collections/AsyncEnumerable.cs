@@ -16,8 +16,7 @@
 ********************************************************************************/
 namespace Xpandables.Net.Collections;
 /// <summary>
-/// Provides a set of <see langword="static"/> methods for 
-/// <see cref="IAsyncEnumerable{T}"/>.
+/// Provides a set of <see langword="static"/> methods for <see cref="IAsyncEnumerable{T}"/>.
 /// </summary>
 public static class AsyncEnumerable
 {
