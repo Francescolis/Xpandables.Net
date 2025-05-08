@@ -54,14 +54,12 @@ public static class ElementCollectionExtensions
     /// <summary>
     /// Contains the public Array.Empty method.
     /// </summary>
-    public static readonly MethodInfo ArrayEmptyMethod =
-        typeof(Array).GetMethod(nameof(Array.Empty))!;
+    public static readonly MethodInfo ArrayEmptyMethod = typeof(Array).GetMethod(nameof(Array.Empty))!;
 
     /// <summary>
     /// Contains the public AsyncEnumerable.Empty" method.
     /// </summary>
-    public static readonly MethodInfo AsyncArrayEmptyMethod =
-        typeof(AsyncEnumerable).GetMethod(nameof(AsyncEnumerable.Empty))!;
+    public static readonly MethodInfo AsyncArrayEmptyMethod = typeof(AsyncEnumerable).GetMethod(nameof(AsyncEnumerable.Empty))!;
 
     /// <summary>
     /// Returns an array of <see cref="Type"/> objects that represent the type 
@@ -311,8 +309,8 @@ public static class ElementCollectionExtensions
         Type[] interfaces = type.GetInterfaces();
         for (int i = 0; i < interfaces.Length; i++)
         {
-            Type iface = interfaces[i];
-            if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            Type foundInterface = interfaces[i];
+            if (foundInterface.IsGenericType && foundInterface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 return true;
         }
 
@@ -339,8 +337,8 @@ public static class ElementCollectionExtensions
         Type[] interfaces = type.GetInterfaces();
         for (int i = 0; i < interfaces.Length; i++)
         {
-            Type iface = interfaces[i];
-            if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
+            Type foundInterface = interfaces[i];
+            if (foundInterface.IsGenericType && foundInterface.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
                 return true;
         }
 
