@@ -28,10 +28,7 @@ namespace Xpandables.Net.Collections;
 public class ElementEntryJsonConverter : JsonConverter<ElementEntry>
 {
     /// <inheritdoc/>
-    public override ElementEntry Read(
-        ref Utf8JsonReader reader,
-        Type typeToConvert,
-        JsonSerializerOptions options)
+    public override ElementEntry Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
         {
@@ -66,7 +63,7 @@ public class ElementEntryJsonConverter : JsonConverter<ElementEntry>
                     {
                         case JsonTokenType.StartArray:
                             {
-                                List<string> valuesList = new();
+                                List<string> valuesList = [];
                                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                                 {
                                     if (reader.TokenType == JsonTokenType.String)
@@ -75,7 +72,7 @@ public class ElementEntryJsonConverter : JsonConverter<ElementEntry>
                                     }
                                 }
 
-                                values = new StringValues(valuesList.ToArray());
+                                values = new StringValues([.. valuesList]);
                                 break;
                             }
                         case JsonTokenType.String:
@@ -87,8 +84,7 @@ public class ElementEntryJsonConverter : JsonConverter<ElementEntry>
 
                     break;
                 default:
-                    reader.Skip();
-                    break;
+                    throw new JsonException($"Unexpected property name: {propertyName}");
             }
         }
 
@@ -96,10 +92,7 @@ public class ElementEntryJsonConverter : JsonConverter<ElementEntry>
     }
 
     /// <inheritdoc/>
-    public override void Write(
-        Utf8JsonWriter writer,
-        ElementEntry value,
-        JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, ElementEntry value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
 
