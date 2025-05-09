@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+using FluentAssertions;
+
 using Moq;
 
 using Xpandables.Net.DataAnnotations;
@@ -16,8 +18,8 @@ public sealed class ValidatorUnitTest
 
         var result = validator.Validate(instance);
 
-        Assert.True(result.IsSuccessStatusCode);
-        Assert.Empty(result.Errors);
+        result.IsSuccessStatusCode.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
     }
 
     [Fact]
@@ -28,8 +30,8 @@ public sealed class ValidatorUnitTest
 
         var result = validator.Validate(instance);
 
-        Assert.False(result.IsSuccessStatusCode);
-        Assert.NotEmpty(result.Errors);
+        result.IsSuccessStatusCode.Should().BeFalse();
+        result.Errors.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -40,8 +42,8 @@ public sealed class ValidatorUnitTest
 
         var result = await validator.ValidateAsync(instance);
 
-        Assert.True(result.IsSuccessStatusCode);
-        Assert.Empty(result.Errors);
+        result.IsSuccessStatusCode.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
     }
 
     [Fact]
@@ -52,8 +54,8 @@ public sealed class ValidatorUnitTest
 
         var result = await validator.ValidateAsync(instance);
 
-        Assert.False(result.IsSuccessStatusCode);
-        Assert.NotEmpty(result.Errors);
+        result.IsSuccessStatusCode.Should().BeFalse();
+        result.Errors.Should().NotBeEmpty();
     }
 }
 

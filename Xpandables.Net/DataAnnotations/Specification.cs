@@ -26,9 +26,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// source satisfies certain criteria.
 /// </summary>
 /// <typeparam name="TSource">The type of the source to be evaluated.</typeparam>
-public record Specification<TSource> :
-    QueryExpression<TSource, bool>,
-    ISpecification<TSource>
+public record Specification<TSource> : QueryExpression<TSource, bool>, ISpecification<TSource>
 {
     /// <summary>
     /// Initializes a new instance of the 
@@ -50,8 +48,7 @@ public record Specification<TSource> :
     { }
 
     [SetsRequiredMembers]
-    private Specification(Expression<Func<TSource, bool>> expression) :
-        base(expression)
+    private Specification(Expression<Func<TSource, bool>> expression) : base(expression)
     { }
 
     /// <summary>
@@ -61,11 +58,7 @@ public record Specification<TSource> :
     /// <param name="right">The right specification.</param>
     /// <returns>A new specification that represents the logical AND of 
     /// the two specifications.</returns>
-#pragma warning disable CA2225 // Operator overloads have named alternates
-    public static Specification<TSource> operator &(
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        Specification<TSource> left,
-        Specification<TSource> right) =>
+    public static Specification<TSource> operator &(Specification<TSource> left, Specification<TSource> right) =>
         new(left, right.Expression, ExpressionType.AndAlso);
 
     /// <summary>
@@ -75,11 +68,7 @@ public record Specification<TSource> :
     /// <param name="right">The right specification.</param>
     /// <returns>A new specification that represents the logical OR of 
     /// the two specifications.</returns>
-#pragma warning disable CA2225 // Operator overloads have named alternates
-    public static Specification<TSource> operator |(
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        Specification<TSource> left,
-        Specification<TSource> right) =>
+    public static Specification<TSource> operator |(Specification<TSource> left, Specification<TSource> right) =>
         new(left, right.Expression, ExpressionType.OrElse);
 
     /// <summary>  
@@ -88,9 +77,6 @@ public record Specification<TSource> :
     /// <param name="expression">The specification to negate.</param>  
     /// <returns>A new specification that represents the negation of the given 
     /// specification.</returns> 
-#pragma warning disable CA2225 // Operator overloads have named alternates
-    public static Specification<TSource> operator !(
-#pragma warning restore CA2225 // Operator overloads have named alternates
-        Specification<TSource> expression) =>
+    public static Specification<TSource> operator !(Specification<TSource> expression) =>
         new(expression.Expression);
 }

@@ -75,8 +75,8 @@ public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValid
         {
             // remove the built-in validator if a specific validator
             // is registered.
-            var builtinType = typeof(Validator<>).MakeGenericType(type);
-            validators = [.. validators.Where(validator => validator.GetType() != builtinType)];
+            var builtInValidator = typeof(Validator<>).MakeGenericType(type);
+            validators = [.. validators.Where(validator => validator.GetType() != builtInValidator)];
         }
 
         return validators.FirstOrDefault();

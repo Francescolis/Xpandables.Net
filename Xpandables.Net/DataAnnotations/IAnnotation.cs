@@ -17,11 +17,14 @@
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Defines a marker interface to indicate that the class uses an aggregate
-/// and need appending process.
+/// Represents an annotation with metadata about its usage.
 /// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface IAggregateAppender
-#pragma warning restore CA1040 // Avoid empty interfaces
+/// <remarks>This interface provides a mechanism to associate metadata, such as the usage timestamp, with an
+/// annotation.</remarks>
+public interface IAnnotation
 {
+    /// <summary>
+    /// The date and time when the annotation was used.
+    /// </summary>
+    public DateTime UsedOn => DateTime.UtcNow;
 }

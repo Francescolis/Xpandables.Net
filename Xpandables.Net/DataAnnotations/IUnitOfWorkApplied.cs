@@ -20,5 +20,4 @@ namespace Xpandables.Net.DataAnnotations;
 /// Marker interface to indicate that a request should use a unit of work
 /// whatever the outcome of the request.
 /// </summary>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface IUnitOfWorkApplier { }
+public interface IUnitOfWorkApplied : IAnnotation { }

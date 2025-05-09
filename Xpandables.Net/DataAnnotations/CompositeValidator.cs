@@ -24,8 +24,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// </summary>
 /// <typeparam name="TArgument">The type of the argument to validate.</typeparam>
 /// <param name="validators">The validators to use for the validation.</param>
-public sealed class CompositeValidator<TArgument>(
-    IEnumerable<IValidator<TArgument>> validators) :
+public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgument>> validators) :
     Validator<TArgument>, ICompositeValidator<TArgument>
     where TArgument : class, IValidationEnabled
 {
@@ -51,7 +50,7 @@ public sealed class CompositeValidator<TArgument>(
         ExecutionResult failureResult = failureBuilder.Build();
         return failureResult.Errors.Any()
             ? failureResult
-            : ExecutionResults.Ok().Build();
+            : ExecutionResults.Success();
     }
 
     /// <inheritdoc/>
@@ -76,6 +75,6 @@ public sealed class CompositeValidator<TArgument>(
         ExecutionResult failureResult = failureBuilder.Build();
         return failureResult.Errors.Any()
             ? failureResult
-            : ExecutionResults.Ok().Build();
+            : ExecutionResults.Success();
     }
 }

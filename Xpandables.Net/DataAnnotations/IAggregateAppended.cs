@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +17,9 @@
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Defines a marker interface to indicate that the class uses a validator.
+/// Defines a marker interface to indicate that the class uses an aggregate
+/// and need appending process.
 /// </summary>
-public interface IValidationEnabled : IAnnotation
+public interface IAggregateAppended : IAnnotation
 {
 }
