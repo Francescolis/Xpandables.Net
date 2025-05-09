@@ -18,14 +18,14 @@ namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
 /// A pipeline decorator that handles exceptions thrown during the execution 
-/// of a request and transforms them into an <see cref="ExecutionResultException"/>.
+/// of a request and transforms them into an <see cref="ExecutionResult"/>.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
     IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : notnull
+    where TResponse : _ExecutionResult
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(
@@ -40,7 +40,7 @@ public sealed class PipelineExceptionDecorator<TRequest, TResponse> :
         catch (Exception exception)
             when (exception is not ExecutionResultException)
         {
-            throw new ExecutionResultException(exception.ToExecutionResult());
+            return (exception.ToExecutionResult() as TResponse)!;
         }
     }
 }

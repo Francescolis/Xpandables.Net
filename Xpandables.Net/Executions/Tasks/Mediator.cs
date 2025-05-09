@@ -29,7 +29,7 @@ namespace Xpandables.Net.Executions.Tasks;
 /// <see cref="ExecutionResultException"/> are converted into an <see cref="ExecutionResult"/>.
 /// </remarks>
 // ReSharper disable once ClassNeverInstantiated.Global
-internal sealed class Mediator(IServiceProvider provider) : IMediator
+public sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc />
     public async Task<ExecutionResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
