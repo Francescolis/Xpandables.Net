@@ -30,8 +30,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <typeparam name="TRequest">The type of the request, which must implement <see cref="IDependencyRequest"/> and
 /// <see cref="IAggregateAppended"/>.</typeparam>
 /// <typeparam name="TResponse">The type of the response, which must inherit from <see cref="_ExecutionResult"/>.</typeparam>
-public sealed class PipelineAppenderDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) :
-    IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineAppenderDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) : IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest, IAggregateAppended
     where TResponse : _ExecutionResult
 {

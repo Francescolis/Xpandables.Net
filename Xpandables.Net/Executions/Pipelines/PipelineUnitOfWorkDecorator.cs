@@ -27,9 +27,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request object that must implement <see cref="IUnitOfWorkApplied"/>.</typeparam>
 /// <typeparam name="TResponse">The type of the response object that must derive from <see cref="_ExecutionResult"/>.</typeparam>
-public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(
-    IUnitOfWork unitOfWork) :
-    IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(IUnitOfWork unitOfWork) : IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IUnitOfWorkApplied
     where TResponse : _ExecutionResult
 {

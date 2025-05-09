@@ -29,9 +29,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// If the validation fails, the pipeline will short-circuit and return a validation error response.
 /// If the validation succeeds, the execution continues to the next component in the pipeline.
 /// </remarks>
-public sealed class PipelineValidationDecorator<TRequest, TResponse>(
-    ICompositeValidator<TRequest> validators) :
-    IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineValidationDecorator<TRequest, TResponse>(ICompositeValidator<TRequest> validators) : IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IValidationEnabled
     where TResponse : _ExecutionResult
 {

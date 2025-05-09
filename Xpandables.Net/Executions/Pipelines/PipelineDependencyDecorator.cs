@@ -25,9 +25,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request object, which must implement <see cref="IDependencyRequest"/>.</typeparam>
 /// <typeparam name="TResponse">The type of the response object, which must not be null.</typeparam>
-public sealed class PipelineDependencyDecorator<TRequest, TResponse>(
-    IDependencyManager dependencyManager) :
-    IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineDependencyDecorator<TRequest, TResponse>(IDependencyManager dependencyManager) : IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest
     where TResponse : notnull
 {
