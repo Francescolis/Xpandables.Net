@@ -31,9 +31,7 @@ public sealed class PipelineRequestHandler<TRequest>(
     where TRequest : class, IRequest
 {
     /// <inheritdoc />
-    public async Task<ExecutionResult> HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken = default)
+    public async Task<ExecutionResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
     {
         ExecutionResult result = await decorators
             .Reverse()

@@ -18,7 +18,7 @@ public sealed class GetOperationsAccountQueryHandler(
     {
         await Task.Yield();
 
-        IEventFilter filter = new EntityDomainEventFilter
+        EntityDomainEventFilter filter = new()
         {
             Predicate = e => (e.AggregateId == query.KeyId
                               && e.EventName == nameof(DepositMade)) || e.EventName == nameof(WithdrawMade),

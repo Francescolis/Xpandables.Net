@@ -15,9 +15,7 @@ public interface IEventBus
     /// <param name="event">The event instance to publish.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task PublishAsync<TEvent>(
-        TEvent @event,
-        CancellationToken cancellationToken = default)
+    Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
         where TEvent : class, IIntegrationEvent;
 }
 

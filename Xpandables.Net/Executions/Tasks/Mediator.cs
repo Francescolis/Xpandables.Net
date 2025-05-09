@@ -32,9 +32,7 @@ namespace Xpandables.Net.Executions.Tasks;
 internal sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc />
-    public async Task<ExecutionResult> SendAsync<TRequest>(
-        TRequest request,
-        CancellationToken cancellationToken = default)
+    public async Task<ExecutionResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest
     {
         try

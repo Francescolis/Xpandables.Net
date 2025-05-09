@@ -28,7 +28,7 @@ public sealed class ElementEntryJsonConverterUnitTest
         // Assert
         result.Should().NotBeNull();
         result.Key.Should().Be("TestKey");
-        result.Values.Should().BeEquivalentTo(new StringValues(new[] { "Value1", "Value2" }));
+        result.Values.Should().BeEquivalentTo(new StringValues(["Value1", "Value2"]));
     }
 
     [Fact]

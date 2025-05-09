@@ -30,7 +30,5 @@ public interface IPipelineRequestHandler<in TRequest>
     /// <param name="request">The request instance containing required information for processing.</param>
     /// <param name="cancellationToken">A token that enables the operation to be cancelled, if requested.</param>
     /// <returns>A task representing the asynchronous execution, providing an <see cref="ExecutionResult"/> upon completion.</returns>
-    Task<ExecutionResult> HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken = default);
+    Task<ExecutionResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
 }

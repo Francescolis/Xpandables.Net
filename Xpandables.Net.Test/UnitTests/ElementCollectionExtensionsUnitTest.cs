@@ -52,7 +52,7 @@ public sealed class ElementCollectionExtensionsUnitTest
         result.Should().NotBeNull();
         result.Count().Should().Be(2);
         result["Key1"]!.Value.Values.First().Should().Be("Value1");
-        result["Key2"]!.Value.Values.ToArray().Should().Equal(new[] { "Value2", "Value3" });
+        result["Key2"]!.Value.Values.ToArray().Should().Equal(["Value2", "Value3"]);
     }
 
     [Fact]
@@ -71,18 +71,18 @@ public sealed class ElementCollectionExtensionsUnitTest
         // Assert
         result.Should().NotBeNull();
         result.Should().ContainSingle();
-        result["Key1"]!.Value.Values.ToArray().Should().Equal(new[] { "Value1", "Value2" });
+        result["Key1"]!.Value.Values.ToArray().Should().Equal(["Value1", "Value2"]);
     }
 
     [Fact]
     public void ToElementCollection_ShouldOptimizeForICollection()
     {
         // Arrange
-        ICollection<ElementEntry> entries = new List<ElementEntry>
-            {
+        ICollection<ElementEntry> entries =
+            [
                 new("Key1", "Value1"),
                 new("Key2", "Value2")
-            };
+            ];
 
         // Act
         var result = entries.ToElementCollection();

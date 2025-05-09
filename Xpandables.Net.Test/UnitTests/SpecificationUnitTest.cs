@@ -85,100 +85,100 @@ public sealed class SpecificationUnitTest
         result1.Should().BeTrue();
         result2.Should().BeFalse();
     }
-    
+
     [Fact]
     public void IsSatisfiedBy_ReturnsTrue_WhenConditionIsMet()
     {
-        var specification = new Specification<int>(){Expression = x => x > 10};
-    
+        var specification = new Specification<int>() { Expression = x => x > 10 };
+
         var result = specification.IsSatisfiedBy(15);
-    
-        Assert.True(result);
+
+        result.Should().BeTrue();
     }
-    
+
     [Fact]
     public void IsSatisfiedBy_ReturnsFalse_WhenConditionIsNotMet()
     {
-        var specification = new Specification<int>(){Expression = x => x > 10};
-    
+        var specification = new Specification<int>() { Expression = x => x > 10 };
+
         var result = specification.IsSatisfiedBy(5);
-    
-        Assert.False(result);
+
+        result.Should().BeFalse();
     }
-    
+
     [Fact]
     public void AndOperator_ReturnsTrue_WhenBothSpecificationsAreSatisfied()
     {
-        var spec1 = new Specification<int>(){Expression = x => x > 10};
-        var spec2 = new Specification<int>(){Expression = x => x < 20};
-    
+        var spec1 = new Specification<int>() { Expression = x => x > 10 };
+        var spec2 = new Specification<int>() { Expression = x => x < 20 };
+
         var combinedSpec = spec1 & spec2;
-    
+
         var result = combinedSpec.IsSatisfiedBy(15);
-    
-        Assert.True(result);
+
+        result.Should().BeTrue();
     }
-    
+
     [Fact]
     public void AndOperator_ReturnsFalse_WhenOneSpecificationIsNotSatisfied()
     {
-        var spec1 = new Specification<int>(){Expression = x => x > 10};
-        var spec2 = new Specification<int>(){Expression = x => x < 20};
-    
+        var spec1 = new Specification<int>() { Expression = x => x > 10 };
+        var spec2 = new Specification<int>() { Expression = x => x < 20 };
+
         var combinedSpec = spec1 & spec2;
-    
+
         var result = combinedSpec.IsSatisfiedBy(25);
-    
-        Assert.False(result);
+
+        result.Should().BeFalse();
     }
-    
+
     [Fact]
     public void OrOperator_ReturnsTrue_WhenAtLeastOneSpecificationIsSatisfied()
     {
-        var spec1 = new Specification<int>(){Expression = x => x > 10};
-        var spec2 = new Specification<int>(){Expression = x => x < 5};
-    
+        var spec1 = new Specification<int>() { Expression = x => x > 10 };
+        var spec2 = new Specification<int>() { Expression = x => x < 5 };
+
         var combinedSpec = spec1 | spec2;
-    
+
         var result = combinedSpec.IsSatisfiedBy(15);
-    
-        Assert.True(result);
+
+        result.Should().BeTrue();
     }
-    
+
     [Fact]
     public void OrOperator_ReturnsFalse_WhenNeitherSpecificationIsSatisfied()
     {
-        var spec1 = new Specification<int>(){Expression = x => x > 10};
-        var spec2 = new Specification<int>(){Expression = x => x < 5};
-    
+        var spec1 = new Specification<int>() { Expression = x => x > 10 };
+        var spec2 = new Specification<int>() { Expression = x => x < 5 };
+
         var combinedSpec = spec1 | spec2;
-    
+
         var result = combinedSpec.IsSatisfiedBy(7);
-    
-        Assert.False(result);
+
+        result.Should().BeFalse();
     }
-    
+
     [Fact]
     public void NotOperator_ReturnsTrue_WhenSpecificationIsNotSatisfied()
     {
-        var specification = new Specification<int>(){Expression = x => x > 10};
-    
+        var specification = new Specification<int>() { Expression = x => x > 10 };
+
         var negatedSpec = !specification;
-    
+
         var result = negatedSpec.IsSatisfiedBy(5);
-    
-        Assert.True(result);
+
+        result.Should().BeTrue();
     }
-    
+
     [Fact]
     public void NotOperator_ReturnsFalse_WhenSpecificationIsSatisfied()
     {
-        var specification = new Specification<int>(){Expression = x => x > 10};
-    
+        var specification = new Specification<int>() { Expression = x => x > 10 };
+
         var negatedSpec = !specification;
-    
+
         var result = negatedSpec.IsSatisfiedBy(15);
-    
-        Assert.False(result);
+
+        result.Should().BeFalse();
     }
 }

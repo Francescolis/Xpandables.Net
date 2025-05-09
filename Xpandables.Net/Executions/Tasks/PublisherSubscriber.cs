@@ -29,8 +29,7 @@ namespace Xpandables.Net.Executions.Tasks;
 /// Manages subscriptions for various event types and facilitates publishing events
 /// to the subscribed handlers.
 /// </summary>
-public sealed class PublisherSubscriber(IServiceProvider serviceProvider) :
-    Disposable, IPublisher, ISubscriber
+public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disposable, IPublisher, ISubscriber
 {
     private readonly ConcurrentDictionary<Type, ConcurrentBag<object>> _subscribers = [];
 

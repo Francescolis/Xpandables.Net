@@ -13,7 +13,7 @@ public sealed class ElementCollectionUnitTest
 
         collection.Add(entry);
 
-        collection["key1"].Should().Be(entry);
+        collection.Should().HaveElementAt(0, entry);
     }
 
     [Fact]

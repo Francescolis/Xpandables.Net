@@ -28,8 +28,6 @@ public interface IMediator
     /// <param name="request">The request containing the data necessary to perform the operation.</param>
     /// <param name="cancellationToken">An optional token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation, containing the execution result.</returns>
-    Task<ExecutionResult> SendAsync<TRequest>(
-        TRequest request,
-        CancellationToken cancellationToken = default)
+    Task<ExecutionResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest;
 }

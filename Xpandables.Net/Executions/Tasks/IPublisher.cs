@@ -32,8 +32,6 @@ public interface IPublisher
     /// <exception cref="InvalidOperationException">
     /// Thrown when publishing the event fails. See inner exception for additional details.
     /// </exception>
-    Task PublishAsync<TEvent>(
-        TEvent @event,
-        CancellationToken cancellationToken = default)
+    Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
         where TEvent : class, IEvent;
 }
