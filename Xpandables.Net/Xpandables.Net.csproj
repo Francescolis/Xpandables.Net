@@ -23,10 +23,10 @@
         <PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi</PackageTags>
         <PackageReleaseNotes>Refactor publish handler logic in PublisherSubscriber.</PackageReleaseNotes>
         <NeutralLanguage>en-GB</NeutralLanguage>
-        <Version>9.3.5.0</Version>
-        <AssemblyVersion>9.3.5.0</AssemblyVersion>
-        <FileVersion>9.3.5.0</FileVersion>
-        <PackageVersion>9.3.5.0</PackageVersion>
+        <Version>9.3.5.1</Version>
+        <AssemblyVersion>9.3.5.1</AssemblyVersion>
+        <FileVersion>9.3.5.1</FileVersion>
+        <PackageVersion>9.3.5.1</PackageVersion>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
