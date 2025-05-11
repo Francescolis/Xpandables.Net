@@ -21,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
-using Xpandables.Net.Executions.Deciders;
+using Xpandables.Net.Executions.Dependencies;
 using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Pipelines;
 using Xpandables.Net.Executions.Tasks;

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Executions.Deciders;
+namespace Xpandables.Net.Executions.Dependencies;
 
 /// <summary>
 /// Provides a mechanism to get providers for a dependency.

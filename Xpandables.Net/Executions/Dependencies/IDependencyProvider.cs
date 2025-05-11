@@ -17,7 +17,7 @@
 
 using Xpandables.Net.Executions.Tasks;
 
-namespace Xpandables.Net.Executions.Deciders;
+namespace Xpandables.Net.Executions.Dependencies;
 
 /// <summary>
 /// Provides a mechanism to get dependencies for a request.
@@ -30,7 +30,7 @@ public interface IDependencyProvider
     bool CanProvideDependency(Type dependencyType);
 
     /// <summary>
-    /// Gets the dependency from the request.
+    /// Gets the dependency for the request.
     /// </summary>
     /// <param name="request">The request that needs the dependency.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation 
