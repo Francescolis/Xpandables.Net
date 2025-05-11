@@ -153,11 +153,11 @@ public sealed class EndpointProcessor : IEndpointProcessor
     {
         if (executionResult.StatusCode.IsCreated())
         {
-            IResult resultCreated = (executionResult.Result is not null) switch
+            IResult resultCreated = (executionResult.Value is not null) switch
             {
                 true => Results.Created(
                     executionResult.Location,
-                    executionResult.Result),
+                    executionResult.Value),
                 _ => Results.Created(executionResult.Location, null)
             };
 
@@ -168,7 +168,7 @@ public sealed class EndpointProcessor : IEndpointProcessor
             return;
         }
 
-        if (executionResult.Result is Stream stream)
+        if (executionResult.Value is Stream stream)
         {
             string fileName = executionResult.Headers
                 .FirstOrDefault(h => h.Key.Equals("FileName", StringComparison.OrdinalIgnoreCase))
@@ -200,11 +200,11 @@ public sealed class EndpointProcessor : IEndpointProcessor
             return;
         }
 
-        if (executionResult.Result is not null)
+        if (executionResult.Value is not null)
         {
             await context.Response.WriteAsJsonAsync(
-                executionResult.Result,
-                executionResult.Result.GetType())
+                executionResult.Value,
+                executionResult.Value.GetType())
                 .ConfigureAwait(false);
 
             return;

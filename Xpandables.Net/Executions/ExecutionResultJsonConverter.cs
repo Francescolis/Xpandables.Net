@@ -52,12 +52,12 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
 
         if (UseAspNetCoreCompatibility)
         {
-            if (value.Result is not null)
+            if (value.Value is not null)
             {
                 JsonSerializer.Serialize(
                     writer,
-                    value.Result,
-                    value.Result.GetType());
+                    value.Value,
+                    value.Value.GetType());
             }
         }
         else
@@ -102,12 +102,12 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
 
         if (UseAspNetCoreCompatibility)
         {
-            if (value.Result is not null)
+            if (value.Value is not null)
             {
                 JsonSerializer.Serialize(
                     writer,
-                    value.Result,
-                    value.Result.GetType());
+                    value.Value,
+                    value.Value.GetType());
             }
         }
         else

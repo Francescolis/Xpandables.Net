@@ -17,7 +17,7 @@ public class AggregateUnitTest
 
         // Assert
         aggregate.Version.Should().Be(1);
-        aggregate.GetUncommittedEvents().Should().HaveCount(1);
+        aggregate.GetUncommittedEvents().Should().ContainSingle();
         aggregate.GetUncommittedEvents().First().Should().BeOfType<TestCreated>();
         aggregate.Name.Should().Be("Test Name");
     }
@@ -100,7 +100,7 @@ public class AggregateUnitTest
 
         // Assert
         aggregate.Version.Should().Be(1); // Version should only increment once
-        aggregate.GetUncommittedEvents().Should().HaveCount(1);
+        aggregate.GetUncommittedEvents().Should().ContainSingle();
     }
 
     [Fact]

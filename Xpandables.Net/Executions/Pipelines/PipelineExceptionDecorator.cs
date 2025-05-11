@@ -24,7 +24,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public sealed class PipelineExceptionDecorator<TRequest, TResponse> : IPipelineDecorator<TRequest, TResponse>
     where TRequest : class
-    where TResponse : _ExecutionResult
+    where TResponse : Result
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(

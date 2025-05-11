@@ -33,7 +33,7 @@ public sealed class OperationResultUnitTest
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
         result.IsSuccessStatusCode.Should().BeTrue();
-        result.Result.Should().Be(expectedResult);
+        result.Value.Should().Be(expectedResult);
     }
 
     [Fact]

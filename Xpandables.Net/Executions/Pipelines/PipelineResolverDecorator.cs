@@ -32,7 +32,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <typeparam name="TResponse">The type of the response that inherits from _ExecutionResult.</typeparam>
 public sealed class PipelineResolverDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) : IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest, IAggregateResolved
-    where TResponse : _ExecutionResult
+    where TResponse : Result
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(

@@ -34,11 +34,7 @@ namespace Xpandables.Net.Executions;
 /// <see cref="ExecutionResult"/> and <see cref="ExecutionResult{TResult}"/>.
 /// </remarks>
 // ReSharper disable once InconsistentNaming
-#pragma warning disable CA1707
-#pragma warning disable IDE1006
-public abstract record _ExecutionResult
-#pragma warning restore IDE1006
-#pragma warning restore CA1707
+public abstract record Result
 {
     /// <summary>
     /// Contains the key for the exception in the <see cref="ElementCollection" />.
@@ -46,7 +42,7 @@ public abstract record _ExecutionResult
     public const string ExceptionKey = "Exception";
 
     [JsonConstructor]
-    internal _ExecutionResult() { }
+    internal Result() { }
 
     /// <summary>
     /// Represents the HTTP status code associated with the execution result.
@@ -70,9 +66,9 @@ public abstract record _ExecutionResult
     public Uri? Location { get; init; }
 
     /// <summary>
-    /// Represents the result of an execution, which can contain a value or object resulting from the operation.
+    /// Represents the result value of an execution, which can contain an object resulting from the operation.
     /// </summary>
-    public object? Result { get; init; }
+    public object? Value { get; init; }
 
     /// <summary>
     /// Represents a collection of errors associated with an execution result.
@@ -125,16 +121,16 @@ public abstract record _ExecutionResult
     public abstract void EnsureSuccessStatusCode();
 
     /// <summary>
-    /// Converts an instance of <see cref="_ExecutionResult"/> to its associated
+    /// Converts an instance of <see cref="Result"/> to its associated
     /// <see cref="HttpStatusCode"/> representation.
     /// </summary>
     /// <param name="result">The execution result to convert.</param>
     /// <returns>The <see cref="HttpStatusCode"/> associated with the execution result.</returns>
     /// <remarks>
-    /// Provides implicit conversion for <see cref="_ExecutionResult"/> to <see cref="HttpStatusCode"/>,
+    /// Provides implicit conversion for <see cref="Result"/> to <see cref="HttpStatusCode"/>,
     /// allowing simpler usage when dealing with HTTP status codes in response to execution results.
     /// </remarks>
-    public static implicit operator HttpStatusCode(_ExecutionResult result) => result.ToHttpStatusCode();
+    public static implicit operator HttpStatusCode(Result result) => result.ToHttpStatusCode();
 
     /// <summary>
     /// Converts the execution result to its associated HTTP status code.
@@ -151,12 +147,12 @@ public abstract record _ExecutionResult
 /// including its status, headers, errors, and result content.
 /// </summary>
 /// <remarks>
-/// This class is a sealed implementation of the <see cref="_ExecutionResult"/> base class.
+/// This class is a sealed implementation of the <see cref="Result"/> base class.
 /// It provides functionality to evaluate success status, ensure success, and convert results
 /// to a generic version for handling specific result types.
 /// </remarks>
 [Serializable]
-public sealed record ExecutionResult : _ExecutionResult
+public sealed record ExecutionResult : Result
 {
     [JsonConstructor]
     internal ExecutionResult() { }
@@ -218,7 +214,7 @@ public sealed record ExecutionResult : _ExecutionResult
             Extensions = Extensions,
             Headers = Headers,
             Location = Location,
-            Result = Result,
+            Value = Value,
             StatusCode = StatusCode,
             Title = Title
         };
@@ -230,12 +226,12 @@ public sealed record ExecutionResult : _ExecutionResult
 /// </summary>
 /// <typeparam name="TResult">The type of the result object contained in the execution result.</typeparam>
 /// <remarks>
-/// This class extends the abstract <see cref="_ExecutionResult"/> class and provides
+/// This class extends the abstract <see cref="Result"/> class and provides
 /// specific implementation details, such as the result object, properties for
 /// status code evaluation, and methods to ensure successful execution outcomes.
 /// It also supports implicit conversions to and from the non-generic <see cref="ExecutionResult"/> class.
 /// </remarks>
-public sealed record ExecutionResult<TResult> : _ExecutionResult
+public sealed record ExecutionResult<TResult> : Result
 {
     [JsonConstructor]
     internal ExecutionResult() { }
@@ -248,14 +244,14 @@ public sealed record ExecutionResult<TResult> : _ExecutionResult
     [MaybeNull]
     // ReSharper disable once UseNullableAnnotationInsteadOfAttribute
     [AllowNull]
-    public new TResult Result
+    public new TResult Value
     {
-        get => (TResult?)base.Result;
-        init => base.Result = value;
+        get => (TResult?)base.Value;
+        init => base.Value = value;
     }
 
     /// <inheritdoc />
-    [MemberNotNullWhen(true, nameof(Result))]
+    [MemberNotNullWhen(true, nameof(Value))]
     public override bool IsSuccessStatusCode => StatusCode.IsSuccessStatusCode();
 
     /// <inheritdoc />
@@ -271,7 +267,7 @@ public sealed record ExecutionResult<TResult> : _ExecutionResult
     /// This method verifies whether the execution result signifies a successful operation.
     /// In cases where the result is unsuccessful, an exception is thrown to handle the error.
     /// </remarks>
-    [MemberNotNull([nameof(Result)])]
+    [MemberNotNull([nameof(Value)])]
     public override void EnsureSuccessStatusCode()
     {
         if (!IsSuccessStatusCode)
@@ -311,7 +307,7 @@ public sealed record ExecutionResult<TResult> : _ExecutionResult
             Title = result.Title,
             Detail = result.Detail,
             Location = result.Location,
-            Result = result.Result is TResult resultValue ? resultValue : default,
+            Value = result.Value is TResult resultValue ? resultValue : default,
             Errors = result.Errors,
             Headers = result.Headers,
             Extensions = result.Extensions
@@ -329,7 +325,7 @@ public sealed record ExecutionResult<TResult> : _ExecutionResult
         Title = Title,
         Detail = Detail,
         Location = Location,
-        Result = Result,
+        Value = Value,
         Errors = Errors,
         Headers = Headers,
         Extensions = Extensions

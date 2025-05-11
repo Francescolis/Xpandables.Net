@@ -29,7 +29,7 @@ public sealed class ExecutionResultSuccessBuilderUnitTest
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
         result.Title.Should().Be("Test Title");
         result.Detail.Should().Be("Test Detail");
-        result.Result.Should().Be("Test Result");
+        result.Value.Should().Be("Test Result");
         result.Location.Should().Be(new Uri("http://example.com"));
         result.Headers["HeaderKey"]!.Value.Values.Should().Contain("HeaderValue");
         result.Extensions["ExtensionKey"]!.Value.Values.Should().Contain("ExtensionValue");
@@ -58,7 +58,7 @@ public sealed class ExecutionResultSuccessBuilderUnitTest
         result.StatusCode.Should().Be(default);
         result.Title.Should().BeNull();
         result.Detail.Should().BeNull();
-        result.Result.Should().BeNull();
+        result.Value.Should().BeNull();
         result.Location.Should().BeNull();
         result.Headers.Should().BeEmpty();
         result.Extensions.Should().BeEmpty();

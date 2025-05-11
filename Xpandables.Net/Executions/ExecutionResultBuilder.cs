@@ -165,7 +165,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
             StatusCode = StatusCode,
             Title = Title,
             Detail = Detail,
-            Result = Result,
+            Value = Result,
             Location = Location,
             Headers = Headers,
             Extensions = Extensions,
@@ -283,7 +283,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <inheritdoc/>
     public TBuilder WithException(Exception exception)
     {
-        ElementEntry? entry = Errors[_ExecutionResult.ExceptionKey];
+        ElementEntry? entry = Errors[Executions.Result.ExceptionKey];
         if (entry.HasValue)
         {
             _ = Errors.Remove(entry.Value.Key);
@@ -295,7 +295,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
         else
         {
             entry = new ElementEntry(
-                _ExecutionResult.ExceptionKey,
+                Executions.Result.ExceptionKey,
                 AggregateExceptionValues(exception));
         }
 
@@ -451,6 +451,6 @@ public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode s
             Headers = Headers,
             Extensions = Extensions,
             Errors = Errors,
-            Result = Result
+            Value = Result
         };
 }

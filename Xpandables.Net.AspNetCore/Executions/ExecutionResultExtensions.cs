@@ -40,7 +40,7 @@ public static class ExecutionResultExtensions
     {
         ModelStateDictionary modelState = new();
         foreach (ElementEntry entry in executionResult.Errors
-            .Where(e => e.Key != _ExecutionResult.ExceptionKey))
+            .Where(e => e.Key != Result.ExceptionKey))
         {
             foreach (string? value in entry.Values)
             {
