@@ -39,7 +39,7 @@ public sealed class PipelineExceptionDecorator<TRequest, TResponse> : IPipelineD
         catch (Exception exception)
             when (exception is not ExecutionResultException)
         {
-            return (exception.ToExecutionResult() as TResponse)!;
+            return (TResponse)(Result)exception.ToExecutionResult();
         }
     }
 }

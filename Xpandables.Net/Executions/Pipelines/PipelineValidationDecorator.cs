@@ -45,7 +45,7 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(ICompositeV
 
         if (!result.IsSuccessStatusCode)
         {
-            return (result as TResponse)!;
+            return (TResponse)(Result)result;
         }
 
         return await next().ConfigureAwait(false);
