@@ -94,7 +94,9 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
                 EventProcessed eventPublished = new()
                 {
-                    EventId = @event.EventId, PublishedOn = DateTime.UtcNow, ErrorMessage = null
+                    EventId = @event.EventId,
+                    PublishedOn = DateTime.UtcNow,
+                    ErrorMessage = null
                 };
 
                 await eventStore.MarkAsProcessedAsync(eventPublished, cancellationToken).ConfigureAwait(false);
@@ -103,7 +105,9 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             {
                 EventProcessed eventPublished = new()
                 {
-                    EventId = @event.EventId, PublishedOn = DateTime.UtcNow, ErrorMessage = exception.ToString()
+                    EventId = @event.EventId,
+                    PublishedOn = DateTime.UtcNow,
+                    ErrorMessage = exception.ToString()
                 };
 
                 await eventStore
@@ -126,7 +130,8 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         {
             if (!_options.IsEventSchedulerEnabled)
             {
-                break;
+                _logger.LogWarning("Event scheduler is disabled.");
+                continue;
             }
 
             try
