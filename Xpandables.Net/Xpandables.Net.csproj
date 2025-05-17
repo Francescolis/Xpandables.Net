@@ -21,12 +21,12 @@
         <PackageOutputPath>../../Nugets</PackageOutputPath>
         <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
         <PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi</PackageTags>
-        <PackageReleaseNotes>Refactor publish handler logic in PublisherSubscriber.</PackageReleaseNotes>
+        <PackageReleaseNotes>Update dotnet references to 9.0.5.</PackageReleaseNotes>
         <NeutralLanguage>en-GB</NeutralLanguage>
-        <Version>9.3.5.1</Version>
-        <AssemblyVersion>9.3.5.1</AssemblyVersion>
-        <FileVersion>9.3.5.1</FileVersion>
-        <PackageVersion>9.3.5.1</PackageVersion>
+        <Version>9.3.5.2</Version>
+        <AssemblyVersion>9.3.5.2</AssemblyVersion>
+        <FileVersion>9.3.5.2</FileVersion>
+        <PackageVersion>9.3.5.2</PackageVersion>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
@@ -74,10 +74,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.4" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.4" />
-        <PackageReference Include="System.ComponentModel.Composition" Version="9.0.4" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5" />
+        <PackageReference Include="System.ComponentModel.Composition" Version="9.0.5" />
         <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1" />
     </ItemGroup>
 

@@ -22,12 +22,12 @@
         <PackageOutputPath>../../Nugets</PackageOutputPath>
         <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
         <PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi</PackageTags>
-        <PackageReleaseNotes>Refactor publish handler logic in PublisherSubscriber.</PackageReleaseNotes>
-        <NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>9.3.5.1</Version>
-		<AssemblyVersion>9.3.5.1</AssemblyVersion>
-		<FileVersion>9.3.5.1</FileVersion>
-		<PackageVersion>9.3.5.1</PackageVersion>
+		<PackageReleaseNotes>Update dotnet references to 9.0.5.</PackageReleaseNotes>
+		<NeutralLanguage>en-GB</NeutralLanguage>
+		<Version>9.3.5.2</Version>
+		<AssemblyVersion>9.3.5.2</AssemblyVersion>
+		<FileVersion>9.3.5.2</FileVersion>
+		<PackageVersion>9.3.5.2</PackageVersion>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
@@ -51,7 +51,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="Xpandables.Net.ico"/>
+        <Content Include="Xpandables.Net.ico" />
     </ItemGroup>
 
     <ItemGroup>
@@ -69,11 +69,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.5" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj"/>
+        <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
     </ItemGroup>
 
 </Project>
