@@ -29,7 +29,7 @@ public sealed class RestRequestStreamTest
         // Arrange
         var services = new ServiceCollection();
 
-        services.AddXRestAttibuteProvider();
+        services.AddXRestAttributeProvider();
         services.AddXRestRequestBuilders();
         services.AddXRestResponseBuilders();
         services.AddXRestRequestHandler();

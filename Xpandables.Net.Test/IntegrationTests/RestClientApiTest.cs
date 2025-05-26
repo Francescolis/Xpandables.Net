@@ -22,7 +22,7 @@ public sealed class RestClientApiTest : IClassFixture<WebApplicationFactory<Prog
     {
         var services = new ServiceCollection();
 
-        services.AddXRestAttibuteProvider();
+        services.AddXRestAttributeProvider();
         services.AddXRestRequestBuilders();
         services.AddXRestResponseBuilders();
         services.AddXRestRequestHandler();

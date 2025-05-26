@@ -34,7 +34,7 @@ public static class ServiceCollectionRestExtensions
     /// </summary>
     /// <param name="services">The collection of services to which the singleton implementation is added.</param>
     /// <returns>The updated service collection with the new singleton service registered.</returns>
-    public static IServiceCollection AddXRestAttibuteProvider(
+    public static IServiceCollection AddXRestAttributeProvider(
         this IServiceCollection services)
         => services.AddSingleton<IRestAttributeProvider, RestAttributeProvider>();
 
@@ -65,6 +65,7 @@ public static class ServiceCollectionRestExtensions
             .AddTransient(typeof(IRestRequestComposer<>), typeof(RestMultipartComposer<>))
             .AddTransient(typeof(IRestRequestComposer<>), typeof(RestStreamComposer<>))
             .AddTransient(typeof(IRestRequestComposer<>), typeof(RestPatchComposer<>))
+            .AddTransient(typeof(IRestRequestComposer<>), typeof(RestPathStringComposer<>))
             .AddTransient(typeof(IRestRequestComposer<>), typeof(RestStringComposer<>));
 
     /// <summary>
