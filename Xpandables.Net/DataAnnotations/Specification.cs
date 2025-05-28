@@ -40,7 +40,7 @@ public record Specification<TSource> : QueryExpression<TSource, bool>, ISpecific
         Expression.Compile().Invoke(source);
 
     [SetsRequiredMembers]
-    private Specification(
+    internal Specification(
          Expression<Func<TSource, bool>> left,
          Expression<Func<TSource, bool>> right,
          ExpressionType expressionType) :
@@ -48,7 +48,7 @@ public record Specification<TSource> : QueryExpression<TSource, bool>, ISpecific
     { }
 
     [SetsRequiredMembers]
-    private Specification(Expression<Func<TSource, bool>> expression) : base(expression)
+    internal Specification(Expression<Func<TSource, bool>> expression) : base(expression)
     { }
 
     /// <summary>
@@ -78,5 +78,26 @@ public record Specification<TSource> : QueryExpression<TSource, bool>, ISpecific
     /// <returns>A new specification that represents the negation of the given 
     /// specification.</returns> 
     public static Specification<TSource> operator !(Specification<TSource> expression) =>
-        new(expression.Expression);
+        new(NotExpression(expression.Expression));
+
+    /// <summary>
+    /// Determines whether the specified <see cref="Specification{TSource}"/> evaluates as true.
+    /// </summary>
+    /// <remarks>This operator always returns <see langword="false"/> to enforce the use of logical operators 
+    /// such as <c>|</c> without short-circuiting. This behavior is standard for expression
+    /// combinators.</remarks>
+    /// <param name="_">The <see cref="Specification{TSource}"/> to evaluate.</param>
+    /// <returns>Always returns <see langword="false"/>.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    public static bool operator true(Specification<TSource> _) => false;
+
+    /// <summary>
+    /// Defines the behavior of the conditional `false` operator for the <see cref="Specification{TSource}"/>
+    /// type.
+    /// </summary>
+    /// <remarks>This operator always returns <see langword="false"/> to ensure that logical operators such as
+    /// `|` are used without short-circuiting.</remarks>
+    /// <param name="_">The <see cref="Specification{TSource}"/> instance to evaluate.</param>
+    /// <returns>Always returns <see langword="false"/>.</returns>
+    public static bool operator false(Specification<TSource> _) => false;
 }

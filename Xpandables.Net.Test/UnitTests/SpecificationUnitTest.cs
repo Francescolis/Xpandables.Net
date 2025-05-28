@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Expressions;
 
 namespace Xpandables.Net.Test.UnitTests;
 
@@ -40,7 +41,7 @@ public sealed class SpecificationUnitTest
         var spec2 = new Specification<int>() { Expression = x => x < 10 };
 
         // Act
-        var combinedSpec = spec1 & spec2;
+        var combinedSpec = spec1.And(spec2);
         var result1 = combinedSpec.IsSatisfiedBy(7);
         var result2 = combinedSpec.IsSatisfiedBy(3);
         var result3 = combinedSpec.IsSatisfiedBy(12);

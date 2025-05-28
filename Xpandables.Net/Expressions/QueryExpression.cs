@@ -20,7 +20,7 @@ using System.Linq.Expressions;
 namespace Xpandables.Net.Expressions;
 
 /// <summary>
-/// Represents a query expression with a source and result type.
+/// Represents a query expression that can be used to filter or project data
 /// </summary>
 /// <typeparam name="TSource">The type of the source.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -36,7 +36,8 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     /// Initializes a new instance of the 
     /// <see cref="QueryExpression{TSource, TResult}"/> class with the specified 
     /// expressions and expression type to produce a new expression of type
-    /// <see cref="ExpressionType.AndAlso"/> or <see cref="ExpressionType.OrElse"/>.
+    /// <see cref="ExpressionType.AndAlso"/>,<see cref="ExpressionType.OrElse"/>,
+    /// <see cref="ExpressionType.And"/> and <see cref="ExpressionType.Or"/>.
     /// </summary>
     /// <param name="left">The left expression.</param>
     /// <param name="right">The right expression.</param>
@@ -47,27 +48,24 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     public QueryExpression(
         Expression<Func<TSource, TResult>> left,
         Expression<Func<TSource, TResult>> right,
-#pragma warning disable IDE0072 // Add missing cases
         ExpressionType expressionType) =>
         Expression = expressionType switch
         {
-            ExpressionType.AndAlso => AndExpression(left, right),
-            ExpressionType.OrElse => OrExpression(left, right),
-            _ => throw new InvalidOperationException(
-                $"Only {ExpressionType.AndAlso} and " +
-                $"{ExpressionType.Or} are supported")
+            ExpressionType.AndAlso => AndAlsoExpression(left, right),
+            ExpressionType.OrElse => OrElseExpression(left, right),
+            ExpressionType.And => AndExpression(left, right),
+            ExpressionType.Or => OrExpression(left, right),
+            _ => throw new InvalidOperationException($"Unsupported expression type : {expressionType}")
         };
-#pragma warning restore IDE0072 // Add missing cases
 
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="QueryExpression{TSource, TResult}"/> class with the specified 
-    /// expression to produce a new negated expression.
+    /// <see cref="QueryExpression{TSource, TResult}"/> class with the specified expression.
     /// </summary>
-    /// <param name="expression">The expression to negate.</param>
+    /// <param name="expression">The expression.</param>
     [SetsRequiredMembers]
     public QueryExpression(Expression<Func<TSource, TResult>> expression) =>
-        Expression = NotExpression(expression);
+        Expression = expression;
 
     /// <summary>
     /// Gets the expression that defines the query.
@@ -165,59 +163,73 @@ public record QueryExpression<TSource, TResult> : IQueryExpression<TSource, TRes
     public static QueryExpression<TSource, TResult> operator !(
 #pragma warning restore CA2225 // Operator overloads have named alternates
         QueryExpression<TSource, TResult> expression) =>
-        new(expression.Expression);
+        new(NotExpression(expression.Expression));
 
-    private static Expression<Func<TSource, TResult>> AndExpression(
+    /// <summary>
+    /// Determines whether the specified <see cref="QueryExpression{TSource, TResult}"/> evaluates as true.
+    /// </summary>
+    /// <remarks>This operator always returns <see langword="false"/> to enforce the use of logical operators 
+    /// such as <c>|</c> without short-circuiting. This behavior is standard for expression
+    /// combinators.</remarks>
+    /// <param name="_">The <see cref="QueryExpression{TSource, TResult}"/> to evaluate.</param>
+    /// <returns>Always returns <see langword="false"/>.</returns>
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    public static bool operator true(QueryExpression<TSource, TResult> _) => false;
+
+    /// <summary>
+    /// Defines the behavior of the conditional `false` operator for the <see cref="QueryExpression{TSource, TResult}"/>
+    /// type.
+    /// </summary>
+    /// <remarks>This operator always returns <see langword="false"/> to ensure that logical operators such as
+    /// `|` are used without short-circuiting.</remarks>
+    /// <param name="_">The <see cref="QueryExpression{TSource, TResult}"/> instance to evaluate.</param>
+    /// <returns>Always returns <see langword="false"/>.</returns>
+    public static bool operator false(QueryExpression<TSource, TResult> _) => false;
+
+    internal static Expression<Func<TSource, TResult>> AndExpression(
         Expression<Func<TSource, TResult>> left,
-        Expression<Func<TSource, TResult>> right)
-    {
-        ParameterExpression parameter = System.Linq.Expressions
-            .Expression.Parameter(typeof(TSource), "param");
-
-        Expression leftBody = ReplaceParameter(
-            left.Body, left.Parameters[0], parameter);
-        Expression rightBody = ReplaceParameter(
-            right.Body, right.Parameters[0], parameter);
-
-        return System.Linq.Expressions.Expression
-            .Lambda<Func<TSource, TResult>>(
-                System.Linq.Expressions.Expression
-                    .AndAlso(leftBody, rightBody), parameter);
-    }
-
-    private static Expression<Func<TSource, TResult>> OrExpression(
+        Expression<Func<TSource, TResult>> right) =>
+        CombineExpressions(left, right, System.Linq.Expressions.Expression.And);
+    internal static Expression<Func<TSource, TResult>> AndAlsoExpression(
         Expression<Func<TSource, TResult>> left,
-        Expression<Func<TSource, TResult>> right)
+        Expression<Func<TSource, TResult>> right) =>
+        CombineExpressions(left, right, System.Linq.Expressions.Expression.AndAlso);
+
+    internal static Expression<Func<TSource, TResult>> OrExpression(
+        Expression<Func<TSource, TResult>> left,
+        Expression<Func<TSource, TResult>> right) =>
+        CombineExpressions(left, right, System.Linq.Expressions.Expression.Or);
+
+    internal static Expression<Func<TSource, TResult>> OrElseExpression(
+        Expression<Func<TSource, TResult>> left,
+        Expression<Func<TSource, TResult>> right) =>
+        CombineExpressions(left, right, System.Linq.Expressions.Expression.OrElse);
+
+    internal static Expression<Func<TSource, TResult>> NotExpression(
+        Expression<Func<TSource, TResult>> expression) =>
+        CombineExpressions(expression, System.Linq.Expressions.Expression.Not);
+
+    private static Expression<Func<TSource, TResult>> CombineExpressions(
+        Expression<Func<TSource, TResult>> left,
+        Expression<Func<TSource, TResult>> right,
+        Func<Expression, Expression, BinaryExpression> combiner)
     {
-        ParameterExpression parameter = System.Linq.Expressions
-            .Expression.Parameter(typeof(TSource), "param");
-
-        Expression leftBody = ReplaceParameter(
-            left.Body, left.Parameters[0], parameter);
-        Expression rightBody = ReplaceParameter(
-            right.Body, right.Parameters[0], parameter);
-
-        return System.Linq.Expressions.Expression
-            .Lambda<Func<TSource, TResult>>(
-                System.Linq.Expressions.Expression
-                    .OrElse(leftBody, rightBody), parameter);
+        ParameterExpression parameter = System.Linq.Expressions.Expression.Parameter(typeof(TSource), "param");
+        Expression leftBody = ReplaceParameter(left.Body, left.Parameters[0], parameter);
+        Expression rightBody = ReplaceParameter(right.Body, right.Parameters[0], parameter);
+        return System.Linq.Expressions.Expression.Lambda<Func<TSource, TResult>>(
+            combiner(leftBody, rightBody), parameter);
     }
 
-    private static Expression<Func<TSource, TResult>> NotExpression(
-        Expression<Func<TSource, TResult>> expression)
+    private static Expression<Func<TSource, TResult>> CombineExpressions(
+        Expression<Func<TSource, TResult>> expression,
+        Func<Expression, UnaryExpression> combiner)
     {
-        ParameterExpression parameter = System.Linq.Expressions
-            .Expression.Parameter(typeof(TSource), "param");
-
-        Expression expressionBody = ReplaceParameter(
-            expression.Body, expression.Parameters[0], parameter);
-
-        return System.Linq.Expressions.Expression
-            .Lambda<Func<TSource, TResult>>(
-                System.Linq.Expressions.Expression
-                    .Not(expressionBody), parameter);
+        ParameterExpression parameter = System.Linq.Expressions.Expression.Parameter(typeof(TSource), "param");
+        Expression body = ReplaceParameter(expression.Body, expression.Parameters[0], parameter);
+        return System.Linq.Expressions.Expression.Lambda<Func<TSource, TResult>>(
+            combiner(body), parameter);
     }
-
     private static Expression ReplaceParameter(
         Expression body,
         ParameterExpression toReplace,
