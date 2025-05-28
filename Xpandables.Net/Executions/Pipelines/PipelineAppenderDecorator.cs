@@ -30,13 +30,14 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <typeparam name="TRequest">The type of the request, which must implement <see cref="IDependencyRequest"/> and
 /// <see cref="IAggregateAppended"/>.</typeparam>
 /// <typeparam name="TResponse">The type of the response, which must inherit from <see cref="Result"/>.</typeparam>
-public sealed class PipelineAppenderDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) : IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineAppenderDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) :
+    IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest, IAggregateAppended
     where TResponse : Result
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(
-        TRequest request,
+        RequestContext<TRequest> context,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
@@ -48,13 +49,13 @@ public sealed class PipelineAppenderDecorator<TRequest, TResponse>(IServiceProvi
         }
 
         Type aggregateStoreType = typeof(IAggregateStore<>)
-            .MakeGenericType(request.DependencyType);
+            .MakeGenericType(context.Request.DependencyType);
 
         IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
             .GetRequiredService(aggregateStoreType);
 
         await aggregateStore
-            .AppendAsync((Aggregate)request.DependencyInstance, cancellationToken)
+            .AppendAsync((Aggregate)context.Request.DependencyInstance, cancellationToken)
             .ConfigureAwait(false);
 
         return response;

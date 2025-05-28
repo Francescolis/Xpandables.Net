@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Executions.Tasks;
+
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
@@ -23,12 +25,12 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
 public sealed class PipelineExceptionDecorator<TRequest, TResponse> : IPipelineDecorator<TRequest, TResponse>
-    where TRequest : class
+    where TRequest : class, IRequest
     where TResponse : Result
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(
-        TRequest request,
+        RequestContext<TRequest> context,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {

@@ -16,6 +16,7 @@
  *
 ********************************************************************************/
 using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Executions.Pipelines;
@@ -27,13 +28,14 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request object that must implement <see cref="IUnitOfWorkApplied"/>.</typeparam>
 /// <typeparam name="TResponse">The type of the response object that must derive from <see cref="Result"/>.</typeparam>
-public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(IUnitOfWork unitOfWork) : IPipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IUnitOfWorkApplied
+public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(IUnitOfWork unitOfWork) :
+    IPipelineDecorator<TRequest, TResponse>
+    where TRequest : class, IRequest, IUnitOfWorkApplied
     where TResponse : Result
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(
-        TRequest request,
+        RequestContext<TRequest> context,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {

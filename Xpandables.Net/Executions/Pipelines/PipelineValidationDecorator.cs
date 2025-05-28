@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Executions.Pipelines;
 
@@ -29,18 +30,19 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// If the validation fails, the pipeline will short-circuit and return a validation error response.
 /// If the validation succeeds, the execution continues to the next component in the pipeline.
 /// </remarks>
-public sealed class PipelineValidationDecorator<TRequest, TResponse>(ICompositeValidator<TRequest> validators) : IPipelineDecorator<TRequest, TResponse>
-    where TRequest : class, IValidationEnabled
+public sealed class PipelineValidationDecorator<TRequest, TResponse>(ICompositeValidator<TRequest> validators) :
+    IPipelineDecorator<TRequest, TResponse>
+    where TRequest : class, IRequest, IValidationEnabled
     where TResponse : Result
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(
-        TRequest query,
+        RequestContext<TRequest> context,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         ExecutionResult result = await validators
-            .ValidateAsync(query)
+            .ValidateAsync(context.Request)
             .ConfigureAwait(false);
 
         if (!result.IsSuccessStatusCode)

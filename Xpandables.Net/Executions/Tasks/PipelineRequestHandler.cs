@@ -33,13 +33,15 @@ public sealed class PipelineRequestHandler<TRequest>(
     /// <inheritdoc />
     public async Task<ExecutionResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
     {
+        RequestContext<TRequest> context = new(request);
+
         ExecutionResult result = await decorators
             .Reverse()
             .Aggregate<IPipelineDecorator<TRequest, ExecutionResult>,
                 RequestHandler<ExecutionResult>>(
                 Handler,
                 (next, decorator) => async () => await decorator.HandleAsync(
-                    request,
+                    context,
                     next,
                     cancellationToken).ConfigureAwait(false))().ConfigureAwait(false);
 

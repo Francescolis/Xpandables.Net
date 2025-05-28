@@ -33,18 +33,18 @@ public sealed class PipelineDependencyDecorator<TRequest, TResponse>(
 {
     /// <inheritdoc/>
     public async Task<TResponse> HandleAsync(
-        TRequest request,
+        RequestContext<TRequest> context,
         RequestHandler<TResponse> next,
         CancellationToken cancellationToken = default)
     {
         IDependencyProvider dependencyProvider = dependencyManager
-            .GetDependencyProvider(request.DependencyType);
+            .GetDependencyProvider(context.Request.DependencyType);
 
         object dependency = await dependencyProvider
-            .GetDependencyAsync(request, cancellationToken)
+            .GetDependencyAsync(context.Request, cancellationToken)
             .ConfigureAwait(false);
 
-        request.DependencyInstance = dependency;
+        context.Request.DependencyInstance = dependency;
 
         return await next().ConfigureAwait(false);
     }
