@@ -30,7 +30,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <param name="serviceProvider">The service provider used to resolve dependencies required by the pipeline.</param>
 /// <typeparam name="TRequest">The type of the request that implements IDependencyRequest.</typeparam>
 /// <typeparam name="TResponse">The type of the response that inherits from _ExecutionResult.</typeparam>
-public sealed class PipelineResolverDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) :
+public sealed class PipelineAggregateResolverDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) :
     IPipelineDecorator<TRequest, TResponse>
     where TRequest : class, IDependencyRequest, IAggregateResolved
     where TResponse : Result

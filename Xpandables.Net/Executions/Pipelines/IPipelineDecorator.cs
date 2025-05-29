@@ -39,7 +39,7 @@ public interface IPipelineDecorator<TRequest, TResponse>
     /// <summary>
     /// Handles the pipeline request and invokes the next handler in the pipeline.
     /// </summary>
-    /// <param name="context">The request context to process.</param>
+    /// <param name="context">The request context to process with.</param>
     /// <param name="next">The next handler in the pipeline to be executed.</param>
     /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response.</returns>

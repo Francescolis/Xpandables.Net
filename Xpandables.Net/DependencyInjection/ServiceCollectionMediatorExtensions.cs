@@ -186,7 +186,7 @@ public static class ServiceCollectionMediatorExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineAppenderDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineAppenderDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineAggregateAppenderDecorator<,>));
 
     /// <summary>
     /// Adds an pipeline decorator to the <see cref="IServiceCollection" /> that resolve
@@ -197,7 +197,7 @@ public static class ServiceCollectionMediatorExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineResolverDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineResolverDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineAggregateResolverDecorator<,>));
 
     /// <summary>
     /// Adds the dependency pipeline decorator to the <see cref="IServiceCollection" />.
