@@ -14,8 +14,6 @@
 * limitations under the License.
 *
 ********************************************************************************/
-using System.Collections.Concurrent;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.DataAnnotations;
@@ -26,44 +24,10 @@ namespace Xpandables.Net.DataAnnotations;
 /// <param name="serviceProvider">The service provider to use.</param>
 public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValidatorProvider
 {
-    private static readonly ConcurrentDictionary<Type, IValidator> _validators = new();
     private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private static readonly PeriodicTimer _cacheClearTimer = new(TimeSpan.FromHours(1));
-#pragma warning disable CA1823 // Avoid unused private fields
-    private static readonly Task _cacheClearTask = ClearCachePeriodicallyAsync();
-#pragma warning restore CA1823 // Avoid unused private fields
-
-    private static async Task ClearCachePeriodicallyAsync()
-    {
-        while (await _cacheClearTimer.WaitForNextTickAsync().ConfigureAwait(false))
-        {
-            _validators.Clear();
-        }
-    }
 
     /// <inheritdoc/>
     public IValidator? TryGetValidator(Type type)
-    {
-        if (_validators.TryGetValue(type, out var validator))
-        {
-            return validator;
-        }
-
-        validator = GetValidatorCore(type);
-
-        if (validator is not null)
-        {
-            _validators.TryAdd(type, validator);
-        }
-
-        return validator;
-    }
-
-    /// <inheritdoc/>
-    public IValidator? TryGetValidator<TArgument>()
-        where TArgument : class, IValidationEnabled => TryGetValidator(typeof(TArgument));
-
-    private IValidator? GetValidatorCore(Type type)
     {
         Type validatorType = typeof(IValidator<>).MakeGenericType(type);
 
@@ -78,6 +42,25 @@ public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValid
             // is registered.
             var builtInValidator = typeof(Validator<>).MakeGenericType(type);
             validators = [.. validators.Where(validator => validator.GetType() != builtInValidator)];
+        }
+
+        return validators.FirstOrDefault();
+    }
+
+    /// <inheritdoc/>
+    public IValidator? TryGetValidator<TArgument>()
+        where TArgument : class, IValidationEnabled
+    {
+        var validators = _serviceProvider
+            .GetServices<IValidator<TArgument>>()
+            .ToList();
+
+        if (validators.Count > 1)
+        {
+            // remove the built-in validator if a specific validator
+            // is registered.
+            var builtInValidatorType = typeof(Validator<TArgument>);
+            validators = [.. validators.Where(validator => validator.GetType() != builtInValidatorType)];
         }
 
         return validators.FirstOrDefault();
