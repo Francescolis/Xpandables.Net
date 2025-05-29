@@ -22,16 +22,20 @@ namespace Xpandables.Net.DataAnnotations;
 public interface IValidatorProvider
 {
     /// <summary>
-    /// Returns a validator for the specified type.
+    /// Attempts to retrieve a validator for the specified type.
     /// </summary>
-    /// <param name="type">The type to get a validator for.</param>
-    /// <returns>The validator for the specified type.</returns>
-    IValidator? GetValidator(Type type);
+    /// <param name="type">The type for which to retrieve the validator. Cannot be <see langword="null"/>.</param>
+    /// <returns>An instance of <see cref="IValidator"/> if a validator for the specified type exists;  otherwise, <see
+    /// langword="null"/>.</returns>
+    IValidator? TryGetValidator(Type type);
 
     /// <summary>
-    /// Returns a validator for the specified type.
+    /// Attempts to retrieve a validator for the specified argument type.
     /// </summary>
-    /// <typeparam name="TArgument">The type to get a validator for.</typeparam>
-    /// <returns>The validator for the specified type.</returns>
-    IValidator? GetValidator<TArgument>();
+    /// <typeparam name="TArgument">The type of the argument for which the validator is requested. Must be a reference type and implement <see
+    /// cref="IValidationEnabled"/>.</typeparam>
+    /// <returns>An instance of <see cref="IValidator"/> if a validator for <typeparamref name="TArgument"/> is available; 
+    /// otherwise, <see langword="null"/>.</returns>
+    IValidator? TryGetValidator<TArgument>()
+        where TArgument : class, IValidationEnabled;
 }

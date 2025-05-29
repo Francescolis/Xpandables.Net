@@ -42,7 +42,7 @@ public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValid
     }
 
     /// <inheritdoc/>
-    public IValidator? GetValidator(Type type)
+    public IValidator? TryGetValidator(Type type)
     {
         if (_validators.TryGetValue(type, out var validator))
         {
@@ -60,7 +60,8 @@ public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValid
     }
 
     /// <inheritdoc/>
-    public IValidator? GetValidator<TArgument>() => GetValidator(typeof(TArgument));
+    public IValidator? TryGetValidator<TArgument>()
+        where TArgument : class, IValidationEnabled => TryGetValidator(typeof(TArgument));
 
     private IValidator? GetValidatorCore(Type type)
     {

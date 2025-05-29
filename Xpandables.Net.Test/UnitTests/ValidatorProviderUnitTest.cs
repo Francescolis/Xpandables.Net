@@ -23,7 +23,7 @@ public sealed class ValidatorProviderUnitTest
         var provider = new ValidatorProvider(_serviceProvider);
 
         // Act
-        var validator = provider.GetValidator<TestClass>();
+        var validator = provider.TryGetValidator<TestClass>();
 
         // Assert
         validator.Should().NotBeNull();
@@ -37,7 +37,7 @@ public sealed class ValidatorProviderUnitTest
         var provider = new ValidatorProvider(_serviceProvider);
 
         // Act
-        var validator = provider.GetValidator<UnregisteredClass>();
+        var validator = provider.TryGetValidator<UnregisteredClass>();
 
         // Assert
         validator.Should().BeNull();

@@ -117,7 +117,7 @@ public sealed class EndpointValidator(IValidatorProvider validatorProvider) : IE
         List<ValidatorDescriptor> validators = [];
         foreach (ArgumentDescriptor argument in arguments)
         {
-            IValidator? validator = provider.GetValidator(argument.ParameterType);
+            IValidator? validator = provider.TryGetValidator(argument.ParameterType);
             if (validator is not null)
             {
                 validators.Add(new ValidatorDescriptor
