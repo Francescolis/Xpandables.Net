@@ -136,23 +136,25 @@ public static class TextCryptography
             {
                 using Aes aes = Aes.Create();
 
-                using Rfc2898DeriveBytes rfcKey = new(
+                aes.KeySize = 256;
+                aes.BlockSize = 128;
+                int keySizeBytes = aes.KeySize / 8;
+                int ivSizeBytes = aes.BlockSize / 8;
+
+                byte[] combinedKeyAndIv = Rfc2898DeriveBytes.Pbkdf2(
                     keyBytes,
                     saltBytes,
-                    1000,
-                    HashAlgorithmName.SHA256);
+                    100000, // Use the updated iteration count
+                    HashAlgorithmName.SHA256,
+                    keySizeBytes + ivSizeBytes);
 
-                rfcKey.IterationCount = 100000;
+                aes.Key = combinedKeyAndIv.AsSpan(0, keySizeBytes).ToArray();
+                aes.IV = combinedKeyAndIv.AsSpan(keySizeBytes, ivSizeBytes).ToArray();
 
                 if (isEncryption)
                 {
                     aes.Padding = PaddingMode.PKCS7;
                 }
-
-                aes.KeySize = 256;
-                aes.BlockSize = 128;
-                aes.Key = rfcKey.GetBytes(aes.KeySize / 8);
-                aes.IV = rfcKey.GetBytes(aes.BlockSize / 8);
                 aes.Mode = CipherMode.CBC;
 
                 using (CryptoStream cryptoStream = new(

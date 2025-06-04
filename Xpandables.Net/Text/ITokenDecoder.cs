@@ -58,11 +58,11 @@ public static class TokenDecoderExtensions
         string payload = token.Split('.')[1];
         byte[] jsonBytes = ParseBase64WithoutPadding(payload);
 
-        Dictionary<string, object> keyValuePairs =
+        Dictionary<string, object>? keyValuePairs =
             JsonSerializer
-                .Deserialize<Dictionary<string, object>>(jsonBytes)!;
+                .Deserialize(jsonBytes, DefaultJsonSerializerContext.Default.DictionaryStringObject);
 
-        return keyValuePairs
+        return keyValuePairs?
             .Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()!));
     }
 

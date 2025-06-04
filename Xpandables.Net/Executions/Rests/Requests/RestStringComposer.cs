@@ -41,7 +41,7 @@ public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRes
         StringContent content = new(
             JsonSerializer.Serialize(
                 context.Request.GetStringContent(),
-                context.SerializerOptions),
+                Text.DefaultJsonSerializerContext.Default.String),
             Encoding.UTF8,
             context.Attribute.ContentType);
 #pragma warning restore CA2000 // Dispose objects before losing scope

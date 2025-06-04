@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata; // Moved to top
 
 namespace Xpandables.Net.Text;
 
@@ -38,15 +38,32 @@ public sealed class PrimitiveJsonConverterFactory : JsonConverterFactory
         Type typeToConvert,
         JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(typeToConvert);
+        ArgumentNullException.ThrowIfNull(options);
+
         Type valueType = typeToConvert.GetInterfaces()
             .First(i => i.IsGenericType
                 && i.GetGenericTypeDefinition() == typeof(IPrimitive<,>))
             .GetGenericArguments()[1];
 
+        var jsonTypeInfoForValue = options.GetTypeInfo(valueType);
+        if (jsonTypeInfoForValue is null)
+        {
+            // Fallback or error handling if type info is not found for TValue
+            // This might happen if TValue itself is not part of the context,
+            // which is expected as Primitive<T> can wrap any TValue.
+            // The factory itself is hard to make fully AOT-safe without restricting TValue.
+            // For now, we proceed, but this highlights a deeper issue for full AOT.
+            throw new InvalidOperationException(
+                $"Could not get JsonTypeInfo for value type {valueType.FullName} used in PrimitiveJsonConverter for {typeToConvert.FullName}. " +
+                $"Ensure {valueType.FullName} is included in a JsonSerializableAttribute on your JsonSerializerContext if it's a common type, " +
+                $"or this converter might not be fully AOT compatible for all TValue types.");
+        }
+
         Type converterType = typeof(PrimitiveJsonConverter<,>)
             .MakeGenericType(typeToConvert, valueType);
 
-        return (JsonConverter)Activator.CreateInstance(converterType)!;
+        return (JsonConverter)Activator.CreateInstance(converterType, jsonTypeInfoForValue)!;
     }
 }
 
@@ -60,6 +77,14 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue> :
     where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
     where TValue : notnull
 {
+    private readonly JsonTypeInfo<TValue> _valueTypeInfo;
+
+    public PrimitiveJsonConverter(JsonTypeInfo<TValue> valueTypeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(valueTypeInfo);
+        _valueTypeInfo = valueTypeInfo;
+    }
+
     /// <inheritdoc/>
     public override TPrimitive Read(
         ref Utf8JsonReader reader,
@@ -67,7 +92,7 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue> :
         JsonSerializerOptions options)
     {
         TPrimitive primitive = JsonSerializer
-            .Deserialize<TValue>(ref reader, options) switch
+            .Deserialize(ref reader, _valueTypeInfo) switch
         {
             TValue value => TPrimitive.Create(value),
             _ => TPrimitive.Default()
@@ -81,5 +106,5 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue> :
         Utf8JsonWriter writer,
         TPrimitive value,
         JsonSerializerOptions options) =>
-        JsonSerializer.Serialize(writer, value.Value, options);
+        JsonSerializer.Serialize(writer, value.Value, _valueTypeInfo);
 }

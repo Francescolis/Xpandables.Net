@@ -22,9 +22,19 @@ namespace Xpandables.Net.Optionals;
 /// <summary>
 /// A JSON converter for the <see cref="Optional{T}"/> type.
 /// </summary>
+using System.Text.Json.Serialization.Metadata;
+
 /// <typeparam name="T">The type of the value.</typeparam>
 public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
 {
+    private readonly JsonTypeInfo<T> _jsonTypeInfo;
+
+    public OptionalJsonConverter(JsonTypeInfo<T> jsonTypeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+        _jsonTypeInfo = jsonTypeInfo;
+    }
+
     /// <inheritdoc />
     public override Optional<T> Read(
         ref Utf8JsonReader reader,
@@ -36,7 +46,7 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
             return Optional.Empty<T>();
         }
 
-        T? value = JsonSerializer.Deserialize<T>(ref reader, options);
+        T? value = JsonSerializer.Deserialize(ref reader, _jsonTypeInfo);
 
         return value.ToOptional();
     }
@@ -48,11 +58,12 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
         JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        ArgumentNullException.ThrowIfNull(options);
+        // options are not used directly if _jsonTypeInfo is used,
+        // but the parameter is part of the overridden method signature.
 
         if (value.IsNotEmpty)
         {
-            JsonSerializer.Serialize(writer, value.Value, options);
+            JsonSerializer.Serialize(writer, value.Value, _jsonTypeInfo);
         }
         else
         {

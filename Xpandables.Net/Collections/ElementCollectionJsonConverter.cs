@@ -38,7 +38,7 @@ public sealed class ElementCollectionJsonConverter : JsonConverter<ElementCollec
         Type typeToConvert,
         JsonSerializerOptions options)
     {
-        ElementEntry[]? entries = JsonSerializer.Deserialize<ElementEntry[]>(ref reader, options);
+        ElementEntry[]? entries = JsonSerializer.Deserialize(ref reader, Text.DefaultJsonSerializerContext.Default.ElementEntryArray);
 
         return entries is not null
             ? ElementCollection.With(entries)
@@ -55,5 +55,5 @@ public sealed class ElementCollectionJsonConverter : JsonConverter<ElementCollec
         Utf8JsonWriter writer,
         ElementCollection value,
         JsonSerializerOptions options) =>
-        JsonSerializer.Serialize(writer, value.ToArray(), options);
+        JsonSerializer.Serialize(writer, value.ToArray(), Text.DefaultJsonSerializerContext.Default.ElementEntryArray);
 }

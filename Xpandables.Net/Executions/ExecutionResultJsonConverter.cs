@@ -40,7 +40,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
         JsonSerializerOptions options) =>
         UseAspNetCoreCompatibility
             ? throw new NotSupportedException()
-            : JsonSerializer.Deserialize<ExecutionResult>(ref reader);
+            : JsonSerializer.Deserialize(ref reader, Text.DefaultJsonSerializerContext.Default.ExecutionResult);
 
     /// <inheritdoc/>
     public override void Write(
@@ -62,7 +62,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
         }
         else
         {
-            JsonSerializer.Serialize(writer, value);
+            JsonSerializer.Serialize(writer, value, Text.DefaultJsonSerializerContext.Default.ExecutionResult);
         }
     }
 }

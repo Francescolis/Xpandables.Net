@@ -301,8 +301,8 @@ public static class HelperExtensions
     public static T? DeserializeAnonymousType<T>(
         this string json,
         T _,
-        JsonSerializerOptions? options = null)
-         => JsonSerializer.Deserialize<T>(json, options);
+        System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo)
+         => JsonSerializer.Deserialize<T>(json, jsonTypeInfo);
 
     /// <summary>
     /// Asynchronously reads the UTF-8 encoded text representing a single JSON 
@@ -394,11 +394,11 @@ public static class HelperExtensions
     /// serializable members.</exception>
     public static string ToJsonString<T>(
         this T source,
-        JsonSerializerOptions? options = null)
+        System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        return JsonSerializer.Serialize(source, source.GetType(), options);
+        return JsonSerializer.Serialize<T>(source, jsonTypeInfo);
     }
 
     /// <summary>

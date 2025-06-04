@@ -109,8 +109,8 @@ public static class OptionalExtensions
     public static IAsyncEnumerable<T> WhereSomeAsync<T>(
         this IAsyncEnumerable<Optional<T>> source) =>
         source
-            .WhereAwait(optional => ValueTask.FromResult(optional.IsNotEmpty))
-            .SelectAwait(optional => ValueTask.FromResult(optional.Value));
+            .Where(optional => optional.IsNotEmpty)
+            .Select(optional => optional.Value);
 
     /// <summary>
     /// Projects the value of the optional to a new form.

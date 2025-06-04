@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PublishAot>true</PublishAot>
         <Platforms>x64</Platforms>
         <LangVersion>latest</LangVersion>
         <ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
@@ -31,7 +32,7 @@
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
         <AnalysisLevel>latest-all</AnalysisLevel>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
         <IncludeSymbols>True</IncludeSymbols>
     </PropertyGroup>
 
@@ -78,7 +79,7 @@
         <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5" />
         <PackageReference Include="System.ComponentModel.Composition" Version="9.0.5" />
-        <PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="9.0.5" /> <!-- Use a version compatible with .NET 9/10 -->
     </ItemGroup>
 
 </Project>

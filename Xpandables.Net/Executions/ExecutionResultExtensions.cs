@@ -22,6 +22,7 @@ using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.Text;
+using System.Text.Json; // Added using directive
 
 namespace Xpandables.Net.Executions;
 
@@ -339,12 +340,13 @@ public static class ExecutionResultExtensions
                 return validationException.ValidationResult.ToElementCollection();
             }
 
-            var anonymousType = new { Errors = default(Dictionary<string, IEnumerable<string>>) };
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                var errors =
-                    currentException.Message.DeserializeAnonymousType(anonymousType, DefaultSerializerOptions.Defaults);
+                var errors = JsonSerializer.Deserialize(
+                    currentException.Message,
+                    Text.DefaultJsonSerializerContext.Default.ErrorMessagePoco);
+
                 if (errors is not null && errors.Errors is not null && errors.Errors.Count > 0)
                 {
                     ElementCollection collection = [];

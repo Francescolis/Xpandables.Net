@@ -35,11 +35,25 @@ public sealed class OptionalJsonConverterFactory : JsonConverterFactory
         Type typeToConvert,
         JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(typeToConvert);
+        ArgumentNullException.ThrowIfNull(options);
+
         Type valueType = typeToConvert.GetGenericArguments()[0];
+
+        // Get JsonTypeInfo for the inner type T
+        var jsonTypeInfoForValueType = options.GetTypeInfo(valueType);
+        if (jsonTypeInfoForValueType is null)
+        {
+            throw new InvalidOperationException(
+                $"Could not get JsonTypeInfo for type {valueType.FullName} from JsonSerializerOptions. " +
+                $"Ensure {valueType.FullName} (or a more generic version like 'object' if used with Optional<object>) " +
+                $"is included in a JsonSerializableAttribute on your JsonSerializerContext.");
+        }
 
         Type converterType = typeof(OptionalJsonConverter<>)
             .MakeGenericType(valueType);
 
-        return (JsonConverter)Activator.CreateInstance(converterType)!;
+        // Pass the JsonTypeInfo to the constructor of OptionalJsonConverter<T>
+        return (JsonConverter)Activator.CreateInstance(converterType, jsonTypeInfoForValueType)!;
     }
 }
