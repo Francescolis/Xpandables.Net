@@ -55,12 +55,13 @@ public abstract class EventConverter : IEventConverter
     /// </exception>
     protected static JsonDocument SerializeEvent(
         IEvent @event,
-        JsonSerializerOptions? jsonOptions = null,
+        System.Text.Json.Serialization.Metadata.JsonTypeInfo eventTypeInfo,
+        // JsonSerializerOptions? jsonOptions = null, // Options for serialization itself are now part of eventTypeInfo
         JsonDocumentOptions documentOptions = default)
     {
         try
         {
-            byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), jsonOptions);
+            byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, eventTypeInfo);
             return JsonDocument.Parse(json, documentOptions);
         }
         catch (Exception exception)
@@ -84,22 +85,23 @@ public abstract class EventConverter : IEventConverter
     /// </exception>
     protected static IEvent DeserializeEvent(
         JsonDocument eventData,
-        Type eventType,
-        JsonSerializerOptions? options = null)
+        System.Text.Json.Serialization.Metadata.JsonTypeInfo jsonTypeInfo)
     {
         try
         {
-            object? @event = eventData.Deserialize(eventType, options)
+            object? @event = eventData.Deserialize(jsonTypeInfo)
                              ?? throw new InvalidOperationException(
-                                 $"Failed to deserialize the event data to {eventType.Name}.");
+                                 $"Failed to deserialize the event data using the provided JsonTypeInfo for type {jsonTypeInfo.Type.FullName}.");
 
             return (IEvent)@event;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
         {
+            // Use jsonTypeInfo.Type.FullName if jsonTypeInfo is not null, otherwise indicate unknown type.
+            string typeNameForError = jsonTypeInfo?.Type.FullName ?? "unknown (JsonTypeInfo was null)";
             throw new InvalidOperationException(
-                $"Failed to convert the event entity to {eventType.Name}. " +
+                $"Failed to convert the event entity (resolved type: {typeNameForError}). " +
                 $"See inner exception for details.", exception);
         }
     }

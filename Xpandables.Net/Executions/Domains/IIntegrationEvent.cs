@@ -56,7 +56,7 @@ public record IntegrationEvent<TDomainEvent> : IntegrationEvent, IIntegrationEve
     /// Initializes a new instance of the <see cref="IntegrationEvent{TDomainEvent}" /> class.
     /// </summary>
     [JsonConstructor]
-    protected IntegrationEvent() { }
+    public IntegrationEvent() { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IntegrationEvent{TDomainEvent}" /> class.

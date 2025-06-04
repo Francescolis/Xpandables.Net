@@ -37,6 +37,7 @@ public sealed class GetOperationsAccountQueryHandler(
             .WithHeader("Count", $"{filter.TotalCount}")
             .Build();
 
+        // OperationAccount record is now in its own file: OperationAccount.cs
         static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {

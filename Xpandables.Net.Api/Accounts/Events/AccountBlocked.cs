@@ -8,7 +8,7 @@ namespace Xpandables.Net.Api.Accounts.Events;
 public sealed record AccountBlocked : DomainEvent<Account>
 {
     [JsonConstructor]
-    private AccountBlocked() { }
+    public AccountBlocked() { }
 
     [SetsRequiredMembers]
     public AccountBlocked(Account account) : base(account) { }

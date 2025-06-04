@@ -60,10 +60,21 @@ public sealed class PrimitiveJsonConverterFactory : JsonConverterFactory
                 $"or this converter might not be fully AOT compatible for all TValue types.");
         }
 
-        Type converterType = typeof(PrimitiveJsonConverter<,>)
-            .MakeGenericType(typeToConvert, valueType);
+        // Type converterType = typeof(PrimitiveJsonConverter<,>)
+        //     .MakeGenericType(typeToConvert, valueType);
 
-        return (JsonConverter)Activator.CreateInstance(converterType, jsonTypeInfoForValue)!;
+        // return (JsonConverter)Activator.CreateInstance(converterType, jsonTypeInfoForValue)!;
+
+        // Attempt to get the converter from the options.
+        // If the specific IPrimitive implementing type is included in the JsonSerializerContext
+        // associated with options, this should return the source-generated converter.
+        if (options.GetConverter(typeToConvert) is JsonConverter converter)
+        {
+            return converter;
+        }
+
+        // For full AOT safety, all necessary IPrimitive implementing types should be in a context.
+        return null;
     }
 }
 

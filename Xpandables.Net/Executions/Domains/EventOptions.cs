@@ -23,19 +23,36 @@ namespace Xpandables.Net.Executions.Domains;
 /// Represents a set of event options and provides methods to retrieve relevant event converters for specific event types.
 /// This sealed record contains a list of <see cref="IEventConverter"/> implementations that determine whether they can convert specific event types.
 /// </summary>
+using Xpandables.Net.Repositories.Converters;
+
 public sealed record EventOptions
 {
     /// <summary>
+    /// Gets or sets the event type resolver.
+    /// </summary>
+    public IEventTypeResolver EventTypeResolver { get; }
+
+    /// <summary>
     /// Gets the list of user-defined converters that were registered.
     /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
     public IList<IEventConverter> Converters { get; }
-        =
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventOptions"/> class.
+    /// </summary>
+    /// <param name="eventTypeResolver">The event type resolver to be used by converters.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="eventTypeResolver"/> is null.</exception>
+    public EventOptions(IEventTypeResolver eventTypeResolver)
+    {
+        ArgumentNullException.ThrowIfNull(eventTypeResolver);
+        EventTypeResolver = eventTypeResolver;
+        Converters =
         [
-            new EventConverterDomain(),
-            new EventConverterIntegration(),
-            new EventConverterSnapshot()
+            new EventConverterDomain(eventTypeResolver),
+            new EventConverterIntegration(eventTypeResolver),
+            new EventConverterSnapshot(eventTypeResolver)
         ];
+    }
 
     /// <summary>
     /// Returns the <see cref="IEventConverter"/> instance for the specified type.

@@ -42,7 +42,7 @@ public sealed class RestPatchComposer<TRestRequest> : IRestRequestComposer<TRest
         StringContent content = new(
             JsonSerializer.Serialize(
                 context.Request.PatchOperations,
-                Text.DefaultJsonSerializerContext.Default.ListOperation),
+                Text.CoreJsonSerializerContext.Default.ListOperation),
             Encoding.UTF8,
             context.Attribute.ContentType);
 #pragma warning restore CA2000 // Dispose objects before losing scope

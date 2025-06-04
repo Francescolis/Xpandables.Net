@@ -16,6 +16,7 @@
  ********************************************************************************/
 
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata; // Added for JsonTypeInfo
 
 using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
@@ -27,6 +28,19 @@ namespace Xpandables.Net.Repositories.Converters;
 /// </summary>
 public sealed class EventConverterDomain : EventConverter
 {
+    private readonly IEventTypeResolver _eventTypeResolver;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventConverterDomain"/> class.
+    /// </summary>
+    /// <param name="eventTypeResolver">The resolver for event type names to JsonTypeInfo.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="eventTypeResolver"/> is null.</exception>
+    public EventConverterDomain(IEventTypeResolver eventTypeResolver)
+    {
+        ArgumentNullException.ThrowIfNull(eventTypeResolver);
+        _eventTypeResolver = eventTypeResolver;
+    }
+
     /// <inheritdoc />
     public override Type EventType => typeof(IDomainEvent);
 
@@ -44,9 +58,22 @@ public sealed class EventConverterDomain : EventConverter
     {
         try
         {
-            Type eventType = Type.GetType(entity.EventFullName, true)!;
+            JsonTypeInfo? resolvedJsonTypeInfo = _eventTypeResolver.GetJsonTypeInfo(entity.EventFullName);
 
-            IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
+            if (resolvedJsonTypeInfo is null)
+            {
+                // Fallback: This path is still an AOT concern due to Type.GetType().
+                // Ideally, the resolver should handle all known event types.
+                Type eventType = Type.GetType(entity.EventFullName, true)!; // AOT concern
+                resolvedJsonTypeInfo = options?.GetTypeInfo(eventType)
+                    ?? throw new InvalidOperationException(
+                        $"Could not resolve JsonTypeInfo for type name '{entity.EventFullName}' via resolver or options. " +
+                        $"Ensure the IEventTypeResolver is correctly populated and/or JsonSerializerOptions includes a resolver for this type.");
+            }
+
+            // The base DeserializeEvent now expects a non-nullable JsonTypeInfo.
+            // The check above ensures resolvedJsonTypeInfo is not null if we reach here.
+            IEvent @event = DeserializeEvent(entity.EventData, resolvedJsonTypeInfo!);
 
             return (IDomainEvent)@event;
         }
@@ -75,7 +102,8 @@ public sealed class EventConverterDomain : EventConverter
                 EventName = domainEvent.GetType().Name,
                 EventFullName = domainEvent.GetType().AssemblyQualifiedName!,
                 EventVersion = domainEvent.EventVersion,
-                EventData = SerializeEvent(domainEvent, options)
+                EventData = SerializeEvent(domainEvent, _eventTypeResolver.GetJsonTypeInfo(domainEvent.GetType().FullName!)
+                    ?? throw new InvalidOperationException($"Could not resolve JsonTypeInfo for event type {domainEvent.GetType().FullName} during serialization."))
             };
         }
         catch (Exception exception)

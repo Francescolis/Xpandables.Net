@@ -8,7 +8,7 @@ namespace Xpandables.Net.Api.Accounts.Events;
 public sealed record AccountClosed : DomainEvent<Account>
 {
     [JsonConstructor]
-    private AccountClosed() { }
+    public AccountClosed() { }
 
     [SetsRequiredMembers]
     public AccountClosed(Account context) : base(context) { }

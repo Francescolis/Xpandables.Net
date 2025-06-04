@@ -70,7 +70,7 @@ public record DomainEvent<TAggregateRoot> : DomainEvent
     /// <see cref="DomainEvent" /> class.
     /// </summary>
     [JsonConstructor]
-    protected DomainEvent() { }
+    public DomainEvent() { }
 
     /// <summary>
     /// Initializes a new instance of the

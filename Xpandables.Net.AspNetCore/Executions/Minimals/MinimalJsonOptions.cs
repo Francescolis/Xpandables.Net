@@ -35,8 +35,8 @@ public sealed class MinimalJsonOptions : IConfigureOptions<JsonOptions>
         options.SerializerOptions.PropertyNameCaseInsensitive = true;
         options.SerializerOptions.PropertyNamingPolicy = null;
 
-        options.SerializerOptions.Converters
-            .Add(new JsonStringEnumConverter());
+        // options.SerializerOptions.Converters
+        //     .Add(new JsonStringEnumConverter()); // IL3050: Handled by attributes on enums and source generation contexts.
         options.SerializerOptions.Converters
             .Add(new ExecutionResultJsonConverterFactory()
             {

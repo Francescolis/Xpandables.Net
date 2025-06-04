@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Executions.Domains; // For entity configurations
 using Xpandables.Net.Executions.Domains.Converters;
 using Xpandables.Net.Repositories;
 
@@ -18,7 +19,10 @@ public static class DataContextEventSqlServerBuilder
         ConventionSet conventionSet = SqlServerConventionSetBuilder.Build();
 
         ModelBuilder modelBuilder = new(conventionSet);
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContextEvent).Assembly);
+        // modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContextEvent).Assembly); // IL2026
+        modelBuilder.ApplyConfiguration(new EntityDomainEventTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new EntityIntegrationEventTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new EntitySnapShotEventTypeConfiguration());
 
         modelBuilder.Entity<EntityDomainEvent>()
             .Property(p => p.KeyId)

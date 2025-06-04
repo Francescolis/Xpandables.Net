@@ -345,7 +345,7 @@ public static class ExecutionResultExtensions
             {
                 var errors = JsonSerializer.Deserialize(
                     currentException.Message,
-                    Text.DefaultJsonSerializerContext.Default.ErrorMessagePoco);
+                    Text.CoreJsonSerializerContext.Default.ErrorMessagePoco);
 
                 if (errors is not null && errors.Errors is not null && errors.Errors.Count > 0)
                 {

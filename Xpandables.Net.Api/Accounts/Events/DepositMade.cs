@@ -8,7 +8,7 @@ namespace Xpandables.Net.Api.Accounts.Events;
 public sealed record DepositMade : DomainEvent<Account>
 {
     [JsonConstructor]
-    private DepositMade() { }
+    public DepositMade() { }
 
     [SetsRequiredMembers]
     public DepositMade(Account account, decimal amount) :

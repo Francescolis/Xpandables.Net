@@ -8,7 +8,7 @@ namespace Xpandables.Net.Api.Accounts.Events;
 public sealed record WithdrawMade : DomainEvent<Account>
 {
     [JsonConstructor]
-    private WithdrawMade() { }
+    public WithdrawMade() { }
 
     [SetsRequiredMembers]
     public WithdrawMade(Account account, decimal amount) :
