@@ -16,7 +16,6 @@
  ********************************************************************************/
 
 using System.Reflection;
-using System.Diagnostics.CodeAnalysis; // Required for DynamicallyAccessedMembersAttribute
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

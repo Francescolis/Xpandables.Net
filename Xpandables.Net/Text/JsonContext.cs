@@ -6,7 +6,7 @@ using Xpandables.Net.Executions;
 using Xpandables.Net.Executions.Domains; // For Core event types like DomainEvent, IntegrationEvent, SnapshotEvent, EmptyAggregateRoot
 using Xpandables.Net.Executions.Tasks; // For the base Event type
 using Xpandables.Net.Optionals;
-using Xpandables.Net.Executions.Rests; // For TokenValue, RefreshTokenValue, RestResponse, and Rest Enums
+using Xpandables.Net.Executions.Rests; // For TokenValue, RefreshTokenValue, RestResponse
 // Removed: using Xpandables.Net.Api.Accounts;
 // Removed: using Xpandables.Net.Api.Accounts.Events;
 // Removed: using System.Text.Json.Serialization.Metadata; // Not needed if EventTypeInfoMap is removed
@@ -26,36 +26,12 @@ namespace Xpandables.Net.Text;
 [JsonSerializable(typeof(ElementCollection))]
 [JsonSerializable(typeof(Xpandables.Net.Collections.ElementEntry[]))]
 [JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(object))] // Added for DeserializeAsyncEnumerableAsync
+[JsonSerializable(typeof(IAsyncEnumerable<string>))] // Added for DeserializeAsyncEnumerableAsync
+[JsonSerializable(typeof(IAsyncEnumerable<object>))] // Added for DeserializeAsyncEnumerableAsync
 [JsonSerializable(typeof(Operation))] // From Microsoft.AspNetCore.JsonPatch
 [JsonSerializable(typeof(List<Operation>))] // From Microsoft.AspNetCore.JsonPatch
 [JsonSerializable(typeof(Dictionary<string, object>))] // For ITokenDecoder and other dynamic scenarios
-[JsonSerializable(typeof(int))]
-[JsonSerializable(typeof(bool))]
-[JsonSerializable(typeof(decimal))]
-[JsonSerializable(typeof(Guid))]
-[JsonSerializable(typeof(DateTime))]
-[JsonSerializable(typeof(DateTimeOffset))]
-
-// Optional<T> types
-[JsonSerializable(typeof(Optional<int>))]
-[JsonSerializable(typeof(Optional<bool>))]
-[JsonSerializable(typeof(Optional<decimal>))]
-[JsonSerializable(typeof(Optional<Guid>))]
-[JsonSerializable(typeof(Optional<DateTime>))]
-[JsonSerializable(typeof(Optional<DateTimeOffset>))]
-// Test specific types for Optional<T> (Removed due to project reference issues)
-// [JsonSerializable(typeof(Xpandables.Net.Test.UnitTests.OptionalUnitTest.StructType))]
-// [JsonSerializable(typeof(Optional<Xpandables.Net.Test.UnitTests.OptionalUnitTest.StructType>))]
-
-// IPrimitive<TSelf, TValue> implementing types
-[JsonSerializable(typeof(Xpandables.Net.Repositories.EntityStatus))]
-// [JsonSerializable(typeof(Xpandables.Net.Test.UnitTests.PrimitiveUnitTest.TestPrimitive))] // Removed due to project reference issues.
-
-// Enums from Xpandables.Net.Executions.Rests.Rest
-[JsonSerializable(typeof(Rest.Method))]
-[JsonSerializable(typeof(Rest.Location))]
-[JsonSerializable(typeof(Rest.BodyFormat))]
-[JsonSerializable(typeof(Rest.DataFormat))]
 
 // Core Base Event Types from Xpandables.Net.Executions.Domains
 [JsonSerializable(typeof(Event))]

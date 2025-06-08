@@ -55,13 +55,12 @@ public abstract class EventConverter : IEventConverter
     /// </exception>
     protected static JsonDocument SerializeEvent(
         IEvent @event,
-        System.Text.Json.Serialization.Metadata.JsonTypeInfo eventTypeInfo,
-        // JsonSerializerOptions? jsonOptions = null, // Options for serialization itself are now part of eventTypeInfo
+        JsonSerializerOptions? jsonOptions = null,
         JsonDocumentOptions documentOptions = default)
     {
         try
         {
-            byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, eventTypeInfo);
+            byte[] json = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), jsonOptions);
             return JsonDocument.Parse(json, documentOptions);
         }
         catch (Exception exception)

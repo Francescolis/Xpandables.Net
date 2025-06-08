@@ -102,8 +102,7 @@ public sealed class EventConverterDomain : EventConverter
                 EventName = domainEvent.GetType().Name,
                 EventFullName = domainEvent.GetType().AssemblyQualifiedName!,
                 EventVersion = domainEvent.EventVersion,
-                EventData = SerializeEvent(domainEvent, _eventTypeResolver.GetJsonTypeInfo(domainEvent.GetType().FullName!)
-                    ?? throw new InvalidOperationException($"Could not resolve JsonTypeInfo for event type {domainEvent.GetType().FullName} during serialization."))
+                EventData = SerializeEvent(domainEvent, options)
             };
         }
         catch (Exception exception)

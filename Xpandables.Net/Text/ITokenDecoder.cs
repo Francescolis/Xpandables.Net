@@ -63,7 +63,8 @@ public static class TokenDecoderExtensions
                 .Deserialize(jsonBytes, CoreJsonSerializerContext.Default.DictionaryStringObject);
 
         return keyValuePairs?
-            .Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()!));
+            .Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()!))
+            ?? Enumerable.Empty<Claim>();
     }
 
     /// <summary>

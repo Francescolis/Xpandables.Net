@@ -14,20 +14,20 @@
         <Title>Xpandables.Net.EntityFramework</Title>
         <Authors>Francescolis</Authors>
         <Company>Kamersoft.Net</Company>
-        <Description>A utility library in .Net9.0 to easily add patterns such as CQRS</Description>
+        <Description>A utility library in .Net10 (AOT compatible) to easily add patterns such as CQRS with EntityFramework</Description>
         <Copyright>Copyright © 2024 Francis-Black EWANE</Copyright>
         <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
         <PackageIcon>Xpandables.Net.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageOutputPath>../../Nugets</PackageOutputPath>
         <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-        <PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi</PackageTags>
-		<PackageReleaseNotes>Add RequestContext to pipeline</PackageReleaseNotes>
+        <PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi AOT</PackageTags>
+		<PackageReleaseNotes>.NET 10 AOT Update</PackageReleaseNotes>
 		<NeutralLanguage>en-GB</NeutralLanguage>
-		<Version>9.3.5.3</Version>
-		<AssemblyVersion>9.3.5.3</AssemblyVersion>
-		<FileVersion>9.3.5.3</FileVersion>
-		<PackageVersion>9.3.5.3</PackageVersion>
+		<Version>10.0.0.0</Version>
+		<AssemblyVersion>10.0.0.0</AssemblyVersion>
+		<FileVersion>10.0.0.0</FileVersion>
+		<PackageVersion>10.0.0.0</PackageVersion>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
@@ -39,14 +39,14 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
         <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-        <NoWarn>1701;1702;CA1812;CA1062;</NoWarn>
+        <NoWarn>1701;1702;CA1812;CA1062;1591;1572;1573;1587</NoWarn>
         <WarningLevel>9999</WarningLevel>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
         <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-        <NoWarn>1701;1702;CA1812;CA1062;</NoWarn>
+        <NoWarn>1701;1702;CA1812;CA1062;1591;1572;1573;1587</NoWarn>
         <WarningLevel>9999</WarningLevel>
     </PropertyGroup>
 

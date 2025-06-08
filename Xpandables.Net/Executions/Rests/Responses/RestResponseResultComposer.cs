@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization.Metadata; // Added for JsonTypeInfo
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,24 +23,9 @@ namespace Xpandables.Net.Executions.Rests.Responses;
 /// Composes a result RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
 /// <typeparam name="TRestRequest"> The type of the REST request.</typeparam> 
-using Xpandables.Net.Executions.Rests.Responses; // Required for IRestResponseTypeResolver
-
 public sealed class RestResponseResultComposer<TRestRequest> : IRestResponseComposer<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
-    private readonly IRestResponseTypeResolver _responseTypeResolver;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RestResponseResultComposer{TRestRequest}"/> class.
-    /// </summary>
-    /// <param name="responseTypeResolver">The resolver for REST response types.</param>
-    /// <exception cref="ArgumentNullException">Thrown if responseTypeResolver is null.</exception>
-    public RestResponseResultComposer(IRestResponseTypeResolver responseTypeResolver)
-    {
-        ArgumentNullException.ThrowIfNull(responseTypeResolver);
-        _responseTypeResolver = responseTypeResolver;
-    }
-
     /// <inheritdoc/>
     public bool CanCompose(RestResponseContext<TRestRequest> context) =>
             context.Message.IsSuccessStatusCode
@@ -80,27 +64,7 @@ public sealed class RestResponseResultComposer<TRestRequest> : IRestResponseComp
                 };
             }
 
-            JsonTypeInfo? resultTypeInfo = _responseTypeResolver.GetJsonTypeInfo(resultType);
-            if (resultTypeInfo == null)
-            {
-                // Log this failure or handle more gracefully if some types are intentionally not AOT-ready.
-                // Forcing AOT safety means all resolvable types must be in a context.
-                throw new InvalidOperationException(
-                    $"Could not resolve JsonTypeInfo for result type {resultType.FullName}. " +
-                    "Ensure this type is included in a JsonSerializerContext and the IRestResponseTypeResolver is correctly configured.");
-            }
-
-            // The 'options' parameter might still be useful if it contains other configurations
-            // not covered by JsonTypeInfo (e.g., custom converters not part of the context).
-            // However, JsonSerializer.Deserialize(string, JsonTypeInfo) is the primary AOT-safe overload.
-            // If 'options' are needed, one would typically get JsonTypeInfo via options.GetTypeInfo(type),
-            // but here we explicitly use a resolver that should be context-aware.
-            // object? typedResult = JsonSerializer.Deserialize(stringContent, resultTypeInfo); // No direct string overload with JsonTypeInfo only
-
-            // Convert string to JsonDocument first, then deserialize with JsonTypeInfo
-            using JsonDocument jsonDocument = JsonDocument.Parse(stringContent);
-            object? typedResult = JsonSerializer.Deserialize(jsonDocument.RootElement, resultTypeInfo);
-
+            object? typedResult = JsonSerializer.Deserialize(stringContent, resultType, options);
 
             return new RestResponse
             {

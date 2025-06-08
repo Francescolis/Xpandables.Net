@@ -31,7 +31,7 @@ public sealed class OptionalJsonConverterFactory : JsonConverterFactory
         && typeToConvert.GetGenericTypeDefinition() == typeof(Optional<>);
 
     /// <inheritdoc />
-    public override JsonConverter? CreateConverter(
+    public override JsonConverter CreateConverter(
         Type typeToConvert,
         JsonSerializerOptions options)
     {
@@ -50,25 +50,10 @@ public sealed class OptionalJsonConverterFactory : JsonConverterFactory
                 $"is included in a JsonSerializableAttribute on your JsonSerializerContext.");
         }
 
-        // Type converterType = typeof(OptionalJsonConverter<>)
-        //     .MakeGenericType(valueType);
+        Type converterType = typeof(OptionalJsonConverter<>)
+            .MakeGenericType(valueType);
 
-        // // Pass the JsonTypeInfo to the constructor of OptionalJsonConverter<T>
-        // return (JsonConverter)Activator.CreateInstance(converterType, jsonTypeInfoForValueType)!;
-
-        // Attempt to get the converter from the options.
-        // If Optional<T> for the specific T is included in the JsonSerializerContext associated with options,
-        // this should return the source-generated converter.
-        if (options.GetConverter(typeToConvert) is JsonConverter converter)
-        {
-            return converter;
-        }
-
-        // If the specific Optional<T> is not in the context, and we want to strictly enforce AOT-safety,
-        // we should not fall back to reflection-based instantiation.
-        // Returning null tells the JsonSerializer to use its next available converter or default behavior,
-        // which might involve reflection if the type isn't fully covered by source generation elsewhere.
-        // For full AOT safety, all necessary Optional<T> instantiations should be in a context.
-        return null;
+        // Pass the JsonTypeInfo to the constructor of OptionalJsonConverter<T>
+        return (JsonConverter)Activator.CreateInstance(converterType, jsonTypeInfoForValueType)!;
     }
 }

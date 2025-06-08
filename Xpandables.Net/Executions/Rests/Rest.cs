@@ -23,16 +23,11 @@ namespace Xpandables.Net.Executions.Rests;
 /// <summary>
 /// Provides with <see cref="RestAttribute"/> behaviors.
 /// </summary>
-using System.Text.Json.Serialization; // Required for JsonStringEnumConverter
-
 public static class Rest
 {
-    // ... (other using directives if any) ...
-
     /// <summary>
     /// Represents the HTTP methods.
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter<Method>))]
     public enum Method
     {
         /// <summary>
@@ -91,7 +86,6 @@ public static class Rest
     /// can be combined.
     /// </summary>
     [Flags]
-    [JsonConverter(typeof(JsonStringEnumConverter<Location>))]
     public enum Location
     {
         /// <summary>
@@ -143,7 +137,6 @@ public static class Rest
     /// <summary>
     /// Represents the format of the body content in an HTTP request.
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter<BodyFormat>))]
     public enum BodyFormat
     {
         /// <summary>
@@ -185,7 +178,6 @@ public static class Rest
     /// <summary>
     /// Represents the data format used in HTTP requests and responses.
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter<DataFormat>))]
     public enum DataFormat
     {
         /// <summary>

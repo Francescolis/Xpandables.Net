@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.DependencyInjection;
@@ -23,8 +24,8 @@ namespace Xpandables.Net.DependencyInjection;
 /// from the <see cref="IServiceProvider"/>.
 /// </summary>
 /// <typeparam name="T">The type of the service to be resolved.</typeparam>
-public sealed class LazyResolved<T>(IServiceProvider provider) :
+public sealed class LazyResolved<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T>(IServiceProvider provider) :
     Lazy<T>(provider.GetRequiredService<T>())
-    where T : notnull
+    where T : notnull, new()
 {
 }

@@ -33,10 +33,6 @@ public static class DefaultSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = null,
-            WriteIndented = true,
-            // Converters =
-            // {
-            //     // new JsonStringEnumConverter() // IL3050: RequiresDynamicCode. Handled by JsonSourceGenerationOptions if needed.
-            // }
+            WriteIndented = true
         };
 }

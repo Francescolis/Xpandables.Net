@@ -15,11 +15,13 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+		<NoWarn>1701;1702;CA1812;CA1062;1591;1572;1573;1587</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+		<NoWarn>1701;1702;CA1812;CA1062;1591;1572;1573;1587</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

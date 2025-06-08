@@ -97,8 +97,7 @@ public sealed class EventConverterSnapshot : EventConverter
                 EventVersion = snapshot.EventVersion,
                 EventName = snapshot.GetType().Name,
                 EventFullName = snapshot.GetType().AssemblyQualifiedName!,
-                EventData = SerializeEvent(snapshot, _eventTypeResolver.GetJsonTypeInfo(snapshot.GetType().FullName!)
-                    ?? throw new InvalidOperationException($"Could not resolve JsonTypeInfo for event type {snapshot.GetType().FullName} during serialization."))
+                EventData = SerializeEvent(snapshot, options)
             };
         }
         catch (Exception exception)

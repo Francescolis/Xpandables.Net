@@ -14,11 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Xpandables.Net.Text; // Added this using
 
 namespace Xpandables.Net;
 
@@ -312,8 +315,7 @@ public static class HelperExtensions
     /// <typeparam name="T">The anonymous type.</typeparam>
     /// <param name="stream">The JSON data to parse.</param>
     /// <param name="_">The anonymous instance.</param>
-    /// <param name="options">Options to control the behavior during 
-    /// parsing.</param>
+    /// <param name="jsonTypeInfo">Provides metadata about the type to convert.</param>
     /// <param name="cancellationToken">A CancellationToken to observe while 
     /// waiting for the task to complete.</param>
     /// <returns> A T representation of the JSON value.</returns>
@@ -328,10 +330,10 @@ public static class HelperExtensions
     public static Task<T?> DeserializeAnonymousTypeAsync<T>(
         this Stream stream,
         T _,
-        JsonSerializerOptions? options = null,
+        JsonTypeInfo<T> jsonTypeInfo,
         CancellationToken cancellationToken = default)
         => JsonSerializer
-            .DeserializeAsync<T>(stream, options, cancellationToken)
+            .DeserializeAsync<T>(stream, jsonTypeInfo, cancellationToken)
             .AsTask();
 
     /// <summary>
@@ -340,39 +342,43 @@ public static class HelperExtensions
     /// <typeparam name="T">Specifies the type of objects contained in the asynchronous enumerable collection.</typeparam>
     /// <param name="stream">Represents the input stream from which data will be deserialized.</param>
     /// <param name="_">An instance of the specified type used to guide the deserialization process.</param>
-    /// <param name="options">Provides options to customize the deserialization behavior.</param>
+    /// <param name="jsonTypeInfo">Provides metadata about the type to convert.</param>
     /// <param name="cancellationToken">Allows for the operation to be canceled if needed.</param>
     /// <returns>An asynchronous enumerable collection of the deserialized objects.</returns>
     public static IAsyncEnumerable<T?> DeserializeAsyncEnumerableAsync<T>(
         this Stream stream,
         T _,
-        JsonSerializerOptions? options = null,
+        JsonTypeInfo<T> jsonTypeInfo,
         CancellationToken cancellationToken = default)
-        => JsonSerializer.DeserializeAsyncEnumerable<T>(stream, options, cancellationToken);
-
-    private static readonly MethodInfo DeserializeAsyncEnumerableMethod = typeof(JsonSerializer)
-                .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .FirstOrDefault(m => m is { Name: "DeserializeAsyncEnumerable", IsGenericMethod: true })!;
+        => JsonSerializer.DeserializeAsyncEnumerable<T>(stream, jsonTypeInfo, cancellationToken);
 
     /// <summary>
     /// Deserializes a stream into an asynchronous enumerable of a specified type using JSON serialization options.
     /// </summary>
     /// <param name="stream">The input stream containing the JSON data to be deserialized.</param>
-    /// <param name="type">Specifies the type of objects that the deserialized enumerable will contain.</param>
-    /// <param name="options">Provides additional settings for the JSON serialization process.</param>
+    /// <param name="type">Specifies the type of objects that the deserialized enumerable will contain (currently supports string and object).</param>
     /// <param name="cancellationToken">Allows for the operation to be canceled if needed.</param>
     /// <returns>An asynchronous enumerable of the specified type populated with the deserialized data.</returns>
     public static object DeserializeAsyncEnumerableAsync(
         this Stream stream,
         Type type,
-        JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(stream);
-        MethodInfo genericMethod = DeserializeAsyncEnumerableMethod.MakeGenericMethod(type);
 
-        return genericMethod.Invoke(null, [stream, options, cancellationToken])!;
+        if (type == typeof(string))
+        {
+            return JsonSerializer.DeserializeAsyncEnumerable<string>(stream, CoreJsonSerializerContext.Default.String, cancellationToken)!;
+        }
+        else if (type == typeof(object))
+        {
+            return JsonSerializer.DeserializeAsyncEnumerable<object>(stream, CoreJsonSerializerContext.Default.Object, cancellationToken)!;
+        }
+        else
+        {
+            throw new NotSupportedException($"Deserializing IAsyncEnumerable<{type.FullName}> is not supported by this AOT-compatible helper. Add specific JsonTypeInfo to CoreJsonSerializerContext and update this method.");
+        }
     }
 
     /// <summary>
@@ -380,7 +386,7 @@ public static class HelperExtensions
     /// <see cref="System.Text.Json"/>.
     /// </summary>
     /// <param name="source">The object to act on.</param>
-    /// <param name="options">The serializer options to be applied.</param>
+    /// <param name="jsonTypeInfo">Provides metadata about the type to convert.</param>
     /// <returns>A JSOn string representation of the object.</returns>
     /// <exception cref="NotSupportedException">There is no compatible 
     /// System.Text.Json.Serialization.JsonConverter for TValue or its 

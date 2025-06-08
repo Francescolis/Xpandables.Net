@@ -11,9 +11,7 @@ using Xpandables.Net.Executions.Rests; // From Xpandables.Net
 using System.Text.Json.Serialization.Metadata; // Standard library
 using Xpandables.Net.Executions.Tasks; // For base Event type
 using Xpandables.Net.Text; // For JsonConverters from Xpandables.Net
-// For ElementCollectionJsonConverter and ElementEntryJsonConverter - already imported via Xpandables.Net.Collections
-using Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount; // For OperationAccount
-using Xpandables.Net.Test.Models; // For Monkey - if tests are to be AOT compatible via this context
+using Xpandables.Net.Collections; // For ElementCollectionJsonConverter and ElementEntryJsonConverter
 
 // Namespace for the Api project's context
 namespace Xpandables.Net.Api.Text;
@@ -34,24 +32,6 @@ namespace Xpandables.Net.Api.Text;
 [JsonSerializable(typeof(Operation))]
 [JsonSerializable(typeof(List<Operation>))]
 [JsonSerializable(typeof(Dictionary<string, object>))]
-[JsonSerializable(typeof(decimal))] // For GetBalance
-
-// OperationAccount and related types
-[JsonSerializable(typeof(OperationAccount))]
-[JsonSerializable(typeof(IAsyncEnumerable<OperationAccount>))]
-
-// Monkey and related types (from Test project)
-[JsonSerializable(typeof(Monkey))]
-[JsonSerializable(typeof(IAsyncEnumerable<Monkey>))]
-
-// RestResponse<T> types based on identified TResults
-[JsonSerializable(typeof(RestResponse<string>))]
-[JsonSerializable(typeof(RestResponse<decimal>))]
-[JsonSerializable(typeof(RestResponse<OperationAccount>))] // If a single OperationAccount can be a response
-[JsonSerializable(typeof(RestResponse<IAsyncEnumerable<OperationAccount>>))]
-[JsonSerializable(typeof(RestResponse<Monkey>))] // If a single Monkey can be a response
-[JsonSerializable(typeof(RestResponse<IAsyncEnumerable<Monkey>>))]
-// [JsonSerializable(typeof(RestResponse<object>))] // Already covered by Optional<object> effectively? Let's be explicit if needed by composer.
 
 // Domain Events & Related (local to Xpandables.Net.Api or from Xpandables.Net)
 [JsonSerializable(typeof(AccountBlocked))]
@@ -83,7 +63,7 @@ namespace Xpandables.Net.Api.Text;
 // Snapshot Events & Related (from Xpandables.Net.Executions.Domains)
 [JsonSerializable(typeof(SnapshotEvent))]
 
-// Concrete TResult types for RestResponse<TResult> are added above.
+// TODO: Add concrete TResult types for RestResponse<TResult> as they are identified for RestResponseResultComposer
 
 [JsonSourceGenerationOptions(
     WriteIndented = false,

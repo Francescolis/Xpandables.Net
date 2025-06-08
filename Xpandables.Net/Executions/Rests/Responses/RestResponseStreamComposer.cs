@@ -64,7 +64,10 @@ public sealed class RestResponseStreamComposer<TRestRequest> : IRestResponseComp
                 };
             }
 
-            object typedResult = stream.DeserializeAsyncEnumerableAsync(streamType, options, cancellationToken);
+            // The helper DeserializeAsyncEnumerableAsync now uses CoreJsonSerializerContext internally
+            // and no longer accepts JsonSerializerOptions. It supports string and object element types.
+            // If other types are needed, CoreJsonSerializerContext and the helper must be updated.
+            object typedResult = stream.DeserializeAsyncEnumerableAsync(streamType, cancellationToken);
 
             return new RestResponse
             {

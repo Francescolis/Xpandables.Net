@@ -96,8 +96,7 @@ public sealed class EventConverterIntegration : EventConverter
                 EventName = integrationEvent.GetType().Name,
                 EventFullName = integrationEvent.GetType().AssemblyQualifiedName!,
                 EventVersion = integrationEvent.EventVersion,
-                EventData = SerializeEvent(integrationEvent, _eventTypeResolver.GetJsonTypeInfo(integrationEvent.GetType().FullName!)
-                    ?? throw new InvalidOperationException($"Could not resolve JsonTypeInfo for event type {integrationEvent.GetType().FullName} during serialization."))
+                EventData = SerializeEvent(integrationEvent, options)
             };
         }
         catch (Exception exception)
