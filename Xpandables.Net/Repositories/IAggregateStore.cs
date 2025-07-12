@@ -17,7 +17,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Executions.Domains;
+
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Defines an abstraction for managing aggregate instances in a store.

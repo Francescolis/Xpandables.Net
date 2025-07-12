@@ -15,6 +15,8 @@
  *
  ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
+
 using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Repositories.Filters;
@@ -22,4 +24,13 @@ namespace Xpandables.Net.Repositories.Filters;
 /// <summary>
 /// Represents a filter for event entity integration.
 /// </summary>
-public sealed record EntityIntegrationEventFilter : EntityEventFilter<IEntityEventIntegration, IIntegrationEvent>;
+public sealed record EventFilterIntegration : EventFilter<EntityIntegrationEvent, IIntegrationEvent>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventFilterIntegration"/> class.
+    /// </summary>
+    /// <remarks>This constructor sets the required members of the <see cref="EventFilterIntegration"/>
+    /// class.</remarks>
+    [SetsRequiredMembers]
+    public EventFilterIntegration() : base() { }
+}

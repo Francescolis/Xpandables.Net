@@ -15,19 +15,23 @@
  *
  ********************************************************************************/
 
-using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Text.Json;
 
 using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Executions.Tasks;
 
 namespace Xpandables.Net.Repositories.Filters;
 
 /// <summary>
 /// Represents a filter for events that can be applied to a queryable
-/// collection of events.
+/// collection of events with specific entity.
 /// </summary>
-public interface IEventFilter : IEntityFilter
+/// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
+/// <typeparam name="TEvent"> The type of the event.</typeparam>
+public interface IEventFilter<TEventEntity, TEvent> : IEntityFilter<TEventEntity, TEvent>
+    where TEventEntity : class, IEntityEvent
+    where TEvent : class, IEvent
 {
     /// <summary>
     /// Gets the event type to filter.
@@ -36,46 +40,13 @@ public interface IEventFilter : IEntityFilter
     /// e.g. <see cref="IDomainEvent" />, <see cref="IIntegrationEvent" />
     /// or <see cref="ISnapshotEvent" />.
     /// </remarks>
-    Type EventType { get; }
+    public Type EventType => typeof(TEvent);
 
     /// <summary>
     /// Gets the predicate expression used to filter event data.
     /// </summary>
     /// <remarks>Only supported by PostgreSQL.</remarks>
-    Expression<Func<JsonDocument, bool>>? EventDataPredicate { get; }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    IAsyncEnumerable<TResult> IEntityFilter.FetchAsync<TResult>(
-        IQueryable queryable,
-        CancellationToken cancellationToken) =>
-        FetchAsync(queryable, cancellationToken)
-            .OfType<TResult>();
-
-    /// <summary>
-    /// Asynchronously fetches event entities from the specified queryable collection.
-    /// </summary>
-    /// <param name="queryable">The queryable collection of entities.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>An asynchronous enumerable of event entities.</returns>
-    public IAsyncEnumerable<IEntityEvent> FetchAsync(
-        IQueryable queryable,
-        CancellationToken cancellationToken = default) =>
-        Apply(queryable).OfType<IEntityEvent>().ToAsyncEnumerable();
-}
-
-/// <summary>
-/// Represents a filter for events that can be applied to a queryable
-/// collection of events with specific entity.
-/// </summary>
-/// <typeparam name="TEventEntity">The type of the event entity.</typeparam>
-public interface IEventFilter<TEventEntity> :
-    IEventFilter,
-    IEntityFilter<TEventEntity>
-    where TEventEntity : class, IEntityEvent
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    IQueryable IEntityFilter.Apply(IQueryable queryable)
-        => Apply((IQueryable<TEventEntity>)queryable);
+    Expression<Func<JsonDocument, bool>>? EventDataWhere { get; }
 
     /// <summary>
     /// Applies the filter to the specified queryable collection of
@@ -83,22 +54,22 @@ public interface IEventFilter<TEventEntity> :
     /// </summary>
     /// <param name="queryable">The queryable collection of event entities.</param>
     /// <returns>A queryable collection of filtered results.</returns>
-    public new IQueryable Apply(IQueryable queryable)
+    public new IQueryable<TEvent> Apply(IQueryable<TEventEntity> queryable)
     {
-        IQueryable<TEventEntity> query = (IQueryable<TEventEntity>)queryable;
+        ArgumentNullException.ThrowIfNull(queryable);
+        IQueryable<TEventEntity> query = queryable;
 
-        if (Predicate is not null)
+        if (Where is not null)
         {
-            query = query.Where(Predicate);
+            query = query.Where(Where);
         }
 
-        if (EventDataPredicate is not null)
+        if (EventDataWhere is not null)
         {
-            Expression<Func<TEventEntity, bool>> expression =
-                RepositoryExtensions.Compose<TEventEntity, JsonDocument, bool>(
-                    x => x.EventData, EventDataPredicate);
+            Expression<Func<TEventEntity, bool>> eventDataExpression =
+                CreateEventDataExpression(EventDataWhere);
 
-            query = query.Where(expression);
+            query = query.Where(eventDataExpression);
         }
 
         if (OrderBy is not null)
@@ -106,17 +77,7 @@ public interface IEventFilter<TEventEntity> :
             query = OrderBy(query);
         }
 
-        if (query.TryGetNonEnumeratedCount(out int count))
-        {
-            TotalCount = count;
-        }
-        else
-        {
-            if (ForceTotalCount)
-            {
-                TotalCount = query.Count();
-            }
-        }
+        SetTotalCount(query);
 
         if (PageIndex > 0 && PageSize > 0)
         {
@@ -126,5 +87,17 @@ public interface IEventFilter<TEventEntity> :
         }
 
         return query.Select(Selector);
+    }
+
+    private static Expression<Func<TEventEntity, bool>> CreateEventDataExpression(
+        Expression<Func<JsonDocument, bool>> eventDataWhere)
+    {
+        // Create the property access expression: entity => entity.EventData
+        Expression<Func<TEventEntity, JsonDocument>> eventDataSelector =
+            entity => entity.EventData;
+
+        // Use RepositoryExtensions.Compose to combine the expressions
+        // This creates: entity => eventDataWhere(entity.EventData)
+        return eventDataSelector.Compose(eventDataWhere);
     }
 }

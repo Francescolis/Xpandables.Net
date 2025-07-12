@@ -40,6 +40,7 @@ public sealed class EntityIntegrationEventTypeConfiguration : IEntityTypeConfigu
         _ = builder.Property(e => e.EventVersion).IsRequired();
         _ = builder.Property(e => e.EventData).IsRequired();
         _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(50);
+        _ = builder.Property(e => e.ErrorMessage).IsRequired(false);
         _ = builder.Property(e => e.CreatedOn).IsRequired();
         _ = builder.Property(e => e.UpdatedOn).IsRequired(false);
         _ = builder.Property(e => e.DeletedOn).IsRequired(false);

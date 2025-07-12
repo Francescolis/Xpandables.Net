@@ -28,7 +28,7 @@ public sealed class RepositoryUnitTest
         // Arrange
         var filter = new EntityFilter<TestEntity, TestEntity>
         {
-            Predicate = e => e.KeyId > 0,
+            Where = e => e.KeyId > 0,
             Selector = e => e
         };
 
@@ -55,7 +55,7 @@ public sealed class RepositoryUnitTest
         // Assert
         var filter = new EntityFilter<TestEntity>
         {
-            Predicate = e => e.KeyId > 0,
+            Where = e => e.KeyId > 0,
             Selector = e => e
         };
         var result = await _repository.FetchAsync(filter).ToListAsync();
@@ -68,7 +68,7 @@ public sealed class RepositoryUnitTest
         // Arrange
         var filter = new EntityFilter<TestEntity>
         {
-            Predicate = e => e.KeyId == 1
+            Where = e => e.KeyId == 1
         };
 
         Expression<Func<TestEntity, TestEntity>> updateExpression =
@@ -88,7 +88,7 @@ public sealed class RepositoryUnitTest
         // Arrange
         var filter = new EntityFilter<TestEntity>
         {
-            Predicate = e => e.KeyId == 1
+            Where = e => e.KeyId == 1
         };
 
         // Act

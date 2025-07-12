@@ -15,6 +15,8 @@
  *
  ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
+
 using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Repositories.Filters;
@@ -22,4 +24,13 @@ namespace Xpandables.Net.Repositories.Filters;
 /// <summary>
 /// Represents a filter for event entity snapshots.
 /// </summary>
-public sealed record class EntitySnapShotEventFilter : EntityEventFilter<IEntityEventSnapshot, ISnapshotEvent>;
+public sealed record class EventFilterSnapShot : EventFilter<EntitySnapshotEvent, ISnapshotEvent>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventFilterSnapShot"/> class.
+    /// </summary>
+    /// <remarks>This constructor sets the required members of the <see cref="EventFilterSnapShot"/>
+    /// class.</remarks>
+    [SetsRequiredMembers]
+    public EventFilterSnapShot() : base() { }
+}

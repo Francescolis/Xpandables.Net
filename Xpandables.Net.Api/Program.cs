@@ -1,11 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-using Xpandables.Net.Api;
-using Xpandables.Net.Api.Accounts.Persistence;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Executions.Domains.Converters;
 using Xpandables.Net.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,16 +14,34 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-builder.Services.AddOptions<EventOptions>();
 builder.Services.AddXEndpointRoutes();
 builder.Services.AddXMinimalApi();
 builder.Services.AddXMediator();
 builder.Services.AddXHandlers();
+
+/* 
+ * builder.Services.AddSingleton<IEventStore, InMemoryEventStore>(); 
+ * to use the in-memory event store, comment the above line,
+ * and comment the following lines :
+ * builder.Services.AddXEventUnitOfWork();
+ * builder.Services.AddXPipelineUnitOfWorkDecorator();
+ * builder.Services.AddXEventStore();
+ * builder.Services.AddXDataContextEvent(options =>...)
+ */
+builder.Services.AddXEventUnitOfWork();
+builder.Services.AddXPipelineUnitOfWorkDecorator();
 builder.Services.AddXAggregateStore();
-builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
+builder.Services.AddXEventStore();
+builder.Services.AddXDataContextEvent(options =>
+    options.UseInMemoryDatabase("InMemoryDb")
+        .EnableDetailedErrors()
+        .EnableSensitiveDataLogging()
+        .UseModel(CreateInMemoryModel()));
 builder.Services.AddXPublisher();
 builder.Services.AddXPipelineResolverDecorator();
 builder.Services.AddXPipelineAppenderDecorator();
+
+//builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -70,6 +87,29 @@ app.UseXEndpointRoutes();
 
 app.Run();
 
+// Method to create and configure the model for in-memory database
+static Microsoft.EntityFrameworkCore.Metadata.IModel CreateInMemoryModel()
+{
+    var modelBuilder = new ModelBuilder();
+
+    // Apply all configurations from the assembly
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContextEvent).Assembly);
+
+    // Explicitly configure JsonDocument properties with converters
+    modelBuilder.Entity<EntityDomainEvent>()
+        .Property(e => e.EventData)
+        .HasConversion<JsonDocumentValueConverter>();
+
+    modelBuilder.Entity<EntityIntegrationEvent>()
+        .Property(e => e.EventData)
+        .HasConversion<JsonDocumentValueConverter>();
+
+    modelBuilder.Entity<EntitySnapshotEvent>()
+        .Property(e => e.EventData)
+        .HasConversion<JsonDocumentValueConverter>();
+
+    return modelBuilder.FinalizeModel();
+}
 public partial class Program
 {
 }

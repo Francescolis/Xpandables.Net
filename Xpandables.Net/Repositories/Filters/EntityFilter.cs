@@ -15,6 +15,7 @@
  *
  ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Xpandables.Net.Repositories.Filters;
@@ -37,13 +38,15 @@ public record EntityFilter<TEntity, TResult> : IEntityFilter<TEntity, TResult>
     public int TotalCount { get; set; }
 
     /// <inheritdoc />
-    public Expression<Func<TEntity, TResult>> Selector { get; init; } = null!;
+    public required Expression<Func<TEntity, TResult>> Selector { get; init; }
 
     /// <inheritdoc />
-    public Expression<Func<TEntity, bool>>? Predicate { get; init; }
+    public Expression<Func<TEntity, bool>>? Where { get; init; }
 
     /// <inheritdoc />
     public Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? OrderBy { get; init; }
+    /// <inheritdoc />
+    public Func<IQueryable<TEntity>, IQueryable<TEntity>>? Includes { get; init; }
 }
 
 /// <summary>
@@ -56,5 +59,6 @@ public record EntityFilter<TEntity> : EntityFilter<TEntity, TEntity>, IEntityFil
     /// <summary>
     /// Initializes a new instance of the <see cref="EntityFilter{TEntity}" /> class.
     /// </summary>
+    [SetsRequiredMembers]
     public EntityFilter() => Selector = entity => entity;
 }

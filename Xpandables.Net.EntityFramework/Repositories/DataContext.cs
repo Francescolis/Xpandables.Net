@@ -33,9 +33,7 @@ public abstract class DataContext : DbContext
     /// <see cref="DbContext"/>.</param>  
     protected DataContext(DbContextOptions options) : base(options)
     {
-        // ReSharper disable once VirtualMemberCallInConstructor
         ChangeTracker.Tracked += static (sender, e) => OnEntityTracked(e);
-        // ReSharper disable once VirtualMemberCallInConstructor
         ChangeTracker.StateChanged += static (sender, e) => OnEntityStateChanged(e);
     }
 
@@ -63,13 +61,11 @@ public abstract class DataContext : DbContext
     public override void Dispose()
     {
         // Unsubscribe from events to prevent memory leaks
-        // ReSharper disable once EventUnsubscriptionViaAnonymousDelegate
         ChangeTracker.Tracked -= static (sender, e) => OnEntityTracked(e);
-        // ReSharper disable once EventUnsubscriptionViaAnonymousDelegate
         ChangeTracker.StateChanged -= static (sender, e) => OnEntityStateChanged(e);
 
         base.Dispose();
-        
+
         GC.SuppressFinalize(this);
     }
 }

@@ -59,10 +59,10 @@ public abstract class Repository<TDataContext>(TDataContext context) : AsyncDisp
         ArgumentNullException.ThrowIfNull(filter);
 
         IAsyncEnumerable<TResult> results =
-            (typeof(TEntity) == typeof(TResult)) switch
+            (filter is IEntityFilter<TEntity>) switch
             {
-                true => filter.FetchAsync<TResult>(Context.Set<TEntity>(), cancellationToken),
-                _ => filter.FetchAsync<TResult>(Context.Set<TEntity>().AsNoTracking(), cancellationToken)
+                true => filter.FetchAsync(Context.Set<TEntity>(), cancellationToken),
+                _ => filter.FetchAsync(Context.Set<TEntity>().AsNoTracking(), cancellationToken)
             };
 
         return results;

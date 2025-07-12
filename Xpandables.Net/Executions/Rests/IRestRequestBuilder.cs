@@ -47,7 +47,6 @@ internal sealed class RestRequestBuilder<TRestRequest>(
 {
     private readonly IRestAttributeProvider _attributeProvider = attributeProvider;
     private readonly IEnumerable<IRestRequestComposer<TRestRequest>> _composers = composers;
-    private HttpRequestMessage _message = new();
 
     /// <inheritdoc />
     public ValueTask<HttpRequestMessage> BuildRequestAsync(TRestRequest request,
@@ -65,14 +64,14 @@ internal sealed class RestRequestBuilder<TRestRequest>(
                 $"No request builder found for the request type {request.GetType()}.");
         }
 
-        _message = InitializeHttpRequestMessage(attribute);
+        HttpRequestMessage message = InitializeHttpRequestMessage(attribute);
 
         cancellationToken.ThrowIfCancellationRequested();
 
         RestRequestContext<TRestRequest> context = new()
         {
             Attribute = attribute,
-            Message = _message,
+            Message = message,
             Request = request,
             SerializerOptions = DefaultSerializerOptions.Defaults
         };
@@ -85,19 +84,9 @@ internal sealed class RestRequestBuilder<TRestRequest>(
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        _message = FinalizeHttpRequestMessage(context);
+        message = FinalizeHttpRequestMessage(context);
 
-        return new ValueTask<HttpRequestMessage>(_message);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _message?.Dispose();
-        }
-
-        base.Dispose(disposing);
+        return new ValueTask<HttpRequestMessage>(message);
     }
 
     private static HttpRequestMessage InitializeHttpRequestMessage(_RestAttribute attribute)

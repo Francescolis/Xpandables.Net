@@ -2,14 +2,11 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.Text;
-
-using AsyncEnumerable = System.Linq.AsyncEnumerable;
 
 namespace Xpandables.Net.Api;
 
@@ -34,23 +31,20 @@ public sealed class InMemoryEventStore : IEventStore
         return Task.CompletedTask;
     }
 
-    public IAsyncEnumerable<IEvent> FetchAsync(IEventFilter filter, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TEvent> FetchAsync<TEntityEvent, TEvent>(
+        IEventFilter<TEntityEvent, TEvent> filter, CancellationToken cancellationToken = default)
+        where TEntityEvent : class, IEntityEvent
+        where TEvent : class, IEvent
     {
-        IQueryable<IEntityEventDomain> integrations = _eventEntities
-            .OfType<IEntityEventDomain>()
+        IQueryable<TEntityEvent> integrations = _eventEntities
+            .OfType<TEntityEvent>()
             .AsQueryable();
 
-        IQueryable<IEntityEventDomain> filteredQuery = filter
-            .Apply(integrations)
-            .OfType<IEntityEventDomain>();
-
-        return AsyncEnumerable
-            .ToAsyncEnumerable(filteredQuery
-                .Select(entity =>
-                    _eventConverter.ConvertFrom(entity, _options)));
+        return filter.FetchAsync(integrations, cancellationToken);
     }
 
-    public Task MarkAsProcessedAsync(EventProcessed eventPublished, CancellationToken cancellationToken = default)
+    public Task MarkAsProcessedAsync(
+        EventProcessedInfo info, CancellationToken cancellationToken = default)
     {
         if (cancellationToken.IsCancellationRequested)
         {
@@ -59,10 +53,24 @@ public sealed class InMemoryEventStore : IEventStore
 
         IEnumerable<IEntityEventIntegration> entities = _eventEntities
             .OfType<IEntityEventIntegration>()
-            .Where(e => e.KeyId == eventPublished.EventId);
+            .Where(e => e.KeyId == info.EventId);
 
         entities.ForEach(e => e.SetStatus(EntityStatus.PUBLISHED));
 
+        return Task.CompletedTask;
+    }
+
+    public Task MarkAsProcessedAsync(
+        IEnumerable<EventProcessedInfo> infos, CancellationToken cancellationToken = default)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled(cancellationToken);
+        }
+        foreach (EventProcessedInfo info in infos)
+        {
+            MarkAsProcessedAsync(info, cancellationToken);
+        }
         return Task.CompletedTask;
     }
 }

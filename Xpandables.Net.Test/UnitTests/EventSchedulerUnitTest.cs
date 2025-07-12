@@ -32,7 +32,6 @@ public sealed class EventSchedulerUnitTest
         services.AddXSubscriber();
         services.AddXMessageQueue();
         services.AddXScheduler();
-        services.AddOptions<EventOptions>();
         services.AddLogging();
 
         _serviceProvider = services.BuildServiceProvider();
@@ -55,13 +54,15 @@ public sealed class EventSchedulerUnitTest
         SchedulerOptions options = _serviceProvider.GetRequiredService<IOptions<SchedulerOptions>>().Value;
         options.IsEventSchedulerEnabled = false;
 
-        EntityIntegrationEventFilter filter = new()
+        EventFilterIntegration filter = new()
         {
-            Predicate = x => x.Status == EntityStatus.PUBLISHED, PageIndex = 0, PageSize = 10
+            Where = x => x.Status == EntityStatus.PUBLISHED,
+            PageIndex = 0,
+            PageSize = 10
         };
 
         // Assert
-        List<IEvent> events = await eventStore
+        List<IIntegrationEvent> events = await eventStore
             .FetchAsync(filter, CancellationToken.None)
             .ToListAsync(CancellationToken.None);
 
@@ -99,39 +100,49 @@ public class InMemoryEventStore : IEventStore
         return Task.CompletedTask;
     }
 
-    public IAsyncEnumerable<IEvent> FetchAsync(
-        IEventFilter filter,
+    public IAsyncEnumerable<TEvent> FetchAsync<TEntityEvent, TEvent>(
+        IEventFilter<TEntityEvent, TEvent> filter,
         CancellationToken cancellationToken = default)
+        where TEntityEvent : class, IEntityEvent
+        where TEvent : class, IEvent
     {
         if (cancellationToken.IsCancellationRequested)
         {
-            return AsyncEnumerable.Empty<IEvent>();
+            return AsyncEnumerable.Empty<TEvent>();
         }
 
-        IQueryable<IEntityEventIntegration> integrations = _eventEntities
-            .OfType<IEntityEventIntegration>()
+        IQueryable<TEntityEvent> integrations = _eventEntities
+            .OfType<TEntityEvent>()
             .AsQueryable();
 
-        IQueryable<IEntityEventIntegration>? filteredQuery = filter
-            .Apply(integrations)
-            .OfType<IEntityEventIntegration>();
-
-        return AsyncEnumerable
-            .ToAsyncEnumerable(filteredQuery
-                .Select(entity =>
-                    _eventConverter.ConvertFrom(entity, _options)));
+        return filter.FetchAsync(integrations, cancellationToken);
     }
 
     public Task MarkAsProcessedAsync(
-        EventProcessed eventPublished,
+        EventProcessedInfo info,
         CancellationToken cancellationToken = default)
     {
         IEnumerable<IEntityEventIntegration>? entities = _eventEntities
             .OfType<IEntityEventIntegration>()
-            .Where(e => e.KeyId == eventPublished.EventId);
+            .Where(e => e.KeyId == info.EventId);
 
         entities.ForEach(e => e.SetStatus(EntityStatus.PUBLISHED));
 
+        return Task.CompletedTask;
+    }
+
+    public Task MarkAsProcessedAsync(
+        IEnumerable<EventProcessedInfo> infos,
+        CancellationToken cancellationToken = default)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled(cancellationToken);
+        }
+        foreach (EventProcessedInfo info in infos)
+        {
+            MarkAsProcessedAsync(info, cancellationToken);
+        }
         return Task.CompletedTask;
     }
 }

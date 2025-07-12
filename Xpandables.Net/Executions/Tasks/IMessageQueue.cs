@@ -61,17 +61,17 @@ public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
     /// <inheritdoc />
     public async Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default)
     {
-        IEventFilter eventFilter = new EntityIntegrationEventFilter
+        EventFilterIntegration eventFilter = new()
         {
-            Predicate = x => x.Status == EntityStatus.PENDING.Value,
+            Where = x => x.Status == EntityStatus.PENDING.Value,
             PageIndex = 0,
             PageSize = capacity,
             OrderBy = x => x.OrderBy(o => o.CreatedOn)
         };
 
-        await foreach (IIntegrationEvent @event in eventStore.FetchAsync(eventFilter, cancellationToken)
-                           .OfType<IIntegrationEvent>()
-                           .WithCancellation(cancellationToken))
+        await foreach (IIntegrationEvent @event in eventStore
+            .FetchAsync(eventFilter, cancellationToken)
+            .WithCancellation(cancellationToken))
         {
             await Channel.Writer.WriteAsync(@event, cancellationToken).ConfigureAwait(false);
         }

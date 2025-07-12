@@ -15,6 +15,8 @@
  *
  ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
+
 using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Repositories.Filters;
@@ -22,4 +24,13 @@ namespace Xpandables.Net.Repositories.Filters;
 /// <summary>
 /// Represents a filter for event entity domains.
 /// </summary>
-public sealed record EntityDomainEventFilter : EntityEventFilter<IEntityEventDomain, IDomainEvent>;
+public sealed record EventFilterDomain : EventFilter<EntityDomainEvent, IDomainEvent>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventFilterDomain"/> class.
+    /// </summary>
+    /// <remarks>This constructor sets the required members of the <see cref="EventFilterDomain"/>
+    /// class.</remarks>
+    [SetsRequiredMembers]
+    public EventFilterDomain() : base() { }
+}

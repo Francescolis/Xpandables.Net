@@ -22,9 +22,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Executions.Dependencies;
-using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Pipelines;
 using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Repositories;
 using Xpandables.Net.States;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -281,7 +281,7 @@ public static class ServiceCollectionMediatorExtensions
         this IServiceCollection services) =>
         services.XTryDecorate(
             typeof(IAggregateStore<>),
-            typeof(SnapShotAggregateStore<>),
+            typeof(AggregateSnapShotStore<>),
             typeof(IOriginator));
 
     /// <summary>

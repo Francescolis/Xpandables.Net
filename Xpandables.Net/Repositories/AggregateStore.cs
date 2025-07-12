@@ -17,11 +17,11 @@
 
 using System.ComponentModel.DataAnnotations;
 
+using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
-using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Filters;
 
-namespace Xpandables.Net.Executions.Domains;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents a store for managing aggregate by providing methods to append and resolve aggregates.
@@ -90,19 +90,18 @@ public sealed class AggregateStore<TAggregate>(
     {
         try
         {
-            IEventFilter filter = new EntityDomainEventFilter
+            EventFilterDomain filter = new()
             {
-                Predicate = x => x.AggregateId == keyId, 
+                Where = x => x.AggregateId == keyId,
                 OrderBy = x => x.OrderBy(o => o.EventVersion)
             };
 
             TAggregate aggregate = new();
 
             await foreach (IDomainEvent @event in _eventStore
-                               .FetchAsync(filter, cancellationToken)
-                               .OfType<IDomainEvent>()
-                               .OrderBy(x => x.EventVersion)
-                               .ConfigureAwait(false))
+                            .FetchAsync(filter, cancellationToken)
+                            .OrderBy(x => x.EventVersion)
+                            .ConfigureAwait(false))
             {
                 aggregate.LoadFromHistory(@event);
             }

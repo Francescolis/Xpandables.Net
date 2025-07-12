@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Executions.Tasks;
 
@@ -92,10 +93,10 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             {
                 await eventPublisher.PublishAsync(@event, cancellationToken).ConfigureAwait(false);
 
-                EventProcessed eventPublished = new()
+                EventProcessedInfo eventPublished = new()
                 {
                     EventId = @event.EventId,
-                    PublishedOn = DateTime.UtcNow,
+                    ProcessedOn = DateTime.UtcNow,
                     ErrorMessage = null
                 };
 
@@ -103,10 +104,10 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             }
             catch (Exception exception)
             {
-                EventProcessed eventPublished = new()
+                EventProcessedInfo eventPublished = new()
                 {
                     EventId = @event.EventId,
-                    PublishedOn = DateTime.UtcNow,
+                    ProcessedOn = DateTime.UtcNow,
                     ErrorMessage = exception.ToString()
                 };
 

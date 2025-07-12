@@ -16,13 +16,17 @@
 ********************************************************************************/
 using System.ComponentModel;
 using System.Linq.Expressions;
+using System.Reflection;
 
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Repositories.Filters;
+
 /// <summary>
-/// Represents a filter for entities with pagination support.
+/// Defines a filter for entities, providing options to customize query behavior.
 /// </summary>
+/// <remarks>This interface includes a static property to control whether a total count of entities should be
+/// forced during filtering operations, even if the underlying data source does not natively support counting.</remarks>
 public interface IEntityFilter
 {
     /// <summary>
@@ -30,44 +34,7 @@ public interface IEntityFilter
     /// If set to true, the total count will be calculated even if the queryable does not support it.
     /// </summary>
     public static bool ForceTotalCount { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the index of the page.
-    /// </summary>
-    ushort PageIndex { get; }
-
-    /// <summary>
-    /// Gets or sets the size of the page.
-    /// </summary>
-    ushort PageSize { get; }
-
-    /// <summary>
-    /// Gets the number of elements in a collection. Returns an integer representing the total count.
-    /// </summary>
-    /// <remarks>This value is set when the filter is applied to a queryable.
-    /// You can control the total count calculation using the <see cref="ForceTotalCount"/> property.</remarks>
-    int TotalCount { get; set; }
-
-    /// <summary>
-    /// Applies the filter to the given queryable.
-    /// </summary>
-    /// <param name="queryable">The queryable to apply the filter to.</param>
-    /// <returns>The filtered queryable.</returns>
-    IQueryable Apply(IQueryable queryable);
-
-    /// <summary>
-    /// Fetches a collection of results from the given queryable.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="queryable">The queryable to fetch results from.</param>
-    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-    /// <returns>An asynchronous collection of results.</returns>
-    public IAsyncEnumerable<TResult> FetchAsync<TResult>(
-        IQueryable queryable,
-        CancellationToken cancellationToken = default) =>
-        Apply(queryable).OfType<TResult>().ToAsyncEnumerable();
 }
-
 /// <summary>
 /// Represents a filter for entities with pagination support and specific 
 /// selection criteria.
@@ -78,14 +45,35 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
     where TEntity : class, IEntity
 {
     /// <summary>
-    /// Gets the selector expression for the entity.
+    /// Gets the index of the page (1-based).
+    /// </summary>
+    /// <remarks>Use 0 or 1 to start from the first page. Values less than 1 will disable pagination.</remarks>
+    ushort PageIndex { get; }
+
+    /// <summary>
+    /// Gets the size of the page.
+    /// </summary>
+    /// <remarks>Use 0 to disable pagination.</remarks>
+    ushort PageSize { get; }
+
+    /// <summary>
+    /// Gets or sets the total number of elements in the collection.
+    /// </summary>
+    /// <remarks>
+    /// This value is automatically set when the filter is applied to a queryable.
+    /// You can control the total count calculation using the <see cref="IEntityFilter.ForceTotalCount"/> property.
+    /// </remarks>
+    int TotalCount { get; set; }
+
+    /// <summary>
+    /// Gets the selector expression for projecting the entity to the result type.
     /// </summary>
     Expression<Func<TEntity, TResult>> Selector { get; }
 
     /// <summary>
     /// Gets the predicate expression for filtering entities.
     /// </summary>
-    Expression<Func<TEntity, bool>>? Predicate { get; }
+    Expression<Func<TEntity, bool>>? Where { get; }
 
     /// <summary>
     /// Gets the function for ordering the entities.
@@ -93,17 +81,24 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
     Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? OrderBy { get; }
 
     /// <summary>
-    /// Applies the filter to the given queryable.
+    /// Gets the function for including related entities in the query.
+    /// </summary>
+    Func<IQueryable<TEntity>, IQueryable<TEntity>>? Includes { get; }
+
+    /// <summary>
+    /// Applies the filter to the given queryable and returns the filtered queryable with projection.
     /// </summary>
     /// <param name="queryable">The queryable to apply the filter to.</param>
-    /// <returns>The filtered queryable.</returns>
-    public new IQueryable Apply(IQueryable queryable)
+    /// <returns>The filtered and projected queryable.</returns>
+    public IQueryable<TResult> Apply(IQueryable<TEntity> queryable)
     {
-        IQueryable<TEntity> query = (IQueryable<TEntity>)queryable;
+        ArgumentNullException.ThrowIfNull(queryable);
 
-        if (Predicate is not null)
+        IQueryable<TEntity> query = queryable;
+
+        if (Where is not null)
         {
-            query = query.Where(Predicate);
+            query = query.Where(Where);
         }
 
         if (OrderBy is not null)
@@ -111,15 +106,12 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
             query = OrderBy(query);
         }
 
-        if (query.TryGetNonEnumeratedCount(out int count))
+        if (Includes is not null)
         {
-            TotalCount = count;
+            query = Includes(query);
         }
-        else
-        {
-            if (ForceTotalCount)
-                TotalCount = query.Count();
-        }
+
+        SetTotalCount(query);
 
         if (PageIndex > 0 && PageSize > 0)
         {
@@ -131,16 +123,120 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
         return query.Select(Selector);
     }
 
+    /// <summary>
+    /// Applies the filter to the given non-generic queryable.
+    /// </summary>
+    /// <param name="queryable">The queryable to apply the filter to.</param>
+    /// <returns>The filtered queryable.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    IQueryable IEntityFilter.Apply(IQueryable queryable)
-        => Apply((IQueryable<TEntity>)queryable);
+    public IQueryable Apply(IQueryable queryable) => Apply((IQueryable<TEntity>)queryable);
+
+    /// <summary>
+    /// Fetches a collection of results from the given queryable asynchronously.
+    /// </summary>
+    /// <param name="queryable">The queryable to fetch results from.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>An asynchronous collection of results.</returns>
+    public IAsyncEnumerable<TResult> FetchAsync(
+        IQueryable<TEntity> queryable,
+        CancellationToken cancellationToken = default) =>
+        Apply(queryable).ToAsyncEnumerable();
+
+    /// <summary>
+    /// Gets the string representation of the query after applying the filter.
+    /// This method is useful for debugging or creating ADO.NET queries.
+    /// </summary>
+    /// <param name="queryable">The queryable to apply the filter to.</param>
+    /// <returns>A string representation of the query, or the queryable's ToString() if no specific query string method is available.</returns>
+    /// <remarks>
+    /// This method attempts to use Entity Framework Core's ToQueryString() extension method if available.
+    /// For non-EF queryables, it falls back to the standard ToString() method.
+    /// The returned string may not be suitable for direct execution and is intended primarily for debugging purposes.
+    /// </remarks>
+    public string ToQueryString(IQueryable<TEntity> queryable)
+    {
+        ArgumentNullException.ThrowIfNull(queryable);
+
+        IQueryable<TResult> filteredQuery = Apply(queryable);
+
+        // Try to use EF Core's ToQueryString() method if available
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            // Check if EntityFramework ToQueryString extension is available
+            var efCoreAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(a => a.GetName().Name == "Microsoft.EntityFrameworkCore");
+
+            if (efCoreAssembly is not null)
+            {
+                var extensionsType = efCoreAssembly.GetType("Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions");
+                var method = extensionsType?.GetMethod("ToQueryString",
+                    BindingFlags.Static | BindingFlags.Public,
+                    null,
+                    [typeof(IQueryable)],
+                    null);
+
+                if (method is not null)
+                {
+                    return (string)method.Invoke(null, [filteredQuery])!;
+                }
+            }
+        }
+        catch
+        {
+            // Fall back to ToString() if EF Core is not available or method fails
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+        // Fallback to the standard ToString() method
+        return filteredQuery.ToString() ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Sets the total count by attempting to get it efficiently.
+    /// </summary>
+    /// <param name="query">The query to count.</param>
+    protected void SetTotalCount(IQueryable<TEntity> query)
+    {
+        if (query.TryGetNonEnumeratedCount(out int count))
+        {
+            TotalCount = count;
+        }
+        else if (ForceTotalCount)
+        {
+            TotalCount = query.Count();
+        }
+    }
 }
 
 /// <summary>
-/// Represents a filter for entities with pagination support and specific 
-/// selection criteria.
+/// Represents a filter for entities with pagination support where the entity type 
+/// is both the input and output type.
 /// </summary>
 /// <typeparam name="TEntity">The type of the entity.</typeparam>
 public interface IEntityFilter<TEntity> : IEntityFilter<TEntity, TEntity>
     where TEntity : class, IEntity
-{ }
+{
+    /// <summary>
+    /// Applies the filter to the given queryable without projection (returns entities directly).
+    /// </summary>
+    /// <param name="queryable">The queryable to apply the filter to.</param>
+    /// <returns>The filtered queryable of entities.</returns>
+    public new IQueryable<TEntity> Apply(IQueryable<TEntity> queryable)
+    {
+        // Cast to the generic interface to access the implementation
+        var genericFilter = (IEntityFilter<TEntity, TEntity>)this;
+        return genericFilter.Apply(queryable);
+    }
+
+    /// <summary>
+    /// Fetches entities from the given queryable asynchronously.
+    /// </summary>
+    /// <param name="queryable">The queryable to fetch entities from.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>An asynchronous collection of entities.</returns>
+    public new IAsyncEnumerable<TEntity> FetchAsync(
+        IQueryable<TEntity> queryable,
+        CancellationToken cancellationToken = default) =>
+        Apply(queryable).ToAsyncEnumerable();
+}

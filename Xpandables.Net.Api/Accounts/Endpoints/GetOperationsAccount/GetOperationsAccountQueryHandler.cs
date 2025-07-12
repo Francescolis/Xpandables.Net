@@ -2,8 +2,8 @@
 
 using Xpandables.Net.Api.Accounts.Events;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
@@ -18,9 +18,9 @@ public sealed class GetOperationsAccountQueryHandler(
     {
         await Task.Yield();
 
-        EntityDomainEventFilter filter = new()
+        EventFilterDomain filter = new()
         {
-            Predicate = e => (e.AggregateId == query.KeyId
+            Where = e => (e.AggregateId == query.KeyId
                               && e.EventName == nameof(DepositMade)) || e.EventName == nameof(WithdrawMade),
             //EventDataPredicate = e => e.RootElement
             //    .GetProperty(nameof(EventEntityDomain.EventName))

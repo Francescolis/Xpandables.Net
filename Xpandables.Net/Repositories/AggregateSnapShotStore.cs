@@ -19,16 +19,17 @@ using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.States;
 
-namespace Xpandables.Net.Executions.Domains;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents a store for aggregate root snapshots.
 /// </summary>
 /// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
-public sealed class SnapShotAggregateStore<TAggregateRoot>(
+public sealed class AggregateSnapShotStore<TAggregateRoot>(
     IAggregateStore<TAggregateRoot> aggregateStore,
     IEventStore eventStore,
     IOptions<SnapShotOptions> options) :
@@ -90,17 +91,16 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
 
         try
         {
-            IEventFilter filter = new EntitySnapShotEventFilter
+            EventFilterSnapShot snapshotFilter = new()
             {
-                Predicate = x => x.OwnerId == keyId,
+                Where = x => x.OwnerId == keyId,
                 OrderBy = x => x.OrderByDescending(x => x.EventVersion),
                 PageIndex = 1,
                 PageSize = 1
             };
 
             ISnapshotEvent? @event = await _eventStore
-                .FetchAsync(filter, cancellationToken)
-                .OfType<ISnapshotEvent>()
+                .FetchAsync(snapshotFilter, cancellationToken)
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -120,17 +120,16 @@ public sealed class SnapShotAggregateStore<TAggregateRoot>(
             // because the snapshot is not always up to date, we need to fetch the events
             // after the snapshot version to get the latest events.
 
-            filter = new EntityDomainEventFilter
+            EventFilterDomain domainFilter = new()
             {
-                Predicate = x => x.AggregateId == keyId
+                Where = x => x.AggregateId == keyId
                                  && x.EventVersion > aggregateRoot.Version,
                 OrderBy = x => x.OrderBy(x => x.EventVersion)
             };
 
             await foreach (IDomainEvent ev in _eventStore
-                               .FetchAsync(filter, cancellationToken)
-                               .OfType<IDomainEvent>()
-                               .ConfigureAwait(false))
+                .FetchAsync(domainFilter, cancellationToken)
+                .ConfigureAwait(false))
             {
                 aggregateRoot.LoadFromHistory(ev);
             }

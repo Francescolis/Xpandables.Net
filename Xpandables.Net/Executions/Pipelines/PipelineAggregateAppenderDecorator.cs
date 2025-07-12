@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Executions.Pipelines;
 
