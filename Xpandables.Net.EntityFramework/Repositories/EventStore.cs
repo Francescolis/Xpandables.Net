@@ -125,7 +125,6 @@ public sealed class EventStore(DataContextEvent context) : Disposable, IEventSto
                         .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
                     cancellationToken)
                 .ConfigureAwait(false);
-
         }
     }
 

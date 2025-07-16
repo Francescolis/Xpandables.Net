@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
+using Xpandables.Net.Api.Accounts.Persistence;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Executions.Domains.Converters;
 using Xpandables.Net.Repositories;
@@ -32,11 +33,17 @@ builder.Services.AddXEventUnitOfWork();
 builder.Services.AddXPipelineUnitOfWorkDecorator();
 builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();
+//builder.Services.AddXDataContextEvent(options =>
+//    options.UseInMemoryDatabase("InMemoryDb")
+//        .EnableDetailedErrors()
+//        .EnableSensitiveDataLogging()
+//        .UseModel(CreateInMemoryModel()));
 builder.Services.AddXDataContextEvent(options =>
-    options.UseInMemoryDatabase("InMemoryDb")
-        .EnableDetailedErrors()
-        .EnableSensitiveDataLogging()
-        .UseModel(CreateInMemoryModel()));
+    options
+       .UseNpgsql(builder.Configuration.GetConnectionString(nameof(DataContextEvent)))
+       .EnableSensitiveDataLogging()
+       .EnableDetailedErrors()
+       .UseModel(DataContextEventSqlServerBuilder.CreateModel()));
 builder.Services.AddXPublisher();
 builder.Services.AddXPipelineResolverDecorator();
 builder.Services.AddXPipelineAppenderDecorator();
@@ -88,6 +95,7 @@ app.UseXEndpointRoutes();
 app.Run();
 
 // Method to create and configure the model for in-memory database
+#pragma warning disable CS8321 // Local function is declared but never used
 static Microsoft.EntityFrameworkCore.Metadata.IModel CreateInMemoryModel()
 {
     var modelBuilder = new ModelBuilder();
@@ -110,6 +118,7 @@ static Microsoft.EntityFrameworkCore.Metadata.IModel CreateInMemoryModel()
 
     return modelBuilder.FinalizeModel();
 }
+#pragma warning restore CS8321 // Local function is declared but never used
 public partial class Program
 {
 }

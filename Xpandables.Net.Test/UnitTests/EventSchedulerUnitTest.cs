@@ -46,7 +46,7 @@ public sealed class EventSchedulerUnitTest
 
         TestIntegrationEvent testEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
 
-        await eventStore.AppendAsync([testEvent]);
+        await eventStore.AppendAsync(testEvent);
 
         // Act
         await eventScheduler.ScheduleAsync(CancellationToken.None);

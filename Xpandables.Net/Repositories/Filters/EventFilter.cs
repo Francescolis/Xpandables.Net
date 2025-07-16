@@ -24,7 +24,6 @@ public abstract record EventFilter<TEntity, TEvent> : EntityFilter<TEntity, TEve
     /// all required members are set. It calls the base class constructor.</remarks>
     [SetsRequiredMembers]
     protected EventFilter() : base() => Selector = CreateSimpleEventSelector();
-    //(TEvent)EventConverter.DeserializeEvent(x.EventData, Type.GetType(x.EventFullName)!, DefaultSerializerOptions.Defaults);
 
     /// <inheritdoc />
     public Type EventType => typeof(TEvent);
@@ -62,10 +61,9 @@ public abstract record EventFilter<TEntity, TEvent> : EntityFilter<TEntity, TEve
     /// </summary>
     /// <returns>A simplified selector expression.</returns>
     protected static Expression<Func<TEntity, TEvent>> CreateSimpleEventSelector() =>
-        // Create a simpler expression that EF Core can handle more reliably
         entity => DeserializeEventData(
-            ((IEntityEvent)entity).EventData,
-            ((IEntityEvent)entity).EventFullName,
+            entity.EventData,
+            entity.EventFullName,
             DefaultSerializerOptions.Defaults);
 
     /// <summary>

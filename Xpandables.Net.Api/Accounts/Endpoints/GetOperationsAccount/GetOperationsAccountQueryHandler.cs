@@ -22,10 +22,10 @@ public sealed class GetOperationsAccountQueryHandler(
         {
             Where = e => (e.AggregateId == query.KeyId
                               && e.EventName == nameof(DepositMade)) || e.EventName == nameof(WithdrawMade),
-            //EventDataPredicate = e => e.RootElement
-            //    .GetProperty(nameof(EventEntityDomain.EventName))
-            //    .GetString()!
-            //    .EndsWith("Made"), // For Postgresql
+            EventDataWhere = e => e.RootElement
+                .GetProperty("EventId")
+                .GetGuid()
+                .Equals(new Guid("019814e4-817e-74df-94d8-4d8c42121c7f")), // For Postgresql
             OrderBy = e => e.OrderByDescending(o => o.CreatedOn)
         };
 

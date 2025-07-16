@@ -48,6 +48,9 @@ public interface IEventFilter<TEventEntity, TEvent> : IEntityFilter<TEventEntity
     /// <remarks>Only supported by PostgreSQL.</remarks>
     Expression<Func<JsonDocument, bool>>? EventDataWhere { get; }
 
+    IQueryable<TEvent> IEntityFilter<TEventEntity, TEvent>.Apply(IQueryable<TEventEntity> queryable) =>
+        Apply(queryable);
+
     /// <summary>
     /// Applies the filter to the specified queryable collection of
     /// event entities.
