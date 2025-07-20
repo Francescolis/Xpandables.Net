@@ -45,7 +45,7 @@ public interface IRequestHandler<in TRequest>
 /// <typeparam name="TRequest">The type of request to be handled. Must implement <see cref="IRequest"/>.</typeparam>
 /// <typeparam name="TResponse">The type of the response returned after processing the request.</typeparam>
 public interface IRequestHandler<in TRequest, TResponse> : IRequestHandler<TRequest>
-    where TRequest : class, IRequest
+    where TRequest : class, IRequest<TResponse>
 {
     /// <summary>
     /// Asynchronously handles the specified request and returns the execution result.

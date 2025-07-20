@@ -29,7 +29,7 @@ public interface IRequest
     /// <summary>
     /// Gets the date and time when the request was created.
     /// </summary>
-    public DateTime CreatedAt => DateTime.UtcNow;
+    public DateTime CreatedAt => DateTime.Now;
 }
 
 /// <summary>
