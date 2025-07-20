@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-using FluentAssertions;
+﻿using FluentAssertions;
 
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Filters;
@@ -60,26 +58,6 @@ public sealed class RepositoryUnitTest
         };
         var result = await _repository.FetchAsync(filter).ToListAsync();
         result.Should().Contain(entities);
-    }
-
-    [Fact]
-    public async Task UpdateAsync_ShouldUpdateEntities()
-    {
-        // Arrange
-        var filter = new EntityFilter<TestEntity>
-        {
-            Where = e => e.KeyId == 1
-        };
-
-        Expression<Func<TestEntity, TestEntity>> updateExpression =
-            e => new TestEntity { KeyId = e.KeyId, Name = "Updated" };
-
-        // Act
-        await _repository.UpdateAsync(filter, updateExpression);
-
-        // Assert
-        var result = await _repository.FetchAsync(filter).ToListAsync();
-        result.First(e => e.KeyId == 1).Name.Should().Be("Updated");
     }
 
     [Fact]
@@ -146,11 +124,11 @@ public sealed class RepositoryUnitTest
 }
 
 // Assuming InMemoryUnitOfWork is a real implementation of UnitOfWork
-public class InMemoryUnitOfWork : UnitOfWorkCore
+public class InMemoryUnitOfWork : IUnitOfWork
 {
     private int _changesCount = 0;
 
-    public override Task<int> SaveChangesAsync(
+    public Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default)
     {
         // Simulate saving changes
@@ -158,11 +136,19 @@ public class InMemoryUnitOfWork : UnitOfWorkCore
         return Task.FromResult(_changesCount);
     }
 
-    protected override IRepository GetRepositoryCore(Type repositoryType) =>
+    public TRepository GetRepository<TRepository>()
+        where TRepository : class, IRepository =>
         // Simulate getting a repository
-        new InMemoryRepository();
+        (new InMemoryRepository() as TRepository)!;
 
     public Task<int> GetChangesCountAsync() => Task.FromResult(_changesCount);
+    public Task<IAsyncDisposable> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+    public Task CommitTransactionAsync(CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+    public Task RollbackTransactionAsync(CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+    public ValueTask DisposeAsync() => throw new NotImplementedException();
 }
 
 public class InMemoryRepository : IRepository
@@ -189,19 +175,21 @@ public class InMemoryRepository : IRepository
     }
 
     public Task UpdateAsync<TEntity>(
-        IEntityFilter<TEntity> entityFilter,
-        Expression<Func<TEntity, TEntity>> updateExpression,
+        IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity
     {
         var query = _entities.OfType<TEntity>().AsQueryable();
-        var filteredEntities = entityFilter.Apply(query).OfType<TEntity>().ToList();
 
-        foreach (var entity in filteredEntities)
+        foreach (var entity in entities)
         {
-            var updatedEntity = updateExpression.Compile().Invoke(entity);
-            _entities.Remove(entity);
-            _entities.Add(updatedEntity);
+            var existingEntity = query.FirstOrDefault(e => e.KeyId.Equals(entity.KeyId));
+            if (existingEntity != null)
+            {
+                // Update the existing entity with the new values
+                _entities.Remove(existingEntity);
+                _entities.Add(entity);
+            }
         }
 
         return Task.CompletedTask;

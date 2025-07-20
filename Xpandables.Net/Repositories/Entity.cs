@@ -33,20 +33,20 @@ public abstract class Entity<TKey> : IEntity<TKey>
     protected Entity() { }
 
     /// <inheritdoc />
-    public string Status { get; private set; } = EntityStatus.ACTIVE;
+    public string Status { get; set; } = EntityStatus.ACTIVE;
 
     /// <inheritdoc />
-    public DateTime CreatedOn { get; protected set; } = DateTime.UtcNow;
+    public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
     /// <inheritdoc />
-    public DateTime? UpdatedOn { get; private set; }
+    public DateTime? UpdatedOn { get; set; }
 
     /// <inheritdoc />
-    public DateTime? DeletedOn { get; private set; }
+    public DateTime? DeletedOn { get; set; }
 
     /// <inheritdoc />
     [Key]
-    public TKey KeyId { get; init; } = default!;
+    public required TKey KeyId { get; init; }
 
     /// <inheritdoc />
     public void SetStatus(string status)
@@ -56,8 +56,4 @@ public abstract class Entity<TKey> : IEntity<TKey>
             ? DateTime.UtcNow
             : null;
     }
-
-    /// <inheritdoc />
-    public void SetUpdatedOn(DateTime? updatedOn = null) =>
-        UpdatedOn = updatedOn ?? DateTime.UtcNow;
 }

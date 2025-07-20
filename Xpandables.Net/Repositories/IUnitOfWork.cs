@@ -32,6 +32,37 @@ public interface IUnitOfWork : IAsyncDisposable
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Begins a new transaction asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken"> A token to cancel the operation.</param>
+    /// <remarks>The transaction must be disposed of using the returned <see cref="IAsyncDisposable"/> object
+    /// to ensure that resources are released properly. This method is typically used to group a series of operations
+    /// that should be executed as a single unit of work.</remarks>
+    /// <returns>An <see cref="IAsyncDisposable"/> that represents the transaction. 
+    /// Dispose of this object to commit or roll back
+    /// the transaction.</returns>
+    Task<IAsyncDisposable> BeginTransactionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Commits the current transaction asynchronously.
+    /// </summary>
+    /// <remarks>This method finalizes all operations within the transaction. If the transaction is
+    /// successfully committed, all changes are saved. If the transaction cannot be committed, an exception is
+    /// thrown.</remarks>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous commit operation.</returns>
+    Task CommitTransactionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously rolls back the current transaction.
+    /// </summary>
+    /// <remarks>This method get automatically called when there is an exception.
+    /// Ensure that the transaction is in a state that allows rollback before calling this method.</remarks>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous rollback operation.</returns>
+    Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Returns the repository of the specified type.
     /// </summary>
     /// <typeparam name="TRepository">The type of the repository.</typeparam>

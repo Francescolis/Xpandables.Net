@@ -151,10 +151,16 @@ public sealed class TestUnitOfWork : IUnitOfWork
 {
     public bool SaveChangesCalled { get; private set; }
 
+    public Task<IAsyncDisposable> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+    public Task CommitTransactionAsync(CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     public TRepository GetRepository<TRepository>() where TRepository : class, IRepository
         => throw new NotSupportedException("Not needed for this test");
+    public Task RollbackTransactionAsync(CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

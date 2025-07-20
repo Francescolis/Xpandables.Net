@@ -50,7 +50,7 @@ public abstract class DataContext : DbContext
     {
         if (e is { NewState: EntityState.Modified, Entry.Entity: IEntity entity })
         {
-            entity.SetUpdatedOn();
+            entity.UpdatedOn = DateTime.Now;
         }
     }
 

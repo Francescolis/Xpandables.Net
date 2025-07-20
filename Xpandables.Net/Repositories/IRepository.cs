@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Linq.Expressions;
-
 using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Repositories;
@@ -51,16 +49,15 @@ public interface IRepository : IAsyncDisposable
         where TEntity : class, IEntity;
 
     /// <summary>
-    /// Updates entities in the repository based on a filter and an update expression.
+    /// Asynchronously updates a collection of entities in the data store.
     /// </summary>
-    /// <typeparam name="TEntity">The type of the entity.</typeparam>
-    /// <param name="filter">The filter to apply to the entities to update.</param>
-    /// <param name="updateExpression">The expression that defines the update.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <typeparam name="TEntity">The type of the entities to update. Must implement <see cref="IEntity"/>.</typeparam>
+    /// <param name="entities">The collection of entities to be updated. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
+    /// The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous update operation.</returns>
     Task UpdateAsync<TEntity>(
-        IEntityFilter<TEntity> filter,
-        Expression<Func<TEntity, TEntity>> updateExpression,
+        IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
 

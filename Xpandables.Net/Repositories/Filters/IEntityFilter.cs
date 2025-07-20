@@ -109,6 +109,7 @@ public interface IEntityFilter<TEntity, TResult> : IEntityFilter
         if (Includes is not null)
         {
             query = Includes(query);
+            query = query.ResolveIncludes();
         }
 
         SetTotalCount(query);

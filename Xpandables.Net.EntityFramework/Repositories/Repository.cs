@@ -15,8 +15,6 @@
  *
  ********************************************************************************/
 
-using System.Linq.Expressions;
-
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Repositories.Filters;
@@ -38,7 +36,9 @@ public abstract class Repository<TDataContext>(TDataContext context) : AsyncDisp
     protected TDataContext Context { get; } = context;
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync<TEntity>(IEntityFilter<TEntity> filter, CancellationToken cancellationToken)
+    public virtual Task DeleteAsync<TEntity>(
+        IEntityFilter<TEntity> filter,
+        CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
         ArgumentNullException.ThrowIfNull(filter);
@@ -69,7 +69,9 @@ public abstract class Repository<TDataContext>(TDataContext context) : AsyncDisp
     }
 
     /// <inheritdoc />
-    public virtual Task InsertAsync<TEntity>(IEnumerable<TEntity> entities, CancellationToken cancellationToken)
+    public virtual Task InsertAsync<TEntity>(
+        IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
         Context.AddRange(entities);
@@ -78,18 +80,12 @@ public abstract class Repository<TDataContext>(TDataContext context) : AsyncDisp
 
     /// <inheritdoc />
     public virtual Task UpdateAsync<TEntity>(
-        IEntityFilter<TEntity> filter,
-        Expression<Func<TEntity, TEntity>> updateExpression,
+        IEnumerable<TEntity> entities,
         CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
-        ArgumentNullException.ThrowIfNull(filter);
-        ArgumentNullException.ThrowIfNull(updateExpression);
-
-        Func<TEntity, TEntity> expressionCompiled = updateExpression.Compile();
-        IQueryable<TEntity> query = filter.Apply(Context.Set<TEntity>())
-            .OfType<TEntity>();
-
-        return query.ForEachAsync(entity => expressionCompiled(entity), cancellationToken);
+        ArgumentNullException.ThrowIfNull(entities);
+        Context.UpdateRange(entities);
+        return Task.CompletedTask;
     }
 }

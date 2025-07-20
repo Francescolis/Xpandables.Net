@@ -32,35 +32,27 @@ public interface IEntity
     /// <summary>  
     /// Get a value indicating the state of the underlying instance.  
     /// </summary>  
-    string Status { get; }
+    string Status { get; set; }
 
     /// <summary>  
     /// Gets the creation date of the underlying instance.  
     /// </summary>  
-    DateTime CreatedOn { get; }
+    DateTime CreatedOn { get; set; }
 
     /// <summary>  
     /// Gets the last update date of the underlying instance if exist.  
     /// </summary>  
-    DateTime? UpdatedOn { get; }
+    DateTime? UpdatedOn { get; set; }
 
     /// <summary>  
     /// Gets the deletion date of the underlying instance if exist.  
     /// </summary>  
-    DateTime? DeletedOn { get; }
+    DateTime? DeletedOn { get; set; }
 
     /// <summary>  
     /// Sets the status of the underlying instance.  
     /// </summary>  
     void SetStatus(string status);
-
-    /// <summary>
-    /// Sets the last update date of the underlying instance.
-    /// </summary>
-    /// <param name="updatedOn">The updated date.</param>
-    /// <remarks>If <paramref name="updatedOn"/> is not provided, the current 
-    /// date and time will be used.</remarks>
-    void SetUpdatedOn(DateTime? updatedOn = null);
 }
 
 /// <summary>
