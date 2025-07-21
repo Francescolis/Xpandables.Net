@@ -26,7 +26,7 @@ namespace Xpandables.Net.Executions.Tasks;
 /// <typeparam name="TRequest">The type of the request to be handled, which must implement <see cref="IRequest"/>.</typeparam>
 public sealed class PipelineRequestHandler<TRequest>(
     IRequestHandler<TRequest> decoratee,
-    IEnumerable<IPipelineDecorator<TRequest, ExecutionResult>> decorators) :
+    IEnumerable<IPipelineDecorator<TRequest>> decorators) :
     IPipelineRequestHandler<TRequest>
     where TRequest : class, IRequest
 {
@@ -37,18 +37,18 @@ public sealed class PipelineRequestHandler<TRequest>(
 
         ExecutionResult result = await decorators
             .Reverse()
-            .Aggregate<IPipelineDecorator<TRequest, ExecutionResult>,
-                RequestHandler<ExecutionResult>>(
-                Handler,
-                (next, decorator) => async () => await decorator.HandleAsync(
+            .Aggregate(
+                (RequestHandler)Handler,
+                (next, decorator) => async (ct) => await decorator.HandleAsync(
                     context,
                     next,
-                    cancellationToken).ConfigureAwait(false))().ConfigureAwait(false);
+                    ct).ConfigureAwait(false))
+            (cancellationToken).ConfigureAwait(false);
 
         return result;
 
-        async Task<ExecutionResult> Handler() => await decoratee
-            .HandleAsync(context.Request, cancellationToken)
+        async Task<ExecutionResult> Handler(CancellationToken ct) => await decoratee
+            .HandleAsync(context.Request, ct)
             .ConfigureAwait(false);
     }
 }

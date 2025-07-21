@@ -22,19 +22,16 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <summary>
 /// Represents the next delegate to be executed on a pipeline.
 /// </summary>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public delegate Task<TResponse> RequestHandler<TResponse>()
-    where TResponse : notnull;
+/// <param name="cancellationToken">Optional cancellation token to observe for cancellation requests.</param>
+public delegate Task<ExecutionResult> RequestHandler(CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Defines a contract for decorating a pipeline handler, allowing pre- or post-processing
 /// around the execution of a request within the pipeline.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request being handled by the pipeline, which must be a class.</typeparam>
-/// <typeparam name="TResponse">The type of the response produced by the pipeline, which must be non-nullable.</typeparam>
-public interface IPipelineDecorator<TRequest, TResponse>
+public interface IPipelineDecorator<TRequest>
     where TRequest : class, IRequest
-    where TResponse : notnull
 {
     /// <summary>
     /// Handles the pipeline request and invokes the next handler in the pipeline.
@@ -43,8 +40,8 @@ public interface IPipelineDecorator<TRequest, TResponse>
     /// <param name="next">The next handler in the pipeline to be executed.</param>
     /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response.</returns>
-    Task<TResponse> HandleAsync(
+    Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        RequestHandler<TResponse> next,
+        RequestHandler next,
         CancellationToken cancellationToken);
 }

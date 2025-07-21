@@ -30,19 +30,17 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <param name="serviceProvider">The service provider used to resolve required services.</param>
 /// <typeparam name="TRequest">The type of the request, which must implement <see cref="IDependencyRequest"/> and
 /// <see cref="IAggregateAppended"/>.</typeparam>
-/// <typeparam name="TResponse">The type of the response, which must inherit from <see cref="Result"/>.</typeparam>
-public sealed class PipelineAggregateAppenderDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) :
-    IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineAggregateAppenderDecorator<TRequest>(IServiceProvider serviceProvider) :
+    IPipelineDecorator<TRequest>
     where TRequest : class, IDependencyRequest, IAggregateAppended
-    where TResponse : Result
 {
     /// <inheritdoc/>
-    public async Task<TResponse> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        RequestHandler<TResponse> next,
+        RequestHandler next,
         CancellationToken cancellationToken = default)
     {
-        TResponse response = await next().ConfigureAwait(false);
+        ExecutionResult response = await next(cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {

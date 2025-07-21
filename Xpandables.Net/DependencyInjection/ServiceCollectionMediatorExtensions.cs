@@ -53,7 +53,9 @@ public static class ServiceCollectionMediatorExtensions
         where TMediator : class, IMediator =>
         services
             .AddScoped<IMediator, TMediator>()
-            .AddXPipelineRequestHandler();
+            .AddXPipelineRequestHandler()
+            .AddXPipelinePreDecorator()
+            .AddXPipelinePostDecorator();
 
     /// <summary>
     /// Adds a defaults mediator and pipeline request handler to the <see cref="IServiceCollection" />.
@@ -130,12 +132,16 @@ public static class ServiceCollectionMediatorExtensions
                         }
                         && type.GetInterfaces().Any(i =>
                             i.IsGenericType &&
-                            i.GetGenericTypeDefinition() == typeof(IRequestHandler<>))))
+                            (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
+                            || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
+                            || i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))))
             .Select(type => new HandlerType(
                 type,
                 type.GetInterfaces()
                     .Where(i => i.IsGenericType &&
-                                i.GetGenericTypeDefinition() == typeof(IRequestHandler<>))));
+                                (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
+                                || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
+                                || i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))));
 
         foreach (HandlerType handlerType in handlerTypes)
         {
@@ -186,7 +192,7 @@ public static class ServiceCollectionMediatorExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineAppenderDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineAggregateAppenderDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineAggregateAppenderDecorator<>));
 
     /// <summary>
     /// Adds an pipeline decorator to the <see cref="IServiceCollection" /> that resolve
@@ -197,7 +203,7 @@ public static class ServiceCollectionMediatorExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineResolverDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineAggregateResolverDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineAggregateResolverDecorator<>));
 
     /// <summary>
     /// Adds the dependency pipeline decorator to the <see cref="IServiceCollection" />.
@@ -207,7 +213,7 @@ public static class ServiceCollectionMediatorExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineDependencyDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineDependencyDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineDependencyDecorator<>));
 
     /// <summary>
     /// Adds a unit of work pipeline decorator to the <see cref="IServiceCollection" />.
@@ -217,7 +223,29 @@ public static class ServiceCollectionMediatorExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineUnitOfWorkDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<>));
+
+    /// <summary>
+    /// Adds a post pipeline decorator to the <see cref="IServiceCollection" />.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelinePostDecorator(
+        this IServiceCollection services) =>
+        services
+            .AddXPipelineDecorator(typeof(PipelinePostDecorator<>));
+
+    /// <summary>
+    /// Adds a pre pipeline decorator to the <see cref="IServiceCollection" />.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelinePreDecorator(
+        this IServiceCollection services) =>
+        services
+            .AddXPipelineDecorator(typeof(PipelinePreDecorator<>));
 
     /// <summary>
     /// Adds a validation pipeline decorator to the <see cref="IServiceCollection" />.
@@ -228,7 +256,7 @@ public static class ServiceCollectionMediatorExtensions
     public static IServiceCollection AddXPipelineValidationDecorator(
         this IServiceCollection services) =>
         services
-            .AddXPipelineDecorator(typeof(PipelineValidationDecorator<,>));
+            .AddXPipelineDecorator(typeof(PipelineValidationDecorator<>));
 
     /// <summary>
     /// Adds an exception pipeline decorator to the <see cref="IServiceCollection" />.
@@ -238,7 +266,7 @@ public static class ServiceCollectionMediatorExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddXPipelineExceptionDecorator(
         this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineExceptionDecorator<,>));
+        services.AddXPipelineDecorator(typeof(PipelineExceptionDecorator<>));
 
     /// <summary>
     /// Registers a pipeline decorator of the specified type to the <see cref="IServiceCollection" />.
@@ -246,27 +274,27 @@ public static class ServiceCollectionMediatorExtensions
     /// </summary>
     /// <remarks>
     /// The pipeline decorator must implement the
-    /// <see cref="IPipelineDecorator{TRequest,TResponse}" /> interface.
+    /// <see cref="IPipelineDecorator{TRequest}" /> interface.
     /// </remarks>
     /// <param name="pipelineType">The type of the pipeline decorator to register.</param>
     /// <param name="services">The service collection to add the decorator to.</param>
     /// <returns>The updated service collection.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the specified type does not
-    /// match the <see cref="IPipelineDecorator{TRequest, TResponse}" /> interface.
+    /// match the <see cref="IPipelineDecorator{TRequest}" /> interface.
     /// </exception>
     public static IServiceCollection AddXPipelineDecorator(
         this IServiceCollection services, Type pipelineType)
     {
         if (!pipelineType.GetInterfaces().Any(i =>
                 i.IsGenericType
-                && i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<,>)))
+                && i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<>)))
         {
             throw new InvalidOperationException(
                 $"{pipelineType.Name} does not implement IPipelineDecorator<,> interface.");
         }
 
-        return services.AddTransient(typeof(IPipelineDecorator<,>), pipelineType);
+        return services.AddTransient(typeof(IPipelineDecorator<>), pipelineType);
     }
 
     /// <summary>

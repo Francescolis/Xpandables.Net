@@ -36,6 +36,51 @@ public interface IRequestHandler<in TRequest>
 }
 
 /// <summary>
+/// Defines a handler for processing requests after they have been executed.
+/// </summary>
+/// <typeparam name="TRequest">The type of request to be handled. 
+/// Must implement the <see cref="IRequest"/> interface.</typeparam>
+public interface IRequestPostHandler<TRequest>
+    where TRequest : class, IRequest
+{
+    /// <summary>
+    /// Asynchronously handles the specified request after it has been executed.
+    /// </summary>
+    /// <param name="context">The context of the request, containing necessary information for processing.</param>
+    /// <param name="response">The initial execution result to be modified or used during processing.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests, allowing the operation to be cancelled.</param>
+    /// <returns>A task representing the asynchronous operation, containing the final execution result after processing the
+    /// request.</returns>
+    Task<ExecutionResult> HandleAsync(
+        RequestContext<TRequest> context,
+        ExecutionResult response,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Defines a contract for handling a request asynchronously before it is processed.
+/// </summary>
+/// <remarks>Implementations of this interface are responsible for performing any necessary pre-processing on the
+/// request before it is passed to the main processing logic. This can include validation, logging, or other preparatory
+/// tasks.</remarks>
+/// <typeparam name="TRequest">The type of the request to be handled. Must implement <see cref="IRequest"/>.</typeparam>
+public interface IRequestPreHandler<TRequest>
+    where TRequest : class, IRequest
+{
+    /// <summary>
+    /// Asynchronously handles the specified request before it is processed.
+    /// </summary>
+    /// <param name="context">The context to be processed. Cannot be null.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
+    /// The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="ExecutionResult"/> of
+    /// the request processing.</returns>
+    Task<ExecutionResult> HandleAsync(
+        RequestContext<TRequest> context,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
 /// Defines a handler for processing requests of type <typeparamref name="TRequest"/> and returning a result of type
 /// <typeparamref name="TResponse"/>.
 /// </summary>

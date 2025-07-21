@@ -77,10 +77,10 @@ public sealed class PipelineUnitTest
         var request = new TestDependencyRequest { DependencyKeyId = "test-key", Name = "Test" };
         var handler = new TestDependencyRequestHandler();
         var unitOfWork = new TestUnitOfWork();
-        var decorators = new IPipelineDecorator<TestDependencyRequest, ExecutionResult>[]
+        var decorators = new IPipelineDecorator<TestDependencyRequest>[]
         {
-            new PipelineUnitOfWorkDecorator<TestDependencyRequest, ExecutionResult>(unitOfWork),
-            new PipelineDependencyDecorator<TestDependencyRequest, ExecutionResult>(new TestDependencyManager())
+            new PipelineUnitOfWorkDecorator<TestDependencyRequest>(unitOfWork),
+            new PipelineDependencyDecorator<TestDependencyRequest>(new TestDependencyManager())
         };
         var pipeline = new PipelineRequestHandler<TestDependencyRequest>(handler, decorators);
 
@@ -93,12 +93,12 @@ public sealed class PipelineUnitTest
         unitOfWork.SaveChangesCalled.Should().BeTrue();
     }
 
-    private static IEnumerable<IPipelineDecorator<TestDependencyRequest, ExecutionResult>> BuildPipelineDecorators() =>
+    private static IEnumerable<IPipelineDecorator<TestDependencyRequest>> BuildPipelineDecorators() =>
         [
-            new PipelineValidationDecorator<TestDependencyRequest, ExecutionResult>(new CompositeValidator<TestDependencyRequest>([new TestCompositeValidator()])),
-            new PipelineUnitOfWorkDecorator<TestDependencyRequest, ExecutionResult>(new TestUnitOfWork()),
-            new PipelineDependencyDecorator<TestDependencyRequest, ExecutionResult>(new TestDependencyManager()),
-            new PipelineExceptionDecorator<TestDependencyRequest, ExecutionResult>()
+            new PipelineValidationDecorator<TestDependencyRequest>(new CompositeValidator<TestDependencyRequest>([new TestCompositeValidator()])),
+            new PipelineUnitOfWorkDecorator<TestDependencyRequest>(new TestUnitOfWork()),
+            new PipelineDependencyDecorator<TestDependencyRequest>(new TestDependencyManager()),
+            new PipelineExceptionDecorator<TestDependencyRequest>()
         ];
 }
 

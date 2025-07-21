@@ -25,16 +25,14 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// Implements a pipeline decorator that resolves and injects dependencies into the request during pipeline execution.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request object, which must implement <see cref="IDependencyRequest"/>.</typeparam>
-/// <typeparam name="TResponse">The type of the response object, which must not be null.</typeparam>
-public sealed class PipelineDependencyDecorator<TRequest, TResponse>(
-    IDependencyManager dependencyManager) : IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineDependencyDecorator<TRequest>(
+    IDependencyManager dependencyManager) : IPipelineDecorator<TRequest>
     where TRequest : class, IDependencyRequest, IDependencyProvided
-    where TResponse : notnull
 {
     /// <inheritdoc/>
-    public async Task<TResponse> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        RequestHandler<TResponse> next,
+        RequestHandler next,
         CancellationToken cancellationToken = default)
     {
         IDependencyProvider dependencyProvider = dependencyManager
@@ -46,6 +44,6 @@ public sealed class PipelineDependencyDecorator<TRequest, TResponse>(
 
         context.Request.DependencyInstance = dependency;
 
-        return await next().ConfigureAwait(false);
+        return await next(cancellationToken).ConfigureAwait(false);
     }
 }

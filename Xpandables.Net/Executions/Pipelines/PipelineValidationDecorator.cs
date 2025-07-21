@@ -24,21 +24,19 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// using a composite validator before proceeding to the next pipeline component.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request object, must be a class and implement <see cref="IValidationEnabled"/>.</typeparam>
-/// <typeparam name="TResponse">The type of the response object, must inherit from <see cref="Result"/>.</typeparam>
 /// <param name="validators">The instance of a composite validator responsible for validating the request.</param>
 /// <remarks>
 /// If the validation fails, the pipeline will short-circuit and return a validation error response.
 /// If the validation succeeds, the execution continues to the next component in the pipeline.
 /// </remarks>
-public sealed class PipelineValidationDecorator<TRequest, TResponse>(ICompositeValidator<TRequest> validators) :
-    IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineValidationDecorator<TRequest>(ICompositeValidator<TRequest> validators) :
+    IPipelineDecorator<TRequest>
     where TRequest : class, IRequest, IValidationEnabled
-    where TResponse : Result
 {
     /// <inheritdoc/>
-    public async Task<TResponse> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        RequestHandler<TResponse> next,
+        RequestHandler next,
         CancellationToken cancellationToken = default)
     {
         ExecutionResult result = await validators
@@ -47,9 +45,9 @@ public sealed class PipelineValidationDecorator<TRequest, TResponse>(ICompositeV
 
         if (!result.IsSuccessStatusCode)
         {
-            return (TResponse)(Result)result;
+            return result;
         }
 
-        return await next().ConfigureAwait(false);
+        return await next(cancellationToken).ConfigureAwait(false);
     }
 }

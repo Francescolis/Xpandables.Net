@@ -23,25 +23,23 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// of a request and transforms them into an <see cref="ExecutionResult"/>.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
-/// <typeparam name="TResponse">The type of the response.</typeparam>
-public sealed class PipelineExceptionDecorator<TRequest, TResponse> : IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineExceptionDecorator<TRequest> : IPipelineDecorator<TRequest>
     where TRequest : class, IRequest
-    where TResponse : Result
 {
     /// <inheritdoc/>
-    public async Task<TResponse> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        RequestHandler<TResponse> next,
+        RequestHandler next,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return await next().ConfigureAwait(false);
+            return await next(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
         {
-            return (TResponse)(Result)exception.ToExecutionResult();
+            return exception.ToExecutionResult();
         }
     }
 }

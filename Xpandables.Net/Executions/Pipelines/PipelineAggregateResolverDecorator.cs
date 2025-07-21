@@ -29,16 +29,14 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// </summary>
 /// <param name="serviceProvider">The service provider used to resolve dependencies required by the pipeline.</param>
 /// <typeparam name="TRequest">The type of the request that implements IDependencyRequest.</typeparam>
-/// <typeparam name="TResponse">The type of the response that inherits from _ExecutionResult.</typeparam>
-public sealed class PipelineAggregateResolverDecorator<TRequest, TResponse>(IServiceProvider serviceProvider) :
-    IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineAggregateResolverDecorator<TRequest>(IServiceProvider serviceProvider) :
+    IPipelineDecorator<TRequest>
     where TRequest : class, IDependencyRequest, IAggregateResolved
-    where TResponse : Result
 {
     /// <inheritdoc/>
-    public async Task<TResponse> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        RequestHandler<TResponse> next,
+        RequestHandler next,
         CancellationToken cancellationToken = default)
     {
         Type aggregateStoreType = typeof(IAggregateStore<>)
@@ -51,6 +49,6 @@ public sealed class PipelineAggregateResolverDecorator<TRequest, TResponse>(ISer
             .ResolveAsync((Guid)context.Request.DependencyKeyId, cancellationToken)
             .ConfigureAwait(false);
 
-        return await next().ConfigureAwait(false);
+        return await next(cancellationToken).ConfigureAwait(false);
     }
 }

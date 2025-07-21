@@ -27,21 +27,19 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// after processing the request and response in a pipeline execution.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request object that must implement <see cref="IUnitOfWorkApplied"/>.</typeparam>
-/// <typeparam name="TResponse">The type of the response object that must derive from <see cref="Result"/>.</typeparam>
-public sealed class PipelineUnitOfWorkDecorator<TRequest, TResponse>(IUnitOfWork unitOfWork) :
-    IPipelineDecorator<TRequest, TResponse>
+public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork unitOfWork) :
+    IPipelineDecorator<TRequest>
     where TRequest : class, IRequest, IUnitOfWorkApplied
-    where TResponse : Result
 {
     /// <inheritdoc/>
-    public async Task<TResponse> HandleAsync(
+    public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        RequestHandler<TResponse> next,
+        RequestHandler next,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            TResponse response = await next().ConfigureAwait(false);
+            ExecutionResult response = await next(cancellationToken).ConfigureAwait(false);
 
             return response;
         }
