@@ -26,6 +26,53 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionRepositoryExtensions
 {
     /// <summary>
+    /// Adds a scoped service of the type specified in <typeparamref name="TRepository"/> to the <see
+    /// cref="IServiceCollection"/> with an <see cref="IRepository"/> service type.
+    /// </summary>
+    /// <remarks>This method registers the repository as a scoped service, meaning a new instance will be
+    /// created for each request within the scope.</remarks>
+    /// <typeparam name="TRepository">The type of the repository to add. 
+    /// This type must implement <see cref="IRepository"/>.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the repository will be added.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.</returns>
+    public static IServiceCollection AddXRepository<TRepository>(
+        this IServiceCollection services)
+        where TRepository : class, IRepository =>
+        services.AddScoped<IRepository, TRepository>();
+
+    /// <summary>
+    /// Adds a keyed scoped service of type <typeparamref name="TRepository"/> to the specified <see
+    /// cref="IServiceCollection"/>.
+    /// </summary>
+    /// <remarks>This method registers the repository as a scoped service, allowing it to be resolved with the
+    /// specified key.</remarks>
+    /// <typeparam name="TRepository">The type of the repository to add. 
+    /// Must implement <see cref="IRepository"/>.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the service is added.</param>
+    /// <param name="key">The key associated with the repository service.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
+    public static IServiceCollection AddXRepositoryKeyed<TRepository>(
+        this IServiceCollection services, string key)
+        where TRepository : class, IRepository =>
+        services.AddKeyedScoped<IRepository, TRepository>(key);
+
+    /// <summary>
+    /// Registers a repository service with a scoped lifetime in the dependency injection container.
+    /// </summary>
+    /// <remarks>This method registers the specified repository implementation with a scoped lifetime, meaning
+    /// a new instance is created for each request within the same scope. Ensure that <typeparamref name="TRepository"/>
+    /// implements <typeparamref name="TInterface"/> to avoid runtime errors.</remarks>
+    /// <typeparam name="TInterface">The interface type of the repository to register.</typeparam>
+    /// <typeparam name="TRepository">The concrete implementation type of the repository.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the repository is added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> with the repository service registered.</returns>
+    public static IServiceCollection AddXRepository<TInterface, TRepository>(
+        this IServiceCollection services)
+        where TInterface : class, IRepository
+        where TRepository : class, TInterface =>
+        services.AddScoped<TInterface, TRepository>();
+
+    /// <summary>
     /// Adds a keyed scoped <see cref="IUnitOfWork"/> service to the 
     /// <see cref="IServiceCollection"/>.
     /// </summary>
