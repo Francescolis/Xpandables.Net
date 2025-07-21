@@ -15,6 +15,8 @@
  *
  ********************************************************************************/
 
+using System.Linq.Expressions;
+
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Repositories.Filters;
@@ -26,14 +28,14 @@ namespace Xpandables.Net.Repositories;
 /// specific data context.
 /// </summary>
 /// <typeparam name="TDataContext">The type of the data context.</typeparam>
-public abstract class Repository<TDataContext>(TDataContext context) : AsyncDisposable, IRepository
+public class Repository<TDataContext>(TDataContext context) : AsyncDisposable, IRepository
     where TDataContext : DataContext
 {
     /// <summary>
     /// Gets the data context associated with this repository.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
-    protected TDataContext Context { get; } = context;
+    protected TDataContext Context { get; private set; } = context;
 
     /// <inheritdoc />
     public virtual Task DeleteAsync<TEntity>(
@@ -66,6 +68,30 @@ public abstract class Repository<TDataContext>(TDataContext context) : AsyncDisp
             };
 
         return results;
+    }
+
+    /// <inheritdoc />
+    public virtual IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+        Expression<Func<TEntity, bool>> where,
+        Expression<Func<TEntity, TResult>> selector,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? includes = null,
+        ushort pageIndex = 0,
+        ushort pageSize = 0,
+        CancellationToken cancellationToken = default)
+        where TEntity : class, IEntity
+    {
+        EntityFilter<TEntity, TResult> filter = new()
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize,
+            Selector = selector,
+            Where = where,
+            OrderBy = orderBy,
+            Includes = includes
+        };
+
+        return FetchAsync(filter, cancellationToken);
     }
 
     /// <inheritdoc />

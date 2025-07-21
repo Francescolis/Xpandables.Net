@@ -61,6 +61,18 @@ public static class ServiceCollectionRepositoryExtensions
             optionsAction, contextLifetime, optionsLifetime);
 
     /// <summary>
+    /// Adds the default implementation of <see cref="IRepository"/> to the service collection.
+    /// </summary>
+    /// <typeparam name="TDataContext">The type of the data context used by the repository. 
+    /// Must inherit from <see cref="DataContext"/>.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the repository service is added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> with the repository service registered.</returns>
+    public static IServiceCollection AddXRepositoryDefault<TDataContext>(
+        this IServiceCollection services)
+        where TDataContext : DataContext =>
+        services.AddScoped<IRepository, Repository<TDataContext>>();
+
+    /// <summary>
     /// Adds the UnitOfWork to the service collection.
     /// </summary>
     /// <param name="services">The service collection to add the UnitOfWork to.</param>

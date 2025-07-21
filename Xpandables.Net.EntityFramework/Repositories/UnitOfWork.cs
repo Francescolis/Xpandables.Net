@@ -1,5 +1,8 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Data.Common;
+using System.Reflection;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,83 +14,49 @@ namespace Xpandables.Net.Repositories;
 /// </summary>
 public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) : AsyncDisposable, IUnitOfWork
 {
+    private readonly ConcurrentDictionary<Type, IRepository> _repositories = [];
     private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private IDbContextTransaction? _transaction;
-    private bool _committed;
-    private bool _rollback;
-    private bool _exception;
-
     /// <summary>
     /// Gets the data context associated with this unit of work.
     /// </summary>
     protected DataContext Context { get; } = context;
 
     /// <inheritdoc />
-    public async Task<IAsyncDisposable> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public bool IsTransactional { get; set; }
+
+    /// <inheritdoc />
+    public async Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction is not null)
+        if (IsTransactional)
         {
             throw new InvalidOperationException("A transaction is already in progress.");
         }
 
-        _transaction = await Context.Database
+        var _transaction = await Context.Database
             .BeginTransactionAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return this;
+        return new UnitOfWorkTransaction(_transaction, this);
     }
 
     /// <inheritdoc />
-    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task<IUnitOfWorkTransaction> UseTransactionAsync(
+        DbTransaction transaction,
+        CancellationToken cancellationToken = default)
     {
-        if (_transaction is null)
-        {
-            throw new InvalidOperationException("No transaction is in progress.");
-        }
-        try
-        {
-            await _transaction
-                .CommitAsync(cancellationToken)
-                .ConfigureAwait(false);
-            _committed = true;
-        }
-        catch
-        {
-            _exception = true;
-            throw;
-        }
-        finally
-        {
-            if (_transaction is not null)
-            {
-                await _transaction.DisposeAsync().ConfigureAwait(false);
-                _transaction = null;
-            }
-        }
-    }
+        ArgumentNullException.ThrowIfNull(transaction);
 
-    /// <inheritdoc />
-    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
-    {
-        if (_transaction is null)
+        if (IsTransactional)
         {
-            throw new InvalidOperationException("No transaction is in progress.");
+            throw new InvalidOperationException("A transaction is already in progress.");
         }
-        try
-        {
-            await _transaction
-                .RollbackAsync(cancellationToken)
-                .ConfigureAwait(false);
-            _rollback = true;
-        }
-        finally
-        {
-            if (_transaction is not null)
-            {
-                await _transaction.DisposeAsync().ConfigureAwait(false);
-                _transaction = null;
-            }
-        }
+
+        var _transaction = await Context.Database
+            .UseTransactionAsync(transaction, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Unable to use the specified transaction");
+
+        return new UnitOfWorkTransaction(_transaction, this);
     }
 
     /// <inheritdoc />
@@ -110,14 +79,19 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     public TRepository GetRepository<TRepository>()
         where TRepository : class, IRepository
     {
-        var repository = _serviceProvider.GetService<TRepository>()
-            ?? throw new InvalidOperationException(
-                $"The repository of type {typeof(TRepository).Name} is not registered.");
+        var repository = _repositories.GetOrAdd(typeof(TRepository), _ =>
+        {
+            var service = _serviceProvider.GetService<TRepository>()
+                ?? throw new InvalidOperationException(
+                    $"The repository of type {typeof(TRepository).Name} is not registered.");
 
-        // Inject the ambient DataContext into the repository
-        InjectAmbientContext(repository);
+            // Inject the ambient DataContext into the repository
+            InjectAmbientContext(service);
 
-        return repository;
+            return service;
+        });
+
+        return (TRepository)repository;
     }
 
     /// <inheritdoc />
@@ -125,16 +99,12 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     {
         if (disposing)
         {
-            if (_exception && !_rollback && _transaction is not null)
-            {
-                await RollbackTransactionAsync().ConfigureAwait(false);
-            }
-            else if (!_committed && _transaction is not null)
-            {
-                await CommitTransactionAsync().ConfigureAwait(false);
-            }
-
             await Context.DisposeAsync().ConfigureAwait(false);
+            foreach (var repository in _repositories.Values)
+            {
+                await repository.DisposeAsync().ConfigureAwait(false);
+            }
+            _repositories.Clear();
         }
 
         await base.DisposeAsync(disposing).ConfigureAwait(false);
@@ -198,16 +168,14 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
             .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             .FirstOrDefault(prop =>
                 typeof(DataContext).IsAssignableFrom(prop.PropertyType) &&
-                prop.CanWrite &&
-                (prop.SetMethod?.IsPublic == true || prop.SetMethod?.IsAssembly == true || prop.SetMethod?.IsFamily == true));
+                prop.CanWrite);
     private static FieldInfo? FindDataContextField(Type repositoryType) =>
         // Look for fields that are assignable from DataContext
         repositoryType
             .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             .FirstOrDefault(field =>
                 typeof(DataContext).IsAssignableFrom(field.FieldType) &&
-                !field.IsInitOnly && // Not readonly
-                (field.IsPublic || field.IsAssembly || field.IsFamily)); // Accessible
+                !field.IsInitOnly);
 }
 
 /// <summary>
@@ -223,4 +191,102 @@ public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider ser
     /// Gets the data context associated with this unit of work.
     /// </summary>
     protected new TDataContext Context { get; } = context;
+}
+
+internal sealed class UnitOfWorkTransaction : AsyncDisposable, IUnitOfWorkTransaction
+{
+    private readonly UnitOfWork _unitOfWork;
+    private IDbContextTransaction? _transaction;
+    private bool _committed;
+    private bool _rollback;
+    private bool _exception;
+
+    public UnitOfWorkTransaction(IDbContextTransaction transaction, UnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+        _transaction = transaction;
+        _unitOfWork.IsTransactional = true;
+    }
+
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transaction is null)
+        {
+            throw new InvalidOperationException("No transaction is in progress.");
+        }
+        try
+        {
+            await _transaction
+                .CommitAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            _committed = true;
+        }
+        catch
+        {
+            _exception = true;
+            throw;
+        }
+    }
+
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transaction is null)
+        {
+            throw new InvalidOperationException("No transaction is in progress.");
+        }
+
+        try
+        {
+            await _transaction
+                .RollbackAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            _rollback = true;
+        }
+        catch
+        {
+            _exception = true;
+            throw;
+        }
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            if (_transaction is null)
+            {
+                return;
+            }
+            try
+            {
+                if (_exception && !_rollback)
+                {
+                    await RollbackTransactionAsync().ConfigureAwait(false);
+                }
+                else if (!_exception && !_committed)
+                {
+                    try
+                    {
+                        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+                        await CommitTransactionAsync().ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        await RollbackTransactionAsync().ConfigureAwait(false);
+                        throw;
+                    }
+                }
+            }
+            finally
+            {
+                await _transaction.DisposeAsync().ConfigureAwait(false);
+                _transaction = null;
+                _unitOfWork.IsTransactional = false;
+            }
+        }
+
+        await base.DisposeAsync(disposing).ConfigureAwait(false);
+    }
 }

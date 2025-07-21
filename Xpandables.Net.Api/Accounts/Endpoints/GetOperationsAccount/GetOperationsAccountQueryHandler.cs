@@ -29,6 +29,16 @@ public sealed class GetOperationsAccountQueryHandler(
             OrderBy = e => e.OrderByDescending(o => o.CreatedOn)
         };
 
+        EntityFilter<EntityDomainEvent, object> entityFilter = new()
+        {
+            Where = e => e.AggregateId == query.KeyId,
+            Selector = e => new
+            {
+                e.KeyId,
+                e.CreatedOn
+            },
+        };
+
         IAsyncEnumerable<IEvent> events = eventStore.FetchAsync(filter, cancellationToken);
 
         IAsyncEnumerable<OperationAccount> operations = GetOperations(events, cancellationToken);

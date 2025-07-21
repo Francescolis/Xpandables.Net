@@ -1,5 +1,9 @@
 ﻿using FluentAssertions;
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
+using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Filters;
 
@@ -7,17 +11,35 @@ namespace Xpandables.Net.Test.UnitTests;
 
 public sealed class RepositoryUnitTest
 {
-    private readonly InMemoryRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IServiceProvider _serviceProvider;
     public RepositoryUnitTest()
     {
-        _repository = new InMemoryRepository();
-
         // Arrange
-        _repository.InsertAsync(new List<TestEntity>
-        {
-            new() { KeyId = 1, Name = "Test1" },
-            new() { KeyId = 2, Name = "Test2" }
-        }).Wait();
+        _serviceProvider = new ServiceCollection()
+            .AddXUnitOfWork<UnitOfWork<TestDbContext>>()
+            .AddXRepositoryDefault<TestDbContext>()
+            .AddXDataContext<TestDbContext>(options =>
+                options
+                .UseSqlServer(@"Data Source=(localdb)\ProjectModels;Initial Catalog=XpandablesDb;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False")
+                .UseSeeding((ctx, _) =>
+                {
+                    if (ctx.Set<TestEntity>().Any())
+                        ctx.Set<TestEntity>().ExecuteDelete();
+                    ctx.Set<TestEntity>().AddRange(
+                        new TestEntity { KeyId = 1, Name = "Test1" },
+                        new TestEntity { KeyId = 2, Name = "Test2" }
+                    );
+                    ctx.SaveChanges();
+                }))
+            .BuildServiceProvider();
+
+        _unitOfWork = _serviceProvider.GetRequiredService<IUnitOfWork>();
+
+        using var scope = _serviceProvider.CreateScope();
+        // Initialize the database and insert initial data
+        var dbContext = scope.ServiceProvider.GetRequiredService<TestDbContext>();
+        dbContext.Database.EnsureCreated();
     }
 
     [Fact]
@@ -30,11 +52,28 @@ public sealed class RepositoryUnitTest
             Selector = e => e
         };
 
+        await using var repository = _unitOfWork.GetRepository<IRepository>();
         // Act
-        var result = await _repository.FetchAsync(filter).ToListAsync();
+        var result = await repository.FetchAsync(filter).ToListAsync();
 
         // Assert
         result.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task FetchAsyncAnonymous_ShouldReturnAnonymousTypes()
+    {
+        // Arrange
+        await using var repository = _unitOfWork.GetRepository<IRepository>();
+        // Act
+        var result = await repository
+            .FetchAsync((TestEntity e) => e.KeyId > 0, e => new { e.KeyId, e.Name })
+            .ToListAsync();
+
+        // Assert
+        result.Should().NotBeEmpty();
+        result.Should().OnlyContain(e => e.GetType().GetProperty("KeyId") != null &&
+                                         e.GetType().GetProperty("Name") != null);
     }
 
     [Fact]
@@ -43,20 +82,26 @@ public sealed class RepositoryUnitTest
         // Arrange
         var entities = new List<TestEntity>
             {
-                new() { KeyId = 1,  Name = "Test1" },
-                new() { KeyId = 2, Name = "Test2" }
+                new() { KeyId = 3,  Name = "Test3" },
+                new() { KeyId = 4, Name = "Test4" }
             };
 
         // Act
-        await _repository.InsertAsync(entities);
+        await using (var transaction = await _unitOfWork.BeginTransactionAsync())
+        {
+            await using var repository = _unitOfWork.GetRepository<IRepository>();
+            await repository.InsertAsync(entities);
+        }
 
         // Assert
         var filter = new EntityFilter<TestEntity>
         {
-            Where = e => e.KeyId > 0,
+            Where = e => e.KeyId > 2,
             Selector = e => e
         };
-        var result = await _repository.FetchAsync(filter).ToListAsync();
+
+        await using var repository1 = _unitOfWork.GetRepository<IRepository>();
+        var result = await repository1.FetchAsync(filter).ToListAsync();
         result.Should().Contain(entities);
     }
 
@@ -69,32 +114,21 @@ public sealed class RepositoryUnitTest
             Where = e => e.KeyId == 1
         };
 
+        await using var repository = _unitOfWork.GetRepository<IRepository>();
+
         // Act
-        await _repository.DeleteAsync(filter);
+        await repository.DeleteAsync(filter);
+        await _unitOfWork.SaveChangesAsync();
 
         // Assert
-        var result = await _repository.FetchAsync(filter).ToListAsync();
+        var result = await repository.FetchAsync(filter).ToListAsync();
         result.Should().NotContain(e => e.KeyId == 1);
-    }
-
-    [Fact]
-    public async Task SaveChangesAsync_ShouldSaveChanges()
-    {
-        // Arrange
-        var _unitOfWork = new InMemoryUnitOfWork();
-
-        // Act
-        var result = await _unitOfWork.SaveChangesAsync();
-
-        // Assert
-        result.Should().BePositive();
     }
 
     [Fact]
     public void GetRepository_ShouldReturnRepository()
     {
         // Arrange
-        var _unitOfWork = new InMemoryUnitOfWork();
 
         // Act
         var repository = _unitOfWork.GetRepository<IRepository>();
@@ -106,116 +140,36 @@ public sealed class RepositoryUnitTest
     [Fact]
     public async Task UsingStatement_ShouldCallSaveChangesAsyncOnDispose()
     {
-        // Arrange
-        var unitOfWork = new InMemoryUnitOfWork();
-
-        // Act
-        await using (var repository = unitOfWork.GetRepository<IRepository>())
+        // Arrange // Act
+        await using (var transaction = await _unitOfWork.BeginTransactionAsync())
         {
+            await using var repository = _unitOfWork.GetRepository<IRepository>();
             await repository.InsertAsync(new List<TestEntity>
-            { new() { KeyId = 1,  Name = "Test" } });
+            { new() { KeyId = 5,  Name = "Test5" } });
+            // No need to call SaveChangesAsync explicitly, it should be called automatically
         }
 
         // Assert
-        // No need to call SaveChangesAsync explicitly, it should be called automatically
-        var result = await unitOfWork.GetChangesCountAsync();
-        result.Should().BePositive();
+        await using var _repository = _unitOfWork.GetRepository<IRepository>();
+        var name = await _repository.FetchAsync((TestEntity e) => e.KeyId == 5, e => e.Name).FirstAsync();
+        name.Should().Be("Test5");
     }
 }
 
-// Assuming InMemoryUnitOfWork is a real implementation of UnitOfWork
-public class InMemoryUnitOfWork : IUnitOfWork
+public sealed class TestDbContext(DbContextOptions<TestDbContext> options) : DataContext(options)
 {
-    private int _changesCount = 0;
-
-    public Task<int> SaveChangesAsync(
-        CancellationToken cancellationToken = default)
+    public DbSet<TestEntity> TestEntities { get; set; } = null!;
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Simulate saving changes
-        _changesCount++;
-        return Task.FromResult(_changesCount);
-    }
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+        modelBuilder.Entity<TestEntity>().HasNoKey();
+        modelBuilder.Entity<TestEntity>().Property<Guid>("Id").ValueGeneratedOnAdd();
+        modelBuilder.Entity<TestEntity>().HasKey("Id");
+        modelBuilder.Entity<TestEntity>().Property(e => e.KeyId).IsRequired();
+        modelBuilder.Entity<TestEntity>().Property(e => e.Name).IsRequired().HasMaxLength(100);
+        modelBuilder.Entity<TestEntity>().ToTable("TestEntities");
 
-    public TRepository GetRepository<TRepository>()
-        where TRepository : class, IRepository =>
-        // Simulate getting a repository
-        (new InMemoryRepository() as TRepository)!;
-
-    public Task<int> GetChangesCountAsync() => Task.FromResult(_changesCount);
-    public Task<IAsyncDisposable> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
-    public Task CommitTransactionAsync(CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
-    public Task RollbackTransactionAsync(CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
-    public ValueTask DisposeAsync() => throw new NotImplementedException();
-}
-
-public class InMemoryRepository : IRepository
-{
-    private readonly List<IEntity> _entities = [];
-
-    public IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        IEntityFilter<TEntity, TResult> entityFilter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity
-    {
-        var query = _entities.OfType<TEntity>().AsQueryable();
-        var filteredQuery = entityFilter.Apply(query);
-        return filteredQuery.OfType<TResult>().ToAsyncEnumerable();
-    }
-
-    public Task InsertAsync<TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity
-    {
-        _entities.AddRange(entities);
-        return Task.CompletedTask;
-    }
-
-    public Task UpdateAsync<TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity
-    {
-        var query = _entities.OfType<TEntity>().AsQueryable();
-
-        foreach (var entity in entities)
-        {
-            var existingEntity = query.FirstOrDefault(e => e.KeyId.Equals(entity.KeyId));
-            if (existingEntity != null)
-            {
-                // Update the existing entity with the new values
-                _entities.Remove(existingEntity);
-                _entities.Add(entity);
-            }
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task DeleteAsync<TEntity>(
-        IEntityFilter<TEntity> entityFilter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity
-    {
-        var query = _entities.OfType<TEntity>().AsQueryable();
-        var filteredEntities = entityFilter.Apply(query).OfType<TEntity>().ToList();
-
-        foreach (var entity in filteredEntities)
-        {
-            _entities.Remove(entity);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        // Simulate dispose
-        GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
+        base.OnModelCreating(modelBuilder);
     }
 }
 

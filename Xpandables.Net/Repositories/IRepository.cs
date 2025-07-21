@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Linq.Expressions;
+
 using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Repositories;
@@ -33,6 +35,30 @@ public interface IRepository : IAsyncDisposable
     /// <returns>An asynchronous enumerable of the result type.</returns>
     IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
         IEntityFilter<TEntity, TResult> filter,
+        CancellationToken cancellationToken = default)
+        where TEntity : class, IEntity;
+
+    /// <summary>
+    /// Fetches projected results from the repository using a selector expression.
+    /// This method is particularly useful for anonymous type projections.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the entity.</typeparam>
+    /// <typeparam name="TResult">The type of the result (can be anonymous).</typeparam>
+    /// <param name="selector">The projection expression to apply to entities.</param>
+    /// <param name="where">The predicate to filter entities.</param>
+    /// <param name="orderBy">Optional ordering function.</param>
+    /// <param name="includes">Optional function to include related entities.</param>
+    /// <param name="pageIndex">Optional page index (1-based, 0 to disable pagination).</param>
+    /// <param name="pageSize">Optional page size (0 to disable pagination).</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>An asynchronous enumerable of the result type.</returns>
+    IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+        Expression<Func<TEntity, bool>> where,
+        Expression<Func<TEntity, TResult>> selector,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? includes = null,
+        ushort pageIndex = 0,
+        ushort pageSize = 0,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
 

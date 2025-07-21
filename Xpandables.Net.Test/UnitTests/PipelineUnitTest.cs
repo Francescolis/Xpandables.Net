@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Data.Common;
+using System.Net;
 
 using FluentAssertions;
 
@@ -149,11 +150,10 @@ public sealed class TestCompositeValidator : Validator<TestDependencyRequest>
 // Concrete implementation for unit of work
 public sealed class TestUnitOfWork : IUnitOfWork
 {
+    public bool IsTransactional { get; set; }
     public bool SaveChangesCalled { get; private set; }
 
-    public Task<IAsyncDisposable> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
-    public Task CommitTransactionAsync(CancellationToken cancellationToken = default) =>
+    public Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
@@ -167,6 +167,10 @@ public sealed class TestUnitOfWork : IUnitOfWork
         SaveChangesCalled = true;
         return Task.FromResult(1);
     }
+
+    public Task<IUnitOfWorkTransaction> UseTransactionAsync(
+        DbTransaction transaction,
+        CancellationToken cancellationToken = default) => throw new NotImplementedException();
 }
 
 // Concrete implementation for dependency management
