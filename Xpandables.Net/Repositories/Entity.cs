@@ -36,7 +36,7 @@ public abstract class Entity<TKey> : IEntity<TKey>
     public string Status { get; set; } = EntityStatus.ACTIVE;
 
     /// <inheritdoc />
-    public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedOn { get; set; } = DateTime.Now;
 
     /// <inheritdoc />
     public DateTime? UpdatedOn { get; set; }

@@ -20,11 +20,29 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Xpandables.Net.Repositories;
 
-/// <summary>  
-/// Represents the base class for the Entity Framework Core data context.  
-/// </summary>  
-public abstract class DataContext : DbContext
+/// <summary>
+/// Represents a custom database context that extends <see cref="DbContext"/> to manage entity tracking and state
+/// changes.
+/// </summary>
+/// <remarks>The <see cref="DataContext"/> class provides functionality to initialize a database context with
+/// default or specified options. It includes event handling for entity tracking and state changes, ensuring that
+/// entities are correctly managed when added or modified. This class is suitable for scenarios where custom behavior is
+/// needed during entity lifecycle events.</remarks>
+public class DataContext : DbContext
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DataContext"/> class with default options.
+    /// </summary>
+    /// <remarks>This constructor is useful for scenarios where no specific <see cref="DbContextOptions"/> are
+    /// provided. It initializes the context with default settings, which may be suitable for simple use cases or
+    /// testing. The <see cref="DbContext.OnConfiguring(DbContextOptionsBuilder)"/> method will be called to configure 
+    /// the database (and other options) to be used for this context.</remarks>
+    protected DataContext() : this(new DbContextOptions<DataContext>())
+    {
+        // Default constructor initializes the context with default options.
+        // This is useful for scenarios where no specific options are provided.
+    }
+
     /// <summary>  
     /// Initializes a new instance of the <see cref="DataContext"/> class 
     /// using the specified options.  
