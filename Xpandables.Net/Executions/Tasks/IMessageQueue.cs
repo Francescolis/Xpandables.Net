@@ -2,7 +2,6 @@ using System.Threading.Channels;
 
 using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Executions.Tasks;
 
@@ -61,19 +60,17 @@ public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
     /// <inheritdoc />
     public async Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default)
     {
-        EventFilterIntegration eventFilter = new()
-        {
-            Where = x => x.Status == EntityStatus.PENDING.Value,
-            PageIndex = 0,
-            PageSize = capacity,
-            OrderBy = x => x.OrderBy(o => o.CreatedOn)
-        };
+        Func<IQueryable<EntityIntegrationEvent>, IAsyncQueryable<IEvent>> filter = query =>
+            query.Where(w => w.Status == EntityStatus.PENDING)
+                .OrderBy(o => o.CreatedOn)
+                .Take(capacity)
+                .SelectEvent();
 
-        await foreach (IIntegrationEvent @event in eventStore
-            .FetchAsync(eventFilter, cancellationToken)
+        await foreach (IEvent @event in eventStore
+            .FetchAsync(filter, cancellationToken)
             .WithCancellation(cancellationToken))
         {
-            await Channel.Writer.WriteAsync(@event, cancellationToken).ConfigureAwait(false);
+            await Channel.Writer.WriteAsync((IIntegrationEvent)@event, cancellationToken).ConfigureAwait(false);
         }
     }
 }

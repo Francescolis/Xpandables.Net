@@ -15,11 +15,7 @@
  *
  ********************************************************************************/
 
-using System.Linq.Expressions;
-
 using Microsoft.EntityFrameworkCore;
-
-using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Repositories;
 
@@ -39,13 +35,13 @@ public class Repository<TDataContext>(TDataContext context) : AsyncDisposable, I
 
     /// <inheritdoc />
     public virtual Task DeleteAsync<TEntity>(
-        IEntityFilter<TEntity> filter,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         CancellationToken cancellationToken)
         where TEntity : class, IEntity
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        IQueryable<TEntity> query = filter.Apply(Context.Set<TEntity>()).OfType<TEntity>();
+        IQueryable<TEntity> query = filter(Context.Set<TEntity>());
 
         Context.RemoveRange(query);
 
@@ -53,56 +49,30 @@ public class Repository<TDataContext>(TDataContext context) : AsyncDisposable, I
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        IEntityFilter<TEntity, TResult> filter,
-        CancellationToken cancellationToken)
+    public IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        CancellationToken cancellationToken = default)
         where TEntity : class, IEntity
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        IAsyncEnumerable<TResult> results =
-            (filter is IEntityFilter<TEntity>) switch
-            {
-                true => filter.FetchAsync(Context.Set<TEntity>(), cancellationToken),
-                _ => filter.FetchAsync(Context.Set<TEntity>().AsNoTracking(), cancellationToken)
-            };
+        IQueryable<TEntity> queryable = typeof(TEntity) != typeof(TResult)
+            ? Context.Set<TEntity>().AsNoTracking()
+            : Context.Set<TEntity>();
 
-        return results;
+        IQueryable<TResult> query = filter(queryable);
+
+        return query.AsAsyncEnumerable();
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        Expression<Func<TEntity, bool>> where,
-        Expression<Func<TEntity, TResult>> selector,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        Func<IQueryable<TEntity>, IQueryable<TEntity>>? includes = null,
-        ushort pageIndex = 0,
-        ushort pageSize = 0,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity
-    {
-        EntityFilter<TEntity, TResult> filter = new()
-        {
-            PageIndex = pageIndex,
-            PageSize = pageSize,
-            Selector = selector,
-            Where = where,
-            OrderBy = orderBy,
-            Includes = includes
-        };
-
-        return FetchAsync(filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public virtual Task InsertAsync<TEntity>(
+    public virtual async Task InsertAsync<TEntity>(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken)
-        where TEntity : class, IEntity
-    {
-        Context.AddRange(entities);
-        return Task.CompletedTask;
-    }
+        where TEntity : class, IEntity =>
+        await Context
+            .AddRangeAsync(entities, cancellationToken)
+            .ConfigureAwait(false);
 
     /// <inheritdoc />
     public virtual Task UpdateAsync<TEntity>(

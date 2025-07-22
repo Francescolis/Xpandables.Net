@@ -19,7 +19,6 @@ using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
-using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Repositories;
 
@@ -90,16 +89,16 @@ public sealed class AggregateStore<TAggregate>(
     {
         try
         {
-            EventFilterDomain filter = new()
-            {
-                Where = x => x.AggregateId == keyId,
-                OrderBy = x => x.OrderBy(o => o.EventVersion)
-            };
+            Func<IQueryable<EntityDomainEvent>, IAsyncQueryable<IDomainEvent>> domainFilterFunc = query =>
+                query.Where(w => w.AggregateId == keyId)
+                    .OrderBy(o => o.EventVersion)
+                    .SelectEvent()
+                    .OfType<IDomainEvent>();
 
             TAggregate aggregate = new();
 
             await foreach (IDomainEvent @event in _eventStore
-                            .FetchAsync(filter, cancellationToken)
+                            .FetchAsync(domainFilterFunc, cancellationToken)
                             .OrderBy(x => x.EventVersion)
                             .ConfigureAwait(false))
             {

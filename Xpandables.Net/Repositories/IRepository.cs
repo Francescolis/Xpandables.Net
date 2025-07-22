@@ -14,10 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Linq.Expressions;
-
-using Xpandables.Net.Repositories.Filters;
-
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
@@ -26,39 +22,29 @@ namespace Xpandables.Net.Repositories;
 public interface IRepository : IAsyncDisposable
 {
     /// <summary>
-    /// Fetches entities from the repository based on the specified filter.
+    /// Fetches results from the repository using a query builder function.
+    /// This method allows full control over query composition including filtering, 
+    /// ordering, including, pagination, and projection.
+    /// <code>
+    /// // Example usage:
+    /// var results = await repository.FetchAsync&lt;User, object&gt;(
+    ///     query => query
+    ///         .Where(u => u.IsActive)
+    ///         .Include(u => u.Profile)
+    ///         .OrderBy(u => u.LastName)
+    ///         .Skip(10)
+    ///         .Take(20)
+    ///         .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
+    /// ).ToListAsync();
+    /// </code>
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="filter">The filter to apply to the entities.</param>
+    /// <param name="filter">A filter function that takes an IQueryable&lt;TEntity&gt; and returns an IQueryable&lt;TResult&gt;.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of the result type.</returns>
     IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        IEntityFilter<TEntity, TResult> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
-
-    /// <summary>
-    /// Fetches projected results from the repository using a selector expression.
-    /// This method is particularly useful for anonymous type projections.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of the entity.</typeparam>
-    /// <typeparam name="TResult">The type of the result (can be anonymous).</typeparam>
-    /// <param name="selector">The projection expression to apply to entities.</param>
-    /// <param name="where">The predicate to filter entities.</param>
-    /// <param name="orderBy">Optional ordering function.</param>
-    /// <param name="includes">Optional function to include related entities.</param>
-    /// <param name="pageIndex">Optional page index (1-based, 0 to disable pagination).</param>
-    /// <param name="pageSize">Optional page size (0 to disable pagination).</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>An asynchronous enumerable of the result type.</returns>
-    IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        Expression<Func<TEntity, bool>> where,
-        Expression<Func<TEntity, TResult>> selector,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        Func<IQueryable<TEntity>, IQueryable<TEntity>>? includes = null,
-        ushort pageIndex = 0,
-        ushort pageSize = 0,
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
 
@@ -95,7 +81,7 @@ public interface IRepository : IAsyncDisposable
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task DeleteAsync<TEntity>(
-        IEntityFilter<TEntity> filter,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
 }

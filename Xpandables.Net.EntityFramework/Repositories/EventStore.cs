@@ -23,7 +23,6 @@ using Xpandables.Net.Collections;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
-using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Repositories;
@@ -32,11 +31,22 @@ namespace Xpandables.Net.Repositories;
 /// Represents a store for events, providing methods to append, fetch,
 /// and mark events as published.
 /// </summary>
-/// <param name="context">The data context for the event store.</param>
-// ReSharper disable once ClassNeverInstantiated.Global
-public sealed class EventStore(DataContextEvent context) : Disposable, IEventStore
+public sealed class EventStore : Disposable, IEventStore
 {
     private readonly ConcurrentBag<IEntityEvent> _disposableEntities = [];
+    private readonly DataContextEvent context;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventStore"/> class with the specified data context.
+    /// </summary>
+    /// <param name="context">The data context used to interact with the event store. 
+    /// Cannot be <see langword="null"/>.</param>
+    public EventStore(DataContextEvent context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        this.context = context;
+        IEventStoreExtensions.RegisterEventStore(this);
+    }
 
     /// <inheritdoc />
     public async Task AppendAsync(IEvent @event, CancellationToken cancellationToken = default)
@@ -59,13 +69,13 @@ public sealed class EventStore(DataContextEvent context) : Disposable, IEventSto
 
     /// <inheritdoc />
     public IAsyncEnumerable<TEvent> FetchAsync<TEntityEvent, TEvent>(
-        IEventFilter<TEntityEvent, TEvent> filter, CancellationToken cancellationToken = default)
+        Func<IQueryable<TEntityEvent>, IAsyncQueryable<TEvent>> filter,
+        CancellationToken cancellationToken = default)
         where TEntityEvent : class, IEntityEvent
         where TEvent : class, IEvent
     {
         ArgumentNullException.ThrowIfNull(filter);
-
-        return filter.FetchAsync(context.Set<TEntityEvent>().AsNoTracking(), cancellationToken);
+        return filter(context.Set<TEntityEvent>().AsNoTracking());
     }
 
     /// <inheritdoc />
@@ -135,6 +145,9 @@ public sealed class EventStore(DataContextEvent context) : Disposable, IEventSto
         {
             _disposableEntities.ForEach(entity => entity.Dispose());
             _disposableEntities.Clear();
+
+            // Unregister the event store
+            IEventStoreExtensions.UnregisterEventStore(this);
         }
 
         base.Dispose(disposing);

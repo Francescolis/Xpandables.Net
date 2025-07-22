@@ -19,7 +19,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Xpandables.Net.Repositories.Filters;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Provides extension methods for including related entities in queries.

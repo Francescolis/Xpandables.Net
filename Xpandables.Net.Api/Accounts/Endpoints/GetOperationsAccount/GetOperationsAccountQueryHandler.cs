@@ -4,7 +4,6 @@ using Xpandables.Net.Api.Accounts.Events;
 using Xpandables.Net.Executions;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
 
@@ -18,33 +17,19 @@ public sealed class GetOperationsAccountQueryHandler(
     {
         await Task.Yield();
 
-        EventFilterDomain filter = new()
-        {
-            Where = e => (e.AggregateId == query.KeyId
-                              && e.EventName == nameof(DepositMade)) || e.EventName == nameof(WithdrawMade),
-            //EventDataWhere = e => e.RootElement
-            //    .GetProperty("EventId")
-            //    .GetGuid()
-            //    .Equals(new Guid("019814e4-817e-74df-94d8-4d8c42121c7f")), // For Postgresql
-            OrderBy = e => e.OrderByDescending(o => o.CreatedOn)
-        };
+        Func<IQueryable<EntityDomainEvent>, IAsyncQueryable<IEvent>> filterFunc = q =>
+            q.Where(w => w.AggregateId == query.KeyId
+                             && (w.EventName == nameof(DepositMade) || w.EventName == nameof(WithdrawMade)))
+                .OrderByDescending(o => o.CreatedOn)
+                .SelectEvent()
+                .OfType<IEvent>();
 
-        EntityFilter<EntityDomainEvent, object> entityFilter = new()
-        {
-            Where = e => e.AggregateId == query.KeyId,
-            Selector = e => new
-            {
-                e.KeyId,
-                e.CreatedOn
-            },
-        };
-
-        IAsyncEnumerable<IEvent> events = eventStore.FetchAsync(filter, cancellationToken);
+        IAsyncEnumerable<IEvent> events = eventStore.FetchAsync(filterFunc, cancellationToken);
 
         IAsyncEnumerable<OperationAccount> operations = GetOperations(events, cancellationToken);
 
         return ExecutionResults.Ok(operations)
-            .WithHeader("Count", $"{filter.TotalCount}")
+            .WithHeader("Count", $"{await events.CountAsync(cancellationToken)}")
             .Build();
 
         static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events,

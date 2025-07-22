@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Repositories.Filters;
 
 namespace Xpandables.Net.Test.UnitTests;
 
@@ -46,11 +45,7 @@ public sealed class RepositoryUnitTest
     public async Task FetchAsync_ShouldReturnEntities()
     {
         // Arrange
-        var filter = new EntityFilter<TestEntity, TestEntity>
-        {
-            Where = e => e.KeyId > 0,
-            Selector = e => e
-        };
+        Func<IQueryable<TestEntity>, IQueryable<TestEntity>> filter = query => query.Where(e => e.KeyId > 0);
 
         await using var repository = _unitOfWork.GetRepository<IRepository>();
         // Act
@@ -67,7 +62,8 @@ public sealed class RepositoryUnitTest
         await using var repository = _unitOfWork.GetRepository<IRepository>();
         // Act
         var result = await repository
-            .FetchAsync((TestEntity e) => e.KeyId > 0, e => new { e.KeyId, e.Name })
+            .FetchAsync((IQueryable<TestEntity> query) =>
+                query.Where(e => e.KeyId > 0).Select(e => new { e.KeyId, e.Name }))
             .ToListAsync();
 
         // Assert
@@ -94,11 +90,7 @@ public sealed class RepositoryUnitTest
         }
 
         // Assert
-        var filter = new EntityFilter<TestEntity>
-        {
-            Where = e => e.KeyId > 2,
-            Selector = e => e
-        };
+        Func<IQueryable<TestEntity>, IQueryable<TestEntity>> filter = query => query.Where(e => e.KeyId > 2);
 
         await using var repository1 = _unitOfWork.GetRepository<IRepository>();
         var result = await repository1.FetchAsync(filter).ToListAsync();
@@ -109,10 +101,7 @@ public sealed class RepositoryUnitTest
     public async Task DeleteAsync_ShouldDeleteEntities()
     {
         // Arrange
-        var filter = new EntityFilter<TestEntity>
-        {
-            Where = e => e.KeyId == 1
-        };
+        Func<IQueryable<TestEntity>, IQueryable<TestEntity>> filter = query => query.Where(e => e.KeyId == 1);
 
         await using var repository = _unitOfWork.GetRepository<IRepository>();
 
@@ -151,7 +140,10 @@ public sealed class RepositoryUnitTest
 
         // Assert
         await using var _repository = _unitOfWork.GetRepository<IRepository>();
-        var name = await _repository.FetchAsync((TestEntity e) => e.KeyId == 5, e => e.Name).FirstAsync();
+        var name = await _repository.FetchAsync(
+            (IQueryable<TestEntity> query) => query.Where(e => e.KeyId == 5)
+            .Select(e => e.Name))
+            .FirstAsync();
         name.Should().Be("Test5");
     }
 }

@@ -68,7 +68,7 @@ public class DataContext : DbContext
     {
         if (e is { NewState: EntityState.Modified, Entry.Entity: IEntity entity })
         {
-            entity.UpdatedOn = DateTime.Now;
+            entity.UpdatedOn = DateTime.UtcNow;
         }
     }
 

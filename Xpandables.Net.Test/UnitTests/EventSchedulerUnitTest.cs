@@ -12,7 +12,6 @@ using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
-using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.Text;
 
 using AsyncEnumerable = System.Linq.AsyncEnumerable;
@@ -54,19 +53,19 @@ public sealed class EventSchedulerUnitTest
         SchedulerOptions options = _serviceProvider.GetRequiredService<IOptions<SchedulerOptions>>().Value;
         options.IsEventSchedulerEnabled = false;
 
-        EventFilterIntegration filter = new()
-        {
-            Where = x => x.Status == EntityStatus.PUBLISHED,
-            PageIndex = 0,
-            PageSize = 10
-        };
+        Func<IQueryable<EntityIntegrationEvent>, IAsyncQueryable<IIntegrationEvent>> filterFunc = query =>
+            query.Where(w => w.Status == EntityStatus.PUBLISHED)
+                .OrderBy(o => o.EventVersion)
+                .Take(10)
+                .SelectEvent()
+                .OfType<IIntegrationEvent>();
 
         // Assert
         List<IIntegrationEvent> events = await eventStore
-            .FetchAsync(filter, CancellationToken.None)
+            .FetchAsync(filterFunc, CancellationToken.None)
             .ToListAsync(CancellationToken.None);
 
-        filter.TotalCount.Should().Be(1);
+        events.Count.Should().Be(1);
         events.Should().ContainSingle(e => e.EventId == testEvent.EventId);
     }
 
@@ -101,7 +100,7 @@ public class InMemoryEventStore : IEventStore
     }
 
     public IAsyncEnumerable<TEvent> FetchAsync<TEntityEvent, TEvent>(
-        IEventFilter<TEntityEvent, TEvent> filter,
+        Func<IQueryable<TEntityEvent>, IAsyncQueryable<TEvent>> filter,
         CancellationToken cancellationToken = default)
         where TEntityEvent : class, IEntityEvent
         where TEvent : class, IEvent
@@ -115,7 +114,7 @@ public class InMemoryEventStore : IEventStore
             .OfType<TEntityEvent>()
             .AsQueryable();
 
-        return filter.FetchAsync(integrations, cancellationToken);
+        return filter(integrations);
     }
 
     public Task MarkAsProcessedAsync(

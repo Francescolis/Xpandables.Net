@@ -5,7 +5,6 @@ using Xpandables.Net.Collections;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
-using Xpandables.Net.Repositories.Filters;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Api;
@@ -32,7 +31,8 @@ public sealed class InMemoryEventStore : IEventStore
     }
 
     public IAsyncEnumerable<TEvent> FetchAsync<TEntityEvent, TEvent>(
-        IEventFilter<TEntityEvent, TEvent> filter, CancellationToken cancellationToken = default)
+        Func<IQueryable<TEntityEvent>, IAsyncQueryable<TEvent>> filter,
+        CancellationToken cancellationToken = default)
         where TEntityEvent : class, IEntityEvent
         where TEvent : class, IEvent
     {
@@ -40,7 +40,8 @@ public sealed class InMemoryEventStore : IEventStore
             .OfType<TEntityEvent>()
             .AsQueryable();
 
-        return filter.FetchAsync(integrations, cancellationToken);
+        return filter(integrations)
+            .OfType<TEvent>();
     }
 
     public Task MarkAsProcessedAsync(
