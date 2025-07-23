@@ -81,6 +81,28 @@ public interface IRequestPreHandler<TRequest>
 }
 
 /// <summary>
+/// Defines a handler for managing exceptions that occur during the processing of a request.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request being processed. Must implement <see cref="IRequest"/>.</typeparam>
+public interface IRequestExceptionHandler<TRequest>
+    where TRequest : class, IRequest
+{
+    /// <summary>
+    /// Handles exceptions that occur during the processing of the specified request.
+    /// </summary>
+    /// <param name="context">The context of the request being processed.</param>
+    /// <param name="exception">The exception that occurred during processing.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
+    /// The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains the execution result of type
+    /// <see cref="ExecutionResult"/>.</returns>
+    Task<ExecutionResult> HandleAsync(
+        RequestContext<TRequest> context,
+        Exception exception,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
 /// Defines a handler for processing requests of type <typeparamref name="TRequest"/> and returning a result of type
 /// <typeparamref name="TResponse"/>.
 /// </summary>

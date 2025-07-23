@@ -53,6 +53,8 @@ public static class ServiceCollectionMediatorExtensions
         where TMediator : class, IMediator =>
         services
             .AddScoped<IMediator, TMediator>()
+            .AddXPipelineExceptionDecorator()
+            .AddXPipelineValidationDecorator()
             .AddXPipelineRequestHandler()
             .AddXPipelinePreDecorator()
             .AddXPipelinePostDecorator();

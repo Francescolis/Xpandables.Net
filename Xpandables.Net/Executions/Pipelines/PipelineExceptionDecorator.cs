@@ -23,10 +23,14 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// of a request and transforms them into an <see cref="ExecutionResult"/>.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
-public sealed class PipelineExceptionDecorator<TRequest> : IPipelineDecorator<TRequest>
+public sealed class PipelineExceptionDecorator<TRequest>(
+    IRequestExceptionHandler<TRequest>? exceptionHandler = default) :
+    IPipelineDecorator<TRequest>
     where TRequest : class, IRequest
 {
     /// <inheritdoc/>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design",
+        "CA1031:Do not catch general exception types", Justification = "<Pending>")]
     public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler next,
@@ -37,8 +41,26 @@ public sealed class PipelineExceptionDecorator<TRequest> : IPipelineDecorator<TR
             return await next(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
-            when (exception is not ExecutionResultException)
         {
+            if (exceptionHandler is not null)
+            {
+                try
+                {
+                    return await exceptionHandler
+                    .HandleAsync(context, exception, cancellationToken)
+                    .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    AggregateException aggregateException = new AggregateException(
+                        "An error occurred while handling the exception.",
+                        ex,
+                        exception);
+
+                    return aggregateException.ToExecutionResult();
+                }
+            }
+
             return exception.ToExecutionResult();
         }
     }
