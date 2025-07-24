@@ -52,7 +52,7 @@ public sealed class PipelineExceptionDecorator<TRequest>(
                 }
                 catch (Exception ex)
                 {
-                    AggregateException aggregateException = new AggregateException(
+                    AggregateException aggregateException = new(
                         "An error occurred while handling the exception.",
                         ex,
                         exception);
