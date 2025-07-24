@@ -17,6 +17,8 @@
 
 using System.ComponentModel;
 
+using Xpandables.Net.Optionals;
+
 namespace Xpandables.Net.Executions.Tasks;
 
 /// <summary>
@@ -67,10 +69,9 @@ public interface IDependencyRequest : IRequest
     object DependencyKeyId { get; }
 
     /// <summary>
-    /// The value of the dependency.
+    /// Gets or sets the instance of the dependency used by the component.
     /// </summary>
-    /// <remarks>For internal use only.</remarks>
-    internal object DependencyInstance { get; set; }
+    Optional<object> DependencyInstance { get; set; }
 }
 
 /// <summary>
@@ -87,6 +88,18 @@ public interface IDependencyRequest<TDependency> : IDependencyRequest
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     Type IDependencyRequest.DependencyType => DependencyType;
+
+    /// <summary>
+    /// Gets or sets the instance of the dependency.
+    /// </summary>
+    new Optional<TDependency> DependencyInstance { get; set; }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Optional<object> IDependencyRequest.DependencyInstance
+    {
+        get => DependencyInstance.AsOptional<object>();
+        set => DependencyInstance = value.AsOptional<TDependency>();
+    }
 }
 
 /// <summary>
@@ -99,6 +112,6 @@ public abstract record DependencyRequest<TDependency> : IDependencyRequest<TDepe
     /// <inheritdoc />
     public required object DependencyKeyId { get; init; }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    object IDependencyRequest.DependencyInstance { get; set; } = null!;
+    /// <inheritdoc />
+    public Optional<TDependency> DependencyInstance { get; set; } = Optional.Empty<TDependency>();
 }

@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Executions.Dependencies;
 using Xpandables.Net.Executions.Tasks;
 
@@ -27,7 +26,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// <typeparam name="TRequest">The type of the request object, which must implement <see cref="IDependencyRequest"/>.</typeparam>
 public sealed class PipelineDependencyDecorator<TRequest>(
     IDependencyManager dependencyManager) : IPipelineDecorator<TRequest>
-    where TRequest : class, IDependencyRequest, IDependencyProvided
+    where TRequest : class, IDependencyRequest
 {
     /// <inheritdoc/>
     public async Task<ExecutionResult> HandleAsync(

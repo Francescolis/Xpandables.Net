@@ -55,9 +55,11 @@ public static class ServiceCollectionMediatorExtensions
             .AddScoped<IMediator, TMediator>()
             .AddXPipelineExceptionDecorator()
             .AddXPipelineValidationDecorator()
+            .AddXPipelineDependencyDecorator()
             .AddXPipelineRequestHandler()
             .AddXPipelinePreDecorator()
-            .AddXPipelinePostDecorator();
+            .AddXPipelinePostDecorator()
+            .AddXDependencyManager();
 
     /// <summary>
     /// Adds a defaults mediator and pipeline request handler to the <see cref="IServiceCollection" />.
@@ -136,6 +138,7 @@ public static class ServiceCollectionMediatorExtensions
                             i.IsGenericType &&
                             (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
                             || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
+                            || i.GetGenericTypeDefinition() == typeof(IDependencyRequestHandler<,>)
                             || i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
                             || i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))))
             .Select(type => new HandlerType(
@@ -144,6 +147,7 @@ public static class ServiceCollectionMediatorExtensions
                     .Where(i => i.IsGenericType &&
                                 (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
+                                || i.GetGenericTypeDefinition() == typeof(IDependencyRequestHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))));
 
@@ -187,27 +191,6 @@ public static class ServiceCollectionMediatorExtensions
         this IServiceCollection services)
         where TService : class, IDependencyProvider =>
         services.AddScoped<IDependencyProvider, TService>();
-
-    /// <summary>
-    /// Adds an pipeline decorator to the <see cref="IServiceCollection" /> that append the ambient aggregate root.
-    /// <para>The pipeline decorator is applied in the order of registration.</para>
-    /// </summary>
-    /// <param name="services">The service collection to add the decorator to.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXPipelineAppenderDecorator(
-        this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineAggregateAppenderDecorator<>));
-
-    /// <summary>
-    /// Adds an pipeline decorator to the <see cref="IServiceCollection" /> that resolve
-    /// the ambient aggregate root before request is processed.
-    /// <para>The pipeline decorator is applied in the order of registration.</para>
-    /// </summary>
-    /// <param name="services">The service collection to add the decorator to.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXPipelineResolverDecorator(
-        this IServiceCollection services) =>
-        services.AddXPipelineDecorator(typeof(PipelineAggregateResolverDecorator<>));
 
     /// <summary>
     /// Adds the dependency pipeline decorator to the <see cref="IServiceCollection" />.

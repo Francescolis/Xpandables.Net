@@ -106,8 +106,7 @@ public sealed class PipelineUnitTest
 // Request implementation using DependencyRequest base class
 public sealed record TestDependencyRequest : DependencyRequest<TestDependency>,
     IValidationEnabled,
-    IUnitOfWorkApplied,
-    IDependencyProvided
+    IUnitOfWorkApplied
 {
     public string Name { get; init; } = string.Empty;
 }
@@ -117,10 +116,9 @@ public sealed class TestDependencyRequestHandler :
 {
     public Task<ExecutionResult> HandleAsync(
         TestDependencyRequest request,
-        TestDependency dependency,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(dependency);
+        ArgumentNullException.ThrowIfNull(request);
 
         if (request.Name == "ThrowError")
             throw new InvalidOperationException("Test error");

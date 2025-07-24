@@ -7,10 +7,9 @@ public sealed class DepositAccountCommandHandler : IDependencyRequestHandler<Dep
 {
     public Task<ExecutionResult> HandleAsync(
         DepositAccountCommand command,
-        Account dependency,
         CancellationToken cancellationToken = default)
     {
-        dependency.Deposit(command.Amount);
+        command.DependencyInstance.Map(a => a.Deposit(command.Amount));
 
         return Task.FromResult(ExecutionResults.Success());
     }

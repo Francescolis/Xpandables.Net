@@ -3,9 +3,12 @@ using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
+using Xpandables.Net.Api.Accounts;
 using Xpandables.Net.Api.Accounts.Persistence;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Executions.Domains.Converters;
+using Xpandables.Net.Executions.Handlers;
+using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,26 +21,14 @@ builder.Services.AddOpenApi();
 builder.Services.AddXEndpointRoutes();
 builder.Services.AddXMinimalApi();
 builder.Services.AddXMediator();
-builder.Services.AddXHandlers();
+builder.Services.AddXHandlers(typeof(Account).Assembly);
+builder.Services.AddScoped(typeof(IRequestPostHandler<>), typeof(AggregateRequestPostHandler<>));
+builder.Services.AddXDependencyProvider<AggregateDependencyProvider>();
 
-/* 
- * builder.Services.AddSingleton<IEventStore, InMemoryEventStore>(); 
- * to use the in-memory event store, comment the above line,
- * and comment the following lines :
- * builder.Services.AddXEventUnitOfWork();
- * builder.Services.AddXPipelineUnitOfWorkDecorator();
- * builder.Services.AddXEventStore();
- * builder.Services.AddXDataContextEvent(options =>...)
- */
 builder.Services.AddXEventUnitOfWork();
 builder.Services.AddXPipelineUnitOfWorkDecorator();
 builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();
-//builder.Services.AddXDataContextEvent(options =>
-//    options.UseInMemoryDatabase("InMemoryDb")
-//        .EnableDetailedErrors()
-//        .EnableSensitiveDataLogging()
-//        .UseModel(CreateInMemoryModel()));
 builder.Services.AddXDataContextEvent(options =>
     options
        .UseNpgsql(builder.Configuration.GetConnectionString(nameof(DataContextEvent)))
@@ -45,10 +36,6 @@ builder.Services.AddXDataContextEvent(options =>
        .EnableDetailedErrors()
        .UseModel(DataContextEventSqlServerBuilder.CreateModel()));
 builder.Services.AddXPublisher();
-builder.Services.AddXPipelineResolverDecorator();
-builder.Services.AddXPipelineAppenderDecorator();
-
-//builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
 
 builder.Services.AddSwaggerGen(options =>
 {

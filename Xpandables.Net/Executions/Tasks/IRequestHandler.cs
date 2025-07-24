@@ -169,32 +169,4 @@ public interface IDependencyRequestHandler<in TRequest, in TDependency> : IReque
     where TRequest : class, IDependencyRequest<TDependency>
     where TDependency : class
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    async Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken)
-    {
-        if (request.DependencyInstance is null)
-        {
-            throw new InvalidOperationException("The dependency is not set.");
-        }
-
-        return await HandleAsync(request, (TDependency)request.DependencyInstance, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Handles the specified request asynchronously with the given dependency.
-    /// </summary>
-    /// <param name="request">The request to handle.</param>
-    /// <param name="dependency">The dependency required to handle the request.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>
-    /// A task that represents the asynchronous operation.
-    /// The task result contains the operation result.
-    /// </returns>
-    Task<ExecutionResult> HandleAsync(
-        TRequest request,
-        TDependency dependency,
-        CancellationToken cancellationToken = default);
 }

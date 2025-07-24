@@ -7,10 +7,9 @@ public sealed class UnBlockAccountCommandHandler : IDependencyRequestHandler<UnB
 {
     public Task<ExecutionResult> HandleAsync(
         UnBlockAccountCommand command,
-        Account dependency,
         CancellationToken cancellationToken = default)
     {
-        dependency.UnBlock();
+        command.DependencyInstance.Map(a => a.UnBlock());
 
         return Task.FromResult(ExecutionResults.Success());
     }

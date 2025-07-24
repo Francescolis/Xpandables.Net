@@ -7,10 +7,9 @@ public sealed class BlockAccountCommandHandler : IDependencyRequestHandler<Block
 {
     public Task<ExecutionResult> HandleAsync(
         BlockAccountCommand command,
-        Account dependency,
         CancellationToken cancellationToken = default)
     {
-        dependency.Block();
+        command.DependencyInstance.Map(a => a.Block());
 
         return Task.FromResult(ExecutionResults.Success());
     }
