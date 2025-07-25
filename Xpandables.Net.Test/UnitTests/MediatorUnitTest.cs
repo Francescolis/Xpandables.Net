@@ -71,6 +71,6 @@ public sealed class TestRequestHandler : IRequestHandler<TestRequest>
         if (request.Data == "throw")
             throw new InvalidOperationException("Test exception");
 
-        return Task.FromResult(ExecutionResults.Success());
+        return Task.FromResult(ExecutionResult.Success());
     }
 }

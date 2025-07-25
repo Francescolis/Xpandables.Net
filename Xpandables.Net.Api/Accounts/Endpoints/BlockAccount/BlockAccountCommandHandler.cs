@@ -11,6 +11,6 @@ public sealed class BlockAccountCommandHandler : IDependencyRequestHandler<Block
     {
         command.DependencyInstance.Map(a => a.Block());
 
-        return Task.FromResult(ExecutionResults.Success());
+        return Task.FromResult(ExecutionResult.Success());
     }
 }

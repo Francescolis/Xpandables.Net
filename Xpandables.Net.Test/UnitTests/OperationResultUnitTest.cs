@@ -14,7 +14,7 @@ public sealed class OperationResultUnitTest
     public void Success_ShouldReturnOperationResultWithStatusCodeOk()
     {
         // Act
-        var result = ExecutionResults.Success();
+        var result = ExecutionResult.Success();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -28,7 +28,7 @@ public sealed class OperationResultUnitTest
         var expectedResult = "Success";
 
         // Act
-        var result = ExecutionResults.Success(expectedResult);
+        var result = ExecutionResult.Success(expectedResult);
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -40,7 +40,7 @@ public sealed class OperationResultUnitTest
     public void Failure_ShouldReturnOperationResultWithStatusCodeBadRequest()
     {
         // Act
-        var result = ExecutionResults.Failure("key", "error");
+        var result = ExecutionResult.Failure("key", "error");
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -51,7 +51,7 @@ public sealed class OperationResultUnitTest
     public void Failure_WithStatusCode_ShouldReturnOperationResultWithSpecifiedStatusCode()
     {
         // Act
-        var result = ExecutionResults.Failure(HttpStatusCode.NotFound).Build();
+        var result = ExecutionResult.Failure(HttpStatusCode.NotFound).Build();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -62,12 +62,12 @@ public sealed class OperationResultUnitTest
     public void OperationResult_ShouldSerializeAndDeserializeCorrectly()
     {
         // Arrange
-        var successResult = ExecutionResults.Ok()
+        var successResult = ExecutionResult.Ok()
             .WithLocation(new Uri("http://example.com"))
             .WithHeaders(ElementCollection.With("HeaderKey", "HeaderValue"))
             .WithExtensions(ElementCollection.With("ExtensionKey", "ExtensionValue"))
             .Build();
-        var failureResult = ExecutionResults.BadRequest()
+        var failureResult = ExecutionResult.BadRequest()
             .WithTitle("Test Title")
             .WithDetail("Test Detail")
             .WithErrors(ElementCollection.With("ErrorKey", "ErrorValue"))
@@ -90,12 +90,12 @@ public sealed class OperationResultUnitTest
     public void OperationResult_WithGenericResult_ShouldSerializeAndDeserializeCorrectly()
     {
         // Arrange
-        var successResult = ExecutionResults.Ok("Test Result")
+        var successResult = ExecutionResult.Ok("Test Result")
             .WithLocation(new Uri("http://example.com"))
             .WithHeaders(ElementCollection.With("HeaderKey", "HeaderValue"))
             .WithExtensions(ElementCollection.With("ExtensionKey", "ExtensionValue"))
             .Build();
-        var failureResult = ExecutionResults.BadRequest<string>()
+        var failureResult = ExecutionResult.BadRequest<string>()
             .WithTitle("Test Title")
             .WithDetail("Test Detail")
             .WithErrors(ElementCollection.With("ErrorKey", "ErrorValue"))

@@ -206,25 +206,25 @@ else
 
 ```
 
-## ExecutionResult and ExecutionResults
+## ExecutionResult and ExecutionResult
 
 ### Overview
 
-The `ExecutionResult` and `ExecutionResults` classes are part of the `Xpandables.Net.Executions` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
+The `ExecutionResult` and `ExecutionResult` classes are part of the `Xpandables.Net.Executions` namespace. They provide a structured way to handle the results of operations, encapsulating both success and failure scenarios with detailed information.
 
 #### ExecutionResult
 
 The `ExecutionResult` interface represents the result of an execution. It includes properties for status code, title, detail, location, result, errors, headers, and extensions. It also provides methods to check if the execution was successful and to retrieve any associated exceptions.
 
-#### ExecutionResults
+#### ExecutionResult
 
-The `ExecutionResults` class provides static methods to create instances of `ExecutionResult` for both success and failure scenarios. It includes methods to set various HTTP status codes and to include additional details like titles, details, locations, and errors.
+The `ExecutionResult` class provides static methods to create instances of `ExecutionResult` for both success and failure scenarios. It includes methods to set various HTTP status codes and to include additional details like titles, details, locations, and errors.
 
 ### Usage
 
 #### Creating a Success Execution Result
 
-To create a success execution result, you can use the `Success` method from the `ExecutionResults` class. You can specify the status code, result, and other details.
+To create a success execution result, you can use the `Success` method from the `ExecutionResult` class. You can specify the status code, result, and other details.
 
 ```csharp
 
@@ -235,14 +235,14 @@ public class SampleUsage
 {
     public ExecutionResult CreateSuccessResult()
     {
-        return ExecutionResults.Success(HttpStatusCode.OK)
+        return ExecutionResult.Success(HttpStatusCode.OK)
             .WithLocation(new Uri("http://example.com"))
             .Build();
     }
 
     public ExecutionResult<string> CreateSuccessResultWithData()
     {
-        return ExecutionResults.Success("Success Data", HttpStatusCode.OK)
+        return ExecutionResult.Success("Success Data", HttpStatusCode.OK)
             .WithLocation(new Uri("http://example.com"))
             .Build();
     }
@@ -252,7 +252,7 @@ public class SampleUsage
 
 #### Creating a Failure Execution Result
 
-To create a failure execution result, you can use the `Failure` method from the `ExecutionResults` class. You can specify the status code, errors, and other details.
+To create a failure execution result, you can use the `Failure` method from the `ExecutionResult` class. You can specify the status code, errors, and other details.
 
 ```csharp
 
@@ -263,7 +263,7 @@ public class SampleUsage
 {
     public ExecutionResult CreateFailureResult()
     {
-        return ExecutionResults.Failure(HttpStatusCode.BadRequest)
+        return ExecutionResult.Failure(HttpStatusCode.BadRequest)
             .WithTitle("Execution Failed")
             .WithDetail("The execution failed due to bad request.")
             .WithError("ErrorKey", "ErrorMessage")
@@ -272,7 +272,7 @@ public class SampleUsage
 
     public ExecutionResult<string> CreateFailureResultWithData()
     {
-        return ExecutionResults.Failure<string>(HttpStatusCode.BadRequest)
+        return ExecutionResult.Failure<string>(HttpStatusCode.BadRequest)
             .WithTitle("Execution Failed")
             .WithDetail("The execution failed due to bad request with data.")
             .WithError("ErrorKey", "ErrorMessage")
@@ -284,7 +284,7 @@ public class SampleUsage
 
 #### Using Predefined Methods
 
-The `ExecutionResults` class also provides predefined methods for common HTTP status codes like `Ok`, `Created`, `NoContent`, `NotFound`, `BadRequest`, `Conflict`, `Unauthorized`, `InternalServerError`, and `ServiceUnavailable`.
+The `ExecutionResult` class also provides predefined methods for common HTTP status codes like `Ok`, `Created`, `NoContent`, `NotFound`, `BadRequest`, `Conflict`, `Unauthorized`, `InternalServerError`, and `ServiceUnavailable`.
 
 ```csharp
 
@@ -294,13 +294,13 @@ public class SampleUsage
 {
     public ExecutionResult CreateOkResult()
     {
-        return ExecutionResults.Ok()
+        return ExecutionResult.Ok()
             .Build();
     }
 
     public ExecutionResult<string> CreateNotFoundResult()
     {
-        return ExecutionResults.NotFound<string>()
+        return ExecutionResult.NotFound<string>()
             .WithTitle("Resource Not Found")
             .WithDetail("The requested resource was not found.")
             .Build();
@@ -309,7 +309,7 @@ public class SampleUsage
 
 ```
 
-The `ExecutionResult` and `ExecutionResults` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
+The `ExecutionResult` and `ExecutionResult` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
 
 ## IRestClient and Related Classes
 

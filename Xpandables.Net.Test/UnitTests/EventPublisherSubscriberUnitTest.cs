@@ -20,7 +20,7 @@ public sealed class TestQueryHander : IRequestHandler<TestQuery>
         TestQuery query, CancellationToken cancellationToken)
     {
         await Task.Yield();
-        return ExecutionResults.Ok(query.Query).Build();
+        return ExecutionResult.Ok(query.Query).Build();
     }
 }
 

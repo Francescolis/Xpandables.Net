@@ -20,7 +20,7 @@ public sealed class CreateAccountCommandHandler(
             .AppendAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
-        return ExecutionResults.Created().Build();
+        return ExecutionResult.Created().Build();
     }
 }
 
@@ -41,12 +41,12 @@ public sealed class CreateAccountPreCommandHandler(IEventStore eventStore) :
             .CountAsync(cancellationToken)
             .ConfigureAwait(false) > 0)
         {
-            return ExecutionResults
+            return ExecutionResult
                 .Conflict()
                 .WithError("Account", "An account already exists.")
                 .Build();
         }
 
-        return ExecutionResults.Ok().Build();
+        return ExecutionResult.Ok().Build();
     }
 }

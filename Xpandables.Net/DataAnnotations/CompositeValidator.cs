@@ -35,7 +35,7 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     public override ExecutionResult Validate(TArgument instance)
     {
         IExecutionResultFailureBuilder failureBuilder =
-            ExecutionResults.Failure(System.Net.HttpStatusCode.BadRequest);
+            ExecutionResult.Failure(System.Net.HttpStatusCode.BadRequest);
 
         foreach (IValidator<TArgument> validator in _validators
             .OrderBy(o => o.Order))
@@ -50,14 +50,14 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
         ExecutionResult failureResult = failureBuilder.Build();
         return failureResult.Errors.Any()
             ? failureResult
-            : ExecutionResults.Success();
+            : ExecutionResult.Success();
     }
 
     /// <inheritdoc/>
     public override async ValueTask<ExecutionResult> ValidateAsync(TArgument instance)
     {
         IExecutionResultFailureBuilder failureBuilder =
-            ExecutionResults.Failure(System.Net.HttpStatusCode.BadRequest);
+            ExecutionResult.Failure(System.Net.HttpStatusCode.BadRequest);
 
         foreach (IValidator<TArgument> validator in _validators
             .OrderBy(o => o.Order))
@@ -75,6 +75,6 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
         ExecutionResult failureResult = failureBuilder.Build();
         return failureResult.Errors.Any()
             ? failureResult
-            : ExecutionResults.Success();
+            : ExecutionResult.Success();
     }
 }

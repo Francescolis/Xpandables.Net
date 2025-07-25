@@ -21,6 +21,6 @@ public sealed class WithdrawAccountCommandHandler(
             .AppendAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
-        return ExecutionResults.Success();
+        return ExecutionResult.Success();
     }
 }

@@ -63,7 +63,7 @@ public class Validator<TArgument> : IValidator<TArgument>
             validationResults,
             true))
         {
-            return ExecutionResults.Success();
+            return ExecutionResult.Success();
         }
 
         return validationResults.ToExecutionResult();

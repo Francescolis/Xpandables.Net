@@ -25,7 +25,7 @@ public sealed class NullValidator<TArgument> : Validator<TArgument>
     where TArgument : class, IValidationEnabled
 {
     /// <inheritdoc/>
-    /// Does nothing and returns an <see cref="ExecutionResults.Ok"/>.
+    /// Does nothing and returns an <see cref="ExecutionResult.Ok"/>.
     public override ExecutionResult Validate(TArgument instance) =>
-        ExecutionResults.Ok().Build();
+        ExecutionResult.Ok().Build();
 }

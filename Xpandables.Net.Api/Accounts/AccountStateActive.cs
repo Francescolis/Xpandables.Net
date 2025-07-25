@@ -11,7 +11,7 @@ public sealed class AccountStateActive : AccountState
     {
         if (amount <= 0)
         {
-            return ExecutionResults
+            return ExecutionResult
                 .BadRequest()
                 .WithError(nameof(amount), "Deposit amount must be greater than zero.")
                 .Build();
@@ -22,7 +22,7 @@ public sealed class AccountStateActive : AccountState
 
         Context.PushEvent(@event);
 
-        return ExecutionResults.Success();
+        return ExecutionResult.Success();
     }
 
     public override void Withdraw(decimal amount)

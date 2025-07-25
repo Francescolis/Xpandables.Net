@@ -60,7 +60,7 @@ public sealed class EndpointValidator(IValidatorProvider validatorProvider) : IE
 
     static async Task<ExecutionResult> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
     {
-        IExecutionResultFailureBuilder failureBuilder = ExecutionResults.BadRequest();
+        IExecutionResultFailureBuilder failureBuilder = ExecutionResult.BadRequest();
 
         foreach (ValidatorDescriptor descriptor in validators)
         {

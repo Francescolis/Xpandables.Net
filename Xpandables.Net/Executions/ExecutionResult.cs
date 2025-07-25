@@ -152,7 +152,7 @@ public abstract record Result
 /// to a generic version for handling specific result types.
 /// </remarks>
 [Serializable]
-public sealed record ExecutionResult : Result
+public sealed partial record ExecutionResult : Result
 {
     [JsonConstructor]
     internal ExecutionResult() { }

@@ -16,6 +16,6 @@ public sealed class GetBalanceAccountQueryHandler(
             .ResolveAsync(query.KeyId, cancellationToken)
             .ConfigureAwait(false);
 
-        return ExecutionResults.Success(account.CurrentState.Balance);
+        return ExecutionResult.Success(account.CurrentState.Balance);
     }
 }

@@ -84,6 +84,6 @@ public sealed class CompositeValidatorUnitTest
         private readonly bool _shouldPass = shouldPass;
 
         public override ExecutionResult Validate(TestClass instance) =>
-            _shouldPass ? ExecutionResults.Success() : ExecutionResults.Failure("key", "message");
+            _shouldPass ? ExecutionResult.Success() : ExecutionResult.Failure("key", "message");
     }
 }

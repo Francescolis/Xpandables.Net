@@ -21,7 +21,7 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// Provides methods to build success and failure execution results.
 /// </summary>
-public readonly record struct ExecutionResults
+public sealed partial record ExecutionResult
 {
     /// <summary>
     /// Returns an implementation of <see cref="ExecutionResult"/> with the 

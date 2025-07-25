@@ -11,6 +11,6 @@ public sealed class UnBlockAccountCommandHandler : IDependencyRequestHandler<UnB
     {
         command.DependencyInstance.Map(a => a.UnBlock());
 
-        return Task.FromResult(ExecutionResults.Success());
+        return Task.FromResult(ExecutionResult.Success());
     }
 }

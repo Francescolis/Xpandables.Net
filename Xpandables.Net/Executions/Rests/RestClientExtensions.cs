@@ -80,7 +80,7 @@ public static class RestClientExtensions
             return executionResult;
         }
 
-        return ExecutionResults
+        return ExecutionResult
             .Success(response.StatusCode)
             .WithHeaders(response.Headers)
             .WithResult(response.Result)

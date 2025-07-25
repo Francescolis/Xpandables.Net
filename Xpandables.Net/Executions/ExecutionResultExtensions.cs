@@ -106,7 +106,7 @@ public static class ExecutionResultExtensions
 
         ElementCollection errors = validationResults.ToElementCollection();
 
-        return ExecutionResults
+        return ExecutionResult
             .BadRequest()
             .WithTitle(HttpStatusCode.BadRequest.GetAppropriateTitle())
             .WithDetail(HttpStatusCode.BadRequest.GetAppropriateDetail())
@@ -130,7 +130,7 @@ public static class ExecutionResultExtensions
 
         statusCode ??= exception.GetAppropriateStatusCode();
 
-        return ExecutionResults
+        return ExecutionResult
             .Failure(statusCode.Value)
             .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.GetAppropriateTitle())
             .WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.GetAppropriateDetail())
@@ -199,7 +199,7 @@ public static class ExecutionResultExtensions
         try
         {
             action();
-            return ExecutionResults.Success();
+            return ExecutionResult.Success();
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
@@ -225,7 +225,7 @@ public static class ExecutionResultExtensions
         try
         {
             action(args);
-            return ExecutionResults.Ok().Build();
+            return ExecutionResult.Ok().Build();
         }
         catch (ValidationException validationException)
         {
@@ -258,7 +258,7 @@ public static class ExecutionResultExtensions
         try
         {
             await task.ConfigureAwait(false);
-            return ExecutionResults.Ok().Build();
+            return ExecutionResult.Ok().Build();
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
@@ -283,7 +283,7 @@ public static class ExecutionResultExtensions
         try
         {
             TResult result = await task.ConfigureAwait(false);
-            return ExecutionResults
+            return ExecutionResult
                 .Ok(result)
                 .Build();
         }
@@ -314,7 +314,7 @@ public static class ExecutionResultExtensions
         try
         {
             TResult result = func();
-            return ExecutionResults
+            return ExecutionResult
                 .Ok(result)
                 .Build();
         }

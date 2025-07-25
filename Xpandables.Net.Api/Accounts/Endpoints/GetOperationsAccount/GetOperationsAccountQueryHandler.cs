@@ -28,7 +28,7 @@ public sealed class GetOperationsAccountQueryHandler(
 
         IAsyncEnumerable<OperationAccount> operations = GetOperations(events, cancellationToken);
 
-        return ExecutionResults.Ok(operations)
+        return ExecutionResult.Ok(operations)
             .WithHeader("Count", $"{await events.CountAsync(cancellationToken)}")
             .Build();
 

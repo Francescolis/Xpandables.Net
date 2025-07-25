@@ -65,7 +65,7 @@ public static class ExecutionResultExtensions
     public static ExecutionResult ToExecutionResult(
         this ModelStateDictionary modelState,
         HttpStatusCode statusCode = HttpStatusCode.BadRequest) =>
-        ExecutionResults
+        ExecutionResult
             .Failure(statusCode)
             .WithErrors(ElementCollection.With(
                 [.. modelState
@@ -103,7 +103,7 @@ public static class ExecutionResultExtensions
             .Replace("\\", string.Empty, StringComparison.InvariantCulture)
             .Replace("\"", string.Empty, StringComparison.InvariantCulture);
 
-        return ExecutionResults
+        return ExecutionResult
             .BadRequest()
             .WithTitle(((HttpStatusCode)exception.StatusCode).GetAppropriateTitle())
             .WithDetail(isDevelopment ? exception.Message : ((HttpStatusCode)exception.StatusCode).GetAppropriateDetail())

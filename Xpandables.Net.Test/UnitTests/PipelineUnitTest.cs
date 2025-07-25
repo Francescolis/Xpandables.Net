@@ -125,8 +125,8 @@ public sealed class TestDependencyRequestHandler :
 
         // Use the dependency in the handling logic
         var result = request.Name.Length > 0
-            ? ExecutionResults.Success()
-            : ExecutionResults.Failure("Name", "Name is required");
+            ? ExecutionResult.Success()
+            : ExecutionResult.Failure("Name", "Name is required");
 
         return Task.FromResult(result);
     }
@@ -138,8 +138,8 @@ public sealed class TestCompositeValidator : Validator<TestDependencyRequest>
     public override ValueTask<ExecutionResult> ValidateAsync(TestDependencyRequest instance)
     {
         var result = string.IsNullOrEmpty(instance.Name)
-            ? ExecutionResults.Failure("Name", "Name is required")
-            : ExecutionResults.Success();
+            ? ExecutionResult.Failure("Name", "Name is required")
+            : ExecutionResult.Success();
 
         return ValueTask.FromResult(result);
     }
