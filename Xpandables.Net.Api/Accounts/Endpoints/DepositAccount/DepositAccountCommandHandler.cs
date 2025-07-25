@@ -9,8 +9,8 @@ public sealed class DepositAccountCommandHandler : IDependencyRequestHandler<Dep
         DepositAccountCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.DependencyInstance.Map(a => a.Deposit(command.Amount));
+        ExecutionResult result = command.DependencyInstance.Bind(a => a.Deposit(command.Amount));
 
-        return Task.FromResult(ExecutionResults.Success());
+        return Task.FromResult(result);
     }
 }

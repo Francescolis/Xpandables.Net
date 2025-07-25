@@ -12,6 +12,6 @@ public sealed record DepositAccountRequest : IRestString, IValidationEnabled
     public required Guid KeyId { get; init; }
 
     [Required]
-    [Range(10, double.MaxValue)]
+    [Range(0, double.MaxValue)]
     public required decimal Amount { get; init; }
 }

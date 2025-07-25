@@ -1,4 +1,5 @@
 ﻿using Xpandables.Net.Api.Accounts.Events;
+using Xpandables.Net.Executions;
 using Xpandables.Net.Executions.Domains;
 
 namespace Xpandables.Net.Api.Accounts;
@@ -12,7 +13,7 @@ public sealed class Account : AggregateState<Account, AccountState>
         return account;
     }
 
-    public void Deposit(decimal amount) => CurrentState.Deposit(amount);
+    public ExecutionResult Deposit(decimal amount) => CurrentState.Deposit(amount);
 
     public void Withdraw(decimal amount) => CurrentState.Withdraw(amount);
 

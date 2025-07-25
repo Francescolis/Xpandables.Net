@@ -35,7 +35,9 @@ public sealed class AggregateRequestPostHandler<TRequest>(IServiceProvider servi
 
             IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
                 .GetRequiredService(aggregateStoreType);
+
             object aggregate = context.Request.DependencyInstance.Value;
+
             await aggregateStore
                 .AppendAsync((Aggregate)aggregate, cancellationToken)
                 .ConfigureAwait(false);
