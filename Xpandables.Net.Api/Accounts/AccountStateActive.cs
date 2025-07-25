@@ -11,9 +11,11 @@ public sealed class AccountStateActive : AccountState
     {
         if (amount <= 0)
         {
-            return ExecutionResults.BadRequest()
+            return ExecutionResults
+                .BadRequest()
                 .WithError(nameof(amount), "Deposit amount must be greater than zero.")
                 .Build();
+
         }
 
         DepositMade @event = new(Context, amount);

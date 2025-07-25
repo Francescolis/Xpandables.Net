@@ -110,7 +110,7 @@ public abstract record Result
     /// <summary>
     /// Ensures that the execution result indicates a successful status code.
     /// </summary>
-    /// <exception cref="HttpRequestException">
+    /// <exception cref="ExecutionResultException">
     /// Thrown if the <see cref="StatusCode"/> does not represent a successful status code.
     /// </exception>
     /// <remarks>
