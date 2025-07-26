@@ -85,3 +85,12 @@ public interface IRepository : IAsyncDisposable
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
 }
+
+/// <summary>
+/// Defines a repository interface for data operations within a specified data context type.
+/// </summary>
+/// <typeparam name="TDataContext">The type of the data context within which the repository operates. Must be a reference type.</typeparam>
+public interface IRepository<in TDataContext> : IRepository
+    where TDataContext : class
+{
+}

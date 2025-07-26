@@ -3,6 +3,7 @@ using System.Text.Json;
 
 using FluentAssertions;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -53,16 +54,16 @@ public sealed class EventSchedulerUnitTest
         SchedulerOptions options = _serviceProvider.GetRequiredService<IOptions<SchedulerOptions>>().Value;
         options.IsEventSchedulerEnabled = false;
 
-        Func<IQueryable<EntityIntegrationEvent>, IAsyncQueryable<IIntegrationEvent>> filterFunc = query =>
+        Func<IQueryable<EntityIntegrationEvent>, IQueryable<EntityIntegrationEvent>> filterFunc = query =>
             query.Where(w => w.Status == EntityStatus.PUBLISHED)
                 .OrderBy(o => o.EventVersion)
-                .Take(10)
-                .SelectEvent()
-                .OfType<IIntegrationEvent>();
+                .Take(10);
 
         // Assert
         List<IIntegrationEvent> events = await eventStore
             .FetchAsync(filterFunc, CancellationToken.None)
+            .AsEventsAsync(CancellationToken.None)
+            .OfType<IIntegrationEvent>()
             .ToListAsync(CancellationToken.None);
 
         events.Count.Should().Be(1);
@@ -74,17 +75,17 @@ public sealed class EventSchedulerUnitTest
     }
 }
 
-public class InMemoryEventStore : IEventStore
+public class InMemoryEventStore : Repository, IEventStore
 {
-    private readonly EventConverterIntegration _eventConverter = new();
-    private readonly ConcurrentBag<IEntityEvent> _eventEntities = [];
+    private static readonly ConcurrentBag<IEntityEvent> _eventEntities = [];
     private readonly JsonSerializerOptions _options = DefaultSerializerOptions.Defaults;
 
     public Task AppendAsync(
         IEvent @event,
         CancellationToken cancellationToken = default)
     {
-        IEntityEvent entityEvent = _eventConverter.ConvertTo(@event, _options);
+        IEventConverter eventConverter = EventConverter.GetConverterFor(@event);
+        IEntityEvent entityEvent = eventConverter.ConvertTo(@event, _options);
         _eventEntities.Add(entityEvent);
 
         return Task.CompletedTask;
@@ -99,22 +100,20 @@ public class InMemoryEventStore : IEventStore
         return Task.CompletedTask;
     }
 
-    public IAsyncEnumerable<TEvent> FetchAsync<TEntityEvent, TEvent>(
-        Func<IQueryable<TEntityEvent>, IAsyncQueryable<TEvent>> filter,
+    public override IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntityEvent : class, IEntityEvent
-        where TEvent : class, IEvent
     {
         if (cancellationToken.IsCancellationRequested)
         {
-            return AsyncEnumerable.Empty<TEvent>();
+            return AsyncEnumerable.Empty<TResult>();
         }
 
-        IQueryable<TEntityEvent> integrations = _eventEntities
-            .OfType<TEntityEvent>()
+        IQueryable<TEntity> integrations = _eventEntities
+            .OfType<TEntity>()
             .AsQueryable();
 
-        return filter(integrations);
+        return ElementCollectionExtensions.ToAsyncEnumerable(filter(integrations));
     }
 
     public Task MarkAsProcessedAsync(

@@ -17,14 +17,14 @@ public sealed class GetOperationsAccountQueryHandler(
     {
         await Task.Yield();
 
-        Func<IQueryable<EntityDomainEvent>, IAsyncQueryable<IEvent>> filterFunc = q =>
+        Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> filterFunc = q =>
             q.Where(w => w.AggregateId == query.KeyId
                              && (w.EventName == nameof(DepositMade) || w.EventName == nameof(WithdrawMade)))
-                .OrderByDescending(o => o.CreatedOn)
-                .SelectEvent()
-                .OfType<IEvent>();
+                .OrderByDescending(o => o.CreatedOn);
 
-        IAsyncEnumerable<IEvent> events = eventStore.FetchAsync(filterFunc, cancellationToken);
+        IAsyncEnumerable<IEvent> events = eventStore
+            .FetchAsync(filterFunc, cancellationToken)
+            .AsEventsAsync(cancellationToken);
 
         IAsyncEnumerable<OperationAccount> operations = GetOperations(events, cancellationToken);
 

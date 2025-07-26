@@ -4,12 +4,15 @@ using FluentAssertions;
 
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 using Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 using Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Executions.Rests;
+using Xpandables.Net.Repositories;
+using Xpandables.Net.Test.UnitTests;
 
 namespace Xpandables.Net.Test.IntegrationTests;
 
@@ -21,7 +24,9 @@ public sealed class RestClientApiTest : IClassFixture<WebApplicationFactory<Prog
     public RestClientApiTest(WebApplicationFactory<Program> factory)
     {
         var services = new ServiceCollection();
-
+        factory = factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+            services.Replace(new ServiceDescriptor(
+                    typeof(IEventStore), typeof(InMemoryEventStore), ServiceLifetime.Scoped))));
         services.AddXRestAttributeProvider();
         services.AddXRestRequestBuilders();
         services.AddXRestResponseBuilders();

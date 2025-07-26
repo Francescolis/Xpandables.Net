@@ -16,6 +16,7 @@
  ********************************************************************************/
 
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -31,10 +32,9 @@ namespace Xpandables.Net.Repositories;
 /// Represents a store for events, providing methods to append, fetch,
 /// and mark events as published.
 /// </summary>
-public sealed class EventStore : Disposable, IEventStore
+public sealed class EventStore : Repository<DataContextEvent>, IEventStore
 {
     private readonly ConcurrentBag<IEntityEvent> _disposableEntities = [];
-    private readonly DataContextEvent context;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventStore"/> class with the specified data context.
@@ -44,8 +44,7 @@ public sealed class EventStore : Disposable, IEventStore
     public EventStore(DataContextEvent context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        this.context = context;
-        IEventStoreExtensions.RegisterEventStore(this);
+        Context = context;
     }
 
     /// <inheritdoc />
@@ -55,7 +54,7 @@ public sealed class EventStore : Disposable, IEventStore
         IEntityEvent entityEvent = eventConverter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
 
         _disposableEntities.Add(entityEvent);
-        await context.AddAsync(entityEvent, cancellationToken).ConfigureAwait(false);
+        await Context.AddAsync(entityEvent, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -68,14 +67,20 @@ public sealed class EventStore : Disposable, IEventStore
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TEvent> FetchAsync<TEntityEvent, TEvent>(
-        Func<IQueryable<TEntityEvent>, IAsyncQueryable<TEvent>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntityEvent : class, IEntityEvent
-        where TEvent : class, IEvent
+    public new async IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TEntity : class, IEntity
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return filter(context.Set<TEntityEvent>().AsNoTracking());
+
+        IQueryable<TResult> query = filter(Context.Set<TEntity>().AsNoTracking());
+
+        await foreach (TResult result in query.AsAsyncEnumerable()
+            .WithCancellation(cancellationToken))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
@@ -85,7 +90,7 @@ public sealed class EventStore : Disposable, IEventStore
             ? EntityStatus.PUBLISHED
             : EntityStatus.ONERROR;
 
-        await context.Integrations
+        await Context.Integrations
             .Where(e => e.KeyId == info.EventId)
             .ExecuteUpdateAsync(entity =>
                     entity
@@ -112,7 +117,7 @@ public sealed class EventStore : Disposable, IEventStore
         if (successfulEvents.Length > 0)
         {
             var successIds = successfulEvents.Select(i => i.EventId).ToArray();
-            await context.Integrations
+            await Context.Integrations
                 .Where(e => successIds.Contains(e.KeyId))
                 .ExecuteUpdateAsync(entity =>
                     entity
@@ -126,7 +131,7 @@ public sealed class EventStore : Disposable, IEventStore
         // Update failed events (needs individual processing due to different error messages)
         foreach (var failedEvent in failedEvents)
         {
-            await context.Integrations
+            await Context.Integrations
                 .Where(e => e.KeyId == failedEvent.EventId)
                 .ExecuteUpdateAsync(entity =>
                     entity
@@ -139,18 +144,15 @@ public sealed class EventStore : Disposable, IEventStore
     }
 
     /// <inheritdoc />
-    protected override void Dispose(bool disposing)
+    protected override ValueTask DisposeAsync(bool disposing)
     {
         if (disposing)
         {
             _disposableEntities.ForEach(entity => entity.Dispose());
             _disposableEntities.Clear();
-
-            // Unregister the event store
-            IEventStoreExtensions.UnregisterEventStore(this);
         }
 
-        base.Dispose(disposing);
+        return base.DisposeAsync(disposing);
     }
 
     private async Task AppendEventBatchAsync(IEvent[] events, CancellationToken cancellationToken)
@@ -161,7 +163,8 @@ public sealed class EventStore : Disposable, IEventStore
 
         foreach (var eventGroup in eventGroups)
         {
-            await AppendEventGroupAsync(eventGroup, cancellationToken).ConfigureAwait(false);
+            await AppendEventGroupAsync(eventGroup, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 
@@ -180,6 +183,8 @@ public sealed class EventStore : Disposable, IEventStore
         }
 
         // Add all converted events in a single batch operation
-        await context.AddRangeAsync(entityEvents, cancellationToken).ConfigureAwait(false);
+        await Context
+            .AddRangeAsync(entityEvents, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

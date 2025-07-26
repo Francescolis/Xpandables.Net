@@ -54,23 +54,28 @@ public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
         });
 
     /// <inheritdoc />
-    public async Task EnqueueAsync(IIntegrationEvent message, CancellationToken cancellationToken = default) =>
-        await eventStore.AppendAsync(message, cancellationToken).ConfigureAwait(false);
+    public async Task EnqueueAsync(
+        IIntegrationEvent message, CancellationToken cancellationToken = default) =>
+        await eventStore
+            .AppendAsync(message, cancellationToken)
+            .ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default)
     {
-        Func<IQueryable<EntityIntegrationEvent>, IAsyncQueryable<IEvent>> filter = query =>
+        Func<IQueryable<EntityIntegrationEvent>, IQueryable<EntityIntegrationEvent>> filter = query =>
             query.Where(w => w.Status == EntityStatus.PENDING)
                 .OrderBy(o => o.CreatedOn)
-                .Take(capacity)
-                .SelectEvent();
+                .Take(capacity);
 
         await foreach (IEvent @event in eventStore
             .FetchAsync(filter, cancellationToken)
+            .AsEventsAsync(cancellationToken)
             .WithCancellation(cancellationToken))
         {
-            await Channel.Writer.WriteAsync((IIntegrationEvent)@event, cancellationToken).ConfigureAwait(false);
+            await Channel.Writer
+                .WriteAsync((IIntegrationEvent)@event, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

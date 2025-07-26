@@ -1,6 +1,5 @@
 ﻿using Xpandables.Net.Api.Accounts.Events;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Domains;
 using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
 
@@ -31,11 +30,9 @@ public sealed class CreateAccountPreCommandHandler(IEventStore eventStore) :
         RequestContext<CreateAccountCommand> context,
         CancellationToken cancellationToken = default)
     {
-        Func<IQueryable<EntityDomainEvent>, IAsyncQueryable<IDomainEvent>> domainFilterFunc = query =>
-            query.Where(w => w.AggregateId == context.Request.KeyId
-                             && w.EventName == nameof(AccountCreated))
-                .SelectEvent()
-                .OfType<IDomainEvent>();
+        Func<IQueryable<EntityDomainEvent>, IQueryable<Guid>> domainFilterFunc = query =>
+            query.Where(w => w.AggregateId == context.Request.KeyId && w.EventName == nameof(AccountCreated))
+            .Select(s => s.KeyId);
 
         if (await eventStore.FetchAsync(domainFilterFunc, cancellationToken)
             .CountAsync(cancellationToken)

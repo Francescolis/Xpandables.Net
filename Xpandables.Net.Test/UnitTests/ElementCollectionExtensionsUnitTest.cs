@@ -14,7 +14,7 @@ public sealed class ElementCollectionExtensionsUnitTest
     public void ToElementCollection_ShouldThrowArgumentNullException_WhenEntriesIsNull()
     {
         // Arrange
-        IEnumerable<ElementEntry> entries = []!;
+        IEnumerable<ElementEntry> entries = null!;
 
         // Act & Assert
         entries.Invoking(e => e.ToElementCollection())

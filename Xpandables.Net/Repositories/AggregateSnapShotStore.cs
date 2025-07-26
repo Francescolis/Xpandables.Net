@@ -90,15 +90,15 @@ public sealed class AggregateSnapShotStore<TAggregateRoot>(
 
         try
         {
-            Func<IQueryable<EntitySnapshotEvent>, IAsyncQueryable<ISnapshotEvent>> filter = query =>
+            Func<IQueryable<EntitySnapshotEvent>, IQueryable<EntitySnapshotEvent>> filter = query =>
                 query.Where(w => w.OwnerId == keyId)
                 .OrderByDescending(o => o.EventVersion)
-                .Take(1)
-                .SelectEvent()
-                .OfType<ISnapshotEvent>();
+                .Take(1);
 
             ISnapshotEvent? @event = await _eventStore
                 .FetchAsync(filter, cancellationToken)
+                .AsEventsAsync(cancellationToken)
+                .OfType<ISnapshotEvent>()
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
 
@@ -118,15 +118,14 @@ public sealed class AggregateSnapShotStore<TAggregateRoot>(
             // because the snapshot is not always up to date, we need to fetch the events
             // after the snapshot version to get the latest events.
 
-            Func<IQueryable<EntityDomainEvent>, IAsyncQueryable<IDomainEvent>> domainFilterFunc = query =>
-                query.Where(w => w.AggregateId == keyId
-                                 && w.EventVersion > aggregateRoot.Version)
-                .OrderBy(o => o.EventVersion)
-                .SelectEvent()
-                .OfType<IDomainEvent>();
+            Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> domainFilterFunc = query =>
+                query.Where(w => w.AggregateId == keyId && w.EventVersion > aggregateRoot.Version)
+                .OrderBy(o => o.EventVersion);
 
             await foreach (IDomainEvent ev in _eventStore
                 .FetchAsync(domainFilterFunc, cancellationToken)
+                .AsEventsAsync(cancellationToken)
+                .OfType<IDomainEvent>()
                 .ConfigureAwait(false))
             {
                 aggregateRoot.LoadFromHistory(ev);
