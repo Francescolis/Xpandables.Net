@@ -152,6 +152,7 @@ public static class RepositoryExtensions
     /// Deserializes a stream of event entity projections into concrete <see cref="IEvent"/> objects.
     /// This method should be called after the query has been executed and is being streamed from the database.
     /// </summary>
+    /// <remarks>This method also disposes of the <see cref="IEntityEvent"/> instances after deserialization to free resources.</remarks>
     /// <param name="source">The asynchronous stream of event projections.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>An asynchronous stream of deserialized <see cref="IEvent"/> objects.</returns>
@@ -173,10 +174,14 @@ public static class RepositoryExtensions
                     $"Ensure it is referenced and available at runtime.");
             });
 
-            yield return EventConverter.DeserializeEvent(
+            IEvent deserializedEvent = EventConverter.DeserializeEvent(
                 entity.EventData,
                 concreteEventType,
                 DefaultSerializerOptions.Defaults);
+
+            entity.Dispose();
+
+            yield return deserializedEvent;
         }
     }
 

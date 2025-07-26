@@ -111,6 +111,7 @@ public class InMemoryEventStore : Repository, IEventStore
 
         IQueryable<TEntity> integrations = _eventEntities
             .OfType<TEntity>()
+            .Select(CreateCopy)
             .AsQueryable();
 
         return ElementCollectionExtensions.ToAsyncEnumerable(filter(integrations));
@@ -142,5 +143,49 @@ public class InMemoryEventStore : Repository, IEventStore
             MarkAsProcessedAsync(info, cancellationToken);
         }
         return Task.CompletedTask;
+    }
+
+    private static TEntityEvent CreateCopy<TEntityEvent>(TEntityEvent entity)
+        where TEntityEvent : class, IEntity
+    {
+        if (entity is not IEntityEvent entityEvent)
+        {
+            throw new NotSupportedException($"Unsupported entity event type: {typeof(TEntityEvent).FullName}");
+        }
+
+        JsonElement cloneElement = entityEvent.EventData.RootElement.Clone();
+        JsonDocument cloneDocument = JsonDocument.Parse(cloneElement.GetRawText());
+        IEntityEvent result = entityEvent switch
+        {
+            IEntityEventIntegration integration => new EntityIntegrationEvent
+            {
+                CreatedOn = integration.CreatedOn,
+                DeletedOn = integration.DeletedOn,
+                ErrorMessage = integration.ErrorMessage,
+                EventData = cloneDocument,
+                EventFullName = integration.EventFullName,
+                EventName = integration.EventName,
+                EventVersion = integration.EventVersion,
+                KeyId = integration.KeyId,
+                Status = integration.Status,
+                UpdatedOn = integration.UpdatedOn
+            },
+            IEntityEventDomain domain => new EntityDomainEvent
+            {
+                AggregateId = domain.AggregateId,
+                CreatedOn = domain.CreatedOn,
+                DeletedOn = domain.DeletedOn,
+                EventData = cloneDocument,
+                EventFullName = domain.EventFullName,
+                EventName = domain.EventName,
+                EventVersion = domain.EventVersion,
+                KeyId = domain.KeyId,
+                Status = domain.Status,
+                UpdatedOn = domain.UpdatedOn
+            },
+            _ => throw new NotSupportedException($"Unsupported entity event type: {entityEvent.GetType().FullName}")
+        };
+
+        return (TEntityEvent)result;
     }
 }
