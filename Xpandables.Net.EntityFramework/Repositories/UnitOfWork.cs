@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Data.Common;
-using System.Reflection;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -86,7 +85,7 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
                     $"The repository of type {typeof(TRepository).Name} is not registered.");
 
             // Inject the ambient DataContext into the repository
-            InjectAmbientContext(service);
+            DataContextExtensions.InjectAmbientContext(service, Context);
 
             return service;
         });
@@ -109,73 +108,6 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 
         await base.DisposeAsync(disposing).ConfigureAwait(false);
     }
-
-    /// <summary>
-    /// Injects the ambient DataContext into the resolved repository.
-    /// </summary>
-    /// <typeparam name="TRepository">The type of the repository.</typeparam>
-    /// <param name="repository">The repository instance to inject the context into.</param>
-    /// <exception cref="InvalidOperationException">Thrown when the repository doesn't have a DataContext property or field, 
-    /// or when injection fails.</exception>
-    protected void InjectAmbientContext<TRepository>(TRepository repository)
-         where TRepository : class, IRepository
-    {
-        var repositoryType = repository.GetType();
-
-        // Try to find a writable property of DataContext type
-        var contextProperty = FindDataContextProperty(repositoryType);
-        if (contextProperty != null)
-        {
-            try
-            {
-                contextProperty.SetValue(repository, Context);
-                return;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    $"Failed to inject DataContext into property '{contextProperty.Name}' of repository type '{repositoryType.Name}'. " +
-                    $"Ensure the property has a public setter and is compatible with the ambient DataContext type.", ex);
-            }
-        }
-
-        // Try to find a field of DataContext type
-        var contextField = FindDataContextField(repositoryType);
-        if (contextField != null)
-        {
-            try
-            {
-                contextField.SetValue(repository, Context);
-                return;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    $"Failed to inject DataContext into field '{contextField.Name}' of repository type '{repositoryType.Name}'. " +
-                    $"Ensure the field is accessible and compatible with the ambient DataContext type.", ex);
-            }
-        }
-
-        // If neither property nor field found, throw exception
-        throw new InvalidOperationException(
-            $"Repository type '{repositoryType.Name}' does not contain a writable property or accessible field of type '{typeof(DataContext).Name}' " +
-            $"or its derived types. The repository must have a way to receive the ambient DataContext.");
-    }
-
-    private static PropertyInfo? FindDataContextProperty(Type repositoryType) =>
-        // Look for properties that are assignable from DataContext and are writable
-        repositoryType
-            .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            .FirstOrDefault(prop =>
-                typeof(DataContext).IsAssignableFrom(prop.PropertyType) &&
-                prop.CanWrite);
-    private static FieldInfo? FindDataContextField(Type repositoryType) =>
-        // Look for fields that are assignable from DataContext
-        repositoryType
-            .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            .FirstOrDefault(field =>
-                typeof(DataContext).IsAssignableFrom(field.FieldType) &&
-                !field.IsInitOnly);
 }
 
 /// <summary>
@@ -191,6 +123,20 @@ public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider ser
     /// Gets the data context associated with this unit of work.
     /// </summary>
     protected new TDataContext Context { get; } = context;
+}
+
+/// <summary>
+/// Represents a unit of work for handling events within a specified data context.
+/// </summary>
+/// <typeparam name="TDataContext">The type of the data context used by this unit of work. 
+/// Must inherit from <see cref="DataContext"/>.</typeparam>
+/// <param name="context">The data context to be used for this unit of work.</param>
+/// <param name="serviceProvider">The service provider to resolve dependencies.</param>
+public sealed class EventUnitOfWork<TDataContext>(
+    TDataContext context,
+    IServiceProvider serviceProvider) : UnitOfWork<TDataContext>(context, serviceProvider)
+    where TDataContext : DataContext
+{
 }
 
 internal sealed class UnitOfWorkTransaction : AsyncDisposable, IUnitOfWorkTransaction

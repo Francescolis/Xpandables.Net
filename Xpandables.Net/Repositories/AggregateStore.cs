@@ -34,13 +34,13 @@ namespace Xpandables.Net.Repositories;
 /// An <see cref="IUnitOfWork"/> must be registered with the key "Aggregate" to ensure proper transactional support.
 /// </remarks>
 public sealed class AggregateStore<TAggregate>(
-    IEventStore eventStore,
+    IUnitOfWorkEvent unitOfWork,
     IPublisher publisher) :
     IAggregateStore<TAggregate>
     where TAggregate : Aggregate, new()
 {
-    private readonly IEventStore _eventStore = eventStore;
     private readonly IPublisher _publisher = publisher;
+    private readonly IEventStore _eventStore = unitOfWork.GetEventStore<IEventStore>();
 
     /// <inheritdoc />
     public async Task AppendAsync(

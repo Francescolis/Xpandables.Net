@@ -28,7 +28,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// <remarks>The default behavior uses Validator.TryValidateObject(
 /// object, ValidationContext, ICollection{ValidationResult}?, bool).</remarks>
 public class Validator<TArgument> : IValidator<TArgument>
-    where TArgument : class, IValidationEnabled
+    where TArgument : class, IRequiresValidation
 {
     /// <summary>
     /// Contains the service provider.

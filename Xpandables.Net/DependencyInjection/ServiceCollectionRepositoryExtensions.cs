@@ -96,4 +96,16 @@ public static class ServiceCollectionRepositoryExtensions
         this IServiceCollection services)
         where TUnitOfWork : class, IUnitOfWork =>
         services.AddScoped<IUnitOfWork, TUnitOfWork>();
+
+    /// <summary>
+    /// Adds a scoped <see cref="IUnitOfWorkEvent"/> service to the 
+    /// <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="TUnitOfWorkEvent">The type of the unit of work event.</typeparam>
+    /// <param name="services">The service collection to add the service to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXUnitOfWorkEvent<TUnitOfWorkEvent>(
+        this IServiceCollection services)
+        where TUnitOfWorkEvent : class, IUnitOfWorkEvent =>
+        services.AddScoped<IUnitOfWorkEvent, TUnitOfWorkEvent>();
 }

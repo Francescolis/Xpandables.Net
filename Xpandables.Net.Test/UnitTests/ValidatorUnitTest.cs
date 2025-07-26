@@ -59,7 +59,7 @@ public sealed class ValidatorUnitTest
     }
 }
 
-public record ToBeValidated : IValidationEnabled
+public record ToBeValidated : IRequiresValidation
 {
     [Required] public string? Name { get; set; }
 

@@ -78,7 +78,7 @@ public sealed class CompositeValidatorUnitTest
         result.IsSuccessStatusCode.Should().BeFalse();
     }
 
-    private class TestClass : IValidationEnabled { }
+    private class TestClass : IRequiresValidation { }
     private class TestValidator(bool shouldPass) : Validator<TestClass>
     {
         private readonly bool _shouldPass = shouldPass;

@@ -33,9 +33,9 @@ public interface IValidatorProvider
     /// Attempts to retrieve a validator for the specified argument type.
     /// </summary>
     /// <typeparam name="TArgument">The type of the argument for which the validator is requested. Must be a reference type and implement <see
-    /// cref="IValidationEnabled"/>.</typeparam>
+    /// cref="IRequiresValidation"/>.</typeparam>
     /// <returns>An instance of <see cref="IValidator"/> if a validator for <typeparamref name="TArgument"/> is available; 
     /// otherwise, <see langword="null"/>.</returns>
     IValidator? TryGetValidator<TArgument>()
-        where TArgument : class, IValidationEnabled;
+        where TArgument : class, IRequiresValidation;
 }

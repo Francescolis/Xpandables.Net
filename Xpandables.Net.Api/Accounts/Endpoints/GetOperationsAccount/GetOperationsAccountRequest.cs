@@ -6,7 +6,7 @@ using Xpandables.Net.Executions.Rests;
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
 
 [RestGet("/accounts/operations")]
-public sealed record GetOperationsAccountRequest : IValidationEnabled
+public sealed record GetOperationsAccountRequest : IRequiresValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

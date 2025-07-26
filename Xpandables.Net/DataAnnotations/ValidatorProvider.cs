@@ -49,7 +49,7 @@ public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValid
 
     /// <inheritdoc/>
     public IValidator? TryGetValidator<TArgument>()
-        where TArgument : class, IValidationEnabled
+        where TArgument : class, IRequiresValidation
     {
         var validators = _serviceProvider
             .GetServices<IValidator<TArgument>>()

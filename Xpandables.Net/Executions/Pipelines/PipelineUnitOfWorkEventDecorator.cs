@@ -22,14 +22,14 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.Executions.Pipelines;
 
 /// <summary>
-/// The PipelineUnitOfWorkDecorator class is a pipeline decorator that ensures
-/// changes are saved to the database context via the <see cref="IUnitOfWork"/>
+/// The PipelineUnitOfWorkEventDecorator class is a pipeline decorator that ensures
+/// aggregate events changes are saved to the database context via the <see cref="IUnitOfWorkEvent"/>
 /// after processing the request and response in a pipeline execution.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresUnitOfWork"/>.</typeparam>
-public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork unitOfWork) :
+/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresEventStorage"/>.</typeparam>
+public sealed class PipelineUnitOfWorkEventDecorator<TRequest>(IUnitOfWorkEvent unitOfWork) :
     IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IRequiresUnitOfWork
+    where TRequest : class, IRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>
     public async Task<ExecutionResult> HandleAsync(

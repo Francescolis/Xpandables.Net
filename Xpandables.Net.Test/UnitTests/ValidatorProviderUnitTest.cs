@@ -43,7 +43,7 @@ public sealed class ValidatorProviderUnitTest
         validator.Should().BeNull();
     }
 
-    private class TestClass : IValidationEnabled { }
-    private class UnregisteredClass : IValidationEnabled { }
+    private class TestClass : IRequiresValidation { }
+    private class UnregisteredClass : IRequiresValidation { }
     private class TestValidator : Validator<TestClass> { }
 }

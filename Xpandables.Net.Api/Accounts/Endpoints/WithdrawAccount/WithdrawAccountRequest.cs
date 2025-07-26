@@ -6,7 +6,7 @@ using Xpandables.Net.Executions.Rests;
 namespace Xpandables.Net.Api.Accounts.Endpoints.WithdrawAccount;
 
 [RestPost("/accounts/withdraw")]
-public sealed record WithdrawAccountRequest : IValidationEnabled
+public sealed record WithdrawAccountRequest : IRequiresValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

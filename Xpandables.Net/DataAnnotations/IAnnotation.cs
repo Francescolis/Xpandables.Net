@@ -28,3 +28,29 @@ public interface IAnnotation
     /// </summary>
     public DateTime UsedOn => DateTime.UtcNow;
 }
+
+/// <summary>
+/// Represents an interface that indicates a requirement for validation capabilities.
+/// </summary>
+/// <remarks>Implementing this interface suggests that the object supports or requires validation processes,
+/// typically to ensure that its state or data meets certain criteria.</remarks>
+public interface IRequiresValidation : IAnnotation;
+
+/// <summary>
+/// Defines a marker interface to indicate that the request requires 
+/// its aggregate dependency to be stored after successful processing.
+/// </summary>
+/// <remarks>Implementing this interface indicates that a type depends on aggregate storage for its operations or
+/// state management. This interface is typically used in scenarios where dependency injection or service location is
+/// employed to provide storage capabilities.</remarks>
+public interface IRequiresEventStorage : IAnnotation;
+
+/// <summary>
+/// Marker interface to indicate that a request requires automatic 
+/// unit of work management, ensuring database changes are persisted
+/// regardless of the request outcome.
+/// </summary>
+/// <remarks>Implement this interface to signal that the implementing class should be used within a unit of work
+/// pattern. This interface does not define any members and serves as a semantic indicator for dependency injection or
+/// other framework-specific behaviors.</remarks>
+public interface IRequiresUnitOfWork : IAnnotation;

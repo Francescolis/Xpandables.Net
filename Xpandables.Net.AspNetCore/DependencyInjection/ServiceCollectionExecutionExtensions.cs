@@ -168,7 +168,7 @@ public static class ServiceCollectionExecutionExtensions
     /// <remarks>To be applied on many routes, please use 
     /// <see langword="MapGroup"/> with empty prefix 
     /// (<see cref="string.Empty"/>).
-    /// <para>The request must implement the <see cref="IValidationEnabled"/>.
+    /// <para>The request must implement the <see cref="IRequiresValidation"/>.
     /// You can implement the <see cref="IValidator{TArgument}"/> specific
     /// to your request, otherwise you must use the built in one : Register the
     /// generic validator using <see langword="AddXValidatorGenerics"/> method.</para>
@@ -192,7 +192,7 @@ public static class ServiceCollectionExecutionExtensions
     /// <remarks>To be applied on many routes, please use 
     /// <see langword="MapGroup"/> with empty prefix 
     /// (<see cref="string.Empty"/>).
-    /// <para>The request must implement the <see cref="IValidationEnabled"/>.
+    /// <para>The request must implement the <see cref="IRequiresValidation"/>.
     /// You can implement the <see cref="IValidator{TArgument}"/> specific
     /// to your request, otherwise you must use the built in one : Register the
     /// generic validator using <see langword="AddXValidatorGenerics"/> method.</para>

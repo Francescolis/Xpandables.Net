@@ -25,8 +25,7 @@ builder.Services.AddXHandlers(typeof(Account).Assembly);
 builder.Services.AddScoped(typeof(IRequestPostHandler<>), typeof(AggregateRequestPostHandler<>));
 builder.Services.AddXDependencyProvider<AggregateDependencyProvider>();
 
-builder.Services.AddXEventUnitOfWork();
-builder.Services.AddXPipelineUnitOfWorkDecorator();
+builder.Services.AddXUnitOfWorkEvent();
 builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();
 builder.Services.AddXDataContextEvent(options =>

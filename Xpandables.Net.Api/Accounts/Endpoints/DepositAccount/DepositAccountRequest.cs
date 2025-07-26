@@ -6,7 +6,7 @@ using Xpandables.Net.Executions.Rests;
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 
 [RestPost("/accounts/deposit", IsSecured = false)]
-public sealed record DepositAccountRequest : IRestString, IValidationEnabled
+public sealed record DepositAccountRequest : IRestString, IRequiresValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

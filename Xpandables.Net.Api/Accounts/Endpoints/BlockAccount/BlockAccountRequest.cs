@@ -6,7 +6,7 @@ using Xpandables.Net.Executions.Rests;
 namespace Xpandables.Net.Api.Accounts.Endpoints.BlockAccount;
 
 [RestPost("/accounts/block")]
-public sealed record BlockAccountRequest : IValidationEnabled
+public sealed record BlockAccountRequest : IRequiresValidation
 {
     [Required]
     public required Guid KeyId { get; init; }

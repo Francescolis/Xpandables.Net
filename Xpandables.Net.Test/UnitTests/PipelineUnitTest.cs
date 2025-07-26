@@ -105,8 +105,8 @@ public sealed class PipelineUnitTest
 
 // Request implementation using DependencyRequest base class
 public sealed record TestDependencyRequest : DependencyRequest<TestDependency>,
-    IValidationEnabled,
-    IUnitOfWorkApplied
+    IRequiresValidation,
+    IRequiresUnitOfWork
 {
     public string Name { get; init; } = string.Empty;
 }

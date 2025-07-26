@@ -100,7 +100,7 @@ public sealed class EndpointValidator(IValidatorProvider validatorProvider) : IE
     {
         List<ArgumentDescriptor> arguments = [.. context
             .Arguments
-            .OfType<IValidationEnabled>()
+            .OfType<IRequiresValidation>()
             .Select((parameter, index) => new ArgumentDescriptor
             {
                 Index = index,
@@ -137,7 +137,7 @@ public sealed class EndpointValidator(IValidatorProvider validatorProvider) : IE
 internal readonly record struct ArgumentDescriptor
 {
     public required int Index { get; init; }
-    public required IValidationEnabled Parameter { get; init; }
+    public required IRequiresValidation Parameter { get; init; }
     public required Type ParameterType { get; init; }
 }
 
@@ -145,6 +145,6 @@ internal readonly record struct ValidatorDescriptor
 {
     public required int ArgumentIndex { get; init; }
     public required Type ArgumentType { get; init; }
-    public required IValidationEnabled Argument { get; init; }
+    public required IRequiresValidation Argument { get; init; }
     public required IValidator Validator { get; init; }
 }

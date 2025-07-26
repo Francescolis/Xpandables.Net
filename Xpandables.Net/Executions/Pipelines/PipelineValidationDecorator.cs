@@ -23,7 +23,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// Represents a pipeline decorator that performs validation on the incoming request
 /// using a composite validator before proceeding to the next pipeline component.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request object, must be a class and implement <see cref="IValidationEnabled"/>.</typeparam>
+/// <typeparam name="TRequest">The type of the request object, must be a class and implement <see cref="IRequiresValidation"/>.</typeparam>
 /// <param name="validators">The instance of a composite validator responsible for validating the request.</param>
 /// <remarks>
 /// If the validation fails, the pipeline will short-circuit and return a validation error response.
@@ -31,7 +31,7 @@ namespace Xpandables.Net.Executions.Pipelines;
 /// </remarks>
 public sealed class PipelineValidationDecorator<TRequest>(ICompositeValidator<TRequest> validators) :
     IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IValidationEnabled
+    where TRequest : class, IRequest, IRequiresValidation
 {
     /// <inheritdoc/>
     public async Task<ExecutionResult> HandleAsync(

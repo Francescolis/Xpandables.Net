@@ -94,7 +94,7 @@ public class Repository<TDataContext> : Repository, IRepository<TDataContext>
     /// <summary>
     /// Gets the data context associated with this repository.
     /// </summary>
-    public required TDataContext Context { get; init; }
+    public required TDataContext Context { get; set; }
 
     /// <summary>
     /// Asynchronously deletes entities from the database that match the specified filter.

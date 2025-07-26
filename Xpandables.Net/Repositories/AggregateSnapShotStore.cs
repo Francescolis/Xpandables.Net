@@ -30,13 +30,13 @@ namespace Xpandables.Net.Repositories;
 /// <typeparam name="TAggregateRoot">The type of the aggregate root.</typeparam>
 public sealed class AggregateSnapShotStore<TAggregateRoot>(
     IAggregateStore<TAggregateRoot> aggregateStore,
-    IEventStore eventStore,
+    IUnitOfWorkEvent unitOfWork,
     IOptions<SnapShotOptions> options) :
     IAggregateStore<TAggregateRoot>
     where TAggregateRoot : Aggregate, IOriginator, new()
 {
     private readonly IAggregateStore<TAggregateRoot> _aggregateStore = aggregateStore;
-    private readonly IEventStore _eventStore = eventStore;
+    private readonly IEventStore _eventStore = unitOfWork.GetEventStore<IEventStore>();
     private readonly SnapShotOptions _options = options.Value;
 
     /// <inheritdoc />

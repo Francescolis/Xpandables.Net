@@ -111,6 +111,4 @@ public interface IUnitOfWork : IAsyncDisposable
 /// </summary>
 /// <typeparam name="TDataContext">The type of the context.</typeparam>
 public interface IUnitOfWork<TDataContext> : IUnitOfWork
-    where TDataContext : class
-{
-}
+    where TDataContext : class;

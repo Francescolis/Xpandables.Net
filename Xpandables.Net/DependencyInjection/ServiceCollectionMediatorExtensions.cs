@@ -55,10 +55,12 @@ public static class ServiceCollectionMediatorExtensions
             .AddScoped<IMediator, TMediator>()
             .AddXPipelineExceptionDecorator()
             .AddXPipelineValidationDecorator()
+            .AddXPipelineUnitOfWorkDecorator()
+            .AddXPipelineUnitOfWorkEventDecorator()
             .AddXPipelineDependencyDecorator()
-            .AddXPipelineRequestHandler()
             .AddXPipelinePreDecorator()
             .AddXPipelinePostDecorator()
+            .AddXPipelineRequestHandler()
             .AddXDependencyManager();
 
     /// <summary>
@@ -211,6 +213,16 @@ public static class ServiceCollectionMediatorExtensions
     public static IServiceCollection AddXPipelineUnitOfWorkDecorator(
         this IServiceCollection services) =>
         services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<>));
+
+    /// <summary>
+    /// Adds a unit of work event pipeline decorator to the <see cref="IServiceCollection" />.
+    /// <para>The pipeline decorator is applied in the order of registration.</para>
+    /// </summary>
+    /// <param name="services">The service collection to add the decorator to.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddXPipelineUnitOfWorkEventDecorator(
+        this IServiceCollection services) =>
+        services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkEventDecorator<>));
 
     /// <summary>
     /// Adds a post pipeline decorator to the <see cref="IServiceCollection" />.

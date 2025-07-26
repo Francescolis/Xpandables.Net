@@ -22,7 +22,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// </summary>
 /// <typeparam name="TArgument">The type of the argument to validate.</typeparam>
 public sealed class NullValidator<TArgument> : Validator<TArgument>
-    where TArgument : class, IValidationEnabled
+    where TArgument : class, IRequiresValidation
 {
     /// <inheritdoc/>
     /// Does nothing and returns an <see cref="ExecutionResult.Ok"/>.

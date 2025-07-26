@@ -16,11 +16,11 @@ namespace Xpandables.Net.Executions.Handlers;
 /// operation.</remarks>
 /// <typeparam name="TRequest">The type of the request being handled. 
 /// Must implement <see cref="IDependencyRequest"/> and <see
-/// cref="IAggregateAppended"/>.</typeparam>
+/// cref="IRequiresEventStorage"/>.</typeparam>
 /// <param name="serviceProvider"></param>
 public sealed class AggregateRequestPostHandler<TRequest>(IServiceProvider serviceProvider)
     : IRequestPostHandler<TRequest>
-    where TRequest : class, IDependencyRequest, IAggregateAppended
+    where TRequest : class, IDependencyRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>
     public async Task<ExecutionResult> HandleAsync(
