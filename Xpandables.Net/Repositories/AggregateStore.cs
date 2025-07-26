@@ -29,10 +29,6 @@ namespace Xpandables.Net.Repositories;
 /// <typeparam name="TAggregate">
 /// The type of the aggregate, which must inherit from <see cref="Aggregate"/> and have a parameterless constructor.
 /// </typeparam>
-/// <remarks>
-/// This class depends on an implementation of <see cref="IEventStore"/> for storing events and <see cref="IPublisher"/> for publishing those events.
-/// An <see cref="IUnitOfWork"/> must be registered with the key "Aggregate" to ensure proper transactional support.
-/// </remarks>
 public sealed class AggregateStore<TAggregate>(
     IUnitOfWorkEvent unitOfWork,
     IPublisher publisher) :
