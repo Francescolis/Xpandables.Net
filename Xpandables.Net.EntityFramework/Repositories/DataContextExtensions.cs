@@ -48,12 +48,6 @@ public static class DataContextExtensions
                     $"Ensure the field is accessible and compatible with the ambient DataContext type.", ex);
             }
         }
-
-        // If neither property nor field found, throw exception
-        throw new InvalidOperationException(
-            $"Event store type '{repositoryType.Name}' does not contain a writable property or " +
-            $"accessible field of type '{typeof(DataContext).Name}' " +
-            $"or its derived types. The class must have a way to receive the ambient DataContext.");
     }
 
     private static PropertyInfo? FindDataContextProperty(Type repositoryType) =>
