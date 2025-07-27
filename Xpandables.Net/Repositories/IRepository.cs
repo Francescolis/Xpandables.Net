@@ -32,9 +32,9 @@ public interface IRepository : IAsyncDisposable
     ///         .Where(u => u.IsActive)
     ///         .Include(u => u.Profile)
     ///         .OrderBy(u => u.LastName)
+    ///         .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
     ///         .Skip(10)
     ///         .Take(20)
-    ///         .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
     /// ).ToListAsync();
     /// </code>
     /// </summary>
