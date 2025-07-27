@@ -65,6 +65,7 @@ internal sealed class Scheduler : BackgroundService, IScheduler
     }
 
     /// <inheritdoc />
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task ScheduleAsync(CancellationToken cancellationToken = default)
     {
         if (!_options.IsEventSchedulerEnabled)
@@ -74,7 +75,7 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         }
 
         // ReSharper disable once UseAwaitUsing
-        using AsyncServiceScope serviceScope = _serviceScopeFactory.CreateAsyncScope();
+        await using AsyncServiceScope serviceScope = _serviceScopeFactory.CreateAsyncScope();
         IMessageQueue messageQueue = serviceScope.ServiceProvider.GetRequiredService<IMessageQueue>();
 
         await messageQueue.DequeueAsync(_options.MaxSchedulerEventPerThread, cancellationToken).ConfigureAwait(false);

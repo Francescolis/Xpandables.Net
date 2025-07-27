@@ -64,7 +64,7 @@ public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
     public async Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default)
     {
         Func<IQueryable<EntityIntegrationEvent>, IQueryable<EntityIntegrationEvent>> filter = query =>
-            query.Where(w => w.Status == EntityStatus.PENDING)
+            query.Where(w => w.Status == EntityStatus.PENDING.Value)
                 .OrderBy(o => o.CreatedOn)
                 .Take(capacity);
 
