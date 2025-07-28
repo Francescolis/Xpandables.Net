@@ -114,7 +114,7 @@ public class InMemoryEventStore : Repository, IEventStore
             .Select(CreateCopy)
             .AsQueryable();
 
-        return ElementCollectionExtensions.ToAsyncEnumerable(filter(integrations));
+        return filter(integrations).ToAsyncEnumerable();
     }
 
     public Task MarkAsProcessedAsync(

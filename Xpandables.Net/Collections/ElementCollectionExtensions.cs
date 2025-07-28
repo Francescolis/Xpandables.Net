@@ -107,24 +107,6 @@ public static class ElementCollectionExtensions
     }
 
     /// <summary>
-    /// Converts the collection to exposes an enumerator that provides 
-    /// asynchronous iteration over values of <typeparamref name="T"/> type.
-    /// </summary>
-    /// <typeparam name="T">The type of the elements in the 
-    /// collection.</typeparam>
-    /// <param name="source">The collection of elements.</param>
-    /// <returns>An async-enumerable sequence.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="source"/> 
-    /// is null.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        return new AsyncEnumerable<T>(source);
-    }
-
-    /// <summary>
     /// The action delegate to be applied on the ref source.
     /// </summary>
     /// <typeparam name="TItem">Type of the element in the sequence.</typeparam>
