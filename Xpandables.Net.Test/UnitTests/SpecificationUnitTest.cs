@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 
 using Xpandables.Net.DataAnnotations;
-using Xpandables.Net.Expressions;
 
 namespace Xpandables.Net.Test.UnitTests;
 

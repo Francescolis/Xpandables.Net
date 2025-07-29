@@ -21,8 +21,8 @@ using System.Text.Json.Serialization;
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Converts between JSON and the ElementCollection type. It reads JSON data to create an ElementCollection and writes
-/// an ElementCollection back to JSON.
+/// Converts between JSON and the ElementCollection type. 
+/// It reads JSON data to create an ElementCollection and writes an ElementCollection back to JSON.
 /// </summary>
 public sealed class ElementCollectionJsonConverter : JsonConverter<ElementCollection>
 {

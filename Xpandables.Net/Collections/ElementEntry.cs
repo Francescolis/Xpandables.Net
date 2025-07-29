@@ -23,8 +23,11 @@ using Microsoft.Extensions.Primitives;
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Represents an entry in a collection with a key and associated values.
+/// Represents an entry consisting of a key and associated values.
 /// </summary>
+/// <remarks>The <see cref="ElementEntry"/> struct is immutable and is used to store a key-value pair where the
+/// key is a string and the values are a collection of strings. It is designed to be used in scenarios where a
+/// collection of values needs to be associated with a single key.</remarks>
 [StructLayout(LayoutKind.Auto)]
 [JsonConverter(typeof(ElementEntryJsonConverter))]
 public readonly record struct ElementEntry
@@ -37,7 +40,7 @@ public readonly record struct ElementEntry
     /// Gets the values associated with the key.
     /// </summary>
     public required StringValues Values { get; init; }
-    
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ElementEntry"/> struct.
     /// </summary>

@@ -17,81 +17,31 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-using Xpandables.Net.Expressions;
 
 namespace Xpandables.Net.DataAnnotations;
+
 /// <summary>
-/// Provides extension methods for <see cref="Specification{TSource}"/>.
+/// Provides extension methods for working with specifications and collections.
 /// </summary>
 public static class SpecificationExtensions
 {
     /// <summary>
-    /// Combines two specifications with a logical AND.
+    /// Converts an expression to a specification.
     /// </summary>
-    public static Specification<TSource> AndAlso<TSource>(
-        this Specification<TSource> left, Specification<TSource> right) =>
-        new(left, right, ExpressionType.AndAlso);
-
-    /// <summary>
-    /// Combines a specification and an expression with a logical AND.
-    /// </summary>
-    public static Specification<TSource> AndAlso<TSource>(
-        this Specification<TSource> left, Expression<Func<TSource, bool>> right) =>
-        new(left, right, ExpressionType.AndAlso);
-
-    /// <summary>
-    /// Combines two specifications with a bitwise AND.
-    /// </summary>
-    public static Specification<TSource> And<TSource>(
-        this Specification<TSource> left, Specification<TSource> right) =>
-        new(left, right, ExpressionType.And);
-
-    /// <summary>
-    /// Combines a specification and an expression with a bitwise AND.
-    /// </summary>
-    public static Specification<TSource> And<TSource>(
-        this Specification<TSource> left, Expression<Func<TSource, bool>> right) =>
-        new(left, right, ExpressionType.And);
-
-    /// <summary>
-    /// Combines two specifications with a logical OR.
-    /// </summary>
-    public static Specification<TSource> OrElse<TSource>(
-        this Specification<TSource> left, Specification<TSource> right) =>
-        new(left, right, ExpressionType.OrElse);
-
-    /// <summary>
-    /// Combines a specification and an expression with a logical OR.
-    /// </summary>
-    public static Specification<TSource> OrElse<TSource>(
-        this Specification<TSource> left, Expression<Func<TSource, bool>> right) =>
-        new(left, right, ExpressionType.OrElse);
-
-    /// <summary>
-    /// Combines two specifications with a bitwise OR.
-    /// </summary>
-    public static Specification<TSource> Or<TSource>(
-        this Specification<TSource> left, Specification<TSource> right) =>
-        new(left, right, ExpressionType.Or);
-
-    /// <summary>
-    /// Combines a specification and an expression with a bitwise OR.
-    /// </summary>
-    public static Specification<TSource> Or<TSource>(
-        this Specification<TSource> left, Expression<Func<TSource, bool>> right) =>
-        new(left, right, ExpressionType.Or);
-
-    /// <summary>
-    /// Negates the given specification.
-    /// </summary>
-    public static Specification<TSource> Not<TSource>(
-        this Specification<TSource> specification) =>
-        !specification;
+    /// <typeparam name="TSource">The type of the source object.</typeparam>
+    /// <param name="expression">The expression to convert.</param>
+    /// <returns>A new specification based on the expression.</returns>
+    public static Specification<TSource> AsSpecification<TSource>(
+        this Expression<Func<TSource, bool>> expression) =>
+        new(expression);
 
     /// <summary>
     /// Negates the given expression as a specification.
     /// </summary>
+    /// <typeparam name="TSource">The type of the source object.</typeparam>
+    /// <param name="expression">The expression to negate.</param>
+    /// <returns>A new specification representing the negation of the expression.</returns>
     public static Specification<TSource> Not<TSource>(
         this Expression<Func<TSource, bool>> expression) =>
-        new(QueryExpressionExtensions.Not(expression));
+        Specification.Not(new Specification<TSource>(expression));
 }

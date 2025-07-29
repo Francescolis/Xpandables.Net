@@ -15,19 +15,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Expressions;
+using System.Linq.Expressions;
 
 namespace Xpandables.Net.DataAnnotations;
+
 /// <summary>  
-/// Defines a specification that determines whether a given source satisfies 
-/// certain criteria.  
+/// Defines a specification that determines whether a given source satisfies certain criteria.  
 /// </summary>  
 /// <typeparam name="TSource">The type of the source object.</typeparam>  
-public interface ISpecification<TSource> : IQueryExpression<TSource, bool>
+public interface ISpecification<TSource>
 {
+    /// <summary>
+    /// Gets the expression that defines the specification criteria.
+    /// </summary>
+    Expression<Func<TSource, bool>> Expression { get; }
+
     /// <summary>  
-    /// Determines whether the specified source satisfies the criteria of 
-    /// this specification.  
+    /// Determines whether the specified source satisfies the criteria of this specification.  
     /// </summary>  
     /// <param name="source">The source object to evaluate.</param>  
     /// <returns><see langword="true"/> if the source satisfies the criteria; otherwise,

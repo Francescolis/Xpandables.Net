@@ -23,8 +23,11 @@ using Microsoft.Extensions.Primitives;
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// A custom JSON converter for <see cref="ElementEntry"/> that handles <see cref="StringValues"/>.
+/// Provides custom JSON serialization and deserialization for <see cref="ElementEntry"/> objects.
 /// </summary>
+/// <remarks>This converter handles the conversion of <see cref="ElementEntry"/> objects to and from JSON format.
+/// It expects the JSON object to contain properties that match the <see cref="ElementEntry"/> structure, specifically
+/// "Key" and "Values". The "Values" property can be a single string or an array of strings.</remarks>
 public class ElementEntryJsonConverter : JsonConverter<ElementEntry>
 {
     /// <inheritdoc/>
