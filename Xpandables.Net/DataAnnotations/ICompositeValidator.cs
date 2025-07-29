@@ -15,11 +15,14 @@
  *
 ********************************************************************************/
 namespace Xpandables.Net.DataAnnotations;
+
 /// <summary>
-/// Defines a composite validator that validates an instance of 
-/// <typeparamref name="TArgument"/>.
+/// Represents a composite validator for objects that require validation.
 /// </summary>
-/// <typeparam name="TArgument">The type of the argument to validate.</typeparam>
+/// <remarks>This interface extends <see cref="IValidator{TArgument}"/> to provide a mechanism for combining
+/// multiple validators into a single validation operation for objects of type <typeparamref
+/// name="TArgument"/>.</remarks>
+/// <typeparam name="TArgument">The type of the object to be validated. Must be a class that implements <see cref="IRequiresValidation"/>.</typeparam>
 public interface ICompositeValidator<in TArgument> : IValidator<TArgument>
     where TArgument : class, IRequiresValidation
 { }

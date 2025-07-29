@@ -19,9 +19,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Provides a way to get the validator for a given type.
+/// Provides functionality to retrieve validators for specific types.
 /// </summary>
-/// <param name="serviceProvider">The service provider to use.</param>
+/// <remarks>This class is responsible for obtaining validators from the registered services. It supports
+/// retrieving validators for both specific types and generic type arguments. If multiple validators are found, it
+/// prioritizes custom validators over built-in ones.</remarks>
+/// <param name="serviceProvider"></param>
 public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValidatorProvider
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider;
@@ -36,15 +39,8 @@ public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValid
             .OfType<IValidator>()
             .ToList();
 
-        if (validators.Count > 1)
-        {
-            // remove the built-in validator if a specific validator
-            // is registered.
-            var builtInValidator = typeof(Validator<>).MakeGenericType(type);
-            validators = [.. validators.Where(validator => validator.GetType() != builtInValidator)];
-        }
-
-        return validators.FirstOrDefault();
+        Type builtInValidatorType = typeof(Validator<>).MakeGenericType(type);
+        return FilterAndGetValidator(validators, builtInValidatorType);
     }
 
     /// <inheritdoc/>
@@ -55,11 +51,15 @@ public sealed class ValidatorProvider(IServiceProvider serviceProvider) : IValid
             .GetServices<IValidator<TArgument>>()
             .ToList();
 
+        Type builtInValidatorType = typeof(Validator<TArgument>);
+        return FilterAndGetValidator([.. validators.OfType<IValidator>()], builtInValidatorType);
+    }
+
+    private static IValidator? FilterAndGetValidator(List<IValidator> validators, Type builtInValidatorType)
+    {
         if (validators.Count > 1)
         {
-            // remove the built-in validator if a specific validator
-            // is registered.
-            var builtInValidatorType = typeof(Validator<TArgument>);
+            // Remove the built-in validator if a specific validator is registered.
             validators = [.. validators.Where(validator => validator.GetType() != builtInValidatorType)];
         }
 

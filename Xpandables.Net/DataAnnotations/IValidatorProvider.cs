@@ -17,8 +17,11 @@
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Provides methods to get a validator for a given type.
+/// Provides functionality to retrieve validators for specific types.
 /// </summary>
+/// <remarks>This interface defines methods to obtain validators for given types, allowing for type-specific
+/// validation logic. Implementations should ensure that the retrieval methods return <see langword="null"/> if no
+/// suitable validator is found.</remarks>
 public interface IValidatorProvider
 {
     /// <summary>

@@ -21,9 +21,11 @@ using Xpandables.Net.Executions;
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Provides methods to validate an instance and return the result 
-/// of the validation.
+/// Defines a contract for validating objects and returning validation results.
 /// </summary>
+/// <remarks>Implementations of this interface provide mechanisms to validate objects and determine their
+/// compliance with specific rules or criteria. The validation can be performed synchronously or asynchronously, and the
+/// order of execution can be specified.</remarks>
 public interface IValidator
 {
     /// <summary>
@@ -58,10 +60,12 @@ public interface IValidator
 }
 
 /// <summary>
-/// Provides methods to validate an instance of type <typeparamref name="TArgument"/> 
-/// and return the result of the validation.
+/// Defines a contract for validating instances of a specified type.
 /// </summary>
-/// <typeparam name="TArgument">The type of the instance to validate.</typeparam>
+/// <remarks>This interface provides synchronous and asynchronous methods for validating instances of the
+/// specified type. Implementations should ensure that the validation logic is encapsulated within these methods,
+/// returning an <see cref="ExecutionResult"/> that indicates the outcome of the validation process.</remarks>
+/// <typeparam name="TArgument">The type of the instance to be validated. Must be a class that implements <see cref="IRequiresValidation"/>.</typeparam>
 public interface IValidator<in TArgument> : IValidator
     where TArgument : class, IRequiresValidation
 {
