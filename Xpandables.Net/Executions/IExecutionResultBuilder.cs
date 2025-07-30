@@ -21,21 +21,32 @@ using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Executions;
 
+/// <summary>
+/// Base interface for all execution result builders with common functionality.
+/// </summary>
+/// <typeparam name="TBuilder">The type of the builder.</typeparam>
+public interface IExecutionResultBuilderBase<out TBuilder> :
+    IExecutionResultHeaderBuilder<TBuilder>,
+    IExecutionResultLocationBuilder<TBuilder>,
+    IExecutionResultStatusBuilder<TBuilder>,
+    IExecutionResultExtensionBuilder<TBuilder>,
+    IExecutionResultClearBuilder<TBuilder>
+    where TBuilder : class, IExecutionResultBuilder
+{
+}
+
 /// <summary>  
 /// Provides a builder interface for constructing failure execution results.  
 /// </summary>  
 public interface IExecutionResultFailureBuilder :
-   IExecutionResultErrorBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultHeaderBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultLocationBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultDetailBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultTitleBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultMergeBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultStatusBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultExtensionBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultClearBuilder<IExecutionResultFailureBuilder>,
-   IExecutionResultBuilder
-{ }
+    IExecutionResultBuilderBase<IExecutionResultFailureBuilder>,
+    IExecutionResultErrorBuilder<IExecutionResultFailureBuilder>,
+    IExecutionResultDetailBuilder<IExecutionResultFailureBuilder>,
+    IExecutionResultTitleBuilder<IExecutionResultFailureBuilder>,
+    IExecutionResultMergeBuilder<IExecutionResultFailureBuilder>,
+    IExecutionResultBuilder
+{
+}
 
 /// <summary>  
 /// Provides a builder interface for constructing failure execution results 
@@ -43,44 +54,35 @@ public interface IExecutionResultFailureBuilder :
 /// </summary>  
 /// <typeparam name="TResult">The type of the result.</typeparam>  
 public interface IExecutionResultFailureBuilder<TResult> :
-   IExecutionResultErrorBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultHeaderBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultLocationBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultDetailBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultTitleBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultMergeBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultStatusBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultExtensionBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultClearBuilder<IExecutionResultFailureBuilder<TResult>>,
-   IExecutionResultBuilder<TResult>
-{ }
+    IExecutionResultBuilderBase<IExecutionResultFailureBuilder<TResult>>,
+    IExecutionResultErrorBuilder<IExecutionResultFailureBuilder<TResult>>,
+    IExecutionResultDetailBuilder<IExecutionResultFailureBuilder<TResult>>,
+    IExecutionResultTitleBuilder<IExecutionResultFailureBuilder<TResult>>,
+    IExecutionResultMergeBuilder<IExecutionResultFailureBuilder<TResult>>,
+    IExecutionResultBuilder<TResult>
+{
+}
 
 /// <summary>
 /// Interface for building a success execution result.
 /// </summary>
 public interface IExecutionResultSuccessBuilder :
+    IExecutionResultBuilderBase<IExecutionResultSuccessBuilder>,
     IExecutionResultObjectBuilder<IExecutionResultSuccessBuilder>,
-    IExecutionResultHeaderBuilder<IExecutionResultSuccessBuilder>,
-    IExecutionResultLocationBuilder<IExecutionResultSuccessBuilder>,
-    IExecutionResultStatusBuilder<IExecutionResultSuccessBuilder>,
-    IExecutionResultExtensionBuilder<IExecutionResultSuccessBuilder>,
-    IExecutionResultClearBuilder<IExecutionResultSuccessBuilder>,
     IExecutionResultBuilder
-{ }
+{
+}
 
 /// <summary>
 /// Interface for building a success execution result with a specific result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
 public interface IExecutionResultSuccessBuilder<TResult> :
-    IExecutionResultHeaderBuilder<IExecutionResultSuccessBuilder<TResult>>,
-    IExecutionResultLocationBuilder<IExecutionResultSuccessBuilder<TResult>>,
-    IExecutionResultStatusBuilder<IExecutionResultSuccessBuilder<TResult>>,
-    IExecutionResultExtensionBuilder<IExecutionResultSuccessBuilder<TResult>>,
+    IExecutionResultBuilderBase<IExecutionResultSuccessBuilder<TResult>>,
     IExecutionResultResultBuilder<IExecutionResultSuccessBuilder<TResult>, TResult>,
-    IExecutionResultClearBuilder<IExecutionResultSuccessBuilder<TResult>>,
     IExecutionResultBuilder<TResult>
-{ }
+{
+}
 
 /// <summary>
 /// Represents a method for building an <see cref="ExecutionResult"/>.
@@ -140,22 +142,18 @@ public interface IExecutionResultStatusBuilder<out TBuilder>
     TBuilder WithStatusCode(HttpStatusCode statusCode);
 }
 
-/**
- * <summary>
- * Represents a method for setting the title of an execution being built.
- * </summary>
- * <typeparam name="TBuilder">The type of the builder.</typeparam>
- */
+/// <summary>
+/// Represents a method for setting the title of an execution being built.
+/// </summary>
+/// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IExecutionResultTitleBuilder<out TBuilder>
     where TBuilder : class, IExecutionResultBuilder
 {
-    /**
-     * <summary>
-     * Sets the title of the execution being built.
-     * </summary>
-     * <param name="title">The title of the execution.</param>
-     * <returns>The current builder instance.</returns>
-     */
+    /// <summary>
+    /// Sets the title of the execution being built.
+    /// </summary>
+    /// <param name="title">The title of the execution.</param>
+    /// <returns>The current builder instance.</returns>
     TBuilder WithTitle(string title);
 }
 
@@ -233,12 +231,14 @@ public interface IExecutionResultResultBuilder<out TBuilder, in TResult> : IExec
     /// <returns>Returns an instance of the builder with the updated result.</returns>
     /// <exception cref="ArgumentException">Thrown when the provided value does not match the expected type.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    new TBuilder WithResult(object result)
+    new TBuilder WithResult(object? result)
     {
-        if (result is not TResult typedResult)
-            throw new ArgumentException($"The result must be of type {typeof(TResult)}.", nameof(result));
-
-        return WithResult(typedResult);
+        return result switch
+        {
+            null => WithResult(default(TResult)!),
+            TResult typedResult => WithResult(typedResult),
+            _ => throw new ArgumentException($"The result must be of type {typeof(TResult)}.", nameof(result))
+        };
     }
 }
 
@@ -280,12 +280,10 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
     TBuilder WithHeaders(ElementCollection headers);
 }
 
-/**
- * <summary>
- * Represents a method for building an <see cref="ExecutionResult"/> with error details.
- * </summary>
- * <typeparam name="TBuilder">The type of the builder.</typeparam>
- */
+/// <summary>
+/// Represents a method for building an <see cref="ExecutionResult"/> with error details.
+/// </summary>
+/// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IExecutionResultErrorBuilder<out TBuilder>
     where TBuilder : class, IExecutionResultBuilder
 {
@@ -379,12 +377,10 @@ public interface IExecutionResultExtensionBuilder<out TBuilder>
     TBuilder WithExtensions(ElementCollection extensions);
 }
 
-/**
- * <summary>
- * Represents a method for clearing various elements of an execution being built.
- * </summary>
- * <typeparam name="TBuilder">The type of the builder.</typeparam>
- */
+/// <summary>
+/// Represents a method for clearing various elements of an execution being built.
+/// </summary>
+/// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IExecutionResultClearBuilder<out TBuilder>
     where TBuilder : class, IExecutionResultBuilder
 {

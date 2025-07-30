@@ -33,7 +33,6 @@ namespace Xpandables.Net.Executions;
 /// consistent behavior across various execution result types, such as
 /// <see cref="ExecutionResult"/> and <see cref="ExecutionResult{TResult}"/>.
 /// </remarks>
-// ReSharper disable once InconsistentNaming
 public abstract record Result
 {
     /// <summary>
