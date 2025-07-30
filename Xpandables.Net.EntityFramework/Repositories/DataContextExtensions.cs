@@ -27,7 +27,7 @@ public static class DataContextExtensions
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    $"Failed to inject DataContext into property '{contextProperty.Name}' of event store type '{repositoryType.Name}'. " +
+                    $"Failed to inject DataContext into property '{contextProperty.Name}' of store type '{repositoryType.Name}'. " +
                     $"Ensure the property has a public setter and is compatible with the ambient DataContext type.", ex);
             }
         }
@@ -44,7 +44,7 @@ public static class DataContextExtensions
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    $"Failed to inject DataContext into field '{contextField.Name}' of event store type '{repositoryType.Name}'. " +
+                    $"Failed to inject DataContext into field '{contextField.Name}' of store type '{repositoryType.Name}'. " +
                     $"Ensure the field is accessible and compatible with the ambient DataContext type.", ex);
             }
         }
