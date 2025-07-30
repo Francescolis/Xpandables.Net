@@ -231,15 +231,12 @@ public interface IExecutionResultResultBuilder<out TBuilder, in TResult> : IExec
     /// <returns>Returns an instance of the builder with the updated result.</returns>
     /// <exception cref="ArgumentException">Thrown when the provided value does not match the expected type.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    new TBuilder WithResult(object? result)
+    new TBuilder WithResult(object? result) => result switch
     {
-        return result switch
-        {
-            null => WithResult(default(TResult)!),
-            TResult typedResult => WithResult(typedResult),
-            _ => throw new ArgumentException($"The result must be of type {typeof(TResult)}.", nameof(result))
-        };
-    }
+        null => WithResult(default!),
+        TResult typedResult => WithResult(typedResult),
+        _ => throw new ArgumentException($"The result must be of type {typeof(TResult)}.", nameof(result))
+    };
 }
 
 /// <summary>
