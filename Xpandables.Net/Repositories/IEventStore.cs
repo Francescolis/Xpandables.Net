@@ -22,8 +22,13 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a store for managing events, providing methods to append, fetch, and mark events as processed.
+/// Defines a contract for an event store that supports asynchronous operations for appending, processing,  and querying
+/// events. This interface extends <see cref="IRepository"/> to provide additional event-specific  functionality.
 /// </summary>
+/// <remarks>Implementations of <see cref="IEventStore"/> are expected to handle event persistence and retrieval 
+/// efficiently, supporting scenarios where events need to be appended, marked as processed, or queried  based on
+/// specific criteria. The interface provides methods for both single and batch operations,  ensuring flexibility in
+/// handling event data.</remarks>
 public interface IEventStore : IRepository
 {
     /// <summary>

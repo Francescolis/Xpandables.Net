@@ -22,8 +22,11 @@ using Xpandables.Net.Executions.Domains;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Defines an abstraction for managing aggregate instances in a store.
+/// Defines a contract for storing and retrieving aggregates.
 /// </summary>
+/// <remarks>Implementations of this interface are responsible for persisting aggregates and  providing mechanisms
+/// to retrieve them based on their identifiers. The interface  supports asynchronous operations to accommodate
+/// I/O-bound tasks.</remarks>
 public interface IAggregateStore
 {
     /// <summary>
@@ -52,8 +55,13 @@ public interface IAggregateStore
 }
 
 /// <summary>
-/// Represents an abstraction for managing aggregate instances in a store.
+/// Defines a contract for storing and retrieving aggregates of type <typeparamref name="TAggregate"/>.
 /// </summary>
+/// <remarks>This interface provides methods to append and resolve aggregates, ensuring that the operations are
+/// asynchronous and can be cancelled.</remarks>
+/// <typeparam name="TAggregate">The type of aggregate managed by this store. 
+/// Must inherit from <see cref="Aggregate"/> and have a parameterless
+/// constructor.</typeparam>
 public interface IAggregateStore<TAggregate> : IAggregateStore
     where TAggregate : Aggregate, new()
 {

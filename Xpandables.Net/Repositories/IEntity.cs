@@ -20,8 +20,11 @@ using System.Text.Json.Serialization;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an entity with a unique identity.
+/// Represents an entity with a unique identifier and lifecycle metadata.
 /// </summary>
+/// <remarks>The <c>IEntity</c> interface defines the basic properties and methods for an entity,  including its
+/// unique key, status, and timestamps for creation, updates, and deletion.  Implementations of this interface can be
+/// used to track the state and history of an entity  within a system.</remarks>
 public interface IEntity
 {
     /// <summary>
@@ -56,9 +59,10 @@ public interface IEntity
 }
 
 /// <summary>
-/// Represents an entity with a unique identity of type <typeparamref name="TKey"/>.
+/// Represents an entity with a unique key identifier.
 /// </summary>
-/// <typeparam name="TKey">The type of the unique identity.</typeparam>
+/// <typeparam name="TKey">The type of the key identifier, 
+/// which must be non-nullable and implement <see cref="IComparable"/>.</typeparam>
 public interface IEntity<out TKey> : IEntity
     where TKey : notnull, IComparable
 {

@@ -17,8 +17,11 @@
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a repository that provides read and write operations for entities.
+/// Defines a generic repository interface for performing asynchronous CRUD operations on entities.
 /// </summary>
+/// <remarks>This interface provides methods for fetching, inserting, updating, and deleting entities in a data
+/// store. It supports asynchronous operations and allows for query customization through the use of LINQ expressions.
+/// Implementations of this interface should handle the underlying data access logic.</remarks>
 public interface IRepository : IAsyncDisposable
 {
     /// <summary>
@@ -89,7 +92,8 @@ public interface IRepository : IAsyncDisposable
 /// <summary>
 /// Defines a repository interface for data operations within a specified data context type.
 /// </summary>
-/// <typeparam name="TDataContext">The type of the data context within which the repository operates. Must be a reference type.</typeparam>
+/// <typeparam name="TDataContext">The type of the data context within which the repository operates. 
+/// Must be a reference type.</typeparam>
 public interface IRepository<in TDataContext> : IRepository
     where TDataContext : class
 {

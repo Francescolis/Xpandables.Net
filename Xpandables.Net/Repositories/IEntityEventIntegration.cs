@@ -18,8 +18,10 @@
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an integration event entity that includes an error message.
+/// Represents an integration for handling entity events with error information.
 /// </summary>
+/// <remarks>This interface extends <see cref="IEntityEvent"/> to include error handling capabilities.
+/// Implementations should provide the error message associated with the event entity, if any.</remarks>
 public interface IEntityEventIntegration : IEntityEvent
 {
     /// <summary>

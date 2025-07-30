@@ -20,8 +20,11 @@ using Xpandables.Net.Executions.Tasks;
 namespace Xpandables.Net.Executions.Dependencies;
 
 /// <summary>
-/// Provides a mechanism to get dependencies for a request.
+/// Defines a contract for providing dependencies based on specified types or requests.
 /// </summary>
+/// <remarks>Implementations of this interface are responsible for determining if they can provide a specific
+/// dependency and for retrieving the dependency when requested. This interface supports both synchronous type-checking
+/// and asynchronous dependency retrieval.</remarks>
 public interface IDependencyProvider
 {
     /// <summary>

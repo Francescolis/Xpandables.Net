@@ -18,7 +18,7 @@
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a snapshot of an event entity with an owner.
+/// Represents a snapshot of an entity event, providing access to the event's owner information.
 /// </summary>
 public interface IEntityEventSnapshot : IEntityEvent
 {

@@ -17,8 +17,11 @@
 namespace Xpandables.Net.Executions.Dependencies;
 
 /// <summary>
-/// Provides a mechanism to get providers for a dependency.
+/// Provides methods to manage and retrieve dependency providers for specified types.
 /// </summary>
+/// <remarks>This interface defines the contract for managing dependencies within an application, allowing
+/// retrieval of dependency providers based on the type of dependency required. Implementations should handle the
+/// registration and resolution of dependencies.</remarks>
 public interface IDependencyManager
 {
     /// <summary>

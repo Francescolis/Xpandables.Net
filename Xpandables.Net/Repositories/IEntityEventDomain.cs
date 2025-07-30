@@ -18,8 +18,11 @@
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an event entity domain that includes aggregate information.
+/// Represents a domain event associated with an entity aggregate.
 /// </summary>
+/// <remarks>This interface extends <see cref="IEntityEvent"/> to include the unique identifier of the aggregate
+/// that the event pertains to. It is used to track changes or actions related to a specific entity within a
+/// domain-driven design context.</remarks>
 public interface IEntityEventDomain : IEntityEvent
 {
     /// <summary>

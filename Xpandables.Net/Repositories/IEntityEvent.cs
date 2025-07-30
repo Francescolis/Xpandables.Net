@@ -20,8 +20,11 @@ using System.Text.Json;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an event entity that contains event-related data.
+/// Represents an event entity with a unique identifier, providing access to event-specific details such as name, full
+/// name, version, and associated data.
 /// </summary>
+/// <remarks>This interface extends <see cref="IEntity{Guid}"/> to include event-specific properties and
+/// implements <see cref="IDisposable"/> for managing resources.</remarks>
 public interface IEntityEvent : IEntity<Guid>, IDisposable
 {
     /// <summary>
