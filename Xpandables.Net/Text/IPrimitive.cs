@@ -19,8 +19,10 @@ using System.ComponentModel;
 namespace Xpandables.Net.Text;
 
 /// <summary>
-/// Represents a primitive value.
+/// Represents a primitive data type with a value.
 /// </summary>
+/// <remarks>This interface provides a way to access the underlying value of a primitive type. Implementations
+/// should define the specific type of value they represent.</remarks>
 public interface IPrimitive
 {
     /// <summary>
@@ -30,10 +32,13 @@ public interface IPrimitive
 }
 
 /// <summary>
-/// Represents a primitive value of a specific type.
+/// Represents a generic primitive type that encapsulates a value of a specified type.
 /// </summary>
-/// <typeparam name="TPrimitive">The type of the primitive.</typeparam>
-/// <typeparam name="TValue">The type of the value.</typeparam>
+/// <remarks>This interface provides a contract for creating and manipulating primitive types that wrap a value of
+/// type <typeparamref name="TValue"/>. It includes methods for creating instances, obtaining default instances, and
+/// defining implicit conversions between the primitive and its value type.</remarks>
+/// <typeparam name="TPrimitive">The type of the primitive implementing this interface.</typeparam>
+/// <typeparam name="TValue">The type of the value encapsulated by the primitive.</typeparam>
 public interface IPrimitive<TPrimitive, TValue> : IPrimitive
     where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
     where TValue : notnull
@@ -63,23 +68,19 @@ public interface IPrimitive<TPrimitive, TValue> : IPrimitive
     /// <returns>The value of the primitive.</returns>
 #pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator TValue(TPrimitive self);
-#pragma warning restore CA2225 // Operator overloads have named alternates
 
     /// <summary>
     /// Defines an implicit conversion of a value type to its primitive type.
     /// </summary>
     /// <param name="value">The value to convert.</param>
     /// <returns>A new instance of the primitive.</returns>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator TPrimitive(TValue value);
-#pragma warning restore CA2225 // Operator overloads have named alternates
 
     /// <summary>
     /// Defines an implicit conversion of a primitive to string.
     /// </summary>
     /// <param name="self">The primitive to convert.</param>
     /// <returns>The string value of the primitive.</returns>
-#pragma warning disable CA2225 // Operator overloads have named alternates
     static abstract implicit operator string(TPrimitive self);
 #pragma warning restore CA2225 // Operator overloads have named alternates
 

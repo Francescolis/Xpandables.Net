@@ -19,8 +19,9 @@ using System.ComponentModel;
 namespace Xpandables.Net.States;
 
 /// <summary>
-/// Represents a state in a state machine.
+/// Represents a state within a state machine or similar context.
 /// </summary>
+/// <remarks>Implement this interface to define specific behavior for entering a state.</remarks>
 public interface IState
 {
     /// <summary>
@@ -31,9 +32,10 @@ public interface IState
 }
 
 /// <summary>
-/// Represents a state in a state machine with a specific context type.
+/// Defines a state with a specific context type for use in a state machine pattern.
 /// </summary>
-/// <typeparam name="TStateContext">The type of the state context.</typeparam>
+/// <typeparam name="TStateContext">The type of the context associated with the state, 
+/// which must implement <see cref="IStateContext"/>.</typeparam>
 public interface IState<in TStateContext> : IState
     where TStateContext : class, IStateContext
 {
