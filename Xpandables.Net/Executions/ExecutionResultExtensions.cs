@@ -128,6 +128,19 @@ public static class ExecutionResultExtensions
                                  "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
                              Environments.Development;
 
+        if (exception is ExecutionResultException executionResultException)
+        {
+            var executionResult = executionResultException.ExecutionResult;
+            return ExecutionResult
+                .Failure(executionResult.StatusCode)
+                .WithTitle(executionResult.StatusCode.GetAppropriateDetail())
+                .WithDetail(executionResult.StatusCode.GetAppropriateDetail())
+                .WithErrors(executionResult.Errors)
+                .WithExtensions(executionResult.Extensions)
+                .WithHeaders(executionResult.Headers)
+                .Build();
+        }
+
         statusCode ??= exception.GetAppropriateStatusCode();
 
         return ExecutionResult
