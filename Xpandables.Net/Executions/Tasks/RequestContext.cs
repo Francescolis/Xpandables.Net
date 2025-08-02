@@ -72,6 +72,24 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     public bool TryGetItem(string key, out object? value) => Items.TryGetValue(key, out value);
 
     /// <summary>
+    /// Retrieves an item of the specified type associated with the given key.
+    /// </summary>
+    /// <typeparam name="TItem">The type of the item to retrieve.</typeparam>
+    /// <param name="key">The key associated with the item to retrieve. Cannot be <see langword="null"/> or empty.</param>
+    /// <returns>The item of type <typeparamref name="TItem"/> associated with the specified key.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if no item is found with the specified key or if the item cannot be cast to the specified type
+    /// <typeparamref name="TItem"/>.</exception>
+    public TItem GetItem<TItem>(string key)
+    {
+        if (Items.TryGetValue(key, out var value) && value is TItem item)
+        {
+            return item;
+        }
+
+        throw new KeyNotFoundException($"No item found with key '{key}'.");
+    }
+
+    /// <summary>
     /// Attempts to remove the item with the specified key from the request context.
     /// </summary>
     /// <param name="key">The key of the item to remove. Cannot be <see langword="null"/> or empty.</param>
