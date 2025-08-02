@@ -16,6 +16,7 @@
  ********************************************************************************/
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Xpandables.Net.Executions.Tasks;
 
@@ -69,7 +70,33 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <see langword="null"/>. This parameter is passed uninitialized.</param>
     /// <returns><see langword="true"/> if the collection contains an item with the specified key; otherwise, <see
     /// langword="false"/>.</returns>
-    public bool TryGetItem(string key, out object? value) => Items.TryGetValue(key, out value);
+    public bool TryGetItem(string key, [NotNullWhen(true)] out object? value) =>
+        Items.TryGetValue(key, out value);
+
+    /// <summary>
+    /// Attempts to retrieve an item of the specified type from the collection using the provided key.
+    /// </summary>
+    /// <remarks>This method does not throw an exception if the key is not found or if the item is not of the
+    /// expected type. Instead, it returns <see langword="false"/> and sets <paramref name="item"/> to its default
+    /// value.</remarks>
+    /// <typeparam name="TItem">The type of the item to retrieve.</typeparam>
+    /// <param name="key">The key associated with the item to retrieve. Cannot be <see langword="null"/> or empty.</param>
+    /// <param name="item">When this method returns, contains the item of type <typeparamref name="TItem"/> associated with the specified
+    /// key, if the key exists and the item is of the correct type; otherwise, the default value for <typeparamref
+    /// name="TItem"/>.</param>
+    /// <returns><see langword="true"/> if an item with the specified key exists in the collection and is of type <typeparamref
+    /// name="TItem"/>; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetItem<TItem>(string key, [NotNullWhen(true)] out TItem? item)
+    {
+        if (Items.TryGetValue(key, out var value) && value is TItem castedItem)
+        {
+            item = castedItem;
+            return true;
+        }
+
+        item = default;
+        return false;
+    }
 
     /// <summary>
     /// Retrieves an item of the specified type associated with the given key.
@@ -81,9 +108,9 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <typeparamref name="TItem"/>.</exception>
     public TItem GetItem<TItem>(string key)
     {
-        if (Items.TryGetValue(key, out var value) && value is TItem item)
+        if (TryGetItem<TItem>(key, out var value))
         {
-            return item;
+            return value;
         }
 
         throw new KeyNotFoundException($"No item found with key '{key}'.");
