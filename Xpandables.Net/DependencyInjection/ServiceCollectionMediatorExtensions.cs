@@ -140,9 +140,11 @@ public static class ServiceCollectionMediatorExtensions
                             i.IsGenericType &&
                             (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
                             || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
+                            || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
                             || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
                             || i.GetGenericTypeDefinition() == typeof(IDependencyRequestHandler<,>)
                             || i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
+                            || i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
                             || i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))))
             .Select(type => new HandlerType(
                 type,
@@ -150,9 +152,11 @@ public static class ServiceCollectionMediatorExtensions
                     .Where(i => i.IsGenericType &&
                                 (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
+                                || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
                                 || i.GetGenericTypeDefinition() == typeof(IDependencyRequestHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
+                                || i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))));
 
         foreach (HandlerType handlerType in handlerTypes)

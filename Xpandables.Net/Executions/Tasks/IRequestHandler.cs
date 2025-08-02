@@ -59,14 +59,9 @@ public interface IRequestContextHandler<TRequest> : IRequestHandler<TRequest>
     /// <param name="context">The request context containing the request and additional contextual information.</param>
     /// <param name="cancellationToken">Used to signal the cancellation of the operation if needed.</param>
     /// <returns>An asynchronous task that yields the result of the execution.</returns>
-    /// <remarks>
-    /// The default implementation delegates to the non-context version by extracting the request from the context.
-    /// Handlers that need access to context information should override this method.
-    /// </remarks>
     Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        CancellationToken cancellationToken = default) =>
-        HandleAsync(context.Request, cancellationToken);
+        CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
@@ -171,6 +166,38 @@ public interface IRequestHandler<in TRequest, TResponse> : IRequestHandler<TRequ
 }
 
 /// <summary>
+/// Defines a handler for processing requests within a specified <see cref="RequestContext{TRequest}"/>.
+/// </summary>
+/// <remarks>This interface extends <see cref="IRequestHandler{TRequest, TResponse}"/> to provide additional
+/// context-aware handling capabilities. Implementations should use the provided <see cref="RequestContext{TRequest}"/>
+/// to access contextual information about the request, such as metadata or dependencies.</remarks>
+/// <typeparam name="TRequest">The type of the request being handled. Must implement <see cref="IRequest{TResponse}"/>.</typeparam>
+/// <typeparam name="TResponse">The type of the response returned by the handler.</typeparam>
+public interface IRequestContextHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse>
+    where TRequest : class, IRequest<TResponse>
+{
+    /// <summary>
+    /// Handles the specified request asynchronously and returns the result of the execution.
+    /// </summary>
+    /// <remarks>This method processes the request encapsulated in the <paramref name="context"/> and produces
+    /// a response of type <typeparamref name="TResponse"/>. The caller can use the <paramref name="cancellationToken"/>
+    /// to cancel the operation if needed.</remarks>
+    /// <param name="context">The context of the request, containing the request data and any associated metadata.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an <see
+    /// cref="ExecutionResult{TResponse}"/> representing the outcome of the request execution.</returns>
+    Task<ExecutionResult<TResponse>> HandleAsync(
+        RequestContext<TRequest> context,
+        CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    async Task<ExecutionResult<TResponse>> IRequestHandler<TRequest, TResponse>.HandleAsync(
+        TRequest request, CancellationToken cancellationToken) =>
+        await HandleAsync(new(request), cancellationToken).ConfigureAwait(false);
+}
+
+
+/// <summary>
 /// Defines a handler for processing stream requests asynchronously, producing a stream of responses.
 /// </summary>
 /// <remarks>This interface extends <see cref="IRequestHandler{TRequest}"/> to support handling requests that
@@ -198,6 +225,36 @@ public interface IStreamRequestHandler<in TRequest, TResponse> : IRequestHandler
 }
 
 /// <summary>
+/// Defines a handler for processing stream-based requests within a specific request context.
+/// </summary>
+/// <remarks>This interface extends <see cref="IStreamRequestHandler{TRequest, TResponse}"/> by providing
+/// additional context-aware handling capabilities through the <see cref="RequestContext{TRequest}"/>.</remarks>
+/// <typeparam name="TRequest">The type of the request being handled. Must implement <see cref="IStreamRequest{TResponse}"/>.</typeparam>
+/// <typeparam name="TResponse">The type of the response elements produced by the stream.</typeparam>
+public interface IStreamRequestContextHandler<TRequest, TResponse> : IStreamRequestHandler<TRequest, TResponse>
+    where TRequest : class, IStreamRequest<TResponse>
+{
+    /// <summary>
+    /// Handles the specified request asynchronously and returns the result of the operation.
+    /// </summary>
+    /// <remarks>This method processes the request asynchronously and supports streaming responses via <see
+    /// cref="IAsyncEnumerable{T}"/>. The caller can enumerate the responses as they are produced.</remarks>
+    /// <param name="context">The request context containing the input data and metadata required to process the request.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an <see cref="ExecutionResult{T}"/>
+    /// wrapping an <see cref="IAsyncEnumerable{T}"/> of <typeparamref name="TResponse"/> objects, representing the
+    /// responses generated by the handler.</returns>
+    Task<ExecutionResult<IAsyncEnumerable<TResponse>>> HandleAsync(
+        RequestContext<TRequest> context,
+        CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    async Task<ExecutionResult<IAsyncEnumerable<TResponse>>> IStreamRequestHandler<TRequest, TResponse>.HandleAsync(
+        TRequest request, CancellationToken cancellationToken) =>
+        await HandleAsync(new(request), cancellationToken).ConfigureAwait(false);
+}
+
+/// <summary>
 /// Defines a handler for a request of type <typeparamref name="TRequest" />
 /// with a dependency of type <typeparamref name="TDependency" />.
 /// </summary>
@@ -208,4 +265,35 @@ public interface IDependencyRequestHandler<in TRequest, in TDependency> : IReque
     where TRequest : class, IDependencyRequest<TDependency>
     where TDependency : class
 {
+}
+
+/// <summary>
+/// Defines a handler for processing dependency-based requests within a specific context.
+/// </summary>
+/// <remarks>This interface extends <see cref="IDependencyRequestHandler{TRequest, TDependency}"/> by adding
+/// support for handling requests within a contextual wrapper, represented by <see cref="RequestContext{TRequest}"/>. It
+/// is designed for scenarios where additional contextual information is required to process the request.</remarks>
+/// <typeparam name="TRequest">The type of the request being handled. Must implement <see cref="IDependencyRequest{TDependency}"/>.</typeparam>
+/// <typeparam name="TDependency">The type of the dependency associated with the request. Must be a reference type.</typeparam>
+public interface IDependencyRequestContextHandler<TRequest, TDependency> : IDependencyRequestHandler<TRequest, TDependency>
+    where TRequest : class, IDependencyRequest<TDependency>
+    where TDependency : class
+{
+    /// <summary>
+    /// Handles the specified request asynchronously and returns the result of the execution.
+    /// </summary>
+    /// <param name="context">The request context containing the request and additional contextual information.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. T
+    /// he default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task result contains the execution result of type
+    /// <see cref="ExecutionResult"/>.</returns>
+    Task<ExecutionResult> HandleAsync(
+        RequestContext<TRequest> context,
+        CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    async Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
+        TRequest request, CancellationToken cancellationToken) =>
+        await HandleAsync(new(request), cancellationToken).ConfigureAwait(false);
 }
