@@ -32,7 +32,46 @@ public interface IRequestHandler<in TRequest>
     /// <param name="request">The input data required to perform the operation.</param>
     /// <param name="cancellationToken">Used to signal the cancellation of the operation if needed.</param>
     /// <returns>An asynchronous task that yields the result of the execution.</returns>
-    Task<ExecutionResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
+    Task<ExecutionResult> HandleAsync(
+        TRequest request,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Represents a context-aware handler that can process a request of type <typeparamref name="TRequest" />
+/// with access to the full request context, including contextual information set by pipeline decorators,
+/// pre-handlers, or other components.
+/// </summary>
+/// <typeparam name="TRequest">The type of the request being handled.</typeparam>
+/// <remarks>
+/// This interface extends <see cref="IRequestHandler{TRequest}"/> to provide access to the request context.
+/// Handlers implementing this interface will receive the context version when called from the pipeline,
+/// allowing them to access and modify contextual information throughout the request processing lifecycle.
+/// </remarks>
+public interface IRequestContextHandler<TRequest> : IRequestHandler<TRequest>
+    where TRequest : class, IRequest
+{
+    /// <summary>
+    /// Handles an asynchronous operation based on the provided request context and returns the result of the execution.
+    /// This method provides access to the full request context, allowing handlers to access contextual information
+    /// set by pipeline decorators, pre-handlers, or other components.
+    /// </summary>
+    /// <param name="context">The request context containing the request and additional contextual information.</param>
+    /// <param name="cancellationToken">Used to signal the cancellation of the operation if needed.</param>
+    /// <returns>An asynchronous task that yields the result of the execution.</returns>
+    /// <remarks>
+    /// The default implementation delegates to the non-context version by extracting the request from the context.
+    /// Handlers that need access to context information should override this method.
+    /// </remarks>
+    Task<ExecutionResult> HandleAsync(
+        RequestContext<TRequest> context,
+        CancellationToken cancellationToken = default) =>
+        HandleAsync(context.Request, cancellationToken);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
+        TRequest request, CancellationToken cancellationToken) =>
+        HandleAsync(new(request), cancellationToken);
 }
 
 /// <summary>

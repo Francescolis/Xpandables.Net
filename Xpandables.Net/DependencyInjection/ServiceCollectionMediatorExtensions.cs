@@ -139,6 +139,7 @@ public static class ServiceCollectionMediatorExtensions
                         && type.GetInterfaces().Any(i =>
                             i.IsGenericType &&
                             (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
+                            || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
                             || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
                             || i.GetGenericTypeDefinition() == typeof(IDependencyRequestHandler<,>)
                             || i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
@@ -148,6 +149,7 @@ public static class ServiceCollectionMediatorExtensions
                 type.GetInterfaces()
                     .Where(i => i.IsGenericType &&
                                 (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
+                                || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
                                 || i.GetGenericTypeDefinition() == typeof(IDependencyRequestHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)

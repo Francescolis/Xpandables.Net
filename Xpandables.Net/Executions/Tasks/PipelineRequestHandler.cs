@@ -47,8 +47,12 @@ public sealed class PipelineRequestHandler<TRequest>(
 
         return result;
 
-        async Task<ExecutionResult> Handler(CancellationToken ct) => await decoratee
-            .HandleAsync(context.Request, ct)
-            .ConfigureAwait(false);
+        Task<ExecutionResult> Handler(CancellationToken ct) =>
+            decoratee switch
+            {
+                IRequestContextHandler<TRequest> requestContextHandler =>
+                    requestContextHandler.HandleAsync(context, ct),
+                _ => decoratee.HandleAsync(request, ct)
+            };
     }
 }
