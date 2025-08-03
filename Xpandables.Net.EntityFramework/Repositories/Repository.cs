@@ -166,16 +166,6 @@ public class RepositoryPersistent<TDataContext> : Repository<TDataContext>
     where TDataContext : DataContext
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RepositoryPersistent{TDataContext}"/> class with the specified data context.
-    /// </summary>
-    /// <param name="context">The data context used to interact with the repository. Cannot be <see langword="null"/>.</param>
-    public RepositoryPersistent(TDataContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        Context = context;
-    }
-
-    /// <summary>
     /// Deletes entities from the data source that match the specified filter.
     /// </summary>
     /// <remarks>This method deletes the entities that match the specified filter and commits the changes to
