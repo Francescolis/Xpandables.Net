@@ -66,6 +66,24 @@ public static class RepositoryExtensions
         entity.Status == EntityStatus.SUSPENDED;
 
     /// <summary>
+    /// Determines whether the specified entity is published.
+    /// </summary>
+    /// <param name="entity">The entity to check. Must not be <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the entity's status is <see cref="EntityStatus.PUBLISHED"/>; otherwise, <see
+    /// langword="false"/>.</returns>
+    public static bool IsPublished(this IEntity entity) =>
+        entity.Status == EntityStatus.PUBLISHED;
+
+    /// <summary>
+    /// Determines whether the specified entity is in an error state.
+    /// </summary>
+    /// <param name="entity">The entity to evaluate. Must not be <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the entity's status is <see cref="EntityStatus.ONERROR"/>; otherwise, <see
+    /// langword="false"/>.</returns>
+    public static bool IsOnError(this IEntity entity) =>
+        entity.Status == EntityStatus.ONERROR;
+
+    /// <summary>
     /// Combines two expressions into a single expression.
     /// </summary>
     /// <typeparam name="TFirstParam">The type of the first parameter.</typeparam>

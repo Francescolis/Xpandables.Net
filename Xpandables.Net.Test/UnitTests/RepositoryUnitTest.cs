@@ -86,7 +86,7 @@ public sealed class RepositoryUnitTest
         await using (var transaction = await _unitOfWork.BeginTransactionAsync())
         {
             await using var repository = _unitOfWork.GetRepository<IRepository>();
-            await repository.InsertAsync(entities);
+            await repository.AddOrUpdateAsync(entities);
         }
 
         // Assert
@@ -133,7 +133,7 @@ public sealed class RepositoryUnitTest
         await using (var transaction = await _unitOfWork.BeginTransactionAsync())
         {
             await using var repository = _unitOfWork.GetRepository<IRepository>();
-            await repository.InsertAsync(new List<TestEntity>
+            await repository.AddOrUpdateAsync(new List<TestEntity>
             { new() { KeyId = 5,  Name = "Test5" } });
             // No need to call SaveChangesAsync explicitly, it should be called automatically
         }

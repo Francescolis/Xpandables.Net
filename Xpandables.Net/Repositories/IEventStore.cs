@@ -87,29 +87,15 @@ public interface IEventStore : IRepository
     // Hidden members from IRepository
 
     /// <summary>
-    /// Asynchronously inserts a collection of entities into the repository.
+    /// Asynchronously adds or updates a collection of entities in the data store.
     /// </summary>
-    /// <typeparam name="TEntity">The type of the entities to insert. Must implement <see cref="IEntity"/>.</typeparam>
-    /// <param name="entities">The collection of entities to be inserted. Cannot be null.</param>
+    /// <typeparam name="TEntity">The type of the entities to add or update. Must implement <see cref="IEntity"/>.</typeparam>
+    /// <param name="entities">The collection of entities to add or update. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous insert operation.</returns>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    new Task InsertAsync<TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
-
-    /// <summary>
-    /// Asynchronously updates a collection of entities in the data store.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of the entities to update. Must implement <see cref="IEntity"/>.</typeparam>
-    /// <param name="entities">The collection of entities to be updated. Cannot be null.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous update operation.</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    new Task UpdateAsync<TEntity>(
+    new Task AddOrUpdateAsync<TEntity>(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;

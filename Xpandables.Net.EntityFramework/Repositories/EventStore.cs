@@ -102,7 +102,9 @@ public sealed class EventStore : Repository<DataContextEvent>, IEventStore
     }
 
     /// <inheritdoc />
-    public async Task MarkAsProcessedAsync(IEnumerable<EventProcessedInfo> infos, CancellationToken cancellationToken = default)
+    public async Task MarkAsProcessedAsync(
+        IEnumerable<EventProcessedInfo> infos,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(infos);
 

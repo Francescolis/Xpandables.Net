@@ -52,26 +52,16 @@ public interface IRepository : IAsyncDisposable
         where TEntity : class, IEntity;
 
     /// <summary>
-    /// Inserts a collection of entities into the repository.
+    /// Adds new entities or updates existing entities in the data store asynchronously.
     /// </summary>
-    /// <typeparam name="TEntity">The type of the entity.</typeparam>
-    /// <param name="entities">The entities to insert.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task InsertAsync<TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
-
-    /// <summary>
-    /// Asynchronously updates a collection of entities in the data store.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of the entities to update. Must implement <see cref="IEntity"/>.</typeparam>
-    /// <param name="entities">The collection of entities to be updated. Cannot be null or empty.</param>
+    /// <remarks>If an entity in the collection already exists in the data store, it will be updated;
+    /// otherwise, it will be added.</remarks>
+    /// <typeparam name="TEntity">The type of the entities to add or update. Must implement <see cref="IEntity"/>.</typeparam>
+    /// <param name="entities">The collection of entities to add or update. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous update operation.</returns>
-    Task UpdateAsync<TEntity>(
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task AddOrUpdateAsync<TEntity>(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;
