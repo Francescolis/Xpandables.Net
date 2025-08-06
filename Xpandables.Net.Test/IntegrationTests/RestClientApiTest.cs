@@ -46,6 +46,11 @@ public sealed class RestClientApiTest : IClassFixture<WebApplicationFactory<Prog
     [Fact, TestPriority(0)]
     public async Task CreateAccount_Should_Return_Valid_Result()
     {
+        // upload picture
+        var uploadPictureRequest = new UploadPictureRequest();
+        var uploadPictureResponse = await _restClient.SendAsync(uploadPictureRequest);
+        uploadPictureResponse.IsSuccess.Should().BeTrue();
+
         // Create       
         var create = new CreateAccountRequest { KeyId = _keyId };
 
@@ -73,5 +78,28 @@ public sealed class RestClientApiTest : IClassFixture<WebApplicationFactory<Prog
 
         balanceResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         balanceResponse.Result.Should().Be(100);
+    }
+}
+
+[RestPut("/accounts/picture",
+    IsSecured = false,
+    ContentType = Rest.ContentType.MultipartFormData,
+    Location = Rest.Location.Body,
+    BodyFormat = Rest.BodyFormat.Multipart)]
+public sealed record UploadPictureRequest : IRestRequest, IRestMultipart
+{
+    public MultipartFormDataContent GetMultipartContent()
+    {
+        var multipartContent = new MultipartFormDataContent("boundary");
+        var fileContent = new StreamContent(File.OpenRead(@"C:\\Users\\fewan\\OneDrive\\Documents\\Administratif\\Signature.png"))
+        {
+            Headers =
+            {
+                ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(Rest.ContentType.Png)
+            }
+        }
+        ;
+        multipartContent.Add(fileContent, "formFile", "Signature.png");
+        return multipartContent;
     }
 }

@@ -109,7 +109,7 @@ internal sealed class RestRequestBuilder<TRestRequest>(
 
     private static HttpRequestMessage FinalizeHttpRequestMessage(RestRequestContext<TRestRequest> context)
     {
-        if (context.Message.Content is not null)
+        if (context.Message.Content is not null && context.Message.Content.Headers.ContentType is null)
         {
             context.Message.Content.Headers.ContentType
                 = new MediaTypeHeaderValue(context.Attribute.ContentType);
