@@ -148,7 +148,26 @@ public class Repository<TDataContext> : Repository, IRepository<TDataContext>
             return;
         }
 
-        Context.UpdateRange(entities);
+        // Convert to array to avoid multiple enumeration
+        var entitiesArray = collection as TEntity[] ?? collection.ToArray();
+
+        // Get entities to add (those with default KeyId values)
+        var entitiesToAdd = entitiesArray.Where(e => e.KeyId.IsDefaultValue()).ToArray();
+
+        // Get entities to update using Except
+        var entitiesToUpdate = entitiesArray.Except(entitiesToAdd).ToArray();
+
+        // Bulk add new entities
+        if (entitiesToAdd.Length > 0)
+        {
+            Context.AddRange(entitiesToAdd);
+        }
+
+        // Bulk update existing entities
+        if (entitiesToUpdate.Length > 0)
+        {
+            Context.UpdateRange(entitiesToUpdate);
+        }
 
         await Task.CompletedTask.ConfigureAwait(false);
     }
@@ -197,6 +216,82 @@ public class RepositoryPersistent<TDataContext> : Repository<TDataContext>
         CancellationToken cancellationToken)
     {
         await base.AddOrUpdateAsync(entities, cancellationToken).ConfigureAwait(false);
-        await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            // Handle concurrency exceptions by treating failed updates as inserts
+            foreach (var entry in ex.Entries)
+            {
+                if (entry.State == EntityState.Modified)
+                {
+                    // Detach the entity and try to add it instead
+                    entry.State = EntityState.Detached;
+                    Context.Add(entry.Entity);
+                }
+            }
+
+            // Retry saving changes
+            await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+}
+
+/// <summary>
+/// Provides extension methods for checking default values on objects.
+/// </summary>
+internal static class DefaultValueExtensions
+{
+    /// <summary>
+    /// Determines whether the specified value is the default value for its type.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to check.</typeparam>
+    /// <param name="value">The value to check against the default for its type.</param>
+    /// <returns>
+    /// <see langword="true"/> if the value is <see langword="null"/> or equals the default value for its type;
+    /// otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <remarks>
+    /// This method handles various scenarios:
+    /// <list type="bullet">
+    /// <item>Null values return <see langword="true"/></item>
+    /// <item>Nullable types are checked against their underlying type's default</item>
+    /// <item>Value types use <see cref="EqualityComparer{T}.Default"/> for comparison</item>
+    /// <item>Reference types are compared using <see cref="EqualityComparer{T}.Default"/></item>
+    /// <item>Boxed value types are handled correctly by comparing against the boxed default</item>
+    /// </list>
+    /// </remarks>
+    internal static bool IsDefaultValue<T>(this T value)
+    {
+        // Handle null values
+        if (value is null)
+            return true;
+
+        // Use EqualityComparer<T>.Default for type-safe comparison
+        if (EqualityComparer<T>.Default.Equals(value, default))
+            return true;
+
+        // Handle nullable types
+        Type valueType = typeof(T);
+        Type? underlyingType = Nullable.GetUnderlyingType(valueType);
+        if (underlyingType is not null)
+        {
+            // For non-null nullable types, the value is not default
+            return false;
+        }
+
+        // Handle boxed value types
+        Type actualType = value.GetType();
+        if (actualType.IsValueType && actualType != valueType)
+        {
+            // Create default instance of the actual runtime type
+            object? defaultInstance = Activator.CreateInstance(actualType);
+            return EqualityComparer<object>.Default.Equals(value, defaultInstance);
+        }
+
+        return false;
     }
 }
