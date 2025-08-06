@@ -42,6 +42,15 @@ public interface IDomainEvent : IEvent
 }
 
 /// <summary>
+/// Represents a domain event that includes versioning for a specific aggregate type.
+/// </summary>
+/// <typeparam name="TAggregate">The type of the aggregate, which must inherit from <see cref="Aggregate"/>.</typeparam>
+public interface IDomainEvent<TAggregate> : IDomainEvent
+    where TAggregate : Aggregate
+{
+}
+
+/// <summary>
 /// Represents a domain event that is associated with an aggregate.
 /// </summary>
 public record DomainEvent : Event, IDomainEvent
@@ -60,10 +69,10 @@ public record DomainEvent : Event, IDomainEvent
 /// <remarks>
 /// Add a private parameterless constructor and decorate it
 /// with the <see cref="JsonConstructorAttribute" /> attribute when you
-/// are using the base constructor with <typeparamref name="TAggregateRoot" />.
+/// are using the base constructor with <typeparamref name="TAggregate" />.
 /// </remarks>
-public record DomainEvent<TAggregateRoot> : DomainEvent
-    where TAggregateRoot : Aggregate
+public record DomainEvent<TAggregate> : DomainEvent, IDomainEvent<TAggregate>
+    where TAggregate : Aggregate
 {
     /// <summary>
     /// Initializes a new instance of the
@@ -76,11 +85,11 @@ public record DomainEvent<TAggregateRoot> : DomainEvent
     /// Initializes a new instance of the
     /// <see cref="DomainEvent" /> class.
     /// </summary>
-    /// <param name="aggregateRoot">The aggregate root associated with the event.</param>
+    /// <param name="aggregate">The aggregate root associated with the event.</param>
     [SetsRequiredMembers]
-    protected DomainEvent(TAggregateRoot aggregateRoot)
+    protected DomainEvent(TAggregate aggregate)
     {
-        AggregateId = aggregateRoot.KeyId;
-        EventVersion = aggregateRoot.Version;
+        AggregateId = aggregate.KeyId;
+        EventVersion = aggregate.Version;
     }
 }

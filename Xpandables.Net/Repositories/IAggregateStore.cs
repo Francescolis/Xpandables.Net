@@ -68,13 +68,13 @@ public interface IAggregateStore<TAggregate> : IAggregateStore
     /// <summary>
     /// Appends the specified aggregate.
     /// </summary>
-    /// <param name="aggregateRoot">The aggregate to append.</param>
+    /// <param name="aggregate">The aggregate to append.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation result.</returns>
     /// <exception cref="InvalidOperationException">Unable to append the 
     /// aggregate. See inner exception for details.</exception>
     Task AppendAsync(
-        TAggregate aggregateRoot,
+        TAggregate aggregate,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -86,6 +86,8 @@ public interface IAggregateStore<TAggregate> : IAggregateStore
     /// <summary>
     /// Resolves the aggregate that matches the specified keyId.
     /// </summary>
+    /// <remarks>This method retrieves an aggregate of type <typeparamref name="TAggregate"/> using
+    /// a collection of events that match the specified keyId and implements the <see cref="IDomainEvent{TAggregate}"/> interface.</remarks>
     /// <param name="keyId">The aggregate identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation result containing the aggregate.</returns>

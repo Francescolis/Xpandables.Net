@@ -36,7 +36,7 @@ public abstract class AggregateState<TAggregate, TState> :
 
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="AggregateState{TAggregateRoot,TState}"/> class.
+    /// <see cref="AggregateState{TAggregate,TState}"/> class.
     /// </summary>
     /// <param name="initialState">The initial state of the aggregate.</param>
     protected AggregateState(TState initialState) =>

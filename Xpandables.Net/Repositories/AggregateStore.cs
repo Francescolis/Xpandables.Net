@@ -91,10 +91,10 @@ public sealed class AggregateStore<TAggregate>(
 
             TAggregate aggregate = new();
 
-            await foreach (IDomainEvent @event in _eventStore
+            await foreach (IDomainEvent<TAggregate> @event in _eventStore
                 .FetchAsync(domainFilterFunc, cancellationToken)
                 .AsEventsAsync(cancellationToken)
-                .OfType<IDomainEvent>()
+                .OfType<IDomainEvent<TAggregate>>()
                 .OrderBy(x => x.EventVersion)
                 .ConfigureAwait(false))
             {
@@ -104,7 +104,7 @@ public sealed class AggregateStore<TAggregate>(
             if (aggregate.IsEmpty)
             {
                 throw new ValidationException(new ValidationResult(
-                    "The object was not found.",
+                    "The entity was not found.",
                     [nameof(keyId)]), null, keyId);
             }
 
@@ -114,7 +114,7 @@ public sealed class AggregateStore<TAggregate>(
             when (exception is not ValidationException and not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                "Unable to peek the object. See inner exception for details.",
+                "Unable to peek the entity. See inner exception for details.",
                 exception);
         }
     }

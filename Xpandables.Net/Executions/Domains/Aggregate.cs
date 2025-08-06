@@ -144,7 +144,7 @@ public abstract class Aggregate : IEventSourcing
         else
         {
             throw new UnauthorizedAccessException(
-                $"The submitted action {domainEvent.GetType().Name} is not authorized.");
+                $"The submitted event {domainEvent.GetType().Name} is not authorized.");
         }
     }
 }
