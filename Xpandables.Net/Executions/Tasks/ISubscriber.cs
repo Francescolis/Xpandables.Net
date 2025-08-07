@@ -56,4 +56,62 @@ public interface ISubscriber : IDisposable
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     void Subscribe<TEvent>(IEventHandler<TEvent> subscriber)
         where TEvent : class, IEvent;
+
+    /// <summary>
+    /// Subscribes to an event with a specified action and returns a disposable token.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">
+    /// The action to be executed when the event is published.
+    /// </param>
+    /// <returns>A disposable token that can be used to unsubscribe.</returns>
+    IDisposable SubscribeDisposable<TEvent>(Action<TEvent> subscriber)
+        where TEvent : class, IEvent;
+
+    /// <summary>
+    /// Subscribes to an event with a specified asynchronous function and returns a disposable token.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">
+    /// The asynchronous function to be executed when the event is published.
+    /// </param>
+    /// <returns>A disposable token that can be used to unsubscribe.</returns>
+    IDisposable SubscribeDisposable<TEvent>(Func<TEvent, Task> subscriber)
+        where TEvent : class, IEvent;
+
+    /// <summary>
+    /// Subscribes to an event with a specified event handler and returns a disposable token.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">The event handler to be executed when the event is published.</param>
+    /// <returns>A disposable token that can be used to unsubscribe.</returns>
+    IDisposable SubscribeDisposable<TEvent>(IEventHandler<TEvent> subscriber)
+        where TEvent : class, IEvent;
+
+    /// <summary>
+    /// Unsubscribes from an event with the specified action.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">The action to unsubscribe.</param>
+    /// <returns>True if the subscriber was found and removed; otherwise, false.</returns>
+    bool Unsubscribe<TEvent>(Action<TEvent> subscriber)
+        where TEvent : class, IEvent;
+
+    /// <summary>
+    /// Unsubscribes from an event with the specified asynchronous function.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">The asynchronous function to unsubscribe.</param>
+    /// <returns>True if the subscriber was found and removed; otherwise, false.</returns>
+    bool Unsubscribe<TEvent>(Func<TEvent, Task> subscriber)
+        where TEvent : class, IEvent;
+
+    /// <summary>
+    /// Unsubscribes from an event with the specified event handler.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">The event handler to unsubscribe.</param>
+    /// <returns>True if the subscriber was found and removed; otherwise, false.</returns>
+    bool Unsubscribe<TEvent>(IEventHandler<TEvent> subscriber)
+        where TEvent : class, IEvent;
 }

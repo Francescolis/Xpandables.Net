@@ -86,6 +86,45 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
             .Add(subscriber);
 
     /// <inheritdoc />
+    public IDisposable SubscribeDisposable<TEvent>(Action<TEvent> subscriber)
+        where TEvent : class, IEvent
+    {
+        Subscribe(subscriber);
+        return new SubscriptionToken<TEvent>(this, subscriber);
+    }
+
+    /// <inheritdoc />
+    public IDisposable SubscribeDisposable<TEvent>(Func<TEvent, Task> subscriber)
+        where TEvent : class, IEvent
+    {
+        Subscribe(subscriber);
+        return new SubscriptionToken<TEvent>(this, subscriber);
+    }
+
+    /// <inheritdoc />
+    public IDisposable SubscribeDisposable<TEvent>(IEventHandler<TEvent> subscriber)
+        where TEvent : class, IEvent
+    {
+        Subscribe(subscriber);
+        return new SubscriptionToken<TEvent>(this, subscriber);
+    }
+
+    /// <inheritdoc />
+    public bool Unsubscribe<TEvent>(Action<TEvent> subscriber)
+        where TEvent : class, IEvent =>
+        RemoveSubscriber<TEvent>(subscriber);
+
+    /// <inheritdoc />
+    public bool Unsubscribe<TEvent>(Func<TEvent, Task> subscriber)
+        where TEvent : class, IEvent =>
+        RemoveSubscriber<TEvent>(subscriber);
+
+    /// <inheritdoc />
+    public bool Unsubscribe<TEvent>(IEventHandler<TEvent> subscriber)
+        where TEvent : class, IEvent =>
+        RemoveSubscriber<TEvent>(subscriber);
+
+    /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -99,6 +138,27 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
         }
 
         base.Dispose(disposing);
+    }
+
+    private bool RemoveSubscriber<TEvent>(object subscriber)
+        where TEvent : class, IEvent
+    {
+        if (!_subscribers.TryGetValue(typeof(TEvent), out ConcurrentBag<object>? handlers))
+        {
+            return false;
+        }
+
+        // Since ConcurrentBag doesn't support direct removal, we need to recreate it
+        List<object> existingHandlers = [.. handlers];
+        bool removed = existingHandlers.Remove(subscriber);
+
+        if (removed)
+        {
+            // Replace the bag with a new one containing the remaining handlers
+            _subscribers.TryUpdate(typeof(TEvent), [.. existingHandlers], handlers);
+        }
+
+        return removed;
     }
 
     private ConcurrentBag<object> GetHandlersOf<TEvent>()
@@ -121,7 +181,6 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
                     BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic,
                     [eventType, typeof(CancellationToken)]);
 
-                // ReSharper disable once ConvertToLocalFunction
                 DelHandler<IEvent> delHandler = (evt, token) =>
                     (Task)method!.Invoke(handler, [evt, token])!;
 
@@ -133,4 +192,29 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
 
     private delegate Task DelHandler<in TEvent>(TEvent @event, CancellationToken cancellationToken)
         where TEvent : class, IEvent;
+
+    /// <summary>
+    /// Represents a subscription token that can be disposed to unsubscribe from events.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    /// <param name="subscriber">The publisher-subscriber instance.</param>
+    /// <param name="handler">The event handler to unsubscribe.</param>
+    private sealed class SubscriptionToken<TEvent>(PublisherSubscriber subscriber, object handler) : IDisposable
+        where TEvent : class, IEvent
+    {
+#pragma warning disable CA2213 // Disposable fields should be disposed
+        private readonly PublisherSubscriber _subscriber = subscriber;
+#pragma warning restore CA2213 // Disposable fields should be disposed
+        private readonly object _handler = handler;
+        private bool _disposed;
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _subscriber.RemoveSubscriber<TEvent>(_handler);
+                _disposed = true;
+            }
+        }
+    }
 }
