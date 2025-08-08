@@ -33,11 +33,11 @@ public sealed class EntitySnapShotEventTypeConfiguration : IEntityTypeConfigurat
         ArgumentNullException.ThrowIfNull(builder);
 
         _ = builder.HasKey(p => p.KeyId);
-        _ = builder.HasIndex(e => new { e.KeyId, e.OwnerId, e.EventName, e.EventVersion });
-        _ = builder.Property(e => e.EventData).IsRequired();
-        _ = builder.Property(p => p.EventName).IsRequired();
-        _ = builder.Property(p => p.EventFullName).IsRequired();
-        _ = builder.Property(p => p.EventVersion).IsRequired();
+        _ = builder.HasIndex(e => new { e.KeyId, e.OwnerId, e.Name, e.Version });
+        _ = builder.Property(e => e.Data).IsRequired();
+        _ = builder.Property(p => p.Name).IsRequired();
+        _ = builder.Property(p => p.FullName).IsRequired();
+        _ = builder.Property(p => p.Version).IsRequired();
         _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(50);
         _ = builder.Property(e => e.CreatedOn).IsRequired();
         _ = builder.Property(e => e.UpdatedOn).IsRequired(false);

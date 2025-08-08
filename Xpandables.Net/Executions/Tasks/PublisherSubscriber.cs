@@ -61,7 +61,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
             when (exception is not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                $"Unable to publish the event {@event.EventId}. " +
+                $"Unable to publish the event {@event.Id}. " +
                 $"See inner exception for details.",
                 exception);
         }

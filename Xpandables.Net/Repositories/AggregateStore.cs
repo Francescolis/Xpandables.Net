@@ -85,17 +85,19 @@ public sealed class AggregateStore<TAggregate>(
     {
         try
         {
+            string aggregateTypeName = typeof(TAggregate).FullName!;
+
             Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> domainFilterFunc = query =>
-                query.Where(w => w.AggregateId == keyId)
-                    .OrderBy(o => o.EventVersion);
+                query.Where(w => w.AggregateId == keyId && w.AggregateName == aggregateTypeName)
+                    .OrderBy(o => o.Version);
 
             TAggregate aggregate = new();
 
-            await foreach (IDomainEvent<TAggregate> @event in _eventStore
+            await foreach (IDomainEvent @event in _eventStore
                 .FetchAsync(domainFilterFunc, cancellationToken)
                 .AsEventsAsync(cancellationToken)
-                .OfType<IDomainEvent<TAggregate>>()
-                .OrderBy(x => x.EventVersion)
+                .OfType<IDomainEvent>()
+                .OrderBy(x => x.Version)
                 .ConfigureAwait(false))
             {
                 aggregate.LoadFromHistory(@event);

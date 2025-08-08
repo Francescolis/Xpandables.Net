@@ -24,4 +24,7 @@ public sealed class EntityDomainEvent : EntityEvent, IEntityEventDomain
 {
     /// <inheritdoc />
     public required Guid AggregateId { get; init; }
+
+    /// <inheritdoc />
+    public required string AggregateName { get; init; }
 }

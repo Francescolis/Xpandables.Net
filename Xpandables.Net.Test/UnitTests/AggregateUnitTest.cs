@@ -133,17 +133,17 @@ public class TestAggregate : Aggregate
     private void HandleNameUpdated(TestNameUpdated @event) => Name = @event.Name;
 }
 
-public sealed record TestCreated : DomainEvent
+public sealed record TestCreated : DomainEvent<TestAggregate>
 {
     public required string Name { get; init; }
 }
 
-public sealed record TestNameUpdated : DomainEvent
+public sealed record TestNameUpdated : DomainEvent<TestAggregate>
 {
     public required string Name { get; init; }
 }
 
-public sealed record UnregisteredEvent : DomainEvent
+public sealed record UnregisteredEvent : DomainEvent<TestAggregate>
 {
     // Empty event for testing unregistered event handling
 }

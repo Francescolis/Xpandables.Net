@@ -184,7 +184,7 @@ public static class RepositoryExtensions
         await foreach (var entity in source.WithCancellation(cancellationToken)
             .ConfigureAwait(false))
         {
-            Type concreteEventType = eventTypeCache.GetOrAdd(entity.EventFullName, fullName =>
+            Type concreteEventType = eventTypeCache.GetOrAdd(entity.FullName, fullName =>
             {
                 Type? eventType = Type.GetType(fullName);
                 return eventType ?? throw new InvalidOperationException(
@@ -193,7 +193,7 @@ public static class RepositoryExtensions
             });
 
             IEvent deserializedEvent = EventConverter.DeserializeEvent(
-                entity.EventData,
+                entity.Data,
                 concreteEventType,
                 DefaultSerializerOptions.Defaults);
 

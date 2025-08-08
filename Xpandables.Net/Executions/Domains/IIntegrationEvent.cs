@@ -63,5 +63,5 @@ public record IntegrationEvent<TDomainEvent> : IntegrationEvent, IIntegrationEve
     /// </summary>
     /// <param name="domainEvent">The domain event.</param>
     [SetsRequiredMembers]
-    protected IntegrationEvent(TDomainEvent domainEvent) => EventId = domainEvent.EventId;
+    protected IntegrationEvent(TDomainEvent domainEvent) => Id = domainEvent.Id;
 }

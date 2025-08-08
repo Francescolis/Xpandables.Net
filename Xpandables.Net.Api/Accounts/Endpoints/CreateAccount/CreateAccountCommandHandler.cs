@@ -31,7 +31,7 @@ public sealed class CreateAccountPreCommandHandler(IEventStore eventStore) :
         CancellationToken cancellationToken = default)
     {
         Func<IQueryable<EntityDomainEvent>, IQueryable<Guid>> domainFilterFunc = query =>
-            query.Where(w => w.AggregateId == context.Request.KeyId && w.EventName == nameof(AccountCreated))
+            query.Where(w => w.AggregateId == context.Request.KeyId && w.Name == nameof(AccountCreated))
             .Select(s => s.KeyId);
 
         if (await eventStore.FetchAsync(domainFilterFunc, cancellationToken)

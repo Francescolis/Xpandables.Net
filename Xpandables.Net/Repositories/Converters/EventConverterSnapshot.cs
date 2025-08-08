@@ -41,9 +41,9 @@ public sealed class EventConverterSnapshot : EventConverter
     {
         try
         {
-            Type eventType = Type.GetType(entity.EventFullName, true)!;
+            Type eventType = Type.GetType(entity.FullName, true)!;
 
-            IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
+            IEvent @event = DeserializeEvent(entity.Data, eventType, options);
 
             return (ISnapshotEvent)@event;
         }
@@ -67,12 +67,12 @@ public sealed class EventConverterSnapshot : EventConverter
 
             return new EntitySnapshotEvent
             {
-                KeyId = snapshot.EventId,
+                KeyId = snapshot.Id,
                 OwnerId = snapshot.OwnerId,
-                EventVersion = snapshot.EventVersion,
-                EventName = snapshot.GetType().Name,
-                EventFullName = snapshot.GetType().AssemblyQualifiedName!,
-                EventData = SerializeEvent(snapshot, options)
+                Version = snapshot.Version,
+                Name = snapshot.GetType().Name,
+                FullName = snapshot.GetType().AssemblyQualifiedName!,
+                Data = SerializeEvent(snapshot, options)
             };
         }
         catch (Exception exception)

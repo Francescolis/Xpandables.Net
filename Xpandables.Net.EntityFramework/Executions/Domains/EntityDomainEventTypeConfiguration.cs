@@ -33,13 +33,14 @@ public sealed class EntityDomainEventTypeConfiguration : IEntityTypeConfiguratio
         ArgumentNullException.ThrowIfNull(builder);
 
         _ = builder.HasKey(e => e.KeyId);
-        _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.EventName, e.EventVersion });
+        _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.Name, e.Version });
         _ = builder.Property(e => e.KeyId).IsRequired();
         _ = builder.Property(e => e.AggregateId).IsRequired();
-        _ = builder.Property(e => e.EventName).IsRequired().HasMaxLength(100);
-        _ = builder.Property(e => e.EventFullName).IsRequired().HasMaxLength(byte.MaxValue);
-        _ = builder.Property(e => e.EventVersion).IsRequired();
-        _ = builder.Property(e => e.EventData).IsRequired();
+        _ = builder.Property(e => e.AggregateName).IsRequired().HasMaxLength(500);
+        _ = builder.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        _ = builder.Property(e => e.FullName).IsRequired().HasMaxLength(byte.MaxValue);
+        _ = builder.Property(e => e.Version).IsRequired();
+        _ = builder.Property(e => e.Data).IsRequired();
         _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(50);
         _ = builder.Property(e => e.CreatedOn).IsRequired();
         _ = builder.Property(e => e.UpdatedOn).IsRequired(false);

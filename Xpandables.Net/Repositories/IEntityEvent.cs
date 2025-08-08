@@ -30,20 +30,25 @@ public interface IEntityEvent : IEntity<Guid>, IDisposable
     /// <summary>
     /// Gets the name of the event.
     /// </summary>
-    string EventName { get; }
+    string Name { get; }
 
     /// <summary>
     /// Gets the full name of the event.
     /// </summary>
-    string EventFullName { get; }
+    string FullName { get; }
 
     /// <summary>
     /// Gets the version of the event.
     /// </summary>
-    ulong EventVersion { get; }
+    ulong Version { get; }
+
+    /// <summary>
+    /// Gets the sequence number of the event, which is used to track the order of events.
+    /// </summary>
+    ulong Sequence { get; }
 
     /// <summary>
     /// Gets the data associated with the event.
     /// </summary>
-    JsonDocument EventData { get; }
+    JsonDocument Data { get; }
 }

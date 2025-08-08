@@ -19,7 +19,7 @@ public sealed class GetOperationsAccountQueryHandler(
 
         Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> filterFunc = q =>
             q.Where(w => w.AggregateId == query.KeyId
-                             && (w.EventName == nameof(DepositMade) || w.EventName == nameof(WithdrawMade)))
+                             && (w.Name == nameof(DepositMade) || w.Name == nameof(WithdrawMade)))
                 .OrderByDescending(o => o.CreatedOn);
 
         IAsyncEnumerable<IEvent> events = eventStore
@@ -42,7 +42,7 @@ public sealed class GetOperationsAccountQueryHandler(
                     case DepositMade deposit:
                         yield return new OperationAccount
                         {
-                            Id = deposit.EventId,
+                            Id = deposit.Id,
                             Date = deposit.OccurredOn.DateTime,
                             Amount = deposit.Amount,
                             Type = "Deposit"
@@ -51,7 +51,7 @@ public sealed class GetOperationsAccountQueryHandler(
                     case WithdrawMade withdraw:
                         yield return new OperationAccount
                         {
-                            Id = withdraw.EventId,
+                            Id = withdraw.Id,
                             Date = withdraw.OccurredOn.DateTime,
                             Amount = withdraw.Amount,
                             Type = "Withdraw"

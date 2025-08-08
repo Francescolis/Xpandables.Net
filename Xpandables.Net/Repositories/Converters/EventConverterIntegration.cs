@@ -41,9 +41,9 @@ public sealed class EventConverterIntegration : EventConverter
     {
         try
         {
-            Type eventType = Type.GetType(entity.EventFullName, true)!;
+            Type eventType = Type.GetType(entity.FullName, true)!;
 
-            IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
+            IEvent @event = DeserializeEvent(entity.Data, eventType, options);
 
             return (IIntegrationEvent)@event;
         }
@@ -67,11 +67,11 @@ public sealed class EventConverterIntegration : EventConverter
 
             return new EntityIntegrationEvent
             {
-                KeyId = integrationEvent.EventId,
-                EventName = integrationEvent.GetType().Name,
-                EventFullName = integrationEvent.GetType().AssemblyQualifiedName!,
-                EventVersion = integrationEvent.EventVersion,
-                EventData = SerializeEvent(integrationEvent, options)
+                KeyId = integrationEvent.Id,
+                Name = integrationEvent.GetType().Name,
+                FullName = integrationEvent.GetType().AssemblyQualifiedName!,
+                Version = integrationEvent.Version,
+                Data = SerializeEvent(integrationEvent, options)
             };
         }
         catch (Exception exception)

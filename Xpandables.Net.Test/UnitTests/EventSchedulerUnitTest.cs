@@ -44,7 +44,7 @@ public sealed class EventSchedulerUnitTest
         IEventStore eventStore = _serviceProvider.GetRequiredService<IEventStore>();
         IScheduler eventScheduler = _serviceProvider.GetRequiredService<IScheduler>();
 
-        TestIntegrationEvent testEvent = new() { EventId = Guid.CreateVersion7(), EventVersion = 1 };
+        TestIntegrationEvent testEvent = new() { Id = Guid.CreateVersion7(), Version = 1 };
 
         await eventStore.AppendAsync(testEvent);
 
@@ -56,7 +56,7 @@ public sealed class EventSchedulerUnitTest
 
         Func<IQueryable<EntityIntegrationEvent>, IQueryable<EntityIntegrationEvent>> filterFunc = query =>
             query.Where(w => w.Status == EntityStatus.PUBLISHED)
-                .OrderBy(o => o.EventVersion)
+                .OrderBy(o => o.Version)
                 .Take(10);
 
         // Assert
@@ -67,7 +67,7 @@ public sealed class EventSchedulerUnitTest
             .ToListAsync(CancellationToken.None);
 
         events.Count.Should().Be(1);
-        events.Should().ContainSingle(e => e.EventId == testEvent.EventId);
+        events.Should().ContainSingle(e => e.Id == testEvent.Id);
     }
 
     private record TestIntegrationEvent : IntegrationEvent
@@ -153,7 +153,7 @@ public class InMemoryEventStore : Repository, IEventStore
             throw new NotSupportedException($"Unsupported entity event type: {typeof(TEntityEvent).FullName}");
         }
 
-        JsonElement cloneElement = entityEvent.EventData.RootElement.Clone();
+        JsonElement cloneElement = entityEvent.Data.RootElement.Clone();
         JsonDocument cloneDocument = JsonDocument.Parse(cloneElement.GetRawText());
         IEntityEvent result = entityEvent switch
         {
@@ -162,10 +162,10 @@ public class InMemoryEventStore : Repository, IEventStore
                 CreatedOn = integration.CreatedOn,
                 DeletedOn = integration.DeletedOn,
                 ErrorMessage = integration.ErrorMessage,
-                EventData = cloneDocument,
-                EventFullName = integration.EventFullName,
-                EventName = integration.EventName,
-                EventVersion = integration.EventVersion,
+                Data = cloneDocument,
+                FullName = integration.FullName,
+                Name = integration.Name,
+                Version = integration.Version,
                 KeyId = integration.KeyId,
                 Status = integration.Status,
                 UpdatedOn = integration.UpdatedOn
@@ -173,12 +173,13 @@ public class InMemoryEventStore : Repository, IEventStore
             IEntityEventDomain domain => new EntityDomainEvent
             {
                 AggregateId = domain.AggregateId,
+                AggregateName = domain.AggregateName,
                 CreatedOn = domain.CreatedOn,
                 DeletedOn = domain.DeletedOn,
-                EventData = cloneDocument,
-                EventFullName = domain.EventFullName,
-                EventName = domain.EventName,
-                EventVersion = domain.EventVersion,
+                Data = cloneDocument,
+                FullName = domain.FullName,
+                Name = domain.Name,
+                Version = domain.Version,
                 KeyId = domain.KeyId,
                 Status = domain.Status,
                 UpdatedOn = domain.UpdatedOn

@@ -29,4 +29,9 @@ public interface IEntityEventDomain : IEntityEvent
     /// Gets the identifier of the aggregate.
     /// </summary>
     Guid AggregateId { get; }
+
+    /// <summary>
+    /// Gets the aggregate type name that this event belongs to.
+    /// </summary>
+    string AggregateName { get; init; }
 }

@@ -29,7 +29,7 @@ public static class DataContextEventSqlServerBuilder
             .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<EntityDomainEvent>()
-            .Property(p => p.EventData)
+            .Property(p => p.Data)
             .IsRequired();
 
         modelBuilder.Entity<EntityDomainEvent>()
@@ -44,7 +44,7 @@ public static class DataContextEventSqlServerBuilder
             .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<EntityIntegrationEvent>()
-            .Property(p => p.EventData)
+            .Property(p => p.Data)
                 .IsRequired();
 
         modelBuilder.Entity<EntityIntegrationEvent>()
@@ -59,7 +59,7 @@ public static class DataContextEventSqlServerBuilder
             .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<EntitySnapshotEvent>()
-            .Property(p => p.EventData)
+            .Property(p => p.Data)
             .IsRequired();
 
         modelBuilder.Entity<EntitySnapshotEvent>()
@@ -84,7 +84,7 @@ public static class DataContextEventSqlServerBuilder
             .HasDefaultValueSql("NEWID()");
 
         modelBuilder.Entity<EntityDomainEvent>()
-            .Property(p => p.EventData)
+            .Property(p => p.Data)
             .HasJsonDocumentConversion()
             .IsRequired();
 
@@ -94,7 +94,7 @@ public static class DataContextEventSqlServerBuilder
             .HasDefaultValueSql("NEWID()");
 
         modelBuilder.Entity<EntityIntegrationEvent>()
-            .Property(p => p.EventData)
+            .Property(p => p.Data)
             .HasJsonDocumentConversion()
             .IsRequired();
 
@@ -110,7 +110,7 @@ public static class DataContextEventSqlServerBuilder
             .HasDefaultValueSql("NEWID()");
 
         modelBuilder.Entity<EntitySnapshotEvent>()
-            .Property(p => p.EventData)
+            .Property(p => p.Data)
             .HasJsonDocumentConversion()
             .IsRequired();
 

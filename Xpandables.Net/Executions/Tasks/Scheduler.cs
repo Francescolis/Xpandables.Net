@@ -96,7 +96,7 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
                 EventProcessedInfo eventPublished = new()
                 {
-                    EventId = @event.EventId,
+                    EventId = @event.Id,
                     ProcessedOn = DateTime.UtcNow,
                     ErrorMessage = null
                 };
@@ -107,7 +107,7 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             {
                 EventProcessedInfo eventPublished = new()
                 {
-                    EventId = @event.EventId,
+                    EventId = @event.Id,
                     ProcessedOn = DateTime.UtcNow,
                     ErrorMessage = exception.ToString()
                 };

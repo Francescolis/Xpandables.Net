@@ -65,7 +65,7 @@ public abstract class Aggregate : IEventSourcing
 
         Mutate(domainEvent);
 
-        Version = domainEvent.EventVersion;
+        Version = domainEvent.Version;
     }
 
     /// <inheritdoc />
@@ -121,7 +121,7 @@ public abstract class Aggregate : IEventSourcing
 
     private void Apply(IDomainEvent domainEvent)
     {
-        if (_uncommittedEvents.Any(e => e.EventId == domainEvent.EventId))
+        if (_uncommittedEvents.Any(e => e.Id == domainEvent.Id))
         {
             return;
         }

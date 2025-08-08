@@ -91,15 +91,15 @@ static Microsoft.EntityFrameworkCore.Metadata.IModel CreateInMemoryModel()
 
     // Explicitly configure JsonDocument properties with converters
     modelBuilder.Entity<EntityDomainEvent>()
-        .Property(e => e.EventData)
+        .Property(e => e.Data)
         .HasConversion<JsonDocumentValueConverter>();
 
     modelBuilder.Entity<EntityIntegrationEvent>()
-        .Property(e => e.EventData)
+        .Property(e => e.Data)
         .HasConversion<JsonDocumentValueConverter>();
 
     modelBuilder.Entity<EntitySnapshotEvent>()
-        .Property(e => e.EventData)
+        .Property(e => e.Data)
         .HasConversion<JsonDocumentValueConverter>();
 
     return modelBuilder.FinalizeModel();

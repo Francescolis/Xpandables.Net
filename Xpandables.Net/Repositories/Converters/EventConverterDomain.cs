@@ -44,9 +44,9 @@ public sealed class EventConverterDomain : EventConverter
     {
         try
         {
-            Type eventType = Type.GetType(entity.EventFullName, true)!;
+            Type eventType = Type.GetType(entity.FullName, true)!;
 
-            IEvent @event = DeserializeEvent(entity.EventData, eventType, options);
+            IEvent @event = DeserializeEvent(entity.Data, eventType, options);
 
             return (IDomainEvent)@event;
         }
@@ -70,12 +70,13 @@ public sealed class EventConverterDomain : EventConverter
 
             return new EntityDomainEvent
             {
-                KeyId = domainEvent.EventId,
+                KeyId = domainEvent.Id,
                 AggregateId = Guid.Parse(domainEvent.AggregateId.ToString()!),
-                EventName = domainEvent.GetType().Name,
-                EventFullName = domainEvent.GetType().AssemblyQualifiedName!,
-                EventVersion = domainEvent.EventVersion,
-                EventData = SerializeEvent(domainEvent, options)
+                AggregateName = domainEvent.AggregateName,
+                Name = domainEvent.GetType().Name,
+                FullName = domainEvent.GetType().AssemblyQualifiedName!,
+                Version = domainEvent.Version,
+                Data = SerializeEvent(domainEvent, options)
             };
         }
         catch (Exception exception)

@@ -25,16 +25,19 @@ namespace Xpandables.Net.Repositories;
 public abstract class EntityEvent : Entity<Guid>, IEntityEvent
 {
     /// <inheritdoc />
-    public required string EventName { get; init; }
+    public required string Name { get; init; }
 
     /// <inheritdoc />
-    public required string EventFullName { get; init; }
+    public required string FullName { get; init; }
 
     /// <inheritdoc />
-    public required JsonDocument EventData { get; init; }
+    public required JsonDocument Data { get; init; }
 
     /// <inheritdoc />
-    public required ulong EventVersion { get; init; }
+    public required ulong Version { get; init; }
+
+    /// <inheritdoc />
+    public ulong Sequence { get; init; }
 
     /// <inheritdoc />
     public void Dispose()
@@ -54,7 +57,7 @@ public abstract class EntityEvent : Entity<Guid>, IEntityEvent
     {
         if (disposing)
         {
-            EventData?.Dispose();
+            Data?.Dispose();
         }
     }
 }
