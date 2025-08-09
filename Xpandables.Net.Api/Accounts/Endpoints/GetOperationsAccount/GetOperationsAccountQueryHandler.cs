@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Api.Accounts.Events;
+using Xpandables.Net.Collections;
 using Xpandables.Net.Events;
 using Xpandables.Net.Executions;
 using Xpandables.Net.Repositories;
@@ -23,14 +24,15 @@ public sealed class GetOperationsAccountQueryHandler(
                              && (w.Name == nameof(DepositMade) || w.Name == nameof(WithdrawMade)))
                 .OrderByDescending(o => o.CreatedOn);
 
-        IAsyncEnumerable<IEvent> events = eventStore
+        IAsyncPagedEnumerable<IEvent> events = eventStore
             .FetchAsync(filterFunc, cancellationToken)
             .AsEventsAsync(cancellationToken);
 
+        var count = await events.GetPaginationAsync().ConfigureAwait(false);
         IAsyncEnumerable<OperationAccount> operations = GetOperations(events, cancellationToken);
 
         return ExecutionResult.Ok(operations)
-            .WithHeader("Count", $"{await events.CountAsync(cancellationToken)}")
+            .WithHeader("Count", $"{count}")
             .Build();
 
         static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events,

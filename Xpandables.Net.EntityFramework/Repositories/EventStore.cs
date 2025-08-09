@@ -16,7 +16,6 @@
  ********************************************************************************/
 
 using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -67,20 +66,16 @@ public sealed class EventStore : Repository<DataContextEvent>, IEventStore
     }
 
     /// <inheritdoc />
-    public new async IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+    public new IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
         where TEntity : class, IEntity
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        IQueryable<TResult> query = filter(Context.Set<TEntity>().AsNoTracking());
+        IQueryable<TResult> filteredQuery = filter(Context.Set<TEntity>().AsNoTracking());
 
-        await foreach (TResult result in query.AsAsyncEnumerable()
-            .WithCancellation(cancellationToken))
-        {
-            yield return result;
-        }
+        return DoFetchAsync(filteredQuery, cancellationToken);
     }
 
     /// <inheritdoc />

@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+using Xpandables.Net.Collections;
 using Xpandables.Net.Events;
 
 using Xpandables.Net.Repositories.Converters;
@@ -179,6 +180,59 @@ public static class RepositoryExtensions
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
+        ConcurrentDictionary<string, Type> eventTypeCache = [];
+
+        await foreach (var entity in source.WithCancellation(cancellationToken)
+            .ConfigureAwait(false))
+        {
+            Type concreteEventType = eventTypeCache.GetOrAdd(entity.FullName, fullName =>
+            {
+                Type? eventType = Type.GetType(fullName);
+                return eventType ?? throw new InvalidOperationException(
+                    $"The event type '{fullName}' could not be found. " +
+                    $"Ensure it is referenced and available at runtime.");
+            });
+
+            IEvent deserializedEvent = EventConverter.DeserializeEvent(
+                entity.Data,
+                concreteEventType,
+                DefaultSerializerOptions.Defaults);
+
+            entity.Dispose();
+
+            yield return deserializedEvent;
+        }
+    }
+
+    /// <summary>
+    /// Deserializes a stream of event entity projections into concrete <see cref="IEvent"/> objects with pagination support.
+    /// This method should be called after the query has been executed and is being streamed from the database.
+    /// </summary>
+    /// <remarks>This method also disposes of the <see cref="IEntityEvent"/> instances after deserialization to free resources.
+    /// The pagination information from the input is preserved in the output.</remarks>
+    /// <param name="source">The asynchronous paged stream of event projections.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An asynchronous paged stream of deserialized <see cref="IEvent"/> objects with preserved pagination metadata.</returns>
+    public static IAsyncPagedEnumerable<IEvent> AsEventsAsync(
+        this IAsyncPagedEnumerable<IEntityEvent> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        // Create the transformed async enumerable
+        var transformedEnumerable = CreateTransformedEnumerable(source, cancellationToken);
+
+        // Preserve the pagination information from the source
+        var paginationFactory = new Func<Task<Pagination>>(async () =>
+            await source.GetPaginationAsync().ConfigureAwait(false));
+
+        return transformedEnumerable.WithPagination(paginationFactory);
+    }
+
+    private static async IAsyncEnumerable<IEvent> CreateTransformedEnumerable(
+        IAsyncPagedEnumerable<IEntityEvent> source,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
         ConcurrentDictionary<string, Type> eventTypeCache = [];
 
         await foreach (var entity in source.WithCancellation(cancellationToken)

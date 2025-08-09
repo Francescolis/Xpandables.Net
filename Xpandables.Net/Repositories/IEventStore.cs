@@ -68,21 +68,21 @@ public interface IEventStore : IRepository
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task MarkAsProcessedAsync(IEnumerable<EventProcessedInfo> infos, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Asynchronously fetches a sequence of event entities based on the specified filter.
-    /// </summary>
-    /// <remarks>You wil need to call <see cref="RepositoryExtensions.AsEventsAsync(IAsyncEnumerable{IEntityEvent}, CancellationToken)"/>
-    /// to convert entities to events if necessary.</remarks>
-    /// <typeparam name="TEntity">The type of the entity to query, which must implement <see cref="IEntity"/>.</typeparam>
-    /// <typeparam name="TResult">The type of the result to return.</typeparam>
-    /// <param name="filter">A function that defines the query to apply to the <typeparamref name="TEntity"/> collection.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous sequence of <typeparamref name="TResult"/> that matches the specified filter.</returns>
-    new IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
+    ///// <summary>
+    ///// Asynchronously fetches a sequence of event entities based on the specified filter.
+    ///// </summary>
+    ///// <remarks>You wil need to call <see cref="RepositoryExtensions.AsEventsAsync(IAsyncEnumerable{IEntityEvent}, CancellationToken)"/>
+    ///// to convert entities to events if necessary.</remarks>
+    ///// <typeparam name="TEntity">The type of the entity to query, which must implement <see cref="IEntity"/>.</typeparam>
+    ///// <typeparam name="TResult">The type of the result to return.</typeparam>
+    ///// <param name="filter">A function that defines the query to apply to the <typeparamref name="TEntity"/> collection.</param>
+    ///// <param name="cancellationToken">A token to monitor for cancellation requests. 
+    ///// The default value is <see cref="CancellationToken.None"/>.</param>
+    ///// <returns>An asynchronous sequence of <typeparamref name="TResult"/> that matches the specified filter.</returns>
+    //new IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
+    //    Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+    //    CancellationToken cancellationToken = default)
+    //    where TEntity : class, IEntityEvent;
 
     // Hidden members from IRepository
 

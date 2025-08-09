@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Collections;
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
@@ -27,26 +29,37 @@ public interface IRepository : IAsyncDisposable
     /// <summary>
     /// Fetches results from the repository using a query builder function.
     /// This method allows full control over query composition including filtering, 
-    /// ordering, including, pagination, and projection.
+    /// ordering, including, pagination, and projection. When Skip() and Take() are used,
+    /// pagination metadata will be automatically extracted and made available.
     /// <code>
     /// // Example usage:
-    /// var results = await repository.FetchAsync&lt;User, object&gt;(
+    /// var results = repository.FetchAsync&lt;User, UserDto&gt;(
     ///     query => query
     ///         .Where(u => u.IsActive)
     ///         .Include(u => u.Profile)
     ///         .OrderBy(u => u.LastName)
-    ///         .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
+    ///         .Select(u => new UserDto(u.Id, u.FirstName, u.LastName, u.Email))
     ///         .Skip(10)
     ///         .Take(20)
-    /// ).ToListAsync();
+    /// );
+    /// 
+    /// // Access pagination info
+    /// var pagination = await results.GetPaginationAsync();
+    /// Console.WriteLine($"Page {pagination.PageNumber} of {pagination.TotalPages}");
+    /// 
+    /// // Enumerate results
+    /// await foreach (var user in results)
+    /// {
+    ///     Console.WriteLine($"{user.FirstName} {user.LastName}");
+    /// }
     /// </code>
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="filter">A filter function that takes an IQueryable&lt;TEntity&gt; and returns an IQueryable&lt;TResult&gt;.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>An asynchronous enumerable of the result type.</returns>
-    IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+    /// <returns>An async paged enumerable that provides both data and pagination metadata.</returns>
+    IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity;

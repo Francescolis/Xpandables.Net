@@ -15,7 +15,11 @@
  *
  ********************************************************************************/
 
+using System.Runtime.CompilerServices;
+
 using Microsoft.EntityFrameworkCore;
+
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Repositories;
 
@@ -52,10 +56,11 @@ public abstract class Repository : AsyncDisposable, IRepository
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous sequence of <typeparamref name="TResult"/> that represents the query results.</returns>
-    public virtual IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+    public virtual IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity => AsyncEnumerable.Empty<TResult>();
+        where TEntity : class, IEntity =>
+        AsyncEnumerable.Empty<TResult>().WithPagination(new Pagination(0, 0, 0));
 
     /// <summary>
     /// When overridden in derived classes, adds or updates a collection of entities in the data store asynchronously.
@@ -69,6 +74,54 @@ public abstract class Repository : AsyncDisposable, IRepository
         CancellationToken cancellationToken)
         where TEntity : class, IEntity => Task.CompletedTask;
 
+    /// <summary>
+    /// Applies pagination to the filtered query and returns an async paged enumerable.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result to return.</typeparam>
+    /// <param name="filteredQuery">The filtered query to apply pagination to.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An async paged enumerable that provides both data and pagination metadata.</returns>
+    protected static IAsyncPagedEnumerable<TResult> DoFetchAsync<TResult>(
+        IQueryable<TResult> filteredQuery, CancellationToken cancellationToken)
+    {
+        // Extract pagination information and get query without Skip/Take
+        var extractionResult = PaginationExpressionAnalyzer.ExtractPagination(filteredQuery);
+
+        // Create the data enumerable from the original (paginated) query
+        var asyncEnumerable = CreateAsyncEnumerable(filteredQuery, cancellationToken);
+
+        // Create pagination info factory
+        var paginationInfoFactory = CreatePaginationFactory(
+            extractionResult, cancellationToken);
+
+        return asyncEnumerable.WithPagination(paginationInfoFactory);
+    }
+
+    private static async IAsyncEnumerable<TResult> CreateAsyncEnumerable<TResult>(
+        IQueryable<TResult> query,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var item in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
+        {
+            yield return item;
+        }
+    }
+
+    private static Func<Task<Pagination>> CreatePaginationFactory<TResult>(
+        PaginationExtractionResult<TResult> extractionResult,
+        CancellationToken cancellationToken) => async ()
+        =>
+        {
+            // Get total count using the query without pagination
+            long totalCount = await extractionResult.QueryWithoutPagination
+                .LongCountAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            return new Pagination(
+                extractionResult.Skip,
+                extractionResult.Take,
+                totalCount);
+        };
 }
 
 /// <summary>
@@ -114,18 +167,19 @@ public class Repository<TDataContext> : Repository, IRepository<TDataContext>
     /// <param name="filter">A function to apply a filter to the queryable entity set.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>An asynchronous sequence of results of type <typeparamref name="TResult"/>.</returns>
-    public override IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+    public override IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        IQueryable<TEntity> queryable = typeof(TEntity) != typeof(TResult)
+        IQueryable<TEntity> baseQuery = typeof(TEntity) != typeof(TResult)
             ? Context.Set<TEntity>().AsNoTracking()
             : Context.Set<TEntity>();
 
-        IQueryable<TResult> query = filter(queryable);
-        return query.AsAsyncEnumerable();
+        var filteredQuery = filter(baseQuery);
+
+        return DoFetchAsync<TResult>(filteredQuery, cancellationToken);
     }
 
     /// <summary>

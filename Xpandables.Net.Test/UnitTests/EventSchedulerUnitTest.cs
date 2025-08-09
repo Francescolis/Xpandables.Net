@@ -99,13 +99,14 @@ public class InMemoryEventStore : Repository, IEventStore
         return Task.CompletedTask;
     }
 
-    public override IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+    public override IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
     {
         if (cancellationToken.IsCancellationRequested)
         {
-            return AsyncEnumerable.Empty<TResult>();
+            return AsyncEnumerable.Empty<TResult>()
+                .WithPagination(Pagination.WithoutPagination(0));
         }
 
         IQueryable<TEntity> integrations = _eventEntities
@@ -113,7 +114,8 @@ public class InMemoryEventStore : Repository, IEventStore
             .Select(CreateCopy)
             .AsQueryable();
 
-        return filter(integrations).ToAsyncEnumerable();
+        var filteredQuery = filter(integrations);
+        return DoFetchAsync(filteredQuery, cancellationToken);
     }
 
     public Task MarkAsProcessedAsync(
