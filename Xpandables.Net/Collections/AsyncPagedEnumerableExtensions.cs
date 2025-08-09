@@ -17,6 +17,14 @@
 namespace Xpandables.Net.Collections;
 
 /// <summary>
+/// Represents materialized paged data for JSON serialization.
+/// </summary>
+/// <typeparam name="T">The type of items in the collection.</typeparam>
+/// <param name="Data">The materialized data items.</param>
+/// <param name="Pagination">The pagination metadata.</param>
+public readonly record struct MaterializedPagedData<T>(IReadOnlyList<T> Data, Pagination Pagination);
+
+/// <summary>
 /// Provides extension methods for working with <see cref="IAsyncPagedEnumerable{T}"/>.
 /// </summary>
 public static class AsyncPagedEnumerableExtensions
@@ -101,15 +109,15 @@ public static class AsyncPagedEnumerableExtensions
     /// <param name="source">The source async paged enumerable.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A tuple containing the materialized list and pagination info.</returns>
-    public static async Task<(IReadOnlyList<TSource> Items, Pagination Pagination)> ToListWithPaginationAsync<TSource>(
+    public static async Task<MaterializedPagedData<TSource>> ToListWithPaginationAsync<TSource>(
         this IAsyncPagedEnumerable<TSource> source,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
 
         var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
-        var paginationInfo = await source.GetPaginationAsync().ConfigureAwait(false);
+        var pagination = await source.GetPaginationAsync().ConfigureAwait(false);
 
-        return (items, paginationInfo);
+        return new MaterializedPagedData<TSource>(items, pagination);
     }
 }

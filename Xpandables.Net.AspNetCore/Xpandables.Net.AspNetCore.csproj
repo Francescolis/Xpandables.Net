@@ -51,15 +51,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="Xpandables.Net.ico"/>
+        <Content Include="Xpandables.Net.ico" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj"/>
+        <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>

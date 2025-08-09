@@ -35,6 +35,7 @@ builder.Services.AddXDataContextEvent(options =>
        .EnableDetailedErrors()
        .UseModel(DataContextEventSqlServerBuilder.CreateModel()));
 builder.Services.AddXPublisher();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(options =>
 {

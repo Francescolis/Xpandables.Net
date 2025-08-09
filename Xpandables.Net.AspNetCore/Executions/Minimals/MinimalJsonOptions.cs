@@ -20,12 +20,14 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.Collections;
+
 namespace Xpandables.Net.Executions.Minimals;
 
 /// <summary>  
 /// Configures JSON options for endpoints with minimal settings.  
 /// </summary>  
-public sealed class MinimalJsonOptions : IConfigureOptions<JsonOptions>
+public sealed class MinimalJsonOptions(IServiceProvider serviceProvider) : IConfigureOptions<JsonOptions>
 {
     /// <inheritdoc/>  
     public void Configure(JsonOptions options)
@@ -38,9 +40,8 @@ public sealed class MinimalJsonOptions : IConfigureOptions<JsonOptions>
         options.SerializerOptions.Converters
             .Add(new JsonStringEnumConverter());
         options.SerializerOptions.Converters
-            .Add(new ExecutionResultJsonConverterFactory()
-            {
-                UseAspNetCoreCompatibility = true
-            });
+            .Add(new ExecutionResultJsonConverterFactory() { UseAspNetCoreCompatibility = true });
+        options.SerializerOptions.Converters
+            .Add(new MaterializedPagedDataJsonConverterFactory(serviceProvider) { UsePaginationHeaders = false });
     }
 }

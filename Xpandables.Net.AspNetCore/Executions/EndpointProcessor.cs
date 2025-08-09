@@ -202,10 +202,9 @@ public sealed class EndpointProcessor : IEndpointProcessor
 
         if (executionResult.Value is not null)
         {
-            // Check if the value is an IAsyncPagedEnumerable
             if (IsAsyncPagedEnumerable(executionResult.Value))
             {
-                await HandleAsyncPagedEnumerableAsync(context, executionResult.Value)
+                await WritePagedEnumerableAsJsonAsync(context, executionResult.Value)
                     .ConfigureAwait(false);
 
                 return;
@@ -228,69 +227,21 @@ public sealed class EndpointProcessor : IEndpointProcessor
     {
         Type valueType = value.GetType();
 
-        // Check if the type implements IAsyncPagedEnumerable<T>
         return valueType.GetInterfaces()
             .Any(i => i.IsGenericType &&
                       i.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>));
     }
 
-    private static async Task HandleAsyncPagedEnumerableAsync(HttpContext context, object pagedEnumerable)
+    private static async Task WritePagedEnumerableAsJsonAsync(HttpContext context, object pagedEnumerable)
     {
-        // Use dynamic to avoid complex reflection for better performance and readability
         dynamic dynamicPagedEnumerable = pagedEnumerable;
 
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
-        {
-            var result = await MaterializeAsyncPagedEnumerableWithDynamic(dynamicPagedEnumerable);
-            var materializedData = result.Item1;
-            Pagination pagination = result.Item2;
+        object materializedPaged = await AsyncPagedEnumerableExtensions
+            .ToListWithPaginationAsync(dynamicPagedEnumerable, CancellationToken.None)
+            .ConfigureAwait(false);
 
-            // Create the response object with the desired structure
-            var response = new
-            {
-                Pagination = pagination,
-                Data = materializedData
-            };
-
-            // Write the structured response as JSON
-            await context.Response.WriteAsJsonAsync(response)
-                .ConfigureAwait(false);
-        }
-        catch (Exception exception)
-        {
-            // Handle any exceptions that may occur during processing
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                Error = $"An error occurred while processing the request : {exception}"
-            }).ConfigureAwait(false);
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
-    }
-
-    private static async Task<dynamic> MaterializeAsyncPagedEnumerableWithDynamic(dynamic pagedEnumerable)
-    {
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
-        {
-            // Try to use ToListWithPaginationAsync extension method first
-            var result = await AsyncPagedEnumerableExtensions.ToListWithPaginationAsync(pagedEnumerable, CancellationToken.None);
-            return result;
-        }
-        catch (Exception)
-        {
-            // Fallback to regular ToListAsync
-            try
-            {
-                return await AsyncEnumerable.ToListAsync(pagedEnumerable, CancellationToken.None);
-            }
-            catch (Exception)
-            {
-                // Ultimate fallback: return empty list
-                return new List<object>();
-            }
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
+        await context.Response
+            .WriteAsJsonAsync(materializedPaged)
+            .ConfigureAwait(false);
     }
 }
