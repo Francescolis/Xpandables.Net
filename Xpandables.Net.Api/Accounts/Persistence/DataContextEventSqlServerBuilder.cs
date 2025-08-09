@@ -33,6 +33,10 @@ public static class DataContextEventSqlServerBuilder
             .IsRequired();
 
         modelBuilder.Entity<EntityDomainEvent>()
+            .Property(p => p.Sequence)
+            .UseIdentityAlwaysColumn();
+
+        modelBuilder.Entity<EntityDomainEvent>()
             .Property<uint>("ConcurrencyToken")
             .IsRowVersion()
             .IsRequired();
@@ -48,6 +52,10 @@ public static class DataContextEventSqlServerBuilder
                 .IsRequired();
 
         modelBuilder.Entity<EntityIntegrationEvent>()
+            .Property(p => p.Sequence)
+            .UseIdentityAlwaysColumn();
+
+        modelBuilder.Entity<EntityIntegrationEvent>()
             .Property<uint>("ConcurrencyToken")
             .IsRowVersion()
             .IsRequired();
@@ -61,6 +69,10 @@ public static class DataContextEventSqlServerBuilder
         modelBuilder.Entity<EntitySnapshotEvent>()
             .Property(p => p.Data)
             .IsRequired();
+
+        modelBuilder.Entity<EntitySnapshotEvent>()
+            .Property(p => p.Sequence)
+            .UseIdentityAlwaysColumn();
 
         modelBuilder.Entity<EntitySnapshotEvent>()
             .Property<uint>("ConcurrencyToken")

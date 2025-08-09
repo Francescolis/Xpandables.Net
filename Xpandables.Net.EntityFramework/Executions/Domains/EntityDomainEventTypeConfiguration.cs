@@ -15,7 +15,6 @@
  *
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Repositories;
@@ -25,27 +24,15 @@ namespace Xpandables.Net.Executions.Domains;
 /// <summary>
 /// Provides configuration for the <see cref="EntityDomainEvent" /> entity type.
 /// </summary>
-public sealed class EntityDomainEventTypeConfiguration : IEntityTypeConfiguration<EntityDomainEvent>
+public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfiguration<EntityDomainEvent>
 {
     /// <inheritdoc />
-    public void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
+    public sealed override void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
     {
-        ArgumentNullException.ThrowIfNull(builder);
+        base.Configure(builder);
 
-        _ = builder.HasKey(e => e.KeyId);
         _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.Name, e.Version });
-        _ = builder.Property(e => e.KeyId).IsRequired();
         _ = builder.Property(e => e.AggregateId).IsRequired();
-        _ = builder.Property(e => e.AggregateName).IsRequired().HasMaxLength(500);
-        _ = builder.Property(e => e.Name).IsRequired().HasMaxLength(100);
-        _ = builder.Property(e => e.FullName).IsRequired().HasMaxLength(byte.MaxValue);
-        _ = builder.Property(e => e.Version).IsRequired();
-        _ = builder.Property(e => e.Data).IsRequired();
-        _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(50);
-        _ = builder.Property(e => e.CreatedOn).IsRequired();
-        _ = builder.Property(e => e.UpdatedOn).IsRequired(false);
-        _ = builder.Property(e => e.DeletedOn).IsRequired(false);
-
-        _ = builder.HasQueryFilter(e => e.Status != EntityStatus.DELETED.Value);
+        _ = builder.Property(e => e.AggregateName).IsRequired().HasMaxLength(short.MaxValue / 8);
     }
 }

@@ -76,6 +76,12 @@ app.UseSwagger()
         options.RoutePrefix = routePrefix;
     });
 
+using (var scope = app.Services.CreateScope())
+{
+    var dataContext = scope.ServiceProvider.GetRequiredService<DataContextEvent>();
+    await dataContext.Database.EnsureCreatedAsync();
+}
+
 app.UseXEndpointRoutes();
 
 app.Run();

@@ -37,7 +37,7 @@ public abstract class EntityEvent : Entity<Guid>, IEntityEvent
     public required ulong Version { get; init; }
 
     /// <inheritdoc />
-    public ulong Sequence { get; init; }
+    public long Sequence { get; init; }
 
     /// <inheritdoc />
     public void Dispose()

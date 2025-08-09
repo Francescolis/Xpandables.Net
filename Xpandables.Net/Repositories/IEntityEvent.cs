@@ -45,7 +45,7 @@ public interface IEntityEvent : IEntity<Guid>, IDisposable
     /// <summary>
     /// Gets the sequence number of the event, which is used to track the order of events.
     /// </summary>
-    ulong Sequence { get; }
+    long Sequence { get; }
 
     /// <summary>
     /// Gets the data associated with the event.
