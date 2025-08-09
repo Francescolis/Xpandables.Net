@@ -17,9 +17,7 @@
 
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Executions.Domains;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Provides configuration for the <see cref="EntityIntegrationEvent" /> entity.

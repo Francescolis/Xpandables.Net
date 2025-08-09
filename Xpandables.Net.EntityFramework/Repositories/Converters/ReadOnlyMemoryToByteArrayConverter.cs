@@ -15,29 +15,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-using Xpandables.Net.DataAnnotations;
-
-namespace Xpandables.Net.Executions.Controllers;
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
-/// Configures MVC options for the ExecutionResultController.
+/// Converts a <see cref="ReadOnlyMemory{T}"/> of byte to a byte array and vice versa.
 /// </summary>
-public sealed class ControllerMvcOptions : IConfigureOptions<MvcOptions>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ReadOnlyMemoryToByteArrayConverter"/> class.
+/// </remarks>
+public sealed class ReadOnlyMemoryToByteArrayConverter() :
+    ValueConverter<ReadOnlyMemory<byte>, byte[]>(
+        v => v.ToArray(),
+        v => new ReadOnlyMemory<byte>(v))
 {
-    /// <inheritdoc/>
-    public void Configure(MvcOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        options.EnableEndpointRouting = false;
-        options.RespectBrowserAcceptHeader = true;
-        options.ReturnHttpNotAcceptable = true;
-
-        _ = options.Filters.Add<ControllerValidationFilterAttribute>();
-        _ = options.Filters.Add<ControllerFilter>(int.MinValue);
-        options.ModelBinderProviders.Insert(0, new FromModelBinderProvider());
-    }
 }

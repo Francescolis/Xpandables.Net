@@ -15,8 +15,6 @@
  *
  ********************************************************************************/
 
-using System.Runtime.CompilerServices;
-
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Collections;
@@ -84,27 +82,14 @@ public abstract class Repository : AsyncDisposable, IRepository
     protected static IAsyncPagedEnumerable<TResult> DoFetchAsync<TResult>(
         IQueryable<TResult> filteredQuery, CancellationToken cancellationToken)
     {
-        // Extract pagination information and get query without Skip/Take
         var extractionResult = PaginationExpressionAnalyzer.ExtractPagination(filteredQuery);
 
-        // Create the data enumerable from the original (paginated) query
-        var asyncEnumerable = CreateAsyncEnumerable(filteredQuery, cancellationToken);
+        var asyncEnumerable = filteredQuery as IAsyncEnumerable<TResult> ?? filteredQuery.ToAsyncEnumerable();
 
-        // Create pagination info factory
         var paginationInfoFactory = CreatePaginationFactory(
             extractionResult, cancellationToken);
 
         return asyncEnumerable.WithPagination(paginationInfoFactory);
-    }
-
-    private static async IAsyncEnumerable<TResult> CreateAsyncEnumerable<TResult>(
-        IQueryable<TResult> query,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        await foreach (var item in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
-        {
-            yield return item;
-        }
     }
 
     private static Func<Task<Pagination>> CreatePaginationFactory<TResult>(
@@ -112,7 +97,6 @@ public abstract class Repository : AsyncDisposable, IRepository
         CancellationToken cancellationToken) => async ()
         =>
         {
-            // Get total count using the query without pagination
             long totalCount = await extractionResult.QueryWithoutPagination
                 .LongCountAsync(cancellationToken)
                 .ConfigureAwait(false);

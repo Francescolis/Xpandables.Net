@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ********************************************************************************/using System.Linq.Expressions;
+ ********************************************************************************/
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Xpandables.Net.Collections;
@@ -70,21 +71,17 @@ internal static class PaginationExpressionAnalyzer
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            // Check if this is a Skip method call
             if (node.Method.IsGenericMethod &&
                 node.Method.GetGenericMethodDefinition() == SkipMethod.GetGenericMethodDefinition())
             {
                 Skip = ExtractConstantValue(node.Arguments[1]);
-                // Return the source (first argument) to remove the Skip call
                 return Visit(node.Arguments[0]);
             }
 
-            // Check if this is a Take method call
             if (node.Method.IsGenericMethod &&
                 node.Method.GetGenericMethodDefinition() == TakeMethod.GetGenericMethodDefinition())
             {
                 Take = ExtractConstantValue(node.Arguments[1]);
-                // Return the source (first argument) to remove the Take call
                 return Visit(node.Arguments[0]);
             }
 

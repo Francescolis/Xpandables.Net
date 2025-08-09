@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Executions.Minimals;
+using Xpandables.Net.Minimals;
 
 namespace Xpandables.Net.Executions;
 

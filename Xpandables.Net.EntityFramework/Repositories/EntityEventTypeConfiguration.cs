@@ -18,9 +18,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Executions.Domains;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Base class for configuring entity event types in Entity Framework.

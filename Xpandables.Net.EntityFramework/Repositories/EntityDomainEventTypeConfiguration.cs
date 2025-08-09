@@ -17,20 +17,21 @@
 
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Repositories;
-
-namespace Xpandables.Net.Executions.Domains;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Configuration class for the <see cref="EntitySnapshotEvent" /> entity.
+/// Provides configuration for the <see cref="EntityDomainEvent" /> entity type.
 /// </summary>
-public sealed class EntitySnapShotEventTypeConfiguration : EntityEventTypeConfiguration<EntitySnapshotEvent>
+public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfiguration<EntityDomainEvent>
 {
     /// <inheritdoc />
-    public sealed override void Configure(EntityTypeBuilder<EntitySnapshotEvent> builder)
+    public sealed override void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
     {
         base.Configure(builder);
 
-        _ = builder.HasIndex(e => new { e.KeyId, e.OwnerId, e.Name, e.Sequence });
+        _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.Name, e.StreamVersion });
+        _ = builder.Property(e => e.AggregateId).IsRequired();
+        _ = builder.Property(e => e.StreamVersion).IsRequired();
+        _ = builder.Property(e => e.AggregateName).IsRequired().HasMaxLength(short.MaxValue / 8);
     }
 }

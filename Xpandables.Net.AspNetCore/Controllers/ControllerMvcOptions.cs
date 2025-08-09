@@ -16,33 +16,28 @@
  *
 ********************************************************************************/
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
-namespace Xpandables.Net.Executions.Controllers;
+using Xpandables.Net.DataAnnotations;
+
+namespace Xpandables.Net.Controllers;
 
 /// <summary>
-/// A filter that executes an <see cref="ExecutionResult"/> if the result 
-/// is of type <see cref="ObjectResult"/>.
+/// Configures MVC options for the ExecutionResultController.
 /// </summary>
-public sealed class ControllerFilter : IAsyncAlwaysRunResultFilter
+public sealed class ControllerMvcOptions : IConfigureOptions<MvcOptions>
 {
     /// <inheritdoc/>
-    public Task OnResultExecutionAsync(
-        ResultExecutingContext context,
-        ResultExecutionDelegate next)
+    public void Configure(MvcOptions options)
     {
-        if (context.Result is ObjectResult objectResult
-            && objectResult.Value is ExecutionResult executionResult)
-        {
-            IEndpointProcessor execute = context
-                .HttpContext
-                .RequestServices
-                .GetRequiredService<IEndpointProcessor>();
+        ArgumentNullException.ThrowIfNull(options);
 
-            return execute.ProcessAsync(context.HttpContext, executionResult);
-        }
+        options.EnableEndpointRouting = false;
+        options.RespectBrowserAcceptHeader = true;
+        options.ReturnHttpNotAcceptable = true;
 
-        return next();
+        _ = options.Filters.Add<ControllerValidationFilterAttribute>();
+        _ = options.Filters.Add<ControllerFilter>(int.MinValue);
+        options.ModelBinderProviders.Insert(0, new FromModelBinderProvider());
     }
 }

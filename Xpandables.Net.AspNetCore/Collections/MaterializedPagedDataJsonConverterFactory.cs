@@ -44,6 +44,8 @@ public sealed class MaterializedPagedDataJsonConverterFactory(IServiceProvider s
             ? typeof(MaterializedPagedDataHeaderJsonConverter<>).MakeGenericType(itemType)
             : typeof(MaterializedPagedDataBodyJsonConverter<>).MakeGenericType(itemType);
 
-        return (JsonConverter)Activator.CreateInstance(converterType, serviceProvider)!;
+        return UsePaginationHeaders
+            ? (JsonConverter)Activator.CreateInstance(converterType, serviceProvider)!
+            : (JsonConverter)Activator.CreateInstance(converterType)!;
     }
 }

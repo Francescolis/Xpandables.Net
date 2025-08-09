@@ -15,30 +15,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+using System.Text.Json;
 
-namespace Xpandables.Net.Executions.Controllers;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
-/// Validates the model state before an action executes. If the model state is invalid, it sets the result to a
-/// BadRequest response.
+/// Converts a <see cref="JsonDocument"/> to a <see cref="string"/> and vice versa.
 /// </summary>
-public sealed class ControllerValidationFilterAttribute : ActionFilterAttribute
+public sealed class JsonDocumentValueConverter : ValueConverter<JsonDocument, string>
 {
-    /// <inheritdoc/>  
-    public override void OnActionExecuting(ActionExecutingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-
-        if (context.ModelState.IsValid)
-        {
-            return;
-        }
-
-        ExecutionResult executionResult =
-            context.ModelState.ToExecutionResult();
-
-        context.Result = new BadRequestObjectResult(executionResult);
-    }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JsonDocumentValueConverter"/> class.
+    /// </summary>
+    public JsonDocumentValueConverter() :
+        base(
+        jsonDocument => jsonDocument.RootElement.GetRawText(),
+        json => JsonDocument.Parse(json, default))
+    { }
 }

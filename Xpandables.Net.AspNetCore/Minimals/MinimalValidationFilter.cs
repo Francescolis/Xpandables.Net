@@ -20,7 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DataAnnotations;
 
-namespace Xpandables.Net.Executions.Minimals;
+namespace Xpandables.Net.Minimals;
 
 /// <summary>
 /// Represents a filter that validates endpoints in a minimal API.

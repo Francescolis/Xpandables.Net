@@ -20,7 +20,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Executions.Minimals;
+using Xpandables.Net.Executions;
+
+namespace Xpandables.Net.Minimals;
 
 /// <summary>  
 /// Middleware to handle execution results and convert exceptions to 

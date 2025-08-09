@@ -53,9 +53,6 @@ public sealed class AggregateStore<TAggregate>(
                 return;
             }
 
-            // Optimistic concurrency check
-            await CheckConcurrencyAsync(aggregate, cancellationToken).ConfigureAwait(false);
-
             await _eventStore
                 .AppendAsync(uncommittedEvents, cancellationToken)
                 .ConfigureAwait(false);

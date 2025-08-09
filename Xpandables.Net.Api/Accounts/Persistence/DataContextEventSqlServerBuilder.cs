@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata.Conventions;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Executions.Domains.Converters;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Repositories.Converters;
 
 namespace Xpandables.Net.Api.Accounts.Persistence;
 

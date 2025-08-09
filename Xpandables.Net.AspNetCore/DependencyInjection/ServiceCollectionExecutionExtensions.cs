@@ -22,10 +22,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.Controllers;
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Controllers;
-using Xpandables.Net.Executions.Minimals;
+using Xpandables.Net.Minimals;
 
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 

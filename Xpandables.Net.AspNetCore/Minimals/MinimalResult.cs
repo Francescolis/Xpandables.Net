@@ -18,7 +18,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Executions.Minimals;
+using Xpandables.Net.Executions;
+
+namespace Xpandables.Net.Minimals;
 
 /// <summary>
 /// Represents an execution result that implements the 

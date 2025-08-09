@@ -20,7 +20,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Text;
 
-namespace Xpandables.Net.Executions.Domains.Converters;
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
 /// Provides extension methods for configuring property conversions.

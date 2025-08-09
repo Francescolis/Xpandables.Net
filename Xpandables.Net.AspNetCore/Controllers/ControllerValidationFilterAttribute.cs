@@ -15,19 +15,32 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Xpandables.Net.Executions.Domains.Converters;
+using Xpandables.Net.Executions;
+
+namespace Xpandables.Net.Controllers;
 
 /// <summary>
-/// Converts a <see cref="ReadOnlyMemory{T}"/> of byte to a byte array and vice versa.
+/// Validates the model state before an action executes. If the model state is invalid, it sets the result to a
+/// BadRequest response.
 /// </summary>
-/// <remarks>
-/// Initializes a new instance of the <see cref="ReadOnlyMemoryToByteArrayConverter"/> class.
-/// </remarks>
-public sealed class ReadOnlyMemoryToByteArrayConverter() :
-    ValueConverter<ReadOnlyMemory<byte>, byte[]>(
-        v => v.ToArray(),
-        v => new ReadOnlyMemory<byte>(v))
+public sealed class ControllerValidationFilterAttribute : ActionFilterAttribute
 {
+    /// <inheritdoc/>  
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (context.ModelState.IsValid)
+        {
+            return;
+        }
+
+        ExecutionResult executionResult =
+            context.ModelState.ToExecutionResult();
+
+        context.Result = new BadRequestObjectResult(executionResult);
+    }
 }
