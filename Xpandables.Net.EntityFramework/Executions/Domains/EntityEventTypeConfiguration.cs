@@ -39,7 +39,6 @@ public abstract class EntityEventTypeConfiguration<TEntityEvent> : IEntityTypeCo
         _ = builder.Property(e => e.Sequence).ValueGeneratedOnAdd();
         _ = builder.Property(e => e.Name).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.FullName).IsRequired().HasMaxLength(short.MaxValue / 8);
-        _ = builder.Property(e => e.Version).IsRequired();
         _ = builder.Property(e => e.Data).IsRequired();
         _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.CreatedOn).IsRequired();

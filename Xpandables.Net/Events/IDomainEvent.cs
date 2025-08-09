@@ -40,6 +40,12 @@ public interface IDomainEvent : IEvent
     string AggregateName { get; }
 
     /// <summary>
+    /// Gets the stream version (position) of this event within the aggregate's event stream.
+    /// This is used for proper event ordering and optimistic concurrency control.
+    /// </summary>
+    long StreamVersion { get; init; }
+
+    /// <summary>
     /// Gets the identifier of the event that caused this event (for causation tracking).
     /// </summary>
     /// <remarks>Null if this event was not caused by another event.</remarks>
@@ -58,11 +64,18 @@ public interface IDomainEvent : IEvent
     IReadOnlyDictionary<string, object?> Metadata { get; init; }
 
     /// <summary>
-    /// Sets the version of the event.
+    /// Sets the stream version of the event.
     /// </summary>
-    /// <param name="version">The version to set.</param>
-    /// <returns>The event domain with the specified version.</returns>
-    IDomainEvent WithVersion(ulong version);
+    /// <param name="streamVersion">The stream version to set.</param>
+    /// <returns>The event domain with the specified stream version.</returns>
+    IDomainEvent WithStreamVersion(long streamVersion);
+
+    /// <summary>
+    /// Sets the aggregate identifier of the event.
+    /// </summary>
+    /// <param name="aggregateId">The aggregate identifier to set.</param>
+    /// <returns>The event domain with the specified aggregate identifier.</returns>
+    IDomainEvent WithAggregateId(Guid aggregateId);
 
     /// <summary>
     /// Sets the causation identifier of the event.
@@ -100,11 +113,18 @@ public interface IDomainEvent<TAggregate> : IDomainEvent
     public new string AggregateName => typeof(TAggregate).FullName!;
 
     /// <summary>
-    /// Sets the version of the event.
+    /// Sets the stream version of the event.
     /// </summary>
-    /// <param name="version">The version to set.</param>
-    /// <returns>The event domain with the specified version.</returns>
-    new IDomainEvent<TAggregate> WithVersion(ulong version);
+    /// <param name="streamVersion">The stream version to set.</param>
+    /// <returns>The event domain with the specified stream version.</returns>
+    new IDomainEvent<TAggregate> WithStreamVersion(long streamVersion);
+
+    /// <summary>
+    /// Sets the aggregate identifier of the event.
+    /// </summary>
+    /// <param name="aggregateId">The aggregate identifier to set.</param>
+    /// <returns>The event domain with the specified aggregate identifier.</returns>
+    new IDomainEvent<TAggregate> WithAggregateId(Guid aggregateId);
 
     /// <summary>
     /// Sets the causation identifier of the event.
@@ -132,7 +152,10 @@ public interface IDomainEvent<TAggregate> : IDomainEvent
     string IDomainEvent.AggregateName => AggregateName;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    IDomainEvent IDomainEvent.WithVersion(ulong version) => WithVersion(version);
+    IDomainEvent IDomainEvent.WithStreamVersion(long streamVersion) => WithStreamVersion(streamVersion);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    IDomainEvent IDomainEvent.WithAggregateId(Guid aggregateId) => WithAggregateId(aggregateId);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     IDomainEvent IDomainEvent.WithCausation(Guid causationId) => WithCausation(causationId);
@@ -155,6 +178,9 @@ public abstract record DomainEvent : Event, IDomainEvent
     /// <inheritdoc />
     public required string AggregateName { get; init; }
 
+    /// <inheritdoc/>
+    public long StreamVersion { get; init; }
+
     /// <inheritdoc />
     public Guid? CausationId { get; init; }
 
@@ -167,8 +193,12 @@ public abstract record DomainEvent : Event, IDomainEvent
         new Dictionary<string, object?>();
 
     /// <inheritdoc />
-    public virtual IDomainEvent WithVersion(ulong version) =>
-        this with { Version = version };
+    public virtual IDomainEvent WithStreamVersion(long streamVersion) =>
+        this with { StreamVersion = streamVersion };
+
+    /// <inheritdoc />
+    public virtual IDomainEvent WithAggregateId(Guid aggregateId) =>
+        this with { AggregateId = aggregateId };
 
     /// <inheritdoc />
     public virtual IDomainEvent WithCausation(Guid causationId) =>
@@ -226,6 +256,9 @@ public abstract record DomainEvent<TAggregate> : Event, IDomainEvent<TAggregate>
     /// <remarks>This property is initialized with the full name of the aggregate type.</remarks>
     public string AggregateName { get; init; } = typeof(TAggregate).FullName!;
 
+    /// <inheritdoc/>
+    public long StreamVersion { get; init; }
+
     /// <inheritdoc />
     public Guid? CausationId { get; init; }
 
@@ -238,8 +271,12 @@ public abstract record DomainEvent<TAggregate> : Event, IDomainEvent<TAggregate>
         new Dictionary<string, object?>();
 
     /// <inheritdoc />
-    public virtual IDomainEvent<TAggregate> WithVersion(ulong version) =>
-        this with { Version = version };
+    public virtual IDomainEvent<TAggregate> WithStreamVersion(long streamVersion) =>
+        this with { StreamVersion = streamVersion };
+
+    /// <inheritdoc />
+    public virtual IDomainEvent<TAggregate> WithAggregateId(Guid aggregateId) =>
+        this with { AggregateId = aggregateId };
 
     /// <inheritdoc />
     public virtual IDomainEvent<TAggregate> WithCausation(Guid causationId) =>

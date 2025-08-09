@@ -43,12 +43,23 @@ public abstract class Aggregate : IEventSourcing
     /// Gets the version of the aggregate root.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
-    public ulong Version { get; protected set; }
+    public long StreamVersion { get; protected set; }
+
+    /// <summary>
+    /// Gets the business version of the aggregate (optional, for business logic).
+    /// This is separate from the stream version and can be used for business versioning.
+    /// </summary>
+    public int BusinessVersion { get; protected set; } = 1;
 
     /// <summary>
     /// Gets a value indicating whether the aggregate root is empty.
     /// </summary>
     public bool IsEmpty => KeyId == Guid.Empty;
+
+    /// <summary>
+    /// Gets the expected stream version for optimistic concurrency control.
+    /// </summary>
+    public long ExpectedStreamVersion => StreamVersion;
 
     /// <inheritdoc />
     public IReadOnlyCollection<IDomainEvent> GetUncommittedEvents() =>
@@ -56,7 +67,7 @@ public abstract class Aggregate : IEventSourcing
 
     /// <inheritdoc />
     public void LoadFromHistory(IEnumerable<IDomainEvent> events) =>
-        events.ForEach(LoadFromHistory);
+        events.OrderBy(e => e.StreamVersion).ForEach(LoadFromHistory);
 
     /// <inheritdoc />
     public void LoadFromHistory(IDomainEvent domainEvent)
@@ -65,7 +76,9 @@ public abstract class Aggregate : IEventSourcing
 
         Mutate(domainEvent);
 
-        Version = domainEvent.Version;
+        StreamVersion = domainEvent.StreamVersion;
+
+        UpdateBusinessVersionFromEvent(domainEvent);
     }
 
     /// <inheritdoc />
@@ -75,6 +88,36 @@ public abstract class Aggregate : IEventSourcing
     public void PushEvent(IDomainEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
+        Apply(domainEvent);
+    }
+
+    /// <inheritdoc />
+    public void PushVersioningEvent(IDomainEvent domainEvent)
+    {
+        ArgumentNullException.ThrowIfNull(domainEvent);
+
+        long nextStreamVersion = StreamVersion + 1;
+        domainEvent = domainEvent
+            .WithStreamVersion(nextStreamVersion)
+            .WithAggregateId(KeyId);
+
+        Apply(domainEvent);
+    }
+
+    /// <inheritdoc />
+    public void PushVersioningEvent<TEvent>(Func<long, TEvent> eventFactory)
+        where TEvent : notnull, IDomainEvent
+    {
+        ArgumentNullException.ThrowIfNull(eventFactory);
+
+        long nextStreamVersion = StreamVersion + 1;
+        TEvent domainEvent = eventFactory(nextStreamVersion);
+
+        // Ensure the event has the correct stream version and aggregate information
+        domainEvent = (TEvent)domainEvent
+            .WithStreamVersion(nextStreamVersion)
+            .WithAggregateId(KeyId);
+
         Apply(domainEvent);
     }
 
@@ -119,6 +162,30 @@ public abstract class Aggregate : IEventSourcing
         return;
     }
 
+    /// <summary>
+    /// Override this method to implement custom business version logic based on events.
+    /// </summary>
+    /// <param name="domainEvent">The domain event being applied.</param>
+    protected virtual void UpdateBusinessVersionFromEvent(IDomainEvent domainEvent)
+    {
+        // Default implementation: increment business version for certain event types
+        // Override in derived classes for custom business versioning logic
+
+        // Example: increment business version only for significant business events
+        if (IsSignificantBusinessEvent(domainEvent))
+        {
+            BusinessVersion++;
+        }
+    }
+
+    /// <summary>
+    /// Determines if an event represents a significant business change.
+    /// Override in derived classes to implement custom logic.
+    /// </summary>
+    /// <param name="domainEvent">The domain event to evaluate.</param>
+    /// <returns>True if the event represents a significant business change.</returns>
+    protected virtual bool IsSignificantBusinessEvent(IDomainEvent domainEvent) => false;
+
     private void Apply(IDomainEvent domainEvent)
     {
         if (_uncommittedEvents.Any(e => e.Id == domainEvent.Id))
@@ -126,10 +193,15 @@ public abstract class Aggregate : IEventSourcing
             return;
         }
 
-        Version++;
-        domainEvent = domainEvent.WithVersion(Version);
+        if (domainEvent.StreamVersion <= StreamVersion)
+        {
+            long nextStreamVersion = StreamVersion + 1;
+            domainEvent = domainEvent.WithStreamVersion(nextStreamVersion);
+        }
 
         Mutate(domainEvent);
+
+        StreamVersion = domainEvent.StreamVersion;
 
         _uncommittedEvents.Enqueue(domainEvent);
     }

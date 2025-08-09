@@ -69,4 +69,18 @@ public interface IEventSourcing
     /// </summary>
     /// <param name="domainEvent"> The event to push.</param>
     void PushEvent(IDomainEvent domainEvent);
+
+    /// <summary>
+    /// Pushes an event into the aggregate root with automatic stream versioning.
+    /// </summary>
+    /// <param name="domainEvent">The event to push, which must implement <see cref="IDomainEvent"/>.</param>
+    void PushVersioningEvent(IDomainEvent domainEvent);
+
+    /// <summary>
+    /// Pushes a new event into the aggregate root using a factory function with automatic stream versioning.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the event to create.</typeparam>
+    /// <param name="eventFactory">The factory function that creates the event.</param>
+    void PushVersioningEvent<TEvent>(Func<long, TEvent> eventFactory)
+        where TEvent : notnull, IDomainEvent;
 }

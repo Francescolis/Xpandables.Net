@@ -41,7 +41,7 @@ public sealed class EventPublisherSubscriberUnitTest
     public async Task PublishAsync_ShouldReturnSuccess_WhenHandlersAreExecutedSuccessfully()
     {
         // Arrange
-        TestIntegrationEvent testIntegrationEvent = new() { Id = Guid.CreateVersion7(), Version = 1 };
+        TestIntegrationEvent testIntegrationEvent = new() { Id = Guid.CreateVersion7() };
         _publisherSubscriber.Subscribe<TestIntegrationEvent>(e =>
         {
             /* Handler logic */
@@ -58,7 +58,7 @@ public sealed class EventPublisherSubscriberUnitTest
     public async Task PublishAsync_ShouldReturnFailure_WhenHandlerThrowsException()
     {
         // Arrange
-        TestIntegrationEvent testIntegrationEvent = new() { Id = Guid.CreateVersion7(), Version = 1 };
+        TestIntegrationEvent testIntegrationEvent = new() { Id = Guid.CreateVersion7() };
         _publisherSubscriber
             .Subscribe<TestIntegrationEvent>(e =>
                 throw new InvalidOperationException("Test exception"));

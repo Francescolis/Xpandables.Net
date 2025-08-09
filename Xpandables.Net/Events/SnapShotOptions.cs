@@ -30,5 +30,5 @@ public sealed record SnapShotOptions
     /// <summary>
     /// Gets the frequency of snapshots.
     /// </summary>
-    public ulong SnapshotFrequency { get; set; } = 50;
+    public long SnapshotFrequency { get; set; } = 50;
 }

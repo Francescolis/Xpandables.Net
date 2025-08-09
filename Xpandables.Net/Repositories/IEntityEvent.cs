@@ -38,11 +38,6 @@ public interface IEntityEvent : IEntity<Guid>, IDisposable
     string FullName { get; }
 
     /// <summary>
-    /// Gets the version of the event.
-    /// </summary>
-    ulong Version { get; }
-
-    /// <summary>
     /// Gets the sequence number of the event, which is used to track the order of events.
     /// </summary>
     long Sequence { get; }

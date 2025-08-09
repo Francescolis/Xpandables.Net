@@ -31,6 +31,6 @@ public sealed class EntitySnapShotEventTypeConfiguration : EntityEventTypeConfig
     {
         base.Configure(builder);
 
-        _ = builder.HasIndex(e => new { e.KeyId, e.OwnerId, e.Name, e.Version });
+        _ = builder.HasIndex(e => new { e.KeyId, e.OwnerId, e.Name, e.Sequence });
     }
 }

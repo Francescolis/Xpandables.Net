@@ -26,5 +26,8 @@ public sealed class EntityDomainEvent : EntityEvent, IEntityEventDomain
     public required Guid AggregateId { get; init; }
 
     /// <inheritdoc />
+    public required long StreamVersion { get; init; }
+
+    /// <inheritdoc />
     public required string AggregateName { get; init; }
 }

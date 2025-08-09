@@ -31,8 +31,9 @@ public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfigur
     {
         base.Configure(builder);
 
-        _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.Name, e.Version });
+        _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.Name, e.StreamVersion });
         _ = builder.Property(e => e.AggregateId).IsRequired();
+        _ = builder.Property(e => e.StreamVersion).IsRequired();
         _ = builder.Property(e => e.AggregateName).IsRequired().HasMaxLength(short.MaxValue / 8);
     }
 }

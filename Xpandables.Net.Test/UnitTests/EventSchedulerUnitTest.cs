@@ -43,7 +43,7 @@ public sealed class EventSchedulerUnitTest
         IEventStore eventStore = _serviceProvider.GetRequiredService<IEventStore>();
         IScheduler eventScheduler = _serviceProvider.GetRequiredService<IScheduler>();
 
-        TestIntegrationEvent testEvent = new() { Id = Guid.CreateVersion7(), Version = 1 };
+        TestIntegrationEvent testEvent = new() { Id = Guid.CreateVersion7() };
 
         await eventStore.AppendAsync(testEvent);
 
@@ -55,7 +55,7 @@ public sealed class EventSchedulerUnitTest
 
         Func<IQueryable<EntityIntegrationEvent>, IQueryable<EntityIntegrationEvent>> filterFunc = query =>
             query.Where(w => w.Status == EntityStatus.PUBLISHED)
-                .OrderBy(o => o.Version)
+                .OrderBy(o => o.Sequence)
                 .Take(10);
 
         // Assert
@@ -164,7 +164,6 @@ public class InMemoryEventStore : Repository, IEventStore
                 Data = cloneDocument,
                 FullName = integration.FullName,
                 Name = integration.Name,
-                Version = integration.Version,
                 KeyId = integration.KeyId,
                 Status = integration.Status,
                 UpdatedOn = integration.UpdatedOn
@@ -178,7 +177,7 @@ public class InMemoryEventStore : Repository, IEventStore
                 Data = cloneDocument,
                 FullName = domain.FullName,
                 Name = domain.Name,
-                Version = domain.Version,
+                StreamVersion = domain.StreamVersion,
                 KeyId = domain.KeyId,
                 Status = domain.Status,
                 UpdatedOn = domain.UpdatedOn

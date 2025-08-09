@@ -31,7 +31,7 @@ public sealed class EntityIntegrationEventTypeConfiguration : EntityEventTypeCon
     {
         base.Configure(builder);
 
-        _ = builder.HasIndex(e => new { e.KeyId, e.Name, e.Version });
+        _ = builder.HasIndex(e => new { e.KeyId, e.Name, e.Sequence });
         _ = builder.Property(e => e.ErrorMessage).IsRequired(false).HasMaxLength(int.MaxValue);
     }
 }

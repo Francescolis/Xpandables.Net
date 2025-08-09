@@ -74,7 +74,7 @@ public sealed class EventConverterDomain : EventConverter
                 AggregateName = domainEvent.AggregateName,
                 Name = domainEvent.GetType().Name,
                 FullName = domainEvent.GetType().AssemblyQualifiedName!,
-                Version = domainEvent.Version,
+                StreamVersion = domainEvent.StreamVersion,
                 Data = SerializeEvent(domainEvent, options)
             };
         }

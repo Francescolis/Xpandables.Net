@@ -31,6 +31,11 @@ public interface IEntityEventDomain : IEntityEvent
     Guid AggregateId { get; }
 
     /// <summary>
+    /// Gets the stream version of the event.
+    /// </summary>
+    long StreamVersion { get; }
+
+    /// <summary>
     /// Gets the aggregate type name that this event belongs to.
     /// </summary>
     string AggregateName { get; init; }

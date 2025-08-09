@@ -68,7 +68,6 @@ public sealed class EventConverterSnapshot : EventConverter
             {
                 KeyId = snapshot.Id,
                 OwnerId = snapshot.OwnerId,
-                Version = snapshot.Version,
                 Name = snapshot.GetType().Name,
                 FullName = snapshot.GetType().AssemblyQualifiedName!,
                 Data = SerializeEvent(snapshot, options)

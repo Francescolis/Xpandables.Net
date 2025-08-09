@@ -69,7 +69,6 @@ public sealed class EventConverterIntegration : EventConverter
                 KeyId = integrationEvent.Id,
                 Name = integrationEvent.GetType().Name,
                 FullName = integrationEvent.GetType().AssemblyQualifiedName!,
-                Version = integrationEvent.Version,
                 Data = SerializeEvent(integrationEvent, options)
             };
         }

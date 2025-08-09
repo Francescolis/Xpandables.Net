@@ -27,11 +27,6 @@ public interface IEvent
     DateTimeOffset OccurredOn { get; init; }
 
     /// <summary>
-    /// Gets the version of the event.
-    /// </summary>
-    ulong Version { get; init; }
-
-    /// <summary>
     /// Gets the unique identifier of the event.
     /// </summary>
     Guid Id { get; init; }
@@ -45,9 +40,6 @@ public abstract record Event : IEvent
 {
     /// <inheritdoc/>
     public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.UtcNow;
-
-    /// <inheritdoc/>
-    public ulong Version { get; init; }
 
     /// <inheritdoc/>
     /// <remarks>It's based on the <see cref="Guid.CreateVersion7()"/>.</remarks>

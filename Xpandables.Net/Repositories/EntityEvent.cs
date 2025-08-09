@@ -34,9 +34,6 @@ public abstract class EntityEvent : Entity<Guid>, IEntityEvent
     public required JsonDocument Data { get; init; }
 
     /// <inheritdoc />
-    public required ulong Version { get; init; }
-
-    /// <inheritdoc />
     public long Sequence { get; init; }
 
     /// <inheritdoc />

@@ -16,6 +16,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 
 using Xpandables.Net.Events;
 
@@ -51,6 +52,9 @@ public sealed class AggregateStore<TAggregate>(
             {
                 return;
             }
+
+            // Optimistic concurrency check
+            await CheckConcurrencyAsync(aggregate, cancellationToken).ConfigureAwait(false);
 
             await _eventStore
                 .AppendAsync(uncommittedEvents, cancellationToken)
@@ -88,7 +92,7 @@ public sealed class AggregateStore<TAggregate>(
 
             Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> domainFilterFunc = query =>
                 query.Where(w => w.AggregateId == keyId && w.AggregateName == aggregateTypeName)
-                    .OrderBy(o => o.Version);
+                    .OrderBy(o => o.StreamVersion);
 
             TAggregate aggregate = new();
 
@@ -96,7 +100,7 @@ public sealed class AggregateStore<TAggregate>(
                 .FetchAsync(domainFilterFunc, cancellationToken)
                 .AsEventsAsync(cancellationToken)
                 .OfType<IDomainEvent>()
-                .OrderBy(x => x.Version)
+                .OrderBy(x => x.StreamVersion)
                 .ConfigureAwait(false))
             {
                 aggregate.LoadFromHistory(@event);
@@ -117,6 +121,27 @@ public sealed class AggregateStore<TAggregate>(
             throw new InvalidOperationException(
                 "Unable to peek the entity. See inner exception for details.",
                 exception);
+        }
+    }
+
+    private async Task CheckConcurrencyAsync(TAggregate aggregate, CancellationToken cancellationToken)
+    {
+        string aggregateTypeName = typeof(TAggregate).FullName!;
+
+        var lastEvent = await _eventStore
+            .FetchAsync<EntityDomainEvent, EntityDomainEvent>(query =>
+                query.Where(e => e.AggregateId == aggregate.KeyId && e.AggregateName == aggregateTypeName)
+                    .OrderByDescending(e => e.StreamVersion)
+                    .Take(1), cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (lastEvent?.StreamVersion + 1 != aggregate.ExpectedStreamVersion)
+        {
+            throw new DBConcurrencyException(
+                $"Concurrency conflict for aggregate {aggregate.KeyId}. " +
+                $"Expected version: {aggregate.ExpectedStreamVersion}, " +
+                $"Actual version: {lastEvent?.StreamVersion ?? -1}");
         }
     }
 }

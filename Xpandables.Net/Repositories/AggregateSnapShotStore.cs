@@ -53,7 +53,6 @@ public sealed class AggregateSnapShotStore<TAggregate>(
                 SnapshotEvent snapshotEvent = new()
                 {
                     Id = Guid.CreateVersion7(),
-                    Version = aggregate.Version,
                     Memento = memento,
                     OwnerId = aggregate.KeyId
                 };
@@ -92,7 +91,7 @@ public sealed class AggregateSnapShotStore<TAggregate>(
         {
             Func<IQueryable<EntitySnapshotEvent>, IQueryable<EntitySnapshotEvent>> filter = query =>
                 query.Where(w => w.OwnerId == keyId)
-                .OrderByDescending(o => o.Version)
+                .OrderByDescending(o => o.Sequence)
                 .Take(1);
 
             ISnapshotEvent? @event = await _eventStore
@@ -119,8 +118,8 @@ public sealed class AggregateSnapShotStore<TAggregate>(
             // after the snapshot version to get the latest events.
 
             Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> domainFilterFunc = query =>
-                query.Where(w => w.AggregateId == keyId && w.Version > aggregate.Version)
-                .OrderBy(o => o.Version);
+                query.Where(w => w.AggregateId == keyId && w.StreamVersion > aggregate.StreamVersion)
+                .OrderBy(o => o.StreamVersion);
 
             await foreach (IDomainEvent ev in _eventStore
                 .FetchAsync(domainFilterFunc, cancellationToken)
@@ -151,6 +150,6 @@ public sealed class AggregateSnapShotStore<TAggregate>(
 
     private bool CanSnapshot(Aggregate aggregate) =>
         _options.IsSnapshotEnabled
-        && aggregate.Version % _options.SnapshotFrequency == 0
-        && aggregate.Version >= _options.SnapshotFrequency;
+        && aggregate.StreamVersion % _options.SnapshotFrequency == 0
+        && aggregate.StreamVersion >= _options.SnapshotFrequency;
 }
