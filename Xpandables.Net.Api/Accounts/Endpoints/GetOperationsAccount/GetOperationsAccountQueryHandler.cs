@@ -11,16 +11,16 @@ namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
 
 public sealed class GetOperationsAccountQueryHandler(
     IEventStore eventStore) :
-    IRequestHandler<GetOperationsAccountQuery>
+    IStreamRequestHandler<GetOperationsAccountQuery, OperationAccount>
 {
-    public async Task<ExecutionResult> HandleAsync(
-        GetOperationsAccountQuery query,
+    public async Task<ExecutionResult<IAsyncPagedEnumerable<OperationAccount>>> HandleAsync(
+        GetOperationsAccountQuery request,
         CancellationToken cancellationToken)
     {
         await Task.Yield();
 
         Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> filterFunc = q =>
-            q.Where(w => w.AggregateId == query.KeyId
+            q.Where(w => w.AggregateId == request.KeyId
                              && (w.Name == nameof(DepositMade) || w.Name == nameof(WithdrawMade)))
                 .OrderByDescending(o => o.CreatedOn)
                 .Skip(0)
@@ -30,10 +30,8 @@ public sealed class GetOperationsAccountQueryHandler(
             .FetchAsync(filterFunc, cancellationToken)
             .AsEventsPagedAsync(cancellationToken);
 
-        IAsyncEnumerable<OperationAccount> operations = GetOperations(events, cancellationToken);
-
-        return ExecutionResult.Ok(operations.WithPagination(events.GetPaginationAsync))
-            //.WithHeader("Count", $"{count}")
+        return ExecutionResult
+            .Ok(events.WithPagination(GetOperations, cancellationToken))
             .Build();
 
         static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events,

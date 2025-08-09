@@ -63,14 +63,18 @@ public readonly record struct Pagination(int? Skip, int? Take, long TotalCount)
     /// <param name="take">Number of items to take.</param>
     /// <param name="totalCount">Total count of items.</param>
     /// <returns>Pagination info.</returns>
-    public static Pagination Create(int skip, int take, long totalCount) =>
-        new(skip, take, totalCount);
+    public static Pagination Create(int skip, int take, long totalCount) => new(skip, take, totalCount);
 
     /// <summary>
     /// Creates pagination info without pagination (just total count).
     /// </summary>
     /// <param name="totalCount">Total count of items.</param>
     /// <returns>Pagination info without pagination values.</returns>
-    public static Pagination WithoutPagination(long totalCount) =>
-        new(null, null, totalCount);
+    public static Pagination WithoutPagination(long totalCount) => new(null, null, totalCount);
+
+    /// <summary>
+    /// Creates pagination info without pagination.
+    /// </summary>
+    /// <returns>Pagination info without pagination values.</returns>
+    public static Pagination WithoutPagination() => new(null, null, 0);
 }

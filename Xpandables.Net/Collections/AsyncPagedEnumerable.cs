@@ -17,10 +17,10 @@
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Internal implementation of <see cref="IAsyncPagedEnumerable{T}"/>.
+/// Represents an asynchronous paged enumerable collection.
 /// </summary>
 /// <typeparam name="T">The type of items in the collection.</typeparam>
-internal sealed class AsyncPagedEnumerable<T>(
+public sealed class AsyncPagedEnumerable<T>(
     IAsyncEnumerable<T> source,
     Func<Task<Pagination>> paginationFactory) : IAsyncPagedEnumerable<T>
 {

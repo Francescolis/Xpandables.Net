@@ -22,6 +22,22 @@ namespace Xpandables.Net.Collections;
 public static class AsyncPagedEnumerableExtensions
 {
     /// <summary>
+    /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with default pagination.
+    /// </summary>
+    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
+    /// <param name="source">The source async enumerable.</param>
+    /// <returns>An async paged enumerable with default pagination metadata.</returns>
+    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
+        this IAsyncEnumerable<TSource> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        return new AsyncPagedEnumerable<TSource>(
+            source,
+            () => Task.FromResult(Pagination.WithoutPagination()));
+    }
+
+    /// <summary>
     /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with pagination.
     /// </summary>
     /// <typeparam name="TSource">The type of items in the collection.</typeparam>
