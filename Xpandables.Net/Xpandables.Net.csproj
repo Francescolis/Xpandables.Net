@@ -50,9 +50,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="Executions\Pipelines\PipelineExceptionAsyncDecorator.cs" />
-        <Compile Remove="Executions\Pipelines\PipelineLoggingDecorator.cs" />
-        <Compile Remove="Executions\Tasks\IPipelineStreamRequestHandler.cs" />
+        <Compile Remove="Tasks\Pipelines\PipelineExceptionAsyncDecorator.cs" />
+        <Compile Remove="Tasks\Pipelines\PipelineLoggingDecorator.cs" />
+        <Compile Remove="Tasks\IPipelineStreamRequestHandler.cs" />
     </ItemGroup>
 
     <ItemGroup>

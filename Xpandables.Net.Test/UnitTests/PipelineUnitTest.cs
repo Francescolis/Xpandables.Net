@@ -5,10 +5,10 @@ using FluentAssertions;
 
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Dependencies;
 using Xpandables.Net.Executions.Pipelines;
-using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Tasks;
+using Xpandables.Net.Tasks.Dependencies;
 
 namespace Xpandables.Net.Test.UnitTests;
 public sealed class PipelineUnitTest

@@ -1,6 +1,6 @@
 using FluentAssertions;
 
-using Xpandables.Net.Executions.Rests;
+using Xpandables.Net.Rests;
 
 namespace Xpandables.Net.Test.UnitTests;
 

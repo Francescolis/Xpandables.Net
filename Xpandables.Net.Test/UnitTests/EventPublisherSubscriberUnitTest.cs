@@ -3,9 +3,9 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Events;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Domains;
-using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.Test.UnitTests;
 

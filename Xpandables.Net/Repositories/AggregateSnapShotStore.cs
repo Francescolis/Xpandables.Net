@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Events;
 using Xpandables.Net.States;
 
 namespace Xpandables.Net.Repositories;

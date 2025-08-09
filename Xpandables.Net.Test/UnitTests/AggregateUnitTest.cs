@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 
-using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Test.UnitTests;
 public class AggregateUnitTest
@@ -113,7 +113,7 @@ public class AggregateUnitTest
         // Act & Assert
         var act = () => aggregate.PushEvent(unregisteredEvent);
         act.Should().Throw<UnauthorizedAccessException>()
-           .WithMessage($"The submitted action {nameof(UnregisteredEvent)} is not authorized.");
+           .WithMessage($"The submitted event {nameof(UnregisteredEvent)} is not authorized.");
     }
 }
 

@@ -21,7 +21,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Text;

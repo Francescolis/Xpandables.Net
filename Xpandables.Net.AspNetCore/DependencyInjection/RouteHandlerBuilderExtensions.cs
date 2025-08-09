@@ -17,7 +17,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.Executions.Rests;
+using Xpandables.Net.Rests;
 
 namespace Xpandables.Net.DependencyInjection;
 

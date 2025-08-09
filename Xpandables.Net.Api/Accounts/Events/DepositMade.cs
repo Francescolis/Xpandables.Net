@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Executions.Domains;
+using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Api.Accounts.Events;
 

@@ -17,7 +17,7 @@
 
 using System.ComponentModel;
 
-using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Repositories;
 

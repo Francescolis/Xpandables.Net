@@ -9,8 +9,7 @@ using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Executions.Domains;
-using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
 using Xpandables.Net.Text;

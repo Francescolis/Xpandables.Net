@@ -7,9 +7,9 @@ using Xpandables.Net.Api.Accounts;
 using Xpandables.Net.Api.Accounts.Persistence;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Executions.Domains.Converters;
-using Xpandables.Net.Executions.Handlers;
-using Xpandables.Net.Executions.Tasks;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Tasks;
+using Xpandables.Net.Tasks.Dependencies;
 
 var builder = WebApplication.CreateBuilder(args);
 

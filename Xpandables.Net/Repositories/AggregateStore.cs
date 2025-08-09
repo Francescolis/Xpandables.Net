@@ -17,8 +17,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-using Xpandables.Net.Executions.Domains;
-using Xpandables.Net.Executions.Tasks;
+using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Repositories;
 

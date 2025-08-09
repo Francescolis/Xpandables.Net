@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.DataAnnotations;
-using Xpandables.Net.Executions.Rests;
+using Xpandables.Net.Rests;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 

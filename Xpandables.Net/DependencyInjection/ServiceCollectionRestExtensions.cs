@@ -17,9 +17,9 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Executions.Rests;
-using Xpandables.Net.Executions.Rests.Requests;
-using Xpandables.Net.Executions.Rests.Responses;
+using Xpandables.Net.Rests;
+using Xpandables.Net.Rests.Requests;
+using Xpandables.Net.Rests.Responses;
 
 namespace Xpandables.Net.DependencyInjection;
 
