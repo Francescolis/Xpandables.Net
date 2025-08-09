@@ -98,7 +98,7 @@ public sealed class AggregateStore<TAggregate>(
 
             await foreach (IDomainEvent @event in _eventStore
                 .FetchAsync(domainFilterFunc, cancellationToken)
-                .AsEventsAsync(cancellationToken)
+                .AsEventsPagedAsync(cancellationToken)
                 .OfType<IDomainEvent>()
                 .OrderBy(x => x.StreamVersion)
                 .ConfigureAwait(false))

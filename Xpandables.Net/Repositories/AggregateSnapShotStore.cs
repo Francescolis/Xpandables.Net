@@ -96,7 +96,7 @@ public sealed class AggregateSnapShotStore<TAggregate>(
 
             ISnapshotEvent? @event = await _eventStore
                 .FetchAsync(filter, cancellationToken)
-                .AsEventsAsync(cancellationToken)
+                .AsEventsPagedAsync(cancellationToken)
                 .OfType<ISnapshotEvent>()
                 .FirstOrDefaultAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -123,7 +123,7 @@ public sealed class AggregateSnapShotStore<TAggregate>(
 
             await foreach (IDomainEvent ev in _eventStore
                 .FetchAsync(domainFilterFunc, cancellationToken)
-                .AsEventsAsync(cancellationToken)
+                .AsEventsPagedAsync(cancellationToken)
                 .OfType<IDomainEvent>()
                 .ConfigureAwait(false))
             {

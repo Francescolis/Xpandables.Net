@@ -24,46 +24,69 @@ public static class AsyncPagedEnumerableExtensions
     /// <summary>
     /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with pagination.
     /// </summary>
-    /// <typeparam name="T">The type of items in the collection.</typeparam>
+    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
     /// <param name="source">The source async enumerable.</param>
     /// <param name="paginationFactory">A factory function that provides pagination information.</param>
     /// <returns>An async paged enumerable with pagination metadata.</returns>
-    public static IAsyncPagedEnumerable<T> WithPagination<T>(
-        this IAsyncEnumerable<T> source,
+    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
+        this IAsyncEnumerable<TSource> source,
         Func<Task<Pagination>> paginationFactory)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(paginationFactory);
 
-        return new AsyncPagedEnumerable<T>(source, paginationFactory);
+        return new AsyncPagedEnumerable<TSource>(source, paginationFactory);
     }
 
     /// <summary>
     /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/>
     /// with immediate pagination info.
     /// </summary>
-    /// <typeparam name="T">The type of items in the collection.</typeparam>
+    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
     /// <param name="source">The source async enumerable.</param>
     /// <param name="pagination">The pagination information.</param>
     /// <returns>An async paged enumerable with pagination metadata.</returns>
-    public static IAsyncPagedEnumerable<T> WithPagination<T>(
-        this IAsyncEnumerable<T> source,
+    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
+        this IAsyncEnumerable<TSource> source,
         Pagination pagination)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        return new AsyncPagedEnumerable<T>(source, () => Task.FromResult(pagination));
+        return new AsyncPagedEnumerable<TSource>(source, () => Task.FromResult(pagination));
+    }
+
+    /// <summary>
+    /// Converts an <see cref="IAsyncPagedEnumerable{TSource}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/>
+    /// with pagination by applying a transformation function.
+    /// </summary>
+    /// <typeparam name="TSource">The type of items in the source collection.</typeparam>
+    /// <typeparam name="TResult">The type of items in the result collection.</typeparam>
+    /// <param name="source">The source async paged enumerable.</param>
+    /// <param name="transformFactory">The transformation function that takes the source and returns a new async paged enumerable.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An async paged enumerable with transformed items and pagination metadata.</returns>
+    public static IAsyncPagedEnumerable<TResult> WithPagination<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<IAsyncPagedEnumerable<TSource>, CancellationToken, IAsyncEnumerable<TResult>> transformFactory,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(transformFactory);
+
+        return new AsyncPagedEnumerable<TResult>(
+            transformFactory(source, cancellationToken),
+            source.GetPaginationAsync);
     }
 
     /// <summary>
     /// Materializes the async paged enumerable to a list with pagination.
     /// </summary>
-    /// <typeparam name="T">The type of items in the collection.</typeparam>
+    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
     /// <param name="source">The source async paged enumerable.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A tuple containing the materialized list and pagination info.</returns>
-    public static async Task<(IReadOnlyList<T> Items, Pagination Pagination)> ToListWithPaginationAsync<T>(
-        this IAsyncPagedEnumerable<T> source,
+    public static async Task<(IReadOnlyList<TSource> Items, Pagination Pagination)> ToListWithPaginationAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);

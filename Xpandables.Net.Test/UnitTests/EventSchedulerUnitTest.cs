@@ -61,7 +61,7 @@ public sealed class EventSchedulerUnitTest
         // Assert
         List<IIntegrationEvent> events = await eventStore
             .FetchAsync(filterFunc, CancellationToken.None)
-            .AsEventsAsync(CancellationToken.None)
+            .AsEventsPagedAsync(CancellationToken.None)
             .OfType<IIntegrationEvent>()
             .ToListAsync(CancellationToken.None);
 

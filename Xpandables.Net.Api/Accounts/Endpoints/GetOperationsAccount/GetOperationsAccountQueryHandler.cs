@@ -22,17 +22,18 @@ public sealed class GetOperationsAccountQueryHandler(
         Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> filterFunc = q =>
             q.Where(w => w.AggregateId == query.KeyId
                              && (w.Name == nameof(DepositMade) || w.Name == nameof(WithdrawMade)))
-                .OrderByDescending(o => o.CreatedOn);
+                .OrderByDescending(o => o.CreatedOn)
+                .Skip(0)
+                .Take(2);
 
         IAsyncPagedEnumerable<IEvent> events = eventStore
             .FetchAsync(filterFunc, cancellationToken)
-            .AsEventsAsync(cancellationToken);
+            .AsEventsPagedAsync(cancellationToken);
 
-        var count = await events.GetPaginationAsync().ConfigureAwait(false);
         IAsyncEnumerable<OperationAccount> operations = GetOperations(events, cancellationToken);
 
-        return ExecutionResult.Ok(operations)
-            .WithHeader("Count", $"{count}")
+        return ExecutionResult.Ok(operations.WithPagination(events.GetPaginationAsync))
+            //.WithHeader("Count", $"{count}")
             .Build();
 
         static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events,

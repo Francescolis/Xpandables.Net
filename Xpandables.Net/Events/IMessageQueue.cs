@@ -69,7 +69,7 @@ public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
 
         await foreach (IEvent @event in eventStore
             .FetchAsync(filter, cancellationToken)
-            .AsEventsAsync(cancellationToken)
+            .AsEventsPagedAsync(cancellationToken)
             .WithCancellation(cancellationToken))
         {
             await Channel.Writer
