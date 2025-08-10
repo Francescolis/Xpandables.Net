@@ -23,7 +23,6 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
     private readonly List<string> _cteClauses = [];
     private readonly List<string> _unionClauses = [];
     private readonly SqlExpressionVisitor _expressionVisitor = new();
-    private readonly Dictionary<Type, string> _registeredTypes = [];
     private readonly List<IDbDataParameter> _additionalParameters = [];
     private readonly string _mainTableAlias;
     private int? _skipCount;
@@ -32,11 +31,11 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
 
     public SelectSqlBuilder(string? alias = null)
     {
-        _mainTableAlias = alias ?? GetDefaultAlias<TEntity>(0);
-        RegisterType<TEntity>(0);
+        // Use provided alias or default to first letter of entity name
+        _mainTableAlias = alias ?? GetDefaultAliasForType<TEntity>();
 
         var tableName = GetTableName<TEntity>();
-        _fromClauses.Add($"[{tableName}] [{_mainTableAlias}]"); // Removed AS keyword
+        _fromClauses.Add($"[{tableName}] [{_mainTableAlias}]");
     }
 
     public ISelectSqlBuilder<TEntity> Select(Expression<Func<TEntity, object>> selector)
@@ -147,16 +146,10 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
     public ISelectSqlBuilder<TEntity> CrossJoin<TJoin>()
         where TJoin : class
     {
-        // Register the join type if not already registered
-        if (!_registeredTypes.ContainsKey(typeof(TJoin)))
-        {
-            RegisterType<TJoin>(_registeredTypes.Count);
-        }
-
         var joinTableName = GetTableName<TJoin>();
-        var joinAlias = _registeredTypes[typeof(TJoin)];
+        var joinAlias = GetDefaultAliasForType<TJoin>();
 
-        _joinClauses.Add($"CROSS JOIN [{joinTableName}] [{joinAlias}]"); // Removed AS keyword
+        _joinClauses.Add($"CROSS JOIN [{joinTableName}] [{joinAlias}]");
         return this;
     }
 
@@ -248,9 +241,6 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
         {
             _expressionVisitor.AddParameter(item.ParameterName, item.Value);
         }
-
-        //// Add CTE parameters to our additional parameters collection
-        //_additionalParameters.AddRange(cteResult.Parameters);
 
         return this;
     }
@@ -387,35 +377,28 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
     {
         ArgumentNullException.ThrowIfNull(joinCondition);
 
-        // Register the join type if not already registered
-        if (!_registeredTypes.ContainsKey(typeof(TJoin)))
-        {
-            RegisterType<TJoin>(_registeredTypes.Count);
-        }
-
         var joinTableName = GetTableName<TJoin>();
-        var joinAlias = _registeredTypes[typeof(TJoin)];
 
+        // Register parameter aliases to get the actual parameter names used in the expression
         _expressionVisitor.RegisterParameterAliases(joinCondition);
+
+        // Get the alias from the second parameter (TJoin) in the expression
+        var joinAlias = joinCondition.Parameters.Count > 1
+            ? joinCondition.Parameters[1].Name
+            : GetDefaultAliasForType<TJoin>();
+
         var conditionSql = _expressionVisitor.VisitAndGenerateSql(joinCondition.Body);
-        _joinClauses.Add($"{joinType} [{joinTableName}] [{joinAlias}] ON {conditionSql}"); // Removed AS keyword
+        _joinClauses.Add($"{joinType} [{joinTableName}] [{joinAlias}] ON {conditionSql}");
 
         return this;
     }
 
-    private void RegisterType<T>(int index)
-    {
-        var alias = GetDefaultAlias<T>(index);
-        _registeredTypes[typeof(T)] = alias;
-    }
-
 #pragma warning disable CA1308 // Normalize strings to uppercase
-    private static string GetDefaultAlias<T>(int index)
+    private static string GetDefaultAliasForType<T>()
     {
         // Generate single character aliases: u, o, c, etc.
         var typeName = typeof(T).Name;
-        if (index == 0) return typeName.ToLowerInvariant()[0].ToString();
-        return $"{typeName.ToLowerInvariant()[0]}{index}";
+        return typeName.ToLowerInvariant()[0].ToString();
     }
 #pragma warning restore CA1308 // Normalize strings to uppercase
 

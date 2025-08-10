@@ -28,16 +28,15 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
     public IReadOnlyList<IDbDataParameter> Parameters => _parameters.AsReadOnly();
 
     /// <summary>
-    /// Registers parameter aliases based on expression parameters.
+    /// Registers parameter aliases based on expression parameters, using their actual names.
     /// </summary>
     /// <param name="expression">The lambda expression containing parameters.</param>
     public void RegisterParameterAliases(LambdaExpression expression)
     {
-        for (int i = 0; i < expression.Parameters.Count; i++)
+        foreach (var param in expression.Parameters)
         {
-            var param = expression.Parameters[i];
-            var alias = GetDefaultAlias(param.Type, i);
-            _parameterAliases[param] = alias;
+            // Use the actual parameter name from the expression
+            _parameterAliases[param] = param.Name!;
         }
     }
 
@@ -140,7 +139,8 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
         if (node.Expression is ParameterExpression parameter)
         {
             var columnName = GetColumnName(node.Member);
-            var tableAlias = _parameterAliases.GetValueOrDefault(parameter, GetDefaultAlias(parameter.Type, 0));
+            // Use the actual parameter name as the alias
+            var tableAlias = _parameterAliases.TryGetValue(parameter, out var value) ? value : parameter.Name;
             _sql.Append(CultureInfo.InvariantCulture, $"[{tableAlias}].[{columnName}]");
         }
         else if (node.Expression is ConstantExpression ||
@@ -404,15 +404,6 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
         _ => throw new NotSupportedException($"Operator {nodeType} is not supported")
     };
 
-#pragma warning disable CA1308 // Normalize strings to uppercase
-    private static string GetDefaultAlias(Type type, int parameterIndex)
-    {
-        // Generate single character aliases: u, o, c, etc.
-        if (parameterIndex == 0) return type.Name.ToLowerInvariant()[0].ToString();
-        return $"{type.Name.ToLowerInvariant()[0]}{parameterIndex}";
-    }
-
-#pragma warning restore CA1308 // Normalize strings to uppercase
     private static string GetColumnName(MemberInfo member)
     {
         var columnAttribute = member.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>();

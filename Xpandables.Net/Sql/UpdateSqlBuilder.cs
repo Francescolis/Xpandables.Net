@@ -51,7 +51,10 @@ internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> whe
 
         _expressionVisitor.RegisterParameterAliases(predicate);
         var sql = _expressionVisitor.VisitAndGenerateSql(predicate.Body);
-        // Remove alias from WHERE clause columns and add parentheses
+        if (sql.StartsWith('('))
+        {
+            sql = sql[1..^1]; // Remove outer parentheses
+        }
         _whereClauses.Add($"({RemoveAliasFromWhereClause(sql)})");
         return this;
     }

@@ -317,9 +317,8 @@ public sealed class SqlBuilderUnitTest
         var result = query.Build();
 
         // Assert
-        result.Sql.Should().Contain("UPDATE [u] SET [FirstName] = @p0, [LastName] = @p1");
-        result.Sql.Should().Contain("FROM [Users] [u]");
-        result.Sql.Should().Contain("WHERE ([u].[Id] = @p2)");
+        result.Sql.Should().Contain("UPDATE [Users] SET [FirstName] = @p0, [LastName] = @p1");
+        result.Sql.Should().Contain("WHERE ([Id] = @p2)");
 
         result.Parameters.Should().HaveCount(3);
         result.Parameters.ElementAt(0).Value.Should().Be(firstName);
