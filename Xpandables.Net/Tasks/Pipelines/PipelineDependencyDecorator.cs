@@ -15,10 +15,11 @@
  *
 ********************************************************************************/
 
+using Xpandables.Net.Executions;
 using Xpandables.Net.Tasks;
 using Xpandables.Net.Tasks.Dependencies;
 
-namespace Xpandables.Net.Executions.Pipelines;
+namespace Xpandables.Net.Tasks.Pipelines;
 
 /// <summary>
 /// Implements a pipeline decorator that resolves and injects dependencies into the request during pipeline execution.

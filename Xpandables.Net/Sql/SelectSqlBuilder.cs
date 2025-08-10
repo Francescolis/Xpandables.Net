@@ -120,28 +120,16 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
     }
 
     public ISelectSqlBuilder<TEntity> InnerJoin<TJoin>(Expression<Func<TEntity, TJoin, bool>> joinCondition)
-        where TJoin : class
-    {
-        return AddJoin<TJoin>("INNER JOIN", joinCondition);
-    }
+        where TJoin : class => AddJoin("INNER JOIN", joinCondition);
 
     public ISelectSqlBuilder<TEntity> LeftJoin<TJoin>(Expression<Func<TEntity, TJoin, bool>> joinCondition)
-        where TJoin : class
-    {
-        return AddJoin<TJoin>("LEFT JOIN", joinCondition);
-    }
+        where TJoin : class => AddJoin("LEFT JOIN", joinCondition);
 
     public ISelectSqlBuilder<TEntity> RightJoin<TJoin>(Expression<Func<TEntity, TJoin, bool>> joinCondition)
-        where TJoin : class
-    {
-        return AddJoin<TJoin>("RIGHT JOIN", joinCondition);
-    }
+        where TJoin : class => AddJoin("RIGHT JOIN", joinCondition);
 
     public ISelectSqlBuilder<TEntity> FullOuterJoin<TJoin>(Expression<Func<TEntity, TJoin, bool>> joinCondition)
-        where TJoin : class
-    {
-        return AddJoin<TJoin>("FULL OUTER JOIN", joinCondition);
-    }
+        where TJoin : class => AddJoin("FULL OUTER JOIN", joinCondition);
 
     public ISelectSqlBuilder<TEntity> CrossJoin<TJoin>()
         where TJoin : class

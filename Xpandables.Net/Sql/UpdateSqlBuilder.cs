@@ -26,7 +26,7 @@ namespace Xpandables.Net.Sql;
 /// Implementation of UPDATE SQL builder with fluent API.
 /// </summary>
 /// <typeparam name="TEntity">The entity type to update.</typeparam>
-internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> where TEntity : class
+internal sealed partial class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> where TEntity : class
 {
     private readonly List<string> _setClauses = [];
     private readonly List<string> _whereClauses = [];
@@ -134,12 +134,10 @@ internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> whe
         }
     }
 
-    private static string RemoveAliasFromWhereClause(string sql)
-    {
+    private static string RemoveAliasFromWhereClause(string sql) =>
         // Removes patterns like [alias].[Column] => [Column]
         // Handles multiple aliases and nested brackets
-        return System.Text.RegularExpressions.Regex.Replace(sql, @"\[[a-zA-Z0-9_]+\]\.\[([a-zA-Z0-9_]+)\]", "[$1]");
-    }
+        RemoveAliasRegex().Replace(sql, "[$1]");
 
     private static string GetTableName<T>()
     {
@@ -153,4 +151,7 @@ internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> whe
         var columnAttribute = member.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>();
         return columnAttribute?.Name ?? member.Name;
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"\[[a-zA-Z0-9_]+\]\.\[([a-zA-Z0-9_]+)\]")]
+    private static partial System.Text.RegularExpressions.Regex RemoveAliasRegex();
 }

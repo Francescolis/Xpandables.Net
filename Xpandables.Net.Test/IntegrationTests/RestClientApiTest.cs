@@ -91,7 +91,7 @@ public sealed record UploadPictureRequest : IRestRequest, IRestMultipart
     public MultipartFormDataContent GetMultipartContent()
     {
         var multipartContent = new MultipartFormDataContent("boundary");
-        var fileContent = new StreamContent(File.OpenRead(@"C:\\Users\\fewan\\OneDrive\\Documents\\Administratif\\Signature.png"))
+        var fileContent = new StreamContent(File.OpenRead(@""))
         {
             Headers =
             {

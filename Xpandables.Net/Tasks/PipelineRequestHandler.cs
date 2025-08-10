@@ -16,7 +16,7 @@
  ********************************************************************************/
 
 using Xpandables.Net.Executions;
-using Xpandables.Net.Executions.Pipelines;
+using Xpandables.Net.Tasks.Pipelines;
 
 namespace Xpandables.Net.Tasks;
 

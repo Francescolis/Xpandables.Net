@@ -15,9 +15,10 @@
  *
 ********************************************************************************/
 using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Executions;
 using Xpandables.Net.Tasks;
 
-namespace Xpandables.Net.Executions.Pipelines;
+namespace Xpandables.Net.Tasks.Pipelines;
 
 /// <summary>
 /// Represents a pipeline decorator that performs validation on the incoming request

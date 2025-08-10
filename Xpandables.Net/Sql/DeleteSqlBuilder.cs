@@ -26,7 +26,7 @@ namespace Xpandables.Net.Sql;
 /// Implementation of DELETE SQL builder with fluent API.
 /// </summary>
 /// <typeparam name="TEntity">The entity type to delete.</typeparam>
-internal sealed class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> where TEntity : class
+internal sealed partial class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> where TEntity : class
 {
     private readonly List<string> _whereClauses = [];
     private readonly SqlExpressionVisitor _expressionVisitor = new();
@@ -65,12 +65,10 @@ internal sealed class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> whe
         return new SqlQueryResult(sql.ToString(), _expressionVisitor.Parameters);
     }
 
-    private static string RemoveAliasFromWhereClause(string sql)
-    {
+    private static string RemoveAliasFromWhereClause(string sql) =>
         // Removes patterns like [alias].[Column] => [Column]
         // Handles multiple aliases and nested brackets
-        return System.Text.RegularExpressions.Regex.Replace(sql, @"\[[a-zA-Z0-9_]+\]\.\[([a-zA-Z0-9_]+)\]", "[$1]");
-    }
+        RemoveAliasRegex().Replace(sql, "[$1]");
 
     private static string GetTableName<T>()
     {
@@ -78,4 +76,7 @@ internal sealed class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> whe
         var tableAttribute = type.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.TableAttribute>();
         return tableAttribute?.Name ?? type.Name;
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"\[[a-zA-Z0-9_]+\]\.\[([a-zA-Z0-9_]+)\]")]
+    private static partial System.Text.RegularExpressions.Regex RemoveAliasRegex();
 }

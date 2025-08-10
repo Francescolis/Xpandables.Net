@@ -72,15 +72,16 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
         return _sql.ToString();
     }
 
-    public void AddParameter(string name, object? value)
-    {
-        var parameterName = $"@p{_parameterIndex++}";
+    /// <summary>
+    /// Adds a parameter to the SQL query.
+    /// </summary>
+    /// <param name="name">The name of the parameter.</param>
+    /// <param name="value">The value of the parameter.</param>
+    public void AddParameter(string name, object? value) =>
         _parameters.Add(new SqlParameter(name, value ?? DBNull.Value));
-    }
 
-    private static bool ShouldConvertBooleanToEquality(Expression expression)
-    {
-        return expression switch
+    private static bool ShouldConvertBooleanToEquality(Expression expression) =>
+        expression switch
         {
             // Direct boolean property access: u.IsActive
             MemberExpression member when member.Expression is ParameterExpression => true,
@@ -95,7 +96,6 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
 
             _ => false
         };
-    }
 
     private static bool DetermineBooleanValue(Expression expression, out MemberExpression? memberExpression)
     {
@@ -143,8 +143,7 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
             var tableAlias = _parameterAliases.TryGetValue(parameter, out var value) ? value : parameter.Name;
             _sql.Append(CultureInfo.InvariantCulture, $"[{tableAlias}].[{columnName}]");
         }
-        else if (node.Expression is ConstantExpression ||
-                 (node.Expression is MemberExpression))
+        else if (node.Expression is ConstantExpression or MemberExpression)
         {
             // Handle constant member access (local variables, properties)
             var value = GetMemberValue(node);

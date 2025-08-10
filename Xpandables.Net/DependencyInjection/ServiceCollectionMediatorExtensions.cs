@@ -22,11 +22,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Events;
-using Xpandables.Net.Executions.Pipelines;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.States;
 using Xpandables.Net.Tasks;
 using Xpandables.Net.Tasks.Dependencies;
+using Xpandables.Net.Tasks.Pipelines;
 
 // ReSharper disable MemberCanBePrivate.Global
 

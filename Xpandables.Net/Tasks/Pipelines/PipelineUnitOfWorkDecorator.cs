@@ -16,10 +16,11 @@
  *
 ********************************************************************************/
 using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Executions;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Tasks;
 
-namespace Xpandables.Net.Executions.Pipelines;
+namespace Xpandables.Net.Tasks.Pipelines;
 
 /// <summary>
 /// The PipelineUnitOfWorkDecorator class is a pipeline decorator that ensures

@@ -83,7 +83,7 @@ public sealed class SqlBuilderUnitTest
         result.Sql.Should().Contain("WHERE ([u].[IsActive] = @p0)");
         result.Sql.Should().Contain("ORDER BY [u].[Id] ASC");
         result.Sql.Should().Contain("OFFSET 10 ROWS FETCH NEXT 5 ROWS ONLY");
-        result.Parameters.Should().HaveCount(1);
+        result.Parameters.Should().ContainSingle();
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public sealed class SqlBuilderUnitTest
         result.Sql.Should().Contain("ORDER BY [u].[Id] DESC");
         result.Sql.Should().Contain("OFFSET 10 ROWS FETCH NEXT 5 ROWS ONLY");
 
-        result.Parameters.Should().HaveCount(1);
+        result.Parameters.Should().ContainSingle();
         result.Parameters.First().Value.Should().Be(100);
     }
 
@@ -258,10 +258,10 @@ public sealed class SqlBuilderUnitTest
         result.Sql.Should().Be("INSERT INTO [Users] ([FirstName], [LastName], [BirthDate], [IsActive])\r\nVALUES (@p0, @p1, @p2, @p3)");
 
         result.Parameters.Should().HaveCount(4);
-        result.Parameters.ElementAt(0).Value.Should().Be(firstName);
-        result.Parameters.ElementAt(1).Value.Should().Be(lastName);
-        result.Parameters.ElementAt(2).Value.Should().Be(birthDate);
-        result.Parameters.ElementAt(3).Value.Should().Be(isActive);
+        result.Parameters.First().Value.Should().Be(firstName);
+        result.Parameters.ElementAt(1).Should().Be(lastName);
+        result.Parameters.ElementAt(2).Should().Be(birthDate);
+        result.Parameters.ElementAt(3).Should().Be(isActive);
     }
 
     [Fact]
@@ -321,9 +321,9 @@ public sealed class SqlBuilderUnitTest
         result.Sql.Should().Contain("WHERE ([Id] = @p2)");
 
         result.Parameters.Should().HaveCount(3);
-        result.Parameters.ElementAt(0).Value.Should().Be(firstName);
-        result.Parameters.ElementAt(1).Value.Should().Be(lastName);
-        result.Parameters.ElementAt(2).Value.Should().Be(1);
+        result.Parameters.ElementAt(0).Should().Be(firstName);
+        result.Parameters.ElementAt(1).Should().Be(lastName);
+        result.Parameters.ElementAt(2).Should().Be(1);
     }
 
     [Fact]
@@ -368,7 +368,7 @@ public sealed class SqlBuilderUnitTest
         // Assert
         result.Sql.Should().Contain("DELETE FROM [Users]");
         result.Sql.Should().Contain("WHERE ([IsActive] = @p0)");
-        result.Parameters.Should().HaveCount(1);
+        result.Parameters.Should().ContainSingle();
     }
 
     [Fact]
@@ -382,7 +382,7 @@ public sealed class SqlBuilderUnitTest
 
         // Assert
         result.Sql.Should().Be("DELETE FROM [Users]\r\nWHERE ([IsActive] = @p0)");
-        result.Parameters.Should().HaveCount(1);
+        result.Parameters.Should().ContainSingle();
     }
 
     [Fact]
@@ -432,9 +432,9 @@ public sealed class SqlBuilderUnitTest
         result.Sql.Should().Be("EXEC [GetUsersByAge] @MinAge, @MaxAge, @IsActive");
 
         result.Parameters.Should().HaveCount(3);
-        result.Parameters.Should().Contain(p => p.ParameterName == "@MinAge" && p.Value.Equals(18));
-        result.Parameters.Should().Contain(p => p.ParameterName == "@MaxAge" && p.Value.Equals(65));
-        result.Parameters.Should().Contain(p => p.ParameterName == "@IsActive" && p.Value.Equals(true));
+        result.Parameters.Should().Contain(p => p.ParameterName == "@MinAge" && p.Value!.Equals(18));
+        result.Parameters.Should().Contain(p => p.ParameterName == "@MaxAge" && p.Value!.Equals(65));
+        result.Parameters.Should().Contain(p => p.ParameterName == "@IsActive" && p.Value!.Equals(true));
     }
 
     [Fact]
@@ -484,7 +484,7 @@ public sealed class SqlBuilderUnitTest
 
         // Assert
         result.Sql.Should().Contain("WHERE ([u].[FirstName] LIKE @p0)");
-        result.Parameters.Should().HaveCount(1);
+        result.Parameters.Should().ContainSingle();
         result.Parameters.First().Value.Should().Be($"%{searchTerm}%");
     }
 
@@ -502,7 +502,7 @@ public sealed class SqlBuilderUnitTest
 
         // Assert
         result.Sql.Should().Contain("WHERE ([u].[FirstName] LIKE @p0)");
-        result.Parameters.Should().HaveCount(1);
+        result.Parameters.Should().ContainSingle();
         result.Parameters.First().Value.Should().Be($"{prefix}%");
     }
 
@@ -520,7 +520,7 @@ public sealed class SqlBuilderUnitTest
 
         // Assert
         result.Sql.Should().Contain("WHERE ([u].[FirstName] LIKE @p0)");
-        result.Parameters.Should().HaveCount(1);
+        result.Parameters.Should().ContainSingle();
         result.Parameters.First().Value.Should().Be($"%{suffix}");
     }
 
@@ -603,8 +603,8 @@ public sealed class SqlBuilderUnitTest
 
         // Assert
         result.Parameters.Should().HaveCount(2);
-        result.Parameters.Should().Contain(p => p.Value.Equals(minAge));
-        result.Parameters.Should().Contain(p => p.Value.Equals(department));
+        result.Parameters.Should().Contain(p => p.Value!.Equals(minAge));
+        result.Parameters.Should().Contain(p => p.Value!.Equals(department));
     }
 
     #endregion

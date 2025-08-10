@@ -88,9 +88,8 @@ internal static class PaginationExpressionAnalyzer
             return base.VisitMethodCall(node);
         }
 
-        private static int? ExtractConstantValue(Expression expression)
-        {
-            return expression switch
+        private static int? ExtractConstantValue(Expression expression) =>
+            expression switch
             {
                 ConstantExpression constant => constant.Value as int?,
                 UnaryExpression { NodeType: ExpressionType.Convert } unary
@@ -98,7 +97,6 @@ internal static class PaginationExpressionAnalyzer
                 MemberExpression member => ExtractMemberValue(member),
                 _ => null
             };
-        }
 
         private static int? ExtractMemberValue(MemberExpression member)
         {

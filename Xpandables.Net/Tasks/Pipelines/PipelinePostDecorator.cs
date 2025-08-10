@@ -1,6 +1,7 @@
-﻿using Xpandables.Net.Tasks;
+﻿using Xpandables.Net.Executions;
+using Xpandables.Net.Tasks;
 
-namespace Xpandables.Net.Executions.Pipelines;
+namespace Xpandables.Net.Tasks.Pipelines;
 
 /// <summary>
 /// Represents a decorator that executes post-handling logic for a request in a pipeline.
