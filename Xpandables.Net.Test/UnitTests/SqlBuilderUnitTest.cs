@@ -30,6 +30,7 @@ public sealed class SqlBuilderUnitTest
     [Table("Users")]
     public sealed class User
     {
+        [System.ComponentModel.DataAnnotations.Key]
         public int Id { get; set; }
         [Column("FirstName")]
         public string FirstName { get; set; } = string.Empty;
@@ -43,6 +44,7 @@ public sealed class SqlBuilderUnitTest
     [Table("Orders")]
     public sealed class Order
     {
+        [System.ComponentModel.DataAnnotations.Key]
         public int Id { get; set; }
         public int UserId { get; set; }
         public DateTime Date { get; set; }
@@ -53,6 +55,7 @@ public sealed class SqlBuilderUnitTest
     [Table("Departments")]
     public sealed class Department
     {
+        [System.ComponentModel.DataAnnotations.Key]
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
     }
@@ -171,8 +174,10 @@ public sealed class SqlBuilderUnitTest
         result.Sql.Should().StartWith("WITH [UserTotals] AS ("); // Keep AS for CTEs (required syntax)
         result.Sql.Should().Contain("SELECT [u].[Id], [u].[FirstName], [u].[LastName]");
         result.Sql.Should().Contain("FROM [Users] [u]");
-        result.Sql.Should().Contain("WHERE ([u].[IsActive] = @p");
+        result.Sql.Should().Contain("HAVING ([o].[Amount] > @p0)");
+        result.Sql.Should().Contain("WHERE ([u].[IsActive] = @p1)");
         result.Sql.Should().Contain("ORDER BY [u].[LastName] ASC");
+        result.Parameters.Should().HaveCount(2);
     }
 
     [Fact]
@@ -361,7 +366,8 @@ public sealed class SqlBuilderUnitTest
 
         // Assert
         result.Sql.Should().Contain("DELETE FROM [Users]");
-        result.Sql.Should().Contain("WHERE (NOT [IsActive])");
+        result.Sql.Should().Contain("WHERE ([IsActive] = @p0)");
+        result.Parameters.Should().HaveCount(1);
     }
 
     [Fact]
@@ -374,8 +380,8 @@ public sealed class SqlBuilderUnitTest
         var result = query.Build();
 
         // Assert
-        result.Sql.Should().Be("DELETE FROM [Users]\r\nWHERE (NOT [IsActive])");
-        result.Parameters.Should().BeEmpty();
+        result.Sql.Should().Be("DELETE FROM [Users]\r\nWHERE ([IsActive] = @p0)");
+        result.Parameters.Should().HaveCount(1);
     }
 
     [Fact]
@@ -390,8 +396,8 @@ public sealed class SqlBuilderUnitTest
 
         // Assert
         result.Sql.Should().Contain("DELETE FROM [Users]");
-        result.Sql.Should().Contain("WHERE (NOT [IsActive]) AND ([BirthDate] < @p0)");
-        result.Parameters.Should().HaveCount(1);
+        result.Sql.Should().Contain("WHERE ([IsActive] = @p0) AND ([BirthDate] < @p1)");
+        result.Parameters.Should().HaveCount(2);
     }
 
     [Fact]

@@ -57,10 +57,14 @@ internal sealed class InsertSqlBuilder<TEntity> : IInsertSqlBuilder<TEntity> whe
             .Where(p => p.CanRead && IsInsertableProperty(p))
             .ToList();
 
+        // Filter properties that have non-default values in at least one entity
+        var propertiesWithValues = properties.Where(p => 
+            entityList.Any(entity => HasNonDefaultValue(p, entity))).ToList();
+
         if (_columns.Count == 0)
         {
             // First time - set up columns
-            foreach (var property in properties)
+            foreach (var property in propertiesWithValues)
             {
                 var columnName = GetColumnName(property);
                 _columns.Add($"[{columnName}]");
@@ -70,7 +74,7 @@ internal sealed class InsertSqlBuilder<TEntity> : IInsertSqlBuilder<TEntity> whe
         foreach (var entity in entityList)
         {
             var valueParameters = new List<string>();
-            foreach (var property in properties)
+            foreach (var property in propertiesWithValues)
             {
                 var value = property.GetValue(entity);
                 var parameterName = $"@p{_parameterIndex++}";
@@ -110,18 +114,21 @@ internal sealed class InsertSqlBuilder<TEntity> : IInsertSqlBuilder<TEntity> whe
 
         if (valuesSelector.Body is NewExpression newExpression)
         {
-            // Handle anonymous type: new { entity.Property1, entity.Property2 }
+            // Handle anonymous type: new { FirstName = firstName, LastName = lastName }
             for (int i = 0; i < newExpression.Arguments.Count; i++)
             {
-                if (newExpression.Arguments[i] is MemberExpression memberExpr)
-                {
-                    var columnName = GetColumnName(memberExpr.Member);
-                    _columns.Add($"[{columnName}]");
+                // Get the column name from the anonymous type member name
+                var memberName = newExpression.Members?[i]?.Name ?? $"Column{i}";
+                
+                // Try to find the corresponding entity property to get the proper column name
+                var entityProperty = typeof(TEntity).GetProperty(memberName);
+                var columnName = entityProperty != null ? GetColumnName(entityProperty) : memberName;
+                
+                _columns.Add($"[{columnName}]");
 
-                    var parameterName = $"@p{_parameterIndex++}";
-                    var value = GetExpressionValue(memberExpr);
-                    _parameters.Add(new SqlParameter(parameterName, value ?? DBNull.Value));
-                }
+                var parameterName = $"@p{_parameterIndex++}";
+                var value = GetExpressionValue(newExpression.Arguments[i]);
+                _parameters.Add(new SqlParameter(parameterName, value ?? DBNull.Value));
             }
         }
         else if (valuesSelector.Body is MemberInitExpression memberInitExpression)
@@ -184,5 +191,18 @@ internal sealed class InsertSqlBuilder<TEntity> : IInsertSqlBuilder<TEntity> whe
     {
         var columnAttribute = member.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>();
         return columnAttribute?.Name ?? member.Name;
+    }
+
+    private static bool HasNonDefaultValue(PropertyInfo property, object entity)
+    {
+        var value = property.GetValue(entity);
+        if (value == null) return false;
+
+        // Check if the value is the default for the type
+        var defaultValue = property.PropertyType.IsValueType 
+            ? Activator.CreateInstance(property.PropertyType) 
+            : null;
+
+        return !Equals(value, defaultValue);
     }
 }

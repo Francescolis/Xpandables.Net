@@ -41,8 +41,11 @@ internal sealed class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> whe
 
         _expressionVisitor.RegisterParameterAliases(predicate);
         var sql = _expressionVisitor.VisitAndGenerateSql(predicate.Body);
-        // Remove alias from WHERE clause columns
-        _whereClauses.Add(RemoveAliasFromWhereClause(sql));
+        if (sql.StartsWith('('))
+        {
+            sql = sql[1..^1]; // Remove outer parentheses
+        }
+        _whereClauses.Add($"({RemoveAliasFromWhereClause(sql)})");
         return this;
     }
 

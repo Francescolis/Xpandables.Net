@@ -78,7 +78,11 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
 
         _expressionVisitor.RegisterParameterAliases(predicate);
         var sql = _expressionVisitor.VisitAndGenerateSql(predicate.Body);
-        _whereClauses.Add(sql);
+        if (sql.StartsWith('(') && sql.EndsWith(')'))
+        {
+            sql = sql[1..^1]; // Remove outer parentheses
+        }
+        _whereClauses.Add($"({sql})");
         return this;
     }
 
@@ -89,7 +93,11 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
 
         _expressionVisitor.RegisterParameterAliases(predicate);
         var sql = _expressionVisitor.VisitAndGenerateSql(predicate.Body);
-        _whereClauses.Add(sql);
+        if (sql.StartsWith('(') && sql.EndsWith(')'))
+        {
+            sql = sql[1..^1]; // Remove outer parentheses
+        }
+        _whereClauses.Add($"({sql})");
         return this;
     }
 

@@ -49,8 +49,70 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
     public string VisitAndGenerateSql(Expression expression)
     {
         _sql.Clear();
-        Visit(expression);
+        
+        // Handle standalone boolean expressions
+        if (expression.Type == typeof(bool) && ShouldConvertBooleanToEquality(expression))
+        {
+            var booleanValue = DetermineBooleanValue(expression, out var memberExpression);
+            if (memberExpression != null)
+            {
+                Visit(memberExpression);
+                _sql.Append(" = ");
+                AddParameter(booleanValue);
+            }
+            else
+            {
+                Visit(expression);
+            }
+        }
+        else
+        {
+            Visit(expression);
+        }
+        
         return _sql.ToString();
+    }
+
+    private static bool ShouldConvertBooleanToEquality(Expression expression)
+    {
+        return expression switch
+        {
+            // Direct boolean property access: u.IsActive
+            MemberExpression member when member.Expression is ParameterExpression => true,
+            
+            // Negated boolean property: !u.IsActive
+            UnaryExpression { NodeType: ExpressionType.Not } unary 
+                when unary.Operand is MemberExpression member &&
+                     member.Expression is ParameterExpression => true,
+            
+            // Boolean binary expressions should not be converted
+            BinaryExpression => false,
+            
+            _ => false
+        };
+    }
+
+    private static bool DetermineBooleanValue(Expression expression, out MemberExpression? memberExpression)
+    {
+        memberExpression = null;
+        
+        switch (expression)
+        {
+            // Direct boolean property access: u.IsActive -> u.IsActive = true
+            case MemberExpression member when member.Expression is ParameterExpression:
+                memberExpression = member;
+                return true;
+            
+            // Negated boolean property: !u.IsActive -> u.IsActive = false
+            case UnaryExpression { NodeType: ExpressionType.Not } unary 
+                when unary.Operand is MemberExpression mem &&
+                     mem.Expression is ParameterExpression:
+                memberExpression = (MemberExpression)unary.Operand;
+                return false;
+            
+            default:
+                return true;
+        }
     }
 
     protected override Expression VisitBinary(BinaryExpression node)
@@ -356,9 +418,23 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
         switch (node.NodeType)
         {
             case ExpressionType.Not:
-                _sql.Append("(NOT ");
-                Visit(node.Operand);
-                _sql.Append(')');
+                // Check if this is a boolean property negation that should be handled at a higher level
+                if (node.Operand is MemberExpression member && 
+                    member.Expression is ParameterExpression &&
+                    node.Type == typeof(bool))
+                {
+                    // This case is handled by VisitAndGenerateSql for standalone boolean expressions
+                    // If we reach here, it means we're in a nested context
+                    _sql.Append("(NOT ");
+                    Visit(node.Operand);
+                    _sql.Append(')');
+                }
+                else
+                {
+                    _sql.Append("(NOT ");
+                    Visit(node.Operand);
+                    _sql.Append(')');
+                }
                 break;
             case ExpressionType.Negate:
                 _sql.Append("(-");
