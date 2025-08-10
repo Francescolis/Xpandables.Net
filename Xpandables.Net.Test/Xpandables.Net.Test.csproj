@@ -33,6 +33,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Xpandables.Net.Api\Xpandables.Net.Api.csproj" />
+        <ProjectReference Include="..\Xpandables.Net.Sql\Xpandables.Net.Sql.csproj" />
         <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
     </ItemGroup>
 
