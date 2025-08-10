@@ -80,8 +80,10 @@ public sealed class SqlBuilderUnitTest
         // Assert
         result.Sql.Should().Contain("SELECT [u].[Id], [u].[LastName], [u].[FirstName], [u].[BirthDate]");
         result.Sql.Should().Contain("FROM [Users] [u]");
+        result.Sql.Should().Contain("WHERE ([u].[IsActive] = @p0)");
         result.Sql.Should().Contain("ORDER BY [u].[Id] ASC");
         result.Sql.Should().Contain("OFFSET 10 ROWS FETCH NEXT 5 ROWS ONLY");
+        result.Parameters.Should().HaveCount(1);
     }
 
     [Fact]

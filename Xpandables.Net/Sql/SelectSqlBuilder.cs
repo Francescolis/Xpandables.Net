@@ -242,10 +242,15 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
         ArgumentNullException.ThrowIfNull(cteQuery);
 
         var cteResult = cteQuery.Build();
-        _cteClauses.Add($"[{cteName}] AS ({cteResult.Sql})"); // Keep AS for CTEs as it's required syntax
+        _cteClauses.Add($"[{cteName}] AS ({cteResult.Sql})");
 
-        // Add CTE parameters to our additional parameters collection
-        _additionalParameters.AddRange(cteResult.Parameters);
+        foreach (var item in cteResult.Parameters)
+        {
+            _expressionVisitor.AddParameter(item.ParameterName, item.Value);
+        }
+
+        //// Add CTE parameters to our additional parameters collection
+        //_additionalParameters.AddRange(cteResult.Parameters);
 
         return this;
     }
