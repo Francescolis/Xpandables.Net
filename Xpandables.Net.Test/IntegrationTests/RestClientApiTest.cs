@@ -91,7 +91,7 @@ public sealed record UploadPictureRequest : IRestRequest, IRestMultipart
     public MultipartFormDataContent GetMultipartContent()
     {
         var multipartContent = new MultipartFormDataContent("boundary");
-        var fileContent = new StreamContent(File.OpenRead(@""))
+        var fileContent = new StreamContent(File.OpenRead(@"C:\Windows\Temp\cm.svg"))
         {
             Headers =
             {

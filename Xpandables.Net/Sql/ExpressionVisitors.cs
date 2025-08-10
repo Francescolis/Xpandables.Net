@@ -77,8 +77,11 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
     /// </summary>
     /// <param name="name">The name of the parameter.</param>
     /// <param name="value">The value of the parameter.</param>
-    public void AddParameter(string name, object? value) =>
+    public void AddParameter(string name, object? value)
+    {
+        _parameterIndex++;
         _parameters.Add(new SqlParameter(name, value ?? DBNull.Value));
+    }
 
     private static bool ShouldConvertBooleanToEquality(Expression expression) =>
         expression switch

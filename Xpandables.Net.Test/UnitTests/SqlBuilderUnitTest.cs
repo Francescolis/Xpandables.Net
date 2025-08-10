@@ -259,9 +259,9 @@ public sealed class SqlBuilderUnitTest
 
         result.Parameters.Should().HaveCount(4);
         result.Parameters.First().Value.Should().Be(firstName);
-        result.Parameters.ElementAt(1).Should().Be(lastName);
-        result.Parameters.ElementAt(2).Should().Be(birthDate);
-        result.Parameters.ElementAt(3).Should().Be(isActive);
+        result.Parameters.ElementAt(1).Value.Should().Be(lastName);
+        result.Parameters.ElementAt(2).Value.Should().Be(birthDate);
+        result.Parameters.ElementAt(3).Value.Should().Be(isActive);
     }
 
     [Fact]
@@ -321,9 +321,9 @@ public sealed class SqlBuilderUnitTest
         result.Sql.Should().Contain("WHERE ([Id] = @p2)");
 
         result.Parameters.Should().HaveCount(3);
-        result.Parameters.ElementAt(0).Should().Be(firstName);
-        result.Parameters.ElementAt(1).Should().Be(lastName);
-        result.Parameters.ElementAt(2).Should().Be(1);
+        result.Parameters.ElementAt(0).Value.Should().Be(firstName);
+        result.Parameters.ElementAt(1).Value.Should().Be(lastName);
+        result.Parameters.ElementAt(2).Value.Should().Be(1);
     }
 
     [Fact]
