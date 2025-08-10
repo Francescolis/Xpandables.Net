@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Api", "Xpand
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.EntityFramework", "Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj", "{22FDB470-3671-4330-B0AE-D6EE37FEFA5C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Sql", "Xpandables.Net.Sql\Xpandables.Net.Sql.csproj", "{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,14 @@ Global
 		{22FDB470-3671-4330-B0AE-D6EE37FEFA5C}.Release|Any CPU.Build.0 = Release|x64
 		{22FDB470-3671-4330-B0AE-D6EE37FEFA5C}.Release|x64.ActiveCfg = Release|x64
 		{22FDB470-3671-4330-B0AE-D6EE37FEFA5C}.Release|x64.Build.0 = Release|x64
+		{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}.Debug|x64.ActiveCfg = Debug|x64
+		{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}.Debug|x64.Build.0 = Debug|x64
+		{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}.Release|x64.ActiveCfg = Release|x64
+		{7F0840E1-8AF3-4116-A25E-45C5F05B52F8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
