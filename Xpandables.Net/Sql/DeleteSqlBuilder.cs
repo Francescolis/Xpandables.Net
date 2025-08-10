@@ -25,17 +25,14 @@ namespace Xpandables.Net.Sql;
 /// <summary>
 /// Implementation of DELETE SQL builder with fluent API.
 /// </summary>
-/// <typeparam name="TEntity">The entity type to delete from.</typeparam>
+/// <typeparam name="TEntity">The entity type to delete.</typeparam>
 internal sealed class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> where TEntity : class
 {
     private readonly List<string> _whereClauses = [];
-    private readonly List<string> _outputColumns = [];
     private readonly SqlExpressionVisitor _expressionVisitor = new();
-    private readonly string _tableAlias;
 
-    public DeleteSqlBuilder(string? alias = null)
+    public DeleteSqlBuilder()
     {
-        _tableAlias = alias ?? GetDefaultAlias<TEntity>();
     }
 
     public IDeleteSqlBuilder<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
@@ -44,17 +41,8 @@ internal sealed class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> whe
 
         _expressionVisitor.RegisterParameterAliases(predicate);
         var sql = _expressionVisitor.VisitAndGenerateSql(predicate.Body);
-        _whereClauses.Add(sql);
-        return this;
-    }
-
-    public IDeleteSqlBuilder<TEntity> Output<TOutput>(Expression<Func<TEntity, TOutput>> outputSelector)
-    {
-        ArgumentNullException.ThrowIfNull(outputSelector);
-
-        _expressionVisitor.RegisterParameterAliases(outputSelector);
-        var outputSql = _expressionVisitor.VisitAndGenerateSql(outputSelector.Body);
-        _outputColumns.Add(outputSql);
+        // Remove alias from WHERE clause columns
+        _whereClauses.Add(RemoveAliasFromWhereClause(sql));
         return this;
     }
 
@@ -65,14 +53,6 @@ internal sealed class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> whe
 
         sql.Append(CultureInfo.InvariantCulture, $"DELETE FROM [{tableName}]");
 
-        // OUTPUT clause (SQL Server specific)
-        if (_outputColumns.Count > 0)
-        {
-            sql.AppendLine();
-            sql.Append(CultureInfo.InvariantCulture, $"OUTPUT {string.Join(", ", _outputColumns.Select(c => $"DELETED.{c}"))}");
-        }
-
-        // WHERE clause
         if (_whereClauses.Count > 0)
         {
             sql.AppendLine();
@@ -82,9 +62,12 @@ internal sealed class DeleteSqlBuilder<TEntity> : IDeleteSqlBuilder<TEntity> whe
         return new SqlQueryResult(sql.ToString(), _expressionVisitor.Parameters);
     }
 
-#pragma warning disable CA1308 // Normalize strings to uppercase
-    private static string GetDefaultAlias<T>() => typeof(T).Name.ToLowerInvariant();
-#pragma warning restore CA1308 // Normalize strings to uppercase
+    private static string RemoveAliasFromWhereClause(string sql)
+    {
+        // Removes patterns like [alias].[Column] => [Column]
+        // Handles multiple aliases and nested brackets
+        return System.Text.RegularExpressions.Regex.Replace(sql, @"\[[a-zA-Z0-9_]+\]\.\[([a-zA-Z0-9_]+)\]", "[$1]");
+    }
 
     private static string GetTableName<T>()
     {

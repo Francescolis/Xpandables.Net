@@ -127,12 +127,21 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
         {
             if (i > 0) _sql.Append(", ");
 
+            // Store the current SQL length to get the column expression
+            var startLength = _sql.Length;
             Visit(node.Arguments[i]);
+            var columnExpression = _sql.ToString(startLength, _sql.Length - startLength);
 
-            // Add alias if available
+            // Add alias only if it's different from the column name or if it's needed
             if (node.Members?[i] != null)
             {
-                _sql.Append(CultureInfo.InvariantCulture, $" AS [{node.Members[i].Name}]");
+                var aliasName = node.Members[i].Name;
+
+                // Check if we need an alias by comparing with the actual column name
+                if (ShouldAddAlias(node.Arguments[i], aliasName, columnExpression))
+                {
+                    _sql.Append(CultureInfo.InvariantCulture, $" AS [{aliasName}]");
+                }
             }
         }
 
@@ -148,12 +157,39 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
 
             if (node.Bindings[i] is MemberAssignment assignment)
             {
+                // Store the current SQL length to get the column expression
+                var startLength = _sql.Length;
                 Visit(assignment.Expression);
-                _sql.Append(CultureInfo.InvariantCulture, $" AS [{assignment.Member.Name}]");
+                var columnExpression = _sql.ToString(startLength, _sql.Length - startLength);
+
+                var aliasName = assignment.Member.Name;
+
+                // Check if we need an alias
+                if (ShouldAddAlias(assignment.Expression, aliasName, columnExpression))
+                {
+                    _sql.Append(CultureInfo.InvariantCulture, $" AS [{aliasName}]");
+                }
             }
         }
 
         return node;
+    }
+
+    private static bool ShouldAddAlias(Expression expression, string aliasName, string _)
+    {
+        // If it's a member expression accessing a property/field
+        if (expression is MemberExpression memberExpr &&
+            memberExpr.Expression is ParameterExpression)
+        {
+            // Get the actual column name from the member
+            var actualColumnName = GetColumnName(memberExpr.Member);
+
+            // Only add alias if the alias name is different from the actual column name
+            return !string.Equals(aliasName, actualColumnName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // For complex expressions, method calls, etc., always add alias
+        return true;
     }
 
     private void HandleStringMethod(MethodCallExpression node)
@@ -313,5 +349,34 @@ internal sealed class SqlExpressionVisitor : ExpressionVisitor
     {
         var columnAttribute = member.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>();
         return columnAttribute?.Name ?? member.Name;
+    }
+
+    protected override Expression VisitUnary(UnaryExpression node)
+    {
+        switch (node.NodeType)
+        {
+            case ExpressionType.Not:
+                _sql.Append("(NOT ");
+                Visit(node.Operand);
+                _sql.Append(')');
+                break;
+            case ExpressionType.Negate:
+                _sql.Append("(-");
+                Visit(node.Operand);
+                _sql.Append(')');
+                break;
+            case ExpressionType.Convert:
+            case ExpressionType.ConvertChecked:
+                // For type conversions, just visit the operand
+                Visit(node.Operand);
+                break;
+            default:
+                // For other unary expressions, try to evaluate them
+                var value = GetExpressionValue(node);
+                AddParameter(value);
+                break;
+        }
+
+        return node;
     }
 }

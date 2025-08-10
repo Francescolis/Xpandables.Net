@@ -36,7 +36,7 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
         RegisterType<TEntity>(0);
 
         var tableName = GetTableName<TEntity>();
-        _fromClauses.Add($"[{tableName}] AS [{_mainTableAlias}]");
+        _fromClauses.Add($"[{tableName}] [{_mainTableAlias}]"); // Removed AS keyword
     }
 
     public ISelectSqlBuilder<TEntity> Select(Expression<Func<TEntity, object>> selector)
@@ -148,7 +148,7 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
         var joinTableName = GetTableName<TJoin>();
         var joinAlias = _registeredTypes[typeof(TJoin)];
 
-        _joinClauses.Add($"CROSS JOIN [{joinTableName}] AS [{joinAlias}]");
+        _joinClauses.Add($"CROSS JOIN [{joinTableName}] [{joinAlias}]"); // Removed AS keyword
         return this;
     }
 
@@ -234,7 +234,7 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
         ArgumentNullException.ThrowIfNull(cteQuery);
 
         var cteResult = cteQuery.Build();
-        _cteClauses.Add($"[{cteName}] AS ({cteResult.Sql})");
+        _cteClauses.Add($"[{cteName}] AS ({cteResult.Sql})"); // Keep AS for CTEs as it's required syntax
 
         // Add CTE parameters to our additional parameters collection
         _additionalParameters.AddRange(cteResult.Parameters);
@@ -385,7 +385,7 @@ internal sealed class SelectSqlBuilder<TEntity> : ISelectSqlBuilder<TEntity> whe
 
         _expressionVisitor.RegisterParameterAliases(joinCondition);
         var conditionSql = _expressionVisitor.VisitAndGenerateSql(joinCondition.Body);
-        _joinClauses.Add($"{joinType} [{joinTableName}] AS [{joinAlias}] ON {conditionSql}");
+        _joinClauses.Add($"{joinType} [{joinTableName}] [{joinAlias}] ON {conditionSql}"); // Removed AS keyword
 
         return this;
     }

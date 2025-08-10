@@ -25,19 +25,17 @@ public static class SqlBuilder
     /// Starts building an UPDATE query for the specified table.
     /// </summary>
     /// <typeparam name="TEntity">The entity type representing the table to update.</typeparam>
-    /// <param name="alias">Optional alias for the table.</param>
     /// <returns>An UPDATE SQL builder for method chaining.</returns>
-    public static IUpdateSqlBuilder<TEntity> Update<TEntity>(string? alias = null) where TEntity : class
-        => new UpdateSqlBuilder<TEntity>(alias);
+    public static IUpdateSqlBuilder<TEntity> Update<TEntity>() where TEntity : class
+        => new UpdateSqlBuilder<TEntity>();
 
     /// <summary>
     /// Starts building a DELETE query for the specified table.
     /// </summary>
     /// <typeparam name="TEntity">The entity type representing the table to delete from.</typeparam>
-    /// <param name="alias">Optional alias for the table.</param>
     /// <returns>A DELETE SQL builder for method chaining.</returns>
-    public static IDeleteSqlBuilder<TEntity> Delete<TEntity>(string? alias = null) where TEntity : class
-        => new DeleteSqlBuilder<TEntity>(alias);
+    public static IDeleteSqlBuilder<TEntity> Delete<TEntity>() where TEntity : class
+        => new DeleteSqlBuilder<TEntity>();
 
     /// <summary>
     /// Starts building a stored procedure call.

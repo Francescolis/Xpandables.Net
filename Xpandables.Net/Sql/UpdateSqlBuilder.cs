@@ -32,11 +32,9 @@ internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> whe
     private readonly List<string> _whereClauses = [];
     private readonly List<string> _outputColumns = [];
     private readonly SqlExpressionVisitor _expressionVisitor = new();
-    private readonly string _tableAlias;
 
-    public UpdateSqlBuilder(string? alias = null)
+    public UpdateSqlBuilder()
     {
-        _tableAlias = alias ?? GetDefaultAlias<TEntity>();
     }
 
     public IUpdateSqlBuilder<TEntity> Set<TValues>(Expression<Func<TEntity, TValues>> setSelector)
@@ -53,7 +51,8 @@ internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> whe
 
         _expressionVisitor.RegisterParameterAliases(predicate);
         var sql = _expressionVisitor.VisitAndGenerateSql(predicate.Body);
-        _whereClauses.Add(sql);
+        // Remove alias from WHERE clause columns
+        _whereClauses.Add(RemoveAliasFromWhereClause(sql));
         return this;
     }
 
@@ -75,7 +74,8 @@ internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> whe
         var sql = new StringBuilder();
         var tableName = GetTableName<TEntity>();
 
-        sql.Append(CultureInfo.InvariantCulture, $"UPDATE [{_tableAlias}] SET {string.Join(", ", _setClauses)}");
+        // Use table name (no alias) for UPDATE
+        sql.Append(CultureInfo.InvariantCulture, $"UPDATE [{tableName}] SET {string.Join(", ", _setClauses)}");
 
         // OUTPUT clause (SQL Server specific)
         if (_outputColumns.Count > 0)
@@ -83,9 +83,6 @@ internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> whe
             sql.AppendLine();
             sql.Append(CultureInfo.InvariantCulture, $"OUTPUT {string.Join(", ", _outputColumns.Select(c => $"INSERTED.{c}"))}");
         }
-
-        sql.AppendLine();
-        sql.Append(CultureInfo.InvariantCulture, $"FROM [{tableName}] AS [{_tableAlias}]");
 
         // WHERE clause
         if (_whereClauses.Count > 0)
@@ -134,9 +131,12 @@ internal sealed class UpdateSqlBuilder<TEntity> : IUpdateSqlBuilder<TEntity> whe
         }
     }
 
-#pragma warning disable CA1308 // Normalize strings to uppercase
-    private static string GetDefaultAlias<T>() => typeof(T).Name.ToLowerInvariant();
-#pragma warning restore CA1308 // Normalize strings to uppercase
+    private static string RemoveAliasFromWhereClause(string sql)
+    {
+        // Removes patterns like [alias].[Column] => [Column]
+        // Handles multiple aliases and nested brackets
+        return System.Text.RegularExpressions.Regex.Replace(sql, @"\[[a-zA-Z0-9_]+\]\.\[([a-zA-Z0-9_]+)\]", "[$1]");
+    }
 
     private static string GetTableName<T>()
     {
