@@ -22,10 +22,10 @@ namespace Xpandables.Net.Collections;
 /// JSON converter for materialized paged data that serializes pagination info in the response body.
 /// </summary>
 /// <typeparam name="T">The type of items in the collection.</typeparam>
-internal sealed class MaterializedPagedDataBodyJsonConverter<T> : JsonConverter<MaterializedPagedData<T>>
+internal sealed class MaterializedPagedDataBodyJsonConverter<T> : JsonConverter<AsyncPagedEnumerableData<T>>
 {
     /// <inheritdoc />
-    public override MaterializedPagedData<T> Read(
+    public override AsyncPagedEnumerableData<T> Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options) =>
@@ -34,7 +34,7 @@ internal sealed class MaterializedPagedDataBodyJsonConverter<T> : JsonConverter<
     /// <inheritdoc />
     public override void Write(
         Utf8JsonWriter writer,
-        MaterializedPagedData<T> value,
+        AsyncPagedEnumerableData<T> value,
         JsonSerializerOptions options)
     {
         writer.WriteStartObject();

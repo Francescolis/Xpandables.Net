@@ -14,25 +14,16 @@
  * limitations under the License.
  *
  ********************************************************************************/
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Xpandables.Net.Collections;
-/// <summary>
-/// Contains information extracted from a query expression for pagination analysis.
-/// </summary>
-/// <param name="Skip">The number of items to skip.</param>
-/// <param name="Take">The number of items to take.</param>
-/// <param name="QueryWithoutPagination">The original query with Skip/Take methods removed.</param>
-internal readonly record struct PaginationExtractionResult<TResult>(
-    int? Skip,
-    int? Take,
-    IQueryable<TResult> QueryWithoutPagination);
 
 /// <summary>
 /// Analyzes LINQ expressions to extract Skip and Take operations.
 /// </summary>
-internal static class PaginationExpressionAnalyzer
+internal static class PaginationSourceExtractor
 {
     private static readonly MethodInfo SkipMethod = typeof(Queryable)
         .GetMethods(BindingFlags.Static | BindingFlags.Public)
@@ -43,28 +34,9 @@ internal static class PaginationExpressionAnalyzer
         .First(m => m.Name == nameof(Queryable.Take) && m.GetParameters().Length == 2);
 
     /// <summary>
-    /// Extracts Skip and Take values from a query and returns a version without pagination.
-    /// </summary>
-    /// <typeparam name="TResult">The result type of the query.</typeparam>
-    /// <param name="query">The query to analyze.</param>
-    /// <returns>Pagination extraction result containing Skip/Take values and unpaginated query.</returns>
-    public static PaginationExtractionResult<TResult> ExtractPagination<TResult>(IQueryable<TResult> query)
-    {
-        var visitor = new PaginationExtractionVisitor();
-        var modifiedExpression = visitor.Visit(query.Expression);
-
-        var queryWithoutPagination = query.Provider.CreateQuery<TResult>(modifiedExpression);
-
-        return new PaginationExtractionResult<TResult>(
-            visitor.Skip,
-            visitor.Take,
-            queryWithoutPagination);
-    }
-
-    /// <summary>
     /// Expression visitor that extracts and removes Skip/Take method calls.
     /// </summary>
-    private sealed class PaginationExtractionVisitor : ExpressionVisitor
+    internal sealed class PaginationExtractionVisitor : ExpressionVisitor
     {
         public int? Skip { get; private set; }
         public int? Take { get; private set; }
@@ -100,7 +72,6 @@ internal static class PaginationExpressionAnalyzer
 
         private static int? ExtractMemberValue(MemberExpression member)
         {
-#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
                 // Handle cases like local variables or properties
@@ -112,14 +83,16 @@ internal static class PaginationExpressionAnalyzer
                         PropertyInfo property => property.GetValue(constant.Value),
                         _ => null
                     };
+
                     return value as int?;
                 }
             }
-            catch
+            catch (Exception exception)
             {
+                Trace.TraceError($"Failed to extract member value from {member} with exception : {exception}");
                 // If we can't extract the value, return null
             }
-#pragma warning restore CA1031 // Do not catch general exception types
+
             return null;
         }
     }

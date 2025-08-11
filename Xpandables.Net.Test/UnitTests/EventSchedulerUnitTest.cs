@@ -106,7 +106,7 @@ public class InMemoryEventStore : Repository, IEventStore
         if (cancellationToken.IsCancellationRequested)
         {
             return AsyncEnumerable.Empty<TResult>()
-                .WithPagination(Pagination.WithoutPagination(0));
+                .WithPagination(Pagination.Without(0));
         }
 
         IQueryable<TEntity> integrations = _eventEntities
@@ -115,7 +115,8 @@ public class InMemoryEventStore : Repository, IEventStore
             .AsQueryable();
 
         var filteredQuery = filter(integrations);
-        return DoFetchAsync(filteredQuery, cancellationToken);
+        return filteredQuery.WithPagination();
+        //return DoFetchAsync(filteredQuery, cancellationToken);
     }
 
     public Task MarkAsProcessedAsync(

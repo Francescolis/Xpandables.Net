@@ -58,7 +58,7 @@ public abstract class Repository : AsyncDisposable, IRepository
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity =>
-        AsyncEnumerable.Empty<TResult>().WithPagination(new Pagination(0, 0, 0));
+        AsyncEnumerable.Empty<TResult>().WithPagination();
 
     /// <summary>
     /// When overridden in derived classes, adds or updates a collection of entities in the data store asynchronously.
@@ -71,41 +71,6 @@ public abstract class Repository : AsyncDisposable, IRepository
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken)
         where TEntity : class, IEntity => Task.CompletedTask;
-
-    /// <summary>
-    /// Applies pagination to the filtered query and returns an async paged enumerable.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the result to return.</typeparam>
-    /// <param name="filteredQuery">The filtered query to apply pagination to.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>An async paged enumerable that provides both data and pagination metadata.</returns>
-    protected static IAsyncPagedEnumerable<TResult> DoFetchAsync<TResult>(
-        IQueryable<TResult> filteredQuery, CancellationToken cancellationToken)
-    {
-        var extractionResult = PaginationExpressionAnalyzer.ExtractPagination(filteredQuery);
-
-        var asyncEnumerable = filteredQuery as IAsyncEnumerable<TResult> ?? filteredQuery.ToAsyncEnumerable();
-
-        var paginationInfoFactory = CreatePaginationFactory(
-            extractionResult, cancellationToken);
-
-        return asyncEnumerable.WithPagination(paginationInfoFactory);
-    }
-
-    private static Func<Task<Pagination>> CreatePaginationFactory<TResult>(
-        PaginationExtractionResult<TResult> extractionResult,
-        CancellationToken cancellationToken) => async ()
-        =>
-        {
-            long totalCount = await extractionResult.QueryWithoutPagination
-                .LongCountAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            return new Pagination(
-                extractionResult.Skip,
-                extractionResult.Take,
-                totalCount);
-        };
 }
 
 /// <summary>
@@ -163,7 +128,7 @@ public class Repository<TDataContext> : Repository, IRepository<TDataContext>
 
         var filteredQuery = filter(baseQuery);
 
-        return DoFetchAsync<TResult>(filteredQuery, cancellationToken);
+        return filteredQuery.WithPagination();
     }
 
     /// <summary>
@@ -187,7 +152,7 @@ public class Repository<TDataContext> : Repository, IRepository<TDataContext>
         }
 
         // Convert to array to avoid multiple enumeration
-        var entitiesArray = collection as TEntity[] ?? collection.ToArray();
+        var entitiesArray = collection as TEntity[] ?? [.. collection];
 
         // Get entities to add (those with default KeyId values)
         var entitiesToAdd = entitiesArray.Where(e => e.KeyId.IsDefaultValue()).ToArray();

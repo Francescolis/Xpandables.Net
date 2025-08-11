@@ -237,7 +237,7 @@ public sealed class EndpointProcessor : IEndpointProcessor
         dynamic dynamicPagedEnumerable = pagedEnumerable;
 
         object materializedPaged = await AsyncPagedEnumerableExtensions
-            .ToListWithPaginationAsync(dynamicPagedEnumerable, CancellationToken.None)
+            .ToAsyncPagedEnumerableDataAsync(dynamicPagedEnumerable, CancellationToken.None)
             .ConfigureAwait(false);
 
         await context.Response

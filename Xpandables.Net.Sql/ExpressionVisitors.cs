@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.Data.SqlClient;
 
 namespace Xpandables.Net.Sql;
+
 /// <summary>
 /// Expression visitor that converts LINQ expressions to SQL fragments and parameters.
 /// </summary>

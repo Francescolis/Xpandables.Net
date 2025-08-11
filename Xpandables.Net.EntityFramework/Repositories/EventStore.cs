@@ -74,8 +74,7 @@ public sealed class EventStore : Repository<DataContextEvent>, IEventStore
         ArgumentNullException.ThrowIfNull(filter);
 
         IQueryable<TResult> filteredQuery = filter(Context.Set<TEntity>().AsNoTracking());
-
-        return DoFetchAsync(filteredQuery, cancellationToken);
+        return filteredQuery.WithPagination();
     }
 
     /// <inheritdoc />

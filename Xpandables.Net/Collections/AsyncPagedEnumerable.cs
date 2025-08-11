@@ -20,6 +20,8 @@ namespace Xpandables.Net.Collections;
 /// Represents an asynchronous paged enumerable collection.
 /// </summary>
 /// <typeparam name="T">The type of items in the collection.</typeparam>
+/// <remarks>You can managed the way the class get serialized by registering the JSON converter
+/// <see langword="MaterializedPagedDataJsonConverterFactory"/> from the "Xpandables.Net.AspNetCore" package.</remarks>
 public sealed class AsyncPagedEnumerable<T>(
     IAsyncEnumerable<T> source,
     Func<Task<Pagination>> paginationFactory) : IAsyncPagedEnumerable<T>
@@ -28,7 +30,7 @@ public sealed class AsyncPagedEnumerable<T>(
     private readonly Lazy<Task<Pagination>> _lazyPagination = new(() => paginationFactory());
 
     /// <inheritdoc />
-    public Pagination PaginationInfo =>
+    public Pagination Pagination =>
         _lazyPagination.Value.IsCompletedSuccessfully
             ? _lazyPagination.Value.Result
             : throw new InvalidOperationException(

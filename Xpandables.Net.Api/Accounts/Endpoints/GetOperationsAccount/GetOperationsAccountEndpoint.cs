@@ -1,4 +1,5 @@
-﻿using Xpandables.Net.DependencyInjection;
+﻿using Xpandables.Net.Collections;
+using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.Api.Accounts.Endpoints.GetOperationsAccount;
@@ -24,5 +25,5 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
         .WithName("GetOperationsAccount")
         .WithXMinimalApi()
         .AllowAnonymous()
-        .Produces<IAsyncEnumerable<OperationAccount>>();
+        .Produces<AsyncPagedEnumerableData<OperationAccount>>();
 }

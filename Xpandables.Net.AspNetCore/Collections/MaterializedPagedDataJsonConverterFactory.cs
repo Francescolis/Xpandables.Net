@@ -34,7 +34,7 @@ public sealed class MaterializedPagedDataJsonConverterFactory(IServiceProvider s
     /// <inheritdoc />
     public override bool CanConvert(Type typeToConvert) =>
         typeToConvert.IsGenericType &&
-               typeToConvert.GetGenericTypeDefinition() == typeof(MaterializedPagedData<>);
+               typeToConvert.GetGenericTypeDefinition() == typeof(AsyncPagedEnumerableData<>);
 
     /// <inheritdoc />
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)

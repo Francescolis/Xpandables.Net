@@ -17,12 +17,12 @@
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Represents materialized paged data for JSON serialization.
+/// Represents an <see cref="IAsyncPagedEnumerable{T}"/> materialized data for JSON serialization.
 /// </summary>
 /// <typeparam name="T">The type of items in the collection.</typeparam>
 /// <param name="Data">The materialized data items.</param>
 /// <param name="Pagination">The pagination metadata.</param>
-public readonly record struct MaterializedPagedData<T>(IReadOnlyList<T> Data, Pagination Pagination);
+public readonly record struct AsyncPagedEnumerableData<T>(IReadOnlyList<T> Data, Pagination Pagination);
 
 /// <summary>
 /// Provides extension methods for working with <see cref="IAsyncPagedEnumerable{T}"/>.
@@ -40,9 +40,7 @@ public static class AsyncPagedEnumerableExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        return new AsyncPagedEnumerable<TSource>(
-            source,
-            () => Task.FromResult(Pagination.WithoutPagination()));
+        return source.WithPagination(Pagination.Without());
     }
 
     /// <summary>
@@ -103,21 +101,78 @@ public static class AsyncPagedEnumerableExtensions
     }
 
     /// <summary>
-    /// Materializes the async paged enumerable to a list with pagination.
+    /// Converts an <see cref="IQueryable{TSource}"/> to an <see cref="IAsyncPagedEnumerable{TSource}"/>
+    /// with default pagination based on the query's Skip and Take values.
+    /// </summary>
+    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
+    /// <param name="source">The source queryable.</param>
+    /// <returns>An async paged enumerable with default pagination metadata.</returns>
+    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
+        this IQueryable<TSource> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var paginationSource = source.ExtractPagination();
+        var asyncEnumerable = source as IAsyncEnumerable<TSource> ?? source.ToAsyncEnumerable();
+        return asyncEnumerable.WithPagination(() =>
+        {
+            long totalCount = paginationSource.QueryWithoutPagination.LongCount();
+            return Task.FromResult(Pagination.With(paginationSource.Skip, paginationSource.Take, totalCount));
+        });
+    }
+
+    /// <summary>
+    /// Converts an <see cref="IQueryable{TSource}"/> to an <see cref="IAsyncPagedEnumerable{TSource}"/>
+    /// with pagination based on the provided <see cref="Pagination"/> object.
+    /// </summary>
+    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
+    /// <param name="source">The source queryable.</param>
+    /// <param name="pagination">The pagination information to apply.</param>
+    /// <returns>An async paged enumerable with pagination metadata.</returns>
+    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
+        this IQueryable<TSource> source, Pagination pagination)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var asyncEnumerable = source as IAsyncEnumerable<TSource> ?? source.ToAsyncEnumerable();
+
+        return asyncEnumerable.WithPagination(pagination);
+    }
+
+    /// <summary>
+    /// Extracts Skip and Take values from a query and returns a version without pagination.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the query.</typeparam>
+    /// <param name="source">The query to analyze.</param>
+    /// <returns>Pagination extraction result containing Skip/Take values and unpaginated query.</returns>
+    public static PaginationSource<TSource> ExtractPagination<TSource>(this IQueryable<TSource> source)
+    {
+        var visitor = new PaginationSourceExtractor.PaginationExtractionVisitor();
+
+        var modifiedExpression = visitor.Visit(source.Expression);
+
+        var queryWithoutPagination = source.Provider.CreateQuery<TSource>(modifiedExpression);
+
+        return Pagination.WithSource(visitor.Skip, visitor.Take, queryWithoutPagination);
+    }
+
+    /// <summary>
+    /// Converts an <see cref="IAsyncPagedEnumerable{TSource}"/> to an <see cref="AsyncPagedEnumerableData{TSource}"/>
+    /// containing the materialized data and pagination metadata for JSON serialization.
     /// </summary>
     /// <typeparam name="TSource">The type of items in the collection.</typeparam>
     /// <param name="source">The source async paged enumerable.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A tuple containing the materialized list and pagination info.</returns>
-    public static async Task<MaterializedPagedData<TSource>> ToListWithPaginationAsync<TSource>(
+    /// <returns>An <see cref="AsyncPagedEnumerableData{TSource}"/> containing the materialized data and pagination metadata.</returns>
+    public static async Task<AsyncPagedEnumerableData<TSource>> ToAsyncPagedEnumerableDataAsync<TSource>(
         this IAsyncPagedEnumerable<TSource> source,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+        var data = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
         var pagination = await source.GetPaginationAsync().ConfigureAwait(false);
 
-        return new MaterializedPagedData<TSource>(items, pagination);
+        return new AsyncPagedEnumerableData<TSource>(data, pagination);
     }
 }
