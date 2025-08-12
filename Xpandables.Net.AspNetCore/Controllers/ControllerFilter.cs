@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,12 +38,29 @@ public sealed class ControllerFilter : IAsyncAlwaysRunResultFilter
         if (context.Result is ObjectResult objectResult
             && objectResult.Value is ExecutionResult executionResult)
         {
-            IEndpointProcessor execute = context
-                .HttpContext
-                .RequestServices
-                .GetRequiredService<IEndpointProcessor>();
+            IMinimalResultExecution? minimalResultExecution = context
+                    .HttpContext
+                   .RequestServices
+                   .GetServices<IMinimalResultExecution>()
+                   .FirstOrDefault(execution => execution.CanExecute(executionResult));
 
-            return execute.ProcessAsync(context.HttpContext, executionResult);
+            if (minimalResultExecution is null)
+            {
+                if (executionResult.Value is not null)
+                {
+                    return context.HttpContext.Response.WriteAsJsonAsync(
+                        executionResult.Value,
+                        executionResult.Value.GetType());
+                }
+                else
+                {
+                    return context.HttpContext.Response
+                        .CompleteAsync();
+                }
+            }
+
+            return minimalResultExecution
+                .ExecuteAsync(context.HttpContext, executionResult);
         }
 
         return next();

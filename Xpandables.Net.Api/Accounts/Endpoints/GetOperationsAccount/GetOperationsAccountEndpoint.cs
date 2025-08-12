@@ -25,5 +25,5 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
         .WithName("GetOperationsAccount")
         .WithXMinimalApi()
         .AllowAnonymous()
-        .Produces<AsyncPagedEnumerableData<OperationAccount>>();
+        .Produces<IAsyncPagedEnumerable<OperationAccount>>(contentType: Rests.Rest.ContentType.Json);
 }

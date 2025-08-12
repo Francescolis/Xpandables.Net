@@ -47,41 +47,14 @@ public static class ServiceCollectionExecutionExtensions
         this IServiceCollection services) =>
         services
             .AddXMinimalJsonOptions()
-            .AddXEndpointProcessor()
             .AddXValidatorProvider()
             .AddXEndpointValidator()
             .AddXMinimalMiddleware()
-            .AddXValidatorDefault();
-
-    /// <summary>
-    /// Adds a scoped service of the type specified in 
-    /// <typeparamref name="TEndpointProcessor"/> 
-    /// with an implementation type of 
-    /// <see cref="IEndpointProcessor"/> to the specified 
-    /// <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <typeparam name="TEndpointProcessor">The type of the service to add. 
-    /// This class must implement <see cref="IEndpointProcessor"/>.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add 
-    /// the service to.</param>
-    /// <returns>A reference to this instance after the execution has 
-    /// completed.</returns>
-    public static IServiceCollection AddXEndpointProcessor<TEndpointProcessor>(
-        this IServiceCollection services)
-        where TEndpointProcessor : class, IEndpointProcessor =>
-        services.AddScoped<IEndpointProcessor, TEndpointProcessor>();
-
-    /// <summary>
-    /// Adds a scoped service of the type <see cref="EndpointProcessor"/> 
-    /// to the specified <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add 
-    /// the service to.</param>
-    /// <returns>A reference to this instance after the execution has 
-    /// completed.</returns>
-    public static IServiceCollection AddXEndpointProcessor(
-        this IServiceCollection services) =>
-        services.AddXEndpointProcessor<EndpointProcessor>();
+            .AddXValidatorDefault()
+            .AddScoped<IMinimalResultExecution, FailureMinimalResultExecution>()
+            .AddScoped<IMinimalResultExecution, CreatedMinimalResultExecution>()
+            .AddScoped<IMinimalResultExecution, StreamMinimalResultExecution>()
+            .AddScoped<IMinimalResultExecution, AsyncPagedEnumerableMinimalResultExecution>();
 
     /// <summary>
     /// Adds a scoped service of the type specified in 

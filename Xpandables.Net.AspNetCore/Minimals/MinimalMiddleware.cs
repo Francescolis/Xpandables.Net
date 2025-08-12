@@ -18,7 +18,6 @@
 using System.Reflection;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Executions;
 
@@ -47,15 +46,13 @@ public sealed class MinimalMiddleware : IMiddleware
                 exception = targetInvocation.InnerException ?? targetInvocation;
             }
 
-            IEndpointProcessor execute = context
-                .RequestServices
-                .GetRequiredService<IEndpointProcessor>();
-
             ExecutionResult executionResult =
                 exception.ToExecutionResultForProblemDetails();
 
-            await execute
-                .ProcessAsync(context, executionResult)
+            var minimalResult = executionResult.ToMinimalResult();
+
+            await minimalResult
+                .ExecuteAsync(context)
                 .ConfigureAwait(false);
         }
     }

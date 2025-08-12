@@ -44,10 +44,26 @@ public sealed class MinimalResult(ExecutionResult executionResult) : IResult
     /// <returns>A task that represents the asynchronous execution.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        IEndpointProcessor execute = httpContext
+        IMinimalResultExecution? minimalResultExecution = httpContext
             .RequestServices
-            .GetRequiredService<IEndpointProcessor>();
+            .GetServices<IMinimalResultExecution>()
+            .FirstOrDefault(execution => execution.CanExecute(_executionResult));
 
-        return execute.ProcessAsync(httpContext, _executionResult);
+        if (minimalResultExecution is null)
+        {
+            if (executionResult.Value is not null)
+            {
+                return httpContext.Response.WriteAsJsonAsync(
+                    executionResult.Value,
+                    executionResult.Value.GetType());
+            }
+            else
+            {
+                return httpContext.Response
+                    .CompleteAsync();
+            }
+        }
+
+        return minimalResultExecution.ExecuteAsync(httpContext, _executionResult);
     }
 }

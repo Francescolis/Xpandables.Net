@@ -231,17 +231,17 @@ public static class Rest
         /// <summary>
         /// Represents the JSON content type.
         /// </summary>
-        public const string Json = "application/json";
+        public const string Json = "application/json; charset=utf-8";
 
         /// <summary>  
         /// Represents the JSON Patch content type.  
         /// </summary>  
-        public const string JsonPatch = "application/json-patch+json";
+        public const string JsonPatch = "application/json-patch+json; charset=utf-8";
 
         /// <summary>  
         /// Represents the JSON problem content type.  
         /// </summary>  
-        public const string JsonProblem = "application/problem+json";
+        public const string JsonProblem = "application/problem+json; charset=utf-8";
 
         /// <summary>
         /// Represents the XML content type.
