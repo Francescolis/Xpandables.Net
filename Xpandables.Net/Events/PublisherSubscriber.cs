@@ -16,11 +16,10 @@
  ********************************************************************************/
 
 using System.Collections.Concurrent;
-using System.Reflection;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Events;
 
@@ -31,7 +30,8 @@ namespace Xpandables.Net.Events;
 /// </summary>
 public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disposable, IPublisher, ISubscriber
 {
-    private readonly ConcurrentDictionary<Type, ConcurrentBag<object>> _subscribers = [];
+    private readonly ConcurrentDictionary<Type, EventHandlerCollection> _subscribers = new();
+    private readonly ConcurrentDictionary<Type, object[]> _serviceHandlerCache = new();
 
     /// <inheritdoc />
     public async Task PublishAsync<TEvent>(
@@ -39,66 +39,103 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
         CancellationToken cancellationToken = default)
         where TEvent : class, IEvent
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         try
         {
-            ConcurrentBag<object> handlers = GetHandlersOf(@event.GetType());
+            var eventType = @event.GetType();
+            var handlers = GetHandlersOf(eventType);
 
-            Task[] tasks =
-            [
-                .. handlers
-                    .Select(handler => handler switch
-                    {
-                        Action<TEvent> action => Task.Run(() => action(@event), cancellationToken),
-                        Func<TEvent, Task> func => func(@event),
-                        DelHandler<IEvent> eventHandler => eventHandler.Invoke(@event, cancellationToken),
-                        _ => Task.CompletedTask
-                    })
-            ];
+            if (handlers.IsEmpty)
+            {
+                return;
+            }
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            var tasks = new List<Task>(handlers.Count);
+
+            // Process synchronous action handlers
+            foreach (var action in handlers.SyncHandlers)
+            {
+                tasks.Add(ExecuteHandlerSafelyAsync(() =>
+                {
+                    ((Action<TEvent>)action)(@event);
+                    return Task.CompletedTask;
+                }));
+            }
+
+            // Process asynchronous function handlers
+            foreach (var func in handlers.AsyncHandlers)
+            {
+                tasks.Add(ExecuteHandlerSafelyAsync(() =>
+                    ((Func<TEvent, CancellationToken, Task>)func)(@event, cancellationToken)));
+            }
+
+            // Process service handlers
+            foreach (var serviceHandler in handlers.ServiceHandlers)
+            {
+                tasks.Add(ExecuteHandlerSafelyAsync(() =>
+                    ((IEventHandler<TEvent>)serviceHandler).HandleAsync(@event, cancellationToken)));
+            }
+
+            // Process dependency injection handlers
+            var diHandlers = GetServiceHandlers(eventType);
+            foreach (var diHandler in diHandlers)
+            {
+                tasks.Add(ExecuteHandlerSafelyAsync(() =>
+                    ((IEventHandler<TEvent>)diHandler).HandleAsync(@event, cancellationToken)));
+            }
+
+            if (tasks.Count > 0)
+            {
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
         }
-        catch (Exception exception)
-            when (exception is not InvalidOperationException)
+        catch (Exception exception) when (exception is not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                $"Unable to publish the event {@event.Id}. " +
-                $"See inner exception for details.",
+                $"Unable to publish the event {@event.Id}. See inner exception for details.",
                 exception);
         }
     }
 
     /// <inheritdoc />
     public void Subscribe<TEvent>(Action<TEvent> subscriber)
-        where TEvent : class, IEvent =>
-        GetHandlersOf<TEvent>()
-            .Add(subscriber);
+        where TEvent : class, IEvent
+    {
+        ArgumentNullException.ThrowIfNull(subscriber);
+        GetOrCreateHandlersOf<TEvent>().AddSyncHandler(subscriber);
+    }
 
     /// <inheritdoc />
-    public void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
-        where TEvent : class, IEvent =>
-        GetHandlersOf<TEvent>()
-            .Add(subscriber);
+    public void Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> subscriber)
+        where TEvent : class, IEvent
+    {
+        ArgumentNullException.ThrowIfNull(subscriber);
+        GetOrCreateHandlersOf<TEvent>().AddAsyncHandler(subscriber);
+    }
 
     /// <inheritdoc />
     public void Subscribe<TEvent>(IEventHandler<TEvent> subscriber)
-        where TEvent : class, IEvent =>
-        GetHandlersOf<TEvent>()
-            .Add(subscriber);
+        where TEvent : class, IEvent
+    {
+        ArgumentNullException.ThrowIfNull(subscriber);
+        GetOrCreateHandlersOf<TEvent>().AddServiceHandler(subscriber);
+    }
 
     /// <inheritdoc />
     public IDisposable SubscribeDisposable<TEvent>(Action<TEvent> subscriber)
         where TEvent : class, IEvent
     {
         Subscribe(subscriber);
-        return new SubscriptionToken<TEvent>(this, subscriber);
+        return new SubscriptionToken<TEvent>(this, subscriber, HandlerType.Sync);
     }
 
     /// <inheritdoc />
-    public IDisposable SubscribeDisposable<TEvent>(Func<TEvent, Task> subscriber)
+    public IDisposable SubscribeDisposable<TEvent>(Func<TEvent, CancellationToken, Task> subscriber)
         where TEvent : class, IEvent
     {
         Subscribe(subscriber);
-        return new SubscriptionToken<TEvent>(this, subscriber);
+        return new SubscriptionToken<TEvent>(this, subscriber, HandlerType.Async);
     }
 
     /// <inheritdoc />
@@ -106,92 +143,90 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
         where TEvent : class, IEvent
     {
         Subscribe(subscriber);
-        return new SubscriptionToken<TEvent>(this, subscriber);
+        return new SubscriptionToken<TEvent>(this, subscriber, HandlerType.Service);
     }
 
     /// <inheritdoc />
     public bool Unsubscribe<TEvent>(Action<TEvent> subscriber)
         where TEvent : class, IEvent =>
-        RemoveSubscriber<TEvent>(subscriber);
+        _subscribers.TryGetValue(typeof(TEvent), out var handlers) &&
+        handlers.RemoveSyncHandler(subscriber);
 
     /// <inheritdoc />
-    public bool Unsubscribe<TEvent>(Func<TEvent, Task> subscriber)
+    public bool Unsubscribe<TEvent>(Func<TEvent, CancellationToken, Task> subscriber)
         where TEvent : class, IEvent =>
-        RemoveSubscriber<TEvent>(subscriber);
+        _subscribers.TryGetValue(typeof(TEvent), out var handlers) &&
+        handlers.RemoveAsyncHandler(subscriber);
 
     /// <inheritdoc />
     public bool Unsubscribe<TEvent>(IEventHandler<TEvent> subscriber)
         where TEvent : class, IEvent =>
-        RemoveSubscriber<TEvent>(subscriber);
+        _subscribers.TryGetValue(typeof(TEvent), out var handlers) &&
+        handlers.RemoveServiceHandler(subscriber);
 
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            foreach (ConcurrentBag<object> handlers in _subscribers.Values)
-            {
-                handlers.Clear();
-            }
-
             _subscribers.Clear();
+            _serviceHandlerCache.Clear();
         }
 
         base.Dispose(disposing);
     }
 
-    private bool RemoveSubscriber<TEvent>(object subscriber)
-        where TEvent : class, IEvent
-    {
-        if (!_subscribers.TryGetValue(typeof(TEvent), out ConcurrentBag<object>? handlers))
-        {
-            return false;
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static async Task ExecuteHandlerSafelyAsync(Func<Task> handler) =>
+        await handler().ConfigureAwait(false);
 
-        // Since ConcurrentBag doesn't support direct removal, we need to recreate it
-        List<object> existingHandlers = [.. handlers];
-        bool removed = existingHandlers.Remove(subscriber);
-
-        if (removed)
-        {
-            // Replace the bag with a new one containing the remaining handlers
-            _subscribers.TryUpdate(typeof(TEvent), [.. existingHandlers], handlers);
-        }
-
-        return removed;
-    }
-
-    private ConcurrentBag<object> GetHandlersOf<TEvent>()
+    private EventHandlerCollection GetOrCreateHandlersOf<TEvent>()
         where TEvent : class, IEvent =>
-        GetHandlersOf(typeof(TEvent));
+        _subscribers.GetOrAdd(typeof(TEvent), _ => new EventHandlerCollection());
 
-    private ConcurrentBag<object> GetHandlersOf(Type eventType)
+    private EventHandlerCollection GetHandlersOf(Type eventType) =>
+        _subscribers.TryGetValue(eventType, out var handlers) ? handlers : EventHandlerCollection.Empty;
+
+    private object[] GetServiceHandlers(Type eventType) =>
+        _serviceHandlerCache.GetOrAdd(eventType, type =>
+        {
+            var handlerType = typeof(IEventHandler<>).MakeGenericType(type);
+            return [.. serviceProvider.GetServices(handlerType).OfType<object>()];
+        });
+
+    /// <summary>
+    /// Thread-safe collection for managing different types of event handlers.
+    /// </summary>
+    private sealed class EventHandlerCollection
     {
-        Type handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
-        ConcurrentBag<object> handlers = _subscribers.GetOrAdd(eventType, _ => []);
+        public static readonly EventHandlerCollection Empty = new();
 
-        serviceProvider
-            .GetServices(handlerType)
-            .Cast<object>()
-            .Where(handler => !handlers.Contains(handler))
-            .ForEach(handler =>
-            {
-                MethodInfo? method = handlerType.GetMethod(
-                    "HandleAsync",
-                    BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic,
-                    [eventType, typeof(CancellationToken)]);
+        private readonly ConcurrentDictionary<object, byte> _syncHandlers = new();
+        private readonly ConcurrentDictionary<object, byte> _asyncHandlers = new();
+        private readonly ConcurrentDictionary<object, byte> _serviceHandlers = new();
 
-                DelHandler<IEvent> delHandler = (evt, token) =>
-                    (Task)method!.Invoke(handler, [evt, token])!;
+        public IEnumerable<object> SyncHandlers => _syncHandlers.Keys;
+        public IEnumerable<object> AsyncHandlers => _asyncHandlers.Keys;
+        public IEnumerable<object> ServiceHandlers => _serviceHandlers.Keys;
 
-                handlers.Add(delHandler);
-            });
+        public int Count => _syncHandlers.Count + _asyncHandlers.Count + _serviceHandlers.Count;
+        public bool IsEmpty => Count == 0;
 
-        return handlers;
+        public void AddSyncHandler(object handler) => _syncHandlers.TryAdd(handler, 0);
+        public void AddAsyncHandler(object handler) => _asyncHandlers.TryAdd(handler, 0);
+        public void AddServiceHandler(object handler) => _serviceHandlers.TryAdd(handler, 0);
+
+        public bool RemoveSyncHandler(object handler) => _syncHandlers.TryRemove(handler, out _);
+        public bool RemoveAsyncHandler(object handler) => _asyncHandlers.TryRemove(handler, out _);
+        public bool RemoveServiceHandler(object handler) => _serviceHandlers.TryRemove(handler, out _);
     }
 
-    private delegate Task DelHandler<in TEvent>(TEvent @event, CancellationToken cancellationToken)
-        where TEvent : class, IEvent;
+    private enum HandlerType
+    {
+        Sync,
+        Async,
+        Service
+    }
 
     /// <summary>
     /// Represents a subscription token that can be disposed to unsubscribe from events.
@@ -199,21 +234,36 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="subscriber">The publisher-subscriber instance.</param>
     /// <param name="handler">The event handler to unsubscribe.</param>
-    private sealed class SubscriptionToken<TEvent>(PublisherSubscriber subscriber, object handler) : IDisposable
+    /// <param name="handlerType">The type of handler being tracked.</param>
+    private sealed class SubscriptionToken<TEvent>(
+        PublisherSubscriber subscriber,
+        object handler,
+        HandlerType handlerType) : IDisposable
         where TEvent : class, IEvent
     {
-#pragma warning disable CA2213 // Disposable fields should be disposed
         private readonly PublisherSubscriber _subscriber = subscriber;
-#pragma warning restore CA2213 // Disposable fields should be disposed
         private readonly object _handler = handler;
-        private bool _disposed;
+        private readonly HandlerType _handlerType = handlerType;
+        private volatile bool _disposed;
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            var success = _handlerType switch
             {
-                _subscriber.RemoveSubscriber<TEvent>(_handler);
-                _disposed = true;
+                HandlerType.Sync => _subscriber.Unsubscribe((Action<TEvent>)_handler),
+                HandlerType.Async => _subscriber.Unsubscribe((Func<TEvent, CancellationToken, Task>)_handler),
+                HandlerType.Service => _subscriber.Unsubscribe((IEventHandler<TEvent>)_handler),
+                _ => false
+            };
+
+            if (!success)
+            {
+                Trace.WriteLine($"Failed to unsubscribe the handler of type {_handlerType} for event type {typeof(TEvent).Name}.");
             }
         }
     }

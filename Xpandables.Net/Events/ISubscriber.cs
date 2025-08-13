@@ -62,9 +62,9 @@ public interface ISubscriber : IDisposable
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="subscriber">
     /// The asynchronous function to be executed
-    /// when the event is published.
+    /// when the event is published. The function receives the event and a cancellation token.
     /// </param>
-    void Subscribe<TEvent>(Func<TEvent, Task> subscriber)
+    void Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> subscriber)
         where TEvent : class, IEvent;
 
     /// <summary>
@@ -91,10 +91,11 @@ public interface ISubscriber : IDisposable
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="subscriber">
-    /// The asynchronous function to be executed when the event is published.
+    /// The asynchronous function to be executed when the event is published. 
+    /// The function receives the event and a cancellation token.
     /// </param>
     /// <returns>A disposable token that can be used to unsubscribe.</returns>
-    IDisposable SubscribeDisposable<TEvent>(Func<TEvent, Task> subscriber)
+    IDisposable SubscribeDisposable<TEvent>(Func<TEvent, CancellationToken, Task> subscriber)
         where TEvent : class, IEvent;
 
     /// <summary>
@@ -121,7 +122,7 @@ public interface ISubscriber : IDisposable
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="subscriber">The asynchronous function to unsubscribe.</param>
     /// <returns>True if the subscriber was found and removed; otherwise, false.</returns>
-    bool Unsubscribe<TEvent>(Func<TEvent, Task> subscriber)
+    bool Unsubscribe<TEvent>(Func<TEvent, CancellationToken, Task> subscriber)
         where TEvent : class, IEvent;
 
     /// <summary>
