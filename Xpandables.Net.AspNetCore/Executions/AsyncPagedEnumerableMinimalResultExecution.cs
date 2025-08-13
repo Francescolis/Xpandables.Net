@@ -19,7 +19,10 @@ using System.Reflection;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Collections;
 
@@ -77,11 +80,14 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
             Indented = false
         });
 
+        var jsonSerializerOptions = context.RequestServices
+            .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions;
+
         writer.WriteStartObject();
 
         // Write pagination metadata first
         writer.WritePropertyName("pagination");
-        JsonSerializer.Serialize(writer, pagination);
+        JsonSerializer.Serialize(writer, pagination, jsonSerializerOptions);
 
         // Write data array start
         writer.WritePropertyName("data");
@@ -89,9 +95,7 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
 
         await foreach (T item in pagedEnumerable.WithCancellation(context.RequestAborted))
         {
-            JsonSerializer.Serialize(writer, item);
-
-            // Flush periodically to send data to client immediately
+            JsonSerializer.Serialize(writer, item, jsonSerializerOptions);
             await writer.FlushAsync(context.RequestAborted).ConfigureAwait(false);
         }
 
@@ -107,7 +111,6 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
         var endpoint = context.GetEndpoint();
         if (endpoint == null) return null;
 
-        // Look for ProducesResponseTypeMetadata in endpoint metadata
         var producesMetadata = endpoint.Metadata
             .OfType<ProducesResponseTypeMetadata>()
             .FirstOrDefault();
@@ -117,7 +120,6 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
             return producesMetadata.ContentTypes.First();
         }
 
-        // Alternative: Look for IProducesResponseTypeMetadata
         var iProducesMetadata = endpoint.Metadata
             .OfType<IProducesResponseTypeMetadata>()
             .FirstOrDefault();

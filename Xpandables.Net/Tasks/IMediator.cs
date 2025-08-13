@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Events;
 using Xpandables.Net.Executions;
 
 namespace Xpandables.Net.Tasks;
@@ -21,7 +22,7 @@ namespace Xpandables.Net.Tasks;
 /// <summary>
 /// Defines a mediator interface for sending requests and receiving execution results asynchronously.
 /// </summary>
-public interface IMediator
+public interface IMediator : IPublisher
 {
     /// <summary>
     /// Sends a request asynchronously and returns an execution result.
