@@ -33,8 +33,18 @@ public abstract class State<TStateContext> : IState<TStateContext>
     void IState<TStateContext>.EnterStateContext(TStateContext context)
 #pragma warning restore CA1033 // Interface methods should be callable by child types
     {
+        ArgumentNullException.ThrowIfNull(context);
+        Context = context;
         OnEnteringStateContext(context);
-        Context = context ?? throw new ArgumentNullException(nameof(context));
+    }
+
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+    void IState<TStateContext>.ExitStateContext(TStateContext context)
+#pragma warning restore CA1033 // Interface methods should be callable by child types
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        OnExitingStateContext(context);
+        Context = null!;
     }
 
     /// <summary>
@@ -43,7 +53,13 @@ public abstract class State<TStateContext> : IState<TStateContext>
     /// <param name="context">The state context.</param>
     /// <remarks>Override this method to add custom logic when entering the 
     /// state context.</remarks>
-    protected virtual void OnEnteringStateContext(TStateContext context)
-    {
-    }
+    protected virtual void OnEnteringStateContext(TStateContext context) { }
+
+    /// <summary>
+    /// Called when exiting the state context.
+    /// </summary>
+    /// <param name="context">The state context.</param>
+    /// <remarks>Override this method to add custom logic when exiting the 
+    /// state context.</remarks>
+    protected virtual void OnExitingStateContext(TStateContext context) { }
 }

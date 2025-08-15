@@ -577,10 +577,8 @@ internal sealed class Scheduler : BackgroundService, IScheduler
     /// Determines if the circuit breaker should attempt to reset.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool ShouldAttemptCircuitBreakerReset()
-    {
-        return DateTime.UtcNow - _circuitBreakerLastFailureTimeProvider() >= _options.CircuitBreakerTimeout;
-    }
+    private bool ShouldAttemptCircuitBreakerReset() =>
+        DateTime.UtcNow - _circuitBreakerLastFailureTimeProvider() >= _options.CircuitBreakerTimeout;
 
     /// <summary>
     /// Calculates exponential backoff delay using cryptographically secure random jitter.
@@ -685,10 +683,8 @@ internal sealed class Scheduler : BackgroundService, IScheduler
     /// Updates performance metrics.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void UpdateMetrics(int processedCount, int errorCount, TimeSpan elapsed)
-    {
+    private void UpdateMetrics(int processedCount, int errorCount, TimeSpan elapsed) =>
         _metrics.UpdateMetrics(processedCount, errorCount, elapsed);
-    }
 
     #endregion
 
@@ -755,10 +751,7 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             Interlocked.Add(ref _totalProcessingTimeTicks, elapsed.Ticks);
         }
 
-        public void IncrementError()
-        {
-            Interlocked.Increment(ref _totalErrors);
-        }
+        public void IncrementError() => Interlocked.Increment(ref _totalErrors);
     }
 
     #endregion

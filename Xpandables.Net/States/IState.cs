@@ -29,6 +29,12 @@ public interface IState
     /// </summary>
     /// <param name="context">The context of the state.</param>
     void EnterStateContext(IStateContext context);
+
+    /// <summary>
+    /// Method to be called when exiting the state context.
+    /// </summary>
+    /// <param name="context">The context of the state.</param>
+    void ExitStateContext(IStateContext context);
 }
 
 /// <summary>
@@ -45,7 +51,17 @@ public interface IState<in TStateContext> : IState
     /// <param name="context">The context of the state.</param>
     void EnterStateContext(TStateContext context);
 
+    /// <summary>
+    /// Method to be called when exiting the state with a specific context type.
+    /// </summary>
+    /// <param name="context">The context of the state.</param>
+    void ExitStateContext(TStateContext context);
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     void IState.EnterStateContext(IStateContext context) =>
         EnterStateContext((TStateContext)context);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    void IState.ExitStateContext(IStateContext context) =>
+        ExitStateContext((TStateContext)context);
 }
