@@ -40,54 +40,54 @@ public readonly record struct PaginationSource<TResult>
 /// <summary>
 /// Represents pagination metadata.
 /// </summary>
-public readonly record struct Pagination
+public sealed record Pagination
 {
     /// <summary>
     /// The number of items to skip (null if no Skip was found).
     /// </summary>
-    public readonly required int? Skip { get; init; }
+    public required int? Skip { get; init; }
 
     /// <summary>
     /// The number of items to take (null if no Take was found).
     /// </summary>
-    public readonly required int? Take { get; init; }
+    public required int? Take { get; init; }
 
     /// <summary>
     /// The total number of items across all pages.
     /// </summary>
-    public readonly required long TotalCount { get; init; }
+    public required long TotalCount { get; init; }
 
     /// <summary>
     /// The current page number (1-based) or null if pagination is not detected.
     /// </summary>
-    public readonly int? PageNumber => Skip.HasValue && Take.HasValue ? (Skip.Value / Take.Value) + 1 : null;
+    public int? PageNumber => Skip.HasValue && Take.HasValue ? (Skip.Value / Take.Value) + 1 : null;
 
     /// <summary>
     /// The page size or null if Take is not specified.
     /// </summary>
-    public readonly int? PageSize => Take;
+    public int? PageSize => Take;
 
     /// <summary>
     /// The total number of pages or null if pagination is not fully specified.
     /// </summary>
-    public readonly int? TotalPages => Take.HasValue && Take.Value > 0
+    public int? TotalPages => Take.HasValue && Take.Value > 0
         ? (int)Math.Ceiling((double)TotalCount / Take.Value)
         : null;
 
     /// <summary>
     /// A value indicating whether there is a previous page.
     /// </summary>
-    public readonly bool HasPreviousPage => PageNumber.HasValue && PageNumber.Value > 1;
+    public bool HasPreviousPage => PageNumber.HasValue && PageNumber.Value > 1;
 
     /// <summary>
     /// A value indicating whether there is a next page.
     /// </summary>
-    public readonly bool HasNextPage => PageNumber.HasValue && TotalPages.HasValue && PageNumber.Value < TotalPages.Value;
+    public bool HasNextPage => PageNumber.HasValue && TotalPages.HasValue && PageNumber.Value < TotalPages.Value;
 
     /// <summary>
     /// A value indicating whether pagination was detected in the query.
     /// </summary>
-    public readonly bool IsPaginated => Skip.HasValue || Take.HasValue;
+    public bool IsPaginated => Skip.HasValue || Take.HasValue;
 
     /// <summary>
     /// Creates pagination info from explicit values.
