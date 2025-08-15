@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,8 @@
  *
  ********************************************************************************/
 
+using System.Collections.Concurrent;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Xpandables.Net.Collections;
@@ -30,8 +32,41 @@ public readonly record struct AsyncPagedEnumerableData<T>(IReadOnlyList<T> Data,
 /// <summary>
 /// Provides extension methods for working with <see cref="IAsyncPagedEnumerable{T}"/>.
 /// </summary>
-public static partial class AsyncPagedEnumerableExtensions
+public static class AsyncPagedEnumerableExtensions
 {
+    #region Cached Reflection Operations
+
+    // Memory-aware caches that automatically clean up unused entries
+    private static readonly MemoryAwareCache<Type, bool> _asyncPagedEnumerableTypeCache = 
+        new(TimeSpan.FromMinutes(10), TimeSpan.FromHours(2));
+
+    private static readonly MemoryAwareCache<Type, MethodInfo?> _entityFrameworkCountMethodCache = 
+        new(TimeSpan.FromMinutes(15), TimeSpan.FromHours(4));
+
+    private static readonly MemoryAwareCache<Type, QueryableExtractionInfo?> _queryableExtractionCache = 
+        new(TimeSpan.FromMinutes(10), TimeSpan.FromHours(2));
+
+    // Use ConditionalWeakTable for delegate caching - automatically cleaned when key is collected
+    private static readonly ConditionalWeakTable<Type, Func<object, IQueryable?>> _queryableExtractors = new();
+
+    // Static constructor to handle cleanup on app shutdown
+    static AsyncPagedEnumerableExtensions()
+    {
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => CleanupCaches();
+        AppDomain.CurrentDomain.DomainUnload += (_, _) => CleanupCaches();
+    }
+
+    private static void CleanupCaches()
+    {
+        _asyncPagedEnumerableTypeCache?.Dispose();
+        _entityFrameworkCountMethodCache?.Dispose();
+        _queryableExtractionCache?.Dispose();
+    }
+
+    #endregion
+
+    #region Public API Methods
+
     /// <summary>
     /// Determines whether the specified type implements the <see cref="IAsyncPagedEnumerable{T}"/> interface.
     /// </summary>
@@ -40,9 +75,9 @@ public static partial class AsyncPagedEnumerableExtensions
     /// otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsAsyncPagedEnumerable(Type type) =>
-        type.GetInterfaces()
-            .Any(i => i.IsGenericType
-                && i.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>));
+        _asyncPagedEnumerableTypeCache.GetOrAdd(type, static t =>
+            t.GetInterfaces().Any(i => i.IsGenericType &&
+                                      i.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>))) ?? false;
 
     /// <summary>
     /// Determines whether the specified asynchronous enumerable is an instance of <see
@@ -69,12 +104,13 @@ public static partial class AsyncPagedEnumerableExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
 
+        // Fast path: if already paged, return as-is
         if (source is IAsyncPagedEnumerable<TSource> existingPaged)
         {
             return existingPaged;
         }
 
-        return source.WithPagination(Pagination.Without());
+        return source.WithPagination(CreateOptimizedPaginationFactory<TSource>(source));
     }
 
     /// <summary>
@@ -209,5 +245,128 @@ public static partial class AsyncPagedEnumerableExtensions
         var pagination = await source.GetPaginationAsync().ConfigureAwait(false);
 
         return new AsyncPagedEnumerableData<TSource>(data, pagination);
+    }
+
+    /// <summary>
+    /// High-performance method to attempt extracting a count from various async enumerable sources.
+    /// Uses memory-aware caching to prevent memory leaks.
+    /// </summary>
+    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
+    /// <param name="source">The source async enumerable.</param>
+    /// <param name="cancellationToken">Cancellation token for async operations.</param>
+    /// <returns>The total count if available without enumeration, otherwise null.</returns>
+    public static async ValueTask<long?> TryGetCountAsync<TSource>(
+        this IAsyncEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        // Fast path: Check if it's already paged with known count
+        if (source is IAsyncPagedEnumerable<TSource> pagedSource)
+        {
+            try
+            {
+                var pagination = await pagedSource.GetPaginationAsync().ConfigureAwait(false);
+                return pagination.TotalCount >= 0 ? pagination.TotalCount : null;
+            }
+            catch
+            {
+                // Pagination retrieval failed, continue to other strategies
+            }
+        }
+
+        // Try to extract queryable for efficient counting
+        var queryable = TryExtractQueryableUsingCache<TSource>(source);
+        if (queryable is not null)
+        {
+            try
+            {
+                // Try Entity Framework's CountAsync if available
+                var efCountMethod = GetEntityFrameworkCountMethod<TSource>();
+                if (efCountMethod is not null)
+                {
+                    var task = (Task<int>)efCountMethod.Invoke(null, [queryable, cancellationToken])!;
+                    return await task.ConfigureAwait(false);
+                }
+
+                // Fall back to synchronous count for LINQ-to-Objects
+                return queryable.LongCount();
+            }
+            catch
+            {
+                // Count operation failed
+            }
+        }
+
+        // No efficient count method available
+        return null;
+    }
+
+    #endregion
+
+    #region Memory-Efficient Private Methods
+
+    /// <summary>
+    /// Creates an optimized pagination factory that attempts various strategies for getting count efficiently.
+    /// </summary>
+    private static Func<Task<Pagination>> CreateOptimizedPaginationFactory<TSource>(
+        IAsyncEnumerable<TSource> source)
+    {
+        return async () =>
+        {
+            // Try to get count efficiently first
+            var count = await source.TryGetCountAsync().ConfigureAwait(false);
+            
+            // If we got a count, use it; otherwise indicate unknown count
+            return count.HasValue ? Pagination.Without(count.Value) : Pagination.Without();
+        };
+    }
+
+    /// <summary>
+    /// Gets Entity Framework's CountAsync method with memory-aware caching.
+    /// </summary>
+    private static MethodInfo? GetEntityFrameworkCountMethod<TSource>()
+    {
+        return _entityFrameworkCountMethodCache.GetOrAdd(typeof(TSource), static _ =>
+        {
+            try
+            {
+                var efAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => a.GetName().Name == "Microsoft.EntityFrameworkCore");
+
+                if (efAssembly is null) return null;
+
+                var extensionsType = efAssembly.GetType("Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions");
+                if (extensionsType is null) return null;
+
+                var countMethods = extensionsType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Where(m => m.Name == "CountAsync" && 
+                               m.IsGenericMethod && 
+                               m.GetParameters().Length == 2)
+                    .FirstOrDefault();
+
+                return countMethods?.MakeGenericMethod(typeof(TSource));
+            }
+            catch
+            {
+                return null;
+            }
+        });
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Cached information about queryable extraction capabilities.
+    /// </summary>
+    private sealed record QueryableExtractionInfo(
+        bool CanExtract,
+        FieldInfo? Field,
+        PropertyInfo? Property)
+    {
+        /// <summary>
+        /// Represents a queryable extraction info that indicates no extraction is possible.
+        /// </summary>
+        public static readonly QueryableExtractionInfo None = new(false, null, null);
     }
 }
