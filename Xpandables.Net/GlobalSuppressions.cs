@@ -6,6 +6,9 @@
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Collections.PaginationSourceExtractor.PaginationExtractionVisitor.ExtractMemberValue(System.Linq.Expressions.MemberExpression)~System.Nullable{System.Int32}")]
 [assembly: SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>", Scope = "member", Target = "~F:Xpandables.Net.Events.PublisherSubscriber.SubscriptionToken`1._subscriber")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Collections.AsyncPagedEnumerator`1.FinalizeEnumerationAsync~System.Threading.Tasks.ValueTask")]
+[assembly: SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Events.Scheduler.ScheduleAsync(System.Threading.CancellationToken)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Events.Scheduler.ProcessEventBatchAsync(System.Collections.Generic.List{Xpandables.Net.Events.IIntegrationEvent},Xpandables.Net.Events.IPublisher,Xpandables.Net.Repositories.IEventStore,System.Threading.CancellationToken)~System.Threading.Tasks.Task{Xpandables.Net.Events.Scheduler.BatchProcessingResult}")]
+[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.Events.Scheduler.ExecuteAsync(System.Threading.CancellationToken)~System.Threading.Tasks.Task")]
 // This file is used by Code Analysis to maintain SuppressMessage
 // attributes that are applied to this project.
 // Project-level suppressions either have no target or are given
