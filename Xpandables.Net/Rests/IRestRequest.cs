@@ -66,7 +66,7 @@ public interface IRestRequest<TResult> : IRestRequest
 }
 
 /// <summary>
-/// Defines a contract for a request that streams data and returns a result of a specified type.
+/// Defines a contract for a request that streams data and returns an <see cref="IAsyncPagedEnumerable{T}"/> of a specified type.
 /// </summary>
 /// <typeparam name="TResult">Specifies the type of result that must not be null.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix

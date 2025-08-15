@@ -17,7 +17,7 @@
 
 using System.Text.Json;
 
-using Xpandables.Net.Rests;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests.Responses;
 
@@ -49,8 +49,6 @@ public sealed class RestResponseStreamComposer<TRestRequest> : IRestResponseComp
 
         try
         {
-            Type streamType = request.ResultType!;
-
             Stream stream = await response.Content
                 .ReadAsStreamAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -66,7 +64,12 @@ public sealed class RestResponseStreamComposer<TRestRequest> : IRestResponseComp
                 };
             }
 
-            object typedResult = stream.DeserializeAsyncEnumerableAsync(streamType, options, cancellationToken);
+            Type itemType = request.ResultType!;
+
+            dynamic asyncResult = stream.DeserializeAsyncEnumerableAsync(itemType, options, cancellationToken);
+            var asyncPagedResult = AsyncPagedEnumerableExtensions.IsAsyncPagedEnumerable(asyncResult)
+                ? asyncResult
+                : AsyncPagedEnumerableExtensions.WithPagination(asyncResult);
 
             return new RestResponse
             {
@@ -74,7 +77,7 @@ public sealed class RestResponseStreamComposer<TRestRequest> : IRestResponseComp
                 ReasonPhrase = response.ReasonPhrase,
                 Headers = response.Headers.ToElementCollection(),
                 Version = response.Version,
-                Result = typedResult
+                Result = asyncPagedResult
             };
         }
         catch (Exception exception)

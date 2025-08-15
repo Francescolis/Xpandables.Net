@@ -30,6 +30,30 @@ public readonly record struct AsyncPagedEnumerableData<T>(IReadOnlyList<T> Data,
 public static class AsyncPagedEnumerableExtensions
 {
     /// <summary>
+    /// Determines whether the specified type implements the <see cref="IAsyncPagedEnumerable{T}"/> interface.
+    /// </summary>
+    /// <param name="type">The type to check for implementation of <see cref="IAsyncPagedEnumerable{T}"/>.</param>
+    /// <returns><see langword="true"/> if the specified type implements <see cref="IAsyncPagedEnumerable{T}"/>; 
+    /// otherwise, <see
+    /// langword="false"/>.</returns>
+    public static bool IsAsyncPagedEnumerable(Type type) =>
+        type.GetInterfaces()
+            .Any(i => i.IsGenericType &&
+                     i.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>));
+
+    /// <summary>
+    /// Determines whether the specified asynchronous enumerable is an instance of <see
+    /// cref="IAsyncPagedEnumerable{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the asynchronous enumerable.</typeparam>
+    /// <param name="source">The asynchronous enumerable to check. Cannot be <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the specified <paramref name="source"/> is an <see cref="IAsyncPagedEnumerable{T}"/>;
+    /// otherwise, <see langword="false"/>.</returns>
+    public static bool IsAsyncPagedEnumerable<T>(this IAsyncEnumerable<T> source) =>
+        source is IAsyncPagedEnumerable<T>;
+
+
+    /// <summary>
     /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with default pagination.
     /// </summary>
     /// <typeparam name="TSource">The type of items in the collection.</typeparam>
@@ -39,7 +63,6 @@ public static class AsyncPagedEnumerableExtensions
         this IAsyncEnumerable<TSource> source)
     {
         ArgumentNullException.ThrowIfNull(source);
-
         return source.WithPagination(Pagination.Without());
     }
 

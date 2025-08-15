@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Collections;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Rests;
 
@@ -51,10 +52,10 @@ public sealed class RestRequestStreamTest
         var query = new Query();
 
         // Act
-        using RestResponse<IAsyncEnumerable<Monkey>> response = await sender.SendAsync(query, CancellationToken.None);
+        using RestResponse<IAsyncPagedEnumerable<Monkey>> response = await sender.SendAsync(query, CancellationToken.None);
         response.IsSuccess.Should().BeTrue();
         var monkeys = await response.Result!.ToListAsync();
-
+        var pagination = await response.Result!.GetPaginationAsync();
         // Assert
         response.Should().NotBeNull();
         response.Result.Should().NotBeNull();
