@@ -451,7 +451,7 @@ internal sealed class Scheduler : BackgroundService, IScheduler
                 using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
 
-                await eventPublisher.PublishAsync(@event, timeoutCts.Token).ConfigureAwait(false);
+                await eventPublisher.PublishAsync((dynamic)@event, timeoutCts.Token).ConfigureAwait(false);
 
                 processedInfos.Add(new EventProcessedInfo
                 {

@@ -46,37 +46,33 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
             var eventType = @event.GetType();
             var handlers = GetHandlersOf(eventType);
 
-            if (handlers.IsEmpty)
-            {
-                throw new InvalidOperationException(
-                    $"No handlers registered for event type {eventType.Name}. " +
-                    "Ensure that you have subscribed to the event before publishing.");
-            }
-
             var tasks = new List<Task>(handlers.Count);
 
-            // Process synchronous action handlers
-            foreach (var action in handlers.SyncHandlers)
+            if (!handlers.IsEmpty)
             {
-                tasks.Add(ExecuteHandlerSafelyAsync(() =>
+                // Process synchronous action handlers
+                foreach (var action in handlers.SyncHandlers)
                 {
-                    ((Action<TEvent>)action)(@event);
-                    return Task.CompletedTask;
-                }));
-            }
+                    tasks.Add(ExecuteHandlerSafelyAsync(() =>
+                    {
+                        ((Action<TEvent>)action)(@event);
+                        return Task.CompletedTask;
+                    }));
+                }
 
-            // Process asynchronous function handlers
-            foreach (var func in handlers.AsyncHandlers)
-            {
-                tasks.Add(ExecuteHandlerSafelyAsync(() =>
-                    ((Func<TEvent, CancellationToken, Task>)func)(@event, cancellationToken)));
-            }
+                // Process asynchronous function handlers
+                foreach (var func in handlers.AsyncHandlers)
+                {
+                    tasks.Add(ExecuteHandlerSafelyAsync(() =>
+                        ((Func<TEvent, CancellationToken, Task>)func)(@event, cancellationToken)));
+                }
 
-            // Process service handlers
-            foreach (var serviceHandler in handlers.ServiceHandlers)
-            {
-                tasks.Add(ExecuteHandlerSafelyAsync(() =>
-                    ((IEventHandler<TEvent>)serviceHandler).HandleAsync(@event, cancellationToken)));
+                // Process service handlers
+                foreach (var serviceHandler in handlers.ServiceHandlers)
+                {
+                    tasks.Add(ExecuteHandlerSafelyAsync(() =>
+                        ((IEventHandler<TEvent>)serviceHandler).HandleAsync(@event, cancellationToken)));
+                }
             }
 
             // Process dependency injection handlers
@@ -90,6 +86,12 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
             if (tasks.Count > 0)
             {
                 await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"No handlers registered for event type {eventType.Name}. " +
+                    "Ensure that you have subscribed to the event before publishing.");
             }
         }
         catch (Exception exception) when (exception is not InvalidOperationException)
