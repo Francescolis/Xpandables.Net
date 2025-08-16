@@ -23,10 +23,28 @@ using Xpandables.Net.Executions;
 namespace Xpandables.Net.Tasks;
 
 /// <summary>
+/// Defines a contract for handling asynchronous operations based on a specified request.
+/// </summary>
+/// <remarks>Implementations of this interface are responsible for processing a given request and returning the
+/// result of the operation. The operation can be canceled using the provided <see cref="CancellationToken"/>.</remarks>
+public interface IRequestHandler
+{
+    /// <summary>
+    /// Handles an asynchronous operation based on the provided request and returns the result of the execution.
+    /// </summary>
+    /// <param name="request">The input data required to perform the operation.</param>
+    /// <param name="cancellationToken">Used to signal the cancellation of the operation if needed.</param>
+    /// <returns>An asynchronous task that yields the result of the execution.</returns>
+    Task<ExecutionResult> HandleAsync(
+        IRequest request,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
 /// Represents a handler to process a request of type <typeparamref name="TRequest" />.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request being handled.</typeparam>
-public interface IRequestHandler<in TRequest>
+public interface IRequestHandler<in TRequest> : IRequestHandler
     where TRequest : class, IRequest
 {
     /// <summary>
@@ -38,6 +56,11 @@ public interface IRequestHandler<in TRequest>
     Task<ExecutionResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Task<ExecutionResult> IRequestHandler.HandleAsync(
+        IRequest request, CancellationToken cancellationToken) =>
+        HandleAsync((TRequest)request, cancellationToken);
 }
 
 /// <summary>
