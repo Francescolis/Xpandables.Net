@@ -80,7 +80,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
             foreach (var diHandler in diHandlers)
             {
                 tasks.Add(ExecuteHandlerSafelyAsync(() =>
-                    ((IEventHandler)diHandler).HandleAsync(@event, cancellationToken)));
+                    ((IEventHandler<TEvent>)diHandler).HandleAsync(@event, cancellationToken)));
             }
 
             if (tasks.Count > 0)
