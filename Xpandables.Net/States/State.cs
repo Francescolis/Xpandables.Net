@@ -44,7 +44,6 @@ public abstract class State<TStateContext> : IState<TStateContext>
     {
         ArgumentNullException.ThrowIfNull(context);
         OnExitingStateContext(context);
-        Context = null!;
     }
 
     /// <summary>
