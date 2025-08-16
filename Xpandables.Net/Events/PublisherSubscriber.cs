@@ -55,7 +55,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
                 {
                     tasks.Add(ExecuteHandlerSafelyAsync(() =>
                     {
-                        ((Action<TEvent>)action)(@event);
+                        InvokeAction(action, @event, eventType);
                         return Task.CompletedTask;
                     }));
                 }
@@ -64,14 +64,14 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
                 foreach (var func in handlers.AsyncHandlers)
                 {
                     tasks.Add(ExecuteHandlerSafelyAsync(() =>
-                        ((Func<TEvent, CancellationToken, Task>)func)(@event, cancellationToken)));
+                        InvokeAsyncFunc(func, @event, eventType, cancellationToken)));
                 }
 
                 // Process service handlers
                 foreach (var serviceHandler in handlers.ServiceHandlers)
                 {
                     tasks.Add(ExecuteHandlerSafelyAsync(() =>
-                        ((IEventHandler<TEvent>)serviceHandler).HandleAsync(@event, cancellationToken)));
+                        InvokeServiceHandler(serviceHandler, @event, eventType, cancellationToken)));
                 }
             }
 
@@ -80,7 +80,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
             foreach (var diHandler in diHandlers)
             {
                 tasks.Add(ExecuteHandlerSafelyAsync(() =>
-                    ((IEventHandler<TEvent>)diHandler).HandleAsync(@event, cancellationToken)));
+                    InvokeServiceHandler(diHandler, @event, eventType, cancellationToken)));
             }
 
             if (tasks.Count > 0)
@@ -195,6 +195,27 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
             var handlerType = typeof(IEventHandler<>).MakeGenericType(type);
             return [.. serviceProvider.GetServices(handlerType).OfType<object>()];
         });
+
+    private static void InvokeAction(object action, object eventObj, Type eventType)
+    {
+        var actionType = typeof(Action<>).MakeGenericType(eventType);
+        var method = actionType.GetMethod("Invoke")!;
+        method.Invoke(action, [eventObj]);
+    }
+
+    private static Task InvokeAsyncFunc(object func, object eventObj, Type eventType, CancellationToken cancellationToken)
+    {
+        var funcType = typeof(Func<,,>).MakeGenericType(eventType, typeof(CancellationToken), typeof(Task));
+        var method = funcType.GetMethod("Invoke")!;
+        return (Task)method.Invoke(func, [eventObj, cancellationToken])!;
+    }
+
+    private static Task InvokeServiceHandler(object serviceHandler, object eventObj, Type eventType, CancellationToken cancellationToken)
+    {
+        var handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
+        var method = handlerType.GetMethod(nameof(IEventHandler<IEvent>.HandleAsync))!;
+        return (Task)method.Invoke(serviceHandler, [eventObj, cancellationToken])!;
+    }
 
     /// <summary>
     /// Thread-safe collection for managing different types of event handlers.

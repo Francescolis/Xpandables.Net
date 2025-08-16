@@ -61,7 +61,7 @@ public sealed class AggregateStore<TAggregate>(
             [
                 .. uncommittedEvents
                     .Select(async @event => await _publisher
-                        .PublishAsync((dynamic)@event, cancellationToken)
+                        .PublishAsync(@event, cancellationToken)
                         .ConfigureAwait(false))
             ];
 
