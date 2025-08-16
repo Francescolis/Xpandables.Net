@@ -48,7 +48,9 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
 
             if (handlers.IsEmpty)
             {
-                return;
+                throw new InvalidOperationException(
+                    $"No handlers registered for event type {eventType.Name}. " +
+                    "Ensure that you have subscribed to the event before publishing.");
             }
 
             var tasks = new List<Task>(handlers.Count);
