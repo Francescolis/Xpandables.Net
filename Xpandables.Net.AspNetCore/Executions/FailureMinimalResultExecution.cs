@@ -52,6 +52,8 @@ public sealed class FailureMinimalResultExecution : MinimalResultExecution
                 HttpContext = context,
                 ProblemDetails = problemDetails
             }).ConfigureAwait(false);
+
+            return;
         }
 
         IResult result = Results.Problem(problemDetails);
