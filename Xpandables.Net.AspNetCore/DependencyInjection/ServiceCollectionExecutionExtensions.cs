@@ -54,6 +54,7 @@ public static class ServiceCollectionExecutionExtensions
             .AddScoped<IMinimalResultExecution, FailureMinimalResultExecution>()
             .AddScoped<IMinimalResultExecution, CreatedMinimalResultExecution>()
             .AddScoped<IMinimalResultExecution, StreamMinimalResultExecution>()
+            .AddScoped<IMinimalResultExecution, SuccessMinimalResultExecution>()
             .AddScoped<IMinimalResultExecution, AsyncPagedEnumerableMinimalResultExecution>();
 
     /// <summary>

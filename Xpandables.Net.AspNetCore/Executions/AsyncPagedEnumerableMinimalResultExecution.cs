@@ -48,12 +48,6 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
     /// <inheritdoc/>
     public override async Task ExecuteAsync(HttpContext context, ExecutionResult executionResult)
     {
-        if (!CanExecute(executionResult))
-        {
-            throw new InvalidOperationException(
-                "Execution result must be an IAsyncPagedEnumerable<T> with a status code of OK.");
-        }
-
         await base
             .ExecuteAsync(context, executionResult)
             .ConfigureAwait(false);
@@ -89,7 +83,7 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
         writer.WritePropertyName("pagination");
         JsonSerializer.Serialize(writer, pagination, jsonSerializerOptions);
 
-        // Write data array start
+        // Write data array
         writer.WritePropertyName("data");
         writer.WriteStartArray();
 
