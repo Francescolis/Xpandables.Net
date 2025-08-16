@@ -89,9 +89,7 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
             }
             else
             {
-                throw new InvalidOperationException(
-                    $"No handlers registered for event type {eventType.Name}. " +
-                    "Ensure that you have subscribed to the event before publishing.");
+                Trace.WriteLine($"No handlers found for event type {eventType.Name}. Event ID: {@event.Id}");
             }
         }
         catch (Exception exception) when (exception is not InvalidOperationException)
