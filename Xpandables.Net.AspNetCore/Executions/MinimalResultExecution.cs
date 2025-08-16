@@ -54,8 +54,6 @@ public abstract class MinimalResultExecution : IMinimalResultExecution
                 new StringValues(executionResult.Location.ToString());
         }
 
-        context.Response.StatusCode = (int)executionResult.StatusCode;
-
         foreach (ElementEntry header in executionResult.Headers)
         {
             context.Response.Headers.Append(

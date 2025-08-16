@@ -49,6 +49,8 @@ public sealed class MinimalResult(ExecutionResult executionResult) : IResult
             .GetServices<IMinimalResultExecution>()
             .FirstOrDefault(execution => execution.CanExecute(_executionResult));
 
+        httpContext.Response.StatusCode = (int)_executionResult.StatusCode;
+
         if (minimalResultExecution is null)
         {
             if (executionResult.Value is not null)
