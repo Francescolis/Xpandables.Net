@@ -1,98 +1,149 @@
-﻿# Xpandables.Net
+﻿# Xpandables.Net Libraries
 
-**Provides useful interfaces and contracts in .NET 9.0** with implementations following SOLID principles, functional programming patterns, and modern web development practices. The library is strongly-typed and designed to eliminate invalid states while providing excellent IntelliSense support.
+A comprehensive suite of .NET 9.0 utility libraries that provide modern patterns and practices for building robust, maintainable applications. The Xpandables.Net ecosystem consists of three complementary libraries that work together to offer a complete development experience.
 
-**✨ Key Features:**
-- 🚀 **Zero Reflection** - All operations use compile-time type checking
-- 📦 **Strongly Typed** - Catch errors at compile time, not runtime
-- 🔄 **JSON Serializable** - Full serialization/deserialization support
-- 🌐 **ASP.NET Core Ready** - Automatic response conversion
-- 🏗️ **Builder Pattern** - Fluent and intuitive API design
-- ⚡ **High Performance** - Minimal allocations and optimized execution
+## 📚 Libraries Overview
 
-Feel free to fork this project, make your own changes and create a pull request.
+### 🔧 Xpandables.Net (Core)
+The foundational library that provides essential patterns and utilities including:
+- **ExecutionResult Pattern** - Type-safe result handling with fluent API
+- **CQRS & Mediator Pattern** - Command/Query separation with pipeline support  
+- **Pipeline Architecture** - Decoratable request/response processing
+- **Repository Pattern** - Generic data access abstractions
+- **Event Sourcing** - Domain event handling and state management
+- **State Pattern** - Memento-based state management
+- **Dependency Injection Extensions** - Streamlined service registration
 
-This project is licensed under the Apache License, Version 2.0. See the [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) file for details.
+### 🏛️ Xpandables.Net.EntityFramework
+Entity Framework Core integration that extends the core library with:
+- **EF Core Repository Implementation** - Concrete data access with Entity Framework
+- **Unit of Work Pattern** - Transaction management and change tracking
+- **DataContext Extensions** - Enhanced DbContext functionality
+- **Aggregate Store** - Domain-driven design support for aggregates
+- **Event Sourcing Storage** - Persistent event store implementation
 
-## 📦 Installation
+### 🌐 Xpandables.Net.AspNetCore
+ASP.NET Core integration providing:
+- **Minimal API Extensions** - ExecutionResult integration with HTTP responses
+- **Dependency Injection Extensions** - Service registration helpers
+- **HTTP Result Mapping** - Automatic status code conversion
+- **JSON Serialization** - Custom converters for ExecutionResult types
 
-Install the required NuGet packages based on your needs:
+## 🚀 Installation
 
-### Core Library
+Install the libraries via NuGet Package Manager:
 
-```bash
-dotnet add package Xpandables.Net
-```
+### Package Manager Console
+````````
+Install-Package Xpandables.Net
+Install-Package Xpandables.Net.EntityFramework
+Install-Package Xpandables.Net.AspNetCore
 
-### For ASP.NET Core
+### .NET CLI
+````````
 
-```bash
-dotnet add package Xpandables.Net.AspNetCore
-```
+### PackageReference
+````````
+<PackageReference Include="Xpandables.Net" Version="9.4.6.0" />
+<PackageReference Include="Xpandables.Net.EntityFramework" Version="9.4.6.0" />
+<PackageReference Include="Xpandables.Net.AspNetCore" Version="9.4.6.0" />
+````````
 
-### For HTTP Client Extensions
+## 📋 Requirements
 
-```bash
-dotnet add package Xpandables.Net.Executions
-```
+- **.NET 9.0** or later
+- **Entity Framework Core 9.0.8** (for EntityFramework package)
+- **ASP.NET Core 9.0** (for AspNetCore package)
 
-### For Functional Programming Extensions
+## 📄 License
 
-```bash
-dotnet add package Xpandables.Net.Functional
-```
+This project is licensed under the **Apache License 2.0** - see the [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) for details.
 
-### For Validation Extensions
+## 🤝 Contributing
 
-```bash
-dotnet add package Xpandables.Net.Validation
-```
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-### For Unit Testing Extensions
+## 📚 Documentation
 
-```bash
-dotnet add package Xpandables.Net.Testing
-```
+For more detailed documentation and advanced usage examples, visit the [GitHub repository](https://github.com/Francescolis/Xpandables.Net).
 
-## Getting Started
+## 🆕 Release Notes
+
+**Version 9.4.6.0**
+- Add RequestContext to pipeline
+- Enhanced ExecutionResult serialization options
+- Improved Entity Framework integration
+- Performance optimizations
 
 ---
 
-## 🎯 ExecutionResult - Structured Result Handling
+## 🎯 ExecutionResult Pattern
 
-### Overview
+The `ExecutionResult` type is a robust implementation of the Result pattern that eliminates exceptions for expected failures and provides a consistent way to handle operation outcomes. It's designed to work seamlessly in both domain logic and API responses.
 
-The `ExecutionResult` and `ExecutionResult<TResult>` classes provide a robust, type-safe way to handle operation results in your applications. They encapsulate success and failure scenarios with detailed HTTP status codes, error information, headers, and metadata - **all without using reflection**.
+### ✨ Key Features
 
-**🔥 Key Benefits:**
-- ✅ **Zero Reflection** - Compile-time type safety and optimal performance
 - 🏗️ **Builder Pattern** - Fluent, readable result construction
-- 🌐 **HTTP Ready** - Built-in support for HTTP status codes and headers
+- 🌐 **HTTP Ready** - Built-in support for HTTP status codes and headers  
 - 📄 **JSON Compatible** - Seamless serialization/deserialization
 - 🚀 **ASP.NET Core Integration** - Automatic response conversion
 - 🔒 **Type Safe** - Strongly-typed generic variants available
+- 🛡️ **Exception Safe** - Convert exceptions to results automatically
+- 📊 **Rich Metadata** - Headers, extensions, errors, and location support
+
+### 🎨 Benefits
+
+**✅ Explicit Error Handling**
+- Forces callers to handle both success and failure cases
+- Eliminates hidden exception paths
+- Makes failure scenarios part of the method signature
+
+**🔄 Composable Operations**  
+- Chain operations without exception handling noise
+- Railway-oriented programming support
+- Clean separation of happy path from error handling
+
+**🌐 HTTP-First Design**
+- Direct mapping to HTTP status codes
+- Built-in support for REST API patterns
+- Consistent response format across endpoints
+
+**⚡ Performance Benefits**
+- No exception allocation overhead
+- Reduced stack unwinding
+- Better performance in failure scenarios
 
 ### 🏗️ Creating ExecutionResults
 
 #### ✅ Success Results
-
 ```csharp
-using System.Net;
+using Xpandables.Net;
 using Xpandables.Net.Executions;
 
-public class SampleUsage
-{
-    public ExecutionResult CreateSuccessResult()
+public class UserService 
+{ 
+    public ExecutionResult<User> GetUser(int id) 
+    { 
+        // Simple success with data 
+        var user = new User { Id = id, Name = "John Doe" }; 
+        return ExecutionResult.Success(user); 
+    }
+    public ExecutionResult CreateUser(User user)
     {
-        return ExecutionResult.Success(HttpStatusCode.OK)
-            .WithLocation(new Uri("http://example.com"))
+        // Success with custom status code and location
+        return ExecutionResult.Created()
+            .WithLocation($"/api/users/{user.Id}")
+            .WithHeader("X-User-Created", DateTime.UtcNow.ToString())
             .Build();
     }
 
-    public ExecutionResult<string> CreateSuccessResultWithData()
+    public async Task<ExecutionResult<List<User>>> GetUsersAsync()
     {
-        return ExecutionResult.Success("Success Data", HttpStatusCode.OK)
-            .WithLocation(new Uri("http://example.com"))
+        var users = await GetUsersFromDatabase();
+    
+        return ExecutionResult.Ok(users)
+            .WithHeader("X-Total-Count", users.Count.ToString())
+            .WithExtension("cached", "false")
             .Build();
     }
 }
@@ -101,263 +152,329 @@ public class SampleUsage
 #### ❌ Failure Results
 
 ```csharp
-using System.Net;
-using Xpandables.Net.Executions;
-
-public class SampleUsage
-{
-    public ExecutionResult CreateFailureResult()
-    {
-        return ExecutionResult.Failure(HttpStatusCode.BadRequest)
-            .WithTitle("Execution Failed")
-            .WithDetail("The execution failed due to bad request.")
-            .WithError("ErrorKey", "ErrorMessage")
-            .Build();
-    }
-
-    public ExecutionResult<string> CreateFailureResultWithData()
-    {
-        return ExecutionResult.Failure<string>(HttpStatusCode.BadRequest)
-            .WithTitle("Execution Failed")
-            .WithDetail("The execution failed due to bad request with data.")
-            .WithError("ErrorKey", "ErrorMessage")
-            .Build();
-    }
-}
-```
-
-#### ⚙️ Using Predefined Methods
-
-The `ExecutionResult` class also provides predefined methods for common HTTP status codes like `Ok`, `Created`, `NoContent`, `NotFound`, `BadRequest`, `Conflict`, `Unauthorized`, `InternalServerError`, and `ServiceUnavailable`.
-
-```csharp
-using Xpandables.Net.Executions;
-
-public class SampleUsage
-{
-    public ExecutionResult CreateOkResult()
-    {
-        return ExecutionResult.Ok()
-            .Build();
-    }
-
-    public ExecutionResult<string> CreateNotFoundResult()
-    {
-        return ExecutionResult.NotFound<string>()
-            .WithTitle("Resource Not Found")
-            .WithDetail("The requested resource was not found.")
-            .Build();
-    }
-}
-```
-
-The `ExecutionResult` and `ExecutionResult` classes provide a flexible and structured way to handle execution results in your application. By using these classes, you can ensure that your operations return consistent and detailed results, making it easier to handle both success and failure scenarios.
-
-### IRestClient and Related Classes
-
-#### Overview
-
-The `IRestClient` interface and related classes in the `Xpandables.Net.Executions.Rests` namespace provide a structured way to handle HTTP client requests and responses. These classes and interfaces allow you to configure, send, and process HTTP requests with detailed options and builders.
-
-##### IRestClient
-
-The `IRestClient` interface provides methods to handle HTTP client requests using a typed client HTTP client. It supports sending requests that do not return a response, requests that return a response of a specific type, and requests that return a stream that can be async-enumerated.
-
-##### IRestAttributeBuilder
-
-The `IRestAttributeBuilder` interface defines a builder for creating `RestAttribute`. This interface takes priority over the `RestAttribute`.
-
-##### RestAttribute
-
-The `RestAttribute` class is an attribute used to configure options for HTTP client requests. It should decorate implementations of `IRestRequest`, `IRestRequest<TResponse>`, or `IRestRequestStream<TResponse>` to be used with `IRestClient`.
-
-#### Usage
-
-##### Creating and Sending a Simple Request
-
-To create and send a simple request using `IRestClient`, you can define a request class and decorate it with `RestAttribute`.
-
-```csharp
-using System.Net; 
-using Xpandables.Net.Executions.Rests;
-
-[RestGet("/api/data")] 
-public sealed record GetDataRequest : IRestString; // IRestString inherits IRestRequest
-
-
-public class SampleUsage 
+public class UserService 
 { 
-    private readonly IRestClient _restClient;
-    public SampleUsage(IRestClient restClient)
-    {
-        _restClient = restClient;
-    }
-
-    public async Task SendRequestAsync()
-    {
-        var request = new GetDataRequest();
-        RestResponse response = await _restClient.SendAsync(request);
-    
-        if (response.IsSuccess)
-        {
-            Console.WriteLine("Request was successful.");
-        }
-        else
-        {
-            Console.WriteLine("Request failed.");
-        }
-    }
-}
-```
-
-
-##### Creating and Sending a Request with a Response
-
-To create and send a request that returns a response of a specific type, you can define a request class and a response class.
-
-```csharp
-using System.Net; 
-using Xpandables.Net.Executions.Rests;
-
-[RestGet("/api/data")] 
-public sealed record GetDataRequest : IRestRequest<string>, IRestString;
-
-public class SampleUsage 
-{ 
-    private readonly IRestClient _restClient;
-    public SampleUsage(IRestClient restClient)
-    {
-        _restClient = restClient;
-    }
-
-    public async Task SendRequestWithResponseAsync()
-    {
-        var request = new GetDataRequest();
-        RestResponse<string> response = await _restClient.SendAsync(request);
-    
-        if (response.IsSuccess)
-        {
-            Console.WriteLine($"Response data: {response.Result}");
-        }
-        else
-        {
-            Console.WriteLine("Request failed.");
-        }
-    }
-}
-```
-
-To create and send a request that returns a response of stream type, you can define a request class and a response class.
-
-```csharp
-using System.Net; 
-using Xpandables.Net.Executions.Rests;
-
-public sealed record Result(string Data);
-
-[RestGet("/api/data")] 
-public sealed record GetDataRequest : IRestRequestStream<Result>, IRestString;
-
-public class SampleUsage 
-{ 
-    private readonly IRestClient _restClient;
-    public SampleUsage(IRestClient restClient)
-    {
-        _restClient = restClient;
-    }
-
-    public async Task SendRequestWithResponseAsync()
-    {
-        var request = new GetDataRequest();
-        RestResponse<IAsyncEnumerable<Result>> response = await _restClient.SendAsync(request);
-        // response will be of type IAsyncEnumerable<Result>
-        // You can use response.Result to access the stream of results.
-
-        if (response.IsSuccess)
-        {
-            // iterate over the stream
-        }
-        else
-        {
-            Console.WriteLine("Request failed.");
-        }
-    }
-}
-```
-
-##### Using a Custom Request Options Builder
-
-To use a custom request options builder, implement the `IRestAttributeBuilder` interface in your request class.
-
-```csharp
-using System.Net; 
-using Xpandables.Net.Http;
-
-public class CustomRequestAttributeBuilder : IRestAttributeBuilder 
-{ 
-    public RestAttribute Build(IServiceProvider serviceProvider) 
+    public ExecutionResult<User> GetUser(int id) 
     { 
-        return new RestAttribute 
-            { 
-                Path = "/api/custom", 
-                Method = Method.POST, 
-                ContentType = "application/json" 
-            }; 
-    } 
-}
-
-public sealed record CustomRequest : IRestRequest, CustomRequestAttributeBuilder;
-
-public class SampleUsage 
-{ 
-    private readonly IRestClient _restClient;
-    public SampleUsage(IRestClient restClient)
-    {
-        _restClient = restClient;
-    }
-
-    public async Task SendCustomRequestAsync()
-    {
-        var request = new CustomRequest();
-        RestResponse response = await _restClient.SendAsync(request);
-    
-        if (response.IsSuccess)
-        {
-            Console.WriteLine("Custom request was successful.");
+        if (id <= 0) 
+        { 
+            return ExecutionResult
+                .BadRequest<User>()
+                .WithTitle("Invalid User ID")
+                .WithDetail("User ID must be greater than zero")
+                .WithError("id", "Value must be positive")
+                .Build();
         }
-        else
+    public ExecutionResult DeleteUser(int id)
+    {
+        try
         {
-            Console.WriteLine("Custom request failed.");
+            // Business logic here
+            if (UserHasActiveOrders(id))
+            {
+                return ExecutionResult.Conflict()
+                    .WithTitle("Cannot Delete User")
+                    .WithDetail("User has active orders and cannot be deleted")
+                    .WithError("activeOrders", "Complete or cancel orders before deletion")
+                    .Build();
+            }
+
+            // Delete user logic
+            return ExecutionResult.NoContent().Build();
+        }
+        catch (Exception ex)
+        {
+            return ExecutionResult.InternalServerError()
+                .WithTitle("Deletion Failed")
+                .WithException(ex)
+                .Build();
         }
     }
 }
 ```
 
+#### 🎭 Variants
+```csharp
+var cpfResult = ExecutionResult.Success(cpfNumber);
+var failureResult = ExecutionResult.Failure("Invalid CPF", "The provided CPF number is invalid.");
+var notFoundResult = ExecutionResult.Failure("NotFound", "The requested resource was not found.");
+```
 
-The `IRestClient` interface and related classes provide a flexible and structured way to handle HTTP client requests and responses in your application. By using these classes, you can ensure that your HTTP operations are consistent and detailed, making it easier to handle various HTTP scenarios.
+### 🔄 Composing ExecutionResults
 
-### Entity Framework Support
+ExecutionResults can be composed using the `Bind` and `Map` methods, enabling clean and expressive pipelines:
+
+```csharp
+var result = await repository
+    .GetDataAsync()
+    .Bind(ValidateData)
+    .Map(TransformData)
+    .Execute();
+```
+
+#### 🔧 Advanced Builder Usage
+
+For more complex scenarios, the `ExecutionResultBuilder` provides a fluent interface for configuring results:
+
+```csharp
+public class OrderService 
+{ 
+    public async Task<ExecutionResult<Order>> ProcessOrderAsync(CreateOrderRequest request) 
+    { 
+        // Validate request
+        var validationResult = ValidateOrder(request); 
+        if (!validationResult.IsSuccessStatusCode) 
+        { 
+            return validationResult.ToExecutionResult<Order>(); 
+        }
+        try
+        {
+            var order = await CreateOrderAsync(request);
+        
+            return ExecutionResult.Created(order)
+                .WithLocation($"/api/orders/{order.Id}")
+                .WithTitle("Order Created Successfully")
+                .WithDetail($"Order {order.Id} has been created and is being processed")
+                .WithHeader("X-Order-Id", order.Id.ToString())
+                .WithHeader("X-Processing-Time", "< 1 minute")
+                .WithExtension("estimatedDelivery", order.EstimatedDelivery.ToString())
+                .WithExtension("trackingEnabled", "true")
+                .Build();
+        }
+        catch (InsufficientInventoryException ex)
+        {
+            return ExecutionResult.Conflict<Order>()
+                .WithTitle("Insufficient Inventory")
+                .WithDetail("One or more items are out of stock")
+                .WithErrors(ex.OutOfStockItems.ToDictionary(
+                    item => item.Sku, 
+                    item => $"Only {item.Available} available, requested {item.Requested}"))
+                .Build();
+        }
+        catch (Exception ex)
+        {
+            return ExecutionResult.InternalServerError<Order>()
+                .WithTitle("Order Processing Failed")
+                .WithException(ex)
+                .Build();
+        }
+
+        private ExecutionResult ValidateOrder(CreateOrderRequest request)
+        {
+            var errors = new Dictionary<string, string>();
+
+            if (request.Items?.Any() != true)
+                errors["items"] = "At least one item is required";
+
+            if (string.IsNullOrWhiteSpace(request.CustomerEmail))
+                errors["customerEmail"] = "Customer email is required";
+
+            if (errors.Any())
+            {
+                return ExecutionResult.BadRequest()
+                    .WithTitle("Invalid Order Request")
+                    .WithErrors(errors)
+                    .Build();
+            }
+
+            return ExecutionResult.Success();
+        }
+}
+```
+
+### 🔄 Working with Results
+
+#### 🎯 Pattern Matching & Handling
+````````csharp
+public class OrderController : ControllerBase 
+{
+    private readonly OrderService _orderService;
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
+    {
+        var result = await _orderService.ProcessOrderAsync(request);
+
+        // Automatic conversion to HTTP response
+        return result.IsSuccessStatusCode 
+            ? Ok(result.Value)
+            : BadRequest(result);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOrder(int id)
+    {
+        var result = await _orderService.GetOrderAsync(id);
+
+        // Pattern matching approach
+        return result.StatusCode switch
+        {
+            HttpStatusCode.OK => Ok(result.Value),
+            HttpStatusCode.NotFound => NotFound(new { Message = result.Detail }),
+            HttpStatusCode.Unauthorized => Unauthorized(),
+            _ => StatusCode((int)result.StatusCode, result)
+        };
+    }
+}
+````````
+
+#### 🔗 Chaining Operations
+````````csharp
+public class OrderWorkflow 
+{ 
+    public async Task<ExecutionResult<Order>> ProcessCompleteOrderAsync(int orderId)
+    { 
+        // Chain operations - each step can fail independently 
+        var orderResult = await GetOrderAsync(orderId); 
+        if (!orderResult.IsSuccessStatusCode) 
+            return orderResult;
+        var paymentResult = await ProcessPaymentAsync(orderResult.Value);
+        if (!paymentResult.IsSuccessStatusCode)
+            return paymentResult.ToExecutionResult<Order>();
+
+        var inventoryResult = await ReserveInventoryAsync(orderResult.Value);
+        if (!inventoryResult.IsSuccessStatusCode)
+            return inventoryResult.ToExecutionResult<Order>();
+
+        var shippingResult = await ScheduleShippingAsync(orderResult.Value);
+        if (!shippingResult.IsSuccessStatusCode)
+            return shippingResult.ToExecutionResult<Order>();
+
+        // All steps succeeded
+        return ExecutionResult.Success(orderResult.Value);
+    }
+}
+````````
 
 ### 📄 JSON Serialization
 
-ExecutionResult is fully JSON serializable without reflection:
+ExecutionResult provides seamless JSON serialization for API responses:
+````````csharp
+public class ExecutionResultController : ControllerBase 
+{ 
+    [HttpGet("success-example")] 
+    public ExecutionResult<ProductDto> GetProduct() 
+    { 
+        var product = new ProductDto 
+        { 
+            Id = 1, 
+            Name = "Sample Product", 
+            Price = 29.99m 
+        };
 
-### 🌐 ASP.NET Core Integration
+        return ExecutionResult.Ok(product)
+            .WithHeader("X-Cache-Status", "MISS")
+            .Build();
+    }
 
-ExecutionResult automatically converts to HTTP responses in ASP.NET Core applications.
+    [HttpGet("error-example")] 
+    public ExecutionResult<ProductDto> GetProductError()
+    {
+        return ExecutionResult.NotFound<ProductDto>()
+            .WithTitle("Product Not Found")
+            .WithDetail("The requested product does not exist")
+            .WithError("productId", "Invalid product identifier")
+            .Build();
+    }
+}
 
-#### Registration and Configuration
+// JSON Output for success: // { //   "statusCode": 200, //   "value": { //     "id": 1, //     "name": "Sample Product", //     "price": 29.99 //   }, //   "headers": { //     "X-Cache-Status": ["MISS"] //   } // }
+// JSON Output for error: // { //   "statusCode": 404, //   "title": "Product Not Found", //   "detail": "The requested product does not exist", //   "errors": { //     "productId": ["Invalid product identifier"] //   } // }
 
-#### Minimal API Usage
+````````
 
-#### Controller Usage
+### 🧪 Unit Testing with ExecutionResult
 
-### 🔍 Advanced Usage
+ExecutionResult makes unit testing explicit and straightforward:
+````````csharp
+[Test]
+public async Task ProcessOrder_WithValidRequest_ReturnsCreatedResult()
+{
+    // Arrange
+    var request = new CreateOrderRequest
+    {
+        CustomerEmail = "test@example.com",
+        Items = new List<OrderItem>
+        {
+            new OrderItem { ProductId = 1, Quantity = 2 }
+        }
+    };
 
-#### Merging ExecutionResults
+    // Act
+    var result = await _orderService.ProcessOrderAsync(request);
 
-#### Working with Headers and Extensions
+    // Assert
+    result.IsSuccessStatusCode.Should().BeTrue();
+    result.StatusCode.Should().Be(HttpStatusCode.Created);
+    result.Value.Should().NotBeNull();
+    result.Value.CustomerEmail.Should().Be("test@example.com");
+    result.Location.Should().NotBeNull();
+    result.Headers.Should().ContainKey("X-Order-Id");
+}
 
-#### Ensuring Success
+[Test] 
+public async Task ProcessOrder_WithInvalidEmail_ReturnsBadRequest() 
+{ 
+    // Arrange 
+    var request = new CreateOrderRequest { CustomerEmail = "" };
 
-The `ExecutionResult` classes provide a comprehensive, type-safe, and performance-optimized way to handle operation results in your .NET applications. With zero reflection usage and seamless ASP.NET Core integration, they offer a robust foundation for building reliable APIs and services.
+    // Act
+    var result = await _orderService.ProcessOrderAsync(request);
+
+    // Assert
+    result.IsSuccessStatusCode.Should().BeFalse();
+    result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    result.Title.Should().Be("Invalid Order Request");
+    result.Errors.Should().ContainKey("customerEmail");
+    result.Value.Should().BeNull();
+}
+````````
+
+### 🔧 Exception Handling Integration
+
+Convert exceptions to ExecutionResults automatically:
+````````csharp
+public class UserService
+{
+    public ExecutionResult<User> GetUser(int id)
+    {
+        try
+        {
+            // Your existing code that might throw
+            var user = _repository.GetById(id);
+            if (user == null)
+                throw new UserNotFoundException($"User {id} not found");
+
+            return ExecutionResult.Success(user);
+        }
+        catch (UserNotFoundException ex)
+        {
+            return ExecutionResult.NotFound<User>()
+                .WithTitle("User Not Found")
+                .WithDetail(ex.Message)
+                .Build();
+        }
+        catch (DatabaseException ex) when (ex.IsTemporary)
+        {
+            return ExecutionResult.ServiceUnavailable<User>()
+                .WithTitle("Service Temporarily Unavailable")
+                .WithDetail("Please try again in a few moments")
+                .WithException(ex)
+                .Build();
+        }
+        catch (Exception ex)
+        {
+            // Automatic exception conversion
+            return ex.ToExecutionResult<User>();
+        }
+}
+````````
+---
+
+The ExecutionResult pattern provides a robust, type-safe, and HTTP-friendly way to handle operation outcomes in your applications. It promotes explicit error handling, improves API consistency, and integrates seamlessly with modern .NET development practices.
+
+---
+
+
+---
+
+*Xpandables.Net - Building better .NET applications with proven patterns and practices.*
