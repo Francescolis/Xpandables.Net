@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Collections;
 using Xpandables.Net.Controllers;
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Executions;
@@ -223,8 +222,6 @@ public static class ServiceCollectionExecutionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the 
     /// service to.</param>
     /// <returns>A reference to this instance after the execution has completed.</returns>
-    /// <remarks>The default <see cref="MaterializedPagedDataJsonConverterFactory"/> is configured to use the
-    /// body serializer options.</remarks>
     public static IServiceCollection AddXMinimalJsonOptions(
         this IServiceCollection services) =>
         services.AddSingleton<IConfigureOptions<JsonOptions>,

@@ -18,7 +18,6 @@
         <Copyright>Copyright © 2024 Francis-Black EWANE</Copyright>
         <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
         <PackageIcon>Xpandables.Net.png</PackageIcon>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageOutputPath>../../Nugets</PackageOutputPath>
         <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
         <PackageTags>Optional Pipeline DDD Aggregate Http Repository State EntityFramework MinimalApi</PackageTags>
