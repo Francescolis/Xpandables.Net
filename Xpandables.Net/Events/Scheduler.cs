@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ********************************************************************************/
-
+********************************************************************************/
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -52,13 +52,11 @@ internal sealed class Scheduler : BackgroundService, IScheduler
     private readonly SemaphoreSlim _concurrencyLimiter;
     private readonly SchedulerMetrics _metrics;
 
-    // Thread-safe state management
     private volatile SchedulerOptions _options;
     private volatile CircuitBreakerState _circuitBreakerState = CircuitBreakerState.Closed;
     private volatile int _circuitBreakerFailureCount;
     private volatile int _consecutiveFailures;
 
-    // Thread-safe access using Func<> for types that cannot be volatile
     private volatile Func<DateTime> _circuitBreakerLastFailureTimeProvider = static () => DateTime.MinValue;
     private volatile Func<TimeSpan> _currentBackoffDelayProvider = static () => TimeSpan.Zero;
 
@@ -211,17 +209,14 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options?.CurrentValue ?? throw new ArgumentNullException(nameof(options));
 
-        // Initialize concurrency limiter
         _concurrencyLimiter = new SemaphoreSlim(_options.MaxConcurrentProcessors, _options.MaxConcurrentProcessors);
         _metrics = new SchedulerMetrics();
 
-        // Monitor options changes
         _optionsMonitor = options.OnChange(newOptions =>
         {
             var oldMaxConcurrency = _options.MaxConcurrentProcessors;
             _options = newOptions;
 
-            // Adjust concurrency limiter if needed
             AdjustConcurrencyLimiter(oldMaxConcurrency, newOptions.MaxConcurrentProcessors);
 
             LogOptionsUpdated(_logger, newOptions.MaxConcurrentProcessors, newOptions.BatchSize,
@@ -270,7 +265,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             var eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IPublisher>();
             var eventStore = serviceScope.ServiceProvider.GetRequiredService<IEventStore>();
 
-            // Dequeue events with configured batch size
             await messageQueue.DequeueAsync(_options.BatchSize, cancellationToken).ConfigureAwait(false);
 
             if (messageQueue.Channel.Reader.Count == 0)
@@ -281,7 +275,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
                 return;
             }
 
-            // Collect events into batches for parallel processing
             var eventBatches = await CollectEventBatchesAsync(messageQueue, cancellationToken).ConfigureAwait(false);
 
             if (eventBatches.Count == 0)
@@ -292,17 +285,14 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
             LogProcessingBatches(_logger, eventBatches.Sum(b => b.Count), eventBatches.Count, null);
 
-            // Process batches in parallel with controlled concurrency
             var processingTasks = eventBatches.Select(batch =>
                 ProcessEventBatchAsync(batch, eventPublisher, eventStore, cancellationToken));
 
             var batchResults = await Task.WhenAll(processingTasks).ConfigureAwait(false);
 
-            // Aggregate results
             processedCount = batchResults.Sum(r => r.ProcessedCount);
             errorCount = batchResults.Sum(r => r.ErrorCount);
 
-            // Update metrics and state
             UpdateMetrics(processedCount, errorCount, stopwatch.Elapsed);
 
             if (errorCount == 0)
@@ -340,24 +330,18 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         {
             try
             {
-                // Get current backoff delay
                 var currentBackoffDelay = _currentBackoffDelayProvider();
 
-                // Wait for next tick or apply backoff delay
                 var delayTask = currentBackoffDelay > TimeSpan.Zero
                     ? Task.Delay(currentBackoffDelay, stoppingToken)
                     : Task.CompletedTask;
 
-                // FIXED: Get timer result once and store it to avoid multiple consumption
                 var timerResult = await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false);
 
-                // Wait for both delay and timer
                 await delayTask.ConfigureAwait(false);
 
-                // Check if timer was cancelled (only consume the result once)
                 if (!timerResult) break; // Timer was cancelled
 
-                // Acquire semaphore to limit concurrent executions
                 await _concurrencyLimiter.WaitAsync(stoppingToken).ConfigureAwait(false);
 
                 try
@@ -412,7 +396,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             return [];
         }
 
-        // Create batches based on processor count for optimal distribution
         var batchSize = Math.Max(1, allEvents.Count / Environment.ProcessorCount);
         var batches = new List<List<IIntegrationEvent>>();
 
@@ -447,7 +430,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
             try
             {
-                // Publish event with timeout
                 using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
 
@@ -493,7 +475,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             catch (Exception exception)
             {
                 LogEventStoreBatchUpdateFailed(_logger, processedInfos.Count, exception);
-                // Consider this as additional errors
                 errorCount += processedInfos.Count(p => p.ErrorMessage == null);
             }
         }
@@ -511,7 +492,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
         LogSchedulerExecutionFailed(_logger, _consecutiveFailures, exception);
 
-        // Update circuit breaker state
         if (_circuitBreakerState != CircuitBreakerState.Open)
         {
             Interlocked.Increment(ref _circuitBreakerFailureCount);
@@ -543,7 +523,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
     /// </summary>
     private void HandlePartialFailure(int errorCount)
     {
-        // Partial failures don't trigger circuit breaker but may trigger backoff
         if (errorCount > _options.BatchSize * 0.5) // More than 50% failed
         {
             _consecutiveFailures++;
@@ -565,7 +544,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         }
         else if (_circuitBreakerState == CircuitBreakerState.Closed)
         {
-            // Reset failure count on successful execution
             if (Interlocked.Exchange(ref _circuitBreakerFailureCount, 0) > 0)
             {
                 LogCircuitBreakerFailureCountReset(_logger, null);
@@ -594,16 +572,13 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         var baseDelay = TimeSpan.FromMilliseconds(_options.BackoffBaseDelayMs);
         var maxDelay = TimeSpan.FromMilliseconds(_options.BackoffMaxDelayMs);
 
-        // Exponential backoff with cryptographically secure jitter
         var exponentialDelay = TimeSpan.FromTicks(baseDelay.Ticks * (1L << Math.Min(_consecutiveFailures - 1, 20)));
 
-        // Use cryptographically secure random for jitter
         var jitterMs = GenerateSecureRandomJitter((int)baseDelay.TotalMilliseconds);
         var jitter = TimeSpan.FromMilliseconds(jitterMs);
 
         var calculatedDelay = TimeSpan.FromTicks(Math.Min(exponentialDelay.Ticks + jitter.Ticks, maxDelay.Ticks));
 
-        // Update provider with new delay value
         _currentBackoffDelayProvider = () => calculatedDelay;
 
         LogBackoffApplied(_logger, calculatedDelay.TotalMilliseconds, _consecutiveFailures, null);
@@ -622,7 +597,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         rng.GetBytes(bytes);
         var randomValue = BitConverter.ToUInt32(bytes, 0);
 
-        // Ensure uniform distribution
         return (int)(randomValue % (uint)maxValue);
     }
 
@@ -663,12 +637,10 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
         if (difference > 0)
         {
-            // Increase capacity
             _concurrencyLimiter.Release(difference);
         }
         else
         {
-            // Decrease capacity by acquiring permits
             _ = Task.Run(async () =>
             {
                 for (int i = 0; i < Math.Abs(difference); i++)

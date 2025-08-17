@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ********************************************************************************/
-
+********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Executions;
@@ -30,11 +30,11 @@ namespace Xpandables.Net.Tasks;
 /// and invokes its processing logic. Any exceptions not derived from
 /// <see cref="ExecutionResultException"/> are converted into an <see cref="ExecutionResult"/>.
 /// </remarks>
-// ReSharper disable once ClassNeverInstantiated.Global
 public sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc />
-    public async Task<ExecutionResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+    public async Task<ExecutionResult> SendAsync<TRequest>(
+        TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest
     {
         try

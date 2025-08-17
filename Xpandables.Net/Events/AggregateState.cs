@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using Xpandables.Net.States;
 
 namespace Xpandables.Net.Events;
@@ -83,10 +83,8 @@ public abstract class AggregateState<TAggregate, TState> :
             OnStateTransitioning(previousState, state);
             StateTransitioning?.Invoke(this, transitionArgs);
 
-            // Exit current state if it exists
             previousState?.ExitStateContext(this);
 
-            // Set new state and enter it
             _currentState = state;
             state.EnterStateContext(this);
 

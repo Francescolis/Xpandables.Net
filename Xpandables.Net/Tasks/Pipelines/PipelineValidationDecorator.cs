@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +17,6 @@
 ********************************************************************************/
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.Tasks.Pipelines;
 

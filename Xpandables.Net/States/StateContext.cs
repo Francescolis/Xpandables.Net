@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 namespace Xpandables.Net.States;
 
 /// <summary>
@@ -84,10 +84,8 @@ public abstract class StateContext<TState> : IStateContext<TState>
             OnStateTransitioning(previousState, state);
             StateTransitioning?.Invoke(this, transitionArgs);
 
-            // Exit current state if it exists
             previousState?.ExitStateContext(this);
 
-            // Set new state and enter it
             _currentState = state;
             state.EnterStateContext(this);
 

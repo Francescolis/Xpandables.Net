@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ********************************************************************************/
-
+********************************************************************************/
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -158,7 +158,7 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
         JsonConverter converter = (JsonConverter)Activator.CreateInstance(
             converterType,
             [UseAspNetCoreCompatibility])!;
-        
+
         return converter;
     }
 }

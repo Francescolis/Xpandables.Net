@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +16,6 @@
  *
 ********************************************************************************/
 using Xpandables.Net.Collections;
-using Xpandables.Net.Rests;
 
 using static Xpandables.Net.Rests.Rest;
 

@@ -15,8 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Rests;
-
 using static Xpandables.Net.Rests.Rest;
 
 namespace Xpandables.Net.Rests.Requests;

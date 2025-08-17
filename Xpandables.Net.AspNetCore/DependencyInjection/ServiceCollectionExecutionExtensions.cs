@@ -37,12 +37,13 @@ namespace Xpandables.Net.DependencyInjection;
 public static class ServiceCollectionExecutionExtensions
 {
     /// <summary>
-    /// Adds execution result execution services to the service collection 
-    /// for minimal APIs.
+    /// Configures and registers the necessary services for the Minimal API framework.
     /// </summary>
-    /// <param name="services">The service collection to add the services
-    /// to.</param>
-    /// <returns>The updated service collection.</returns>
+    /// <remarks>This method registers a set of services and middleware required for the Minimal API
+    /// framework,  including JSON options, validation providers, endpoint validators, and result execution strategies.
+    /// It is intended to be used during application startup to configure the dependency injection container.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the Minimal API services will be added.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance, allowing for method chaining.</returns>
     public static IServiceCollection AddXMinimalApi(
         this IServiceCollection services) =>
         services
@@ -51,11 +52,25 @@ public static class ServiceCollectionExecutionExtensions
             .AddXEndpointValidator()
             .AddXMinimalMiddleware()
             .AddXValidatorDefault()
-            .AddScoped<IMinimalResultExecution, FailureMinimalResultExecution>()
-            .AddScoped<IMinimalResultExecution, CreatedMinimalResultExecution>()
-            .AddScoped<IMinimalResultExecution, StreamMinimalResultExecution>()
-            .AddScoped<IMinimalResultExecution, SuccessMinimalResultExecution>()
-            .AddScoped<IMinimalResultExecution, AsyncPagedEnumerableMinimalResultExecution>();
+            .AddXMinimalResultExecution<FailureMinimalResultExecution>()
+            .AddXMinimalResultExecution<CreatedMinimalResultExecution>()
+            .AddXMinimalResultExecution<StreamMinimalResultExecution>()
+            .AddXMinimalResultExecution<SuccessMinimalResultExecution>()
+            .AddXMinimalResultExecution<AsyncPagedEnumerableMinimalResultExecution>();
+
+    /// <summary>
+    /// Registers a scoped implementation of the <see cref="IMinimalResultExecution"/> interface in the dependency
+    /// injection container.
+    /// </summary>
+    /// <remarks>This method is used to configure dependency injection for a specific implementation of <see
+    /// cref="IMinimalResultExecution"/>. The implementation type must be a class.</remarks>
+    /// <typeparam name="TMinimalResultExecution">The concrete type that implements <see cref="IMinimalResultExecution"/> to be registered.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXMinimalResultExecution<TMinimalResultExecution>(
+        this IServiceCollection services)
+        where TMinimalResultExecution : class, IMinimalResultExecution =>
+        services.AddScoped<IMinimalResultExecution, TMinimalResultExecution>();
 
     /// <summary>
     /// Adds a scoped service of the type specified in 

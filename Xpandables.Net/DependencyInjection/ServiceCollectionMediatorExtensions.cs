@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ********************************************************************************/
-
+********************************************************************************/
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
+using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.States;
@@ -241,6 +242,19 @@ public static class ServiceCollectionMediatorExtensions
         this IServiceCollection services) =>
         services
             .AddXPipelineDecorator(typeof(PipelinePostDecorator<>));
+
+    /// <summary>
+    /// Adds the <see cref="AggregateRequestPostHandler{TRequest}"/> as the default implementation of  <see
+    /// cref="IRequestPostHandler{TRequest}"/> to the service collection for appending aggregates to the store.
+    /// </summary>
+    /// <remarks>This method registers the <see cref="AggregateRequestPostHandler{TRequest}"/> as a scoped
+    /// service,  allowing it to be resolved for handling post-processing logic for requests that implement 
+    /// <see cref="IDependencyRequest"/> and <see cref="IRequiresEventStorage"/> </remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the handler is added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXAggregateStorePostHandler(
+        this IServiceCollection services) =>
+        services.AddScoped(typeof(IRequestPostHandler<>), typeof(AggregateRequestPostHandler<>));
 
     /// <summary>
     /// Adds a pre pipeline decorator to the <see cref="IServiceCollection" />.

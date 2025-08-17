@@ -1,4 +1,5 @@
-﻿/*******************************************************************************
+﻿
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ********************************************************************************/
-
+********************************************************************************/
 using System.Collections.Concurrent;
 
 using Xpandables.Net.Collections;
@@ -113,7 +113,6 @@ public abstract class Aggregate : IEventSourcing
         long nextStreamVersion = StreamVersion + 1;
         TEvent domainEvent = eventFactory(nextStreamVersion);
 
-        // Ensure the event has the correct stream version and aggregate information
         domainEvent = (TEvent)domainEvent
             .WithStreamVersion(nextStreamVersion)
             .WithAggregateId(KeyId);
@@ -159,7 +158,6 @@ public abstract class Aggregate : IEventSourcing
         }
 
         _ = _eventHandlers.TryAdd(eventType, handler);
-        return;
     }
 
     /// <summary>

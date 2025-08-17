@@ -8,7 +8,6 @@ using Xpandables.Net.Api.Accounts.Persistence;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
-using Xpandables.Net.Tasks;
 using Xpandables.Net.Tasks.Dependencies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +21,7 @@ builder.Services.AddXEndpointRoutes();
 builder.Services.AddXMinimalApi();
 builder.Services.AddXMediator();
 builder.Services.AddXHandlers(typeof(Account).Assembly);
-builder.Services.AddScoped(typeof(IRequestPostHandler<>), typeof(AggregateRequestPostHandler<>));
+builder.Services.AddXAggregateStorePostHandler();
 builder.Services.AddXDependencyProvider<AggregateDependencyProvider>();
 
 builder.Services.AddXUnitOfWorkEvent();
