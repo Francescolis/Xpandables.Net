@@ -54,21 +54,12 @@ public interface IUnitOfWorkTransaction : IAsyncDisposable
 /// Represents a unit of work that encapsulates a set of operations to 
 /// be performed as a single transaction.
 /// </summary>
-public interface IUnitOfWork : IAsyncDisposable
+public interface IUnitOfWork : IUnitOfWorkBase
 {
     /// <summary>
     /// Gets a value indicating whether the operation is transactional.
     /// </summary>
     bool IsTransactional { get; }
-
-    /// <summary>
-    /// Saves all changes made in this unit of work.
-    /// </summary>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The number of state entries written to the database.</returns>
-    /// <exception cref="InvalidOperationException">All exceptions 
-    /// related to the operation.</exception>
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Begins a new transaction asynchronously.

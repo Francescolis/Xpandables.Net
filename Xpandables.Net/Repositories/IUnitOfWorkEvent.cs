@@ -23,17 +23,8 @@ namespace Xpandables.Net.Repositories;
 /// <remarks>This interface extends <see cref="IUnitOfWork"/> to include operations specific to event management.
 /// Implementations should ensure that all event operations are completed successfully before committing the
 /// transaction, providing atomicity and consistency.</remarks>
-public interface IUnitOfWorkEvent : IAsyncDisposable
+public interface IUnitOfWorkEvent : IUnitOfWorkBase
 {
-    /// <summary>
-    /// Saves all changes made in this unit of work.
-    /// </summary>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The number of state entries written to the database.</returns>
-    /// <exception cref="InvalidOperationException">All exceptions 
-    /// related to the operation.</exception>
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Retrieves an instance of the specified event store type.
     /// </summary>
