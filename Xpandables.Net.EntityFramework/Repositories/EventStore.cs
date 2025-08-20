@@ -69,7 +69,7 @@ public sealed class EventStore : Repository<DataContextEvent>, IEventStore
     public new IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity
+        where TEntity : class
     {
         ArgumentNullException.ThrowIfNull(filter);
 

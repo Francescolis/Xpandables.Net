@@ -68,28 +68,10 @@ public interface IEventStore : IRepository
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task MarkAsProcessedAsync(IEnumerable<EventProcessedInfo> infos, CancellationToken cancellationToken = default);
 
-    ///// <summary>
-    ///// Asynchronously fetches a sequence of event entities based on the specified filter.
-    ///// </summary>
-    ///// <remarks>You wil need to call <see cref="RepositoryExtensions.AsEventsAsync(IAsyncEnumerable{IEntityEvent}, CancellationToken)"/>
-    ///// to convert entities to events if necessary.</remarks>
-    ///// <typeparam name="TEntity">The type of the entity to query, which must implement <see cref="IEntity"/>.</typeparam>
-    ///// <typeparam name="TResult">The type of the result to return.</typeparam>
-    ///// <param name="filter">A function that defines the query to apply to the <typeparamref name="TEntity"/> collection.</param>
-    ///// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    ///// The default value is <see cref="CancellationToken.None"/>.</param>
-    ///// <returns>An asynchronous sequence of <typeparamref name="TResult"/> that matches the specified filter.</returns>
-    //new IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
-    //    Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-    //    CancellationToken cancellationToken = default)
-    //    where TEntity : class, IEntityEvent;
-
-    // Hidden members from IRepository
-
     /// <summary>
     /// Asynchronously adds or updates a collection of entities in the data store.
     /// </summary>
-    /// <typeparam name="TEntity">The type of the entities to add or update. Must implement <see cref="IEntity"/>.</typeparam>
+    /// <typeparam name="TEntity">The type of the entities to add or update.</typeparam>
     /// <param name="entities">The collection of entities to add or update. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
@@ -98,13 +80,13 @@ public interface IEventStore : IRepository
     new Task AddOrUpdateAsync<TEntity>(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
+        where TEntity : class;
 
     /// <summary>
     /// Asynchronously deletes entities from the data source based on the specified filter.
     /// </summary>
     /// <remarks>This method is intended for internal use and may not be visible in all contexts.</remarks>
-    /// <typeparam name="TEntity">The type of the entity to delete. Must implement <see cref="IEntity"/>.</typeparam>
+    /// <typeparam name="TEntity">The type of the entity to delete.</typeparam>
     /// <param name="filter">A function to filter the entities to be deleted. The function should return a filtered <see
     /// cref="IQueryable{TEntity}"/>.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
@@ -114,7 +96,7 @@ public interface IEventStore : IRepository
     new Task DeleteAsync<TEntity>(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
+        where TEntity : class;
 }
 
 /// <summary>

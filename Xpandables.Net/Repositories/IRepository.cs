@@ -63,14 +63,14 @@ public interface IRepository : IAsyncDisposable
     IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
+        where TEntity : class;
 
     /// <summary>
     /// Adds new entities or updates existing entities in the data store asynchronously.
     /// </summary>
     /// <remarks>If an entity in the collection already exists in the data store, it will be updated;
     /// otherwise, it will be added.</remarks>
-    /// <typeparam name="TEntity">The type of the entities to add or update. Must implement <see cref="IEntity"/>.</typeparam>
+    /// <typeparam name="TEntity">The type of the entities to add or update.</typeparam>
     /// <param name="entities">The collection of entities to add or update. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
@@ -78,7 +78,7 @@ public interface IRepository : IAsyncDisposable
     Task AddOrUpdateAsync<TEntity>(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
+        where TEntity : class;
 
     /// <summary>
     /// Deletes entities from the repository based on a filter.
@@ -90,7 +90,7 @@ public interface IRepository : IAsyncDisposable
     Task DeleteAsync<TEntity>(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity;
+        where TEntity : class;
 }
 
 /// <summary>
@@ -98,7 +98,7 @@ public interface IRepository : IAsyncDisposable
 /// </summary>
 /// <typeparam name="TDataContext">The type of the data context within which the repository operates. 
 /// Must be a reference type.</typeparam>
-public interface IRepository<in TDataContext> : IRepository
+public interface IRepository<TDataContext> : IRepository
     where TDataContext : class
 {
 }

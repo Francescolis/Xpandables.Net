@@ -22,58 +22,6 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an abstract base class for a repository that provides asynchronous operations for managing entities in a
-/// data store. This class must be inherited to implement specific data access logic.
-/// </summary>
-/// <remarks>The <see cref="Repository"/> class defines a set of virtual methods for common data operations such
-/// as insert, update, delete, and fetch. Derived classes should override these methods to provide specific
-/// implementations for interacting with a particular data source.</remarks>
-public abstract class Repository : AsyncDisposable, IRepository
-{
-    /// <summary>
-    /// when overridden in derived classes, deletes entities from the repository.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of the entity to delete. Must implement <see cref="IEntity"/>.</typeparam>
-    /// <param name="filter">A function to filter the entities to be deleted. 
-    /// The function takes an <see cref="IQueryable{TEntity}"/> and
-    /// returns a filtered <see cref="IQueryable{TEntity}"/>.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous delete operation.</returns>
-    public virtual Task DeleteAsync<TEntity>(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
-        CancellationToken cancellationToken)
-        where TEntity : class, IEntity => Task.CompletedTask;
-
-    /// <summary>
-    /// When overridden in derived classes, fetches a sequence of results asynchronously based on the provided filter.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of the entity to query, which must implement <see cref="IEntity"/>.</typeparam>
-    /// <typeparam name="TResult">The type of the result to return.</typeparam>
-    /// <param name="filter">A function that defines the query to apply to the <see cref="IQueryable{TEntity}"/> to produce a sequence of
-    /// <see cref="IQueryable{TResult}"/>.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous sequence of <typeparamref name="TResult"/> that represents the query results.</returns>
-    public virtual IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class, IEntity =>
-        AsyncEnumerable.Empty<TResult>().WithPagination();
-
-    /// <summary>
-    /// When overridden in derived classes, adds or updates a collection of entities in the data store asynchronously.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of the entities to add or update. Must implement <see cref="IEntity"/>.</typeparam>
-    /// <param name="entities">The collection of entities to add or update. Cannot be <see langword="null"/> or empty.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    public virtual Task AddOrUpdateAsync<TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken)
-        where TEntity : class, IEntity => Task.CompletedTask;
-}
-
-/// <summary>
 /// Represents a repository that provides data access functionality for a
 /// specific data context.
 /// </summary>
@@ -155,7 +103,9 @@ public class Repository<TDataContext> : Repository, IRepository<TDataContext>
         var entitiesArray = collection as TEntity[] ?? [.. collection];
 
         // Get entities to add (those with default KeyId values)
-        var entitiesToAdd = entitiesArray.Where(e => e.KeyId.IsDefaultValue()).ToArray();
+        var entitiesToAdd = entitiesArray
+            .Where(e => !Context.Entry(e).IsKeySet)
+            .ToArray();
 
         // Get entities to update using Except
         var entitiesToUpdate = entitiesArray.Except(entitiesToAdd).ToArray();
@@ -240,61 +190,5 @@ public class RepositoryPersistent<TDataContext> : Repository<TDataContext>
             // Retry saving changes
             await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-    }
-}
-
-/// <summary>
-/// Provides extension methods for checking default values on objects.
-/// </summary>
-internal static class DefaultValueExtensions
-{
-    /// <summary>
-    /// Determines whether the specified value is the default value for its type.
-    /// </summary>
-    /// <typeparam name="T">The type of the value to check.</typeparam>
-    /// <param name="value">The value to check against the default for its type.</param>
-    /// <returns>
-    /// <see langword="true"/> if the value is <see langword="null"/> or equals the default value for its type;
-    /// otherwise, <see langword="false"/>.
-    /// </returns>
-    /// <remarks>
-    /// This method handles various scenarios:
-    /// <list type="bullet">
-    /// <item>Null values return <see langword="true"/></item>
-    /// <item>Nullable types are checked against their underlying type's default</item>
-    /// <item>Value types use <see cref="EqualityComparer{T}.Default"/> for comparison</item>
-    /// <item>Reference types are compared using <see cref="EqualityComparer{T}.Default"/></item>
-    /// <item>Boxed value types are handled correctly by comparing against the boxed default</item>
-    /// </list>
-    /// </remarks>
-    internal static bool IsDefaultValue<T>(this T value)
-    {
-        // Handle null values
-        if (value is null)
-            return true;
-
-        // Use EqualityComparer<T>.Default for type-safe comparison
-        if (EqualityComparer<T>.Default.Equals(value, default))
-            return true;
-
-        // Handle nullable types
-        Type valueType = typeof(T);
-        Type? underlyingType = Nullable.GetUnderlyingType(valueType);
-        if (underlyingType is not null)
-        {
-            // For non-null nullable types, the value is not default
-            return false;
-        }
-
-        // Handle boxed value types
-        Type actualType = value.GetType();
-        if (actualType.IsValueType && actualType != valueType)
-        {
-            // Create default instance of the actual runtime type
-            object? defaultInstance = Activator.CreateInstance(actualType);
-            return EqualityComparer<object>.Default.Equals(value, defaultInstance);
-        }
-
-        return false;
     }
 }
