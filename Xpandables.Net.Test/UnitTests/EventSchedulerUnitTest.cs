@@ -148,7 +148,7 @@ public class InMemoryEventStore : Repository, IEventStore
     }
 
     private static TEntityEvent CreateCopy<TEntityEvent>(TEntityEvent entity)
-        where TEntityEvent : class, IEntity
+        where TEntityEvent : class
     {
         if (entity is not IEntityEvent entityEvent)
         {
