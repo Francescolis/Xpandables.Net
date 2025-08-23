@@ -48,6 +48,11 @@ public sealed class PipelineUnitOfWorkEventDecorator<TRequest>(IUnitOfWorkEvent 
             await unitOfWork
                 .SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
+
+            foreach (var batch in PipelineDomainEventsDecorator<TRequest>.DomainEventCommitBuffer.Drain())
+            {
+                batch.OnCommitted();
+            }
         }
     }
 }

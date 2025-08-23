@@ -56,6 +56,7 @@ public static class ServiceCollectionMediatorExtensions
             .AddXPipelineValidationDecorator()
             .AddXPipelineUnitOfWorkDecorator()
             .AddXPipelineUnitOfWorkEventDecorator()
+            .AddXPipelineDomainEventsDecorator()
             .AddXPipelineDependencyDecorator()
             .AddXPipelinePreDecorator()
             .AddXPipelinePostDecorator()
@@ -228,6 +229,19 @@ public static class ServiceCollectionMediatorExtensions
     public static IServiceCollection AddXPipelineUnitOfWorkEventDecorator(
         this IServiceCollection services) =>
         services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkEventDecorator<>));
+
+    /// <summary>
+    /// Adds a decorator to the XPipeline that enables the handling of domain events.
+    /// </summary>
+    /// <remarks>This method registers the <see cref="PipelineDomainEventsDecorator{T}"/> as a decorator in
+    /// the XPipeline. It is used to ensure that domain events are processed as part of the pipeline
+    /// execution.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the decorator will be added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXPipelineDomainEventsDecorator(
+        this IServiceCollection services) =>
+        services.AddXPipelineDecorator(typeof(PipelineDomainEventsDecorator<>))
+        .AddScoped<IPendingDomainEvents, PendingDomainEvents>();
 
     /// <summary>
     /// Adds a post pipeline decorator to the <see cref="IServiceCollection" />.

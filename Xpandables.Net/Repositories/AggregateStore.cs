@@ -31,11 +31,11 @@ namespace Xpandables.Net.Repositories;
 /// </typeparam>
 public sealed class AggregateStore<TAggregate>(
     IUnitOfWorkEvent unitOfWork,
-    IPublisher publisher) :
+    IPendingDomainEvents pendingDomainEvents) :
     IAggregateStore<TAggregate>
     where TAggregate : Aggregate, new()
 {
-    private readonly IPublisher _publisher = publisher;
+    private readonly IPendingDomainEvents _pendingDomainEvents = pendingDomainEvents;
     private readonly IEventStore _eventStore = unitOfWork.GetEventStore<IEventStore>();
 
     /// <inheritdoc />
@@ -57,17 +57,7 @@ public sealed class AggregateStore<TAggregate>(
                 .AppendAsync(uncommittedEvents, cancellationToken)
                 .ConfigureAwait(false);
 
-            Task[] tasks =
-            [
-                .. uncommittedEvents
-                    .Select(async @event => await _publisher
-                        .PublishAsync(@event, cancellationToken)
-                        .ConfigureAwait(false))
-            ];
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            aggregate.MarkEventsAsCommitted();
+            _pendingDomainEvents.AddRange(uncommittedEvents, aggregate.MarkEventsAsCommitted);
         }
         catch (Exception exception)
             when (exception is not ValidationException and not InvalidOperationException)
