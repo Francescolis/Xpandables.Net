@@ -261,7 +261,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         try
         {
             await using var serviceScope = _serviceScopeFactory.CreateAsyncScope();
-            var messageQueue = serviceScope.ServiceProvider.GetRequiredService<IMessageQueue>();
             var eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IPublisher>();
             var eventStore = serviceScope.ServiceProvider.GetRequiredService<IEventStore>();
             var outbox = (IIntegrationOutboxStore)eventStore;

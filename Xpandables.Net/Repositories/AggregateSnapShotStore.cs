@@ -183,9 +183,7 @@ public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggreg
 
     private async Task<ISnapshotEvent?> FindLatestSnapshotAsync(
         Guid keyId,
-        CancellationToken cancellationToken)
-    {
-        return await _eventStore
+        CancellationToken cancellationToken) => await _eventStore
             .FetchAsync<EntitySnapshotEvent, EntitySnapshotEvent>(query =>
                 query.Where(w => w.OwnerId == keyId)
                     .OrderByDescending(o => o.Sequence)
@@ -194,7 +192,6 @@ public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggreg
             .OfType<ISnapshotEvent>()
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
-    }
 
     private async Task LoadEventsAfterSnapshotAsync(
         TAggregate aggregate,
