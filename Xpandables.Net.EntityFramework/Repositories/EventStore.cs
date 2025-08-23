@@ -97,11 +97,9 @@ public sealed class EventStore(DataContextEvent context) : Repository<DataContex
         var infoArray = infos as EventProcessedInfo[] ?? [.. infos];
         if (infoArray.Length == 0) return;
 
-        // Group by success/error for more efficient updates
         var successfulEvents = infoArray.Where(i => i.ErrorMessage is null).ToArray();
         var failedEvents = infoArray.Where(i => i.ErrorMessage is not null).ToArray();
 
-        // Update successful events
         if (successfulEvents.Length > 0)
         {
             var successIds = successfulEvents.Select(i => i.EventId).ToArray();
@@ -116,7 +114,6 @@ public sealed class EventStore(DataContextEvent context) : Repository<DataContex
                 .ConfigureAwait(false);
         }
 
-        // Update failed events (needs individual processing due to different error messages)
         foreach (var failedEvent in failedEvents)
         {
             await Context.Integrations
@@ -146,7 +143,13 @@ public sealed class EventStore(DataContextEvent context) : Repository<DataContex
     private async Task AppendEventBatchAsync(IEvent[] events, CancellationToken cancellationToken)
     {
         var eventGroups = events
-            .GroupBy(e => e.GetType())
+            .GroupBy(e =>
+            {
+                if (e is IDomainEvent) return typeof(IDomainEvent);
+                if (e is IIntegrationEvent) return typeof(IIntegrationEvent);
+                if (e is ISnapshotEvent) return typeof(ISnapshotEvent);
+                throw new InvalidOperationException($"Unsupported event type: {e.GetType().FullName}.");
+            })
             .ToArray();
 
         foreach (var eventGroup in eventGroups)
@@ -158,11 +161,9 @@ public sealed class EventStore(DataContextEvent context) : Repository<DataContex
 
     private async Task AppendEventGroupAsync(IGrouping<Type, IEvent> eventGroup, CancellationToken cancellationToken)
     {
-        // Get converter once per event type for efficiency
         IEventConverter eventConverter = EventConverter.GetConverterFor(eventGroup.Key);
         var entityEvents = new List<IEntityEvent>();
 
-        // Convert all events of this type
         foreach (IEvent @event in eventGroup)
         {
             IEntityEvent entityEvent = eventConverter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
@@ -170,7 +171,6 @@ public sealed class EventStore(DataContextEvent context) : Repository<DataContex
             _disposableEntities.Add(entityEvent);
         }
 
-        // Add all converted events in a single batch operation
         await Context
             .AddRangeAsync(entityEvents, cancellationToken)
             .ConfigureAwait(false);

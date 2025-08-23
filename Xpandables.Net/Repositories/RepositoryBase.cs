@@ -83,7 +83,7 @@ public abstract class RepositoryBase<TDataContext>(TDataContext context) : Repos
     where TDataContext : class
 {
     /// <summary>
-    /// Gets or sets the data context associated with this repository.
+    /// Gets or sets the data context associated with this store.
     /// </summary>
     protected TDataContext Context { get; init; } = context;
 }
