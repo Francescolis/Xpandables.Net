@@ -74,7 +74,7 @@ public sealed class EventSchedulerUnitTest
     }
 }
 
-public class InMemoryEventStore : RepositoryBase, IEventStore
+public class InMemoryEventStore : RepositoryBase, IEventStore, IIntegrationOutboxStore
 {
     private static readonly ConcurrentBag<IEntityEvent> _eventEntities = [];
     private readonly JsonSerializerOptions _options = DefaultSerializerOptions.Defaults;
@@ -99,6 +99,50 @@ public class InMemoryEventStore : RepositoryBase, IEventStore
         return Task.CompletedTask;
     }
 
+    public Task<IReadOnlyList<IIntegrationEvent>> ClaimPendingAsync(
+        int batchSize, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(batchSize);
+
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled<IReadOnlyList<IIntegrationEvent>>(cancellationToken);
+
+        List<Guid> events = [.. _eventEntities
+            .OfType<IEntityEventIntegration>()
+            .Where(e => e.Status == EntityStatus.PENDING)
+            .OrderBy(o => o.Sequence)
+            .Take(batchSize)
+            .Select(e=>e.KeyId)];
+
+        events.ForEach(e =>
+        {
+            IEntityEventIntegration? entity = _eventEntities
+                .OfType<IEntityEventIntegration>()
+                .FirstOrDefault(f => f.KeyId == e);
+
+            entity?.SetStatus(EntityStatus.PROCESSING);
+        });
+
+        IEventConverter converter = EventConverter.GetConverterFor<IIntegrationEvent>();
+        List<IEntityEventIntegration> processing = [.. _eventEntities
+            .OfType<IEntityEventIntegration>()
+            .Where(e => e.Status == EntityStatus.PROCESSING)
+            .OrderBy(o => o.Sequence)
+            .Take(batchSize)
+            .Select(CreateCopy)];
+
+        var integrationEvents = new List<IIntegrationEvent>(processing.Count);
+        foreach (var entity in processing)
+        {
+            if (converter.ConvertFrom(entity, DefaultSerializerOptions.Defaults) is IIntegrationEvent ie)
+            {
+                integrationEvents.Add(ie);
+            }
+        }
+
+        return Task.FromResult((IReadOnlyList<IIntegrationEvent>)integrationEvents);
+    }
+
     public override IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
@@ -116,7 +160,6 @@ public class InMemoryEventStore : RepositoryBase, IEventStore
 
         var filteredQuery = filter(integrations);
         return filteredQuery.WithPagination();
-        //return DoFetchAsync(filteredQuery, cancellationToken);
     }
 
     public Task MarkAsProcessedAsync(

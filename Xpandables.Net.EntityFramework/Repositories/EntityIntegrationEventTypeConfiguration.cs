@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Xpandables.Net.Repositories;
@@ -29,7 +30,15 @@ public sealed class EntityIntegrationEventTypeConfiguration : EntityEventTypeCon
     {
         base.Configure(builder);
 
-        _ = builder.HasIndex(e => new { e.KeyId, e.Name, e.Sequence });
+        _ = builder.HasIndex(e => new { e.KeyId, e.Name, e.Sequence }).IsUnique();
         _ = builder.Property(e => e.ErrorMessage).IsRequired(false).HasMaxLength(int.MaxValue);
+
+        _ = builder.HasIndex(e => e.Status);
+        _ = builder.HasIndex(e => e.NextAttemptOn);
+        _ = builder.HasIndex(e => e.ClaimId);
+
+        _ = builder.Property(e => e.AttemptCount).HasDefaultValue(0);
+        _ = builder.Property(e => e.NextAttemptOn).IsRequired(false);
+        _ = builder.Property(e => e.ClaimId).IsRequired(false);
     }
 }

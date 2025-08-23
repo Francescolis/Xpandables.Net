@@ -28,4 +28,16 @@ public interface IEntityEventIntegration : IEntityEvent
     /// Gets the error message associated with the event entity.
     /// </summary>
     string? ErrorMessage { get; }
+    /// <summary>
+    /// Gets the number of publish attempts made for the current operation.
+    /// </summary>
+    int AttemptCount { get; }
+    /// <summary>
+    /// When the next attempt should be made to process the event.
+    /// </summary>
+    DateTime? NextAttemptOn { get; }
+    /// <summary>
+    /// Identifier of the scheduler instance that claims the event for processing.
+    /// </summary>
+    Guid? ClaimId { get; }
 }

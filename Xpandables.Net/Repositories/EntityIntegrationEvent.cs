@@ -27,8 +27,15 @@ public sealed class EntityIntegrationEvent : EntityEvent, IEntityEventIntegratio
     /// </summary>
     public EntityIntegrationEvent() => SetStatus(EntityStatus.PENDING);
 
-    /// <summary>
-    /// Gets the error message associated with the event entity.
-    /// </summary>
+    /// <inheritdoc/>
     public string? ErrorMessage { get; init; }
+
+    /// <inheritdoc/>
+    public int AttemptCount { get; init; }
+
+    /// <inheritdoc/>
+    public DateTime? NextAttemptOn { get; init; }
+
+    /// <inheritdoc/>
+    public Guid? ClaimId { get; init; }
 }

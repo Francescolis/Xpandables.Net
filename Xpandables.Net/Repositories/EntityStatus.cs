@@ -110,6 +110,7 @@ public readonly partial record struct EntityStatus
         {
             { nameof(ACTIVE), ACTIVE },
             { nameof(PENDING), PENDING },
+            { nameof(PROCESSING), PROCESSING },
             { nameof(DELETED), DELETED },
             { nameof(SUSPENDED), SUSPENDED },
             { nameof(ONERROR), ONERROR },
@@ -125,6 +126,11 @@ public readonly partial record struct EntityStatus
     /// It is pending (for any reason).
     /// </summary>
     public static EntityStatus PENDING => Create(nameof(PENDING));
+
+    /// <summary>
+    /// Gets the status representing an entity that is currently being processed.
+    /// </summary>
+    public static EntityStatus PROCESSING => Create(nameof(PROCESSING));
 
     /// <summary>
     /// It is deleted (logical deletion).

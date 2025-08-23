@@ -264,25 +264,20 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             var messageQueue = serviceScope.ServiceProvider.GetRequiredService<IMessageQueue>();
             var eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IPublisher>();
             var eventStore = serviceScope.ServiceProvider.GetRequiredService<IEventStore>();
+            var outbox = (IIntegrationOutboxStore)eventStore;
 
-            await messageQueue.DequeueAsync(_options.BatchSize, cancellationToken).ConfigureAwait(false);
-
-            if (messageQueue.Channel.Reader.Count == 0)
+            // Claim a batch directly from the outbox (multi-instance safe)
+            var claimed = await outbox.ClaimPendingAsync(_options.BatchSize, cancellationToken).ConfigureAwait(false);
+            if (claimed.Count == 0)
             {
                 LogNoEventsToSchedule(_logger, null);
-                ResetBackoffDelay(); // Reset on successful empty queue
+                ResetBackoffDelay();
                 HandleCircuitBreakerSuccess();
                 return;
             }
 
-            var eventBatches = await CollectEventBatchesAsync(messageQueue, cancellationToken).ConfigureAwait(false);
-
-            if (eventBatches.Count == 0)
-            {
-                LogNoValidEventsCollected(_logger, null);
-                return;
-            }
-
+            // Partition into batches for parallel processing
+            var eventBatches = CreateBatches(claimed);
             LogProcessingBatches(_logger, eventBatches.Sum(b => b.Count), eventBatches.Count, null);
 
             var processingTasks = eventBatches.Select(batch =>
@@ -373,36 +368,22 @@ internal sealed class Scheduler : BackgroundService, IScheduler
     #region Private Implementation Methods
 
     /// <summary>
-    /// Collects events from the message queue into batches for parallel processing.
+    /// Divides a collection of integration events into smaller batches for processing.
     /// </summary>
-    private static async Task<List<List<IIntegrationEvent>>> CollectEventBatchesAsync(
-        IMessageQueue messageQueue,
-        CancellationToken cancellationToken)
+    /// <remarks>The method calculates the batch size based on the total number of events and the number of
+    /// processors available on the system. Each batch will contain approximately the same number of events, with the
+    /// exception of the last batch, which may contain fewer events.</remarks>
+    /// <param name="events">The collection of integration events to be divided into batches. Cannot be null.</param>
+    /// <returns>A list of batches, where each batch is a list of integration events. The number of batches is determined by the
+    /// size of the input collection and the number of available processors.</returns>
+    private static List<List<IIntegrationEvent>> CreateBatches(IReadOnlyList<IIntegrationEvent> events)
     {
-        await Task.Yield(); // Ensure we are not blocking the caller
-
-        var allEvents = new List<IIntegrationEvent>();
-        var reader = messageQueue.Channel.Reader;
-
-        // Collect all available events
-        while (reader.TryRead(out var @event) && @event is not null)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            allEvents.Add(@event);
-        }
-
-        if (allEvents.Count == 0)
-        {
-            return [];
-        }
-
-        var batchSize = Math.Max(1, allEvents.Count / Environment.ProcessorCount);
+        var list = events.ToList();
+        var batchSize = Math.Max(1, list.Count / Math.Max(1, Environment.ProcessorCount));
         var batches = new List<List<IIntegrationEvent>>();
-
-        for (int i = 0; i < allEvents.Count; i += batchSize)
+        for (int i = 0; i < list.Count; i += batchSize)
         {
-            var batch = allEvents.Skip(i).Take(batchSize).ToList();
-            batches.Add(batch);
+            batches.Add([.. list.Skip(i).Take(batchSize)]);
         }
 
         return batches;

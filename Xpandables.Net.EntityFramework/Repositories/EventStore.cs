@@ -35,7 +35,7 @@ namespace Xpandables.Net.Repositories;
 /// supports appending single or multiple events, marking events as processed, and fetching paginated results. This
 /// class is designed to work with Entity Framework Core and ensures proper disposal of resources.</remarks>
 /// <param name="context"></param>
-public sealed class EventStore<TDataContext>(TDataContext context) : Repository<TDataContext>(context), IEventStore
+public sealed class EventStore<TDataContext>(TDataContext context) : Repository<TDataContext>(context), IEventStore, IIntegrationOutboxStore
     where TDataContext : DataContext
 {
     private readonly ConcurrentBag<IEntityEvent> _disposableEntities = [];
@@ -72,11 +72,69 @@ public sealed class EventStore<TDataContext>(TDataContext context) : Repository<
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<IIntegrationEvent>> ClaimPendingAsync(
+        int batchSize, CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        var claimId = Guid.NewGuid();
+        var eventsSet = Context.Set<EntityIntegrationEvent>();
+
+        // 1) Select candidate ids
+        var candidateIds = await eventsSet
+            .Where(e =>
+                (e.Status == EntityStatus.PENDING.Value) ||
+                (e.Status == EntityStatus.ONERROR.Value && (e.NextAttemptOn == null || e.NextAttemptOn <= now)))
+            .Where(e => e.ClaimId == null)
+            .OrderBy(e => e.Sequence)
+            .Select(e => e.KeyId)
+            .Take(Math.Max(1, batchSize))
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (candidateIds.Count == 0) return [];
+
+        // 2) Claim them (best-effort, another instance may have raced; ClaimId==null prevents double-claim)
+        var updated = await eventsSet
+            .Where(e => candidateIds.Contains(e.KeyId) && e.ClaimId == null)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(e => e.Status, EntityStatus.PROCESSING.Value)
+                .SetProperty(e => e.ClaimId, claimId)
+                .SetProperty(e => e.ErrorMessage, (string?)null)
+                .SetProperty(e => e.UpdatedOn, now),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (updated == 0) return [];
+
+        // 3) Load the claimed rows for this claimId and convert to IIntegrationEvent
+        var claimed = await eventsSet
+            .AsNoTracking()
+            .Where(e => e.ClaimId == claimId)
+            .OrderBy(e => e.Sequence)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        IEventConverter converter = EventConverter.GetConverterFor<IIntegrationEvent>();
+        var integrationEvents = new List<IIntegrationEvent>(claimed.Count);
+        foreach (var entity in claimed)
+        {
+            if (converter.ConvertFrom(entity, DefaultSerializerOptions.Defaults) is IIntegrationEvent ie)
+            {
+                integrationEvents.Add(ie);
+            }
+        }
+
+        return integrationEvents;
+    }
+
+    /// <inheritdoc />
     public async Task MarkAsProcessedAsync(EventProcessedInfo info, CancellationToken cancellationToken = default)
     {
         string status = info.ErrorMessage is null
             ? EntityStatus.PUBLISHED
             : EntityStatus.ONERROR;
+        DateTime now = DateTime.UtcNow;
+        bool success = info.ErrorMessage is null;
 
         await Context.Set<EntityIntegrationEvent>()
             .Where(e => e.KeyId == info.EventId)
@@ -84,7 +142,10 @@ public sealed class EventStore<TDataContext>(TDataContext context) : Repository<
                     entity
                         .SetProperty(e => e.Status, status)
                         .SetProperty(e => e.ErrorMessage, info.ErrorMessage)
-                        .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
+                        .SetProperty(e => e.AttemptCount, success ? e => e.AttemptCount : e => e.AttemptCount + 1)
+                        .SetProperty(e => e.NextAttemptOn, success ? e => null : e => GetNextAttempt(now, e.AttemptCount + 1))
+                        .SetProperty(e => e.ClaimId, (Guid?)null)
+                        .SetProperty(e => e.UpdatedOn, now),
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -96,35 +157,40 @@ public sealed class EventStore<TDataContext>(TDataContext context) : Repository<
     {
         ArgumentNullException.ThrowIfNull(infos);
 
-        var infoArray = infos as EventProcessedInfo[] ?? [.. infos];
-        if (infoArray.Length == 0) return;
+        var items = infos as EventProcessedInfo[] ?? [.. infos];
+        if (items.Length == 0) return;
 
-        var successfulEvents = infoArray.Where(i => i.ErrorMessage is null).ToArray();
-        var failedEvents = infoArray.Where(i => i.ErrorMessage is not null).ToArray();
+        var successIds = items.Where(i => i.ErrorMessage is null).Select(i => i.EventId).ToArray();
+        var failed = items.Where(i => i.ErrorMessage is not null).ToArray();
+        var now = DateTime.UtcNow;
 
-        if (successfulEvents.Length > 0)
+        if (successIds.Length > 0)
         {
-            var successIds = successfulEvents.Select(i => i.EventId).ToArray();
             await Context.Set<EntityIntegrationEvent>()
                 .Where(e => successIds.Contains(e.KeyId))
                 .ExecuteUpdateAsync(entity =>
                     entity
                         .SetProperty(e => e.Status, EntityStatus.PUBLISHED.Value)
                         .SetProperty(e => e.ErrorMessage, (string?)null)
-                        .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
+                        .SetProperty(e => e.NextAttemptOn, (DateTime?)null)
+                        .SetProperty(e => e.ClaimId, (Guid?)null)
+                        .SetProperty(e => e.UpdatedOn, now),
                     cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        foreach (var failedEvent in failedEvents)
+        foreach (var f in failed)
         {
             await Context.Set<EntityIntegrationEvent>()
-                .Where(e => e.KeyId == failedEvent.EventId)
+                .Where(e => e.KeyId == f.EventId)
                 .ExecuteUpdateAsync(entity =>
                     entity
                         .SetProperty(e => e.Status, EntityStatus.ONERROR.Value)
-                        .SetProperty(e => e.ErrorMessage, failedEvent.ErrorMessage)
-                        .SetProperty(e => e.UpdatedOn, DateTime.UtcNow),
+                        .SetProperty(e => e.ErrorMessage, f.ErrorMessage)
+                        .SetProperty(e => e.AttemptCount, e => e.AttemptCount + 1)
+                        .SetProperty(e => e.NextAttemptOn, e => GetNextAttempt(now, e.AttemptCount + 1))
+                        .SetProperty(e => e.ClaimId, (Guid?)null)
+                        .SetProperty(e => e.UpdatedOn, now),
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -176,5 +242,13 @@ public sealed class EventStore<TDataContext>(TDataContext context) : Repository<
         await Context
             .AddRangeAsync(entityEvents, cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    // Simple exponential backoff with cap (customize as needed)
+    private static DateTime GetNextAttempt(DateTime now, int attemptCount)
+    {
+        // base 10s, double each time, max 10 minutes
+        var delay = TimeSpan.FromSeconds(Math.Min(600, 10 * Math.Pow(2, Math.Min(10, attemptCount - 1))));
+        return now.Add(delay);
     }
 }
