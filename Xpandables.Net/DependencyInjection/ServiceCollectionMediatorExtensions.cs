@@ -24,12 +24,9 @@ using Microsoft.Extensions.Hosting;
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.States;
 using Xpandables.Net.Tasks;
 using Xpandables.Net.Tasks.Dependencies;
 using Xpandables.Net.Tasks.Pipelines;
-
-// ReSharper disable MemberCanBePrivate.Global
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -316,60 +313,6 @@ public static class ServiceCollectionMediatorExtensions
 
         return services.AddTransient(typeof(IPipelineDecorator<>), pipelineType);
     }
-
-    /// <summary>
-    /// Adds the aggregate snapshot store to the <see cref="IServiceCollection" />.
-    /// </summary>
-    /// <param name="services">
-    /// The service collection to add the aggregate
-    /// snapshot store to.
-    /// </param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXSnapshotAggregateStore(
-        this IServiceCollection services) =>
-        services.XTryDecorate(
-            typeof(IAggregateStore<>),
-            typeof(AggregateSnapShotStore<>),
-            typeof(IOriginator));
-
-    /// <summary>
-    /// Adds the specified aggregate store implementation to the
-    /// <see cref="IServiceCollection" />.
-    /// </summary>
-    /// <param name="services">
-    /// The service collection to add the
-    /// aggregate store to.
-    /// </param>
-    /// <param name="aggregateStoreType">
-    /// The type of the aggregate store
-    /// implementation.
-    /// </param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXAggregateStore(
-        this IServiceCollection services,
-        Type aggregateStoreType)
-    {
-        services.TryAdd(
-            new ServiceDescriptor(
-                typeof(IAggregateStore<>),
-                aggregateStoreType,
-                ServiceLifetime.Scoped));
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds the default aggregate store implementation to the
-    /// <see cref="IServiceCollection" />.
-    /// </summary>
-    /// <param name="services">
-    /// The service collection to add the
-    /// aggregate store to.
-    /// </param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXAggregateStore(
-        this IServiceCollection services) =>
-        services.AddXAggregateStore(typeof(AggregateStore<>));
 
     /// <summary>
     /// Adds the specified publisher implementation to the

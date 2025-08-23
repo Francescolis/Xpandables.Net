@@ -16,8 +16,11 @@
  *
 ********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
+using Xpandables.Net.States;
 
 namespace Xpandables.Net.DependencyInjection;
 /// <summary>
@@ -280,5 +283,67 @@ public static class ServiceCollectionRepositoryExtensions
         where TInterface : class, IEventStore
         where TImplementation : class, TInterface =>
         services.AddKeyedScoped<TInterface, TImplementation>(key);
-}
 
+    /// <summary>
+    /// Adds the default implementation of <see cref="IAggregateStore{TAggregate}"/> for the specified aggregate type to
+    /// the service collection.
+    /// </summary>
+    /// <remarks>This method registers the <see cref="IAggregateStore{TAggregate}"/> implementation as a
+    /// scoped service.</remarks>
+    /// <typeparam name="TAggregate">The type of the aggregate for which the store is being registered. Must derive from <see cref="Aggregate"/> and
+    /// have a parameterless constructor.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the aggregate store will be added.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance, to allow for method chaining.</returns>
+    public static IServiceCollection AddXAggregateStore<TAggregate>(
+        this IServiceCollection services)
+        where TAggregate : Aggregate, new()
+    {
+        services.TryAddScoped<IAggregateStore<TAggregate>, AggregateStore<TAggregate>>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the specified aggregate store type as the implementation of the <see cref="IAggregateStore{T}"/>
+    /// interface in the service collection.
+    /// </summary>
+    /// <remarks>This method adds the specified <paramref name="aggregateStoreType"/> to the service
+    /// collection with a scoped lifetime. If an implementation of <see cref="IAggregateStore{T}"/> is already
+    /// registered, it will not be replaced.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the aggregate store type will be added.</param>
+    /// <param name="aggregateStoreType">The type that implements <see cref="IAggregateStore{T}"/>. This type must be a concrete, non-abstract class.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXAggregateStore(
+        this IServiceCollection services, Type aggregateStoreType)
+    {
+        services.TryAddScoped(typeof(IAggregateStore<>), aggregateStoreType);
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the aggregate store to the specified service collection.
+    /// </summary>
+    /// <remarks>This method registers the aggregate store with the dependency injection container,  using
+    /// the default implementation of <c>AggregateStore&lt;T&gt;</c>.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the aggregate store will be added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXAggregateStore(
+        this IServiceCollection services) =>
+        services.AddXAggregateStore(typeof(AggregateStore<>));
+
+    /// <summary>
+    /// Adds a snapshot-based aggregate store to the service collection, decorating the existing  <see
+    /// cref="IAggregateStore{T}"/> implementation with snapshot functionality.
+    /// </summary>
+    /// <remarks>This method decorates the existing <see cref="IAggregateStore{T}"/> implementation with  <see
+    /// cref="AggregateSnapShotStore{T}"/>, enabling snapshot functionality for aggregates that  implement <see
+    /// cref="IOriginator"/>. This can improve performance by reducing the need to  replay the full event stream for
+    /// aggregates that support snapshots.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the snapshot aggregate store is added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXAggregateSnapshotStore(
+        this IServiceCollection services) =>
+        services.XTryDecorate(
+            typeof(IAggregateStore<>),
+            typeof(AggregateSnapShotStore<>),
+            typeof(IOriginator));
+}
