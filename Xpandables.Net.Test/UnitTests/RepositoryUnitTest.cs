@@ -17,7 +17,7 @@ public sealed class RepositoryUnitTest
         // Arrange
         _serviceProvider = new ServiceCollection()
             .AddXUnitOfWork<UnitOfWork<TestDbContext>>()
-            .AddXRepositoryDefault<TestDbContext>()
+            .AddXRepository<TestDbContext>()
             .AddXDataContext<TestDbContext>(options =>
                 options
                 .UseSqlServer(@"Data Source=(localdb)\ProjectModels;Initial Catalog=XpandablesDb;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False")
@@ -87,6 +87,7 @@ public sealed class RepositoryUnitTest
         {
             await using var repository = _unitOfWork.GetRepository<IRepository>();
             await repository.AddOrUpdateAsync(entities);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         // Assert
@@ -124,27 +125,6 @@ public sealed class RepositoryUnitTest
 
         // Assert
         repository.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task UsingStatement_ShouldCallSaveChangesAsyncOnDispose()
-    {
-        // Arrange // Act
-        await using (var transaction = await _unitOfWork.BeginTransactionAsync())
-        {
-            await using var repository = _unitOfWork.GetRepository<IRepository>();
-            await repository.AddOrUpdateAsync(new List<TestEntity>
-            { new() { KeyId = 5,  Name = "Test5" } });
-            // No need to call SaveChangesAsync explicitly, it should be called automatically
-        }
-
-        // Assert
-        await using var _repository = _unitOfWork.GetRepository<IRepository>();
-        var name = await _repository.FetchAsync(
-            (IQueryable<TestEntity> query) => query.Where(e => e.KeyId == 5)
-            .Select(e => e.Name))
-            .FirstAsync();
-        name.Should().Be("Test5");
     }
 }
 

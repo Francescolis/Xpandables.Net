@@ -79,7 +79,7 @@ public abstract class RepositoryBase : AsyncDisposable, IRepository
 /// <typeparam name="TDataContext">The type of the data context associated with the repository. This must be a reference type.</typeparam>
 /// <param name="context"> The data context instance to be used by the repository. This 
 /// parameter is required and must not be <see langword="null"/>.</param>
-public abstract class RepositoryBase<TDataContext>(TDataContext context) : RepositoryBase
+public abstract class RepositoryBase<TDataContext>(TDataContext context) : RepositoryBase, IRepository<TDataContext>
     where TDataContext : class
 {
     /// <summary>

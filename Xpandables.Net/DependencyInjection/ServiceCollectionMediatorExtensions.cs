@@ -372,32 +372,6 @@ public static class ServiceCollectionMediatorExtensions
         services.AddXAggregateStore(typeof(AggregateStore<>));
 
     /// <summary>
-    /// Adds the specified event store implementation to the
-    /// <see cref="IServiceCollection" />.
-    /// </summary>
-    /// <typeparam name="TEventStore">
-    /// The type of the event store
-    /// implementation.
-    /// </typeparam>
-    /// <param name="services">
-    /// The service collection to add the
-    /// event store to.
-    /// </param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddXEventStore<TEventStore>(
-        this IServiceCollection services)
-        where TEventStore : class, IEventStore
-    {
-        services.TryAdd(
-            new ServiceDescriptor(
-                typeof(IEventStore),
-                typeof(TEventStore),
-                ServiceLifetime.Scoped));
-
-        return services;
-    }
-
-    /// <summary>
     /// Adds the specified publisher implementation to the
     /// <see cref="IServiceCollection" />.
     /// </summary>

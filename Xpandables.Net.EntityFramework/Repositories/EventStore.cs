@@ -30,11 +30,13 @@ namespace Xpandables.Net.Repositories;
 /// <summary>
 /// Provides functionality for storing and managing events in a database context.
 /// </summary>
-/// <remarks>The <see cref="EventStore"/> class is a specialized repository for handling event-sourced data. It
+/// <typeparam name="TDataContext">The type of the database context used by the event store. Must derive from <see cref="DataContext"/>.</typeparam>
+/// <remarks>The <see cref="EventStore{TDataContext}"/> class is a specialized repository for handling event-sourced data. It
 /// supports appending single or multiple events, marking events as processed, and fetching paginated results. This
 /// class is designed to work with Entity Framework Core and ensures proper disposal of resources.</remarks>
 /// <param name="context"></param>
-public sealed class EventStore(DataContextEvent context) : Repository<DataContextEvent>(context), IEventStore
+public sealed class EventStore<TDataContext>(TDataContext context) : Repository<TDataContext>(context), IEventStore
+    where TDataContext : DataContext
 {
     private readonly ConcurrentBag<IEntityEvent> _disposableEntities = [];
 
@@ -76,7 +78,7 @@ public sealed class EventStore(DataContextEvent context) : Repository<DataContex
             ? EntityStatus.PUBLISHED
             : EntityStatus.ONERROR;
 
-        await Context.Integrations
+        await Context.Set<EntityIntegrationEvent>()
             .Where(e => e.KeyId == info.EventId)
             .ExecuteUpdateAsync(entity =>
                     entity
@@ -103,7 +105,7 @@ public sealed class EventStore(DataContextEvent context) : Repository<DataContex
         if (successfulEvents.Length > 0)
         {
             var successIds = successfulEvents.Select(i => i.EventId).ToArray();
-            await Context.Integrations
+            await Context.Set<EntityIntegrationEvent>()
                 .Where(e => successIds.Contains(e.KeyId))
                 .ExecuteUpdateAsync(entity =>
                     entity
@@ -116,7 +118,7 @@ public sealed class EventStore(DataContextEvent context) : Repository<DataContex
 
         foreach (var failedEvent in failedEvents)
         {
-            await Context.Integrations
+            await Context.Set<EntityIntegrationEvent>()
                 .Where(e => e.KeyId == failedEvent.EventId)
                 .ExecuteUpdateAsync(entity =>
                     entity

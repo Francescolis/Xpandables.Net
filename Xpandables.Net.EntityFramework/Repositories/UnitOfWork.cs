@@ -188,7 +188,7 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 /// </summary>
 /// <typeparam name="TDataContext">The type of the data context.</typeparam>
 public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider serviceProvider) :
-    UnitOfWork(context, serviceProvider)
+    UnitOfWork(context, serviceProvider), IUnitOfWork<TDataContext>
     where TDataContext : DataContext
 {
     /// <summary>
