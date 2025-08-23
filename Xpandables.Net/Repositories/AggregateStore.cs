@@ -53,6 +53,8 @@ public sealed class AggregateStore<TAggregate>(
                 return;
             }
 
+            await CheckConcurrencyAsync(aggregate, cancellationToken).ConfigureAwait(false);
+
             await _eventStore
                 .AppendAsync(uncommittedEvents, cancellationToken)
                 .ConfigureAwait(false);
@@ -123,7 +125,7 @@ public sealed class AggregateStore<TAggregate>(
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        if (lastEvent?.StreamVersion + 1 != aggregate.ExpectedStreamVersion)
+        if ((lastEvent?.StreamVersion ?? 0) + 1 != aggregate.ExpectedStreamVersion)
         {
             throw new DBConcurrencyException(
                 $"Concurrency conflict for aggregate {aggregate.KeyId}. " +
