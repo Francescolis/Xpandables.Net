@@ -19,64 +19,80 @@ using System.Collections.Concurrent;
 using System.Data.Common;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a unit of work that encapsulates a set of operations to be
-/// performed on a data context.
+/// Represents a unit of work implementation that manages a data context and provides transactional support, repository
+/// access, and change tracking for database operations.
 /// </summary>
-public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) : AsyncDisposable, IUnitOfWork
+/// <remarks>This class is designed to encapsulate the lifetime of a data context and ensure that all database
+/// operations are performed within a consistent transactional boundary. It supports both synchronous and asynchronous
+/// operations, including transaction management, saving changes, and accessing repositories.  The <see
+/// cref="UnitOfWork"/> is intended to be used in scenarios where a unit of work pattern is required to
+/// coordinate changes across multiple repositories or services. It ensures that resources are properly disposed of when
+/// the unit of work is no longer needed.</remarks>
+/// <param name="context"></param>
+/// <param name="serviceProvider"></param>
+public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) : UnitOfWorkBase, IUnitOfWork
 {
     private readonly ConcurrentDictionary<Type, IRepository> _repositories = [];
     private readonly IServiceProvider _serviceProvider = serviceProvider;
+
     /// <summary>
     /// Gets the data context associated with this unit of work.
     /// </summary>
     protected DataContext Context { get; } = context;
 
     /// <inheritdoc />
-    public bool IsTransactional { get; set; }
-
-    /// <inheritdoc />
-    public async Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public override async Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (IsTransactional)
-        {
-            throw new InvalidOperationException("A transaction is already in progress.");
-        }
-
         var _transaction = await Context.Database
             .BeginTransactionAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return new UnitOfWorkTransaction(_transaction, this);
+        return new UnitOfWorkTransaction(_transaction.GetDbTransaction());
     }
 
     /// <inheritdoc />
-    public async Task<IUnitOfWorkTransaction> UseTransactionAsync(
+    public override IUnitOfWorkTransaction BeginTransaction()
+    {
+        var _transaction = Context.Database.BeginTransaction();
+
+        return new UnitOfWorkTransaction(_transaction.GetDbTransaction());
+    }
+
+    /// <inheritdoc />
+    public override async Task<IUnitOfWorkTransaction> UseTransactionAsync(
         DbTransaction transaction,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(transaction);
-
-        if (IsTransactional)
-        {
-            throw new InvalidOperationException("A transaction is already in progress.");
-        }
 
         var _transaction = await Context.Database
             .UseTransactionAsync(transaction, cancellationToken)
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException("Unable to use the specified transaction");
 
-        return new UnitOfWorkTransaction(_transaction, this);
+        return new UnitOfWorkTransaction(_transaction.GetDbTransaction());
     }
 
     /// <inheritdoc />
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override IUnitOfWorkTransaction UseTransaction(DbTransaction transaction)
+    {
+        ArgumentNullException.ThrowIfNull(transaction);
+
+        var _transaction = Context.Database.UseTransaction(transaction)
+            ?? throw new InvalidOperationException("Unable to use the specified transaction");
+
+        return new UnitOfWorkTransaction(_transaction.GetDbTransaction());
+    }
+
+    /// <inheritdoc />
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -92,14 +108,29 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     }
 
     /// <inheritdoc />
-    public TRepository GetRepository<TRepository>()
-        where TRepository : class, IRepository
+    public override int SaveChanges()
+    {
+        try
+        {
+            return Context.SaveChanges();
+        }
+        catch (Exception exception)
+            when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                "An error occurred while saving the changes.",
+                exception);
+        }
+    }
+
+    /// <inheritdoc />
+    public override TRepository GetRepository<TRepository>()
     {
         var repository = _repositories.GetOrAdd(typeof(TRepository), _ =>
         {
             var service = _serviceProvider.GetService<TRepository>()
                 ?? throw new InvalidOperationException(
-                    $"The repository of type {typeof(TRepository).Name} is not registered.");
+                    $"The store of type {typeof(TRepository).Name} is not registered.");
 
             // Inject the ambient DataContext into the repository
             DataContextExtensions.InjectAmbientContext(service, Context);
@@ -110,17 +141,41 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
         return (TRepository)repository;
     }
 
+    /// <summary>
+    /// Releases the resources used by the current instance of the class.
+    /// </summary>
+    /// <remarks>This method should be called when the instance is no longer needed to ensure that all
+    /// resources  are properly released. If the instance is disposed, it cannot be used again.</remarks>
+    /// <param name="disposing"></param>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing && !IsDisposed)
+        {
+            Context.Dispose();
+
+            _repositories.Clear();
+
+            IsDisposed = true;
+        }
+
+        base.Dispose(disposing);
+    }
+
     /// <inheritdoc />
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing)
+        if (disposing && !IsDisposed)
         {
             await Context.DisposeAsync().ConfigureAwait(false);
+
             foreach (var repository in _repositories.Values)
             {
                 await repository.DisposeAsync().ConfigureAwait(false);
             }
+
             _repositories.Clear();
+
+            IsDisposed = true;
         }
 
         await base.DisposeAsync(disposing).ConfigureAwait(false);
@@ -140,116 +195,4 @@ public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider ser
     /// Gets the data context associated with this unit of work.
     /// </summary>
     protected new TDataContext Context { get; } = context;
-}
-
-/// <summary>
-/// Represents a unit of work for handling events within a specified data context.
-/// </summary>
-/// <typeparam name="TDataContext">The type of the data context used by this unit of work. 
-/// Must inherit from <see cref="DataContext"/>.</typeparam>
-/// <param name="context">The data context to be used for this unit of work.</param>
-/// <param name="serviceProvider">The service provider to resolve dependencies.</param>
-public sealed class EventUnitOfWork<TDataContext>(
-    TDataContext context,
-    IServiceProvider serviceProvider) : UnitOfWork<TDataContext>(context, serviceProvider)
-    where TDataContext : DataContext
-{
-}
-
-internal sealed class UnitOfWorkTransaction : AsyncDisposable, IUnitOfWorkTransaction
-{
-    private readonly UnitOfWork _unitOfWork;
-    private IDbContextTransaction? _transaction;
-    private bool _committed;
-    private bool _rollback;
-    private bool _exception;
-
-    public UnitOfWorkTransaction(IDbContextTransaction transaction, UnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-        _transaction = transaction;
-        _unitOfWork.IsTransactional = true;
-    }
-
-    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
-    {
-        if (_transaction is null)
-        {
-            throw new InvalidOperationException("No transaction is in progress.");
-        }
-        try
-        {
-            await _transaction
-                .CommitAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            _committed = true;
-        }
-        catch
-        {
-            _exception = true;
-            throw;
-        }
-    }
-
-    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
-    {
-        if (_transaction is null)
-        {
-            throw new InvalidOperationException("No transaction is in progress.");
-        }
-
-        try
-        {
-            await _transaction
-                .RollbackAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            _rollback = true;
-        }
-        catch
-        {
-            _exception = true;
-            throw;
-        }
-    }
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        if (disposing)
-        {
-            if (_transaction is null)
-            {
-                return;
-            }
-            try
-            {
-                if (_exception && !_rollback)
-                {
-                    await RollbackTransactionAsync().ConfigureAwait(false);
-                }
-                else if (!_exception && !_committed)
-                {
-                    try
-                    {
-                        await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
-                        await CommitTransactionAsync().ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        await RollbackTransactionAsync().ConfigureAwait(false);
-                        throw;
-                    }
-                }
-            }
-            finally
-            {
-                await _transaction.DisposeAsync().ConfigureAwait(false);
-                _transaction = null;
-                _unitOfWork.IsTransactional = false;
-            }
-        }
-
-        await base.DisposeAsync(disposing).ConfigureAwait(false);
-    }
 }

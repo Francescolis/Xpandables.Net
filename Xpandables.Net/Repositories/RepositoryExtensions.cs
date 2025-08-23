@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.Events;
@@ -83,6 +84,70 @@ public static class RepositoryExtensions
     /// langword="false"/>.</returns>
     public static bool IsOnError(this IEntity entity) =>
         entity.Status == EntityStatus.ONERROR;
+
+    /// <summary>
+    /// Creates a deep clone of the specified entity event.
+    /// </summary>
+    /// <typeparam name="TEntityEvent">The type of the entity event to clone. Must implement <see cref="IEntityEvent"/>.</typeparam>
+    /// <param name="entity">The entity event instance to clone. Cannot be <see langword="null"/>.</param>
+    /// <returns>A new instance of <typeparamref name="TEntityEvent"/> that is a deep clone of the specified entity event.</returns>
+    /// <exception cref="NotSupportedException">Thrown if the specified entity event type is not supported or if <paramref name="entity"/> does not implement
+    /// <see cref="IEntityEvent"/>.</exception>
+    public static TEntityEvent EntityEventClone<TEntityEvent>(TEntityEvent entity)
+         where TEntityEvent : class
+    {
+        if (entity is not IEntityEvent entityEvent)
+        {
+            throw new NotSupportedException($"Unsupported entity event type: {typeof(TEntityEvent).FullName}");
+        }
+
+        JsonElement cloneElement = entityEvent.Data.RootElement.Clone();
+        JsonDocument cloneDocument = JsonDocument.Parse(cloneElement.GetRawText());
+        IEntityEvent result = entityEvent switch
+        {
+            IEntityEventIntegration integration => new EntityIntegrationEvent
+            {
+                CreatedOn = integration.CreatedOn,
+                DeletedOn = integration.DeletedOn,
+                ErrorMessage = integration.ErrorMessage,
+                Data = cloneDocument,
+                FullName = integration.FullName,
+                Name = integration.Name,
+                KeyId = integration.KeyId,
+                Status = integration.Status,
+                UpdatedOn = integration.UpdatedOn
+            },
+            IEntityEventDomain domain => new EntityDomainEvent
+            {
+                AggregateId = domain.AggregateId,
+                AggregateName = domain.AggregateName,
+                CreatedOn = domain.CreatedOn,
+                DeletedOn = domain.DeletedOn,
+                Data = cloneDocument,
+                FullName = domain.FullName,
+                Name = domain.Name,
+                StreamVersion = domain.StreamVersion,
+                KeyId = domain.KeyId,
+                Status = domain.Status,
+                UpdatedOn = domain.UpdatedOn
+            },
+            IEntityEventSnapshot snapshot => new EntitySnapshotEvent
+            {
+                CreatedOn = snapshot.CreatedOn,
+                DeletedOn = snapshot.DeletedOn,
+                Data = cloneDocument,
+                OwnerId = snapshot.OwnerId,
+                FullName = snapshot.FullName,
+                Name = snapshot.Name,
+                KeyId = snapshot.KeyId,
+                Status = snapshot.Status,
+                UpdatedOn = snapshot.UpdatedOn
+            },
+            _ => throw new NotSupportedException($"Unsupported entity event type: {entityEvent.GetType().FullName}")
+        };
+
+        return (TEntityEvent)result;
+    }
 
     /// <summary>
     /// Combines two expressions into a single expression.

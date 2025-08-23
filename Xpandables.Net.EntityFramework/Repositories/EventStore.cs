@@ -28,23 +28,15 @@ using Xpandables.Net.Text;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a store for events, providing methods to append, fetch,
-/// and mark events as published.
+/// Provides functionality for storing and managing events in a database context.
 /// </summary>
-public sealed class EventStore : Repository<DataContextEvent>, IEventStore
+/// <remarks>The <see cref="EventStore"/> class is a specialized repository for handling event-sourced data. It
+/// supports appending single or multiple events, marking events as processed, and fetching paginated results. This
+/// class is designed to work with Entity Framework Core and ensures proper disposal of resources.</remarks>
+/// <param name="context"></param>
+public sealed class EventStore(DataContextEvent context) : Repository<DataContextEvent>(context), IEventStore
 {
     private readonly ConcurrentBag<IEntityEvent> _disposableEntities = [];
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventStore"/> class with the specified data context.
-    /// </summary>
-    /// <param name="context">The data context used to interact with the event store. 
-    /// Cannot be <see langword="null"/>.</param>
-    public EventStore(DataContextEvent context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        Context = context;
-    }
 
     /// <inheritdoc />
     public async Task AppendAsync(IEvent @event, CancellationToken cancellationToken = default)

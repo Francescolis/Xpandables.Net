@@ -22,17 +22,16 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a repository that provides data access functionality for a
-/// specific data context.
+/// Provides an implementation of a repository pattern using Entity Framework Core.
 /// </summary>
-public class Repository<TDataContext> : Repository, IRepository<TDataContext>
+/// <remarks>This class extends the base repository functionality to include additional operations such as
+/// asynchronous  deletion, fetching with filters, and bulk add-or-update operations. It is designed to work with Entity
+/// Framework Core  and supports advanced query customization through the use of filter functions.</remarks>
+/// <typeparam name="TDataContext">The type of the database context used by the repository. Must derive from <see cref="DataContext"/>.</typeparam>
+/// <param name="context">The data context instance to be used by the repository. This cannot be <see langword="null"/>.</param>
+public class Repository<TDataContext>(TDataContext context) : RepositoryBase<TDataContext>(context)
     where TDataContext : DataContext
 {
-    /// <summary>
-    /// Gets the data context associated with this repository.
-    /// </summary>
-    public required TDataContext Context { get; set; }
-
     /// <summary>
     /// Asynchronously deletes entities from the database that match the specified filter.
     /// </summary>
@@ -99,24 +98,19 @@ public class Repository<TDataContext> : Repository, IRepository<TDataContext>
             return;
         }
 
-        // Convert to array to avoid multiple enumeration
         var entitiesArray = collection as TEntity[] ?? [.. collection];
 
-        // Get entities to add (those with default KeyId values)
         var entitiesToAdd = entitiesArray
             .Where(e => !Context.Entry(e).IsKeySet)
             .ToArray();
 
-        // Get entities to update using Except
         var entitiesToUpdate = entitiesArray.Except(entitiesToAdd).ToArray();
 
-        // Bulk add new entities
         if (entitiesToAdd.Length > 0)
         {
             Context.AddRange(entitiesToAdd);
         }
 
-        // Bulk update existing entities
         if (entitiesToUpdate.Length > 0)
         {
             Context.UpdateRange(entitiesToUpdate);
@@ -129,12 +123,13 @@ public class Repository<TDataContext> : Repository, IRepository<TDataContext>
 /// <summary>
 /// Represents a repository that provides persistent data operations for a specified data context.
 /// </summary>
-/// <remarks>This class extends the functionality of <see cref="Repository{TDataContext}"/> by ensuring that
+/// <remarks>This class extends the functionality of <see cref="RepositoryBase{TDataContext}"/> by ensuring that
 /// changes made to the data context are persisted to the database. It provides methods for deleting entities and adding
 /// or updating entities, with changes automatically committed to the underlying data source.</remarks>
 /// <typeparam name="TDataContext">The type of the data context used by the repository. 
 /// Must derive from <see cref="DataContext"/>.</typeparam>
-public class RepositoryPersistent<TDataContext> : Repository<TDataContext>
+/// <param name="context"> The data context instance to be used by the repository. This cannot be <see langword="null"/>.</param>
+public class RepositoryPersistent<TDataContext>(TDataContext context) : Repository<TDataContext>(context)
     where TDataContext : DataContext
 {
     /// <summary>
@@ -176,18 +171,15 @@ public class RepositoryPersistent<TDataContext> : Repository<TDataContext>
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            // Handle concurrency exceptions by treating failed updates as inserts
             foreach (var entry in ex.Entries)
             {
                 if (entry.State == EntityState.Modified)
                 {
-                    // Detach the entity and try to add it instead
                     entry.State = EntityState.Detached;
                     Context.Add(entry.Entity);
                 }
             }
 
-            // Retry saving changes
             await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
     }

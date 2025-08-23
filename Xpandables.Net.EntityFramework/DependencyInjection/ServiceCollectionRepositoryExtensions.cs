@@ -71,7 +71,7 @@ public static class ServiceCollectionRepositoryExtensions
     public static IServiceCollection AddXRepositoryDefault<TDataContext>(
         this IServiceCollection services)
         where TDataContext : DataContext =>
-        services.AddScoped<IRepository, Repository<TDataContext>>();
+        services.AddScoped<IRepository, RepositoryBase<TDataContext>>();
 
     /// <summary>
     /// Adds the UnitOfWork to the service collection.

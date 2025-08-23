@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using System.Net;
+﻿using System.Net;
 
 using FluentAssertions;
 
@@ -146,29 +145,15 @@ public sealed class TestCompositeValidator : Validator<TestDependencyRequest>
 }
 
 // Concrete implementation for unit of work
-public sealed class TestUnitOfWork : IUnitOfWork
+public sealed class TestUnitOfWork : UnitOfWorkBase
 {
-    public bool IsTransactional { get; set; }
     public bool SaveChangesCalled { get; private set; }
 
-    public Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-
-    public TRepository GetRepository<TRepository>() where TRepository : class, IRepository
-        => throw new NotSupportedException("Not needed for this test");
-    public Task RollbackTransactionAsync(CancellationToken cancellationToken = default) =>
-        throw new NotImplementedException();
-
-    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         SaveChangesCalled = true;
         return Task.FromResult(1);
     }
-
-    public Task<IUnitOfWorkTransaction> UseTransactionAsync(
-        DbTransaction transaction,
-        CancellationToken cancellationToken = default) => throw new NotImplementedException();
 }
 
 // Concrete implementation for dependency management

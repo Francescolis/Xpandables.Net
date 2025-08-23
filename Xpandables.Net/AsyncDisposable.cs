@@ -34,7 +34,7 @@ public abstract class AsyncDisposable : IAsyncDisposable
     /// </value>
     /// <remarks>Default initialization for 
     /// a <see cref="bool"/> is <c>false</c>.</remarks>
-    private bool IsDisposed { get; set; }
+    protected bool IsDisposed { get; set; }
 
     /// <summary>
     /// Public Implementation of DisposeAsync according to .NET 

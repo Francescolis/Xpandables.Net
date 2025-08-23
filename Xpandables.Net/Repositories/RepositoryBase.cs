@@ -23,10 +23,10 @@ namespace Xpandables.Net.Repositories;
 /// Represents an abstract base class for a repository that provides asynchronous operations for managing entities in a
 /// data store. This class must be inherited to implement specific data access logic.
 /// </summary>
-/// <remarks>The <see cref="Repository"/> class defines a set of virtual methods for common data operations such
+/// <remarks>The <see cref="RepositoryBase"/> class defines a set of virtual methods for common data operations such
 /// as insert, update, delete, and fetch. Derived classes should override these methods to provide specific
 /// implementations for interacting with a particular data source.</remarks>
-public abstract class Repository : AsyncDisposable, IRepository
+public abstract class RepositoryBase : AsyncDisposable, IRepository
 {
     /// <summary>
     /// when overridden in derived classes, deletes entities from the repository.
@@ -69,4 +69,21 @@ public abstract class Repository : AsyncDisposable, IRepository
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken)
         where TEntity : class => Task.CompletedTask;
+}
+
+/// <summary>
+/// Represents a base class for repositories that operate on a specific data context.
+/// </summary>
+/// <remarks>This class provides a foundation for implementing repositories that interact with a specific data
+/// context. Derived classes should define the specific operations and behaviors for the repository.</remarks>
+/// <typeparam name="TDataContext">The type of the data context associated with the repository. This must be a reference type.</typeparam>
+/// <param name="context"> The data context instance to be used by the repository. This 
+/// parameter is required and must not be <see langword="null"/>.</param>
+public abstract class RepositoryBase<TDataContext>(TDataContext context) : RepositoryBase
+    where TDataContext : class
+{
+    /// <summary>
+    /// Gets or sets the data context associated with this repository.
+    /// </summary>
+    protected TDataContext Context { get; init; } = context;
 }

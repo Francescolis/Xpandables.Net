@@ -74,7 +74,7 @@ public sealed class EventSchedulerUnitTest
     }
 }
 
-public class InMemoryEventStore : Repository, IEventStore
+public class InMemoryEventStore : RepositoryBase, IEventStore
 {
     private static readonly ConcurrentBag<IEntityEvent> _eventEntities = [];
     private readonly JsonSerializerOptions _options = DefaultSerializerOptions.Defaults;

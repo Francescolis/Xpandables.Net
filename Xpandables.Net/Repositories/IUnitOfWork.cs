@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,45 +20,18 @@ using System.Data.Common;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a transaction within a unit of work pattern, providing methods to commit or rollback changes
-/// asynchronously.
-/// </summary>
-/// <remarks>This interface is designed to be used in scenarios where changes need to be committed or rolled back
-/// as a single transaction. Implementations should ensure that resources are properly disposed of when the transaction
-/// is completed or disposed.</remarks>
-public interface IUnitOfWorkTransaction : IAsyncDisposable
-{
-    /// <summary>
-    /// Commits the current transaction asynchronously.
-    /// </summary>
-    /// <remarks>This method finalizes the transaction, making all changes permanent. If the operation is
-    /// canceled via the <paramref name="cancellationToken"/>, the task will be marked as canceled.</remarks>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous commit operation.</returns>
-    Task CommitTransactionAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Asynchronously rolls back the current transaction.
-    /// </summary>
-    /// <remarks>This method should be called to undo all operations performed in the current transaction. If
-    /// the transaction has already been committed or rolled back, calling this method will have no effect.</remarks>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous rollback operation.</returns>
-    Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
-}
-
-/// <summary>
 /// Represents a unit of work that encapsulates a set of operations to 
 /// be performed as a single transaction.
 /// </summary>
-public interface IUnitOfWork : IUnitOfWorkBase
+public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
     /// <summary>
-    /// Gets a value indicating whether the operation is transactional.
+    /// Returns the repository of the specified type.
     /// </summary>
-    bool IsTransactional { get; }
+    /// <typeparam name="TRepository">The type of the repository.</typeparam>
+    /// <returns>The repository instance.</returns>
+    TRepository GetRepository<TRepository>()
+       where TRepository : class, IRepository;
 
     /// <summary>
     /// Begins a new transaction asynchronously.
@@ -69,9 +41,18 @@ public interface IUnitOfWork : IUnitOfWorkBase
     /// to ensure that resources are released properly. This method is typically used to group a series of operations
     /// that should be executed as a single unit of work.</remarks>
     /// <returns>An <see cref="IUnitOfWorkTransaction"/> that represents the transaction. 
-    /// Dispose of this object to commit or roll back
-    /// the transaction.</returns>
+    /// Dispose of this object to commit or roll back the transaction.</returns>
     Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Begins a new transaction within the current unit of work.
+    /// </summary>
+    /// <remarks>The returned transaction must be disposed to either commit or roll back the changes.  Ensure
+    /// that only one transaction is active at a time within the same unit of work.</remarks>
+    /// <returns>An <see cref="IUnitOfWorkTransaction"/> instance representing the transaction.
+    /// Use this object to manage the transaction's lifecycle.
+    /// Dispose of this object to commit or roll back the transaction.</returns>
+    IUnitOfWorkTransaction BeginTransaction();
 
     /// <summary>
     /// Associates the specified transaction with the current database context for asynchronous operations.
@@ -89,12 +70,32 @@ public interface IUnitOfWork : IUnitOfWorkBase
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns the repository of the specified type.
+    /// Associates an existing <see cref="DbTransaction"/> with the current unit of work.
     /// </summary>
-    /// <typeparam name="TRepository">The type of the repository.</typeparam>
-    /// <returns>The repository instance.</returns>
-    TRepository GetRepository<TRepository>()
-        where TRepository : class, IRepository;
+    /// <remarks>This method allows the unit of work to operate within the context of a pre-existing database
+    /// transaction. The caller is responsible for managing the lifecycle of the provided transaction, including
+    /// committing or rolling it back.</remarks>
+    /// <param name="transaction">The <see cref="DbTransaction"/> to be used by the unit of work. Cannot be <see langword="null"/>.</param>
+    /// <returns>An <see cref="IUnitOfWorkTransaction"/> instance that represents the scope of the transaction.
+    /// Dispose of this object to commit or roll back the transaction.</returns>
+    IUnitOfWorkTransaction UseTransaction(DbTransaction transaction);
+
+    /// <summary>
+    /// Saves all changes made in this unit of work.
+    /// </summary>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The number of state entries written to the database.</returns>
+    /// <exception cref="InvalidOperationException">All exceptions 
+    /// related to the operation.</exception>
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Saves all changes made in the current context to the underlying data store.
+    /// </summary>
+    /// <remarks>This method commits any tracked changes, such as additions, updates, or deletions, to the
+    /// data store. If no changes are detected, the method performs no operation and returns 0.</remarks>
+    /// <returns>The number of state entries written to the data store. Returns 0 if no changes were made.</returns>
+    int SaveChanges();
 }
 
 /// <summary>

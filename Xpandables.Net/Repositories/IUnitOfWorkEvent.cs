@@ -23,7 +23,7 @@ namespace Xpandables.Net.Repositories;
 /// <remarks>This interface extends <see cref="IUnitOfWork"/> to include operations specific to event management.
 /// Implementations should ensure that all event operations are completed successfully before committing the
 /// transaction, providing atomicity and consistency.</remarks>
-public interface IUnitOfWorkEvent : IUnitOfWorkBase
+public interface IUnitOfWorkEvent : IUnitOfWork
 {
     /// <summary>
     /// Retrieves an instance of the specified event store type.
