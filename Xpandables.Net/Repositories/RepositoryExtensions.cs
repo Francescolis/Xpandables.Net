@@ -284,7 +284,9 @@ public static class RepositoryExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        return source.WithPagination(AsEventsAsync, cancellationToken);
+        return source
+            .AsEventsAsync(cancellationToken)
+            .WithPagination();
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
 namespace Xpandables.Net.Collections;
@@ -27,9 +27,6 @@ public static partial class AsyncPagedEnumerableExtensions
     /// <summary>
     /// Determines whether the specified type implements the <see cref="IAsyncPagedEnumerable{T}"/> interface.
     /// </summary>
-    /// <param name="type">The type to check for implementation of <see cref="IAsyncPagedEnumerable{T}"/>.</param>
-    /// <returns><see langword="true"/> if the specified type implements <see cref="IAsyncPagedEnumerable{T}"/>; 
-    /// otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsAsyncPagedEnumerable(Type type) =>
         type.GetInterfaces()
@@ -37,141 +34,127 @@ public static partial class AsyncPagedEnumerableExtensions
                 && i.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>));
 
     /// <summary>
-    /// Determines whether the specified asynchronous enumerable is an instance of <see
-    /// cref="IAsyncPagedEnumerable{T}"/>.
+    /// Determines whether the specified asynchronous enumerable is an instance of <see cref="IAsyncPagedEnumerable{T}"/>.
     /// </summary>
-    /// <typeparam name="T">The type of elements in the asynchronous enumerable.</typeparam>
-    /// <param name="source">The asynchronous enumerable to check. Cannot be <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if the specified <paramref name="source"/> is an <see cref="IAsyncPagedEnumerable{T}"/>;
-    /// otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsAsyncPagedEnumerable<T>(this IAsyncEnumerable<T> source) =>
         source is IAsyncPagedEnumerable<T>;
 
     /// <summary>
-    /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with smart pagination.
-    /// Uses memory-efficient caching and automatic cleanup to prevent memory leaks.
+    /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> to enable pagination
+    /// metadata, such as page size and total count.
     /// </summary>
-    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
-    /// <param name="source">The source async enumerable.</param>
-    /// <returns>An async paged enumerable with optimized pagination metadata.</returns>
+    /// <remarks>If <paramref name="source"/> is already an <see cref="IAsyncPagedEnumerable{T}"/>, it is
+    /// returned as-is. When <paramref name="alwaysCount"/> is <see langword="true"/>, the method throws a <see
+    /// cref="NotSupportedException"/> if the source is a plain <see cref="IAsyncEnumerable{T}"/>, as calculating the
+    /// total count generically requires buffering or double enumeration, which may lead to unexpected memory pressure.
+    /// In such cases, consider using an <see cref="IQueryable{T}"/> source instead.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to convert. Cannot be <see langword="null"/>.</param>
+    /// <param name="alwaysCount">A value indicating whether the total count of items in the sequence should always be calculated. If <see
+    /// langword="true"/>, the method attempts to calculate the total count, which may require buffering or double
+    /// enumeration. Defaults to <see langword="false"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that wraps the source sequence and provides pagination metadata.</returns>
+    /// <exception cref="NotSupportedException">Thrown if <paramref name="alwaysCount"/> is <see langword="true"/> and <paramref name="source"/> is a plain <see
+    /// cref="IAsyncEnumerable{T}"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
-        this IAsyncEnumerable<TSource> source)
+        this IAsyncEnumerable<TSource> source, bool alwaysCount = false)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        if (source is IAsyncPagedEnumerable<TSource> existingPaged)
+        if (source is IAsyncPagedEnumerable<TSource> paged) return paged;
+
+        if (alwaysCount)
         {
-            return existingPaged;
+            // WARNING: Counting a plain IAsyncEnumerable<T> generically requires buffering or double enumeration.
+            // To prevent unexpected memory pressure, we fail fast. Prefer IQueryable<T> or set alwaysCount=false.
+            throw new NotSupportedException("alwaysCount=true is not supported for plain IAsyncEnumerable<T>. " +
+                "Use IQueryable<T> or leave alwaysCount=false to stream with default metadata.");
         }
 
-        return source.WithPagination(Pagination.Without());
+        return new AsyncPagedEnumerable<TSource>(
+            source,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            buffer: null);
     }
 
     /// <summary>
-    /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with pagination.
+    /// Enables asynchronous pagination over the elements of the specified queryable data source.
     /// </summary>
-    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
-    /// <param name="source">The source async enumerable.</param>
-    /// <param name="paginationFactory">A factory function that provides pagination information.</param>
-    /// <returns>An async paged enumerable with pagination metadata.</returns>
+    /// <typeparam name="TSource">The type of the elements in the queryable data source.</typeparam>
+    /// <param name="source">The queryable data source to paginate. Cannot be <see langword="null"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that allows asynchronous enumeration of the paginated data.</returns>
     public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
-        this IAsyncEnumerable<TSource> source,
-        Func<Task<Pagination>> paginationFactory)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(paginationFactory);
-
-        return new AsyncPagedEnumerable<TSource>(source, paginationFactory);
-    }
+        this IQueryable<TSource> source) => WithPagination(source, alwaysCount: false);
 
     /// <summary>
-    /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/>
-    /// with immediate pagination info.
+    /// Enables pagination for an <see cref="IQueryable{T}"/> source, optionally including a total count of items.
     /// </summary>
-    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
-    /// <param name="source">The source async enumerable.</param>
-    /// <param name="pagination">The pagination information.</param>
-    /// <returns>An async paged enumerable with pagination metadata.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    /// <remarks>This method supports both paginated and unpaginated queries. If the query does not include
+    /// pagination (i.e., no skip or take), the behavior depends on the value of <paramref name="alwaysCount"/>: <list
+    /// type="bullet"> <item> <description>If <paramref name="alwaysCount"/> is <see langword="false"/>, the enumerable
+    /// streams the query without buffering or counting.</description> </item> <item> <description>If <paramref
+    /// name="alwaysCount"/> is <see langword="true"/>, the total count is calculated before streaming the
+    /// query.</description> </item> </list> When pagination is present, the method projects the query to include the
+    /// total count in a single query, if supported by the underlying provider.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source query.</typeparam>
+    /// <param name="source">The queryable source to apply pagination to. Cannot be <see langword="null"/>.</param>
+    /// <param name="alwaysCount">A value indicating whether to always calculate the total count of items in the source. If <see
+    /// langword="true"/>, the total count is included in the pagination metadata even if no pagination is applied. If
+    /// <see langword="false"/>, the total count is omitted unless pagination is explicitly present in the query.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that represents the paginated query. The enumerable includes
+    /// pagination metadata such as the total count of items and the applied skip/take values, if applicable.</returns>
     public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
-        this IAsyncEnumerable<TSource> source,
-        Pagination pagination)
+        this IQueryable<TSource> source, bool alwaysCount)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        return new AsyncPagedEnumerable<TSource>(source, () => Task.FromResult(pagination));
-    }
+        var extraction = ExtractPagination(source);
+        var skip = extraction.Skip;
+        var take = extraction.Take;
+        var unpaginated = extraction.QueryWithoutPagination;
 
-    /// <summary>
-    /// Converts an <see cref="IAsyncPagedEnumerable{TSource}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/>
-    /// with pagination by applying a transformation function.
-    /// </summary>
-    /// <typeparam name="TSource">The type of items in the source collection.</typeparam>
-    /// <typeparam name="TResult">The type of items in the result collection.</typeparam>
-    /// <param name="source">The source async paged enumerable.</param>
-    /// <param name="transformFactory">The transformation function that takes the source and returns a new async paged enumerable.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>An async paged enumerable with transformed items and pagination metadata.</returns>
-    public static IAsyncPagedEnumerable<TResult> WithPagination<TSource, TResult>(
-        this IAsyncPagedEnumerable<TSource> source,
-        Func<IAsyncPagedEnumerable<TSource>, CancellationToken, IAsyncEnumerable<TResult>> transformFactory,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(transformFactory);
-
-        return new AsyncPagedEnumerable<TResult>(
-            transformFactory(source, cancellationToken),
-            source.GetPaginationAsync);
-    }
-
-    /// <summary>
-    /// Converts an <see cref="IQueryable{TSource}"/> to an <see cref="IAsyncPagedEnumerable{TSource}"/>
-    /// with default pagination based on the query's Skip and Take values.
-    /// </summary>
-    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
-    /// <param name="source">The source queryable.</param>
-    /// <returns>An async paged enumerable with default pagination metadata.</returns>
-    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
-        this IQueryable<TSource> source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        var paginationSource = source.ExtractPagination();
         var asyncEnumerable = source as IAsyncEnumerable<TSource> ?? source.ToAsyncEnumerable();
-        return asyncEnumerable.WithPagination(() =>
+
+        if (!skip.HasValue && !take.HasValue)
         {
-            long totalCount = paginationSource.QueryWithoutPagination.LongCount();
-            return Task.FromResult(Pagination.With(paginationSource.Skip, paginationSource.Take, totalCount));
-        });
-    }
+            if (!alwaysCount)
+            {
+                return new AsyncPagedEnumerable<TSource>(
+                    asyncEnumerable,
+                    static _ => new ValueTask<Pagination>(Pagination.Without()),
+                    buffer: null);
+            }
+            else
+            {
+                return new AsyncPagedEnumerable<TSource>(
+                    asyncEnumerable,
+                    async ct =>
+                    {
+                        var total = await ExecuteCountAsync(unpaginated, ct).ConfigureAwait(false);
+                        return Pagination.Without(total);
+                    },
+                    buffer: null);
+            }
+        }
 
-    /// <summary>
-    /// Converts an <see cref="IQueryable{TSource}"/> to an <see cref="IAsyncPagedEnumerable{TSource}"/>
-    /// with pagination based on the provided <see cref="Pagination"/> object.
-    /// </summary>
-    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
-    /// <param name="source">The source queryable.</param>
-    /// <param name="pagination">The pagination information to apply.</param>
-    /// <returns>An async paged enumerable with pagination metadata.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
-        this IQueryable<TSource> source, Pagination pagination)
-    {
-        ArgumentNullException.ThrowIfNull(source);
+        var projected = ProjectWithTotal(source, unpaginated);
 
-        var asyncEnumerable = source as IAsyncEnumerable<TSource> ?? source.ToAsyncEnumerable();
-        return asyncEnumerable.WithPagination(pagination);
+        IAsyncEnumerable<PrimedResult<TSource>> projectedAsync =
+            projected as IAsyncEnumerable<PrimedResult<TSource>>
+            ?? projected.ToAsyncEnumerable();
+
+        return new AsyncPagedPrimedEnumerable<TSource>(
+            projectedAsync,
+            skip,
+            take,
+            fallbackTotalFactory: ct => ExecuteCountAsync(unpaginated, ct));
     }
 
     /// <summary>
     /// Extracts Skip and Take values from a query and returns a version without pagination.
     /// </summary>
-    /// <typeparam name="TSource">The type of the query.</typeparam>
-    /// <param name="source">The query to analyze.</param>
-    /// <returns>Pagination extraction result containing Skip/Take values and unpaginated query.</returns>
     public static PaginationSource<TSource> ExtractPagination<TSource>(this IQueryable<TSource> source)
     {
         var visitor = new PaginationSourceExtractor.PaginationExtractionVisitor();
@@ -181,5 +164,123 @@ public static partial class AsyncPagedEnumerableExtensions
         var queryWithoutPagination = source.Provider.CreateQuery<TSource>(modifiedExpression);
 
         return Pagination.WithSource(visitor.Skip, visitor.Take, queryWithoutPagination);
+    }
+
+    private static IQueryable<PrimedResult<TSource>> ProjectWithTotal<TSource>(
+        IQueryable<TSource> pageQuery,
+        IQueryable<TSource> unpaginatedQuery)
+    {
+        var p = Expression.Parameter(typeof(TSource), "item");
+
+        var longCountCall = Expression.Call(
+            QueryableLongCount<TSource>.Method,
+            unpaginatedQuery.Expression);
+
+        var tupleCtor = PrimedFactory<TSource>.Ctor;
+        var newTuple = Expression.New(tupleCtor, p, longCountCall);
+
+        var selector = Expression.Lambda<Func<TSource, PrimedResult<TSource>>>(newTuple, p);
+        return Queryable.Select(pageQuery, selector);
+    }
+
+#pragma warning disable CA1031 // Do not catch general exception types
+    private static async ValueTask<long> ExecuteCountAsync<TSource>(
+        IQueryable<TSource> query,
+        CancellationToken cancellationToken)
+    {
+        var longCountExpr = Expression.Call(
+            QueryableLongCount<TSource>.Method,
+            query.Expression);
+
+        if (query.Provider is not null)
+        {
+            try
+            {
+                var asyncResult = await TryExecuteAsync<long>(
+                    query.Provider,
+                    longCountExpr,
+                    cancellationToken)
+                    .ConfigureAwait(false);
+
+                return asyncResult;
+            }
+            catch
+            {
+                // fall through
+            }
+        }
+
+        // sync fallback
+        try
+        {
+            return query.Provider!.Execute<long>(longCountExpr);
+        }
+        catch
+        {
+            var countExpr = Expression.Call(
+                QueryableCount<TSource>.Method,
+                query.Expression);
+
+            if (query.Provider is not null)
+            {
+                try
+                {
+                    var asyncCount = await TryExecuteAsync<int>(
+                        query.Provider,
+                        countExpr,
+                        cancellationToken)
+                        .ConfigureAwait(false);
+
+                    return asyncCount;
+                }
+                catch
+                {
+                    // fall through
+                }
+            }
+
+            return query.Provider!.Execute<int>(countExpr);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static async Task<T> TryExecuteAsync<T>(IQueryProvider provider, Expression expression, CancellationToken ct)
+    {
+        try
+        {
+            // Try to call provider.ExecuteAsync<T>(Expression, CancellationToken) without hard provider dependency.
+            dynamic dyn = provider;
+            var task = (Task<T>)dyn.ExecuteAsync<T>(expression, ct);
+            return await task.ConfigureAwait(false);
+        }
+        catch
+        {
+            // No async; use sync on worker to keep API async.
+            return await Task
+                .Run(() => provider.Execute<T>(expression), ct)
+                .ConfigureAwait(false);
+        }
+    }
+
+#pragma warning restore CA1031 // Do not catch general exception types
+
+    // Expression targets cached via method groups (no string-based reflection)
+    private static class QueryableLongCount<T>
+    {
+        public static readonly System.Reflection.MethodInfo Method =
+            ((Func<IQueryable<T>, long>)Queryable.LongCount).Method;
+    }
+
+    private static class QueryableCount<T>
+    {
+        public static readonly System.Reflection.MethodInfo Method =
+            ((Func<IQueryable<T>, int>)Queryable.Count).Method;
+    }
+
+    private static class PrimedFactory<T>
+    {
+        public static readonly System.Reflection.ConstructorInfo Ctor =
+            typeof(PrimedResult<T>).GetConstructor([typeof(T), typeof(long)])
+            ?? throw new InvalidOperationException("Could not locate PrimedResult<T> constructor.");
     }
 }

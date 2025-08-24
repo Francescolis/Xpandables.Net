@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,131 +14,54 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Runtime.CompilerServices;
-
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Provides an asynchronous enumerator that supports paginated enumeration of items and updates pagination metadata
-/// upon completion of enumeration.
+/// Provides an asynchronous enumerator for iterating over a collection of items of type <typeparamref name="T"/>.
 /// </summary>
-/// <remarks>This enumerator is designed to work with <see cref="AsyncPagedEnumerable{T}"/> to facilitate
-/// paginated data retrieval. It tracks the number of items enumerated and updates the parent pagination metadata when
-/// enumeration is completed. The enumerator ensures proper disposal and finalization of resources, even in the presence
-/// of exceptions or early disposal.</remarks>
-/// <typeparam name="T">The type of elements being enumerated.</typeparam>
-/// <param name="sourceEnumerator"></param>
-/// <param name="parent"></param>
-/// <param name="cancellationToken"></param>
-public sealed class AsyncPagedEnumerator<T>(
-    IAsyncEnumerator<T> sourceEnumerator,
-    AsyncPagedEnumerable<T> parent,
-    CancellationToken cancellationToken) : IAsyncEnumerator<T>
+/// <remarks>This enumerator supports asynchronous iteration over a read-only collection of items. It maintains
+/// the current position within the collection and provides access to the current item via the <see cref="Current"/>
+/// property.</remarks>
+/// <typeparam name="T">The type of the elements in the collection.</typeparam>
+/// <param name="items"></param>
+public sealed class AsyncPagedEnumerator<T>(IReadOnlyList<T> items) : IAsyncEnumerator<T>
 {
-    private readonly IAsyncEnumerator<T> _sourceEnumerator = sourceEnumerator ?? throw new ArgumentNullException(nameof(sourceEnumerator));
-    private readonly AsyncPagedEnumerable<T> _parent = parent ?? throw new ArgumentNullException(nameof(parent));
-    private readonly CancellationToken _cancellationToken = cancellationToken;
+    private readonly IReadOnlyList<T> _items = items ?? throw new ArgumentNullException(nameof(items));
+    private int _index = -1;
 
-    private long _itemCount;
-    private bool _enumerationCompleted;
-    private bool _disposed;
+    /// <summary>
+    /// Gets the current element in the collection or sequence.
+    /// </summary>
+    public T Current { get; private set; } = default!;
 
-    /// <inheritdoc />
-    public T Current => _sourceEnumerator.Current;
-
-    /// <inheritdoc />
-    public async ValueTask<bool> MoveNextAsync()
+    /// <summary>
+    /// Advances the enumerator to the next element in the collection asynchronously.
+    /// </summary>
+    /// <remarks>After the enumerator advances past the last element in the collection, the <see
+    /// cref="Current"/> property is set to its default value.</remarks>
+    /// <returns>A <see cref="ValueTask{TResult}"/> that resolves to <see langword="true"/> if the enumerator successfully
+    /// advanced to the next element; otherwise, <see langword="false"/> if the end of the collection has been
+    /// reached.</returns>
+    public ValueTask<bool> MoveNextAsync()
     {
-        if (_disposed)
+        var next = _index + 1;
+        if ((uint)next < (uint)_items.Count)
         {
-            return false;
+            _index = next;
+            Current = _items[next];
+            return ValueTask.FromResult(true);
         }
 
-        try
-        {
-            var hasNext = await _sourceEnumerator
-                .MoveNextAsync(_cancellationToken)
-                .ConfigureAwait(false);
-
-            if (hasNext)
-            {
-                _itemCount++;
-                return true;
-            }
-            else
-            {
-                // Enumeration completed - update parent's pagination
-                await FinalizeEnumerationAsync().ConfigureAwait(false);
-                return false;
-            }
-        }
-        catch
-        {
-            // Even on exception, try to finalize if we haven't already
-            if (!_enumerationCompleted)
-            {
-                await FinalizeEnumerationAsync().ConfigureAwait(false);
-            }
-            throw;
-        }
+        Current = default!;
+        return ValueTask.FromResult(false);
     }
 
     /// <summary>
-    /// Finalizes the enumeration by updating the parent's pagination with the actual count.
+    /// Asynchronously releases the unmanaged resources used by the object and performs other cleanup operations.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private async ValueTask FinalizeEnumerationAsync()
-    {
-        if (_enumerationCompleted)
-        {
-            return;
-        }
-
-        _enumerationCompleted = true;
-
-        try
-        {
-            // Get the original pagination (if available) to preserve skip/take info
-            var originalPagination = await _parent.GetPaginationAsync().ConfigureAwait(false);
-
-            // Create new pagination with the actual counted total
-            var updatedPagination = originalPagination.TotalCount == 0
-                ? CreatePaginationWithCount(originalPagination, _itemCount)
-                : originalPagination;
-
-            _parent.UpdatePaginationAfterEnumeration(updatedPagination);
-        }
-        catch
-        {
-            var fallbackPagination = Pagination.Without(_itemCount);
-            _parent.UpdatePaginationAfterEnumeration(fallbackPagination);
-        }
-    }
-
-    /// <summary>
-    /// Creates pagination info with the counted total while preserving skip/take values.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Pagination CreatePaginationWithCount(Pagination original, long actualCount) =>
-        original.Skip.HasValue || original.Take.HasValue
-            ? Pagination.With(original.Skip, original.Take, actualCount)
-            : Pagination.Without(actualCount);
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-
-        if (!_enumerationCompleted)
-        {
-            await FinalizeEnumerationAsync().ConfigureAwait(false);
-        }
-
-        await _sourceEnumerator.DisposeAsync().ConfigureAwait(false);
-    }
+    /// <remarks>This method should be called when the object is no longer needed to ensure proper resource
+    /// cleanup.  It is recommended to use this method within a `await using` statement or explicitly call it when 
+    /// asynchronous disposal is required.</remarks>
+    /// <returns></returns>
+    public ValueTask DisposeAsync() => default;
 }

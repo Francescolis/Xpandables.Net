@@ -150,7 +150,7 @@ public class InMemoryEventStore : RepositoryBase, IEventStore, IIntegrationOutbo
         if (cancellationToken.IsCancellationRequested)
         {
             return AsyncEnumerable.Empty<TResult>()
-                .WithPagination(Pagination.Without(0));
+                .WithPagination();
         }
 
         IQueryable<TEntity> integrations = _eventEntities

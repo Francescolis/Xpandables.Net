@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,25 +65,57 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
     private static async Task WritePagedEnumerableAsJsonAsync<T>(
         HttpContext context, IAsyncPagedEnumerable<T> pagedEnumerable)
     {
-        var pagination = await pagedEnumerable.GetPaginationAsync().ConfigureAwait(false);
-
         context.Response.ContentType = GetContentTypeFromEndpoint(context) ?? "application/json; charset=utf-8";
+
+        var jsonSerializerOptions = context.RequestServices
+            .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions;
 
         await using var writer = new Utf8JsonWriter(context.Response.BodyWriter.AsStream(), new JsonWriterOptions
         {
             Indented = false
         });
 
-        var jsonSerializerOptions = context.RequestServices
-            .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions;
+        // Try primeable streaming path first (single round trip, no page buffering).
+        if (pagedEnumerable is IAsyncPagedPrimedEnumerable<T> primeable)
+        {
+            var (pagination, enumerator) = await primeable.PrimeAsync(context.RequestAborted).ConfigureAwait(false);
+
+            writer.WriteStartObject();
+
+            writer.WritePropertyName("pagination");
+            JsonSerializer.Serialize(writer, pagination, jsonSerializerOptions);
+
+            writer.WritePropertyName("data");
+            writer.WriteStartArray();
+
+            try
+            {
+                while (await enumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    JsonSerializer.Serialize(writer, enumerator.Current, jsonSerializerOptions);
+                    await writer.FlushAsync(context.RequestAborted).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                await enumerator.DisposeAsync().ConfigureAwait(false);
+            }
+
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+
+            await writer.FlushAsync(context.RequestAborted).ConfigureAwait(false);
+            return;
+        }
+
+        // Fallback: existing pattern (may buffer page depending on implementation).
+        var paginationFallback = await pagedEnumerable.GetPaginationAsync().ConfigureAwait(false);
 
         writer.WriteStartObject();
 
-        // Write pagination metadata first
         writer.WritePropertyName("pagination");
-        JsonSerializer.Serialize(writer, pagination, jsonSerializerOptions);
+        JsonSerializer.Serialize(writer, paginationFallback, jsonSerializerOptions);
 
-        // Write data array
         writer.WritePropertyName("data");
         writer.WriteStartArray();
 
@@ -97,7 +128,6 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
         writer.WriteEndArray();
         writer.WriteEndObject();
 
-        // Final flush
         await writer.FlushAsync(context.RequestAborted).ConfigureAwait(false);
     }
 

@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,97 +14,101 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Runtime.CompilerServices;
+
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Represents an asynchronous paged enumerable collection.
+/// Represents an asynchronous enumerable that supports pagination, allowing efficient retrieval of paged data.
 /// </summary>
-/// <typeparam name="T">The type of items in the collection.</typeparam>
-/// <remarks>You can managed the way the class get serialized by registering the JSON converter
-/// <see langword="MaterializedPagedDataJsonConverterFactory"/> from the "Xpandables.Net.AspNetCore" package.</remarks>
-public sealed class AsyncPagedEnumerable<T>(
-    IAsyncEnumerable<T> source,
-    Func<Task<Pagination>> paginationFactory) : IAsyncPagedEnumerable<T>
+/// <remarks>This class provides functionality for consuming asynchronous data streams with pagination support. It
+/// allows access to pagination metadata via the <see cref="Pagination"/> property or the asynchronous <see
+/// cref="GetPaginationAsync"/> method. The enumerable can be iterated asynchronously using <see
+/// cref="GetAsyncEnumerator(CancellationToken)"/>.</remarks>
+/// <typeparam name="T">The type of elements in the enumerable.</typeparam>
+public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
 {
-    private readonly IAsyncEnumerable<T> _source = source ?? throw new ArgumentNullException(nameof(source));
-    private readonly Lazy<Task<Pagination>> _lazyPagination = new(() => paginationFactory());
-    private volatile Pagination? _enumerationBasedPagination;
+    private readonly IAsyncEnumerable<T> _source;
+    private readonly Func<CancellationToken, ValueTask<Pagination>> _paginationFactory;
+    private readonly PageBuffer<T>? _buffer;
+
+    private volatile Pagination? _cachedPagination;
+    private volatile Task<Pagination>? _paginationTask;
+
+    internal AsyncPagedEnumerable(
+        IAsyncEnumerable<T> source,
+        Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
+        PageBuffer<T>? buffer)
+    {
+        _source = source ?? throw new ArgumentNullException(nameof(source));
+        _paginationFactory = paginationFactory ?? throw new ArgumentNullException(nameof(paginationFactory));
+        _buffer = buffer;
+    }
 
     /// <inheritdoc />
     public Pagination Pagination
     {
         get
         {
-            if (_enumerationBasedPagination is not null)
+            var cached = _cachedPagination;
+            if (cached is not null)
             {
-                return _enumerationBasedPagination;
-            }
-            if (!_lazyPagination.IsValueCreated)
-            {
-                throw new InvalidOperationException(
-                    $"Pagination info is not yet available. Use {nameof(GetPaginationAsync)} for async access.");
+                return cached;
             }
 
-            return _lazyPagination.Value.IsCompletedSuccessfully
-                ? _lazyPagination.Value.Result
-                : throw new InvalidOperationException(
-                    $"Pagination info is not yet available. Use {nameof(GetPaginationAsync)} for async access.");
+            throw new InvalidOperationException(
+                $"Pagination info is not yet available. Use {nameof(GetPaginationAsync)} for async access.");
         }
     }
 
+#pragma warning disable CS0420 // A reference to a volatile field will not be treated as volatile
     /// <inheritdoc />
     public async Task<Pagination> GetPaginationAsync()
     {
-        if (_enumerationBasedPagination is not null)
+        var cached = _cachedPagination;
+        if (cached is not null)
         {
-            return _enumerationBasedPagination;
+            return cached;
         }
 
-        return await _lazyPagination.Value.ConfigureAwait(false);
+        var existing = _paginationTask;
+        if (existing is null)
+        {
+            var created = EnsurePaginationTask();
+            existing = Interlocked.CompareExchange(ref _paginationTask, created, null) ?? created;
+        }
+
+        var pagination = await existing.ConfigureAwait(false);
+        Volatile.Write(ref _cachedPagination, pagination);
+        return pagination;
     }
+#pragma warning restore CS0420 // A reference to a volatile field will not be treated as volatile
 
     /// <inheritdoc />
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        // Check if we should use counting enumerator
-        if (ShouldUseCountingEnumerator())
+        var items = _buffer?.Items;
+        if (items is not null)
         {
-            return new AsyncPagedEnumerator<T>(
-                _source.GetAsyncEnumerator(cancellationToken),
-                this,
-                cancellationToken);
+            return new AsyncPagedEnumerator<T>(items);
         }
-
 
         return _source.GetAsyncEnumerator(cancellationToken);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Task<Pagination> EnsurePaginationTask() => _paginationFactory(CancellationToken.None).AsTask();
+
     /// <summary>
-    /// Determines if we should use the counting enumerator based on pagination state.
+    /// Shared immutable buffer for one-shot materialization.
     /// </summary>
-    private bool ShouldUseCountingEnumerator()
+    internal sealed class PageBuffer<TItem>
     {
-        // Use counting enumerator if:
-        // 1. We don't have enumeration-based pagination yet, AND
-        // 2. The lazy pagination has a TotalCount of 0 (indicating unknown count)
-        if (_enumerationBasedPagination is not null)
-        {
-            return false;
-        }
+        private IReadOnlyList<TItem>? _items;
+        public IReadOnlyList<TItem>? Items => Volatile.Read(ref _items);
 
-        if (_lazyPagination.Value.IsCompletedSuccessfully)
-        {
-            var pagination = _lazyPagination.Value.Result;
-            return pagination.TotalCount == 0;
-        }
-
-        return true;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TrySet(IReadOnlyList<TItem> items) =>
+            Interlocked.CompareExchange(ref _items, items, comparand: null) is null;
     }
-
-    /// <summary>
-    /// Internal method to update pagination info after enumeration completes.
-    /// Called by AsyncPagedEnumerator when enumeration finishes.
-    /// </summary>
-    internal void UpdatePaginationAfterEnumeration(Pagination newPagination) =>
-        _enumerationBasedPagination = newPagination;
 }

@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +17,21 @@
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Extends <see cref="IAsyncEnumerable{T}"/> to provide pagination metadata.
+/// Represents an asynchronous enumerable collection that supports pagination.
 /// </summary>
-/// <typeparam name="T">The type of items in the collection.</typeparam>
+/// <remarks>This interface extends <see cref="IAsyncEnumerable{T}"/> to provide additional support for paginated
+/// data. It includes metadata about the pagination state and methods to retrieve this metadata asynchronously.
+/// Implementations may compute pagination metadata lazily, and callers should use <see cref="GetPaginationAsync"/>  to
+/// ensure the metadata is available.</remarks>
+/// <typeparam name="T">The type of elements in the collection.</typeparam>
 public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
-    where T : allows ref struct
 {
     /// <summary>
     /// Gets the pagination information for this collection.
     /// </summary>
     /// <remarks>
-    /// This property provides access to pagination metadata such as skip/take values,
-    /// total count, and computed page information. The pagination info is
-    /// lazily evaluated when first accessed.
+    /// Accessing this property before metadata is available throws.
+    /// Use <see cref="GetPaginationAsync"/> for async access.
     /// </remarks>
     Pagination Pagination { get; }
 
@@ -38,9 +39,8 @@ public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
     /// Gets a task that completes when pagination information is available.
     /// </summary>
     /// <remarks>
-    /// Use this when you need to access pagination metadata before starting enumeration.
-    /// This is useful for scenarios where you need to show pagination controls
-    /// before displaying data.
+    /// Pagination metadata is computed lazily and only when required.
+    /// For database-backed sources, the implementation strives to use a single round trip.
     /// </remarks>
     Task<Pagination> GetPaginationAsync();
 }

@@ -31,7 +31,7 @@ public sealed class GetOperationsAccountQueryHandler(
             .AsEventsPagedAsync(cancellationToken);
 
         return ExecutionResult
-            .Ok(events.WithPagination(GetOperations, cancellationToken))
+            .Ok(GetOperations(events, cancellationToken).WithPagination())
             .Build();
 
         static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events,
