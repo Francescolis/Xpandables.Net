@@ -20,14 +20,6 @@ using System.Runtime.CompilerServices;
 namespace Xpandables.Net.Collections;
 
 /// <summary>
-/// Represents an <see cref="IAsyncPagedEnumerable{T}"/> materialized data for JSON serialization.
-/// </summary>
-/// <typeparam name="T">The type of items in the collection.</typeparam>
-/// <param name="Data">The materialized data items.</param>
-/// <param name="Pagination">The pagination metadata.</param>
-public readonly record struct AsyncPagedEnumerableData<T>(IReadOnlyList<T> Data, Pagination Pagination);
-
-/// <summary>
 /// Provides extension methods for working with <see cref="IAsyncPagedEnumerable{T}"/>.
 /// </summary>
 public static partial class AsyncPagedEnumerableExtensions
@@ -189,25 +181,5 @@ public static partial class AsyncPagedEnumerableExtensions
         var queryWithoutPagination = source.Provider.CreateQuery<TSource>(modifiedExpression);
 
         return Pagination.WithSource(visitor.Skip, visitor.Take, queryWithoutPagination);
-    }
-
-    /// <summary>
-    /// Converts an <see cref="IAsyncPagedEnumerable{TSource}"/> to an <see cref="AsyncPagedEnumerableData{TSource}"/>
-    /// containing the materialized data and pagination metadata for JSON serialization.
-    /// </summary>
-    /// <typeparam name="TSource">The type of items in the collection.</typeparam>
-    /// <param name="source">The source async paged enumerable.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>An <see cref="AsyncPagedEnumerableData{TSource}"/> containing the materialized data and pagination metadata.</returns>
-    public static async Task<AsyncPagedEnumerableData<TSource>> ToAsyncPagedEnumerableDataAsync<TSource>(
-        this IAsyncPagedEnumerable<TSource> source,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        var data = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
-        var pagination = await source.GetPaginationAsync().ConfigureAwait(false);
-
-        return new AsyncPagedEnumerableData<TSource>(data, pagination);
     }
 }
