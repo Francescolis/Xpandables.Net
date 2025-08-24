@@ -21,9 +21,6 @@ namespace Xpandables.Net.Collections;
 /// Extends <see cref="IAsyncEnumerable{T}"/> to provide pagination metadata.
 /// </summary>
 /// <typeparam name="T">The type of items in the collection.</typeparam>
-/// <remarks>For JSON serialization, you can use the converter extension method 
-/// <see cref="AsyncPagedEnumerableExtensions.ToAsyncPagedEnumerableDataAsync{TSource}(IAsyncPagedEnumerable{TSource}, CancellationToken)"/>
-/// that converts the paged enumerable to a materialized data structure.</remarks>
 public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
     where T : allows ref struct
 {
