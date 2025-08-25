@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 
 using Xpandables.Net.Events;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Repositories.Converters;
 
@@ -28,12 +29,38 @@ namespace Xpandables.Net.Repositories.Converters;
 /// </summary>
 public abstract class EventConverter : IEventConverter
 {
-    private readonly static ConcurrentBag<IEventConverter> _converters =
+    private static readonly ConcurrentBag<IEventConverter> _converters =
     [
         new EventConverterDomain(),
         new EventConverterIntegration(),
         new EventConverterSnapshot()
     ];
+
+    private static readonly MemoryAwareCache<string, Type> _eventTypeCache = new();
+    private static readonly MemoryAwareCache<(Type Type, JsonSerializerOptions? Options), Func<JsonDocument, IEvent>> _deserializerCache = new();
+
+    /// <summary>
+    /// Resolves the <see cref="Type"/> of an event based on its fully qualified name.
+    /// </summary>
+    /// <remarks>This method uses an internal cache to optimize repeated resolutions of the same event type.
+    /// If the cache is unavailable, the method falls back to resolving the type directly.</remarks>
+    /// <param name="fullName">The fully qualified name of the event type to resolve. This cannot be <see langword="null"/>.</param>
+    /// <returns>The resolved <see cref="Type"/> corresponding to the specified fully qualified name.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the event type cannot be resolved. This may occur if the specified type name does not exist, is not
+    /// referenced, or is unavailable at runtime.</exception>
+    public static Type ResolveEventType(string fullName)
+    {
+        ArgumentNullException.ThrowIfNull(fullName);
+
+        return _eventTypeCache.GetOrAdd(fullName, static name =>
+        {
+            Type? eventType = Type.GetType(name);
+            return eventType ?? throw new InvalidOperationException(
+                $"The event type '{name}' could not be found. Ensure it is referenced and available at runtime.");
+        })
+            ?? Type.GetType(fullName) ?? throw new InvalidOperationException(
+            $"The event type '{fullName}' could not be found. Ensure it is referenced and available at runtime.");
+    }
 
     /// <summary>
     /// Gets the collection of event converters used to transform events into different formats.
@@ -144,6 +171,78 @@ public abstract class EventConverter : IEventConverter
                 $"Failed to serialize the event {@event.GetType().FullName}. " +
                 $"See inner exception for details.", exception);
         }
+    }
+
+    /// <summary>
+    /// Deserializes event data into an instance of the specified event type, using a cached deserialization delegate
+    /// for improved performance.
+    /// </summary>
+    /// <remarks>This method uses a caching mechanism to store and reuse deserialization delegates for
+    /// specific event types and options, improving performance for repeated deserialization of the same event type. If
+    /// the cache is unavailable, the method falls back to direct deserialization.</remarks>
+    /// <param name="eventData">The <see cref="JsonDocument"/> containing the event data to deserialize. Cannot be <see langword="null"/>.</param>
+    /// <param name="eventType">The <see cref="Type"/> of the event to deserialize. Must implement <see cref="IEvent"/>. Cannot be <see
+    /// langword="null"/>.</param>
+    /// <param name="options">Optional <see cref="JsonSerializerOptions"/> to customize the deserialization process. If <see
+    /// langword="null"/>, default options are used.</param>
+    /// <returns>An instance of the specified <paramref name="eventType"/> that implements <see cref="IEvent"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the deserialization process fails, or if the deserialized object cannot be cast to <see
+    /// cref="IEvent"/>.</exception>
+    public static IEvent DeserializeEventCached(
+        JsonDocument eventData,
+        Type eventType,
+        JsonSerializerOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(eventData);
+        ArgumentNullException.ThrowIfNull(eventType);
+
+        var key = (eventType, options);
+
+        var deserializer = _deserializerCache.GetOrAdd(key, static k =>
+        {
+            var (type, opts) = k;
+
+            return new Func<JsonDocument, IEvent>(doc =>
+            {
+                object? @event = doc.Deserialize(type, opts)
+                    ?? throw new InvalidOperationException($"Failed to deserialize the event data to {type.Name}.");
+
+                return (IEvent)@event;
+            });
+        });
+
+        if (deserializer is null)
+        {
+            return DeserializeEvent(eventData, eventType, options);
+        }
+
+        try
+        {
+            return deserializer(eventData);
+        }
+        catch (Exception exception) when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                $"Failed to convert the event entity to {eventType.Name}. See inner exception for details.",
+                exception);
+        }
+    }
+
+    /// <summary>
+    /// Converts a cached entity event into its corresponding <see cref="IEvent"/> instance.
+    /// </summary>
+    /// <param name="entity">The cached entity event containing the event data and metadata. Cannot be <see langword="null"/>.</param>
+    /// <param name="options">Optional <see cref="JsonSerializerOptions"/> to customize the deserialization process. If <see
+    /// langword="null"/>, default options are used.</param>
+    /// <returns>The deserialized <see cref="IEvent"/> instance corresponding to the provided entity event.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the event type cannot be resolved or if deserialization fails.</exception>"
+    public static IEvent ConvertFromCached(
+        IEntityEvent entity,
+        JsonSerializerOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        var eventType = ResolveEventType(entity.FullName);
+        return DeserializeEventCached(entity.Data, eventType, options);
     }
 
     /// <summary>

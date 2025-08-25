@@ -15,7 +15,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -245,22 +244,12 @@ public static class RepositoryExtensions
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
-        ConcurrentDictionary<string, Type> eventTypeCache = [];
 
         await foreach (var entity in source.WithCancellation(cancellationToken)
             .ConfigureAwait(false))
         {
-            Type concreteEventType = eventTypeCache.GetOrAdd(entity.FullName, fullName =>
-            {
-                Type? eventType = Type.GetType(fullName);
-                return eventType ?? throw new InvalidOperationException(
-                    $"The event type '{fullName}' could not be found. " +
-                    $"Ensure it is referenced and available at runtime.");
-            });
-
-            IEvent deserializedEvent = EventConverter.DeserializeEvent(
-                entity.Data,
-                concreteEventType,
+            IEvent deserializedEvent = EventConverter.ConvertFromCached(
+                entity,
                 DefaultSerializerOptions.Defaults);
 
             entity.Dispose();
