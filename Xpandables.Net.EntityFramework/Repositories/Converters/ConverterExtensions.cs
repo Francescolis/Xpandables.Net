@@ -39,6 +39,17 @@ public static class ConverterExtensions
         => builder.HasConversion<JsonDocumentValueConverter>();
 
     /// <summary>
+    /// Configures the property to use a value comparer for <see cref="JsonDocument"/> instances.
+    /// </summary>
+    /// <remarks>This method sets a custom value comparer to handle comparisons of <see cref="JsonDocument"/>
+    /// values, ensuring proper equality checks and change tracking for properties of this type.</remarks>
+    /// <param name="builder">The <see cref="PropertyBuilder{TProperty}"/> for the property being configured.</param>
+    public static void HasJsonDocumentComparer(
+        this PropertyBuilder<JsonDocument> builder) =>
+        builder.Metadata.SetValueComparer(new JsonDocumentValueComparer());
+
+
+    /// <summary>
     /// Configures the property to use a <see cref="PrimitiveValueConverter{TPrimitive, TValue}"/> 
     /// for conversion.
     /// </summary>
