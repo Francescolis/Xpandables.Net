@@ -66,3 +66,35 @@ public interface IEventSourcing
     void PushVersioningEvent<TEvent>(Func<long, TEvent> eventFactory)
         where TEvent : notnull, IDomainEvent;
 }
+
+/// <summary>
+/// Provides extension methods for working with event-sourced aggregates.
+/// </summary>
+/// <remarks>This class contains utility methods to simplify common operations on aggregates that implement the
+/// <see cref="IEventSourcing"/> interface, such as replaying event histories and managing uncommitted events.</remarks>
+public static class EventSourcingExtensions
+{
+    /// <summary>
+    /// Replays the specified history into the aggregate.
+    /// </summary>
+    public static void Replay(this IEventSourcing source, IEnumerable<IDomainEvent> history)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(history);
+        source.LoadFromHistory(history);
+    }
+
+    /// <summary>
+    /// Returns a snapshot of uncommitted events and clears the buffer.
+    /// </summary>
+    public static IReadOnlyCollection<IDomainEvent> DequeueUncommittedEvents(this IEventSourcing source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        var events = source.GetUncommittedEvents();
+        if (events.Count > 0)
+        {
+            source.MarkEventsAsCommitted();
+        }
+        return events;
+    }
+}

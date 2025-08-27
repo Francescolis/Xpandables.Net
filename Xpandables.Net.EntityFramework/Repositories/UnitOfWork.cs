@@ -40,7 +40,11 @@ namespace Xpandables.Net.Repositories;
 public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) : UnitOfWorkBase, IUnitOfWork
 {
     private readonly ConcurrentDictionary<Type, IRepository> _repositories = [];
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
+
+    /// <summary>
+    /// Gets the service provider.
+    /// </summary>
+    protected IServiceProvider ServiceProvider { get; } = serviceProvider;
 
     /// <summary>
     /// Gets the data context associated with this unit of work.
@@ -128,7 +132,7 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     {
         var repository = _repositories.GetOrAdd(typeof(TRepository), _ =>
         {
-            var service = _serviceProvider.GetService<TRepository>()
+            var service = ServiceProvider.GetService<TRepository>()
                 ?? throw new InvalidOperationException(
                     $"The store of type {typeof(TRepository).Name} is not registered.");
 

@@ -17,6 +17,7 @@
 ********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Repositories;
 
@@ -202,4 +203,23 @@ public static class ServiceCollectionRepositoryExtensions
         this IServiceCollection services, string key)
         where TDataContext : DataContext =>
         services.AddXEventStoreKeyed<EventStore<TDataContext>>(key);
+
+    /// <summary>
+    /// Registers the default implementation of <see cref="IOutboxStore"/> using the specified  <typeparamref
+    /// name="TDataContext"/> as the data context.
+    /// </summary>
+    /// <remarks>This method registers the <see cref="OutboxStore{TDataContext}"/> as a scoped service  for
+    /// the <see cref="IOutboxStore"/> interface. Ensure that <typeparamref name="TDataContext"/>  is properly
+    /// configured in the application's dependency injection container.</remarks>
+    /// <typeparam name="TDataContext">The type of the data context to be used by the <see cref="OutboxStore{TDataContext}"/>.  Must derive from <see
+    /// cref="DataContext"/>.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the <see cref="IOutboxStore"/> service is added.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance with the <see cref="IOutboxStore"/> service registered.</returns>
+    public static IServiceCollection AddXOutboxStore<TDataContext>(
+        this IServiceCollection services)
+        where TDataContext : DataContext
+    {
+        services.TryAddScoped<IOutboxStore, OutboxStore<TDataContext>>();
+        return services;
+    }
 }

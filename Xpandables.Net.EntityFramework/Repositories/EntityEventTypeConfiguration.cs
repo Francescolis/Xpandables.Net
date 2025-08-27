@@ -44,5 +44,8 @@ public abstract class EntityEventTypeConfiguration<TEntityEvent> : IEntityTypeCo
         _ = builder.Property(e => e.DeletedOn).IsRequired(false);
 
         _ = builder.HasQueryFilter(e => e.Status != EntityStatus.DELETED.Value);
+
+        // Global ordering/reads
+        _ = builder.HasIndex(e => e.Sequence);
     }
 }

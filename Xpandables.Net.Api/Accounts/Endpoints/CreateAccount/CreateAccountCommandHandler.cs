@@ -16,7 +16,7 @@ public sealed class CreateAccountCommandHandler(
         Account account = Account.Create(command.KeyId);
 
         await aggregateStore
-            .AppendAsync(account, cancellationToken)
+            .SaveAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
         return ExecutionResult.Created().Build();

@@ -1,19 +1,6 @@
-﻿
-/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+﻿/*******************************************************************************
+ * Copyright (C) ...
+ * Licensed under the Apache License, Version 2.0
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
@@ -26,24 +13,27 @@ using Xpandables.Net.States;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents a store for aggregate root snapshots that provides optimized
-/// snapshot creation and retrieval functionality.
+/// Decorates an aggregate store with snapshot creation and fast load from latest snapshot.
 /// </summary>
-/// <typeparam name="TAggregate">The type of the aggregate root.</typeparam>
+/// <typeparam name="TAggregate">Aggregate type.</typeparam>
 public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggregate>
-    where TAggregate : Aggregate, IOriginator, new()
+    where TAggregate : class, IAggregate, IOriginator, new()
 {
     private readonly IAggregateStore<TAggregate> _aggregateStore;
     private readonly IEventStore _eventStore;
     private readonly SnapShotOptions _options;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AggregateSnapShotStore{TAggregate}"/> class.
+    /// Initializes a new instance of the <see cref="AggregateSnapShotStore{TAggregate}"/> class,  which provides
+    /// functionality for managing aggregate snapshots in conjunction with an aggregate store and event store.
     /// </summary>
-    /// <param name="aggregateStore">The underlying aggregate store.</param>
-    /// <param name="unitOfWork">The unit of work for event operations.</param>
-    /// <param name="options">The snapshot configuration options.</param>
-    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+    /// <param name="aggregateStore">The aggregate store used to persist and retrieve aggregates. Cannot be <see langword="null"/>.</param>
+    /// <param name="unitOfWork">The unit of work that provides access to the event store. Cannot be <see langword="null"/>.</param>
+    /// <param name="options">The configuration options for snapshot behavior. The <see cref="SnapShotOptions"/> value cannot be <see
+    /// langword="null"/>.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="aggregateStore"/>, <paramref name="unitOfWork"/>, or <paramref name="options"/> is
+    /// <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown if the <paramref name="options"/> value is <see langword="null"/>.</exception>
     public AggregateSnapShotStore(
         IAggregateStore<TAggregate> aggregateStore,
         IUnitOfWorkEvent unitOfWork,
@@ -59,8 +49,11 @@ public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggreg
         ValidateOptions();
     }
 
-    /// <inheritdoc />
-    public async Task AppendAsync(
+    /// <summary>
+    /// Persists the aggregate (via underlying store) and, if frequency matches, appends a snapshot.
+    /// Both snapshot and events are committed by the unit of work.
+    /// </summary>
+    public async Task SaveAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
@@ -68,15 +61,14 @@ public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggreg
 
         try
         {
-            // Create snapshot if conditions are met
+            // Snapshot first: both snapshot and domain events are tracked and committed together.
             if (ShouldCreateSnapshot(aggregate))
             {
                 await CreateSnapshotAsync(aggregate, cancellationToken).ConfigureAwait(false);
             }
 
-            // Append the aggregate to the underlying store
             await _aggregateStore
-                .AppendAsync(aggregate, cancellationToken)
+                .SaveAsync(aggregate, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (IsRethrownException(exception))
@@ -86,32 +78,34 @@ public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggreg
         catch (Exception exception)
         {
             throw new InvalidOperationException(
-                $"Unable to append the aggregate with ID '{aggregate.KeyId}'. See inner exception for details.",
+                $"Unable to save the aggregate with ID '{aggregate.KeyId}'. See inner exception for details.",
                 exception);
         }
     }
 
-    /// <inheritdoc />
-    public async Task<TAggregate> ResolveAsync(
-        Guid keyId,
+    /// <summary>
+    /// Loads the aggregate: if snapshots enabled and present, restore from latest snapshot, then replay events after it.
+    /// Otherwise, fallback to underlying store.
+    /// </summary>
+    public async Task<TAggregate> LoadAsync(
+        Guid aggregateId,
         CancellationToken cancellationToken = default)
     {
-        if (keyId == Guid.Empty)
+        if (aggregateId == Guid.Empty)
         {
-            throw new ArgumentException("KeyId cannot be empty.", nameof(keyId));
+            throw new ArgumentException("AggregateId cannot be empty.", nameof(aggregateId));
         }
 
-        // If snapshots are disabled, delegate to the underlying store
         if (!_options.IsSnapshotEnabled)
         {
             return await _aggregateStore
-                .ResolveAsync(keyId, cancellationToken)
+                .LoadAsync(aggregateId, cancellationToken)
                 .ConfigureAwait(false);
         }
 
         try
         {
-            return await ResolveFromSnapshotAsync(keyId, cancellationToken).ConfigureAwait(false);
+            return await ResolveFromSnapshotAsync(aggregateId, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception) when (IsRethrownException(exception))
         {
@@ -120,7 +114,7 @@ public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggreg
         catch (Exception exception)
         {
             throw new InvalidOperationException(
-                $"Unable to resolve the aggregate with ID '{keyId}'. See inner exception for details.",
+                $"Unable to load the aggregate with ID '{aggregateId}'. See inner exception for details.",
                 exception);
         }
     }
@@ -129,6 +123,7 @@ public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggreg
     {
         IMemento memento = aggregate.Save();
 
+        // Assuming SnapshotEvent implements ISnapshotEvent and converters are registered.
         var snapshotEvent = new SnapshotEvent
         {
             Id = Guid.CreateVersion7(),
@@ -137,88 +132,66 @@ public sealed class AggregateSnapShotStore<TAggregate> : IAggregateStore<TAggreg
         };
 
         await _eventStore
-            .AppendAsync(snapshotEvent, cancellationToken)
+            .AppendSnapshotAsync(aggregate.KeyId, snapshotEvent, cancellationToken)
             .ConfigureAwait(false);
     }
 
     private async Task<TAggregate> ResolveFromSnapshotAsync(
-        Guid keyId,
+        Guid aggregateId,
         CancellationToken cancellationToken)
     {
-        // Try to find the most recent snapshot
-        var latestSnapshot = await FindLatestSnapshotAsync(keyId, cancellationToken)
+        // Get latest snapshot once (store-agnostic)
+        var envelope = await _eventStore
+            .ReadLatestSnapshotAsync(aggregateId, cancellationToken)
             .ConfigureAwait(false);
 
-        TAggregate aggregate = new();
-
-        if (latestSnapshot is not null)
+        if (!envelope.HasValue)
         {
-            // Restore aggregate from snapshot
-            aggregate.Restore(latestSnapshot.Memento);
-
-            // Load events that occurred after the snapshot
-            await LoadEventsAfterSnapshotAsync(aggregate, keyId, cancellationToken)
+            // No snapshot: fallback
+            return await _aggregateStore
+                .LoadAsync(aggregateId, cancellationToken)
                 .ConfigureAwait(false);
         }
-        else
+
+        if (envelope.Value.Event is not ISnapshotEvent snapshot)
         {
-            // No snapshot found, fallback to regular resolution
-            return await _aggregateStore
-                .ResolveAsync(keyId, cancellationToken)
-                .ConfigureAwait(false);
+            throw new InvalidOperationException(
+                $"Latest snapshot for aggregate '{aggregateId}' is not an ISnapshotEvent.");
+        }
+
+        // Rehydrate from snapshot
+        var aggregate = new TAggregate();
+        aggregate.Restore(snapshot.Memento);
+
+        // Replay events after snapshot’s version (assuming Restore set StreamVersion to snapshot version)
+        await foreach (var env in _eventStore
+            .ReadStreamAsync(aggregateId, fromVersion: aggregate.StreamVersion, cancellationToken: cancellationToken)
+            .ConfigureAwait(false))
+        {
+            if (env.Event is IDomainEvent domainEvent)
+            {
+                aggregate.LoadFromHistory(domainEvent);
+            }
         }
 
         if (aggregate.IsEmpty)
         {
             throw new ValidationException(
                 new ValidationResult(
-                    $"The aggregate with ID '{keyId}' was not found.",
-                    [nameof(keyId)]),
+                    $"The aggregate with ID '{aggregateId}' was not found.",
+                    [nameof(aggregateId)]),
                 null,
-                keyId);
+                aggregateId);
         }
 
         return aggregate;
     }
 
-    private async Task<ISnapshotEvent?> FindLatestSnapshotAsync(
-        Guid keyId,
-        CancellationToken cancellationToken) => await _eventStore
-            .FetchAsync<EntitySnapshotEvent, EntitySnapshotEvent>(query =>
-                query.Where(w => w.OwnerId == keyId)
-                    .OrderByDescending(o => o.Sequence)
-                    .Take(1), cancellationToken)
-            .AsEventsPagedAsync(cancellationToken)
-            .OfType<ISnapshotEvent>()
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-    private async Task LoadEventsAfterSnapshotAsync(
-        TAggregate aggregate,
-        Guid keyId,
-        CancellationToken cancellationToken)
-    {
-        var eventsQuery = _eventStore
-            .FetchAsync<EntityDomainEvent, EntityDomainEvent>(query =>
-                query.Where(w => w.AggregateId == keyId && w.StreamVersion > aggregate.StreamVersion)
-                    .OrderBy(o => o.StreamVersion), cancellationToken)
-            .AsEventsPagedAsync(cancellationToken)
-            .OfType<IDomainEvent>();
-
-        await foreach (IDomainEvent domainEvent in eventsQuery
-            .WithCancellation(cancellationToken)
-            .ConfigureAwait(false))
-        {
-            aggregate.LoadFromHistory(domainEvent);
-        }
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool ShouldCreateSnapshot(Aggregate aggregate) =>
+    private bool ShouldCreateSnapshot(IAggregate aggregate) =>
         _options.IsSnapshotEnabled
         && aggregate.StreamVersion > 0
-        && aggregate.StreamVersion % _options.SnapshotFrequency == 0
-        && aggregate.StreamVersion >= _options.SnapshotFrequency;
+        && aggregate.StreamVersion % _options.SnapshotFrequency == 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsRethrownException(Exception exception) =>

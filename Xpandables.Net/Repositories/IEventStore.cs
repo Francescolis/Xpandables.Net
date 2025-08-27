@@ -15,108 +15,68 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
 using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Defines a contract for an event store that supports asynchronous operations for appending, processing,  and querying
-/// events. This interface extends <see cref="IRepository"/> to provide additional event-specific  functionality.
+/// Event-sourcing oriented event store API.
+/// Provides stream appends with optimistic concurrency, stream/global reads, and snapshot support.
 /// </summary>
-/// <remarks>Implementations of <see cref="IEventStore"/> are expected to handle event persistence and retrieval 
-/// efficiently, supporting scenarios where events need to be appended, marked as processed, or queried  based on
-/// specific criteria. The interface provides methods for both single and batch operations,  ensuring flexibility in
-/// handling event data.</remarks>
-public interface IEventStore : IRepository
+public interface IEventStore : IAsyncDisposable
 {
     /// <summary>
-    /// Appends the specified event to the event stream asynchronously.
+    /// Appends domain events to an aggregate stream with optimistic concurrency.
     /// </summary>
-    /// <param name="event">The event to append. Cannot be null.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous append operation.</returns>
-    Task AppendAsync(IEvent @event, CancellationToken cancellationToken = default);
+    /// <param name="aggregateId">Aggregate identifier.</param>
+    /// <param name="aggregateName">Aggregate CLR name (usually typeof(T).Name or FullName).</param>
+    /// <param name="expectedVersion">Expected current stream version (-1 for new stream).</param>
+    /// <param name="events">Events to append (in order).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>AppendResult including assigned stream version range.</returns>
+    Task<AppendResult> AppendToStreamAsync(
+        Guid aggregateId,
+        string aggregateName,
+        long expectedVersion,
+        IEnumerable<IDomainEvent> events,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Appends a collection of events asynchronously to the event store.
+    /// Reads domain events in a specific aggregate stream from a given version.
     /// </summary>
-    /// <param name="events">The collection of events to append. Cannot be null or contain null elements.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous append operation.</returns>
-    Task AppendAsync(IEnumerable<IEvent> events, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<EventEnvelope> ReadStreamAsync(
+        Guid aggregateId,
+        long fromVersion = 0,
+        int maxCount = int.MaxValue,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Marks the specified event as processed asynchronously.
+    /// Reads all events globally from a given store position (sequence).
     /// </summary>
-    /// <param name="info">The information about the event to be marked as processed.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task MarkAsProcessedAsync(EventProcessedInfo info, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<EventEnvelope> ReadAllAsync(
+        long fromPosition = 0,
+        int maxCount = 4096,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Marks the specified events as processed asynchronously.
+    /// Gets the current stream version for an aggregate, or -1 if no stream exists.
     /// </summary>
-    /// <remarks>This method updates the state of the specified events to indicate they have been processed.
-    /// It is designed to be used in scenarios where event processing is tracked asynchronously.</remarks>
-    /// <param name="infos">A collection of <see cref="EventProcessedInfo"/> objects representing the events to be marked as processed.
-    /// Cannot be null or contain null elements.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task MarkAsProcessedAsync(IEnumerable<EventProcessedInfo> infos, CancellationToken cancellationToken = default);
+    Task<long> GetStreamVersionAsync(
+        Guid aggregateId,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously adds or updates a collection of entities in the data store.
+    /// Appends a snapshot event for an aggregate.
     /// </summary>
-    /// <typeparam name="TEntity">The type of the entities to add or update.</typeparam>
-    /// <param name="entities">The collection of entities to add or update. Cannot be null or empty.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    new Task AddOrUpdateAsync<TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+    Task AppendSnapshotAsync(
+        Guid aggregateId,
+        ISnapshotEvent snapshot,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously deletes entities from the data source based on the specified filter.
+    /// Reads the latest snapshot event for an aggregate, if any.
     /// </summary>
-    /// <remarks>This method is intended for internal use and may not be visible in all contexts.</remarks>
-    /// <typeparam name="TEntity">The type of the entity to delete.</typeparam>
-    /// <param name="filter">A function to filter the entities to be deleted. The function should return a filtered <see
-    /// cref="IQueryable{TEntity}"/>.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous delete operation.</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    new Task DeleteAsync<TEntity>(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
-}
-
-/// <summary>
-/// Represents information about a processed event, including its unique identifier,  the completion time of processing,
-/// and any associated error message.
-/// </summary>
-public readonly record struct EventProcessedInfo
-{
-    /// <summary>
-    /// Gets the unique identifier of the event.
-    /// </summary>
-    public readonly required Guid EventId { get; init; }
-
-    /// <summary>
-    /// Gets the date and time when the processing was completed.
-    /// </summary>
-    public readonly required DateTimeOffset ProcessedOn { get; init; }
-
-    /// <summary>
-    /// Gets the error message associated with the current operation.
-    /// </summary>
-    public readonly required string? ErrorMessage { get; init; }
+    Task<EventEnvelope?> ReadLatestSnapshotAsync(
+        Guid aggregateId,
+        CancellationToken cancellationToken = default);
 }

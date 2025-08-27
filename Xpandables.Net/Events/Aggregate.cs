@@ -22,9 +22,16 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents the base class for an aggregate root in a domain-driven design.
+/// Represents the base class for an aggregate in a domain-driven design (DDD) context.
 /// </summary>
-public abstract class Aggregate : IEventSourcing
+/// <remarks>The <see cref="Aggregate"/> class provides a foundation for implementing aggregates, which are the 
+/// central concept in DDD for encapsulating domain logic and ensuring consistency within a bounded context.  It manages
+/// the state of the aggregate, tracks uncommitted domain events, and provides mechanisms for  replaying and applying
+/// events to maintain the aggregate's state. <para> This class is designed to be extended by specific aggregate
+/// implementations, which define the domain-specific  behavior and event handling logic. It enforces key invariants
+/// such as monotonic stream versioning and ensures  that the aggregate's identity is properly initialized.
+/// </para></remarks>
+public abstract class Aggregate : IAggregate
 {
     private readonly Dictionary<Type, Delegate> _eventHandlers = [];
     private readonly ConcurrentQueue<IDomainEvent> _uncommittedEvents = new();
@@ -34,36 +41,42 @@ public abstract class Aggregate : IEventSourcing
     /// </summary>
     protected Aggregate() { }
 
-    /// <summary>
-    /// Gets the unique identifier of the aggregate root.
-    /// </summary>
+    /// <inheritdoc />
     public Guid KeyId { get; protected set; } = Guid.Empty;
 
-    /// <summary>
-    /// Gets the version of the aggregate root.
-    /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
+    /// <inheritdoc />
     public long StreamVersion { get; protected set; }
 
-    /// <summary>
-    /// Gets the business version of the aggregate (optional, for business logic).
-    /// This is separate from the stream version and can be used for business versioning.
-    /// </summary>
+    /// <inheritdoc />
     public int BusinessVersion { get; protected set; } = 1;
 
-    /// <summary>
-    /// Gets a value indicating whether the aggregate root is empty.
-    /// </summary>
+    /// <inheritdoc />
     public bool IsEmpty => KeyId == Guid.Empty;
 
-    /// <summary>
-    /// Gets the expected stream version for optimistic concurrency control.
-    /// </summary>
+    /// <inheritdoc />
     public long ExpectedStreamVersion => StreamVersion;
 
     /// <inheritdoc />
     public IReadOnlyCollection<IDomainEvent> GetUncommittedEvents() =>
         [.. _uncommittedEvents];
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<IDomainEvent> DequeueUncommittedEvents()
+    {
+        var events = GetUncommittedEvents();
+        if (events.Count > 0)
+        {
+            MarkEventsAsCommitted();
+        }
+        return events;
+    }
+
+    /// <inheritdoc />
+    public void Replay(IEnumerable<IDomainEvent> history)
+    {
+        ArgumentNullException.ThrowIfNull(history);
+        LoadFromHistory(history);
+    }
 
     /// <inheritdoc />
     public void LoadFromHistory(IEnumerable<IDomainEvent> events) =>
@@ -75,9 +88,7 @@ public abstract class Aggregate : IEventSourcing
         ArgumentNullException.ThrowIfNull(domainEvent);
 
         Mutate(domainEvent);
-
         StreamVersion = domainEvent.StreamVersion;
-
         UpdateBusinessVersionFromEvent(domainEvent);
     }
 
@@ -97,10 +108,21 @@ public abstract class Aggregate : IEventSourcing
         ArgumentNullException.ThrowIfNull(domainEvent);
 
         long nextStreamVersion = StreamVersion + 1;
-        domainEvent = domainEvent
-            .WithStreamVersion(nextStreamVersion)
-            .WithAggregateId(KeyId);
 
+        // Enforce identity for the very first event.
+        if (domainEvent.AggregateId == Guid.Empty && KeyId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "Aggregate is not initialized. The first event must carry a non-empty AggregateId.");
+        }
+
+        // Propagate existing KeyId when event didn't carry one.
+        if (domainEvent.AggregateId == Guid.Empty && KeyId != Guid.Empty)
+        {
+            domainEvent = domainEvent.WithAggregateId(KeyId);
+        }
+
+        domainEvent = domainEvent.WithStreamVersion(nextStreamVersion);
         Apply(domainEvent);
     }
 
@@ -113,10 +135,18 @@ public abstract class Aggregate : IEventSourcing
         long nextStreamVersion = StreamVersion + 1;
         TEvent domainEvent = eventFactory(nextStreamVersion);
 
-        domainEvent = (TEvent)domainEvent
-            .WithStreamVersion(nextStreamVersion)
-            .WithAggregateId(KeyId);
+        if (domainEvent.AggregateId == Guid.Empty && KeyId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "Aggregate is not initialized. The first event must carry a non-empty AggregateId.");
+        }
 
+        if (domainEvent.AggregateId == Guid.Empty && KeyId != Guid.Empty)
+        {
+            domainEvent = (TEvent)domainEvent.WithAggregateId(KeyId);
+        }
+
+        domainEvent = (TEvent)domainEvent.WithStreamVersion(nextStreamVersion);
         Apply(domainEvent);
     }
 
@@ -129,7 +159,7 @@ public abstract class Aggregate : IEventSourcing
         where TEvent : notnull, IDomainEvent => On(typeof(TEvent), handler);
 
     /// <summary>
-    /// Registers the delegate for the specific event type.
+    /// Registers the delegate for the specified event type.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="handler">The event handler.</param>
@@ -141,11 +171,7 @@ public abstract class Aggregate : IEventSourcing
     /// </summary>
     /// <param name="eventType">The type of the event.</param>
     /// <param name="handler">The event handler.</param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the event type is
-    /// not an event domain.
-    /// </exception>
-    // ReSharper disable once MemberCanBePrivate.Global
+    /// <exception cref="ArgumentException">Thrown when the type is not an <see cref="IDomainEvent"/>.</exception>
     protected void On(Type eventType, Delegate handler)
     {
         ArgumentNullException.ThrowIfNull(eventType);
@@ -153,23 +179,18 @@ public abstract class Aggregate : IEventSourcing
 
         if (!typeof(IDomainEvent).IsAssignableFrom(eventType))
         {
-            throw new ArgumentException(
-                $"The type {eventType.Name} is not an event domain.");
+            throw new ArgumentException($"The type {eventType.Name} is not an event domain.");
         }
 
         _ = _eventHandlers.TryAdd(eventType, handler);
     }
 
     /// <summary>
-    /// Override this method to implement custom business version logic based on events.
+    /// Override to implement custom business version logic based on events.
     /// </summary>
     /// <param name="domainEvent">The domain event being applied.</param>
     protected virtual void UpdateBusinessVersionFromEvent(IDomainEvent domainEvent)
     {
-        // Default implementation: increment business version for certain event types
-        // Override in derived classes for custom business versioning logic
-
-        // Example: increment business version only for significant business events
         if (IsSignificantBusinessEvent(domainEvent))
         {
             BusinessVersion++;
@@ -178,19 +199,19 @@ public abstract class Aggregate : IEventSourcing
 
     /// <summary>
     /// Determines if an event represents a significant business change.
-    /// Override in derived classes to implement custom logic.
     /// </summary>
     /// <param name="domainEvent">The domain event to evaluate.</param>
-    /// <returns>True if the event represents a significant business change.</returns>
     protected virtual bool IsSignificantBusinessEvent(IDomainEvent domainEvent) => false;
 
     private void Apply(IDomainEvent domainEvent)
     {
+        // Idempotency for current unit: ignore duplicate event Ids.
         if (_uncommittedEvents.Any(e => e.Id == domainEvent.Id))
         {
             return;
         }
 
+        // Ensure monotonic versioning for newly raised events.
         if (domainEvent.StreamVersion <= StreamVersion)
         {
             long nextStreamVersion = StreamVersion + 1;
@@ -198,9 +219,7 @@ public abstract class Aggregate : IEventSourcing
         }
 
         Mutate(domainEvent);
-
         StreamVersion = domainEvent.StreamVersion;
-
         _uncommittedEvents.Enqueue(domainEvent);
     }
 
@@ -208,7 +227,12 @@ public abstract class Aggregate : IEventSourcing
     {
         if (_eventHandlers.TryGetValue(domainEvent.GetType(), out Delegate? handler))
         {
-            KeyId = domainEvent.AggregateId;
+            // Capture identity at first application.
+            if (KeyId == Guid.Empty && domainEvent.AggregateId != Guid.Empty)
+            {
+                KeyId = domainEvent.AggregateId;
+            }
+
             _ = handler.DynamicInvoke(domainEvent);
         }
         else

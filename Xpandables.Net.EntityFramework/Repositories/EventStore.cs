@@ -15,11 +15,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 using Microsoft.EntityFrameworkCore;
 
-using Xpandables.Net.Collections;
 using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
@@ -28,227 +27,203 @@ using Xpandables.Net.Text;
 namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Provides functionality for storing and managing events in a database context.
+/// EF Core-backed event store.
+/// - Stream appends do not call SaveChanges to allow unit-of-work to commit atomically.
+/// - Reads are immediate and use AsNoTracking.
 /// </summary>
-/// <typeparam name="TDataContext">The type of the database context used by the event store. Must derive from <see cref="DataContext"/>.</typeparam>
-/// <remarks>The <see cref="EventStore{TDataContext}"/> class is a specialized repository for handling event-sourced data. It
-/// supports appending single or multiple events, marking events as processed, and fetching paginated results. This
-/// class is designed to work with Entity Framework Core and ensures proper disposal of resources.</remarks>
-/// <param name="context"></param>
-public sealed class EventStore<TDataContext>(TDataContext context) : Repository<TDataContext>(context), IEventStore, IIntegrationOutboxStore
+public sealed class EventStore<TDataContext>(TDataContext context) : AsyncDisposable, IEventStore
     where TDataContext : DataContext
 {
-    private readonly ConcurrentBag<IEntityEvent> _disposableEntities = [];
+    private readonly TDataContext _db = context;
 
-    /// <inheritdoc />
-    public async Task AppendAsync(IEvent @event, CancellationToken cancellationToken = default)
-    {
-        IEventConverter eventConverter = EventConverter.GetConverterFor(@event);
-        IEntityEvent entityEvent = eventConverter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
-
-        _disposableEntities.Add(entityEvent);
-        await Context.AddAsync(entityEvent, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task AppendAsync(IEnumerable<IEvent> events, CancellationToken cancellationToken = default)
-    {
-        IEvent[] eventsArray = events as IEvent[] ?? [.. events];
-        if (eventsArray.Length == 0) return;
-
-        await AppendEventBatchAsync(eventsArray, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public new IAsyncPagedEnumerable<TResult> FetchAsync<TEntity, TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+    /// <inheritdoc/>
+    public async Task<AppendResult> AppendToStreamAsync(
+        Guid aggregateId,
+        string aggregateName,
+        long expectedVersion,
+        IEnumerable<IDomainEvent> events,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(events);
 
-        IQueryable<TResult> filteredQuery = filter(Context.Set<TEntity>().AsNoTracking());
-        return filteredQuery.WithPagination();
+        var batch = events as IDomainEvent[] ?? [.. events];
+        if (batch.Length == 0)
+        {
+            return AppendResult.Create(expectedVersion + 1, expectedVersion);
+        }
+
+        long current = await GetStreamVersionCoreAsync(aggregateId, cancellationToken).ConfigureAwait(false);
+        if (current != expectedVersion)
+        {
+            // You can choose to throw early, or let DB uniqueness enforce at commit. Early throw is helpful.
+            throw new InvalidOperationException(
+                $"Concurrency violation for aggregate {aggregateId}. " +
+                $"Expected version {expectedVersion} but found {current}.");
+        }
+
+        var converter = EventConverter.GetConverterFor<IDomainEvent>();
+        var entities = new List<EntityDomainEvent>(capacity: batch.Length);
+        long next = expectedVersion;
+
+        foreach (var @event in batch)
+        {
+            next++;
+
+            @event
+                .WithAggregateId(aggregateId)
+                .WithStreamVersion(next)
+                .WithAggregateName(aggregateName);
+
+            var entity = (EntityDomainEvent)converter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
+
+            entities.Add(entity);
+        }
+
+        await _db.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
+        // Defer SaveChanges to the UnitOfWork
+
+        Guid[] ids = [.. entities.ConvertAll(e => e.KeyId)];
+        return AppendResult.Create(ids, expectedVersion + 1, next);
     }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<IIntegrationEvent>> ClaimPendingAsync(
-        int batchSize, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<EventEnvelope> ReadStreamAsync(
+        Guid aggregateId,
+        long fromVersion = 0,
+        int maxCount = int.MaxValue,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var now = DateTime.UtcNow;
-        var claimId = Guid.NewGuid();
-        var eventsSet = Context.Set<EntityIntegrationEvent>();
+        ArgumentOutOfRangeException.ThrowIfNegative(fromVersion);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
 
-        // 1) Select candidate ids
-        var candidateIds = await eventsSet
-            .Where(e =>
-                (e.Status == EntityStatus.PENDING.Value) ||
-                (e.Status == EntityStatus.ONERROR.Value && (e.NextAttemptOn == null || e.NextAttemptOn <= now)))
-            .Where(e => e.ClaimId == null)
-            .OrderBy(e => e.Sequence)
-            .Select(e => e.KeyId)
-            .Take(Math.Max(1, batchSize))
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (candidateIds.Count == 0) return [];
-
-        // 2) Claim them (best-effort, another instance may have raced; ClaimId==null prevents double-claim)
-        var updated = await eventsSet
-            .Where(e => candidateIds.Contains(e.KeyId) && e.ClaimId == null)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(e => e.Status, EntityStatus.PROCESSING.Value)
-                .SetProperty(e => e.ClaimId, claimId)
-                .SetProperty(e => e.ErrorMessage, (string?)null)
-                .SetProperty(e => e.UpdatedOn, now),
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        if (updated == 0) return [];
-
-        // 3) Load the claimed rows for this claimId and convert to IIntegrationEvent
-        var claimed = await eventsSet
+        var query = _db.Set<EntityDomainEvent>()
             .AsNoTracking()
-            .Where(e => e.ClaimId == claimId)
+            .Where(e => e.AggregateId == aggregateId && e.StreamVersion > fromVersion)
+            .OrderBy(e => e.StreamVersion)
+            .Take(maxCount);
+
+        await foreach (var entity in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
+        {
+            var @event = EventConverter.ConvertFromCached(entity, DefaultSerializerOptions.Defaults);
+            yield return new EventEnvelope
+            {
+                EventId = entity.KeyId,
+                EventType = entity.Name,
+                EventFullName = entity.FullName,
+                OccurredOn = entity.CreatedOn,
+                Event = @event,
+                GlobalPosition = entity.Sequence,
+                AggregateId = entity.AggregateId,
+                AggregateName = entity.AggregateName,
+                StreamVersion = entity.StreamVersion
+            };
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<EventEnvelope> ReadAllAsync(
+        long fromPosition = 0,
+        int maxCount = 4096,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(fromPosition);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
+
+        var query = _db.Set<EntityEvent>()
+            .AsNoTracking()
+            .Where(e => e.Sequence > fromPosition)
             .OrderBy(e => e.Sequence)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+            .Take(maxCount);
 
-        IEventConverter converter = EventConverter.GetConverterFor<IIntegrationEvent>();
-        var integrationEvents = new List<IIntegrationEvent>(claimed.Count);
-        foreach (var entity in claimed)
+        await foreach (var entity in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
         {
-            if (converter.ConvertFrom(entity, DefaultSerializerOptions.Defaults) is IIntegrationEvent ie)
+            var @event = EventConverter.ConvertFromCached(entity, DefaultSerializerOptions.Defaults);
+
+            Guid? aggregateId = null;
+            string? aggregateName = null;
+            long? streamVersion = null;
+
+            if (entity is EntityDomainEvent de)
             {
-                integrationEvents.Add(ie);
+                aggregateId = de.AggregateId;
+                aggregateName = de.AggregateName;
+                streamVersion = de.StreamVersion;
             }
-        }
 
-        return integrationEvents;
-    }
-
-    /// <inheritdoc />
-    public async Task MarkAsProcessedAsync(EventProcessedInfo info, CancellationToken cancellationToken = default)
-    {
-        string status = info.ErrorMessage is null
-            ? EntityStatus.PUBLISHED
-            : EntityStatus.ONERROR;
-        DateTime now = DateTime.UtcNow;
-        bool success = info.ErrorMessage is null;
-
-        await Context.Set<EntityIntegrationEvent>()
-            .Where(e => e.KeyId == info.EventId)
-            .ExecuteUpdateAsync(entity =>
-                    entity
-                        .SetProperty(e => e.Status, status)
-                        .SetProperty(e => e.ErrorMessage, info.ErrorMessage)
-                        .SetProperty(e => e.AttemptCount, success ? e => e.AttemptCount : e => e.AttemptCount + 1)
-                        .SetProperty(e => e.NextAttemptOn, success ? e => null : e => GetNextAttempt(now, e.AttemptCount + 1))
-                        .SetProperty(e => e.ClaimId, (Guid?)null)
-                        .SetProperty(e => e.UpdatedOn, now),
-                cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task MarkAsProcessedAsync(
-        IEnumerable<EventProcessedInfo> infos,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(infos);
-
-        var items = infos as EventProcessedInfo[] ?? [.. infos];
-        if (items.Length == 0) return;
-
-        var successIds = items.Where(i => i.ErrorMessage is null).Select(i => i.EventId).ToArray();
-        var failed = items.Where(i => i.ErrorMessage is not null).ToArray();
-        var now = DateTime.UtcNow;
-
-        if (successIds.Length > 0)
-        {
-            await Context.Set<EntityIntegrationEvent>()
-                .Where(e => successIds.Contains(e.KeyId))
-                .ExecuteUpdateAsync(entity =>
-                    entity
-                        .SetProperty(e => e.Status, EntityStatus.PUBLISHED.Value)
-                        .SetProperty(e => e.ErrorMessage, (string?)null)
-                        .SetProperty(e => e.NextAttemptOn, (DateTime?)null)
-                        .SetProperty(e => e.ClaimId, (Guid?)null)
-                        .SetProperty(e => e.UpdatedOn, now),
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        foreach (var f in failed)
-        {
-            await Context.Set<EntityIntegrationEvent>()
-                .Where(e => e.KeyId == f.EventId)
-                .ExecuteUpdateAsync(entity =>
-                    entity
-                        .SetProperty(e => e.Status, EntityStatus.ONERROR.Value)
-                        .SetProperty(e => e.ErrorMessage, f.ErrorMessage)
-                        .SetProperty(e => e.AttemptCount, e => e.AttemptCount + 1)
-                        .SetProperty(e => e.NextAttemptOn, e => GetNextAttempt(now, e.AttemptCount + 1))
-                        .SetProperty(e => e.ClaimId, (Guid?)null)
-                        .SetProperty(e => e.UpdatedOn, now),
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-    protected override ValueTask DisposeAsync(bool disposing)
-    {
-        if (disposing)
-        {
-            _disposableEntities.ForEach(entity => entity.Dispose());
-            _disposableEntities.Clear();
-        }
-
-        return base.DisposeAsync(disposing);
-    }
-
-    private async Task AppendEventBatchAsync(IEvent[] events, CancellationToken cancellationToken)
-    {
-        var eventGroups = events
-            .GroupBy(e =>
+            yield return new EventEnvelope
             {
-                if (e is IDomainEvent) return typeof(IDomainEvent);
-                if (e is IIntegrationEvent) return typeof(IIntegrationEvent);
-                if (e is ISnapshotEvent) return typeof(ISnapshotEvent);
-                throw new InvalidOperationException($"Unsupported event type: {e.GetType().FullName}.");
-            })
-            .ToArray();
-
-        foreach (var eventGroup in eventGroups)
-        {
-            await AppendEventGroupAsync(eventGroup, cancellationToken)
-                .ConfigureAwait(false);
+                EventId = entity.KeyId,
+                EventType = entity.Name,
+                EventFullName = entity.FullName,
+                OccurredOn = entity.CreatedOn,
+                Event = @event,
+                GlobalPosition = entity.Sequence,
+                AggregateId = aggregateId,
+                AggregateName = aggregateName,
+                StreamVersion = streamVersion
+            };
         }
     }
 
-    private async Task AppendEventGroupAsync(IGrouping<Type, IEvent> eventGroup, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public Task<long> GetStreamVersionAsync(
+        Guid aggregateId, CancellationToken cancellationToken = default) =>
+        GetStreamVersionCoreAsync(aggregateId, cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task AppendSnapshotAsync(
+        Guid aggregateId, ISnapshotEvent snapshot, CancellationToken cancellationToken = default)
     {
-        IEventConverter eventConverter = EventConverter.GetConverterFor(eventGroup.Key);
-        var entityEvents = new List<IEntityEvent>();
+        ArgumentNullException.ThrowIfNull(snapshot);
 
-        foreach (IEvent @event in eventGroup)
-        {
-            IEntityEvent entityEvent = eventConverter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
-            entityEvents.Add(entityEvent);
-            _disposableEntities.Add(entityEvent);
-        }
+        var converter = EventConverter.GetConverterFor<ISnapshotEvent>();
 
-        await Context
-            .AddRangeAsync(entityEvents, cancellationToken)
+        snapshot.WithOwnerId(aggregateId);
+        var entity = (EntitySnapshotEvent)converter.ConvertTo(snapshot, DefaultSerializerOptions.Defaults);
+
+        await _db.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+        // Defer SaveChanges to the UnitOfWork
+    }
+
+    /// <inheritdoc/>
+    public async Task<EventEnvelope?> ReadLatestSnapshotAsync(
+        Guid aggregateId, CancellationToken cancellationToken = default)
+    {
+        var entity = await _db.Set<EntitySnapshotEvent>()
+            .AsNoTracking()
+            .Where(e => e.OwnerId == aggregateId)
+            .OrderByDescending(e => e.Sequence)
+            .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        if (entity is null) return null;
+
+        var @event = EventConverter.ConvertFromCached(entity, DefaultSerializerOptions.Defaults);
+        return new EventEnvelope
+        {
+            EventId = entity.KeyId,
+            EventType = entity.Name,
+            EventFullName = entity.FullName,
+            OccurredOn = entity.CreatedOn,
+            Event = @event,
+            GlobalPosition = entity.Sequence,
+            AggregateId = aggregateId,
+            AggregateName = null,
+            StreamVersion = null
+        };
     }
 
-    // Simple exponential backoff with cap (customize as needed)
-    private static DateTime GetNextAttempt(DateTime now, int attemptCount)
+    private async Task<long> GetStreamVersionCoreAsync(
+        Guid aggregateId, CancellationToken cancellationToken)
     {
-        // base 10s, double each time, max 10 minutes
-        var delay = TimeSpan.FromSeconds(Math.Min(600, 10 * Math.Pow(2, Math.Min(10, attemptCount - 1))));
-        return now.Add(delay);
+        var last = await _db.Set<EntityDomainEvent>()
+            .AsNoTracking()
+            .Where(e => e.AggregateId == aggregateId)
+            .OrderByDescending(e => e.StreamVersion)
+            .Select(e => (long?)e.StreamVersion)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return last ?? -1;
     }
 }

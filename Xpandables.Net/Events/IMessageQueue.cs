@@ -50,19 +50,19 @@ public interface IMessageQueue
     Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default);
 }
 
-// ReSharper disable once ClassNeverInstantiated.Global
 /// <summary>
 /// Provides a bounded message queue implementation that facilitates the enqueuing and dequeuing
 /// of integration events used within an event-driven system.
 /// </summary>
 #pragma warning disable CA1711
-public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
+public sealed class MessageQueue(IOutboxStore outboxStore) : IMessageQueue
 #pragma warning restore CA1711
 {
     /// <inheritdoc />
     public Channel<IIntegrationEvent> Channel { get; } =
         System.Threading.Channels.Channel.CreateBounded<IIntegrationEvent>(new BoundedChannelOptions(100)
         {
+            // Tune these to your scheduler model. Defaults keep the existing behavior.
             SingleReader = true,
             SingleWriter = true,
             AllowSynchronousContinuations = false,
@@ -71,26 +71,33 @@ public sealed class MessageQueue(IEventStore eventStore) : IMessageQueue
 
     /// <inheritdoc />
     public async Task EnqueueAsync(
-        IIntegrationEvent message, CancellationToken cancellationToken = default) =>
-        await eventStore
-            .AppendAsync(message, cancellationToken)
+        IIntegrationEvent message, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        await outboxStore
+            .EnqueueAsync(message, cancellationToken)
             .ConfigureAwait(false);
+        // SaveChanges is deferred to UnitOfWork decorator.
+    }
 
     /// <inheritdoc />
     public async Task DequeueAsync(ushort capacity, CancellationToken cancellationToken = default)
     {
-        Func<IQueryable<EntityIntegrationEvent>, IQueryable<EntityIntegrationEvent>> filter = query =>
-            query.Where(w => w.Status == EntityStatus.PENDING.Value)
-                .OrderBy(o => o.CreatedOn)
-                .Take(capacity);
+        if (capacity == 0 || cancellationToken.IsCancellationRequested) return;
 
-        await foreach (IEvent @event in eventStore
-            .FetchAsync(filter, cancellationToken)
-            .AsEventsPagedAsync(cancellationToken)
-            .WithCancellation(cancellationToken))
+        var batchSize = Math.Max(1, (int)capacity);
+        var pending = await outboxStore
+            .ClaimPendingAsync(batchSize, leaseDuration: null, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (pending.Count == 0) return;
+
+        foreach (var @event in pending)
         {
+            // Respect cancellation and backpressure
+            cancellationToken.ThrowIfCancellationRequested();
             await Channel.Writer
-                .WriteAsync((IIntegrationEvent)@event, cancellationToken)
+                .WriteAsync(@event, cancellationToken)
                 .ConfigureAwait(false);
         }
     }

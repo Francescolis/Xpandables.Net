@@ -172,11 +172,11 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             new EventId(1018, nameof(LogEventProcessingFailed)),
             "Failed to process event {EventId} of type {EventType}");
 
-    private static readonly Action<ILogger, int, Exception> LogEventStoreBatchUpdateFailed =
+    private static readonly Action<ILogger, int, Exception?> LogOutboxBatchUpdateFailed =
         LoggerMessage.Define<int>(
             LogLevel.Error,
-            new EventId(1019, nameof(LogEventStoreBatchUpdateFailed)),
-            "Failed to update event store for batch of {Count} events");
+            new EventId(1019, nameof(LogOutboxBatchUpdateFailed)),
+            "Failed to update outbox for batch of {Count} events");
 
     private static readonly Action<ILogger, Exception?> LogBackgroundServiceStarting =
         LoggerMessage.Define(
@@ -262,11 +262,10 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         {
             await using var serviceScope = _serviceScopeFactory.CreateAsyncScope();
             var eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IPublisher>();
-            var eventStore = serviceScope.ServiceProvider.GetRequiredService<IEventStore>();
-            var outbox = (IIntegrationOutboxStore)eventStore;
+            var outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
             // Claim a batch directly from the outbox (multi-instance safe)
-            var claimed = await outbox.ClaimPendingAsync(_options.BatchSize, cancellationToken).ConfigureAwait(false);
+            var claimed = await outbox.ClaimPendingAsync(_options.BatchSize, leaseDuration: null, cancellationToken).ConfigureAwait(false);
             if (claimed.Count == 0)
             {
                 LogNoEventsToSchedule(_logger, null);
@@ -280,7 +279,7 @@ internal sealed class Scheduler : BackgroundService, IScheduler
             LogProcessingBatches(_logger, eventBatches.Sum(b => b.Count), eventBatches.Count, null);
 
             var processingTasks = eventBatches.Select(batch =>
-                ProcessEventBatchAsync(batch, eventPublisher, eventStore, cancellationToken));
+                ProcessEventBatchAsync(batch, eventPublisher, outbox, cancellationToken));
 
             var batchResults = await Task.WhenAll(processingTasks).ConfigureAwait(false);
 
@@ -366,15 +365,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
     #region Private Implementation Methods
 
-    /// <summary>
-    /// Divides a collection of integration events into smaller batches for processing.
-    /// </summary>
-    /// <remarks>The method calculates the batch size based on the total number of events and the number of
-    /// processors available on the system. Each batch will contain approximately the same number of events, with the
-    /// exception of the last batch, which may contain fewer events.</remarks>
-    /// <param name="events">The collection of integration events to be divided into batches. Cannot be null.</param>
-    /// <returns>A list of batches, where each batch is a list of integration events. The number of batches is determined by the
-    /// size of the input collection and the number of available processors.</returns>
     private static List<List<IIntegrationEvent>> CreateBatches(IReadOnlyList<IIntegrationEvent> events)
     {
         var list = events.ToList();
@@ -388,25 +378,22 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         return batches;
     }
 
-    /// <summary>
-    /// Processes a batch of events with error isolation and performance tracking.
-    /// </summary>
     private async Task<BatchProcessingResult> ProcessEventBatchAsync(
         List<IIntegrationEvent> events,
         IPublisher eventPublisher,
-        IEventStore eventStore,
+        IOutboxStore outbox,
         CancellationToken cancellationToken)
     {
         var processedCount = 0;
         var errorCount = 0;
-        var processedInfos = new List<EventProcessedInfo>(events.Count);
+
+        var successIds = new List<Guid>(events.Count);
+        var failures = new List<(Guid EventId, string Error)>(events.Count);
 
         foreach (var @event in events)
         {
             if (cancellationToken.IsCancellationRequested)
-            {
                 break;
-            }
 
             try
             {
@@ -414,57 +401,43 @@ internal sealed class Scheduler : BackgroundService, IScheduler
                 timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
 
                 await eventPublisher.PublishAsync(@event, timeoutCts.Token).ConfigureAwait(false);
-
-                processedInfos.Add(new EventProcessedInfo
-                {
-                    EventId = @event.Id,
-                    ProcessedOn = DateTime.UtcNow,
-                    ErrorMessage = null
-                });
-
+                successIds.Add(@event.Id);
                 processedCount++;
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
                 errorCount++;
-
-                var errorMessage = exception switch
-                {
-                    TimeoutException => "Event processing timeout exceeded",
-                    _ => exception.ToString()
-                };
-
-                processedInfos.Add(new EventProcessedInfo
-                {
-                    EventId = @event.Id,
-                    ProcessedOn = DateTime.UtcNow,
-                    ErrorMessage = errorMessage
-                });
-
+                var errorMessage = exception is TimeoutException
+                    ? "Event processing timeout exceeded"
+                    : exception.ToString();
+                failures.Add((@event.Id, errorMessage));
                 LogEventProcessingFailed(_logger, @event.Id, @event.GetType().Name, exception);
             }
         }
 
-        // Batch update event store for better performance
-        if (processedInfos.Count > 0)
+        // Update outbox for the batch
+        try
         {
-            try
+            if (successIds.Count > 0)
             {
-                await eventStore.MarkAsProcessedAsync(processedInfos, cancellationToken).ConfigureAwait(false);
+                await outbox.CompleteAsync(successIds, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception exception)
+            if (failures.Count > 0)
             {
-                LogEventStoreBatchUpdateFailed(_logger, processedInfos.Count, exception);
-                errorCount += processedInfos.Count(p => p.ErrorMessage == null);
+                await outbox.FailAsync(failures, cancellationToken).ConfigureAwait(false);
             }
+        }
+        catch (Exception exception)
+        {
+            LogOutboxBatchUpdateFailed(_logger, successIds.Count + failures.Count, exception);
+            // All would be retried later when lease expires; count successful publishes as errors
+            errorCount += successIds.Count;
         }
 
         return new BatchProcessingResult(processedCount, errorCount);
     }
 
-    /// <summary>
-    /// Handles scheduler-level exceptions with circuit breaker logic.
-    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void HandleSchedulerException(Exception exception)
     {
         _consecutiveFailures++;
@@ -489,18 +462,12 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         CalculateBackoffDelay();
     }
 
-    /// <summary>
-    /// Handles background service exceptions with exponential backoff.
-    /// </summary>
     private void HandleBackgroundException(Exception exception)
     {
         LogBackgroundServiceError(_logger, exception);
         HandleSchedulerException(exception);
     }
 
-    /// <summary>
-    /// Handles partial failures where some events succeeded.
-    /// </summary>
     private void HandlePartialFailure(int errorCount)
     {
         if (errorCount > _options.BatchSize * 0.5) // More than 50% failed
@@ -510,9 +477,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         }
     }
 
-    /// <summary>
-    /// Handles successful execution, resetting failure counters.
-    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void HandleCircuitBreakerSuccess()
     {
@@ -531,16 +495,10 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         }
     }
 
-    /// <summary>
-    /// Determines if the circuit breaker should attempt to reset.
-    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ShouldAttemptCircuitBreakerReset() =>
         DateTime.UtcNow - _circuitBreakerLastFailureTimeProvider() >= _options.CircuitBreakerTimeout;
 
-    /// <summary>
-    /// Calculates exponential backoff delay using cryptographically secure random jitter.
-    /// </summary>
     private void CalculateBackoffDelay()
     {
         if (_consecutiveFailures == 0)
@@ -553,36 +511,25 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         var maxDelay = TimeSpan.FromMilliseconds(_options.BackoffMaxDelayMs);
 
         var exponentialDelay = TimeSpan.FromTicks(baseDelay.Ticks * (1L << Math.Min(_consecutiveFailures - 1, 20)));
-
         var jitterMs = GenerateSecureRandomJitter((int)baseDelay.TotalMilliseconds);
         var jitter = TimeSpan.FromMilliseconds(jitterMs);
-
         var calculatedDelay = TimeSpan.FromTicks(Math.Min(exponentialDelay.Ticks + jitter.Ticks, maxDelay.Ticks));
 
         _currentBackoffDelayProvider = () => calculatedDelay;
-
         LogBackoffApplied(_logger, calculatedDelay.TotalMilliseconds, _consecutiveFailures, null);
     }
 
-    /// <summary>
-    /// Generates cryptographically secure random jitter for backoff calculations.
-    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int GenerateSecureRandomJitter(int maxValue)
     {
         if (maxValue <= 0) return 0;
-
         using var rng = RandomNumberGenerator.Create();
-        var bytes = new byte[4];
+        Span<byte> bytes = stackalloc byte[4];
         rng.GetBytes(bytes);
-        var randomValue = BitConverter.ToUInt32(bytes, 0);
-
+        var randomValue = BitConverter.ToUInt32(bytes);
         return (int)(randomValue % (uint)maxValue);
     }
 
-    /// <summary>
-    /// Resets backoff delay after successful execution.
-    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ResetBackoffDelay()
     {
@@ -593,9 +540,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         }
     }
 
-    /// <summary>
-    /// Applies exponential backoff delay.
-    /// </summary>
     private async Task ApplyExponentialBackoffAsync(CancellationToken cancellationToken)
     {
         var currentBackoffDelay = _currentBackoffDelayProvider();
@@ -606,9 +550,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         }
     }
 
-    /// <summary>
-    /// Adjusts concurrency limiter when options change.
-    /// </summary>
     private void AdjustConcurrencyLimiter(int oldMaxConcurrency, int newMaxConcurrency)
     {
         if (oldMaxConcurrency == newMaxConcurrency) return;
@@ -631,9 +572,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
         }
     }
 
-    /// <summary>
-    /// Updates performance metrics.
-    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateMetrics(int processedCount, int errorCount, TimeSpan elapsed) =>
         _metrics.UpdateMetrics(processedCount, errorCount, elapsed);
@@ -642,7 +580,6 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
     #region Disposal
 
-    /// <inheritdoc />
     public override void Dispose()
     {
         _optionsMonitor?.Dispose();
@@ -657,24 +594,15 @@ internal sealed class Scheduler : BackgroundService, IScheduler
 
     #region Supporting Types
 
-    /// <summary>
-    /// Represents the state of the circuit breaker.
-    /// </summary>
     private enum CircuitBreakerState
     {
-        Closed,   // Normal operation
-        Open,     // Circuit breaker tripped, blocking requests
-        HalfOpen  // Testing if the circuit can be closed
+        Closed,
+        Open,
+        HalfOpen
     }
 
-    /// <summary>
-    /// Result of batch processing operation.
-    /// </summary>
     private readonly record struct BatchProcessingResult(int ProcessedCount, int ErrorCount);
 
-    /// <summary>
-    /// Tracks scheduler performance metrics using thread-safe operations.
-    /// </summary>
     private sealed class SchedulerMetrics
     {
         private long _totalProcessedEvents;

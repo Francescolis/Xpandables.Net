@@ -29,9 +29,14 @@ public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfigur
     {
         base.Configure(builder);
 
-        _ = builder.HasIndex(e => new { e.KeyId, e.AggregateId, e.Name, e.StreamVersion });
         _ = builder.Property(e => e.AggregateId).IsRequired();
         _ = builder.Property(e => e.StreamVersion).IsRequired();
         _ = builder.Property(e => e.AggregateName).IsRequired().HasMaxLength(short.MaxValue / 8);
+
+        // Optimistic concurrency at DB level: one event per (AggregateId, StreamVersion)
+        _ = builder.HasIndex(e => new { e.AggregateId, e.StreamVersion }).IsUnique();
+
+        // Helpful filter/index for stream queries
+        _ = builder.HasIndex(e => e.AggregateId);
     }
 }

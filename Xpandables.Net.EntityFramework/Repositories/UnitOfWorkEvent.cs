@@ -29,8 +29,15 @@ public class UnitOfWorkEvent(DataContext context, IServiceProvider serviceProvid
 {
     /// <inheritdoc />
     public IEventStore GetEventStore<TEventStore>()
-        where TEventStore : class, IEventStore =>
-        GetRepository<TEventStore>();
+        where TEventStore : class, IEventStore
+    {
+        var eventStore = ServiceProvider.GetService(typeof(TEventStore)) as TEventStore
+        ?? throw new InvalidOperationException($"The event store of type '{typeof(TEventStore)}' is not registered.");
+
+        DataContextExtensions.InjectAmbientContext(eventStore, Context);
+
+        return eventStore;
+    }
 }
 
 /// <summary>

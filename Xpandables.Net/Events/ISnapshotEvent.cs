@@ -33,6 +33,13 @@ public interface ISnapshotEvent : IEvent
     /// Gets the owner of the snapshot event.
     /// </summary>
     Guid OwnerId { get; }
+
+    /// <summary>
+    /// Associates the specified owner identifier with the snapshot event.
+    /// </summary>
+    /// <param name="ownerId">The unique identifier of the owner to associate with the snapshot event.</param>
+    /// <returns>An updated <see cref="ISnapshotEvent"/> instance with the specified owner identifier.</returns>
+    ISnapshotEvent WithOwnerId(Guid ownerId);
 }
 
 /// <summary>
@@ -45,4 +52,7 @@ public sealed record SnapshotEvent : Event, ISnapshotEvent
 
     /// <inheritdoc />
     public required Guid OwnerId { get; init; }
+
+    /// <inheritdoc />
+    public ISnapshotEvent WithOwnerId(Guid ownerId) => this with { OwnerId = ownerId };
 }

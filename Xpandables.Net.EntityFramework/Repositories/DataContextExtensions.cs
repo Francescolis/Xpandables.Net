@@ -28,7 +28,7 @@ namespace Xpandables.Net.Repositories;
 public static class DataContextExtensions
 {
     internal static void InjectAmbientContext<TRepository>(TRepository repository, object context)
-         where TRepository : class, IRepository
+         where TRepository : class
     {
         var repositoryType = repository.GetType();
 

@@ -41,12 +41,16 @@ public static class ServiceCollectionMediatorExtensions
             .GetMethod(nameof(AddXEventHandler))!;
 
     /// <summary>
-    /// Adds a mediator of type <typeparamref name="TMediator" /> to
-    /// the <see cref="IServiceCollection" />.
+    /// Registers the specified mediator implementation and its associated pipeline decorators  into the service
+    /// collection.
     /// </summary>
-    /// <typeparam name="TMediator">The type of the mediator to add.</typeparam>
-    /// <param name="services">The service collection to add the mediator to.</param>
-    /// <returns>The updated service collection.</returns>
+    /// <remarks>This method registers the specified mediator type as a scoped service and adds a series of 
+    /// pipeline decorators to enhance the mediator's behavior. These decorators include exception handling, 
+    /// validation, unit of work management, dependency injection, and pre- and post-processing capabilities.</remarks>
+    /// <typeparam name="TMediator">The type of the mediator implementation to register. This type must implement the  <see cref="IMediator"/>
+    /// interface.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the mediator and pipeline decorators will be added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance, allowing for further chaining of service registrations.</returns>
     public static IServiceCollection AddXMediator<TMediator>(
         this IServiceCollection services)
         where TMediator : class, IMediator =>
@@ -55,7 +59,33 @@ public static class ServiceCollectionMediatorExtensions
             .AddXPipelineExceptionDecorator()
             .AddXPipelineValidationDecorator()
             .AddXPipelineUnitOfWorkDecorator()
+            .AddXPipelineDependencyDecorator()
+            .AddXPipelinePreDecorator()
+            .AddXPipelinePostDecorator()
+            .AddXPipelineRequestHandler()
+            .AddXDependencyManager();
+
+    /// <summary>
+    /// Adds the specified mediator implementation and configures the pipeline with event sourcing and additional
+    /// decorators.
+    /// </summary>
+    /// <remarks>This method registers the specified mediator implementation as a scoped service and
+    /// configures the mediator pipeline  with a series of decorators, including exception handling, validation, unit of
+    /// work, domain events, integration events,  and dependency management. These decorators enhance the mediator's
+    /// behavior by adding cross-cutting concerns and  event sourcing capabilities.</remarks>
+    /// <typeparam name="TMediator">The type of the mediator implementation to register. This type must implement <see cref="IMediator"/>.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the mediator and pipeline components will be added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance, allowing for further configuration chaining.</returns>
+    public static IServiceCollection AddXMediatorWithEventSourcing<TMediator>(
+        this IServiceCollection services)
+        where TMediator : class, IMediator =>
+        services
+            .AddScoped<IMediator, TMediator>()
+            .AddXPipelineExceptionDecorator()
+            .AddXPipelineValidationDecorator()
+            .AddXPipelineIntegrationOutboxDecorator()
             .AddXPipelineUnitOfWorkEventDecorator()
+            .AddXPipelineUnitOfWorkDecorator()
             .AddXPipelineDomainEventsDecorator()
             .AddXPipelineDependencyDecorator()
             .AddXPipelinePreDecorator()
@@ -64,13 +94,27 @@ public static class ServiceCollectionMediatorExtensions
             .AddXDependencyManager();
 
     /// <summary>
-    /// Adds a defaults mediator and pipeline request handler to the <see cref="IServiceCollection" />.
+    /// Adds the default implementation of the XMediator library to the specified service collection.
     /// </summary>
-    /// <param name="services">The service collection to add the mediator to.</param>
-    /// <returns>The updated service collection.</returns>
+    /// <remarks>This method registers the default <see cref="Mediator"/> implementation with the dependency
+    /// injection container. It is intended to be used in application startup to configure XMediator services.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the XMediator services will be added.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance, allowing for method chaining.</returns>
     public static IServiceCollection AddXMediator(
         this IServiceCollection services) =>
         services.AddXMediator<Mediator>();
+
+    /// <summary>
+    /// Adds Mediator with event sourcing capabilities to the specified service collection.
+    /// </summary>
+    /// <remarks>This method registers the default implementation of XMediator with event sourcing support. It
+    /// is an extension method for <see cref="IServiceCollection"/> and is typically called during application startup
+    /// to configure dependency injection.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the XMediator services will be added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXMediatorWithEventSourcing(
+        this IServiceCollection services) =>
+        services.AddXMediatorWithEventSourcing<Mediator>();
 
     /// <summary>
     /// Registers a pipeline request handler of the specified type to the
@@ -242,6 +286,18 @@ public static class ServiceCollectionMediatorExtensions
         this IServiceCollection services) =>
         services.AddXPipelineDecorator(typeof(PipelineDomainEventsDecorator<>))
         .AddScoped<IPendingDomainEvents, PendingDomainEvents>();
+
+    /// <summary>
+    /// Adds the XPipeline integration events decorator to the service collection.
+    /// </summary>
+    /// <remarks>This method registers the <c>PipelineIntegrationOutboxDecorator&lt;&gt;</c> as a pipeline
+    /// decorator  and adds the <see cref="IPendingIntegrationEvents"/> service implementation.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the decorator and related services are added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXPipelineIntegrationOutboxDecorator(
+        this IServiceCollection services) =>
+        services.AddXPipelineDecorator(typeof(PipelineIntegrationOutboxDecorator<>))
+        .AddScoped<IPendingIntegrationEvents, PendingIntegrationEvents>();
 
     /// <summary>
     /// Adds a post pipeline decorator to the <see cref="IServiceCollection" />.

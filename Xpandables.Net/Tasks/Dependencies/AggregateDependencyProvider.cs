@@ -48,7 +48,7 @@ public sealed class AggregateDependencyProvider(IServiceProvider serviceProvider
             .GetRequiredService(aggregateStoreType);
 
         return await aggregateStore
-            .ResolveAsync((Guid)request.DependencyKeyId, cancellationToken)
+            .LoadAsync((Guid)request.DependencyKeyId, cancellationToken)
             .ConfigureAwait(false);
     }
 }

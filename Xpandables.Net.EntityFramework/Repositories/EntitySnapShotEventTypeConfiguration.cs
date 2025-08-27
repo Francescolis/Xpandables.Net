@@ -29,6 +29,10 @@ public sealed class EntitySnapShotEventTypeConfiguration : EntityEventTypeConfig
     {
         base.Configure(builder);
 
-        _ = builder.HasIndex(e => new { e.KeyId, e.OwnerId, e.Name, e.Sequence });
+        _ = builder.Property(e => e.OwnerId).IsRequired();
+
+        // Fast lookup of latest snapshot per aggregate (OwnerId + Sequence)
+        _ = builder.HasIndex(e => new { e.OwnerId, e.Sequence });
+        _ = builder.HasIndex(e => e.OwnerId);
     }
 }

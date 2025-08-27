@@ -18,7 +18,7 @@ public sealed class WithdrawAccountCommandHandler(
         account.Withdraw(command.Amount);
 
         await aggregateStore
-            .AppendAsync(account, cancellationToken)
+            .SaveAsync(account, cancellationToken)
             .ConfigureAwait(false);
 
         return ExecutionResult.Success();

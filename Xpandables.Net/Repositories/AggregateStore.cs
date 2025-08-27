@@ -16,7 +16,6 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Data;
 
 using Xpandables.Net.Events;
 
@@ -26,111 +25,65 @@ namespace Xpandables.Net.Repositories;
 /// Represents a store for managing aggregate by providing methods to append and resolve aggregates.
 /// This class is designed for use with event sourcing and domain-driven design concepts.
 /// </summary>
-/// <typeparam name="TAggregate">
-/// The type of the aggregate, which must inherit from <see cref="Aggregate"/> and have a parameterless constructor.
-/// </typeparam>
+/// <typeparam name="TAggregate"></typeparam>
+/// <param name="eventStore"></param>
+/// <param name="domainEvents"></param>
 public sealed class AggregateStore<TAggregate>(
-    IUnitOfWorkEvent unitOfWork,
-    IPendingDomainEvents pendingDomainEvents) :
-    IAggregateStore<TAggregate>
-    where TAggregate : Aggregate, new()
+    IEventStore eventStore,
+    IPendingDomainEvents domainEvents) : IAggregateStore<TAggregate>
+    where TAggregate : class, IAggregate, new()
 {
-    private readonly IPendingDomainEvents _pendingDomainEvents = pendingDomainEvents;
-    private readonly IEventStore _eventStore = unitOfWork.GetEventStore<IEventStore>();
+    private readonly IEventStore _eventStore = eventStore;
 
     /// <inheritdoc />
-    public async Task AppendAsync(
+    public async Task<TAggregate> LoadAsync(
+        Guid aggregateId,
+        CancellationToken cancellationToken = default)
+    {
+        var aggregate = new TAggregate();
+
+        var history = await _eventStore
+            .ReadStreamAsync(aggregateId, 0, int.MaxValue, cancellationToken)
+            .Select(e => e.Event)
+            .OfType<IDomainEvent>()
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        aggregate.Replay(history);
+
+        if (aggregate.IsEmpty)
+        {
+            throw new ValidationException(new ValidationResult(
+                "The aggregate was not found.",
+                [nameof(aggregateId)]), null, aggregateId);
+        }
+
+        return aggregate;
+    }
+
+    /// <inheritdoc />
+    public async Task SaveAsync(
         TAggregate aggregate,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            IReadOnlyCollection<IDomainEvent> uncommittedEvents =
-                aggregate.GetUncommittedEvents();
+        ArgumentNullException.ThrowIfNull(aggregate);
 
-            if (uncommittedEvents.Count == 0)
-            {
-                return;
-            }
+        var pending = aggregate.DequeueUncommittedEvents();
+        if (pending.Count == 0) return;
 
-            await CheckConcurrencyAsync(aggregate, cancellationToken).ConfigureAwait(false);
+        // The aggregate.StreamVersion has already been advanced by pending.Count.
+        // expectedVersion must reflect the persisted version before those events.
+        var expectedVersion = aggregate.StreamVersion - pending.Count;
 
-            await _eventStore
-                .AppendAsync(uncommittedEvents, cancellationToken)
-                .ConfigureAwait(false);
-
-            _pendingDomainEvents.AddRange(uncommittedEvents, aggregate.MarkEventsAsCommitted);
-        }
-        catch (Exception exception)
-            when (exception is not ValidationException and not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "Unable to append the object. See inner exception for details.",
-                exception);
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task<TAggregate> ResolveAsync(
-        Guid keyId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            string aggregateTypeName = typeof(TAggregate).FullName!;
-
-            Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> domainFilterFunc = query =>
-                query.Where(w => w.AggregateId == keyId && w.AggregateName == aggregateTypeName)
-                    .OrderBy(o => o.StreamVersion);
-
-            TAggregate aggregate = new();
-
-            await foreach (IDomainEvent @event in _eventStore
-                .FetchAsync(domainFilterFunc, cancellationToken)
-                .AsEventsPagedAsync(cancellationToken)
-                .OfType<IDomainEvent>()
-                .OrderBy(x => x.StreamVersion)
-                .ConfigureAwait(false))
-            {
-                aggregate.LoadFromHistory(@event);
-            }
-
-            if (aggregate.IsEmpty)
-            {
-                throw new ValidationException(new ValidationResult(
-                    "The entity was not found.",
-                    [nameof(keyId)]), null, keyId);
-            }
-
-            return aggregate;
-        }
-        catch (Exception exception)
-            when (exception is not ValidationException and not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "Unable to peek the entity. See inner exception for details.",
-                exception);
-        }
-    }
-
-    private async Task CheckConcurrencyAsync(TAggregate aggregate, CancellationToken cancellationToken)
-    {
-        string aggregateTypeName = typeof(TAggregate).FullName!;
-
-        var lastEvent = await _eventStore
-            .FetchAsync<EntityDomainEvent, EntityDomainEvent>(query =>
-                query.Where(e => e.AggregateId == aggregate.KeyId && e.AggregateName == aggregateTypeName)
-                    .OrderByDescending(e => e.StreamVersion)
-                    .Take(1), cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken)
+        _ = await _eventStore
+            .AppendToStreamAsync(
+                aggregate.KeyId,
+                typeof(TAggregate).FullName ?? typeof(TAggregate).Name,
+                expectedVersion,
+                pending,
+                cancellationToken)
             .ConfigureAwait(false);
 
-        if ((lastEvent?.StreamVersion ?? 0) + 1 != aggregate.ExpectedStreamVersion)
-        {
-            throw new DBConcurrencyException(
-                $"Concurrency conflict for aggregate {aggregate.KeyId}. " +
-                $"Expected version: {aggregate.ExpectedStreamVersion}, " +
-                $"Actual version: {lastEvent?.StreamVersion ?? -1}");
-        }
+        domainEvents.AddRange(pending, aggregate.MarkEventsAsCommitted);
     }
 }

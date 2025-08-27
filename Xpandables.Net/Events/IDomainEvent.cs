@@ -78,6 +78,13 @@ public interface IDomainEvent : IEvent
     IDomainEvent WithAggregateId(Guid aggregateId);
 
     /// <summary>
+    /// Associates the specified aggregate name with the domain event.
+    /// </summary>
+    /// <param name="aggregateName">The name of the aggregate to associate with the domain event. Cannot be null or empty.</param>
+    /// <returns>A new <see cref="IDomainEvent"/> instance with the specified aggregate name.</returns>
+    IDomainEvent WithAggregateName(string aggregateName);
+
+    /// <summary>
     /// Sets the causation identifier of the event.
     /// </summary>
     /// <param name="causationId">The causation identifier to set.</param>
@@ -127,6 +134,13 @@ public interface IDomainEvent<TAggregate> : IDomainEvent
     new IDomainEvent<TAggregate> WithAggregateId(Guid aggregateId);
 
     /// <summary>
+    /// Associates the specified aggregate name with the domain event.
+    /// </summary>
+    /// <param name="aggregateName">The name of the aggregate to associate with the domain event. Cannot be null or empty.</param>
+    /// <returns>A new instance of <see cref="IDomainEvent{TAggregate}"/> with the specified aggregate name.</returns>
+    new IDomainEvent<TAggregate> WithAggregateName(string aggregateName);
+
+    /// <summary>
     /// Sets the causation identifier of the event.
     /// </summary>
     /// <param name="causationId">The causation identifier to set.</param>
@@ -156,6 +170,9 @@ public interface IDomainEvent<TAggregate> : IDomainEvent
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     IDomainEvent IDomainEvent.WithAggregateId(Guid aggregateId) => WithAggregateId(aggregateId);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    IDomainEvent IDomainEvent.WithAggregateName(string aggregateName) => WithAggregateName(aggregateName);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     IDomainEvent IDomainEvent.WithCausation(Guid causationId) => WithCausation(causationId);
@@ -199,6 +216,10 @@ public abstract record DomainEvent : Event, IDomainEvent
     /// <inheritdoc />
     public virtual IDomainEvent WithAggregateId(Guid aggregateId) =>
         this with { AggregateId = aggregateId };
+
+    /// <inheritdoc />
+    public virtual IDomainEvent WithAggregateName(string aggregateName) =>
+        this with { AggregateName = aggregateName };
 
     /// <inheritdoc />
     public virtual IDomainEvent WithCausation(Guid causationId) =>
@@ -277,6 +298,10 @@ public abstract record DomainEvent<TAggregate> : Event, IDomainEvent<TAggregate>
     /// <inheritdoc />
     public virtual IDomainEvent<TAggregate> WithAggregateId(Guid aggregateId) =>
         this with { AggregateId = aggregateId };
+
+    /// <inheritdoc />
+    public virtual IDomainEvent<TAggregate> WithAggregateName(string aggregateName) =>
+        this with { AggregateName = aggregateName };
 
     /// <inheritdoc />
     public virtual IDomainEvent<TAggregate> WithCausation(Guid causationId) =>
