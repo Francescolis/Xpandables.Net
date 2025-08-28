@@ -75,7 +75,7 @@ public class Repository<TDataContext>(TDataContext context) : RepositoryBase<TDa
 
         var filteredQuery = filter(baseQuery);
 
-        return filteredQuery.WithPagination();
+        return filteredQuery.AsAsyncPagedEnumerable();
     }
 
     /// <summary>

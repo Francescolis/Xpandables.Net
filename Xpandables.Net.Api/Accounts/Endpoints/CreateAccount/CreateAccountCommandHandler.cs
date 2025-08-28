@@ -34,8 +34,8 @@ public sealed class CreateAccountPreCommandHandler(IEventStore eventStore) :
             query.Where(w => w.AggregateId == context.Request.KeyId && w.Name == nameof(AccountCreated))
             .Select(s => s.KeyId);
 
-        if (await eventStore.FetchAsync(domainFilterFunc, cancellationToken)
-            .CountAsync(cancellationToken)
+        if (await eventStore.ReadStreamAsync(context.Request.KeyId, cancellationToken: cancellationToken)
+            .CountAsync(c => c.EventType == nameof(AccountCreated), cancellationToken)
             .ConfigureAwait(false) > 0)
         {
             return ExecutionResult

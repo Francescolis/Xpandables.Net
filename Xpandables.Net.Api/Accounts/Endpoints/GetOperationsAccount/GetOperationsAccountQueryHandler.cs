@@ -1,8 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-
-using Xpandables.Net.Api.Accounts.Events;
+﻿using Xpandables.Net.Api.Accounts.Events;
 using Xpandables.Net.Collections;
-using Xpandables.Net.Events;
 using Xpandables.Net.Executions;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Tasks;
@@ -26,41 +23,31 @@ public sealed class GetOperationsAccountQueryHandler(
                 .Skip(0)
                 .Take(2);
 
-        IAsyncPagedEnumerable<IEvent> events = eventStore
-            .FetchAsync(filterFunc, cancellationToken)
-            .AsEventsPagedAsync(cancellationToken);
+        IAsyncPagedEnumerable<OperationAccount> events = eventStore
+            .ReadStreamAsync(request.KeyId, cancellationToken: cancellationToken)
+            .Where(e => e.Event is DepositMade or WithdrawMade)
+            .Select(e => e.Event switch
+            {
+                DepositMade deposit => new OperationAccount
+                {
+                    Id = deposit.Id,
+                    Date = deposit.OccurredOn.DateTime,
+                    Amount = deposit.Amount,
+                    Type = "Deposit"
+                },
+                WithdrawMade withdraw => new OperationAccount
+                {
+                    Id = withdraw.Id,
+                    Date = withdraw.OccurredOn.DateTime,
+                    Amount = withdraw.Amount,
+                    Type = "Withdraw"
+                },
+                _ => throw new InvalidOperationException("Unknown event type.")
+            })
+            .AsAsyncPagedEnumerable();
 
         return ExecutionResult
-            .Ok(GetOperations(events, cancellationToken).WithPagination())
+            .Ok(events)
             .Build();
-
-        static async IAsyncEnumerable<OperationAccount> GetOperations(IAsyncEnumerable<IEvent> events,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            await foreach (IEvent @event in events.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                switch (@event)
-                {
-                    case DepositMade deposit:
-                        yield return new OperationAccount
-                        {
-                            Id = deposit.Id,
-                            Date = deposit.OccurredOn.DateTime,
-                            Amount = deposit.Amount,
-                            Type = "Deposit"
-                        };
-                        break;
-                    case WithdrawMade withdraw:
-                        yield return new OperationAccount
-                        {
-                            Id = withdraw.Id,
-                            Date = withdraw.OccurredOn.DateTime,
-                            Amount = withdraw.Amount,
-                            Type = "Withdraw"
-                        };
-                        break;
-                }
-            }
-        }
     }
 }

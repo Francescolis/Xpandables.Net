@@ -69,7 +69,7 @@ public sealed class RestResponseStreamComposer<TRestRequest> : IRestResponseComp
             dynamic asyncResult = stream.DeserializeAsyncEnumerableAsync(itemType, options, cancellationToken);
             var asyncPagedResult = AsyncPagedEnumerableExtensions.IsAsyncPagedEnumerable(asyncResult)
                 ? asyncResult
-                : AsyncPagedEnumerableExtensions.WithPagination(asyncResult);
+                : AsyncPagedEnumerableExtensions.AsAsyncPagedEnumerable(asyncResult);
 
             return new RestResponse
             {

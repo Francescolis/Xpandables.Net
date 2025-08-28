@@ -13,7 +13,7 @@ public sealed class GetBalanceAccountQueryHandler(
         CancellationToken cancellationToken)
     {
         Account account = await aggregateStore
-            .ResolveAsync(query.KeyId, cancellationToken)
+            .LoadAsync(query.KeyId, cancellationToken)
             .ConfigureAwait(false);
 
         return ExecutionResult.Success(account.CurrentState.Balance);

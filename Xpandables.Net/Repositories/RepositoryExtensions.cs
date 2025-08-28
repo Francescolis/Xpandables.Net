@@ -275,7 +275,7 @@ public static class RepositoryExtensions
 
         return source
             .AsEventsAsync(cancellationToken)
-            .WithPagination();
+            .AsAsyncPagedEnumerable();
     }
 
     /// <summary>

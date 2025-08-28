@@ -150,7 +150,7 @@ public class InMemoryEventStore : RepositoryBase, IEventStore, IIntegrationOutbo
         if (cancellationToken.IsCancellationRequested)
         {
             return AsyncEnumerable.Empty<TResult>()
-                .WithPagination();
+                .AsAsyncPagedEnumerable();
         }
 
         IQueryable<TEntity> integrations = _eventEntities
@@ -159,7 +159,7 @@ public class InMemoryEventStore : RepositoryBase, IEventStore, IIntegrationOutbo
             .AsQueryable();
 
         var filteredQuery = filter(integrations);
-        return filteredQuery.WithPagination();
+        return filteredQuery.AsAsyncPagedEnumerable();
     }
 
     public Task MarkAsProcessedAsync(

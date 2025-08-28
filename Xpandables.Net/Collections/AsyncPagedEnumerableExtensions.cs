@@ -58,7 +58,7 @@ public static partial class AsyncPagedEnumerableExtensions
     /// <exception cref="NotSupportedException">Thrown if <paramref name="alwaysCount"/> is <see langword="true"/> and <paramref name="source"/> is a plain <see
     /// cref="IAsyncEnumerable{T}"/>.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
+    public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
         this IAsyncEnumerable<TSource> source, bool alwaysCount = false)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -85,8 +85,8 @@ public static partial class AsyncPagedEnumerableExtensions
     /// <typeparam name="TSource">The type of the elements in the queryable data source.</typeparam>
     /// <param name="source">The queryable data source to paginate. Cannot be <see langword="null"/>.</param>
     /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that allows asynchronous enumeration of the paginated data.</returns>
-    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
-        this IQueryable<TSource> source) => WithPagination(source, alwaysCount: false);
+    public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
+        this IQueryable<TSource> source) => AsPagedAsyncEnumerable(source, alwaysCount: false);
 
     /// <summary>
     /// Enables pagination for an <see cref="IQueryable{T}"/> source, optionally including a total count of items.
@@ -105,7 +105,7 @@ public static partial class AsyncPagedEnumerableExtensions
     /// <see langword="false"/>, the total count is omitted unless pagination is explicitly present in the query.</param>
     /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that represents the paginated query. The enumerable includes
     /// pagination metadata such as the total count of items and the applied skip/take values, if applicable.</returns>
-    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
+    public static IAsyncPagedEnumerable<TSource> AsPagedAsyncEnumerable<TSource>(
         this IQueryable<TSource> source, bool alwaysCount)
     {
         ArgumentNullException.ThrowIfNull(source);

@@ -56,7 +56,7 @@ public abstract class RepositoryBase : AsyncDisposable, IRepository
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
         where TEntity : class =>
-        AsyncEnumerable.Empty<TResult>().WithPagination();
+        AsyncEnumerable.Empty<TResult>().AsAsyncPagedEnumerable();
 
     /// <summary>
     /// When overridden in derived classes, adds or updates a collection of entities in the data store asynchronously.

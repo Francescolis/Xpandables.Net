@@ -36,17 +36,14 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
                 CancellationToken cancellationToken) =>
             {
                 ExecutionResult result = ExecutionResult.Success(eventStore
-                    .FetchAsync(
-                    (IQueryable<EntityDomainEvent> query) => query
-                        .OrderBy(o => o.Sequence)
-                        .Skip(1)
-                        .Take(10)
-                        .Select(a => new
-                        {
-                            a.AggregateId,
-                            a.AggregateName,
-                            a.Name
-                        }), cancellationToken));
+                    .ReadAllAsync(cancellationToken: cancellationToken)
+                    .Select(a => new
+                    {
+                        a.AggregateId,
+                        a.AggregateName,
+                        a.EventType
+                    })
+                    .AsAsyncPagedEnumerable());
 
                 return result;
             })
