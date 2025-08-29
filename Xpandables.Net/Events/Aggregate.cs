@@ -45,7 +45,7 @@ public abstract class Aggregate : IAggregate
     public Guid KeyId { get; protected set; } = Guid.Empty;
 
     /// <inheritdoc />
-    public long StreamVersion { get; protected set; }
+    public long StreamVersion { get; protected set; } = -1;
 
     /// <inheritdoc />
     public int BusinessVersion { get; protected set; } = 1;
@@ -99,7 +99,7 @@ public abstract class Aggregate : IAggregate
     public void PushEvent(IDomainEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
-        Apply(domainEvent);
+        PushVersioningEvent(domainEvent);
     }
 
     /// <inheritdoc />

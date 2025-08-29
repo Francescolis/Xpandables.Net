@@ -69,12 +69,12 @@ public sealed class EventStore<TDataContext>(TDataContext context) : AsyncDispos
         {
             next++;
 
-            @event
+            var nextEvent = @event
                 .WithAggregateId(aggregateId)
                 .WithStreamVersion(next)
                 .WithAggregateName(aggregateName);
 
-            var entity = (EntityDomainEvent)converter.ConvertTo(@event, DefaultSerializerOptions.Defaults);
+            var entity = (EntityDomainEvent)converter.ConvertTo(nextEvent, DefaultSerializerOptions.Defaults);
 
             entities.Add(entity);
         }
@@ -89,16 +89,16 @@ public sealed class EventStore<TDataContext>(TDataContext context) : AsyncDispos
     /// <inheritdoc/>
     public async IAsyncEnumerable<EventEnvelope> ReadStreamAsync(
         Guid aggregateId,
-        long fromVersion = 0,
+        long fromVersion = -1,
         int maxCount = int.MaxValue,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(fromVersion);
+        ArgumentOutOfRangeException.ThrowIfLessThan(fromVersion, -1);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
 
         var query = _db.Set<EntityDomainEvent>()
             .AsNoTracking()
-            .Where(e => e.AggregateId == aggregateId && e.StreamVersion > fromVersion)
+            .Where(e => e.AggregateId == aggregateId && e.StreamVersion > fromVersion) // exclusive lower bound
             .OrderBy(e => e.StreamVersion)
             .Take(maxCount);
 
@@ -129,7 +129,7 @@ public sealed class EventStore<TDataContext>(TDataContext context) : AsyncDispos
         ArgumentOutOfRangeException.ThrowIfNegative(fromPosition);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
 
-        var query = _db.Set<EntityEvent>()
+        var query = _db.Set<EntityDomainEvent>()
             .AsNoTracking()
             .Where(e => e.Sequence > fromPosition)
             .OrderBy(e => e.Sequence)

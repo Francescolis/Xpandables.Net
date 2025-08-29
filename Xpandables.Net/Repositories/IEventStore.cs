@@ -46,7 +46,7 @@ public interface IEventStore : IAsyncDisposable
     /// </summary>
     IAsyncEnumerable<EventEnvelope> ReadStreamAsync(
         Guid aggregateId,
-        long fromVersion = 0,
+        long fromVersion = -1,
         int maxCount = int.MaxValue,
         CancellationToken cancellationToken = default);
 

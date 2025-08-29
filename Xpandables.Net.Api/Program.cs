@@ -19,7 +19,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddXEndpointRoutes();
 builder.Services.AddXMinimalApi();
-builder.Services.AddXMediator();
+builder.Services.AddXMediatorWithEventSourcing();
 builder.Services.AddXHandlers(typeof(Account).Assembly);
 builder.Services.AddXAggregateStorePostHandler();
 builder.Services.AddXDependencyProvider<AggregateDependencyProvider>();
@@ -27,6 +27,7 @@ builder.Services.AddXDependencyProvider<AggregateDependencyProvider>();
 builder.Services.AddXUnitOfWorkEvent();
 builder.Services.AddXAggregateStore();
 builder.Services.AddXEventStore();
+builder.Services.AddXOutboxStore();
 builder.Services.AddXDataContextEvent(options =>
     options
        .UseNpgsql(builder.Configuration.GetConnectionString(nameof(DataContextEvent)))

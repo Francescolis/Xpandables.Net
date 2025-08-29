@@ -43,6 +43,7 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
                         a.AggregateName,
                         a.EventType
                     })
+                    .AsAsyncQueryable()
                     .AsAsyncPagedEnumerable());
 
                 return result;

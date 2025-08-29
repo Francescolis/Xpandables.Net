@@ -222,4 +222,19 @@ public static class ServiceCollectionRepositoryExtensions
         services.TryAddScoped<IOutboxStore, OutboxStore<TDataContext>>();
         return services;
     }
+
+    /// <summary>
+    /// Adds the default implementation of <see cref="IOutboxStore"/> to the service collection.
+    /// </summary>
+    /// <remarks>This method registers the <see cref="OutboxStore{T}"/> implementation of <see
+    /// cref="IOutboxStore"/>  with a scoped lifetime. It is intended to be used in applications that require outbox
+    /// pattern support.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the outbox store will be added.</param>
+    /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+    public static IServiceCollection AddXOutboxStore(
+        this IServiceCollection services)
+    {
+        services.TryAddScoped<IOutboxStore, OutboxStore<DataContextEvent>>();
+        return services;
+    }
 }

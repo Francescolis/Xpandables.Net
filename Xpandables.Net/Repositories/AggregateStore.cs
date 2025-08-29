@@ -43,7 +43,7 @@ public sealed class AggregateStore<TAggregate>(
         var aggregate = new TAggregate();
 
         var history = await _eventStore
-            .ReadStreamAsync(aggregateId, 0, int.MaxValue, cancellationToken)
+            .ReadStreamAsync(aggregateId, -1, int.MaxValue, cancellationToken)
             .Select(e => e.Event)
             .OfType<IDomainEvent>()
             .ToListAsync(cancellationToken)

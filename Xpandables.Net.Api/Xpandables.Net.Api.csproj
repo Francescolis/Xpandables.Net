@@ -38,4 +38,8 @@
 		<ProjectReference Include="..\Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Database\" />
+	</ItemGroup>
+
 </Project>
