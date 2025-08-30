@@ -41,106 +41,238 @@ public static partial class AsyncPagedEnumerableExtensions
         source is IAsyncPagedEnumerable<T>;
 
     /// <summary>
-    /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> to enable pagination
-    /// metadata, such as page size and total count.
+    /// Converts an <see cref="IAsyncEnumerable{TSource}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/>  to
+    /// enable asynchronous pagination and optional mapping of elements.
     /// </summary>
-    /// <remarks>If <paramref name="source"/> is already an <see cref="IAsyncPagedEnumerable{T}"/>, it is
-    /// returned as-is. When <paramref name="alwaysCount"/> is <see langword="true"/>, the method throws a <see
-    /// cref="NotSupportedException"/> if the source is a plain <see cref="IAsyncEnumerable{T}"/>, as calculating the
-    /// total count generically requires buffering or double enumeration, which may lead to unexpected memory pressure.
-    /// In such cases, consider using an <see cref="IQueryable{T}"/> source instead.</remarks>
     /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-    /// <param name="source">The asynchronous sequence to convert. Cannot be <see langword="null"/>.</param>
-    /// <param name="alwaysCount">A value indicating whether the total count of items in the sequence should always be calculated. If <see
-    /// langword="true"/>, the method attempts to calculate the total count, which may require buffering or double
-    /// enumeration. Defaults to <see langword="false"/>.</param>
-    /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that wraps the source sequence and provides pagination metadata.</returns>
-    /// <exception cref="NotSupportedException">Thrown if <paramref name="alwaysCount"/> is <see langword="true"/> and <paramref name="source"/> is a plain <see
-    /// cref="IAsyncEnumerable{T}"/>.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
-        this IAsyncEnumerable<TSource> source, bool alwaysCount = false)
+    /// <typeparam name="TResult">The type of the elements in the resulting paged sequence.</typeparam>
+    /// <param name="source">The source sequence to convert. Cannot be <see langword="null"/>.</param>
+    /// <param name="mapper">An optional delegate to map elements of type <typeparamref name="TSource"/> to <typeparamref name="TResult"/>. 
+    /// If <see langword="null"/>, the elements are cast directly to <typeparamref name="TResult"/>.</param>
+    /// <param name="alwaysCount">A value indicating whether the resulting paged enumerable should always include a total count of items.  If <see
+    /// langword="true"/>, the source must support provider-side counting; otherwise, an exception is thrown.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TResult}"/> that provides asynchronous pagination over the source sequence.</returns>
+    /// <exception cref="NotSupportedException">Thrown if <paramref name="alwaysCount"/> is <see langword="true"/> and the source sequence does not support 
+    /// provider-side counting.</exception>
+    public static IAsyncPagedEnumerable<TResult> AsAsyncPagedEnumerable<TSource, TResult>(
+        this IAsyncEnumerable<TSource> source,
+        PagedMap<TSource, TResult>? mapper,
+        bool alwaysCount)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        if (source is IAsyncPagedEnumerable<TSource> paged) return paged;
+        if (source is IAsyncPagedEnumerable<TSource> pagedSource)
+        {
+            return new AsyncPagedEnumerable<TSource, TResult>(
+                pagedSource,
+                ct => new ValueTask<Pagination>(pagedSource.GetPaginationAsync()),
+                mapper);
+        }
 
         if (alwaysCount)
         {
-            // WARNING: Counting a plain IAsyncEnumerable<T> generically requires buffering or double enumeration.
-            // To prevent unexpected memory pressure, we fail fast. Prefer IQueryable<T> or set alwaysCount=false.
+            // Avoid double enumeration/buffering
             throw new NotSupportedException("alwaysCount=true is not supported for plain IAsyncEnumerable<T>. " +
-                "Use IQueryable<T> or leave alwaysCount=false to stream with default metadata.");
-        }
-
-        return new AsyncPagedEnumerable<TSource>(
-            source,
-            static _ => new ValueTask<Pagination>(Pagination.Without()),
-            buffer: null);
-    }
-
-    /// <summary>
-    /// Enables asynchronous pagination over an <see cref="IAsyncQueryable{T}"/> source.
-    /// Treated as a streaming async sequence without total count computation.
-    /// </summary>
-    /// <typeparam name="TSource">The element type.</typeparam>
-    /// <param name="source">Async queryable source. Cannot be null.</param>
-    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> with minimal pagination metadata.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
-        this IAsyncQueryable<TSource> source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        // IAsyncQueryable<T> should be asynchronously enumerable
-        if (source is not IAsyncEnumerable<TSource> asyncEnumerable)
-        {
-            throw new NotSupportedException(
-                "The provided IAsyncQueryable<T> does not implement IAsyncEnumerable<T>. " +
-                "Convert to an async sequence first or use IQueryable<T> overloads.");
-        }
-
-        // No counting here to avoid buffering/double enumeration.
-        return new AsyncPagedEnumerable<TSource>(
-            asyncEnumerable,
-            static _ => new ValueTask<Pagination>(Pagination.Without()),
-            buffer: null);
-    }
-
-    /// <summary>
-    /// Enables asynchronous pagination over an <see cref="IAsyncQueryable{T}"/> source.
-    /// When alwaysCount is true, throws to avoid generic double enumeration on unknown providers.
-    /// </summary>
-    /// <typeparam name="TSource">The element type.</typeparam>
-    /// <param name="source">Async queryable source. Cannot be null.</param>
-    /// <param name="alwaysCount">
-    /// If true, attempts to compute total count. Not supported for IAsyncQueryable to avoid buffering/double enumeration.
-    /// </param>
-    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> with pagination metadata.</returns>
-    public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
-        this IAsyncQueryable<TSource> source, bool alwaysCount)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        if (alwaysCount)
-        {
-            // Symmetric to IAsyncEnumerable<T> behavior: avoid generic counting that may cause buffering.
-            throw new NotSupportedException(
-                "alwaysCount=true is not supported for IAsyncQueryable<T>. " +
                 "Use IQueryable<T> overloads to enable provider-side counting.");
         }
 
-        return AsAsyncPagedEnumerable(source);
+        // Streaming-only pagination metadata
+        return new AsyncPagedEnumerable<TSource, TResult>(
+            source,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            mapper);
     }
 
     /// <summary>
-    /// Enables asynchronous pagination over the elements of the specified queryable data source.
+    /// Converts an <see cref="IAsyncEnumerable{TSource}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/>  to
+    /// enable asynchronous pagination and optional mapping of elements.
     /// </summary>
-    /// <typeparam name="TSource">The type of the elements in the queryable data source.</typeparam>
-    /// <param name="source">The queryable data source to paginate. Cannot be <see langword="null"/>.</param>
-    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that allows asynchronous enumeration of the paginated data.</returns>
-    public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
-        this IQueryable<TSource> source) => AsAsyncPagedEnumerable(source, alwaysCount: true);
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting paged sequence.</typeparam>
+    /// <param name="source">The source sequence to convert. Cannot be <see langword="null"/>.</param>
+    /// <param name="mapper">An optional delegate to map elements of type <typeparamref name="TSource"/> to <typeparamref name="TResult"/>. 
+    /// If <see langword="null"/>, the elements are cast directly to <typeparamref name="TResult"/>.</param>
+    /// <param name="alwaysCount">A value indicating whether the resulting paged enumerable should always include a total count of items.  If <see
+    /// langword="true"/>, the source must support provider-side counting; otherwise, an exception is thrown.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TResult}"/> that provides asynchronous pagination over the source sequence.</returns>
+    /// <exception cref="NotSupportedException">Thrown if <paramref name="alwaysCount"/> is <see langword="true"/> and the source sequence does not support 
+    /// provider-side counting.</exception>
+    public static IAsyncPagedEnumerable<TResult> AsAsyncPagedEnumerable<TSource, TResult>(
+        this IAsyncEnumerable<TSource> source,
+        Func<TSource, TResult>? mapper,
+        bool alwaysCount)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        if (source is IAsyncPagedEnumerable<TSource> pagedSource)
+        {
+            return new AsyncPagedEnumerable<TSource, TResult>(
+                pagedSource,
+                ct => new ValueTask<Pagination>(pagedSource.GetPaginationAsync()),
+                mapper);
+        }
+
+        if (alwaysCount)
+        {
+            // Avoid double enumeration/buffering
+            throw new NotSupportedException("alwaysCount=true is not supported for plain IAsyncEnumerable<T>. " +
+                "Use IQueryable<T> overloads to enable provider-side counting.");
+        }
+
+        // Streaming-only pagination metadata
+        return new AsyncPagedEnumerable<TSource, TResult>(
+            source,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            mapper);
+    }
+
+    /// <summary>
+    /// Converts the specified <see cref="IQueryable{T}"/> into an asynchronous paged enumerable, optionally applying a
+    /// custom mapping function and supporting pagination metadata.
+    /// </summary>
+    /// <remarks>This method supports scenarios where paginated data needs to be processed asynchronously,
+    /// such as when working with large datasets or remote data sources. If pagination parameters (e.g., skip and take)
+    /// are detected in the source query, the method optimizes the query to include total count projection in a single
+    /// round trip, if supported by the underlying provider.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source query.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting paged enumerable.</typeparam>
+    /// <param name="source">The source query to convert. This parameter cannot be <see langword="null"/>.</param>
+    /// <param name="mapper">An optional mapping function to transform elements of type <typeparamref name="TSource"/> into elements of type
+    /// <typeparamref name="TResult"/>. If <see langword="null"/>, the default mapping is used.</param>
+    /// <param name="alwaysCount">A value indicating whether the total count of items should always be calculated, even if pagination parameters
+    /// (e.g., skip and take) are not specified. The default value is <see langword="true"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that provides asynchronous enumeration of the paged results, along
+    /// with pagination metadata.</returns>
+    public static IAsyncPagedEnumerable<TResult> AsAsyncPagedEnumerable<TSource, TResult>(
+        this IQueryable<TSource> source,
+        PagedMap<TSource, TResult>? mapper,
+        bool alwaysCount = true)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var extraction = ExtractPagination(source);
+        var skip = extraction.Skip;
+        var take = extraction.Take;
+        var unpaginated = extraction.QueryWithoutPagination;
+
+        var asyncEnumerable = source as IAsyncEnumerable<TSource> ?? source.ToAsyncEnumerable();
+
+        // No Skip/Take found
+        if (!skip.HasValue && !take.HasValue)
+        {
+            if (!alwaysCount)
+            {
+                return new AsyncPagedEnumerable<TSource, TResult>(
+                    asyncEnumerable,
+                    static _ => new ValueTask<Pagination>(Pagination.Without()),
+                    mapper);
+            }
+            else
+            {
+                return new AsyncPagedEnumerable<TSource, TResult>(
+                    asyncEnumerable,
+                    async ct =>
+                    {
+                        var total = await ExecuteCountAsync(unpaginated, ct).ConfigureAwait(false);
+                        return Pagination.Without(total);
+                    },
+                    mapper);
+            }
+        }
+
+        // With Skip/Take: project total in a single round trip if supported
+        var projected = ProjectWithTotal(source, unpaginated);
+
+        IAsyncEnumerable<PrimedResult<TSource>> projectedAsync =
+            projected as IAsyncEnumerable<PrimedResult<TSource>>
+            ?? projected.ToAsyncEnumerable();
+
+        // Reuse optimized primed enumerable to avoid buffering and keep single trip semantics.
+        var primed = new AsyncPagedPrimedEnumerable<TSource>(
+            projectedAsync,
+            skip,
+            take,
+            fallbackTotalFactory: ct => ExecuteCountAsync(unpaginated, ct));
+
+        return new AsyncPagedEnumerable<TSource, TResult>(
+            primed,
+            ct => new ValueTask<Pagination>(primed.GetPaginationAsync()),
+            mapper);
+    }
+
+    /// <summary>
+    /// Converts the specified <see cref="IQueryable{T}"/> into an asynchronous paged enumerable, optionally applying a
+    /// custom mapping function and supporting pagination metadata.
+    /// </summary>
+    /// <remarks>This method supports scenarios where paginated data needs to be processed asynchronously,
+    /// such as when working with large datasets or remote data sources. If pagination parameters (e.g., skip and take)
+    /// are detected in the source query, the method optimizes the query to include total count projection in a single
+    /// round trip, if supported by the underlying provider.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source query.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting paged enumerable.</typeparam>
+    /// <param name="source">The source query to convert. This parameter cannot be <see langword="null"/>.</param>
+    /// <param name="mapper">An optional mapping function to transform elements of type <typeparamref name="TSource"/> into elements of type
+    /// <typeparamref name="TResult"/>. If <see langword="null"/>, the default mapping is used.</param>
+    /// <param name="alwaysCount">A value indicating whether the total count of items should always be calculated, even if pagination parameters
+    /// (e.g., skip and take) are not specified. The default value is <see langword="true"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that provides asynchronous enumeration of the paged results, along
+    /// with pagination metadata.</returns>
+    public static IAsyncPagedEnumerable<TResult> AsAsyncPagedEnumerable<TSource, TResult>(
+        this IQueryable<TSource> source,
+        Func<TSource, TResult>? mapper,
+        bool alwaysCount = true)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var extraction = ExtractPagination(source);
+        var skip = extraction.Skip;
+        var take = extraction.Take;
+        var unpaginated = extraction.QueryWithoutPagination;
+
+        var asyncEnumerable = source as IAsyncEnumerable<TSource> ?? source.ToAsyncEnumerable();
+
+        // No Skip/Take found
+        if (!skip.HasValue && !take.HasValue)
+        {
+            if (!alwaysCount)
+            {
+                return new AsyncPagedEnumerable<TSource, TResult>(
+                    asyncEnumerable,
+                    static _ => new ValueTask<Pagination>(Pagination.Without()),
+                    mapper);
+            }
+            else
+            {
+                return new AsyncPagedEnumerable<TSource, TResult>(
+                    asyncEnumerable,
+                    async ct =>
+                    {
+                        var total = await ExecuteCountAsync(unpaginated, ct).ConfigureAwait(false);
+                        return Pagination.Without(total);
+                    },
+                    mapper);
+            }
+        }
+
+        // With Skip/Take: project total in a single round trip if supported
+        var projected = ProjectWithTotal(source, unpaginated);
+
+        IAsyncEnumerable<PrimedResult<TSource>> projectedAsync =
+            projected as IAsyncEnumerable<PrimedResult<TSource>>
+            ?? projected.ToAsyncEnumerable();
+
+        // Reuse optimized primed enumerable to avoid buffering and keep single trip semantics.
+        var primed = new AsyncPagedPrimedEnumerable<TSource>(
+            projectedAsync,
+            skip,
+            take,
+            fallbackTotalFactory: ct => ExecuteCountAsync(unpaginated, ct));
+
+        return new AsyncPagedEnumerable<TSource, TResult>(
+            primed,
+            ct => new ValueTask<Pagination>(primed.GetPaginationAsync()),
+            mapper);
+    }
 
     /// <summary>
     /// Enables pagination for an <see cref="IQueryable{T}"/> source, optionally including a total count of items.
@@ -160,50 +292,67 @@ public static partial class AsyncPagedEnumerableExtensions
     /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that represents the paginated query. The enumerable includes
     /// pagination metadata such as the total count of items and the applied skip/take values, if applicable.</returns>
     public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
-        this IQueryable<TSource> source, bool alwaysCount)
+        this IQueryable<TSource> source,
+        bool alwaysCount = true)
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        var extraction = ExtractPagination(source);
-        var skip = extraction.Skip;
-        var take = extraction.Take;
-        var unpaginated = extraction.QueryWithoutPagination;
+        return AsAsyncPagedEnumerable(source, (PagedMap<TSource, TSource>?)null, alwaysCount);
+    }
 
-        var asyncEnumerable = source as IAsyncEnumerable<TSource> ?? source.ToAsyncEnumerable();
+    /// <summary>
+    /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> to enable pagination
+    /// metadata, such as page size and total count.
+    /// </summary>
+    /// <remarks>If <paramref name="source"/> is already an <see cref="IAsyncPagedEnumerable{T}"/>, it is
+    /// returned as-is. When <paramref name="alwaysCount"/> is <see langword="true"/>, the method throws a <see
+    /// cref="NotSupportedException"/> if the source is a plain <see cref="IAsyncEnumerable{T}"/>, as calculating the
+    /// total count generically requires buffering or double enumeration, which may lead to unexpected memory pressure.
+    /// In such cases, consider using an <see cref="IQueryable{T}"/> source instead.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to convert. Cannot be <see langword="null"/>.</param>
+    /// <param name="alwaysCount">A value indicating whether the total count of items in the sequence should always be calculated. If <see
+    /// langword="true"/>, the method attempts to calculate the total count, which may require buffering or double
+    /// enumeration. Defaults to <see langword="false"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that wraps the source sequence and provides pagination metadata.</returns>
+    /// <exception cref="NotSupportedException">Thrown if <paramref name="alwaysCount"/> is <see langword="true"/> and <paramref name="source"/> is a plain <see
+    /// cref="IAsyncEnumerable{T}"/>.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
+        this IAsyncEnumerable<TSource> source,
+        bool alwaysCount = false)
+    {
+        ArgumentNullException.ThrowIfNull(source);
 
-        if (!skip.HasValue && !take.HasValue)
+        if (source is IAsyncPagedEnumerable<TSource> paged) return paged;
+
+        return AsAsyncPagedEnumerable(source, (PagedMap<TSource, TSource>?)null, alwaysCount);
+    }
+
+    /// <summary>
+    /// Converts an <see cref="IAsyncQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/>.
+    /// </summary>
+    /// <remarks>This method enables the conversion of an asynchronous queryable sequence to a paged
+    /// enumerable sequence. If the source does not implement <see cref="IAsyncEnumerable{T}"/>, an exception is thrown.
+    /// Ensure that the source sequence supports asynchronous enumeration before calling this method.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous queryable sequence to convert.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that represents the paged asynchronous sequence.</returns>
+    /// <exception cref="NotSupportedException">Thrown if <paramref name="source"/> does not implement <see cref="IAsyncEnumerable{T}"/>.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IAsyncPagedEnumerable<TSource> AsAsyncPagedEnumerable<TSource>(
+        this IAsyncQueryable<TSource> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        if (source is not IAsyncEnumerable<TSource> asyncEnumerable)
         {
-            if (!alwaysCount)
-            {
-                return new AsyncPagedEnumerable<TSource>(
-                    asyncEnumerable,
-                    static _ => new ValueTask<Pagination>(Pagination.Without()),
-                    buffer: null);
-            }
-            else
-            {
-                return new AsyncPagedEnumerable<TSource>(
-                    asyncEnumerable,
-                    async ct =>
-                    {
-                        var total = await ExecuteCountAsync(unpaginated, ct).ConfigureAwait(false);
-                        return Pagination.Without(total);
-                    },
-                    buffer: null);
-            }
+            throw new NotSupportedException(
+                "The provided IAsyncQueryable<T> does not implement IAsyncEnumerable<T>. " +
+                "Convert to an async sequence first or use IQueryable<T> overloads.");
         }
 
-        var projected = ProjectWithTotal(source, unpaginated);
-
-        IAsyncEnumerable<PrimedResult<TSource>> projectedAsync =
-            projected as IAsyncEnumerable<PrimedResult<TSource>>
-            ?? projected.ToAsyncEnumerable();
-
-        return new AsyncPagedPrimedEnumerable<TSource>(
-            projectedAsync,
-            skip,
-            take,
-            fallbackTotalFactory: ct => ExecuteCountAsync(unpaginated, ct));
+        return AsAsyncPagedEnumerable(asyncEnumerable, (PagedMap<TSource, TSource>?)null, alwaysCount: true);
     }
 
     /// <summary>

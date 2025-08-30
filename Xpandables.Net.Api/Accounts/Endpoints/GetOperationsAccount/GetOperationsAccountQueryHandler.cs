@@ -16,13 +16,6 @@ public sealed class GetOperationsAccountQueryHandler(
     {
         await Task.Yield();
 
-        Func<IQueryable<EntityDomainEvent>, IQueryable<EntityDomainEvent>> filterFunc = q =>
-            q.Where(w => w.AggregateId == request.KeyId
-                             && (w.Name == nameof(DepositMade) || w.Name == nameof(WithdrawMade)))
-                .OrderByDescending(o => o.CreatedOn)
-                .Skip(0)
-                .Take(2);
-
         IAsyncPagedEnumerable<OperationAccount> events = eventStore
             .ReadStreamAsync(request.KeyId, cancellationToken: cancellationToken)
             .Where(e => e.Event is DepositMade or WithdrawMade)

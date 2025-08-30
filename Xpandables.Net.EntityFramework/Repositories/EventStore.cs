@@ -15,10 +15,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Runtime.CompilerServices;
-
 using Microsoft.EntityFrameworkCore;
 
+using Xpandables.Net.Collections;
 using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
 using Xpandables.Net.Repositories.Converters;
@@ -87,11 +86,11 @@ public sealed class EventStore<TDataContext>(TDataContext context) : AsyncDispos
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<EventEnvelope> ReadStreamAsync(
+    public IAsyncPagedEnumerable<EventEnvelope> ReadStreamAsync(
         Guid aggregateId,
         long fromVersion = -1,
         int maxCount = int.MaxValue,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(fromVersion, -1);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
@@ -102,29 +101,30 @@ public sealed class EventStore<TDataContext>(TDataContext context) : AsyncDispos
             .OrderBy(e => e.StreamVersion)
             .Take(maxCount);
 
-        await foreach (var entity in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
-        {
-            var @event = EventConverter.ConvertFromCached(entity, DefaultSerializerOptions.Defaults);
-            yield return new EventEnvelope
+        return query.AsAsyncPagedEnumerable(
+            entity =>
             {
-                EventId = entity.KeyId,
-                EventType = entity.Name,
-                EventFullName = entity.FullName,
-                OccurredOn = entity.CreatedOn,
-                Event = @event,
-                GlobalPosition = entity.Sequence,
-                AggregateId = entity.AggregateId,
-                AggregateName = entity.AggregateName,
-                StreamVersion = entity.StreamVersion
-            };
-        }
+                var @event = EventConverter.ConvertFromCached(entity, DefaultSerializerOptions.Defaults);
+                return new EventEnvelope
+                {
+                    EventId = entity.KeyId,
+                    EventType = entity.Name,
+                    EventFullName = entity.FullName,
+                    OccurredOn = entity.CreatedOn,
+                    Event = @event,
+                    GlobalPosition = entity.Sequence,
+                    AggregateId = entity.AggregateId,
+                    AggregateName = entity.AggregateName,
+                    StreamVersion = entity.StreamVersion
+                };
+            });
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<EventEnvelope> ReadAllAsync(
+    public IAsyncPagedEnumerable<EventEnvelope> ReadAllAsync(
         long fromPosition = 0,
         int maxCount = 4096,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(fromPosition);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
@@ -135,34 +135,23 @@ public sealed class EventStore<TDataContext>(TDataContext context) : AsyncDispos
             .OrderBy(e => e.Sequence)
             .Take(maxCount);
 
-        await foreach (var entity in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
-        {
-            var @event = EventConverter.ConvertFromCached(entity, DefaultSerializerOptions.Defaults);
-
-            Guid? aggregateId = null;
-            string? aggregateName = null;
-            long? streamVersion = null;
-
-            if (entity is EntityDomainEvent de)
+        return query.AsAsyncPagedEnumerable(
+            entity =>
             {
-                aggregateId = de.AggregateId;
-                aggregateName = de.AggregateName;
-                streamVersion = de.StreamVersion;
-            }
-
-            yield return new EventEnvelope
-            {
-                EventId = entity.KeyId,
-                EventType = entity.Name,
-                EventFullName = entity.FullName,
-                OccurredOn = entity.CreatedOn,
-                Event = @event,
-                GlobalPosition = entity.Sequence,
-                AggregateId = aggregateId,
-                AggregateName = aggregateName,
-                StreamVersion = streamVersion
-            };
-        }
+                var @event = EventConverter.ConvertFromCached(entity, DefaultSerializerOptions.Defaults);
+                return new EventEnvelope
+                {
+                    EventId = entity.KeyId,
+                    EventType = entity.Name,
+                    EventFullName = entity.FullName,
+                    OccurredOn = entity.CreatedOn,
+                    Event = @event,
+                    GlobalPosition = entity.Sequence,
+                    AggregateId = entity.AggregateId,
+                    AggregateName = entity.AggregateName,
+                    StreamVersion = entity.StreamVersion
+                };
+            });
     }
 
     /// <inheritdoc/>

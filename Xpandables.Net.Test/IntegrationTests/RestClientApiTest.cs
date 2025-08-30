@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xpandables.Net.Api.Accounts.Endpoints.CreateAccount;
 using Xpandables.Net.Api.Accounts.Endpoints.DepositAccount;
 using Xpandables.Net.Api.Accounts.Endpoints.GetBalanceAccount;
+using Xpandables.Net.Collections;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
@@ -164,11 +165,11 @@ internal sealed class InMemoryEventStore : IEventStore
         }
     }
 
-    public async IAsyncEnumerable<EventEnvelope> ReadStreamAsync(
+    public IAsyncPagedEnumerable<EventEnvelope> ReadStreamAsync(
            Guid aggregateId,
            long fromVersion = -1,
            int maxCount = int.MaxValue,
-           [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+           CancellationToken cancellationToken = default)
     {
         KeyValuePair<Guid, List<(long Version, IDomainEvent Event, DateTimeOffset At)>>? kvp;
         lock (_lock)
@@ -178,33 +179,32 @@ internal sealed class InMemoryEventStore : IEventStore
                 : null;
         }
 
-        if (kvp is null) yield break;
+        if (kvp is null)
+            return AsyncEnumerable.Empty<EventEnvelope>().AsAsyncPagedEnumerable();
 
-        foreach (var (ver, ev, at) in kvp.Value.Value
-                     .Where(i => i.Version > fromVersion) // exclusive lower bound
-                     .OrderBy(i => i.Version)
-                     .Take(maxCount))
-        {
-            yield return new EventEnvelope
+        return kvp.Value.Value
+            .Where(i => i.Version > fromVersion) // exclusive lower bound
+            .OrderBy(i => i.Version)
+            .Take(maxCount)
+            .AsQueryable()
+            .AsAsyncPagedEnumerable(item => new EventEnvelope
             {
-                EventId = ev.Id,
-                EventType = ev.GetType().Name,
-                EventFullName = ev.GetType().FullName!,
-                OccurredOn = at,
-                Event = ev,
+                EventId = item.Event.Id,
+                EventType = item.Event.GetType().Name,
+                EventFullName = item.Event.GetType().FullName!,
+                OccurredOn = item.At,
+                Event = item.Event,
                 GlobalPosition = 0,
                 AggregateId = aggregateId,
-                AggregateName = ev.AggregateName,
-                StreamVersion = ver
-            };
-            await Task.Yield();
-        }
+                AggregateName = item.Event.AggregateName,
+                StreamVersion = item.Version
+            });
     }
 
-    public async IAsyncEnumerable<EventEnvelope> ReadAllAsync(
+    public IAsyncPagedEnumerable<EventEnvelope> ReadAllAsync(
         long fromPosition = 0,
         int maxCount = 4096,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         List<(long Position, IEvent Event, Guid? AggregateId, long? StreamVersion, string? AggregateName, DateTimeOffset At)> items;
         lock (_lock)
@@ -212,9 +212,8 @@ internal sealed class InMemoryEventStore : IEventStore
             items = _global.Where(g => g.Position > fromPosition).OrderBy(g => g.Position).Take(maxCount).ToList();
         }
 
-        foreach (var g in items)
-        {
-            yield return new EventEnvelope
+        return items.AsQueryable()
+            .AsAsyncPagedEnumerable(g => new EventEnvelope
             {
                 EventId = (g.Event as IDomainEvent)?.Id ?? Guid.CreateVersion7(),
                 EventType = g.Event.GetType().Name,
@@ -225,9 +224,7 @@ internal sealed class InMemoryEventStore : IEventStore
                 AggregateId = g.AggregateId,
                 AggregateName = g.AggregateName,
                 StreamVersion = g.StreamVersion
-            };
-            await Task.Yield();
-        }
+            });
     }
 
     public Task<long> GetStreamVersionAsync(Guid aggregateId, CancellationToken cancellationToken = default)

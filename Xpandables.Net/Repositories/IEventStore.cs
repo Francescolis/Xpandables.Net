@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Xpandables.Net.Collections;
 using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Repositories;
@@ -44,7 +45,7 @@ public interface IEventStore : IAsyncDisposable
     /// <summary>
     /// Reads domain events in a specific aggregate stream from a given version.
     /// </summary>
-    IAsyncEnumerable<EventEnvelope> ReadStreamAsync(
+    IAsyncPagedEnumerable<EventEnvelope> ReadStreamAsync(
         Guid aggregateId,
         long fromVersion = -1,
         int maxCount = int.MaxValue,
@@ -53,7 +54,7 @@ public interface IEventStore : IAsyncDisposable
     /// <summary>
     /// Reads all events globally from a given store position (sequence).
     /// </summary>
-    IAsyncEnumerable<EventEnvelope> ReadAllAsync(
+    IAsyncPagedEnumerable<EventEnvelope> ReadAllAsync(
         long fromPosition = 0,
         int maxCount = 4096,
         CancellationToken cancellationToken = default);

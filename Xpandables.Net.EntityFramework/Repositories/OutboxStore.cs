@@ -138,13 +138,13 @@ public sealed class OutboxStore<TDataContext>(TDataContext context) : IOutboxSto
         if (items.Length == 0) return;
 
         var now = DateTime.UtcNow;
-        foreach (var f in items)
+        foreach (var (EventId, Error) in items)
         {
             await _db.Set<EntityIntegrationEvent>()
-                .Where(e => e.KeyId == f.EventId)
+                .Where(e => e.KeyId == EventId)
                 .ExecuteUpdateAsync(updater => updater
                     .SetProperty(e => e.Status, EntityStatus.ONERROR.Value)
-                    .SetProperty(e => e.ErrorMessage, f.Error)
+                    .SetProperty(e => e.ErrorMessage, Error)
                     .SetProperty(e => e.AttemptCount, e => e.AttemptCount + 1)
                     .SetProperty(e => e.NextAttemptOn, e => GetNextAttempt(now, e.AttemptCount + 1))
                     .SetProperty(e => e.ClaimId, (Guid?)null)

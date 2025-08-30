@@ -1,4 +1,6 @@
-﻿using Xpandables.Net.Collections;
+﻿using Microsoft.EntityFrameworkCore;
+
+using Xpandables.Net.Collections;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Executions;
 using Xpandables.Net.Repositories;
@@ -32,18 +34,21 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
 
         app.MapGet("/accounts/asyncEnum",
             (
-                IEventStore eventStore,
+                DataContextEvent eventStore,
                 CancellationToken cancellationToken) =>
             {
                 ExecutionResult result = ExecutionResult.Success(eventStore
-                    .ReadAllAsync(cancellationToken: cancellationToken)
+                    .Domains
+                    .AsNoTracking()
+                    .Skip(0)
+                    .Take(5)
                     .Select(a => new
                     {
                         a.AggregateId,
                         a.AggregateName,
-                        a.EventType
+                        a.Status,
+                        a.Name
                     })
-                    .AsAsyncQueryable()
                     .AsAsyncPagedEnumerable());
 
                 return result;
