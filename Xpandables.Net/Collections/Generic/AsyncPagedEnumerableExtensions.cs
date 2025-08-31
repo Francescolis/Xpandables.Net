@@ -1342,6 +1342,189 @@ public static partial class AsyncPagedEnumerableExtensions
             (Func<TSource, TSource>?)null);
     }
 
+    /// <summary>
+    /// Correlates elements from two asynchronous sequences based on matching keys and produces a result value for each
+    /// match.
+    /// </summary>
+    /// <remarks>This method performs an inner join, meaning that only elements with matching keys in both
+    /// sequences are included in the result. The outer sequence is paged, while the inner sequence is fully
+    /// enumerated.</remarks>
+    /// <typeparam name="TOuter">The type of the elements in the outer sequence.</typeparam>
+    /// <typeparam name="TInner">The type of the elements in the inner sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key used to correlate elements from the two sequences.</typeparam>
+    /// <typeparam name="TResult">The type of the result elements produced by the join operation.</typeparam>
+    /// <param name="outer">The outer asynchronous paged sequence to join.</param>
+    /// <param name="inner">The inner asynchronous sequence to join.</param>
+    /// <param name="outerKeySelector">A function to extract the key from each element of the outer sequence.</param>
+    /// <param name="innerKeySelector">A function to extract the key from each element of the inner sequence.</param>
+    /// <param name="resultSelector">A function to create a result element from two matching elements.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If <see langword="null"/>, the default equality comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <returns>An asynchronous paged sequence of result elements, where each result is produced by the <paramref
+    /// name="resultSelector"/> function applied to matching elements from the outer and inner sequences.</returns>
+    public static IAsyncPagedEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(
+        this IAsyncPagedEnumerable<TOuter> outer,
+        IAsyncEnumerable<TInner> inner,
+        Func<TOuter, TKey> outerKeySelector,
+        Func<TInner, TKey> innerKeySelector,
+        Func<TOuter, TInner, TResult> resultSelector,
+        IEqualityComparer<TKey>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(outer);
+        ArgumentNullException.ThrowIfNull(inner);
+        ArgumentNullException.ThrowIfNull(outerKeySelector);
+        ArgumentNullException.ThrowIfNull(innerKeySelector);
+        ArgumentNullException.ThrowIfNull(resultSelector);
+
+        var iter = JoinIterator(outer, inner, outerKeySelector, innerKeySelector, resultSelector, comparer ?? EqualityComparer<TKey>.Default);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
+    /// Correlates elements from two asynchronous sequences based on matching keys and projects the results into a
+    /// specified form.
+    /// </summary>
+    /// <remarks>This method performs a group join, which means that for each element in the <paramref
+    /// name="outer"/> sequence,  it produces a result that includes the element and all matching elements from the
+    /// <paramref name="inner"/> sequence.  If no elements in the <paramref name="inner"/> sequence match a given
+    /// element in the <paramref name="outer"/> sequence,  the result will include the outer element and an empty
+    /// collection.</remarks>
+    /// <typeparam name="TOuter">The type of the elements in the outer sequence.</typeparam>
+    /// <typeparam name="TInner">The type of the elements in the inner sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key used for matching elements in the outer and inner sequences.</typeparam>
+    /// <typeparam name="TResult">The type of the result elements produced by the projection function.</typeparam>
+    /// <param name="outer">The outer asynchronous sequence to join.</param>
+    /// <param name="inner">The inner asynchronous sequence to join.</param>
+    /// <param name="outerKeySelector">A function to extract the key from each element of the outer sequence.</param>
+    /// <param name="innerKeySelector">A function to extract the key from each element of the inner sequence.</param>
+    /// <param name="resultSelector">A function to create a result element from an element of the outer sequence and a collection of matching
+    /// elements from the inner sequence.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If null, the default equality comparer is used.</param>
+    /// <returns>An asynchronous sequence of result elements, where each result element is produced by the <paramref
+    /// name="resultSelector"/>  function applied to an element of the outer sequence and a collection of matching
+    /// elements from the inner sequence.</returns>
+    public static IAsyncPagedEnumerable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(
+        this IAsyncPagedEnumerable<TOuter> outer,
+        IAsyncEnumerable<TInner> inner,
+        Func<TOuter, TKey> outerKeySelector,
+        Func<TInner, TKey> innerKeySelector,
+        Func<TOuter, IEnumerable<TInner>, TResult> resultSelector,
+        IEqualityComparer<TKey>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(outer);
+        ArgumentNullException.ThrowIfNull(inner);
+        ArgumentNullException.ThrowIfNull(outerKeySelector);
+        ArgumentNullException.ThrowIfNull(innerKeySelector);
+        ArgumentNullException.ThrowIfNull(resultSelector);
+
+        var iter = GroupJoinIterator(outer, inner, outerKeySelector, innerKeySelector, resultSelector, comparer ?? EqualityComparer<TKey>.Default);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
+    /// Reverses the order of the elements in the specified asynchronous paged enumerable.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source enumerable.</typeparam>
+    /// <param name="source">The asynchronous paged enumerable whose elements are to be reversed.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that iterates over the elements of the <paramref name="source"/>
+    /// in reverse order.</returns>
+    public static IAsyncPagedEnumerable<TSource> Reverse<TSource>(
+        this IAsyncPagedEnumerable<TSource> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var iter = ReverseIterator(source);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            ct => source.GetPaginationAsync().AsValueTask(),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Returns a new asynchronous paged enumerable that yields the last <paramref name="count"/> elements from the
+    /// source sequence.
+    /// </summary>
+    /// <remarks>This method does not evaluate the entire source sequence immediately. Instead, it defers
+    /// execution and processes elements lazily as the resulting sequence is enumerated.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source asynchronous paged enumerable to take elements from.</param>
+    /// <param name="count">The number of elements to take from the end of the source sequence. If <paramref name="count"/> is less than or
+    /// equal to 0, the resulting sequence will be empty.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the last <paramref name="count"/> elements from
+    /// the source sequence, or an empty sequence if <paramref name="count"/> is less than or equal to 0.</returns>
+    public static IAsyncPagedEnumerable<TSource> TakeLast<TSource>(
+        this IAsyncPagedEnumerable<TSource> source, int count)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        if (count <= 0)
+        {
+            var empty = EmptyIterator<TSource>();
+            return new AsyncPagedEnumerable<TSource, TSource>(
+                empty,
+                static _ => new ValueTask<Pagination>(Pagination.Without()),
+                (Func<TSource, TSource>?)null);
+        }
+
+        var iter = TakeLastIterator(source, count);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Returns a sequence that skips the specified number of elements from the end of the source sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to process. Cannot be <see langword="null"/>.</param>
+    /// <param name="count">The number of elements to skip from the end of the sequence. If <paramref name="count"/> is less than or equal
+    /// to zero, the original sequence is returned.</param>
+    /// <returns>A sequence that contains the elements of the source sequence except for the specified number of elements at the
+    /// end.</returns>
+    public static IAsyncPagedEnumerable<TSource> SkipLast<TSource>(
+        this IAsyncPagedEnumerable<TSource> source, int count)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        if (count <= 0) return source;
+
+        var iter = SkipLastIterator(source, count);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Splits the elements of the source sequence into chunks of the specified size.
+    /// </summary>
+    /// <remarks>This method processes the source sequence lazily, meaning that chunks are generated on demand
+    /// as the resulting sequence is enumerated. It is suitable for use with large or infinite sequences.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to be divided into chunks. Cannot be <see langword="null"/>.</param>
+    /// <param name="size">The maximum size of each chunk. Must be greater than zero.</param>
+    /// <returns>An asynchronous sequence of arrays, where each array contains up to <paramref name="size"/> elements from the
+    /// source sequence. The last chunk may contain fewer elements if the total number of elements in the source
+    /// sequence is not evenly divisible by <paramref name="size"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource[]> Chunk<TSource>(
+        this IAsyncPagedEnumerable<TSource> source, int size)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(size);
+
+        var iter = ChunkIterator(source, size);
+        return new AsyncPagedEnumerable<TSource[], TSource[]>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource[], TSource[]>)(x => x));
+    }
+
+
     private static async IAsyncEnumerable<TSource> FilterAsync<TSource>(
         IAsyncEnumerable<TSource> source,
         Func<TSource, bool> predicate,
@@ -1949,6 +2132,145 @@ public static partial class AsyncPagedEnumerableExtensions
             var key = keySelector(item);
             if (!rightKeys.Contains(key) && yieldedKeys.Add(key)) yield return item;
         }
+    }
+
+    private static async IAsyncEnumerable<TResult> JoinIterator<TOuter, TInner, TKey, TResult>(
+        IAsyncEnumerable<TOuter> outer,
+        IAsyncEnumerable<TInner> inner,
+        Func<TOuter, TKey> outerKeySelector,
+        Func<TInner, TKey> innerKeySelector,
+        Func<TOuter, TInner, TResult> resultSelector,
+        IEqualityComparer<TKey> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var lookup = new Dictionary<TKey, List<TInner>>(comparer);
+        await foreach (var i in inner.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            var key = innerKeySelector(i)!;
+            if (!lookup.TryGetValue(key, out var list))
+            {
+                list = [];
+                lookup[key] = list;
+            }
+            list.Add(i);
+        }
+
+        await foreach (var o in outer.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            var key = outerKeySelector(o)!;
+            if (lookup.TryGetValue(key, out var matches))
+            {
+                foreach (var i in matches)
+                {
+                    yield return resultSelector(o, i);
+                }
+            }
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> GroupJoinIterator<TOuter, TInner, TKey, TResult>(
+        IAsyncEnumerable<TOuter> outer,
+        IAsyncEnumerable<TInner> inner,
+        Func<TOuter, TKey> outerKeySelector,
+        Func<TInner, TKey> innerKeySelector,
+        Func<TOuter, IEnumerable<TInner>, TResult> resultSelector,
+        IEqualityComparer<TKey> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var lookup = new Dictionary<TKey, List<TInner>>(comparer);
+        await foreach (var i in inner.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            var key = innerKeySelector(i)!;
+            if (!lookup.TryGetValue(key, out var list))
+            {
+                list = [];
+                lookup[key] = list;
+            }
+            list.Add(i);
+        }
+
+        await foreach (var o in outer.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            var key = outerKeySelector(o)!;
+            lookup.TryGetValue(key, out var matches);
+            yield return resultSelector(o, matches ?? (IEnumerable<TInner>)Array.Empty<TInner>());
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> ReverseIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var buffer = new List<TSource>();
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            buffer.Add(item);
+        }
+        for (int i = buffer.Count - 1; i >= 0; i--)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return buffer[i];
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> TakeLastIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        int count,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var queue = new Queue<TSource>(count);
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (queue.Count == count) queue.Dequeue();
+            queue.Enqueue(item);
+        }
+        while (queue.Count > 0)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return queue.Dequeue();
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> SkipLastIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        int count,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var queue = new Queue<TSource>(count + 1);
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            queue.Enqueue(item);
+            if (queue.Count > count)
+            {
+                yield return queue.Dequeue();
+            }
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource[]> ChunkIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        int size,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var chunk = new List<TSource>(size);
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            chunk.Add(item);
+            if (chunk.Count == size)
+            {
+                yield return chunk.ToArray();
+                chunk.Clear();
+            }
+        }
+        if (chunk.Count > 0) yield return chunk.ToArray();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
