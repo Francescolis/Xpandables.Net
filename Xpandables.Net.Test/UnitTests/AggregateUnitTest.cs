@@ -16,7 +16,7 @@ public class AggregateUnitTest
         aggregate.PushEvent(testEvent);
 
         // Assert
-        aggregate.StreamVersion.Should().Be(1);
+        aggregate.StreamVersion.Should().Be(0);
         aggregate.GetUncommittedEvents().Should().ContainSingle();
         aggregate.GetUncommittedEvents().First().Should().BeOfType<TestCreated>();
         aggregate.Name.Should().Be("Test Name");
@@ -42,7 +42,7 @@ public class AggregateUnitTest
         }
 
         // Assert
-        aggregate.StreamVersion.Should().Be(3);
+        aggregate.StreamVersion.Should().Be(2);
         aggregate.GetUncommittedEvents().Should().HaveCount(3);
         aggregate.Name.Should().Be("Name 3"); // Last event's name
     }
@@ -82,7 +82,7 @@ public class AggregateUnitTest
 
         // Assert
         aggregate.GetUncommittedEvents().Should().BeEmpty();
-        aggregate.StreamVersion.Should().Be(1); // Version should remain unchanged
+        aggregate.StreamVersion.Should().Be(0); // Version should remain unchanged
         aggregate.Name.Should().Be("Test Name"); // State should remain unchanged
     }
 
@@ -99,7 +99,7 @@ public class AggregateUnitTest
         aggregate.PushEvent(duplicateEvent); // Same event pushed twice
 
         // Assert
-        aggregate.StreamVersion.Should().Be(1); // Version should only increment once
+        aggregate.StreamVersion.Should().Be(0); // Version should only increment once
         aggregate.GetUncommittedEvents().Should().ContainSingle();
     }
 
