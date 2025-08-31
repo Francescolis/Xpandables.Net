@@ -67,6 +67,116 @@ public static partial class AsyncPagedEnumerableExtensions
     }
 
     /// <summary>
+    /// Projects each element of a paged asynchronous sequence to an <see cref="IEnumerable{T}"/>  and flattens the
+    /// resulting sequences into a single paged asynchronous sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source sequence to project and flatten. Cannot be <see langword="null"/>.</param>
+    /// <param name="collectionSelector">A function to apply to each element of the source sequence to produce an <see cref="IEnumerable{T}"/>  of
+    /// results. Cannot be <see langword="null"/>.</param>
+    /// <returns>A paged asynchronous sequence whose elements are the result of invoking the  <paramref
+    /// name="collectionSelector"/> function on each element of the source sequence  and flattening the resulting
+    /// sequences.</returns>
+    public static IAsyncPagedEnumerable<TResult> SelectMany<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, IEnumerable<TResult>> collectionSelector)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(collectionSelector);
+
+        var iter = SelectManyIterator(source, collectionSelector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
+    /// Projects each element of a paged asynchronous sequence to an enumerable collection, flattens the resulting
+    /// sequences into a single sequence, and invokes a result selector function on each element.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TCollection">The type of the elements in the intermediate collections.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source sequence to project and flatten. Cannot be <see langword="null"/>.</param>
+    /// <param name="collectionSelector">A function to project each element of the source sequence into an enumerable collection. Cannot be <see
+    /// langword="null"/>.</param>
+    /// <param name="resultSelector">A function to create a result element from an element of the source sequence and an element of the intermediate
+    /// collection. Cannot be <see langword="null"/>.</param>
+    /// <returns>A paged asynchronous sequence whose elements are the result of invoking the result selector function on each
+    /// element of the source sequence and each element of the intermediate collections.</returns>
+    public static IAsyncPagedEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, IEnumerable<TCollection>> collectionSelector,
+        Func<TSource, TCollection, TResult> resultSelector)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(collectionSelector);
+        ArgumentNullException.ThrowIfNull(resultSelector);
+
+        var iter = SelectManyIterator(source, collectionSelector, resultSelector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
+    /// Projects each element of a paged asynchronous sequence to an asynchronous sequence and flattens the resulting
+    /// sequences into a single paged asynchronous sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source sequence to project and flatten. Cannot be <see langword="null"/>.</param>
+    /// <param name="collectionSelector">A function to apply to each element of the source sequence to produce an asynchronous sequence.  Cannot be <see
+    /// langword="null"/>.</param>
+    /// <returns>A paged asynchronous sequence whose elements are the result of invoking the projection function on each element
+    /// of the source sequence and flattening the resulting sequences.</returns>
+    public static IAsyncPagedEnumerable<TResult> SelectMany<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, IAsyncEnumerable<TResult>> collectionSelector)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(collectionSelector);
+
+        var iter = SelectManyAsyncIterator(source, collectionSelector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
+    /// Projects each element of a sequence to an asynchronous collection and flattens the resulting sequences into a
+    /// single sequence, optionally transforming the elements using a specified result selector.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TCollection">The type of the elements in the intermediate asynchronous collections.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source sequence to project and flatten.</param>
+    /// <param name="collectionSelector">A function to map each element of the source sequence to an asynchronous collection.</param>
+    /// <param name="resultSelector">A function to create a result element from an element of the source sequence and an element of the intermediate
+    /// collection.</param>
+    /// <returns>An asynchronous paged enumerable that contains the flattened and optionally transformed elements of the
+    /// intermediate collections.</returns>
+    public static IAsyncPagedEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, IAsyncEnumerable<TCollection>> collectionSelector,
+        Func<TSource, TCollection, TResult> resultSelector)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(collectionSelector);
+        ArgumentNullException.ThrowIfNull(resultSelector);
+
+        var iter = SelectManyAsyncIterator(source, collectionSelector, resultSelector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
     /// Projects each element of an asynchronous paged sequence into a new form by applying an asynchronous transform
     /// function.
     /// </summary>
@@ -966,6 +1076,271 @@ public static partial class AsyncPagedEnumerableExtensions
             (Func<TSource, TSource>?)null);
     }
 
+    /// <summary>
+    /// Combines two asynchronous sequences by applying a specified function to corresponding elements.
+    /// </summary>
+    /// <remarks>The sequences are combined element by element. If one sequence is longer than the other, the
+    /// resulting sequence  will end when the shorter sequence is exhausted. The <paramref name="resultSelector"/>
+    /// function is invoked  for each pair of elements, and its result is included in the output sequence.</remarks>
+    /// <typeparam name="TFirst">The type of elements in the first sequence.</typeparam>
+    /// <typeparam name="TSecond">The type of elements in the second sequence.</typeparam>
+    /// <typeparam name="TResult">The type of elements in the resulting sequence.</typeparam>
+    /// <param name="first">The first asynchronous paged sequence to combine.</param>
+    /// <param name="second">The second asynchronous sequence to combine.</param>
+    /// <param name="resultSelector">A function that specifies how to combine elements from the two sequences.</param>
+    /// <returns>An asynchronous paged sequence of elements, where each element is the result of invoking  <paramref
+    /// name="resultSelector"/> on corresponding elements from <paramref name="first"/> and <paramref name="second"/>.</returns>
+    public static IAsyncPagedEnumerable<TResult> Zip<TFirst, TSecond, TResult>(
+        this IAsyncPagedEnumerable<TFirst> first,
+        IAsyncEnumerable<TSecond> second,
+        Func<TFirst, TSecond, TResult> resultSelector)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+        ArgumentNullException.ThrowIfNull(resultSelector);
+
+        var iter = ZipIterator(first, second, resultSelector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
+    /// Combines two asynchronous sequences by applying a specified asynchronous function to corresponding elements.
+    /// </summary>
+    /// <remarks>The sequences are combined in a pairwise manner. If one sequence is shorter than the other,
+    /// the resulting  sequence will end when the shorter sequence is exhausted. The <paramref name="resultSelector"/>
+    /// function  is invoked asynchronously for each pair of elements.</remarks>
+    /// <typeparam name="TFirst">The type of elements in the first sequence.</typeparam>
+    /// <typeparam name="TSecond">The type of elements in the second sequence.</typeparam>
+    /// <typeparam name="TResult">The type of elements in the resulting sequence.</typeparam>
+    /// <param name="first">The first asynchronous paged sequence to combine.</param>
+    /// <param name="second">The second asynchronous sequence to combine.</param>
+    /// <param name="resultSelector">A function that takes an element from the first sequence and an element from the second sequence  and returns a
+    /// <see cref="ValueTask{TResult}"/> representing the result of combining the two elements.</param>
+    /// <returns>An asynchronous paged sequence of <typeparamref name="TResult"/> elements, where each element is the result  of
+    /// invoking <paramref name="resultSelector"/> on corresponding elements from the two input sequences.</returns>
+    public static IAsyncPagedEnumerable<TResult> ZipAwait<TFirst, TSecond, TResult>(
+        this IAsyncPagedEnumerable<TFirst> first,
+        IAsyncEnumerable<TSecond> second,
+        Func<TFirst, TSecond, ValueTask<TResult>> resultSelector)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+        ArgumentNullException.ThrowIfNull(resultSelector);
+
+        var iter = ZipAsyncIterator(first, second, resultSelector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
+    /// Produces the set union of two asynchronous sequences, using an optional equality comparer to determine equality.
+    /// </summary>
+    /// <remarks>The resulting sequence contains no duplicate elements. The order of elements in the resulting
+    /// sequence is not guaranteed.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the input sequences.</typeparam>
+    /// <param name="first">The first asynchronous sequence to union.</param>
+    /// <param name="second">The second asynchronous sequence to union.</param>
+    /// <param name="comparer">An optional equality comparer to compare values. If <see langword="null"/>, the default equality comparer for
+    /// the type <typeparamref name="TSource"/> is used.</param>
+    /// <returns>An asynchronous sequence that contains the distinct elements from both input sequences.</returns>
+    public static IAsyncPagedEnumerable<TSource> Union<TSource>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        IEqualityComparer<TSource>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        var iter = UnionIterator(first, second, comparer ?? EqualityComparer<TSource>.Default);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Produces the set intersection of two asynchronous sequences, returning elements that appear in both sequences.
+    /// </summary>
+    /// <remarks>The resulting sequence is evaluated lazily and does not perform any operations until
+    /// enumerated.  The order of elements in the resulting sequence is determined by the order in <paramref
+    /// name="first"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the input sequences.</typeparam>
+    /// <param name="first">The first asynchronous sequence to compare.</param>
+    /// <param name="second">The second asynchronous sequence to compare.</param>
+    /// <param name="comparer">An optional equality comparer to use for comparing elements. If <see langword="null"/>, the default equality
+    /// comparer is used.</param>
+    /// <returns>An asynchronous sequence that contains the elements that are present in both <paramref name="first"/> and
+    /// <paramref name="second"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> Intersect<TSource>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        IEqualityComparer<TSource>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        var iter = IntersectIterator(first, second, comparer ?? EqualityComparer<TSource>.Default);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Produces the set difference of two asynchronous sequences, using an optional equality comparer to determine
+    /// element equality.
+    /// </summary>
+    /// <remarks>The operation is performed lazily and does not evaluate the sequences immediately. The
+    /// resulting sequence will exclude all elements from <paramref name="first"/> that are considered equal to any
+    /// element in <paramref name="second"/>, as determined by the specified or default equality comparer.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the input sequences.</typeparam>
+    /// <param name="first">The first asynchronous sequence whose elements that are not in <paramref name="second"/> will be returned.</param>
+    /// <param name="second">The asynchronous sequence whose elements will be excluded from <paramref name="first"/>.</param>
+    /// <param name="comparer">An optional equality comparer to compare elements. If <see langword="null"/>, the default equality comparer for
+    /// <typeparamref name="TSource"/> is used.</param>
+    /// <returns>An asynchronous sequence that contains the elements from <paramref name="first"/> that do not appear in
+    /// <paramref name="second"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> Except<TSource>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        IEqualityComparer<TSource>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        var iter = ExceptIterator(first, second, comparer ?? EqualityComparer<TSource>.Default);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Returns a sequence of elements from the source collection, ensuring that each element is unique based on a
+    /// specified key.
+    /// </summary>
+    /// <remarks>This method ensures that only the first occurrence of each key, as determined by the
+    /// <paramref name="keySelector"/> and <paramref name="comparer"/>, is included in the result. The operation is
+    /// deferred, meaning the filtering is performed as the result sequence is enumerated.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+    /// <typeparam name="TKey">The type of the key used to determine uniqueness.</typeparam>
+    /// <param name="source">The source collection to filter for distinct elements. Cannot be <see langword="null"/>.</param>
+    /// <param name="keySelector">A function to extract the key for each element. Cannot be <see langword="null"/>.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If <see langword="null"/>, the default equality comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains distinct elements from the source collection,
+    /// determined by the specified key.</returns>
+    public static IAsyncPagedEnumerable<TSource> DistinctBy<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var iter = DistinctByIterator(source, keySelector, comparer ?? EqualityComparer<TKey>.Default);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Produces the set union of two asynchronous sequences based on a specified key selector function.
+    /// </summary>
+    /// <remarks>The resulting sequence preserves the order of elements from the <paramref name="first"/>
+    /// sequence, followed by elements from the <paramref name="second"/> sequence that have distinct keys.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the input sequences.</typeparam>
+    /// <typeparam name="TKey">The type of the key used to compare elements.</typeparam>
+    /// <param name="first">The first asynchronous paged sequence to union.</param>
+    /// <param name="second">The second asynchronous sequence to union.</param>
+    /// <param name="keySelector">A function to extract the key for each element. Elements with duplicate keys are excluded from the result.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If <see langword="null"/>, the default equality comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <returns>An asynchronous paged sequence that contains the distinct elements from both input sequences.</returns>
+    public static IAsyncPagedEnumerable<TSource> UnionBy<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var iter = UnionByIterator(first, second, keySelector, comparer ?? EqualityComparer<TKey>.Default);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Produces the set intersection of two asynchronous sequences based on a specified key selector function.
+    /// </summary>
+    /// <remarks>The comparison is performed using the keys extracted by <paramref name="keySelector"/>.  If
+    /// <paramref name="comparer"/> is not provided, the default equality comparer for <typeparamref name="TKey"/> is
+    /// used.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the input sequences.</typeparam>
+    /// <typeparam name="TKey">The type of the key used for comparison.</typeparam>
+    /// <param name="first">The first asynchronous paged sequence to compare.</param>
+    /// <param name="second">The second asynchronous sequence to compare.</param>
+    /// <param name="keySelector">A function to extract the key for each element.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If null, the default equality comparer is used.</param>
+    /// <returns>An asynchronous paged sequence that contains the elements that appear in both input sequences,  based on the
+    /// keys returned by <paramref name="keySelector"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> IntersectBy<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var iter = IntersectByIterator(first, second, keySelector, comparer ?? EqualityComparer<TKey>.Default);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Produces the set difference of two asynchronous sequences based on a specified key selector.
+    /// </summary>
+    /// <remarks>This method uses deferred execution and only begins processing when the resulting sequence is
+    /// enumerated.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the input sequences.</typeparam>
+    /// <typeparam name="TKey">The type of the key used to compare elements.</typeparam>
+    /// <param name="first">The first asynchronous sequence whose elements that are not also in <paramref name="second"/> will be returned.</param>
+    /// <param name="second">The second asynchronous sequence whose elements will be excluded from the result.</param>
+    /// <param name="keySelector">A function to extract the key for each element.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If <see langword="null"/>, the default equality comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <returns>An asynchronous sequence that contains the elements from <paramref name="first"/> that do not have a matching
+    /// key in <paramref name="second"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> ExceptBy<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var iter = ExceptByIterator(first, second, keySelector, comparer ?? EqualityComparer<TKey>.Default);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
 
     private static async IAsyncEnumerable<TSource> FilterAsync<TSource>(
         IAsyncEnumerable<TSource> source,
@@ -1323,6 +1698,257 @@ public static partial class AsyncPagedEnumerableExtensions
             yield return e.Current;
         }
         while (await e.MoveNextAsync().ConfigureAwait(false));
+    }
+
+    private static async IAsyncEnumerable<TResult> SelectManyIterator<TSource, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, IEnumerable<TResult>> collectionSelector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            foreach (var inner in collectionSelector(item))
+            {
+                yield return inner;
+            }
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> SelectManyIterator<TSource, TCollection, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, IEnumerable<TCollection>> collectionSelector,
+        Func<TSource, TCollection, TResult> resultSelector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            foreach (var inner in collectionSelector(item))
+            {
+                yield return resultSelector(item, inner);
+            }
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> SelectManyAsyncIterator<TSource, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, IAsyncEnumerable<TResult>> collectionSelector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            await foreach (var inner in collectionSelector(item).WithCancellation(ct).ConfigureAwait(false))
+            {
+                ct.ThrowIfCancellationRequested();
+                yield return inner;
+            }
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> SelectManyAsyncIterator<TSource, TCollection, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, IAsyncEnumerable<TCollection>> collectionSelector,
+        Func<TSource, TCollection, TResult> resultSelector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            await foreach (var inner in collectionSelector(item).WithCancellation(ct).ConfigureAwait(false))
+            {
+                ct.ThrowIfCancellationRequested();
+                yield return resultSelector(item, inner);
+            }
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> ZipIterator<TFirst, TSecond, TResult>(
+        IAsyncEnumerable<TFirst> first,
+        IAsyncEnumerable<TSecond> second,
+        Func<TFirst, TSecond, TResult> resultSelector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e1 = first.GetAsyncEnumerator(ct);
+        await using var e2 = second.GetAsyncEnumerator(ct);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var m1 = await e1.MoveNextAsync().ConfigureAwait(false);
+            var m2 = await e2.MoveNextAsync().ConfigureAwait(false);
+            if (!m1 || !m2) yield break;
+            yield return resultSelector(e1.Current, e2.Current);
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> ZipAsyncIterator<TFirst, TSecond, TResult>(
+        IAsyncEnumerable<TFirst> first,
+        IAsyncEnumerable<TSecond> second,
+        Func<TFirst, TSecond, ValueTask<TResult>> resultSelector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e1 = first.GetAsyncEnumerator(ct);
+        await using var e2 = second.GetAsyncEnumerator(ct);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var m1 = await e1.MoveNextAsync().ConfigureAwait(false);
+            var m2 = await e2.MoveNextAsync().ConfigureAwait(false);
+            if (!m1 || !m2) yield break;
+            yield return await resultSelector(e1.Current, e2.Current).ConfigureAwait(false);
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> UnionIterator<TSource>(
+        IAsyncEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        IEqualityComparer<TSource> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var set = new HashSet<TSource>(comparer);
+
+        await foreach (var item in first.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (set.Add(item)) yield return item;
+        }
+
+        await foreach (var item in second.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (set.Add(item)) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> IntersectIterator<TSource>(
+        IAsyncEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        IEqualityComparer<TSource> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var set = new HashSet<TSource>(comparer);
+        await foreach (var item in second.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            set.Add(item);
+        }
+
+        var yielded = new HashSet<TSource>(comparer);
+        await foreach (var item in first.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (set.Contains(item) && yielded.Add(item)) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> ExceptIterator<TSource>(
+        IAsyncEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        IEqualityComparer<TSource> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var exclude = new HashSet<TSource>(comparer);
+        await foreach (var s in second.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            exclude.Add(s);
+        }
+
+        var yielded = new HashSet<TSource>(comparer);
+        await foreach (var f in first.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!exclude.Contains(f) && yielded.Add(f)) yield return f;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> DistinctByIterator<TSource, TKey>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var keys = new HashSet<TKey>(comparer);
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (keys.Add(keySelector(item))) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> UnionByIterator<TSource, TKey>(
+        IAsyncEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var keys = new HashSet<TKey>(comparer);
+
+        await foreach (var item in first.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (keys.Add(keySelector(item))) yield return item;
+        }
+
+        await foreach (var item in second.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (keys.Add(keySelector(item))) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> IntersectByIterator<TSource, TKey>(
+        IAsyncEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var rightKeys = new HashSet<TKey>(comparer);
+        await foreach (var item in second.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            rightKeys.Add(keySelector(item));
+        }
+
+        var yieldedKeys = new HashSet<TKey>(comparer);
+        await foreach (var item in first.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            var key = keySelector(item);
+            if (rightKeys.Contains(key) && yieldedKeys.Add(key)) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> ExceptByIterator<TSource, TKey>(
+        IAsyncEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var rightKeys = new HashSet<TKey>(comparer);
+        await foreach (var item in second.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            rightKeys.Add(keySelector(item));
+        }
+
+        var yieldedKeys = new HashSet<TKey>(comparer);
+        await foreach (var item in first.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            var key = keySelector(item);
+            if (!rightKeys.Contains(key) && yieldedKeys.Add(key)) yield return item;
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
