@@ -1369,6 +1369,7 @@ public static partial class AsyncPagedEnumerableExtensions
         Func<TInner, TKey> innerKeySelector,
         Func<TOuter, TInner, TResult> resultSelector,
         IEqualityComparer<TKey>? comparer = null)
+        where TKey : notnull
     {
         ArgumentNullException.ThrowIfNull(outer);
         ArgumentNullException.ThrowIfNull(inner);
@@ -1413,6 +1414,7 @@ public static partial class AsyncPagedEnumerableExtensions
         Func<TInner, TKey> innerKeySelector,
         Func<TOuter, IEnumerable<TInner>, TResult> resultSelector,
         IEqualityComparer<TKey>? comparer = null)
+        where TKey : notnull
     {
         ArgumentNullException.ThrowIfNull(outer);
         ArgumentNullException.ThrowIfNull(inner);
@@ -2142,6 +2144,7 @@ public static partial class AsyncPagedEnumerableExtensions
         Func<TOuter, TInner, TResult> resultSelector,
         IEqualityComparer<TKey> comparer,
         [EnumeratorCancellation] CancellationToken ct = default)
+        where TKey : notnull
     {
         var lookup = new Dictionary<TKey, List<TInner>>(comparer);
         await foreach (var i in inner.WithCancellation(ct).ConfigureAwait(false))
@@ -2178,6 +2181,7 @@ public static partial class AsyncPagedEnumerableExtensions
         Func<TOuter, IEnumerable<TInner>, TResult> resultSelector,
         IEqualityComparer<TKey> comparer,
         [EnumeratorCancellation] CancellationToken ct = default)
+        where TKey : notnull
     {
         var lookup = new Dictionary<TKey, List<TInner>>(comparer);
         await foreach (var i in inner.WithCancellation(ct).ConfigureAwait(false))
@@ -2197,7 +2201,7 @@ public static partial class AsyncPagedEnumerableExtensions
             ct.ThrowIfCancellationRequested();
             var key = outerKeySelector(o)!;
             lookup.TryGetValue(key, out var matches);
-            yield return resultSelector(o, matches ?? (IEnumerable<TInner>)Array.Empty<TInner>());
+            yield return resultSelector(o, matches ?? (IEnumerable<TInner>)[]);
         }
     }
 
