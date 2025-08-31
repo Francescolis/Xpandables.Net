@@ -237,6 +237,265 @@ public static partial class AsyncPagedEnumerableExtensions
             (Func<TSource, TSource>?)null);
     }
 
+    /// <summary>
+    /// Creates a new asynchronous paged enumerable that skips a specified number of elements  and then takes a
+    /// specified number of elements from the source sequence.
+    /// </summary>
+    /// <remarks>This method allows you to create a paged view of an asynchronous sequence by specifying the
+    /// number of elements  to skip and the number of elements to take. The resulting sequence will reflect the
+    /// specified slice, and any  pagination metadata (e.g., total count) will be adjusted accordingly.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to slice. Cannot be <see langword="null"/>.</param>
+    /// <param name="skip">The number of elements to skip before starting to take elements. Must be non-negative.</param>
+    /// <param name="take">The maximum number of elements to take from the source sequence. Must be greater than zero.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that represents the sliced portion of the source sequence. If
+    /// <paramref name="take"/> is less than or equal to zero, an empty sequence is returned.</returns>
+    public static IAsyncPagedEnumerable<TSource> Slice<TSource>(
+        this IAsyncPagedEnumerable<TSource> source, int skip, int take)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        if (take <= 0)
+        {
+            var empty = EmptyIterator<TSource>();
+            return new AsyncPagedEnumerable<TSource, TSource>(
+                empty,
+                async _ =>
+                {
+                    var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                    var newSkip = (p.Skip ?? 0) + Math.Max(0, skip);
+                    return Pagination.With(newSkip, 0, p.TotalCount);
+                },
+                (Func<TSource, TSource>?)null);
+        }
+
+        if (skip <= 0)
+        {
+            return source.Take(take);
+        }
+
+        var iterator = SliceIterator(source, skip, take);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            async _ =>
+            {
+                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var newSkip = (p.Skip ?? 0) + Math.Max(0, skip);
+                var effectiveTake = p.Take.HasValue ? Math.Min(p.Take.Value, take) : take;
+                return Pagination.With(newSkip, effectiveTake, p.TotalCount);
+            },
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Retrieves a specific page of items from the source sequence based on the specified page number and page size.
+    /// </summary>
+    /// <remarks>This method supports asynchronous pagination and provides metadata about the pagination
+    /// state, such as the total number of items in the source sequence, if available. The pagination is zero-based
+    /// internally, but the <paramref name="pageNumber"/> parameter is 1-based for user convenience.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to paginate. Cannot be <see langword="null"/>.</param>
+    /// <param name="pageNumber">The 1-based page number to retrieve. Must be greater than 0.</param>
+    /// <param name="pageSize">The number of items per page. Must be greater than 0.</param>
+    /// <returns>An asynchronous enumerable representing the specified page of items. The enumerable will contain at most
+    /// <paramref name="pageSize"/> items, or fewer if the source sequence does not contain enough items.</returns>
+    public static IAsyncPagedEnumerable<TSource> Page<TSource>(
+        this IAsyncPagedEnumerable<TSource> source, int pageNumber, int pageSize)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageNumber);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
+
+        var skip = (pageNumber - 1) * pageSize;
+        var iterator = SliceIterator(source, skip, pageSize);
+
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            async _ =>
+            {
+                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var newSkip = (p.Skip ?? 0) + skip;
+                var effectiveTake = p.Take.HasValue ? Math.Min(p.Take.Value, pageSize) : pageSize;
+                // Derive page-related hints if total is known
+                var meta = Pagination.With(newSkip, effectiveTake, p.TotalCount);
+                return meta;
+            },
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Filters the elements of an asynchronous paged enumerable based on their type.
+    /// </summary>
+    /// <typeparam name="TResult">The type to filter the elements of the source sequence to.</typeparam>
+    /// <param name="source">The source asynchronous paged enumerable whose elements are to be filtered.</param>
+    /// <returns>An asynchronous paged enumerable that contains elements from the source sequence of type <typeparamref
+    /// name="TResult"/>.</returns>
+    public static IAsyncPagedEnumerable<TResult> OfType<TResult>(
+        this IAsyncPagedEnumerable<object?> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var iterator = OfTypeIterator<object?, TResult>(source);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
+    /// Converts the elements of the specified asynchronous paged enumerable to the specified type.
+    /// </summary>
+    /// <typeparam name="TResult">The type to which the elements of the source enumerable will be cast.</typeparam>
+    /// <param name="source">The asynchronous paged enumerable whose elements are to be cast. Cannot be <see langword="null"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TResult}"/> containing the elements of the source enumerable cast to the
+    /// specified type.</returns>
+    public static IAsyncPagedEnumerable<TResult> Cast<TResult>(
+        this IAsyncPagedEnumerable<object?> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        // For upcasts (TSource -> TResult assignable) we still project, but metadata is preserved.
+        return new AsyncPagedEnumerable<object?, TResult>(
+            source,
+            ct => source.GetPaginationAsync().AsValueTask(),
+            item => (TResult)item!);
+    }
+
+    /// <summary>
+    /// Adds total count information to an asynchronous paged enumerable.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source asynchronous paged enumerable to which total count information will be added.</param>
+    /// <param name="totalFactory">A delegate that asynchronously computes the total count of items in the sequence.  The delegate receives a <see
+    /// cref="CancellationToken"/> to support cancellation.</param>
+    /// <returns>A new asynchronous paged enumerable that includes total count information alongside the original sequence.</returns>
+    public static IAsyncPagedEnumerable<TSource> WithTotal<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<CancellationToken, ValueTask<long>> totalFactory)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(totalFactory);
+
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            source,
+            async ct =>
+            {
+                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var total = await totalFactory(ct).ConfigureAwait(false);
+                return Pagination.With(p.Skip, p.Take, total);
+            },
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Configures the pagination behavior for the asynchronous paged enumerable.
+    /// </summary>
+    /// <remarks>Use with caution as this will override any existing pagination metadata.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source asynchronous paged enumerable to configure.</param>
+    /// <param name="paginationFactory">A factory method that provides pagination settings. The method is invoked with a  <see
+    /// cref="CancellationToken"/> and returns a <see cref="ValueTask{TResult}"/> containing  the pagination
+    /// configuration.</param>
+    /// <returns>A new asynchronous paged enumerable with the specified pagination behavior applied.</returns>
+    public static IAsyncPagedEnumerable<TSource> WithPagination<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<CancellationToken, ValueTask<Pagination>> paginationFactory)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(paginationFactory);
+
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            source,
+            paginationFactory,
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Transforms each element in the asynchronous paged sequence using the specified mapping function.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source asynchronous paged sequence to transform. Cannot be <see langword="null"/>.</param>
+    /// <param name="mapper">A function that maps each element of the source sequence to an element in the resulting sequence. Cannot be <see
+    /// langword="null"/>.</param>
+    /// <returns>An asynchronous paged sequence containing the transformed elements.</returns>
+    public static IAsyncPagedEnumerable<TResult> Map<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TResult> mapper) =>
+        Select(source, mapper);
+
+    /// <summary>
+    /// Projects each element of an asynchronous paged sequence into a new form using the specified asynchronous mapping
+    /// function.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source asynchronous paged sequence to transform.</param>
+    /// <param name="mapper">An asynchronous function to apply to each element of the source sequence.</param>
+    /// <returns>An asynchronous paged sequence whose elements are the result of invoking the specified mapping function on each
+    /// element of the source sequence.</returns>
+    public static IAsyncPagedEnumerable<TResult> MapAwait<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, ValueTask<TResult>> mapper) =>
+        SelectAwait(source, mapper);
+
+    /// <summary>
+    /// Projects each element of an asynchronous paged sequence into a new form using a mapping function that supports
+    /// cancellation.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source asynchronous paged sequence to transform.</param>
+    /// <param name="mapper">A function that maps each element of the source sequence to a new form. The function receives the element and a 
+    /// <see cref="CancellationToken"/> to support cooperative cancellation.</param>
+    /// <returns>An asynchronous paged sequence whose elements are the result of invoking the mapping function on each element of
+    /// the source sequence.</returns>
+    public static IAsyncPagedEnumerable<TResult> MapAwaitWithCancellation<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask<TResult>> mapper) =>
+        SelectAwaitWithCancellation(source, mapper);
+
+    /// <summary>
+    /// Ensures that the specified asynchronous paged enumerable is converted to a <see cref="Pagination"/> object.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the paged enumerable.</typeparam>
+    /// <param name="source">The asynchronous paged enumerable to convert. Cannot be <see langword="null"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="Pagination"/> object
+    /// representing the paged enumerable.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Pagination> EnsurePaginationAsync<T>(
+        this IAsyncPagedEnumerable<T> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        return source.GetPaginationAsync();
+    }
+
+    /// <summary>
+    /// Converts an asynchronous paged enumerable to a single page of items along with pagination metadata.
+    /// </summary>
+    /// <typeparam name="T">The type of items in the paged enumerable.</typeparam>
+    /// <param name="source">The asynchronous paged enumerable to convert. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is a tuple containing: <list type="bullet">
+    /// <item> <description><see cref="IReadOnlyList{T}"/>: The list of items in the current page.</description> </item>
+    /// <item> <description><see cref="Pagination"/>: Metadata about the pagination state.</description> </item> </list></returns>
+    public static async Task<(IReadOnlyList<T> Items, Pagination Pagination)> ToPageAsync<T>(
+        this IAsyncPagedEnumerable<T> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var pagination = await source.GetPaginationAsync().ConfigureAwait(false);
+
+        var list = new List<T>();
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            list.Add(item);
+        }
+
+        return (list, pagination);
+    }
+
     private static async IAsyncEnumerable<TSource> FilterAsync<TSource>(
         IAsyncEnumerable<TSource> source,
         Func<TSource, bool> predicate,
@@ -309,10 +568,49 @@ public static partial class AsyncPagedEnumerableExtensions
     }
 
     private static async IAsyncEnumerable<TSource> EmptyIterator<TSource>(
+#pragma warning disable IDE0060 // Remove unused parameter
         [EnumeratorCancellation] CancellationToken ct = default)
+#pragma warning restore IDE0060 // Remove unused parameter
     {
         await Task.CompletedTask.ConfigureAwait(false);
         yield break;
+    }
+
+    private static async IAsyncEnumerable<TSource> SliceIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        int skip,
+        int take,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        if (take <= 0) yield break;
+
+        var skipped = 0;
+        var remaining = take;
+
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+
+            if (skipped < skip)
+            {
+                skipped++;
+                continue;
+            }
+
+            yield return item;
+            if (--remaining == 0) yield break;
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> OfTypeIterator<TSource, TResult>(
+    IAsyncEnumerable<TSource> source,
+    [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (item is TResult matched) yield return matched;
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
