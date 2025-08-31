@@ -43,6 +43,30 @@ public static partial class AsyncPagedEnumerableExtensions
     }
 
     /// <summary>
+    /// Projects each element of an asynchronous paged sequence into a new form by incorporating the element's index.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The asynchronous paged sequence to transform. Cannot be <see langword="null"/>.</param>
+    /// <param name="selector">A transform function to apply to each element; the second parameter of the function represents the index of the
+    /// element in the source sequence. Cannot be <see langword="null"/>.</param>
+    /// <returns>An asynchronous paged sequence whose elements are the result of invoking the transform function on each element
+    /// of the source sequence.</returns>
+    public static IAsyncPagedEnumerable<TResult> Select<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, int, TResult> selector)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(selector);
+
+        var iterator = SelectIndexIterator(source, selector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iterator,
+            ct => source.GetPaginationAsync().AsValueTask(),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
     /// Projects each element of an asynchronous paged sequence into a new form by applying an asynchronous transform
     /// function.
     /// </summary>
@@ -64,6 +88,30 @@ public static partial class AsyncPagedEnumerableExtensions
             source,
             ct => source.GetPaginationAsync().AsValueTask(),
             (item, _) => selector(item));
+    }
+
+    /// <summary>
+    /// Projects each element of an asynchronous paged sequence into a new form by incorporating the element's index.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source asynchronous paged sequence to project.</param>
+    /// <param name="selector">A transform function to apply to each element and its index. The function receives the element of type 
+    /// <typeparamref name="TSource"/> and its zero-based index, and returns a <see cref="ValueTask{TResult}"/> 
+    /// representing the projected element of type <typeparamref name="TResult"/>.</param>
+    /// <returns>An asynchronous paged sequence of <typeparamref name="TResult"/> containing the projected elements.</returns>
+    public static IAsyncPagedEnumerable<TResult> SelectAwait<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, int, ValueTask<TResult>> selector)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(selector);
+
+        var iterator = SelectIndexIterator(source, selector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iterator,
+            ct => source.GetPaginationAsync().AsValueTask(),
+            (Func<TResult, TResult>?)null);
     }
 
     /// <summary>
@@ -91,6 +139,31 @@ public static partial class AsyncPagedEnumerableExtensions
     }
 
     /// <summary>
+    /// Projects each element of a paged asynchronous sequence into a new form by incorporating the element's index and
+    /// a cancellation token.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements in the resulting sequence.</typeparam>
+    /// <param name="source">The source sequence to transform. Cannot be <see langword="null"/>.</param>
+    /// <param name="selector">A transform function to apply to each element. The function receives the element, its zero-based index, and a
+    /// <see cref="CancellationToken"/>. Cannot be <see langword="null"/>.</param>
+    /// <returns>A paged asynchronous sequence whose elements are the result of invoking the transform function on each element
+    /// of the source sequence.</returns>
+    public static IAsyncPagedEnumerable<TResult> SelectAwaitWithCancellation<TSource, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, int, CancellationToken, ValueTask<TResult>> selector)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(selector);
+
+        var iterator = SelectIndexIterator(source, selector);
+        return new AsyncPagedEnumerable<TResult, TResult>(
+            iterator,
+            ct => source.GetPaginationAsync().AsValueTask(),
+            (Func<TResult, TResult>?)null);
+    }
+
+    /// <summary>
     /// Filters the elements of an asynchronous paged enumerable based on a specified predicate.
     /// </summary>
     /// <typeparam name="TSource">The type of the elements in the source enumerable.</typeparam>
@@ -109,6 +182,29 @@ public static partial class AsyncPagedEnumerableExtensions
         var filtered = FilterAsync(source, predicate);
         return new AsyncPagedEnumerable<TSource, TSource>(
             filtered,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Filters the elements of an asynchronous paged sequence based on a predicate that includes the element's index.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous paged sequence to filter. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element and its index for a condition. The second parameter of the function represents
+    /// the zero-based index of the element in the sequence.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the input sequence that satisfy the
+    /// condition specified by <paramref name="predicate"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> Where<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, int, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = WhereIndexIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
             static _ => new ValueTask<Pagination>(Pagination.Without()),
             (Func<TSource, TSource>?)null);
     }
@@ -133,6 +229,33 @@ public static partial class AsyncPagedEnumerableExtensions
         var filtered = FilterAsync(source, predicate);
         return new AsyncPagedEnumerable<TSource, TSource>(
             filtered,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Filters the elements of an asynchronous paged sequence based on a predicate that incorporates the element's
+    /// index.
+    /// </summary>
+    /// <remarks>The predicate function receives two arguments: the element to test and the zero-based index
+    /// of the element in the source sequence. This method is designed for use with asynchronous paged sequences, where
+    /// elements are processed lazily as pages are enumerated.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous paged sequence to filter. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function that evaluates each element and its index to determine whether it should be included in the result.
+    /// The function returns a <see cref="ValueTask{Boolean}"/> indicating whether the element satisfies the condition.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the input sequence that satisfy the
+    /// condition specified by the predicate.</returns>
+    public static IAsyncPagedEnumerable<TSource> WhereAwait<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, int, ValueTask<bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = WhereIndexIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
             static _ => new ValueTask<Pagination>(Pagination.Without()),
             (Func<TSource, TSource>?)null);
     }
@@ -165,6 +288,34 @@ public static partial class AsyncPagedEnumerableExtensions
             filtered,
             static _ => new ValueTask<Pagination>(Pagination.Without()),
             (Func<TSource, CancellationToken, ValueTask<TSource>>?)null);
+    }
+
+    /// <summary>
+    /// Filters the elements of an asynchronous sequence based on a predicate that incorporates the element's index and
+    /// a cancellation token.
+    /// </summary>
+    /// <remarks>This method allows filtering of elements in an asynchronous sequence based on both their
+    /// value and their index, while also supporting cancellation. The predicate function is invoked asynchronously for
+    /// each element, and the operation respects the provided <see cref="CancellationToken"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to filter. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. The function receives the element, its zero-based index, and a
+    /// <see cref="CancellationToken"/>. The function must return a <see cref="ValueTask{Boolean}"/> indicating whether
+    /// the element should be included in the result.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that contains elements from the input sequence that satisfy the
+    /// condition specified by the <paramref name="predicate"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> WhereAwaitWithCancellation<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, int, CancellationToken, ValueTask<bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = WhereIndexIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
     }
 
     /// <summary>
@@ -496,6 +647,326 @@ public static partial class AsyncPagedEnumerableExtensions
         return (list, pagination);
     }
 
+    /// <summary>
+    /// Returns an asynchronous sequence that includes elements from the source sequence as long as a specified
+    /// condition is true.
+    /// </summary>
+    /// <remarks>The evaluation of the predicate is deferred and performed asynchronously as the sequence is
+    /// enumerated. Once the predicate returns <see langword="false"/> for an element, no further elements are included
+    /// in the resulting sequence.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to evaluate.</param>
+    /// <param name="predicate">A function to test each element for a condition. The sequence will include elements until this function returns
+    /// <see langword="false"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the start of the source sequence
+    /// that satisfy the condition.</returns>
+    public static IAsyncPagedEnumerable<TSource> TakeWhile<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = TakeWhileIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Returns an asynchronous sequence that includes elements from the source sequence  as long as the specified
+    /// asynchronous predicate evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks>The evaluation of the predicate is deferred and performed asynchronously as elements are
+    /// enumerated. Once the predicate returns <see langword="false"/> for an element, no further elements are evaluated
+    /// or included in the result sequence.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to evaluate.</param>
+    /// <param name="predicate">An asynchronous function that determines whether an element should be included in the result sequence. The
+    /// function is invoked for each element in the source sequence and should return <see langword="true"/>  to include
+    /// the element, or <see langword="false"/> to stop processing further elements.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence  up to, but
+    /// not including, the first element for which the predicate returns <see langword="false"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> TakeWhileAwait<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, ValueTask<bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = TakeWhileIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Returns an asynchronous sequence that includes elements from the source sequence  as long as the specified
+    /// asynchronous predicate evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to filter.</param>
+    /// <param name="predicate">An asynchronous function that determines whether an element should be included in the result sequence.  The
+    /// function takes the current element and a <see cref="CancellationToken"/> as parameters and returns  a <see
+    /// cref="ValueTask{Boolean}"/> indicating whether the element satisfies the condition.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence  that
+    /// satisfy the condition defined by the <paramref name="predicate"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> TakeWhileAwaitWithCancellation<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask<bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = TakeWhileIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Bypasses elements in the asynchronous sequence as long as the specified condition is true,  and then returns the
+    /// remaining elements.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to process. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. The method skips elements while this function  returns <see
+    /// langword="true"/> and stops skipping at the first element for which the function  returns <see
+    /// langword="false"/>. Cannot be <see langword="null"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the input sequence  starting at
+    /// the first element that does not satisfy the condition.</returns>
+    public static IAsyncPagedEnumerable<TSource> SkipWhile<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = SkipWhileIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Bypasses elements in the asynchronous sequence as long as the specified predicate evaluates to <see
+    /// langword="true"/>.
+    /// </summary>
+    /// <remarks>The predicate is evaluated asynchronously for each element in the sequence. Once the
+    /// predicate returns <see langword="false"/> for an element, that element and all subsequent elements are included
+    /// in the resulting sequence.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to process. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. The element is skipped while the predicate returns <see
+    /// langword="true"/>. Cannot be <see langword="null"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at
+    /// the first element for which the predicate returns <see langword="false"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> SkipWhileAwait<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, ValueTask<bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = SkipWhileIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Bypasses elements in the sequence as long as the specified asynchronous predicate evaluates to <see
+    /// langword="true"/>.
+    /// </summary>
+    /// <remarks>The predicate is evaluated asynchronously for each element in the sequence until it returns
+    /// <see langword="false"/>.  Once an element is included, all subsequent elements are included regardless of the
+    /// predicate's result.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The sequence of elements to process.</param>
+    /// <param name="predicate">An asynchronous function that determines whether an element should be skipped. The function takes an element of
+    /// the sequence  and a <see cref="CancellationToken"/> as input and returns a <see cref="ValueTask{Boolean}"/>
+    /// indicating whether the element  should be skipped (<see langword="true"/>) or included (<see
+    /// langword="false"/>).</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the input sequence starting at
+    /// the first element  for which the predicate evaluates to <see langword="false"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> SkipWhileAwaitWithCancellation<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask<bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        var iterator = SkipWhileIterator(source, predicate);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Appends a single element to the end of the asynchronous paged sequence.
+    /// </summary>
+    /// <remarks>The resulting sequence will have one additional element compared to the source sequence.  If
+    /// the source sequence has a defined total count, the total count of the resulting sequence will be incremented by
+    /// one.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The source sequence to which the element will be appended. Cannot be <see langword="null"/>.</param>
+    /// <param name="element">The element to append to the sequence.</param>
+    /// <returns>A new asynchronous paged sequence that contains all elements of the source sequence followed by the appended
+    /// element.</returns>
+    public static IAsyncPagedEnumerable<TSource> Append<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        TSource element)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var iterator = AppendIterator(source, element);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            async _ =>
+            {
+                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var total = p.TotalCount >= 0 ? p.TotalCount + 1 : p.TotalCount;
+                return Pagination.With(p.Skip, p.Take, total);
+            },
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Returns a new asynchronous paged enumerable that begins with the specified element,  followed by the elements of
+    /// the source sequence.
+    /// </summary>
+    /// <remarks>The resulting sequence includes <paramref name="element"/> as the first item, followed by the
+    /// items in <paramref name="source"/>. The pagination metadata of the resulting sequence adjusts  the total count
+    /// to account for the prepended element, if the total count is available.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source asynchronous paged enumerable to prepend to. Cannot be <see langword="null"/>.</param>
+    /// <param name="element">The element to prepend to the sequence.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that starts with <paramref name="element"/>  and continues with
+    /// the elements of <paramref name="source"/>.</returns>
+    public static IAsyncPagedEnumerable<TSource> Prepend<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        TSource element)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var iterator = PrependIterator(source, element);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            async _ =>
+            {
+                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var total = p.TotalCount >= 0 ? p.TotalCount + 1 : p.TotalCount;
+                return Pagination.With(p.Skip, p.Take, total);
+            },
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Concatenates two asynchronous sequences into a single asynchronous paged sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the sequences.</typeparam>
+    /// <param name="first">The first asynchronous paged sequence to concatenate. Cannot be <see langword="null"/>.</param>
+    /// <param name="second">The second asynchronous sequence to concatenate. Cannot be <see langword="null"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that represents the concatenation of the two input sequences.</returns>
+    public static IAsyncPagedEnumerable<TSource> Concat<TSource>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        var iterator = ConcatIterator(first, second);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Concatenates two asynchronous paged sequences into a single sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the sequences.</typeparam>
+    /// <param name="first">The first asynchronous paged sequence to concatenate. Cannot be <see langword="null"/>.</param>
+    /// <param name="second">The second asynchronous paged sequence to concatenate. Cannot be <see langword="null"/>.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that represents the concatenation of the two input sequences.</returns>
+    public static IAsyncPagedEnumerable<TSource> Concat<TSource>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncPagedEnumerable<TSource> second)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        var iterator = ConcatIterator(first, second);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+
+    /// <summary>
+    /// Returns a sequence that contains distinct elements from the source sequence, using an optional equality comparer
+    /// to determine uniqueness.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The source sequence to remove duplicate elements from.</param>
+    /// <param name="comparer">An optional equality comparer to compare elements for uniqueness. If <see langword="null"/>, the default
+    /// equality comparer for <typeparamref name="TSource"/> is used.</param>
+    /// <returns>An asynchronous paged enumerable that contains distinct elements from the source sequence.</returns>
+    public static IAsyncPagedEnumerable<TSource> Distinct<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        IEqualityComparer<TSource>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var iterator = DistinctIterator(source, comparer ?? EqualityComparer<TSource>.Default);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Returns the elements of the specified asynchronous sequence, or a single default value  if the sequence is
+    /// empty.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to return elements from, or the default value  if the sequence is empty.</param>
+    /// <returns>An asynchronous sequence that contains the elements from the input sequence, or a single  default value of type
+    /// <typeparamref name="TSource"/> if the input sequence is empty.</returns>
+    public static IAsyncPagedEnumerable<TSource> DefaultIfEmpty<TSource>(
+        this IAsyncPagedEnumerable<TSource> source)
+        => DefaultIfEmpty(source, default!);
+
+    /// <summary>
+    /// Returns the elements of the specified asynchronous paged sequence, or a single element with the specified
+    /// default value if the sequence is empty.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous paged sequence to return elements from.</param>
+    /// <param name="defaultValue">The value to return if the sequence is empty.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the input sequence, or a single
+    /// element with the specified default value if the sequence is empty.</returns>
+    public static IAsyncPagedEnumerable<TSource> DefaultIfEmpty<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        TSource defaultValue)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var iterator = DefaultIfEmptyIterator(source, defaultValue);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iterator,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<TSource, TSource>?)null);
+    }
+
+
     private static async IAsyncEnumerable<TSource> FilterAsync<TSource>(
         IAsyncEnumerable<TSource> source,
         Func<TSource, bool> predicate,
@@ -611,6 +1082,247 @@ public static partial class AsyncPagedEnumerableExtensions
             ct.ThrowIfCancellationRequested();
             if (item is TResult matched) yield return matched;
         }
+    }
+
+    private static async IAsyncEnumerable<TSource> TakeWhileIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!predicate(item)) yield break;
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> TakeWhileIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, ValueTask<bool>> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!await predicate(item).ConfigureAwait(false)) yield break;
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> TakeWhileIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask<bool>> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!await predicate(item, ct).ConfigureAwait(false)) yield break;
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> SkipWhileIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var skipping = true;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (skipping && predicate(item)) continue;
+            skipping = false;
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> SkipWhileIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, ValueTask<bool>> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var skipping = true;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (skipping && await predicate(item).ConfigureAwait(false)) continue;
+            skipping = false;
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> SkipWhileIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask<bool>> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var skipping = true;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (skipping && await predicate(item, ct).ConfigureAwait(false)) continue;
+            skipping = false;
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> AppendIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        TSource element,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return item;
+        }
+        yield return element;
+    }
+
+    private static async IAsyncEnumerable<TSource> PrependIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        TSource element,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        yield return element;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> SelectIndexIterator<TSource, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, int, TResult> selector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var index = -1;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return selector(item, checked(++index));
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> SelectIndexIterator<TSource, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, int, ValueTask<TResult>> selector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var index = -1;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return await selector(item, checked(++index)).ConfigureAwait(false);
+        }
+    }
+
+    private static async IAsyncEnumerable<TResult> SelectIndexIterator<TSource, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, int, CancellationToken, ValueTask<TResult>> selector,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var index = -1;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return await selector(item, checked(++index), ct).ConfigureAwait(false);
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> WhereIndexIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, int, bool> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var index = -1;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (predicate(item, checked(++index))) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> WhereIndexIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, int, ValueTask<bool>> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var index = -1;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (await predicate(item, checked(++index)).ConfigureAwait(false)) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> WhereIndexIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, int, CancellationToken, ValueTask<bool>> predicate,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var index = -1;
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (await predicate(item, checked(++index), ct).ConfigureAwait(false)) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> ConcatIterator<TSource>(
+        IAsyncEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var item in first.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return item;
+        }
+
+        await foreach (var item in second.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> DistinctIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        IEqualityComparer<TSource> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var set = new HashSet<TSource>(comparer);
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (set.Add(item)) yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<TSource> DefaultIfEmptyIterator<TSource>(
+        IAsyncEnumerable<TSource> source,
+        TSource defaultValue,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e = source.GetAsyncEnumerator(ct);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        if (!await e.MoveNextAsync().ConfigureAwait(false))
+        {
+            yield return defaultValue!;
+            yield break;
+        }
+
+        do
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return e.Current;
+        }
+        while (await e.MoveNextAsync().ConfigureAwait(false));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
