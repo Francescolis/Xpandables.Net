@@ -18,16 +18,16 @@ using System.Runtime.CompilerServices;
 
 namespace Xpandables.Net.Collections;
 
-/// <summary>
-/// Delegate used to map a source item to a result item with optional cancellation support.
-/// </summary>
-/// <typeparam name="TSource">Source item type.</typeparam>
-/// <typeparam name="TResult">Result item type.</typeparam>
-/// <param name="item">The source item.</param>
-/// <param name="cancellationToken">A cancellation token.</param>
-/// <returns>The mapped result, potentially asynchronously.</returns>
-public delegate ValueTask<TResult> PagedMap<in TSource, TResult>(
-    TSource item, CancellationToken cancellationToken);
+///// <summary>
+///// Delegate used to map a source item to a result item with optional cancellation support.
+///// </summary>
+///// <typeparam name="TSource">Source item type.</typeparam>
+///// <typeparam name="TResult">Result item type.</typeparam>
+///// <param name="item">The source item.</param>
+///// <param name="cancellationToken">A cancellation token.</param>
+///// <returns>The mapped result, potentially asynchronously.</returns>
+//public delegate ValueTask<TResult> PagedMap<in TSource, TResult>(
+//    TSource item, CancellationToken cancellationToken);
 
 /// <summary>
 /// Represents an asynchronous, paged enumerable over a source sequence with optional mapping to a result sequence.
@@ -44,12 +44,12 @@ public delegate ValueTask<TResult> PagedMap<in TSource, TResult>(
 public sealed class AsyncPagedEnumerable<TSource, TResult>(
     IAsyncEnumerable<TSource> source,
     Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
-    PagedMap<TSource, TResult>? mapper = null,
+    Func<TSource, CancellationToken, ValueTask<TResult>>? mapper = null,
     AsyncPagedEnumerableBuffer<TResult>? buffer = null) : IAsyncPagedEnumerable<TResult>
 {
     private readonly IAsyncEnumerable<TSource> _source = source ?? throw new ArgumentNullException(nameof(source));
     private readonly Func<CancellationToken, ValueTask<Pagination>> _paginationFactory = paginationFactory ?? throw new ArgumentNullException(nameof(paginationFactory));
-    private readonly PagedMap<TSource, TResult> _mapper = mapper ?? GetIdentityMapperOrThrow();
+    private readonly Func<TSource, CancellationToken, ValueTask<TResult>> _mapper = mapper ?? GetIdentityMapperOrThrow();
     private volatile Pagination? _cachedPagination;
     private volatile Task<Pagination>? _paginationTask;
 
@@ -123,11 +123,11 @@ public sealed class AsyncPagedEnumerable<TSource, TResult>(
     private Task<Pagination> EnsurePaginationTask() => _paginationFactory(CancellationToken.None).AsTask();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static PagedMap<TSource, TResult> WrapSyncMapper(Func<TSource, TResult> mapper) =>
+    private static Func<TSource, CancellationToken, ValueTask<TResult>> WrapSyncMapper(Func<TSource, TResult> mapper) =>
         (item, _) => new ValueTask<TResult>(mapper(item));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static PagedMap<TSource, TResult> GetIdentityMapperOrThrow()
+    private static Func<TSource, CancellationToken, ValueTask<TResult>> GetIdentityMapperOrThrow()
     {
         if (typeof(TSource) == typeof(TResult))
         {
@@ -140,7 +140,7 @@ public sealed class AsyncPagedEnumerable<TSource, TResult>(
 
     private static async IAsyncEnumerable<TResult> EnumerateMappedAsync(
         IAsyncEnumerable<TSource> source,
-        PagedMap<TSource, TResult> mapper,
+        Func<TSource, CancellationToken, ValueTask<TResult>> mapper,
         [EnumeratorCancellation] CancellationToken ct)
     {
         await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))

@@ -56,7 +56,7 @@ public static partial class AsyncPagedEnumerableExtensions
     /// provider-side counting.</exception>
     public static IAsyncPagedEnumerable<TResult> AsAsyncPagedEnumerable<TSource, TResult>(
         this IAsyncEnumerable<TSource> source,
-        PagedMap<TSource, TResult>? mapper,
+        Func<TSource, CancellationToken, ValueTask<TResult>>? mapper,
         bool alwaysCount)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -145,7 +145,7 @@ public static partial class AsyncPagedEnumerableExtensions
     /// with pagination metadata.</returns>
     public static IAsyncPagedEnumerable<TResult> AsAsyncPagedEnumerable<TSource, TResult>(
         this IQueryable<TSource> source,
-        PagedMap<TSource, TResult>? mapper,
+        Func<TSource, CancellationToken, ValueTask<TResult>>? mapper,
         bool alwaysCount = true)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -297,7 +297,7 @@ public static partial class AsyncPagedEnumerableExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        return AsAsyncPagedEnumerable(source, (PagedMap<TSource, TSource>?)null, alwaysCount);
+        return AsAsyncPagedEnumerable(source, (Func<TSource, CancellationToken, ValueTask<TSource>>?)null, alwaysCount);
     }
 
     /// <summary>
@@ -326,7 +326,7 @@ public static partial class AsyncPagedEnumerableExtensions
 
         if (source is IAsyncPagedEnumerable<TSource> paged) return paged;
 
-        return AsAsyncPagedEnumerable(source, (PagedMap<TSource, TSource>?)null, alwaysCount);
+        return AsAsyncPagedEnumerable(source, (Func<TSource, CancellationToken, ValueTask<TSource>>?)null, alwaysCount);
     }
 
     /// <summary>
@@ -352,7 +352,7 @@ public static partial class AsyncPagedEnumerableExtensions
                 "Convert to an async sequence first or use IQueryable<T> overloads.");
         }
 
-        return AsAsyncPagedEnumerable(asyncEnumerable, (PagedMap<TSource, TSource>?)null, alwaysCount: true);
+        return AsAsyncPagedEnumerable(asyncEnumerable, (Func<TSource, CancellationToken, ValueTask<TSource>>?)null, alwaysCount: true);
     }
 
     /// <summary>

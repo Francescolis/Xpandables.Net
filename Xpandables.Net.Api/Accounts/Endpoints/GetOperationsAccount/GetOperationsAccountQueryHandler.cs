@@ -36,8 +36,7 @@ public sealed class GetOperationsAccountQueryHandler(
                     Type = "Withdraw"
                 },
                 _ => throw new InvalidOperationException("Unknown event type.")
-            })
-            .AsAsyncPagedEnumerable();
+            });
 
         return ExecutionResult
             .Ok(events)

@@ -52,7 +52,14 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
             .ExecuteAsync(context, executionResult)
             .ConfigureAwait(false);
 
-        Type itemType = executionResult.Value!.GetType().GetGenericArguments()[0];
+        var value = executionResult.Value!;
+        var valueType = value.GetType();
+
+        var asyncPagedType = valueType
+            .GetInterfaces()
+            .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>));
+
+        Type itemType = asyncPagedType.GetGenericArguments()[0];
 
         MethodInfo genericWriteMethod = writeMethod.MakeGenericMethod(itemType);
 
