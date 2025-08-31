@@ -1526,6 +1526,1189 @@ public static partial class AsyncPagedEnumerableExtensions
             (Func<TSource[], TSource[]>)(x => x));
     }
 
+    /// <summary>
+    /// Determines whether the asynchronous sequence contains any elements.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the asynchronous sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to check for elements. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the sequence
+    /// contains at least one element; otherwise, <see langword="false"/>.</returns>
+    public static async Task<bool> AnyAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e = source.GetAsyncEnumerator(cancellationToken);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        return await e.MoveNextAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Determines whether any element in the asynchronous sequence satisfies the specified condition.
+    /// </summary>
+    /// <remarks>The method enumerates the elements of the asynchronous sequence until the predicate returns
+    /// <see langword="true"/> for an element or the sequence is fully enumerated.</remarks>
+    /// <typeparam name="TSource"></typeparam>
+    /// <param name="source">The asynchronous sequence to evaluate. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if any element
+    /// satisfies the condition; otherwise, <see langword="false"/>.</returns>
+    public static async Task<bool> AnyAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (predicate(item)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether any element in the asynchronous sequence satisfies the specified condition.
+    /// </summary>
+    /// <remarks>The method enumerates the source sequence asynchronously and stops as soon as an element
+    /// satisfying the condition is found. If the sequence is empty, the method returns <see
+    /// langword="false"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">An asynchronous sequence of elements to test.</param>
+    /// <param name="predicate">A function to test each element for a condition. The function returns a <see cref="ValueTask{Boolean}"/> that
+    /// evaluates to <see langword="true"/> if the condition is met; otherwise, <see langword="false"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if any element
+    /// satisfies the condition specified by <paramref name="predicate"/>; otherwise, <see langword="false"/>.</returns>
+    public static async Task<bool> AnyAwaitAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, ValueTask<bool>> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (await predicate(item).ConfigureAwait(false)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether any element in the asynchronous sequence satisfies the specified predicate.
+    /// </summary>
+    /// <remarks>The method evaluates the elements of the sequence lazily and stops processing as soon as the
+    /// predicate returns <see langword="true"/> for any element. If the sequence is empty, the method returns <see
+    /// langword="false"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to evaluate. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. The function takes an element of type <typeparamref
+    /// name="TSource"/> and a <see cref="CancellationToken"/> as input and returns a <see cref="ValueTask{Boolean}"/>
+    /// indicating whether the condition is met. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if any element in
+    /// the sequence satisfies the predicate; otherwise, <see langword="false"/>.</returns>
+    public static async Task<bool> AnyAwaitWithCancellationAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask<bool>> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (await predicate(item, cancellationToken).ConfigureAwait(false)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether all elements in the asynchronous sequence satisfy the specified condition.
+    /// </summary>
+    /// <remarks>The evaluation stops as soon as an element that does not satisfy the condition is
+    /// found.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to evaluate. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if all elements in
+    /// the sequence satisfy the condition; otherwise, <see langword="false"/>.</returns>
+    public static async Task<bool> AllAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!predicate(item)) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether all elements in the asynchronous sequence satisfy the specified condition.
+    /// </summary>
+    /// <remarks>The evaluation of the sequence is performed lazily and stops as soon as an element that does
+    /// not satisfy the  condition is found. If the sequence is empty, the method returns <see
+    /// langword="true"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the asynchronous sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to evaluate. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. The function should return a <see cref="ValueTask{Boolean}"/> 
+    /// indicating whether the condition is satisfied. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if all elements  in
+    /// the sequence satisfy the condition; otherwise, <see langword="false"/>. Returns <see langword="true"/> if  the
+    /// sequence is empty.</returns>
+    public static async Task<bool> AllAwaitAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, ValueTask<bool>> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!await predicate(item).ConfigureAwait(false)) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether all elements in the asynchronous sequence satisfy the specified predicate.
+    /// </summary>
+    /// <remarks>The evaluation of the sequence is performed lazily and stops as soon as an element that does
+    /// not satisfy the  predicate is found. The method respects the <paramref name="cancellationToken"/> and will throw
+    /// an  <see cref="OperationCanceledException"/> if cancellation is requested.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to evaluate. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function that defines the condition to check for each element. The function takes an element of the sequence 
+    /// and a <see cref="CancellationToken"/> as input and returns a <see cref="ValueTask{Boolean}"/> indicating whether
+    /// the condition is satisfied. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if all elements in 
+    /// the sequence satisfy the predicate; otherwise, <see langword="false"/>. If the sequence is empty, the result is 
+    /// <see langword="true"/>.</returns>
+    public static async Task<bool> AllAwaitWithCancellationAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask<bool>> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!await predicate(item, cancellationToken).ConfigureAwait(false)) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the first element of a sequence.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to retrieve the first element from.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the first element of the sequence.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the sequence contains no elements.</exception>
+    public static async Task<TSource> FirstAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e = source.GetAsyncEnumerator(cancellationToken);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        if (await e.MoveNextAsync().ConfigureAwait(false))
+            return e.Current;
+
+        throw new InvalidOperationException("Sequence contains no elements.");
+    }
+
+    /// <summary>
+    /// Asynchronously returns the first element of a sequence, or a default value if the sequence contains no elements.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to return the first element from.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the first element of the sequence, 
+    /// or <see langword="default"/> if the sequence contains no elements.</returns>
+    public static async Task<TSource?> FirstOrDefaultAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e = source.GetAsyncEnumerator(cancellationToken);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        return await e.MoveNextAsync().ConfigureAwait(false) ? e.Current : default;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the first element in the sequence that satisfies the specified predicate.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to search. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the asynchronous operation to complete. The
+    /// default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the first element in the sequence
+    /// that satisfies the predicate.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the sequence contains no elements that satisfy the predicate.</exception>
+    public static async Task<TSource> FirstAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (predicate(item)) return item;
+        }
+        throw new InvalidOperationException("Sequence contains no matching element.");
+    }
+
+    /// <summary>
+    /// Asynchronously returns the first element of a sequence that satisfies a specified condition,  or a default value
+    /// if no such element is found.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The sequence to search. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the first element  in the sequence
+    /// that satisfies the condition defined by <paramref name="predicate"/>, or the default  value of <typeparamref
+    /// name="TSource"/> if no such element is found.</returns>
+    public static async Task<TSource?> FirstOrDefaultAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (predicate(item)) return item;
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the single element of a sequence, or throws an exception if the sequence  contains no
+    /// elements or more than one element.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to retrieve the single element from.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the operation to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the single element  of the sequence.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the sequence contains no elements or more than one element.</exception>
+    public static async Task<TSource> SingleAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e = source.GetAsyncEnumerator(cancellationToken);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        if (!await e.MoveNextAsync().ConfigureAwait(false))
+            throw new InvalidOperationException("Sequence contains no elements.");
+
+        var result = e.Current;
+        if (await e.MoveNextAsync().ConfigureAwait(false))
+            throw new InvalidOperationException("Sequence contains more than one element.");
+
+        return result;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the single element of a sequence, or a default value if the sequence is empty.
+    /// </summary>
+    /// <remarks>This method enumerates the sequence asynchronously. If the sequence contains exactly one
+    /// element, that element is returned.  If the sequence is empty, the default value for the type <typeparamref
+    /// name="TSource"/> is returned. If the sequence contains  more than one element, an <see
+    /// cref="InvalidOperationException"/> is thrown.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The sequence to return the single element from.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the single element of the sequence, 
+    /// or <see langword="default"/> if the sequence is empty.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the sequence contains more than one element.</exception>
+    public static async Task<TSource?> SingleOrDefaultAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e = source.GetAsyncEnumerator(cancellationToken);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        if (!await e.MoveNextAsync().ConfigureAwait(false)) return default;
+
+        var result = e.Current;
+        if (await e.MoveNextAsync().ConfigureAwait(false))
+            throw new InvalidOperationException("Sequence contains more than one element.");
+
+        return result;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the single element of a sequence that satisfies a specified condition,  or throws an
+    /// exception if no such element exists or if more than one element satisfies the condition.
+    /// </summary>
+    /// <remarks>This method enumerates the sequence asynchronously and applies the <paramref
+    /// name="predicate"/> to each element.  If exactly one element satisfies the condition, it is returned. If no
+    /// elements satisfy the condition, or if more  than one element satisfies the condition, an <see
+    /// cref="InvalidOperationException"/> is thrown.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to search. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the single element  of the sequence
+    /// that satisfies the condition defined by <paramref name="predicate"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the sequence contains no elements that satisfy the condition, or if more than one element satisfies
+    /// the condition.</exception>
+    public static async Task<TSource> SingleAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        bool found = false;
+        TSource? result = default;
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (predicate(item))
+            {
+                if (found) throw new InvalidOperationException("Sequence contains more than one matching element.");
+                found = true;
+                result = item;
+            }
+        }
+
+        if (!found) throw new InvalidOperationException("Sequence contains no matching element.");
+        return result!;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the only element of a sequence that satisfies a specified condition, or a default value
+    /// if no such element exists. Throws an exception if more than one element satisfies the condition.
+    /// </summary>
+    /// <remarks>This method enumerates the sequence asynchronously and applies the <paramref
+    /// name="predicate"/> to each element. If exactly one element satisfies the condition, it is returned. If no
+    /// elements satisfy the condition, the default value of <typeparamref name="TSource"/> is returned. If more than
+    /// one element satisfies the condition, an <see cref="InvalidOperationException"/> is thrown.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The sequence to search. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the single element of the sequence
+    /// that satisfies the condition, or <see langword="null"/> if no such element exists.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if more than one element in the sequence satisfies the condition.</exception>
+    public static async Task<TSource?> SingleOrDefaultAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        bool found = false;
+        TSource? result = default;
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (predicate(item))
+            {
+                if (found) throw new InvalidOperationException("Sequence contains more than one matching element.");
+                found = true;
+                result = item;
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the last element of an asynchronous paged sequence.
+    /// </summary>
+    /// <remarks>This method enumerates the entire sequence to determine the last element. If the sequence is
+    /// empty, an <see cref="InvalidOperationException"/> is thrown.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous paged sequence to retrieve the last element from.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the last element of the sequence.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the sequence contains no elements.</exception>
+    public static async Task<TSource> LastAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        bool found = false;
+        TSource? last = default;
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            found = true;
+            last = item;
+        }
+
+        if (!found) throw new InvalidOperationException("Sequence contains no elements.");
+        return last!;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the last element of a sequence, or a default value if the sequence contains no elements.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to return the last element from.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the last element of the sequence, 
+    /// or the default value of <typeparamref name="TSource"/> if the sequence is empty.</returns>
+    public static async Task<TSource?> LastOrDefaultAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        TSource? last = default;
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            last = item;
+        }
+        return last;
+    }
+
+    /// <summary>
+    /// Determines whether the specified value exists in the asynchronous sequence.
+    /// </summary>
+    /// <remarks>This method enumerates the sequence asynchronously to determine whether the specified value
+    /// exists. If the sequence contains the value, the enumeration stops early and the method returns <see
+    /// langword="true"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to search. Cannot be <see langword="null"/>.</param>
+    /// <param name="value">The value to locate in the sequence.</param>
+    /// <param name="comparer">An optional equality comparer to use for comparing elements. If <see langword="null"/>, the default equality
+    /// comparer for the type <typeparamref name="TSource"/> is used.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the operation to complete. The default value is
+    /// <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the specified
+    /// value is found in the sequence; otherwise, <see langword="false"/>.</returns>
+    public static async Task<bool> ContainsAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        TSource value,
+        IEqualityComparer<TSource>? comparer = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        comparer ??= EqualityComparer<TSource>.Default;
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (comparer.Equals(item, value)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether two asynchronous sequences are equal by comparing their elements pairwise.
+    /// </summary>
+    /// <remarks>The method compares the elements of the two sequences in order. The sequences are considered
+    /// equal if they have the same number of elements and each pair of corresponding elements is equal according to the
+    /// specified or default equality comparer.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequences.</typeparam>
+    /// <param name="first">The first asynchronous sequence to compare. Cannot be <see langword="null"/>.</param>
+    /// <param name="second">The second asynchronous sequence to compare. Cannot be <see langword="null"/>.</param>
+    /// <param name="comparer">An optional equality comparer to use for comparing elements. If <see langword="null"/>, the default equality
+    /// comparer for <typeparamref name="TSource"/> is used.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while performing the operation. The operation can be canceled by
+    /// passing a canceled token.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the two
+    /// sequences are equal; otherwise, <see langword="false"/>.</returns>
+    public static async Task<bool> SequenceEqualAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> first,
+        IAsyncEnumerable<TSource> second,
+        IEqualityComparer<TSource>? comparer = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        comparer ??= EqualityComparer<TSource>.Default;
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var e1 = first.GetAsyncEnumerator(cancellationToken);
+        await using var e2 = second.GetAsyncEnumerator(cancellationToken);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var m1 = await e1.MoveNextAsync().ConfigureAwait(false);
+            var m2 = await e2.MoveNextAsync().ConfigureAwait(false);
+
+            if (!m1 || !m2) return m1 == m2;
+            if (!comparer.Equals(e1.Current, e2.Current)) return false;
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously counts the number of elements in the specified asynchronous sequence.
+    /// </summary>
+    /// <remarks>This method enumerates the entire sequence to determine the count. Use caution when working
+    /// with large or infinite sequences, as this may result in high memory usage or an unbounded operation.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to count. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while counting the elements. The default value is <see
+    /// cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the total number of elements in the
+    /// sequence.</returns>
+    public static async Task<int> CountAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        checked
+        {
+            int count = 0;
+            await foreach (var _ in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                count++;
+            }
+            return count;
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously counts the total number of elements in the specified asynchronous paged enumerable.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source enumerable.</typeparam>
+    /// <param name="source">The asynchronous paged enumerable to count the elements of.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while counting the elements. The default value is <see
+    /// cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the total number of elements in the
+    /// source enumerable.</returns>
+    public static async Task<long> LongCountAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        long count = 0;
+        await foreach (var _ in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            count++;
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// Asynchronously retrieves the total count of items from a paginated data source.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the paginated data source.</typeparam>
+    /// <param name="source">The asynchronous paginated data source to retrieve the total count from. Cannot be <see langword="null"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the total number of items in the
+    /// paginated data source.</returns>
+    public static async Task<long> CountFromPaginationAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        var p = await source.GetPaginationAsync().ConfigureAwait(false);
+        return p.TotalCount;
+    }
+
+    /// <summary>
+    /// Asynchronously enumerates all elements in the specified <see cref="IAsyncPagedEnumerable{TSource}"/>  and
+    /// returns them as a <see cref="List{T}"/>.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous paged enumerable to convert to a list. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="List{T}"/>  with all
+    /// elements from the source sequence.</returns>
+    public static async Task<List<TSource>> ToListAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var list = new List<TSource>();
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            list.Add(item);
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// Asynchronously converts an <see cref="IAsyncPagedEnumerable{TSource}"/> to an array.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous paged enumerable to convert. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an array of elements from the source
+    /// sequence.</returns>
+    public static async Task<TSource[]> ToArrayAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await ToListAsync(source, cancellationToken).ConfigureAwait(false);
+        return [.. list];
+    }
+
+    /// <summary>
+    /// Orders the elements of the asynchronous paged sequence in ascending order according to a specified key.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key used for ordering the elements.</typeparam>
+    /// <param name="source">The asynchronous paged sequence to order. Cannot be <see langword="null"/>.</param>
+    /// <param name="keySelector">A function to extract the key for each element. Cannot be <see langword="null"/>.</param>
+    /// <param name="comparer">An optional comparer to use for comparing keys. If <see langword="null"/>, the default comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> whose elements are sorted in ascending order based on the
+    /// specified key.</returns>
+    public static IAsyncPagedEnumerable<TSource> OrderBy<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IComparer<TKey>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var iter = OrderByIterator(source, keySelector, comparer ?? Comparer<TKey>.Default, descending: false);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            ct => source.GetPaginationAsync().AsValueTask(),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Sorts the elements of the asynchronous paged sequence in descending order based on a specified key.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key used for sorting.</typeparam>
+    /// <param name="source">The asynchronous paged sequence to sort. Cannot be <see langword="null"/>.</param>
+    /// <param name="keySelector">A function to extract the key from each element. Cannot be <see langword="null"/>.</param>
+    /// <param name="comparer">An optional comparer to use for comparing keys. If <see langword="null"/>, the default comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <returns>A new asynchronous paged sequence whose elements are sorted in descending order based on the specified key.</returns>
+    public static IAsyncPagedEnumerable<TSource> OrderByDescending<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IComparer<TKey>? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var iter = OrderByIterator(source, keySelector, comparer ?? Comparer<TKey>.Default, descending: true);
+        return new AsyncPagedEnumerable<TSource, TSource>(
+            iter,
+            ct => source.GetPaginationAsync().AsValueTask(),
+            (Func<TSource, TSource>?)null);
+    }
+
+    /// <summary>
+    /// Groups the elements of a sequence according to a specified key selector function.
+    /// </summary>
+    /// <remarks>This method allows grouping elements in an asynchronous paged sequence based on a key. The
+    /// grouping is performed lazily,  and the resulting groups are returned as an asynchronous paged enumerable. Each
+    /// group contains a key and the elements  associated with that key.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key returned by the key selector function.</typeparam>
+    /// <param name="source">The sequence of elements to group.</param>
+    /// <param name="keySelector">A function to extract the key for each element.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If <see langword="null"/>, the default equality comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <returns>An asynchronous paged enumerable of groups, where each group is represented as an <see cref="IGrouping{TKey,
+    /// TSource}"/>  containing a collection of objects and their associated key.</returns>
+    public static IAsyncPagedEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey>? comparer = null)
+        where TKey : notnull
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var iter = GroupByIterator(source, keySelector, static x => x, comparer ?? EqualityComparer<TKey>.Default);
+        return new AsyncPagedEnumerable<IGrouping<TKey, TSource>, IGrouping<TKey, TSource>>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<IGrouping<TKey, TSource>, IGrouping<TKey, TSource>>?)null);
+    }
+
+    /// <summary>
+    /// Groups the elements of a sequence according to a specified key selector function and projects the elements for
+    /// each group.
+    /// </summary>
+    /// <remarks>This method allows grouping elements in an asynchronous sequence into collections based on a
+    /// key.  The grouping is performed lazily, and the resulting groups are returned as an asynchronous paged
+    /// enumerable.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key returned by the key selector function.</typeparam>
+    /// <typeparam name="TElement">The type of the elements in each group.</typeparam>
+    /// <param name="source">The sequence to group.</param>
+    /// <param name="keySelector">A function to extract the key for each element.</param>
+    /// <param name="elementSelector">A function to map each source element to an element in the resulting group.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If null, the default equality comparer is used.</param>
+    /// <returns>An asynchronous paged enumerable of groups, where each group is represented by an <see cref="IGrouping{TKey,
+    /// TElement}"/>  containing a key and a collection of elements.</returns>
+    public static IAsyncPagedEnumerable<IGrouping<TKey, TElement>> GroupBy<TSource, TKey, TElement>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        Func<TSource, TElement> elementSelector,
+        IEqualityComparer<TKey>? comparer = null)
+        where TKey : notnull
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+        ArgumentNullException.ThrowIfNull(elementSelector);
+
+        var iter = GroupByIterator(source, keySelector, elementSelector, comparer ?? EqualityComparer<TKey>.Default);
+        return new AsyncPagedEnumerable<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>>(
+            iter,
+            static _ => new ValueTask<Pagination>(Pagination.Without()),
+            (Func<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>>?)null);
+    }
+
+    /// <summary>
+    /// Asynchronously returns the element with the minimum key value from a sequence of asynchronously paged elements.
+    /// </summary>
+    /// <remarks>This method enumerates the source sequence asynchronously and applies the <paramref
+    /// name="keySelector"/> function to each element  to determine the key for comparison. If multiple elements have
+    /// the same minimum key value, the first occurrence is returned.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key used for comparison.</typeparam>
+    /// <param name="source">An asynchronous sequence of elements to evaluate.</param>
+    /// <param name="keySelector">A function to extract the key for each element.</param>
+    /// <param name="comparer">An optional comparer to use for comparing key values. If <see langword="null"/>, the default comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while awaiting the asynchronous operation. The default value is
+    /// <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the element with the minimum key
+    /// value,  or <see langword="null"/> if the source sequence is empty.</returns>
+    public static async Task<TSource?> MinByAsync<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IComparer<TKey>? comparer = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        comparer ??= Comparer<TKey>.Default;
+
+        bool found = false;
+        TSource? best = default;
+        TKey? bestKey = default;
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var key = keySelector(item);
+            if (!found || comparer.Compare(key, bestKey!) < 0)
+            {
+                found = true;
+                best = item;
+                bestKey = key;
+            }
+        }
+        return best;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the element with the maximum key value from a sequence of asynchronously paged elements.
+    /// </summary>
+    /// <remarks>This method evaluates the sequence lazily and asynchronously. It iterates through the source
+    /// sequence only once and stops as soon as the maximum element is determined. If the source sequence is empty, the
+    /// method returns <see langword="null"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key used for comparison.</typeparam>
+    /// <param name="source">The sequence of asynchronously paged elements to evaluate. Cannot be <see langword="null"/>.</param>
+    /// <param name="keySelector">A function to extract the key from each element. Cannot be <see langword="null"/>.</param>
+    /// <param name="comparer">An optional comparer to use for comparing keys. If <see langword="null"/>, the default comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is the element with the maximum key value, or
+    /// <see langword="null"/> if the source sequence is empty.</returns>
+    public static async Task<TSource?> MaxByAsync<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IComparer<TKey>? comparer = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        comparer ??= Comparer<TKey>.Default;
+
+        bool found = false;
+        TSource? best = default;
+        TKey? bestKey = default;
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var key = keySelector(item);
+            if (!found || comparer.Compare(key, bestKey!) > 0)
+            {
+                found = true;
+                best = item;
+                bestKey = key;
+            }
+        }
+        return best;
+    }
+
+    /// <summary>
+    /// Asynchronously aggregates the elements of an <see cref="IAsyncPagedEnumerable{TSource}"/> sequence  using a
+    /// specified seed value and an accumulator function.
+    /// </summary>
+    /// <remarks>This method processes the elements of the sequence asynchronously and in a streaming fashion,
+    /// making it suitable for large or infinite sequences. The aggregation stops if the sequence is exhausted  or if
+    /// the operation is canceled via the <paramref name="cancellationToken"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TAccumulate">The type of the accumulator value.</typeparam>
+    /// <param name="source">The asynchronous sequence to aggregate. Cannot be <see langword="null"/>.</param>
+    /// <param name="seed">The initial accumulator value.</param>
+    /// <param name="func">A function to apply to each element in the sequence. The function takes the current accumulator value  and the
+    /// current element as arguments, and returns the updated accumulator value. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while performing the aggregation. The default value is <see
+    /// cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous aggregation operation. The task's result is the final accumulator value.</returns>
+    public static async Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(
+        this IAsyncPagedEnumerable<TSource> source,
+        TAccumulate seed,
+        Func<TAccumulate, TSource, TAccumulate> func,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(func);
+
+        var acc = seed;
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            acc = func(acc, item);
+        }
+        return acc;
+    }
+
+    /// <summary>
+    /// Asynchronously aggregates the elements of an <see cref="IAsyncPagedEnumerable{T}"/> sequence using a specified
+    /// seed value and an asynchronous accumulator function.
+    /// </summary>
+    /// <remarks>The <paramref name="func"/> is invoked for each element in the <paramref name="source"/>
+    /// sequence, passing the current accumulator value and the element as arguments. The result of the function is used
+    /// as the accumulator value for the next iteration.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TAccumulate">The type of the accumulator value.</typeparam>
+    /// <param name="source">The asynchronous sequence to aggregate. Cannot be <see langword="null"/>.</param>
+    /// <param name="seed">The initial accumulator value.</param>
+    /// <param name="func">An asynchronous function to apply to each element in the sequence and the current accumulator value. Cannot be
+    /// <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous aggregation operation. The task's result is the final accumulator value
+    /// after processing all elements in the sequence.</returns>
+    public static async Task<TAccumulate> AggregateAwaitAsync<TSource, TAccumulate>(
+        this IAsyncPagedEnumerable<TSource> source,
+        TAccumulate seed,
+        Func<TAccumulate, TSource, ValueTask<TAccumulate>> func,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(func);
+
+        var acc = seed;
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            acc = await func(acc, item).ConfigureAwait(false);
+        }
+        return acc;
+    }
+
+    /// <summary>
+    /// Asynchronously applies an accumulator function over a sequence of elements, starting with the specified seed
+    /// value,  and transforms the final accumulated result using a result selector function.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TAccumulate">The type of the intermediate accumulated value.</typeparam>
+    /// <typeparam name="TResult">The type of the final result value.</typeparam>
+    /// <param name="source">The asynchronous sequence of elements to aggregate. Cannot be <see langword="null"/>.</param>
+    /// <param name="seed">The initial accumulator value.</param>
+    /// <param name="func">A function to apply to each element in the sequence, combining the current accumulated value and the element  to
+    /// produce a new accumulated value. Cannot be <see langword="null"/>.</param>
+    /// <param name="resultSelector">A function to transform the final accumulated value into the result value. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while performing the aggregation. The default value is <see
+    /// cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the final result value produced  by
+    /// applying the <paramref name="resultSelector"/> to the accumulated value.</returns>
+    public static async Task<TResult> AggregateAsync<TSource, TAccumulate, TResult>(
+        this IAsyncPagedEnumerable<TSource> source,
+        TAccumulate seed,
+        Func<TAccumulate, TSource, TAccumulate> func,
+        Func<TAccumulate, TResult> resultSelector,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(func);
+        ArgumentNullException.ThrowIfNull(resultSelector);
+
+        var acc = await AggregateAsync(source, seed, func, cancellationToken).ConfigureAwait(false);
+        return resultSelector(acc);
+    }
+
+    /// <summary>
+    /// Asynchronously retrieves the element at the specified zero-based index from a sequence of asynchronously paged
+    /// elements.
+    /// </summary>
+    /// <remarks>If the specified index is greater than or equal to the number of elements in the sequence, an
+    /// <see cref="InvalidOperationException"/> is thrown.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The sequence of asynchronously paged elements to retrieve the element from.</param>
+    /// <param name="index">The zero-based index of the element to retrieve. Must be non-negative.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the element at the specified index.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the specified <paramref name="index"/> is out of range of the sequence.</exception>
+    public static async Task<TSource> ElementAtAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        int index,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+
+        var i = 0;
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (i++ == index) return item;
+        }
+        throw new InvalidOperationException("Index was out of range.");
+    }
+
+    /// <summary>
+    /// Asynchronously retrieves the element at the specified index in a sequence, or a default value if the index is
+    /// out of range.
+    /// </summary>
+    /// <remarks>This method enumerates the sequence until the specified index is reached or the sequence
+    /// ends.  If the index is out of range, the method returns the default value for <typeparamref
+    /// name="TSource"/>.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to retrieve the element from. Cannot be <see langword="null"/>.</param>
+    /// <param name="index">The zero-based index of the element to retrieve. Must be greater than or equal to 0.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the element at the specified index, 
+    /// or the default value of <typeparamref name="TSource"/> if the index is out of range.</returns>
+    public static async Task<TSource?> ElementAtOrDefaultAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        int index,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        if (index < 0) return default;
+
+        var i = 0;
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (i++ == index) return item;
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the last element of a sequence that satisfies a specified condition.
+    /// </summary>
+    /// <remarks>This method enumerates the sequence asynchronously and applies the <paramref
+    /// name="predicate"/>  to each element. If no matching element is found, an <see cref="InvalidOperationException"/>
+    /// is thrown.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The asynchronous sequence to search.</param>
+    /// <param name="predicate">A function to test each element for a condition.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the last element in the sequence
+    /// that satisfies the condition specified by <paramref name="predicate"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if no element in the sequence satisfies the condition specified by <paramref name="predicate"/>.</exception>
+    public static async Task<TSource> LastAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        bool found = false;
+        TSource? last = default;
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (predicate(item)) { found = true; last = item; }
+        }
+        if (!found) throw new InvalidOperationException("Sequence contains no matching element.");
+        return last!;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the last element of a sequence that satisfies a specified condition,  or a default value
+    /// if no such element is found.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The sequence to search. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function to test each element for a condition. Cannot be <see langword="null"/>.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the asynchronous operation to complete.  This
+    /// parameter is optional and defaults to <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the last element  in the sequence
+    /// that satisfies the condition specified by <paramref name="predicate"/>,  or <see langword="default"/> if no such
+    /// element is found.</returns>
+    public static async Task<TSource?> LastOrDefaultAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        TSource? last = default;
+        bool found = false;
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (predicate(item)) { found = true; last = item; }
+        }
+        return found ? last : default;
+    }
+
+    /// <summary>
+    /// Asynchronously converts an <see cref="IAsyncPagedEnumerable{TSource}"/> to a <see cref="Dictionary{TKey,
+    /// TSource}"/>  using the specified key selector function.
+    /// </summary>
+    /// <remarks>This method processes the elements of the asynchronous sequence in a streaming manner, adding
+    /// each element to the dictionary  as it is retrieved. The operation completes when all elements have been
+    /// processed or if the operation is canceled.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the keys in the resulting dictionary. Must be non-nullable.</typeparam>
+    /// <param name="source">The asynchronous sequence to convert. Cannot be <see langword="null"/>.</param>
+    /// <param name="keySelector">A function to extract a key from each element in the sequence. Cannot be <see langword="null"/>.</param>
+    /// <param name="comparer">An optional equality comparer to use for comparing keys. If <see langword="null"/>, the default equality
+    /// comparer for <typeparamref name="TKey"/> is used.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while performing the operation. Defaults to <see
+    /// cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="Dictionary{TKey,
+    /// TSource}"/>  where each key is the result of applying <paramref name="keySelector"/> to an element in the source
+    /// sequence,  and each value is the corresponding element.</returns>
+    public static async Task<Dictionary<TKey, TSource>> ToDictionaryAsync<TSource, TKey>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey>? comparer = null,
+        CancellationToken cancellationToken = default)
+        where TKey : notnull
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var dict = new Dictionary<TKey, TSource>(comparer);
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            dict.Add(keySelector(item), item);
+        }
+        return dict;
+    }
+
+    /// <summary>
+    /// Asynchronously creates a <see cref="Dictionary{TKey, TValue}"/> from an <see cref="IAsyncPagedEnumerable{T}"/>
+    /// by applying the specified key and element selector functions.
+    /// </summary>
+    /// <remarks>This method processes the elements of the source sequence asynchronously and lazily,
+    /// consuming elements as they are enumerated.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the keys in the resulting dictionary. Keys must be non-null.</typeparam>
+    /// <typeparam name="TElement">The type of the values in the resulting dictionary.</typeparam>
+    /// <param name="source">The asynchronous sequence to convert into a dictionary. Cannot be <see langword="null"/>.</param>
+    /// <param name="keySelector">A function to extract a key from each element. Cannot be <see langword="null"/>.</param>
+    /// <param name="elementSelector">A function to produce a value for each element. Cannot be <see langword="null"/>.</param>
+    /// <param name="comparer">An optional equality comparer to compare keys. If <see langword="null"/>, the default equality comparer for
+    /// <typeparamref name="TKey"/> is used.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while awaiting the asynchronous operation. Defaults to <see
+    /// cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="Dictionary{TKey,
+    /// TValue}"/> where each key is the result of applying <paramref name="keySelector"/> to an element of the source
+    /// sequence, and each value is the result of applying <paramref name="elementSelector"/> to the same element.</returns>
+    public static async Task<Dictionary<TKey, TElement>> ToDictionaryAsync<TSource, TKey, TElement>(
+        this IAsyncPagedEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        Func<TSource, TElement> elementSelector,
+        IEqualityComparer<TKey>? comparer = null,
+        CancellationToken cancellationToken = default)
+        where TKey : notnull
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(keySelector);
+        ArgumentNullException.ThrowIfNull(elementSelector);
+
+        var dict = new Dictionary<TKey, TElement>(comparer);
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            dict.Add(keySelector(item), elementSelector(item));
+        }
+        return dict;
+    }
+
+    /// <summary>
+    /// Asynchronously creates a <see cref="HashSet{T}"/> from an <see cref="IAsyncPagedEnumerable{T}"/>.
+    /// </summary>
+    /// <remarks>This method enumerates the source sequence asynchronously and adds each element to the
+    /// resulting <see cref="HashSet{T}"/>. Duplicate elements are ignored based on the specified or default equality
+    /// comparer.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">The asynchronous paged enumerable to convert to a <see cref="HashSet{T}"/>. Cannot be <see langword="null"/>.</param>
+    /// <param name="comparer">An optional equality comparer to use for comparing elements. If <see langword="null"/>, the default equality
+    /// comparer for <typeparamref name="TSource"/> is used.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="HashSet{T}"/> 
+    /// containing all elements from the source sequence.</returns>
+    public static async Task<HashSet<TSource>> ToHashSetAsync<TSource>(
+        this IAsyncPagedEnumerable<TSource> source,
+        IEqualityComparer<TSource>? comparer = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var set = new HashSet<TSource>(comparer);
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            set.Add(item);
+        }
+        return set;
+    }
 
     private static async IAsyncEnumerable<TSource> FilterAsync<TSource>(
         IAsyncEnumerable<TSource> source,
@@ -2275,6 +3458,70 @@ public static partial class AsyncPagedEnumerableExtensions
             }
         }
         if (chunk.Count > 0) yield return chunk.ToArray();
+    }
+
+    private static async IAsyncEnumerable<TSource> OrderByIterator<TSource, TKey>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IComparer<TKey> comparer,
+        bool descending,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var buffer = new List<(TSource Item, TKey Key)>();
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            buffer.Add((item, keySelector(item)));
+        }
+
+        buffer.Sort((a, b) =>
+        {
+            var cmp = comparer.Compare(a.Key, b.Key);
+            return descending ? -cmp : cmp;
+        });
+
+        foreach (var (item, _) in buffer)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return item;
+        }
+    }
+
+    private static async IAsyncEnumerable<IGrouping<TKey, TElement>> GroupByIterator<TSource, TKey, TElement>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        Func<TSource, TElement> elementSelector,
+        IEqualityComparer<TKey> comparer,
+        [EnumeratorCancellation] CancellationToken ct = default)
+        where TKey : notnull
+    {
+        var map = new Dictionary<TKey, List<TElement>>(comparer);
+        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+        {
+            ct.ThrowIfCancellationRequested();
+            var key = keySelector(item)!;
+            if (!map.TryGetValue(key, out var list))
+            {
+                list = [];
+                map[key] = list;
+            }
+            list.Add(elementSelector(item));
+        }
+
+        foreach (var kvp in map)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return new Grouping<TKey, TElement>(kvp.Key, kvp.Value);
+        }
+    }
+
+    private sealed class Grouping<TKey, TElement>(TKey key, IEnumerable<TElement> elements) : IGrouping<TKey, TElement>
+    {
+        public TKey Key { get; } = key;
+        private readonly IEnumerable<TElement> _elements = elements;
+
+        public IEnumerator<TElement> GetEnumerator() => _elements.GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
