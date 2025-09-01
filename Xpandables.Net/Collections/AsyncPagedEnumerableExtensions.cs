@@ -65,7 +65,7 @@ public static partial class AsyncPagedEnumerableExtensions
         {
             return new AsyncPagedEnumerable<TSource, TResult>(
                 pagedSource,
-                ct => new ValueTask<Pagination>(pagedSource.GetPaginationAsync()),
+                ct => new ValueTask<Pagination>(pagedSource.GetPaginationAsync(ct)),
                 mapper);
         }
 
@@ -108,7 +108,7 @@ public static partial class AsyncPagedEnumerableExtensions
         {
             return new AsyncPagedEnumerable<TSource, TResult>(
                 pagedSource,
-                ct => new ValueTask<Pagination>(pagedSource.GetPaginationAsync()),
+                ct => new ValueTask<Pagination>(pagedSource.GetPaginationAsync(ct)),
                 mapper);
         }
 
@@ -187,16 +187,11 @@ public static partial class AsyncPagedEnumerableExtensions
             projected as IAsyncEnumerable<PrimedResult<TSource>>
             ?? projected.ToAsyncEnumerable();
 
-        // Reuse optimized primed enumerable to avoid buffering and keep single trip semantics.
-        var primed = new AsyncPagedPrimedEnumerable<TSource>(
+        return new AsyncPagedEnumerable<TSource, TResult>(
             projectedAsync,
             skip,
             take,
-            fallbackTotalFactory: ct => ExecuteCountAsync(unpaginated, ct));
-
-        return new AsyncPagedEnumerable<TSource, TResult>(
-            primed,
-            ct => new ValueTask<Pagination>(primed.GetPaginationAsync()),
+            fallbackTotalFactory: ct => ExecuteCountAsync(unpaginated, ct),
             mapper);
     }
 
@@ -262,16 +257,12 @@ public static partial class AsyncPagedEnumerableExtensions
             ?? projected.ToAsyncEnumerable();
 
         // Reuse optimized primed enumerable to avoid buffering and keep single trip semantics.
-        var primed = new AsyncPagedPrimedEnumerable<TSource>(
-            projectedAsync,
-            skip,
-            take,
-            fallbackTotalFactory: ct => ExecuteCountAsync(unpaginated, ct));
-
         return new AsyncPagedEnumerable<TSource, TResult>(
-            primed,
-            ct => new ValueTask<Pagination>(primed.GetPaginationAsync()),
-            mapper);
+             projectedAsync,
+             skip,
+             take,
+             fallbackTotalFactory: ct => ExecuteCountAsync(unpaginated, ct),
+             mapper);
     }
 
     /// <summary>

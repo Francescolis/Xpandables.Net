@@ -82,46 +82,15 @@ public sealed class AsyncPagedEnumerableMinimalResultExecution : MinimalResultEx
             Indented = false
         });
 
-        // Try primeable streaming path first (single round trip, no page buffering).
-        if (pagedEnumerable is IAsyncPagedPrimedEnumerable<T> primeable)
-        {
-            var (pagination, enumerator) = await primeable.PrimeAsync(context.RequestAborted).ConfigureAwait(false);
-
-            writer.WriteStartObject();
-
-            writer.WritePropertyName("pagination");
-            JsonSerializer.Serialize(writer, pagination, jsonSerializerOptions);
-
-            writer.WritePropertyName("data");
-            writer.WriteStartArray();
-
-            try
-            {
-                while (await enumerator.MoveNextAsync().ConfigureAwait(false))
-                {
-                    JsonSerializer.Serialize(writer, enumerator.Current, jsonSerializerOptions);
-                    await writer.FlushAsync(context.RequestAborted).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                await enumerator.DisposeAsync().ConfigureAwait(false);
-            }
-
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-
-            await writer.FlushAsync(context.RequestAborted).ConfigureAwait(false);
-            return;
-        }
-
-        // Fallback: existing pattern (may buffer page depending on implementation).
-        var paginationFallback = await pagedEnumerable.GetPaginationAsync().ConfigureAwait(false);
+        // Always get pagination first; in prime mode this primes and prepares the enumerator.
+        var pagination = await pagedEnumerable
+            .GetPaginationAsync(context.RequestAborted)
+            .ConfigureAwait(false);
 
         writer.WriteStartObject();
 
         writer.WritePropertyName("pagination");
-        JsonSerializer.Serialize(writer, paginationFallback, jsonSerializerOptions);
+        JsonSerializer.Serialize(writer, pagination, jsonSerializerOptions);
 
         writer.WritePropertyName("data");
         writer.WriteStartArray();

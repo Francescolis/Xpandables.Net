@@ -38,7 +38,7 @@ public static partial class AsyncPagedEnumerableExtensions
 
         return new AsyncPagedEnumerable<TSource, TResult>(
             source,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             selector);
     }
 
@@ -62,7 +62,7 @@ public static partial class AsyncPagedEnumerableExtensions
         var iterator = SelectIndexIterator(source, selector);
         return new AsyncPagedEnumerable<TResult, TResult>(
             iterator,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             (Func<TResult, TResult>?)null);
     }
 
@@ -196,7 +196,7 @@ public static partial class AsyncPagedEnumerableExtensions
 
         return new AsyncPagedEnumerable<TSource, TResult>(
             source,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             (item, _) => selector(item));
     }
 
@@ -220,7 +220,7 @@ public static partial class AsyncPagedEnumerableExtensions
         var iterator = SelectIndexIterator(source, selector);
         return new AsyncPagedEnumerable<TResult, TResult>(
             iterator,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             (Func<TResult, TResult>?)null);
     }
 
@@ -244,7 +244,7 @@ public static partial class AsyncPagedEnumerableExtensions
 
         return new AsyncPagedEnumerable<TSource, TResult>(
             source,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             selector);
     }
 
@@ -269,7 +269,7 @@ public static partial class AsyncPagedEnumerableExtensions
         var iterator = SelectIndexIterator(source, selector);
         return new AsyncPagedEnumerable<TResult, TResult>(
             iterator,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             (Func<TResult, TResult>?)null);
     }
 
@@ -446,9 +446,9 @@ public static partial class AsyncPagedEnumerableExtensions
         var iterator = SkipIterator(source, count);
         return new AsyncPagedEnumerable<TSource, TSource>(
             iterator,
-            async _ =>
+            async ct =>
             {
-                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                 var newSkip = (p.Skip ?? 0) + count;
                 // Preserve original Take; only Skip changes here
                 return Pagination.With(newSkip, p.Take, p.TotalCount);
@@ -478,9 +478,9 @@ public static partial class AsyncPagedEnumerableExtensions
             var empty = EmptyIterator<TSource>();
             return new AsyncPagedEnumerable<TSource, TSource>(
                 empty,
-                async _ =>
+                async ct =>
                 {
-                    var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                    var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                     return Pagination.With(p.Skip, 0, p.TotalCount);
                 },
                 (Func<TSource, TSource>?)null);
@@ -489,9 +489,9 @@ public static partial class AsyncPagedEnumerableExtensions
         var iterator = TakeIterator(source, count);
         return new AsyncPagedEnumerable<TSource, TSource>(
             iterator,
-            async _ =>
+            async ct =>
             {
-                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                 var effectiveTake = p.Take.HasValue ? Math.Min(p.Take.Value, count) : count;
                 return Pagination.With(p.Skip, effectiveTake, p.TotalCount);
             },
@@ -520,9 +520,9 @@ public static partial class AsyncPagedEnumerableExtensions
             var empty = EmptyIterator<TSource>();
             return new AsyncPagedEnumerable<TSource, TSource>(
                 empty,
-                async _ =>
+                async ct =>
                 {
-                    var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                    var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                     var newSkip = (p.Skip ?? 0) + Math.Max(0, skip);
                     return Pagination.With(newSkip, 0, p.TotalCount);
                 },
@@ -537,9 +537,9 @@ public static partial class AsyncPagedEnumerableExtensions
         var iterator = SliceIterator(source, skip, take);
         return new AsyncPagedEnumerable<TSource, TSource>(
             iterator,
-            async _ =>
+            async ct =>
             {
-                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                 var newSkip = (p.Skip ?? 0) + Math.Max(0, skip);
                 var effectiveTake = p.Take.HasValue ? Math.Min(p.Take.Value, take) : take;
                 return Pagination.With(newSkip, effectiveTake, p.TotalCount);
@@ -571,9 +571,9 @@ public static partial class AsyncPagedEnumerableExtensions
 
         return new AsyncPagedEnumerable<TSource, TSource>(
             iterator,
-            async _ =>
+            async ct =>
             {
-                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                 var newSkip = (p.Skip ?? 0) + skip;
                 var effectiveTake = p.Take.HasValue ? Math.Min(p.Take.Value, pageSize) : pageSize;
                 // Derive page-related hints if total is known
@@ -617,7 +617,7 @@ public static partial class AsyncPagedEnumerableExtensions
         // For upcasts (TSource -> TResult assignable) we still project, but metadata is preserved.
         return new AsyncPagedEnumerable<object?, TResult>(
             source,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             item => (TResult)item!);
     }
 
@@ -640,7 +640,7 @@ public static partial class AsyncPagedEnumerableExtensions
             source,
             async ct =>
             {
-                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                 var total = await totalFactory(ct).ConfigureAwait(false);
                 return Pagination.With(p.Skip, p.Take, total);
             },
@@ -745,7 +745,7 @@ public static partial class AsyncPagedEnumerableExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        var pagination = await source.GetPaginationAsync().ConfigureAwait(false);
+        var pagination = await source.GetPaginationAsync(cancellationToken).ConfigureAwait(false);
 
         var list = new List<T>();
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -938,9 +938,9 @@ public static partial class AsyncPagedEnumerableExtensions
         var iterator = AppendIterator(source, element);
         return new AsyncPagedEnumerable<TSource, TSource>(
             iterator,
-            async _ =>
+            async ct =>
             {
-                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                 var total = p.TotalCount >= 0 ? p.TotalCount + 1 : p.TotalCount;
                 return Pagination.With(p.Skip, p.Take, total);
             },
@@ -968,9 +968,9 @@ public static partial class AsyncPagedEnumerableExtensions
         var iterator = PrependIterator(source, element);
         return new AsyncPagedEnumerable<TSource, TSource>(
             iterator,
-            async _ =>
+            async ct =>
             {
-                var p = await source.GetPaginationAsync().ConfigureAwait(false);
+                var p = await source.GetPaginationAsync(ct).ConfigureAwait(false);
                 var total = p.TotalCount >= 0 ? p.TotalCount + 1 : p.TotalCount;
                 return Pagination.With(p.Skip, p.Take, total);
             },
@@ -1444,7 +1444,7 @@ public static partial class AsyncPagedEnumerableExtensions
         var iter = ReverseIterator(source);
         return new AsyncPagedEnumerable<TSource, TSource>(
             iter,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             (Func<TSource, TSource>?)null);
     }
 
@@ -2207,7 +2207,7 @@ public static partial class AsyncPagedEnumerableExtensions
         var iter = OrderByIterator(source, keySelector, comparer ?? Comparer<TKey>.Default, descending: false);
         return new AsyncPagedEnumerable<TSource, TSource>(
             iter,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             (Func<TSource, TSource>?)null);
     }
 
@@ -2232,7 +2232,7 @@ public static partial class AsyncPagedEnumerableExtensions
         var iter = OrderByIterator(source, keySelector, comparer ?? Comparer<TKey>.Default, descending: true);
         return new AsyncPagedEnumerable<TSource, TSource>(
             iter,
-            ct => source.GetPaginationAsync().AsValueTask(),
+            ct => source.GetPaginationAsync(ct).AsValueTask(),
             (Func<TSource, TSource>?)null);
     }
 

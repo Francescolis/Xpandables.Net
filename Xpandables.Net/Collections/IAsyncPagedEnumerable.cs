@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 namespace Xpandables.Net.Collections;
 
 /// <summary>
@@ -25,6 +26,7 @@ namespace Xpandables.Net.Collections;
 /// ensure the metadata is available.</remarks>
 /// <typeparam name="T">The type of elements in the collection.</typeparam>
 public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
+    where T : allows ref struct
 {
     /// <summary>
     /// Gets the pagination information for this collection.
@@ -36,11 +38,12 @@ public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
     Pagination Pagination { get; }
 
     /// <summary>
-    /// Gets a task that completes when pagination information is available.
+    /// Asynchronously ensures pagination metadata is available.
+    /// Implementations may use the token to prime the underlying stream.
     /// </summary>
     /// <remarks>
     /// Pagination metadata is computed lazily and only when required.
     /// For database-backed sources, the implementation strives to use a single round trip.
     /// </remarks>
-    Task<Pagination> GetPaginationAsync();
+    Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default);
 }
