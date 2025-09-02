@@ -142,5 +142,5 @@ public static class ExecutionResultExtensions
     /// <param name="executionResult">Represents the result of an execution that will be transformed into a minimal format.</param>
     /// <returns>Returns a minimal result object based on the provided execution result.</returns>
     public static IResult ToMinimalResult(this ExecutionResult executionResult) =>
-        new MinimalResult(executionResult);
+        new ExecutionResultMinimalResult(executionResult);
 }

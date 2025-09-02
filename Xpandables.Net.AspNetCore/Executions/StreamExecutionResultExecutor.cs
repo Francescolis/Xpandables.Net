@@ -24,7 +24,7 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// This class represents a minimal result execution that handles streaming responses.
 /// </summary>
-public sealed class StreamMinimalResultExecution : MinimalResultExecution
+public sealed class StreamExecutionResultExecutor : ExecutionResultExecutor
 {
     /// <inheritdoc/>
     public sealed override bool CanExecute(ExecutionResult executionResult) =>

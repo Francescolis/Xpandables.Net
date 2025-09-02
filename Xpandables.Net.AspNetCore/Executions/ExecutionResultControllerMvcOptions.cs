@@ -20,12 +20,16 @@ using Microsoft.Extensions.Options;
 
 using Xpandables.Net.DataAnnotations;
 
-namespace Xpandables.Net.Controllers;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Configures MVC options for the ExecutionResultController.
+/// Configures the <see cref="MvcOptions"/> for controllers to enforce specific behaviors and filters.
 /// </summary>
-public sealed class ControllerMvcOptions : IConfigureOptions<MvcOptions>
+/// <remarks>This configuration disables endpoint routing, ensures that browser-specified Accept headers are
+/// respected,  and configures the application to return HTTP 406 (Not Acceptable) responses when the requested media
+/// type  is not supported. Additionally, it adds custom filters and a model binder provider to the MVC
+/// pipeline.</remarks>
+public sealed class ExecutionResultControllerMvcOptions : IConfigureOptions<MvcOptions>
 {
     /// <inheritdoc/>
     public void Configure(MvcOptions options)
@@ -36,8 +40,9 @@ public sealed class ControllerMvcOptions : IConfigureOptions<MvcOptions>
         options.RespectBrowserAcceptHeader = true;
         options.ReturnHttpNotAcceptable = true;
 
-        _ = options.Filters.Add<ControllerValidationFilterAttribute>();
-        _ = options.Filters.Add<ControllerFilter>(int.MinValue);
+        options.OutputFormatters.Insert(0, new AsyncPagedEnumerableJsonOutputFormatter());
+        _ = options.Filters.Add<ExecutionResultControllerValidationFilterAttribute>();
+        _ = options.Filters.Add<ExecutionResultControllerResultFilter>(int.MinValue);
         options.ModelBinderProviders.Insert(0, new FromModelBinderProvider());
     }
 }

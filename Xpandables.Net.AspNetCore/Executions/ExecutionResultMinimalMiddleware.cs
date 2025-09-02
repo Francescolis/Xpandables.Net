@@ -19,15 +19,16 @@ using System.Reflection;
 
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.Executions;
+namespace Xpandables.Net.Executions;
 
-namespace Xpandables.Net.Minimals;
-
-/// <summary>  
-/// Middleware to handle execution results and convert exceptions to 
-/// execution results.  
-/// </summary>  
-public sealed class MinimalMiddleware : IMiddleware
+/// <summary>
+/// Middleware that processes exceptions and converts them into minimal execution results for HTTP responses when the
+/// response has not already started.
+/// </summary>
+/// <remarks>This middleware intercepts exceptions thrown during the execution of the request pipeline. If an
+/// exception occurs and the HTTP response has not started, the middleware converts the exception into an <see
+/// cref="ExecutionResult"/> and generates a minimal HTTP response using the appropriate problem details.</remarks>
+public sealed class ExecutionResultMinimalMiddleware : IMiddleware
 {
     /// <inheritdoc/>  
     public async Task InvokeAsync(

@@ -15,31 +15,30 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.Options;
-
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Minimals;
-
+namespace Xpandables.Net.Executions;
 /// <summary>  
-/// Configures JSON options for endpoints with minimal settings.  
+/// Represents a filter that processes the result of an endpoint invocation and 
+/// converts it to a minimal result if it implements <see cref="ExecutionResult"/>.  
 /// </summary>  
-public sealed class MinimalJsonOptions : IConfigureOptions<JsonOptions>
+public sealed class ExecutionResultMinimalFilter : IEndpointFilter
 {
     /// <inheritdoc/>  
-    public void Configure(JsonOptions options)
+    public async ValueTask<object?> InvokeAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
 
-        options.SerializerOptions.PropertyNameCaseInsensitive = true;
-        options.SerializerOptions.PropertyNamingPolicy = null;
+        object? result = await next(context).ConfigureAwait(false);
 
-        options.SerializerOptions.Converters
-            .Add(new JsonStringEnumConverter());
-        options.SerializerOptions.Converters
-            .Add(new ExecutionResultJsonConverterFactory() { UseAspNetCoreCompatibility = true });
+        if (result is ExecutionResult executionResult)
+        {
+            return executionResult.ToMinimalResult();
+        }
+
+        return result;
     }
 }

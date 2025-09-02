@@ -26,7 +26,7 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// This class represents a minimal result execution that handles failure scenarios.
 /// </summary>
-public sealed class FailureMinimalResultExecution : MinimalResultExecution
+public sealed class FailureExecutionResultExecutor : ExecutionResultExecutor
 {
     /// <inheritdoc/>
     public sealed override bool CanExecute(ExecutionResult executionResult) =>

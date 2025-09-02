@@ -23,7 +23,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// Validates an endpoint asynchronously and returns the validation result. 
 /// The process involves the context of the invocation and a delegate.
 /// </summary>
-public interface IEndpointValidator
+public interface IExecutionResultEndpointValidator
 {
     /// <summary>
     /// Validates an asynchronous operation within an endpoint filter context.

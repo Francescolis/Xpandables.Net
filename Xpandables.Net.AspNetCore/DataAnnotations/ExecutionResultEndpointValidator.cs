@@ -29,7 +29,7 @@ namespace Xpandables.Net.DataAnnotations;
 /// Returns validation results or proceeds to the next delegate if valid.
 /// </summary>
 /// <param name="validatorProvider">The validator provider.</param>
-public sealed class EndpointValidator(IValidatorProvider validatorProvider) : IEndpointValidator
+public sealed class ExecutionResultEndpointValidator(IValidatorProvider validatorProvider) : IExecutionResultEndpointValidator
 {
     /// <inheritdoc/>
     public async ValueTask<object?> ValidateAsync(
@@ -136,15 +136,15 @@ public sealed class EndpointValidator(IValidatorProvider validatorProvider) : IE
 
 internal readonly record struct ArgumentDescriptor
 {
-    public required int Index { get; init; }
-    public required IRequiresValidation Parameter { get; init; }
-    public required Type ParameterType { get; init; }
+    public readonly required int Index { get; init; }
+    public readonly required IRequiresValidation Parameter { get; init; }
+    public readonly required Type ParameterType { get; init; }
 }
 
 internal readonly record struct ValidatorDescriptor
 {
-    public required int ArgumentIndex { get; init; }
-    public required Type ArgumentType { get; init; }
-    public required IRequiresValidation Argument { get; init; }
-    public required IValidator Validator { get; init; }
+    public readonly required int ArgumentIndex { get; init; }
+    public readonly required Type ArgumentType { get; init; }
+    public readonly required IRequiresValidation Argument { get; init; }
+    public readonly required IValidator Validator { get; init; }
 }

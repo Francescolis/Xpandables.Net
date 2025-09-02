@@ -18,14 +18,19 @@
 using Microsoft.AspNetCore.Routing;
 
 namespace Xpandables.Net.DependencyInjection;
+
 /// <summary>
-/// Interface for adding and using endpoint routes.
+/// Defines a contract for adding routes to an <see cref="IEndpointRouteBuilder"/>.
 /// </summary>
+/// <remarks>This interface is typically implemented by components that configure endpoint routing in an
+/// application. It provides a method to register routes with an <see cref="IEndpointRouteBuilder"/> instance, enabling
+/// the setup of endpoint-based routing for HTTP requests.</remarks>
 public interface IEndpointRoute : IAddService, IUseService
 {
     /// <summary>
-    /// Adds routes to the specified <see cref="IEndpointRouteBuilder"/>.
+    /// Configures and adds application-specific routes to the provided endpoint route builder.
     /// </summary>
-    /// <param name="app">The <see cref="IEndpointRouteBuilder"/> to add routes to.</param>
+    /// <param name="app">The <see cref="IEndpointRouteBuilder"/> used to define and build the application's routing endpoints. Cannot be
+    /// null.</param>
     void AddRoutes(IEndpointRouteBuilder app);
 }

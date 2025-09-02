@@ -20,9 +20,14 @@ using Microsoft.AspNetCore.Http;
 namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Defines an interface for executing minimal results based on an execution result.
+/// Defines methods for evaluating and executing an <see cref="ExecutionResult"/> in the context of an HTTP request and
+/// response.
 /// </summary>
-public interface IMinimalResultExecution
+/// <remarks>This interface provides functionality to determine whether an execution can proceed based on the
+/// given <see cref="ExecutionResult"/>  and to asynchronously write the result to an HTTP response. It is typically
+/// used in scenarios where execution logic depends on  the outcome of a prior operation, such as middleware or API
+/// response handling.</remarks>
+public interface IExecutionResultExecutor
 {
     /// <summary>
     /// Determines whether the execution can be performed based on the provided execution result.
@@ -37,7 +42,5 @@ public interface IMinimalResultExecution
     /// <param name="context">The HTTP context that contains the request and response information.</param>
     /// <param name="executionResult">The execution result that will be written to the response.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    Task ExecuteAsync(
-        HttpContext context,
-        ExecutionResult executionResult);
+    Task ExecuteAsync(HttpContext context, ExecutionResult executionResult);
 }

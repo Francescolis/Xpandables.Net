@@ -18,21 +18,19 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Executions;
-
-namespace Xpandables.Net.Minimals;
+namespace Xpandables.Net.Executions;
 
 /// <summary>
 /// Represents an execution result that implements the 
 /// <see cref="IResult"/> interface.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="MinimalResult"/> class.
+/// Initializes a new instance of the <see cref="ExecutionResultMinimalResult"/> class.
 /// </remarks>
 /// <param name="executionResult">The execution result to be executed.</param>
 /// <exception cref="ArgumentNullException">Thrown when the execution result 
 /// is null.</exception>
-public sealed class MinimalResult(ExecutionResult executionResult) : IResult
+public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult) : IResult
 {
     private readonly ExecutionResult _executionResult = executionResult
         ?? throw new ArgumentNullException(nameof(executionResult));
@@ -44,9 +42,9 @@ public sealed class MinimalResult(ExecutionResult executionResult) : IResult
     /// <returns>A task that represents the asynchronous execution.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        IMinimalResultExecution? minimalResultExecution = httpContext
+        IExecutionResultExecutor? minimalResultExecution = httpContext
             .RequestServices
-            .GetServices<IMinimalResultExecution>()
+            .GetServices<IExecutionResultExecutor>()
             .FirstOrDefault(execution => execution.CanExecute(_executionResult));
 
         httpContext.Response.StatusCode = (int)_executionResult.StatusCode;

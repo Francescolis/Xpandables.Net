@@ -20,13 +20,17 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 using Xpandables.Net.Executions;
 
-namespace Xpandables.Net.Controllers;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Validates the model state before an action executes. If the model state is invalid, it sets the result to a
-/// BadRequest response.
+/// An action filter that validates the model state of the incoming request and sets a  <see
+/// cref="BadRequestObjectResult"/> containing an <see cref="ExecutionResult"/> if the model state is invalid.
 /// </summary>
-public sealed class ControllerValidationFilterAttribute : ActionFilterAttribute
+/// <remarks>This filter checks the <see langword="ActionExecutingContext.ModelState"/> for validation errors.  If the
+/// model state is invalid, it converts the errors into an <see cref="ExecutionResult"/>  and sets the <see
+/// cref="ActionExecutingContext.Result"/> to a <see cref="BadRequestObjectResult"/>  containing the <see
+/// cref="ExecutionResult"/>. If the model state is valid, the filter does nothing.</remarks>
+public sealed class ExecutionResultControllerValidationFilterAttribute : ActionFilterAttribute
 {
     /// <inheritdoc/>  
     public override void OnActionExecuting(ActionExecutingContext context)

@@ -24,7 +24,7 @@ namespace Xpandables.Net.Executions;
 /// <summary>
 /// This class represents a minimal result execution that handles HTTP 201 Created responses.
 /// </summary>
-public sealed class CreatedMinimalResultExecution : MinimalResultExecution
+public sealed class CreatedExecutionResultExecutor : ExecutionResultExecutor
 {
     /// <inheritdoc/>
     public sealed override bool CanExecute(ExecutionResult executionResult) =>

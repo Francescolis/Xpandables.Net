@@ -28,9 +28,9 @@ using Xpandables.Net.Collections;
 namespace Xpandables.Net.Executions;
 
 /// <summary>
-/// Defines a base class for executing minimal results in ASP.NET Core applications.
+/// Defines a base class for executing results in ASP.NET Core applications.
 /// </summary>
-public abstract class MinimalResultExecution : IMinimalResultExecution
+public abstract class ExecutionResultExecutor : IExecutionResultExecutor
 {
     /// <summary>
     /// When overridden in a derived class, determines whether the execution result can be executed by this instance.

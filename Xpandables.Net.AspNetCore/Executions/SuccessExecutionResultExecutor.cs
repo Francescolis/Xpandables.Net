@@ -29,7 +29,7 @@ namespace Xpandables.Net.Executions;
 /// <remarks>This class is designed to handle execution results with an HTTP status code of <see
 /// cref="HttpStatusCode.OK"/>  and a non-stream value. It writes the result value as JSON to the HTTP response if
 /// available, or completes the  response if no value is present.</remarks>
-public sealed class SuccessMinimalResultExecution : MinimalResultExecution
+public sealed class SuccessExecutionResultExecutor : ExecutionResultExecutor
 {
     /// <inheritdoc/>
     public sealed override bool CanExecute(ExecutionResult executionResult) =>

@@ -21,10 +21,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Controllers;
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Executions;
-using Xpandables.Net.Minimals;
 
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
@@ -48,85 +46,85 @@ public static class ServiceCollectionExecutionExtensions
         services
             .AddXMinimalJsonOptions()
             .AddXValidatorProvider()
-            .AddXEndpointValidator()
+            .AddXExecutionResultEndpointValidator()
             .AddXMinimalMiddleware()
             .AddXValidatorDefault()
-            .AddXMinimalResultExecution<FailureMinimalResultExecution>()
-            .AddXMinimalResultExecution<CreatedMinimalResultExecution>()
-            .AddXMinimalResultExecution<StreamMinimalResultExecution>()
-            .AddXMinimalResultExecution<SuccessMinimalResultExecution>()
-            .AddXMinimalResultExecution<AsyncPagedEnumerableMinimalResultExecution>();
+            .AddXExecutionResultExecutor<FailureExecutionResultExecutor>()
+            .AddXExecutionResultExecutor<CreatedExecutionResultExecutor>()
+            .AddXExecutionResultExecutor<StreamExecutionResultExecutor>()
+            .AddXExecutionResultExecutor<SuccessExecutionResultExecutor>()
+            .AddXExecutionResultExecutor<AsyncPagedExecutionResultExecutor>();
 
     /// <summary>
-    /// Registers a scoped implementation of the <see cref="IMinimalResultExecution"/> interface in the dependency
+    /// Registers a scoped implementation of the <see cref="IExecutionResultExecutor"/> interface in the dependency
     /// injection container.
     /// </summary>
     /// <remarks>This method is used to configure dependency injection for a specific implementation of <see
-    /// cref="IMinimalResultExecution"/>. The implementation type must be a class.</remarks>
-    /// <typeparam name="TMinimalResultExecution">The concrete type that implements <see cref="IMinimalResultExecution"/> to be registered.</typeparam>
+    /// cref="IExecutionResultExecutor"/>. The implementation type must be a class.</remarks>
+    /// <typeparam name="TExecutionResultExecutor">The concrete type that implements <see cref="IExecutionResultExecutor"/> to be registered.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
-    public static IServiceCollection AddXMinimalResultExecution<TMinimalResultExecution>(
+    public static IServiceCollection AddXExecutionResultExecutor<TExecutionResultExecutor>(
         this IServiceCollection services)
-        where TMinimalResultExecution : class, IMinimalResultExecution =>
-        services.AddScoped<IMinimalResultExecution, TMinimalResultExecution>();
+        where TExecutionResultExecutor : class, IExecutionResultExecutor =>
+        services.AddScoped<IExecutionResultExecutor, TExecutionResultExecutor>();
 
     /// <summary>
     /// Adds a scoped service of the type specified in 
     /// <typeparamref name="TEndpointValidator"/> 
     /// with an implementation type of 
-    /// <see cref="IEndpointValidator"/> to the specified 
+    /// <see cref="IExecutionResultEndpointValidator"/> to the specified 
     /// <see cref="IServiceCollection"/>.
     /// </summary>
     /// <typeparam name="TEndpointValidator">The type of the service to add. 
-    /// This class must implement <see cref="IEndpointValidator"/>.</typeparam>
+    /// This class must implement <see cref="IExecutionResultEndpointValidator"/>.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
     /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
-    public static IServiceCollection AddXEndpointValidator<TEndpointValidator>(
+    public static IServiceCollection AddXExecutionResultEndpointValidator<TEndpointValidator>(
         this IServiceCollection services)
-        where TEndpointValidator : class, IEndpointValidator =>
-        services.AddScoped<IEndpointValidator, TEndpointValidator>();
+        where TEndpointValidator : class, IExecutionResultEndpointValidator =>
+        services.AddScoped<IExecutionResultEndpointValidator, TEndpointValidator>();
 
     /// <summary>
-    /// Adds a scoped service of the type <see cref="EndpointValidator"/> 
+    /// Adds a scoped service of the type <see cref="ExecutionResultEndpointValidator"/> 
     /// to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
     /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
-    public static IServiceCollection AddXEndpointValidator(
+    public static IServiceCollection AddXExecutionResultEndpointValidator(
         this IServiceCollection services) =>
-        services.AddXEndpointValidator<EndpointValidator>();
+        services.AddXExecutionResultEndpointValidator<ExecutionResultEndpointValidator>();
 
     /// <summary>
-    /// Adds a scoped service of the type <see cref="MinimalMiddleware"/> 
+    /// Adds a scoped service of the type <see cref="ExecutionResultMinimalMiddleware"/> 
     /// to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add 
     /// the service to.</param>
     /// <returns>A reference to this instance after the execution has 
     /// completed.</returns>
-    public static IServiceCollection AddXMinimalMiddleware(
+    public static IServiceCollection AddXExecutionResultMinimalMiddleware(
         this IServiceCollection services) =>
-        services.AddScoped<MinimalMiddleware>();
+        services.AddScoped<ExecutionResultMinimalMiddleware>();
 
     /// <summary>
-    /// Adds the <see cref="MinimalMiddleware"/> to the application's 
+    /// Adds the <see cref="ExecutionResultMinimalMiddleware"/> to the application's 
     /// request pipeline.
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/> to configure.</param>
     /// <returns>A reference to the <see cref="IApplicationBuilder"/> after the 
     /// execution has completed.</returns>
-    public static IApplicationBuilder UseXMinimalMiddleware(
+    public static IApplicationBuilder UseXExecutionResultMinimalMiddleware(
         this IApplicationBuilder builder) =>
-        builder.UseMiddleware<MinimalMiddleware>();
+        builder.UseMiddleware<ExecutionResultMinimalMiddleware>();
 
     /// <summary>
     /// Applies the execution result filter to the response of the target route(s),
-    /// adding the <see cref="MinimalFilter"/> to the endpoint 
+    /// adding the <see cref="ExecutionResultMinimalFilter"/> to the endpoint 
     /// convention builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the endpoint convention 
@@ -139,14 +137,14 @@ public static class ServiceCollectionExecutionExtensions
     /// (<see cref="string.Empty"/>).
     /// <para>You can register the <see cref="IProblemDetailsService"/> in 
     /// order to customize the response.</para></remarks>
-    public static TBuilder WithXMinimalFilter<TBuilder>(
+    public static TBuilder WithXExecutionResultMinimalFilter<TBuilder>(
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter<TBuilder, MinimalFilter>();
+        builder.AddEndpointFilter<TBuilder, ExecutionResultMinimalFilter>();
 
     /// <summary>
     /// Applies the validation filter factory to the request of the target route(s),
-    /// adding the <see cref="MinimalValidationFilterFactory"/> to the endpoint 
+    /// adding the <see cref="ExecutionResultEndpointValidationFilterFactory"/> to the endpoint 
     /// convention builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the endpoint convention 
@@ -163,15 +161,15 @@ public static class ServiceCollectionExecutionExtensions
     /// generic validator using <see langword="AddXValidatorGenerics"/> method.</para>
     /// <para>You may register the <see cref="IProblemDetailsService"/> in 
     /// order to customize the response.</para></remarks>
-    public static TBuilder WithXValidationFilterFactory<TBuilder>(
+    public static TBuilder WithXExecutionResultValidationFilterFactory<TBuilder>(
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
         builder.AddEndpointFilterFactory(
-            MinimalValidationFilterFactory.FilterFactory);
+            ExecutionResultEndpointValidationFilterFactory.FilterFactory);
 
     /// <summary>
     /// Applies the validation filter to the request of the target route(s),
-    /// adding the <see cref="MinimalValidationFilter"/> to the endpoint 
+    /// adding the <see cref="ExecutionResultEndpointValidationFilter"/> to the endpoint 
     /// convention builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the endpoint convention builder.</typeparam>
@@ -187,17 +185,17 @@ public static class ServiceCollectionExecutionExtensions
     /// generic validator using <see langword="AddXValidatorGenerics"/> method.</para>
     /// <para>You can register the <see cref="IProblemDetailsService"/> in 
     /// order to customize the response.</para></remarks>
-    public static TBuilder WithXValidationFilter<TBuilder>(
+    public static TBuilder WithXExecutionResultValidationFilter<TBuilder>(
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
         builder.AddEndpointFilter(
-            new MinimalValidationFilter().InvokeAsync);
+            new ExecutionResultEndpointValidationFilter().InvokeAsync);
 
     /// <summary>
     /// Applies the execution result filter and validation filter to the 
     /// response of the target route(s),
-    /// adding the <see cref="MinimalFilter"/> and 
-    /// <see cref="MinimalValidationFilter"/> 
+    /// adding the <see cref="ExecutionResultMinimalFilter"/> and 
+    /// <see cref="ExecutionResultEndpointValidationFilter"/> 
     /// to the endpoint convention builder.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the endpoint convention 
@@ -209,33 +207,33 @@ public static class ServiceCollectionExecutionExtensions
     /// (<see cref="string.Empty"/>).
     /// <para>You can register the <see cref="IProblemDetailsService"/> in order
     /// to customize the response.</para></remarks>
-    public static TBuilder WithXMinimalApi<TBuilder>(
+    public static TBuilder WithXExecutionResultMinimalApi<TBuilder>(
         this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder =>
-        builder.WithXMinimalFilter()
-            .WithXValidationFilter();
+        builder.WithXExecutionResultMinimalFilter()
+            .WithXExecutionResultValidationFilter();
 
     /// <summary>
-    /// Adds the <see cref="MinimalJsonOptions"/> to the 
+    /// Adds the <see cref="ExecutionResultMinimalJsonOptions"/> to the 
     /// specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the 
     /// service to.</param>
     /// <returns>A reference to this instance after the execution has completed.</returns>
-    public static IServiceCollection AddXMinimalJsonOptions(
+    public static IServiceCollection AddXExecutionResultMinimalJsonOptions(
         this IServiceCollection services) =>
         services.AddSingleton<IConfigureOptions<JsonOptions>,
-            MinimalJsonOptions>();
+            ExecutionResultMinimalJsonOptions>();
 
     /// <summary>
-    /// Adds the <see cref="ControllerMvcOptions"/> to the 
+    /// Adds the <see cref="ExecutionResultControllerMvcOptions"/> to the 
     /// specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the 
     /// service to.</param>
     /// <returns>A reference to this instance after the execution has completed.</returns>
-    public static IServiceCollection AddXControllerMvcOptions(
+    public static IServiceCollection AddXExecutionResultControllerMvcOptions(
         this IServiceCollection services) =>
         services.AddSingleton<IConfigureOptions<MvcOptions>,
-            ControllerMvcOptions>();
+            ExecutionResultControllerMvcOptions>();
 }

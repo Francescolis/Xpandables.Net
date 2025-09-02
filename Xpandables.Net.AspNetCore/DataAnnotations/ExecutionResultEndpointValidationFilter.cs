@@ -18,14 +18,15 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.DataAnnotations;
-
-namespace Xpandables.Net.Minimals;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Represents a filter that validates endpoints in a minimal API.
+/// Represents an endpoint filter that validates the execution result of an endpoint invocation.
 /// </summary>
-public sealed class MinimalValidationFilter : IEndpointFilter
+/// <remarks>This filter integrates with the endpoint pipeline to perform validation on the execution result using
+/// an <see cref="IExecutionResultEndpointValidator"/>. The validator is resolved from the dependency injection container and is
+/// responsible for ensuring that the endpoint's execution adheres to the expected validation rules.</remarks>
+public sealed class ExecutionResultEndpointValidationFilter : IEndpointFilter
 {
     /// <summary>
     /// Invokes the filter asynchronously.
@@ -41,10 +42,10 @@ public sealed class MinimalValidationFilter : IEndpointFilter
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        IEndpointValidator validator = context
+        IExecutionResultEndpointValidator validator = context
             .HttpContext
             .RequestServices
-            .GetRequiredService<IEndpointValidator>();
+            .GetRequiredService<IExecutionResultEndpointValidator>();
 
         return validator.ValidateAsync(context, next);
     }
