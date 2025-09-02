@@ -62,7 +62,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseXMinimalMiddleware();
+app.UseXExecutionResultMinimalMiddleware();
 app.UseHttpsRedirection();
 app.UseSwagger()
     .UseSwaggerUI(options =>

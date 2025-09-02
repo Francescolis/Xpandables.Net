@@ -28,7 +28,7 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("GetOperationsAccount")
-        .WithXMinimalApi()
+        .WithXExecutionResultMinimalApi()
         .AllowAnonymous()
         .Produces<IAsyncPagedEnumerable<OperationAccount>>(contentType: Rests.Rest.ContentType.Json);
 
@@ -55,7 +55,7 @@ public sealed class GetOperationsAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("GetAsyncEnum")
-        .WithXMinimalApi()
+        .WithXExecutionResultMinimalApi()
         .AllowAnonymous()
         .Produces200OK<IAsyncPagedEnumerable<EntityDomainEvent>>();
     }

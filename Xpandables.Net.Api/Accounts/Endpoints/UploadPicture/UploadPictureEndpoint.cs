@@ -19,7 +19,7 @@ public sealed class UploadPictureEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("PictureAccount")
-        .WithXMinimalApi()
+        .WithXExecutionResultMinimalApi()
         .DisableAntiforgery()
         .AllowAnonymous()
         .Produces(StatusCodes.Status200OK)

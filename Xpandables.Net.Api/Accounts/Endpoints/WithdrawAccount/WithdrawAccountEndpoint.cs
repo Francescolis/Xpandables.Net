@@ -28,7 +28,7 @@ public sealed class WithdrawAccountEndpoint : IEndpointRoute
             })
         .WithTags("Accounts")
         .WithName("WithdrawAccount")
-        .WithXMinimalApi()
+        .WithXExecutionResultMinimalApi()
         .AllowAnonymous()
         .Accepts<WithdrawAccountRequest>(Rest.ContentType.Json)
         .Produces(StatusCodes.Status200OK)

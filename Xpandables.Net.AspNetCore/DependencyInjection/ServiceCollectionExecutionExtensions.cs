@@ -44,10 +44,10 @@ public static class ServiceCollectionExecutionExtensions
     public static IServiceCollection AddXMinimalApi(
         this IServiceCollection services) =>
         services
-            .AddXMinimalJsonOptions()
+            .AddXExecutionResultMinimalJsonOptions()
             .AddXValidatorProvider()
             .AddXExecutionResultEndpointValidator()
-            .AddXMinimalMiddleware()
+            .AddXExecutionResultMinimalMiddleware()
             .AddXValidatorDefault()
             .AddXExecutionResultExecutor<FailureExecutionResultExecutor>()
             .AddXExecutionResultExecutor<CreatedExecutionResultExecutor>()
