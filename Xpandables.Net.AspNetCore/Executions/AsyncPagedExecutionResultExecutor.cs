@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Net;
-using System.Reflection;
 
 using Microsoft.AspNetCore.Http;
 
@@ -28,9 +27,6 @@ namespace Xpandables.Net.Executions;
 /// </summary>
 public sealed class AsyncPagedExecutionResultExecutor : ExecutionResultExecutor
 {
-    readonly static MethodInfo createMethod = typeof(AsyncPagedEnumerableResult)
-        .GetMethod(nameof(AsyncPagedEnumerableResult.Create), BindingFlags.NonPublic | BindingFlags.Static)!;
-
     /// <inheritdoc/>
     public override bool CanExecute(ExecutionResult executionResult) =>
         executionResult is not null &&
@@ -56,9 +52,9 @@ public sealed class AsyncPagedExecutionResultExecutor : ExecutionResultExecutor
 
         Type itemType = asyncPagedType.GetGenericArguments()[0];
 
-        MethodInfo genericCreateMethod = createMethod.MakeGenericMethod(itemType);
+        var resultType = typeof(AsyncPagedEnumerableResult<>).MakeGenericType(itemType);
 
-        IResult result = (IResult)genericCreateMethod.Invoke(null, [executionResult.Value!])!;
+        var result = (IResult)Activator.CreateInstance(resultType, executionResult.Value!)!;
 
         await result.ExecuteAsync(context).ConfigureAwait(false);
     }
