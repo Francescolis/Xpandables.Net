@@ -64,20 +64,16 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
     /// <param name="mapper">An optional mapping function that transforms each item of type <typeparamref name="TSource"/>  into an item of
     /// type <typeparamref name="TResult"/>. The function is invoked with the source item  and a <see
     /// cref="CancellationToken"/>. If <see langword="null"/>, an identity mapper is used.</param>
-    /// <param name="buffer">An optional buffer to store intermediate results during enumeration. If <see langword="null"/>,  no buffering is
-    /// applied.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> or <paramref name="paginationFactory"/> is <see langword="null"/>.</exception>
     public AsyncPagedEnumerable(
         IAsyncEnumerable<TSource> source,
         Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
-        Func<TSource, CancellationToken, ValueTask<TResult>>? mapper = null,
-        AsyncPagedEnumerableBuffer<TResult>? buffer = null)
+        Func<TSource, CancellationToken, ValueTask<TResult>>? mapper = null)
     {
         _mode = Mode.Normal;
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _paginationFactory = paginationFactory ?? throw new ArgumentNullException(nameof(paginationFactory));
         _mapper = mapper ?? GetIdentityMapperOrThrow();
-        _buffer = buffer;
     }
 
     /// <summary>
@@ -92,15 +88,12 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
     /// sequence. The function is invoked with a <see cref="CancellationToken"/> to support cancellation.</param>
     /// <param name="mapper">An optional function to transform items of type <typeparamref name="TSource"/> into items of type <typeparamref
     /// name="TResult"/>. If <c>null</c>, the items are not transformed.</param>
-    /// <param name="buffer">An optional buffer to store paged results for optimized access. If <c>null</c>, no buffering is used.</param>
     public AsyncPagedEnumerable(
         IAsyncEnumerable<TSource> source,
         Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
-        Func<TSource, TResult>? mapper,
-        AsyncPagedEnumerableBuffer<TResult>? buffer = null)
+        Func<TSource, TResult>? mapper)
         : this(source, paginationFactory,
-              mapper is not null ? WrapSyncMapper(mapper) : GetIdentityMapperOrThrow(),
-              buffer)
+              mapper is not null ? WrapSyncMapper(mapper) : GetIdentityMapperOrThrow())
     { }
 
     /// <summary>
