@@ -1,5 +1,3 @@
-using System.Net.Async;
-
 using BenchmarkDotNet.Attributes;
 
 using Xpandables.Net.Async;
@@ -36,7 +34,7 @@ public class MapperBenchmarks
     {
         var paged = AsyncPagedEnumerable.ToAsyncPagedEnumerable(
             PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(PageContext.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
+            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
             mapper: x => x + 1);
         await paged.GetPageContextAsync();
         int sum = 0;
@@ -50,7 +48,7 @@ public class MapperBenchmarks
     {
         var paged = new AsyncPagedEnumerable<int, int>(
             PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(PageContext.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
+            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
             mapper: async (x, ct) => { await Task.CompletedTask; return x + 1; });
         await paged.GetPageContextAsync();
         int sum = 0;
@@ -64,7 +62,7 @@ public class MapperBenchmarks
     {
         var paged = new AsyncPagedEnumerable<int, int>(
             PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(PageContext.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
+            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
             mapper: async (x, ct) =>
             {
                 // Simulate small async CPU-bound then I/O-like yield

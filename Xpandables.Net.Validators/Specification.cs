@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using Xpandables.Net.Validators;
@@ -448,7 +449,7 @@ public record Specification<TSource> : Specification, ISpecification<TSource>
     /// <param name="right">The right specification to be combined. Cannot be null.</param>
     /// <param name="expressionType">The logical expression type used to combine the specifications. Typically ExpressionType.AndAlso or
     /// ExpressionType.OrElse.</param>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
     public Specification(
          [Required] ISpecification<TSource> left,
          [Required] ISpecification<TSource> right,
@@ -484,7 +485,7 @@ public record Specification<TSource> : Specification, ISpecification<TSource>
     /// <param name="right">An expression representing the predicate to combine with the specification. Cannot be null.</param>
     /// <param name="expressionType">The logical operator to use when combining the specification and the predicate. Must be a valid ExpressionType
     /// representing a logical operation, such as AndAlso or OrElse.</param>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
     public Specification(
         [Required] ISpecification<TSource> left,
         [Required] Expression<Func<TSource, bool>> right,

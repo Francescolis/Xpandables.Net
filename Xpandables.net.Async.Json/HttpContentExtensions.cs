@@ -16,7 +16,6 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Async;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -78,7 +77,7 @@ public static class HttpContentExtensions
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return new AsyncPagedEnumerable<T, T>(Iterator(cancellationToken), PageContextFactory);
+            return new AsyncPagedEnumerable<T, T>(Iterator(cancellationToken), PaginationFactory);
 
             async ValueTask<byte[]> ReadBufferAsync(CancellationToken ct)
             {
@@ -86,11 +85,11 @@ public static class HttpContentExtensions
                 return bytes ?? [];
             }
 
-            async ValueTask<PageContext> PageContextFactory(CancellationToken ct)
+            async ValueTask<Pagination> PaginationFactory(CancellationToken ct)
             {
                 var buffer = await ReadBufferAsync(ct).ConfigureAwait(false);
                 if (buffer.Length == 0)
-                    return PageContext.Create(totalCount: 0);
+                    return Pagination.Create(totalCount: 0);
 
                 using var doc = JsonDocument.Parse(buffer);
                 var root = doc.RootElement;
@@ -98,21 +97,21 @@ public static class HttpContentExtensions
 
                 if (root.ValueKind == JsonValueKind.Object)
                 {
-                    var maybe = TryReadPageContext(root, caseInsensitive);
+                    var maybe = TryReadPagination(root, caseInsensitive);
                     if (maybe.HasValue)
                         return maybe.Value;
 
                     var data = TryGetDataArray(root, caseInsensitive);
                     int total = data?.GetArrayLength() ?? 0;
-                    return PageContext.Create(total);
+                    return Pagination.Create(total);
                 }
 
                 if (root.ValueKind == JsonValueKind.Array)
                 {
-                    return PageContext.Create(root.GetArrayLength());
+                    return Pagination.Create(root.GetArrayLength());
                 }
 
-                return PageContext.Create(totalCount: 0);
+                return Pagination.Create(totalCount: 0);
             }
 
             async IAsyncEnumerable<T> Iterator([EnumeratorCancellation] CancellationToken ct = default)
@@ -167,12 +166,12 @@ public static class HttpContentExtensions
         return null;
     }
 
-    private static PageContext? TryReadPageContext(JsonElement obj, bool caseInsensitive)
+    private static Pagination? TryReadPagination(JsonElement obj, bool caseInsensitive)
     {
-        if (!TryGetProperty(obj, "pageContext", caseInsensitive, out var pc) || pc.Value.ValueKind != JsonValueKind.Object)
+        if (!TryGetProperty(obj, "pagination", caseInsensitive, out var pc) || pc.Value.ValueKind != JsonValueKind.Object)
             return null;
 
-        var ctx = PageContext.Empty;
+        var ctx = Pagination.Empty;
         if (TryGetProperty(pc.Value, "pageSize", caseInsensitive, out var pageSize) &&
             pageSize.Value.ValueKind == JsonValueKind.Number &&
             pageSize.Value.TryGetInt32(out var ps))

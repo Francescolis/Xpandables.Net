@@ -15,9 +15,11 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
-using Xpandables.Net.Abstractions.Collections;
+using System.Net;
 
 using Microsoft.Extensions.Primitives;
+
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.ExecutionResults;
 
@@ -301,10 +303,9 @@ public interface IExecutionResultErrorBuilder<out TBuilder>
     /// <summary>
     /// Adds an error entry.
     /// </summary>
-    /// <param name="error">The error entry.</param>
+    /// <param name="entry">The error entry.</param>
     /// <returns>The current builder instance.</returns>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
-    TBuilder WithError(ElementEntry error);
+    TBuilder WithError(ElementEntry entry);
 
     /// <summary>
     /// Adds multiple errors from a dictionary.

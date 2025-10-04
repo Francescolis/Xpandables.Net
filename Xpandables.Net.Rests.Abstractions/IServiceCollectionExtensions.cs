@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Net.DependencyInjection;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,7 +30,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>This class contains static methods that extend the functionality of IServiceCollection, enabling
 /// additional service registration patterns and configuration options commonly used in dependency injection
 /// scenarios.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IServiceCollectionExtensions
 {
     /// <summary>

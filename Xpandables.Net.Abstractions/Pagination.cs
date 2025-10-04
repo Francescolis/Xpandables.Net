@@ -17,7 +17,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Async;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Specifies the strategy for managing pagination in iterators or paginated data contexts.
@@ -25,7 +25,7 @@ namespace Xpandables.Net.Async;
 /// <remarks>This enumeration defines different approaches to updating and managing pagination state. Use the
 /// appropriate strategy based on whether pagination is controlled at the page level, item level, or not managed at
 /// all.</remarks>
-public enum PageContextStrategy
+public enum PaginationStrategy
 {
     /// <summary>
     /// No specific strategy is applied. Pagination may not be updated or managed inside iterators.
@@ -42,14 +42,14 @@ public enum PageContextStrategy
 }
 
 /// <summary>
-/// Represents the context for a paginated collection, including information about the total number of items, page size,
+/// Represents the pagination, including information about the total number of items, page size,
 /// current page, and continuation token for retrieving additional results.
 /// </summary>
 /// <remarks>This type is typically used to manage and navigate paginated data in scenarios where results are
 /// divided into discrete pages. It provides metadata about the pagination state, such as the total number of items
 /// available, the size of each page, and the current page being viewed. The continuation token can be used to fetch the
 /// next set of results in a paginated operation.</remarks>
-public readonly record struct PageContext
+public readonly record struct Pagination
 {
     /// <summary>
     /// The total number of items across all pages.
@@ -73,30 +73,30 @@ public readonly record struct PageContext
 }
 
 /// <summary>
-/// Provides a source generation context for serializing and deserializing PageContext objects using
+/// Provides a source generation context for serializing and deserializing Pagination objects using
 /// System.Text.Json.
 /// </summary>
-/// <remarks>This context enables high-performance JSON serialization for the PageContext type by
+/// <remarks>This context enables high-performance JSON serialization for the Pagination type by
 /// leveraging source generation. Use this context with System.Text.Json APIs to improve serialization speed and
 /// reduce runtime reflection overhead.</remarks>
-[JsonSerializable(typeof(PageContext))]
-public partial class PageContextSourceGenerationContext : JsonSerializerContext
+[JsonSerializable(typeof(Pagination))]
+public partial class PaginationSourceGenerationContext : JsonSerializerContext
 {
 }
 
 
 /// <summary>
-/// Provides extension methods for <see cref="PageContext"/> instances.
+/// Provides extension methods for <see cref="Pagination"/> instances.
 /// </summary>
-/// <remarks>This class contains utility methods that extend the functionality of the <see cref="PageContext"/>
+/// <remarks>This class contains utility methods that extend the functionality of the <see cref="Pagination"/>
 /// type. These methods are designed to simplify common operations and enhance usability.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class PageContextInstancesExtensions
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+public static class PaginationInstancesExtensions
 {
     /// <summary>
-    /// Provides extension methods for <see cref="PageContext"/> instances.
+    /// Provides extension methods for <see cref="Pagination"/> instances.
     /// </summary>
-    extension(PageContext context)
+    extension(Pagination context)
     {
         /// <summary>
         /// Gets a value indicating whether the total count is unknown.
@@ -150,20 +150,20 @@ public static class PageContextInstancesExtensions
 }
 
 /// <summary>
-/// Provides extension methods for <see cref="PageContext"/> instances.
+/// Provides extension methods for <see cref="Pagination"/> instances.
 /// </summary>
-/// <remarks>This class contains utility methods that extend the functionality of the <see cref="PageContext"/>
+/// <remarks>This class contains utility methods that extend the functionality of the <see cref="Pagination"/>
 /// type. These methods are designed to simplify common operations and enhance usability.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class PageContextStaticExtensions
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+public static class PaginationStaticExtensions
 {
     /// <summary>
-    /// Provides extension methods for <see cref="PageContext"/> instances.
+    /// Provides extension methods for <see cref="Pagination"/> instances.
     /// </summary>
-    extension(PageContext)
+    extension(Pagination)
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="PageContext"/> class with the specified pagination parameters.
+        /// Creates a new instance of the <see cref="Pagination"/> class with the specified pagination parameters.
         /// </summary>
         /// <param name="pageSize">The number of items per page. Must be greater than zero.</param>
         /// <param name="currentPage">The current page number. Must be zero or greater.</param>
@@ -171,8 +171,8 @@ public static class PageContextStaticExtensions
         /// langword="null"/>.</param>
         /// <param name="totalCount">An optional total count of items in the paginated collection. Can be <see langword="null"/> if the total
         /// count is unknown.</param>
-        /// <returns>A new <see cref="PageContext"/> instance initialized with the specified parameters.</returns>
-        public static PageContext Create(
+        /// <returns>A new <see cref="Pagination"/> instance initialized with the specified parameters.</returns>
+        public static Pagination Create(
             int pageSize, int currentPage, string? continuationToken = null, int? totalCount = null)
             => new()
             {
@@ -183,12 +183,12 @@ public static class PageContextStaticExtensions
             };
 
         /// <summary>
-        /// Creates a new instance of the <see cref="PageContext"/> class with the specified total count.
+        /// Creates a new instance of the <see cref="Pagination"/> class with the specified total count.
         /// </summary>
-        /// <param name="totalCount">The total number of items to be represented by the <see cref="PageContext"/>.</param>
-        /// <returns>A new <see cref="PageContext"/> instance with the specified total count and default values for other
+        /// <param name="totalCount">The total number of items to be represented by the <see cref="Pagination"/>.</param>
+        /// <returns>A new <see cref="Pagination"/> instance with the specified total count and default values for other
         /// properties.</returns>
-        public static PageContext Create(int totalCount)
+        public static Pagination Create(int totalCount)
             => new()
             {
                 PageSize = 0,
@@ -198,9 +198,9 @@ public static class PageContextStaticExtensions
             };
 
         /// <summary>
-        /// Gets an empty <see cref="PageContext"/> instance with default values.
+        /// Gets an empty <see cref="Pagination"/> instance with default values.
         /// </summary>
-        public static PageContext Empty => new()
+        public static Pagination Empty => new()
         {
             PageSize = 0,
             CurrentPage = 0,

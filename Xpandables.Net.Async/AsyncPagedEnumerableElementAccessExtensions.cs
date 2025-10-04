@@ -31,16 +31,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
+using System.Diagnostics.CodeAnalysis;
 
 using Xpandables.Net.Async;
-
 namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Provides element access extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableElementAccessExtensions
 {
     /// <summary>

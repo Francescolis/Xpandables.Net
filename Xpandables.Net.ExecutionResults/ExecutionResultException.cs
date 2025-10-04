@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
-using Xpandables.Net.Abstractions;
 using System.Runtime.Serialization;
 
 namespace Xpandables.Net.ExecutionResults;
@@ -132,4 +131,4 @@ public sealed class ExecutionResultException : Exception
 
     ///<inheritdoc/>
     public override string ToString() => $"{base.ToString()}{Environment.NewLine}{ExecutionResult}";
-}}
+}

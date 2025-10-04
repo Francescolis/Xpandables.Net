@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 
@@ -32,14 +31,14 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
 {
     private readonly IAsyncEnumerable<TSource>? _source;
     private readonly IQueryable<TSource>? _queryable;
-    private readonly Func<CancellationToken, ValueTask<PageContext>>? _paginationFactory;
+    private readonly Func<CancellationToken, ValueTask<Pagination>>? _paginationFactory;
     private readonly Func<CancellationToken, ValueTask<long>>? _totalFactory;
     private readonly Func<TSource, CancellationToken, ValueTask<TResult>>? _mapper;
 
     private volatile int _paginationState; // 0 = not started, 1 = computing, 2 = computed, 3 = faulted
-    private Task<PageContext>? _paginationTask;
+    private Task<Pagination>? _paginationTask;
     private Exception? _paginationError;
-    private PageContext _pageContext; // backing store
+    private Pagination _pageContext; // backing store
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AsyncPagedEnumerable{TSource, TResult}"/> class,  which provides
@@ -51,14 +50,14 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
     /// enumeration.</remarks>
     /// <param name="source">The asynchronous enumerable representing the data source to be paginated.  This parameter cannot be <see
     /// langword="null"/>.</param>
-    /// <param name="paginationFactory">A factory function that creates a <see cref="PageContext"/> object, which defines the initial  pagination state.
+    /// <param name="paginationFactory">A factory function that creates a <see cref="Pagination"/> object, which defines the initial  pagination state.
     /// This parameter cannot be <see langword="null"/>.</param>
     /// <param name="mapper">An optional asynchronous mapping function that transforms each item of type <typeparamref name="TSource"/>  into
     /// an item of type <typeparamref name="TResult"/>. If <see langword="null"/>, the items are returned  without
     /// transformation.</param>
     public AsyncPagedEnumerable(
         IAsyncEnumerable<TSource> source,
-        Func<CancellationToken, ValueTask<PageContext>> paginationFactory,
+        Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
         Func<TSource, CancellationToken, ValueTask<TResult>>? mapper = null)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -67,7 +66,7 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
         _source = source;
         _paginationFactory = paginationFactory;
         _mapper = mapper;
-        _pageContext = PageContext.Create(0, 0, null, null);
+        _pageContext = Pagination.Create(0, 0, null, null);
     }
 
     /// <summary>
@@ -89,14 +88,14 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
         _queryable = query;
         _totalFactory = totalFactory;
         _mapper = mapper;
-        _pageContext = PageContext.Create(0, 0, null, null);
+        _pageContext = Pagination.Create(0, 0, null, null);
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         // Always pass current (possibly empty) page context as initial snapshot.
-        PageContext initial = _paginationState == 2 ? _pageContext : PageContext.Empty;
+        Pagination initial = _paginationState == 2 ? _pageContext : Pagination.Empty;
 
         return (_source, _queryable) switch
         {
@@ -107,7 +106,7 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
     }
 
     /// <inheritdoc/>
-    public Task<PageContext> GetPageContextAsync(CancellationToken cancellationToken = default)
+    public Task<Pagination> GetPageContextAsync(CancellationToken cancellationToken = default)
     {
         // Fast path if already computed.
         if (_paginationState == 2)
@@ -144,11 +143,11 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
         }
         return existing;
 
-        async Task<PageContext> ComputeAndStoreAsync(CancellationToken ct)
+        async Task<Pagination> ComputeAndStoreAsync(CancellationToken ct)
         {
             try
             {
-                PageContext ctx = await ComputePaginationAsync(ct).ConfigureAwait(false);
+                Pagination ctx = await ComputePaginationAsync(ct).ConfigureAwait(false);
                 _pageContext = ctx;
                 _ = Interlocked.Exchange(ref _paginationState, 2);
                 return ctx;
@@ -162,17 +161,17 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
         }
     }
 
-    private async ValueTask<PageContext> ComputePaginationAsync(CancellationToken cancellationToken)
+    private async ValueTask<Pagination> ComputePaginationAsync(CancellationToken cancellationToken)
     {
         return (_paginationFactory, _queryable) switch
         {
             (not null, _) => await _paginationFactory(cancellationToken).ConfigureAwait(false),
             (null, not null) => await ComputeQueryablePaginationAsync(_queryable, cancellationToken).ConfigureAwait(false),
-            _ => PageContext.Create(0, 0, null, null) // Fallback empty context if no metadata strategy available.
+            _ => Pagination.Create(0, 0, null, null) // Fallback empty context if no metadata strategy available.
         };
     }
 
-    private async ValueTask<PageContext> ComputeQueryablePaginationAsync(
+    private async ValueTask<Pagination> ComputeQueryablePaginationAsync(
         IQueryable<TSource> query,
         CancellationToken cancellationToken)
     {
@@ -210,13 +209,13 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
                 ? (skip.Value / take.Value) + 1
                 : (pageSize > 0 ? 1 : 0);
 
-        return PageContext.Create(pageSize, currentPage, continuationToken: null, totalCount);
+        return Pagination.Create(pageSize, currentPage, continuationToken: null, totalCount);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private IAsyncEnumerator<TResult> CreateMappedEnumerator(
         IAsyncEnumerator<TSource> sourceEnumerator,
-        PageContext initialContext,
+        Pagination initialContext,
         CancellationToken cancellationToken)
     {
         return _mapper switch

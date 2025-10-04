@@ -15,8 +15,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions;
 using System.Text.Json;
+
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests.ResponseBuilders;
 

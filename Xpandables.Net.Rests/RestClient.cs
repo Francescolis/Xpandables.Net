@@ -15,9 +15,8 @@
  *
 ********************************************************************************/
 using System.Net;
-using System.Net.Abstractions;
 
-using Xpandables.Net.Abstractions;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests;
 

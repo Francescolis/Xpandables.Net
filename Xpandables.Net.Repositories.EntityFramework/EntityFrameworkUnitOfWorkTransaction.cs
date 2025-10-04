@@ -16,12 +16,9 @@
 ********************************************************************************/
 
 using System.Data.Common;
-using System.Net.Abstractions;
-using System.Net.Repositories;
 
 using Microsoft.EntityFrameworkCore.Storage;
 
-using Xpandables.Net.Abstractions;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Repositories;

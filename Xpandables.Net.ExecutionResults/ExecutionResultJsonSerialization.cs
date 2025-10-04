@@ -16,11 +16,13 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Xpandables.Net.Abstractions;
-using Xpandables.Net.Abstractions.Collections;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+
+using Xpandables.Net.Collections;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.ExecutionResults;
 
@@ -522,7 +524,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
                     break;
 
                 case "Headers" or "headers":
-                    headers = reader.TokenType == JsonTokenType Null
+                    headers = reader.TokenType == JsonTokenType.Null
                         ? default
                         : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
                     break;

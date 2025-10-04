@@ -4,9 +4,30 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Platforms>x64</Platforms>
     <AssemblyName>Xpandables.Net.Repositories.Pipelines</AssemblyName>
     <RootNamespace>Xpandables.Net.Repositories.Pipelines</RootNamespace>
   </PropertyGroup>
+
+
+	<ItemGroup>
+		<Content Include="Xpandables.Net.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\Xpandables.Net.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net.Repositories\Xpandables.Net.Repositories.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.Tasks.Abstractions\Xpandables.Net.Tasks.Abstractions.csproj" />
+	</ItemGroup>
 
 </Project>

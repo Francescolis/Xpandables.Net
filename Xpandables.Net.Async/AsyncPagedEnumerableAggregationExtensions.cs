@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Net.Async;
-
 using Xpandables.Net.Async;
 
 namespace Xpandables.Net.Async;
@@ -24,7 +22,7 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides aggregation and ordering extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableAggregationExtensions
 {
     /// <summary>

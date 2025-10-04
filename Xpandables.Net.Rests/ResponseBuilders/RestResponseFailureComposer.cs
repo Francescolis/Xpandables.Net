@@ -32,9 +32,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
-using System.Net.Abstractions;
-
+using Xpandables.Net.Collections;
 namespace Xpandables.Net.Rests.ResponseBuilders;
 
 /// <summary>

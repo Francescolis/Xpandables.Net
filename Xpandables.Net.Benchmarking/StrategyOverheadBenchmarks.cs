@@ -1,4 +1,4 @@
-using System.Net.Async;
+using System.Runtime.CompilerServices;
 
 using BenchmarkDotNet.Attributes;
 
@@ -18,11 +18,11 @@ public class StrategyOverheadBenchmarks
     [GlobalSetup]
     public void Setup() => _data = [.. Enumerable.Range(1, Count)];
 
-    private AsyncPagedEnumerable<int, int> CreatePaged(PageContextStrategy strategy)
+    private AsyncPagedEnumerable<int, int> CreatePaged(PaginationStrategy strategy)
     {
         var paged = new AsyncPagedEnumerable<int, int>(
             PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(PageContext.Create(pageSize: 128, currentPage: 1, totalCount: Count))
+            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 128, currentPage: 1, totalCount: Count))
         );
         var e = paged.GetAsyncEnumerator() as IAsyncPagedEnumerator<int>;
         e!.WithPageContextStrategy(strategy);
@@ -32,7 +32,7 @@ public class StrategyOverheadBenchmarks
     private IAsyncEnumerable<int> PlainAsync()
     {
         return Core();
-        async IAsyncEnumerable<int> Core([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        async IAsyncEnumerable<int> Core([EnumeratorCancellation] CancellationToken ct = default)
         {
             foreach (var v in _data)
             {
@@ -45,7 +45,7 @@ public class StrategyOverheadBenchmarks
     [Benchmark(Baseline = true)]
     public async Task Strategy_None()
     {
-        var paged = CreatePaged(PageContextStrategy.None);
+        var paged = CreatePaged(PaginationStrategy.None);
         int sum = 0;
         await foreach (var v in paged)
             sum += v;
@@ -55,7 +55,7 @@ public class StrategyOverheadBenchmarks
     [Benchmark]
     public async Task Strategy_PerPage()
     {
-        var paged = CreatePaged(PageContextStrategy.PerPage);
+        var paged = CreatePaged(PaginationStrategy.PerPage);
         int sum = 0;
         await foreach (var v in paged)
             sum += v;
@@ -65,7 +65,7 @@ public class StrategyOverheadBenchmarks
     [Benchmark]
     public async Task Strategy_PerItem()
     {
-        var paged = CreatePaged(PageContextStrategy.PerItem);
+        var paged = CreatePaged(PaginationStrategy.PerItem);
         int sum = 0;
         await foreach (var v in paged)
             sum += v;

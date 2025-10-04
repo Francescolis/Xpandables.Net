@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.Tasks;
 
@@ -54,4 +53,4 @@ public sealed class DependencyManager : IDependencyManager
             ?? throw new InvalidOperationException(
                 $"The dependency provider for the type {dependencyType.Name} is not registered.");
     }
-}}
+}

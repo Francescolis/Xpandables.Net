@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Net.Async;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -122,10 +121,10 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
         var pageContext = await _results.GetPageContextAsync(cancellationToken).ConfigureAwait(false);
 
         writer.WriteStartObject();
-        writer.WritePropertyName("pageContext");
-        JsonSerializer.Serialize(writer, pageContext, PageContextSourceGenerationContext.Default.PageContext);
+        writer.WritePropertyName("pagination");
+        JsonSerializer.Serialize(writer, pageContext, PaginationSourceGenerationContext.Default.Pagination);
 
-        writer.WritePropertyName("data");
+        writer.WritePropertyName("items");
         writer.WriteStartArray();
 
         await foreach (TResult item in _results.WithCancellation(cancellationToken).ConfigureAwait(false))

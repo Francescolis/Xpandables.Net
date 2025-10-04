@@ -15,8 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
-using System.Net.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +35,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>This class contains static methods that extend the functionality of <see cref="IServiceCollection"/>,
 /// enabling additional service registration patterns and convenience features commonly used in dependency injection
 /// scenarios.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IServiceCollectionExtensions
 {
     /// <summary>

@@ -31,7 +31,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
+using System.Collections;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Async;
 
@@ -40,7 +42,7 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides grouping extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableGroupingExtensions
 {
     /// <summary>
@@ -81,7 +83,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
 
             comparer ??= EqualityComparer<TKey>.Default;
 
-            async IAsyncEnumerable<IGrouping<TKey, TSource>> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<IGrouping<TKey, TSource>> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 ct.ThrowIfCancellationRequested(); // Check cancellation before starting
 
@@ -107,7 +109,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
 
             return new AsyncPagedEnumerable<IGrouping<TKey, TSource>, IGrouping<TKey, TSource>>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -149,7 +151,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
 
             comparer ??= EqualityComparer<TKey>.Default;
 
-            async IAsyncEnumerable<IGrouping<TKey, TElement>> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<IGrouping<TKey, TElement>> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 ct.ThrowIfCancellationRequested(); // Check cancellation before starting
 
@@ -176,7 +178,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
 
             return new AsyncPagedEnumerable<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -218,7 +220,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
 
             comparer ??= EqualityComparer<TKey>.Default;
 
-            async IAsyncEnumerable<TResult> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 ct.ThrowIfCancellationRequested(); // Check cancellation before starting
 
@@ -244,7 +246,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion
@@ -370,7 +372,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
 
         public IEnumerator<TElement> GetEnumerator() => elements.GetEnumerator();
 
-        Collections.IEnumerator Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     private sealed class Lookup<TKey, TElement>(Dictionary<TKey, List<TElement>> groups) : ILookup<TKey, TElement>
@@ -390,6 +392,6 @@ public static class AsyncPagedEnumerableGroupingExtensions
             }
         }
 
-        Collections.IEnumerator Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

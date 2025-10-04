@@ -14,12 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Provides projection extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableProjectionExtensions
 {
     /// <summary>
@@ -43,7 +45,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
             ArgumentNullException.ThrowIfNull(selector);
             return new AsyncPagedEnumerable<TSource, TResult>(
                 source,
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)),
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)),
                 (s, ct) => ValueTask.FromResult(selector(s)));
         }
 
@@ -58,7 +60,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
             ArgumentNullException.ThrowIfNull(selectorAsync);
             return new AsyncPagedEnumerable<TSource, TResult>(
                 source,
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)),
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)),
                 (s, ct) => selectorAsync(s));
         }
 
@@ -73,7 +75,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
             ArgumentNullException.ThrowIfNull(selectorAsync);
             return new AsyncPagedEnumerable<TSource, TResult>(
                 source,
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)),
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)),
                 selectorAsync);
         }
 

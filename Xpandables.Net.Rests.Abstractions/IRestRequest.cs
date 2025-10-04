@@ -34,6 +34,7 @@
 ********************************************************************************/
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 using Xpandables.Net.Async;
 
@@ -90,7 +91,7 @@ public interface IRestRequest<TResult> : IRestRequest
 /// </summary>
 /// <typeparam name="TResult">Specifies the type of result that must not be null.</typeparam>
 /// <remarks>A custom implementation of <see cref="IRestResponseStreamComposer{TResult}"/> can return <see cref="IAsyncPagedEnumerable{T}"/>.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
 public interface IRestRequestStream<TResult> : IRestRequest<TResult>
     where TResult : notnull
 {

@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -31,7 +32,7 @@ public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRes
     where TRestRequest : class, IRestString
 {
     /// <inheritdoc/>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public void Compose(RestRequestContext context)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));

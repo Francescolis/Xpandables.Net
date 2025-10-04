@@ -31,7 +31,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Async;
 namespace Xpandables.Net.Async;
@@ -39,7 +40,7 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides set operation and joining extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableSetExtensions
 {
     /// <summary>
@@ -76,7 +77,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             comparer ??= EqualityComparer<TSource>.Default;
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var seen = new HashSet<TSource>(comparer);
 
@@ -95,7 +96,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -123,7 +124,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             comparer ??= EqualityComparer<TSource>.Default;
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var otherSet = new HashSet<TSource>(comparer);
                 await foreach (var item in other.WithCancellation(ct).ConfigureAwait(false))
@@ -141,7 +142,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -169,7 +170,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             comparer ??= EqualityComparer<TSource>.Default;
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var otherSet = new HashSet<TSource>(comparer);
                 await foreach (var item in other.WithCancellation(ct).ConfigureAwait(false))
@@ -187,7 +188,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion
@@ -205,7 +206,7 @@ public static class AsyncPagedEnumerableSetExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(other);
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -220,7 +221,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -233,7 +234,7 @@ public static class AsyncPagedEnumerableSetExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 yield return element;
 
@@ -245,7 +246,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -258,7 +259,7 @@ public static class AsyncPagedEnumerableSetExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -270,7 +271,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion
@@ -286,7 +287,7 @@ public static class AsyncPagedEnumerableSetExtensions
         /// <param name="resultSelector">A function that specifies how to merge the elements from the two sequences.</param>
         /// <returns>An async paged enumerable that contains merged elements of two input sequences.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the current sequence, the other sequence, or the result selector is null.</exception>
-        [Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "ConfigureAwait is not applicable to await using")]
+        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "ConfigureAwait is not applicable to await using")]
         public IAsyncPagedEnumerable<TResult> ZipPaged<TOther, TResult>(
             IAsyncEnumerable<TOther> other,
             Func<TSource, TOther, TResult> resultSelector)
@@ -295,7 +296,7 @@ public static class AsyncPagedEnumerableSetExtensions
             ArgumentNullException.ThrowIfNull(other);
             ArgumentNullException.ThrowIfNull(resultSelector);
 
-            async IAsyncEnumerable<TResult> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await using var sourceEnumerator = source.GetAsyncEnumerator(ct);
                 await using var otherEnumerator = other.GetAsyncEnumerator(ct);
@@ -309,7 +310,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -348,7 +349,7 @@ public static class AsyncPagedEnumerableSetExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            async IAsyncEnumerable<TSource?> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource?> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 bool hasElements = false;
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -363,7 +364,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource?, TSource?>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion

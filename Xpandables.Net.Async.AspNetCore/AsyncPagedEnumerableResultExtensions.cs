@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -25,7 +25,7 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides extension methods for converting asynchronous paged enumerables to result objects.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableResultExtensions
 {
     /// <summary>

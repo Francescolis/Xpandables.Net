@@ -32,8 +32,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 
-using System.Net.Abstractions;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests.ResponseBuilders;
 
@@ -52,7 +53,7 @@ public sealed class RestResponseNoContentComposer : IRestResponseComposer
     }
 
     /// <inheritdoc/>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public ValueTask<RestResponse> ComposeAsync(
         RestResponseContext context, CancellationToken cancellationToken = default)
     {

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions.Collections;
+using Xpandables.Net.Collections;
 
 using static Xpandables.Net.Rests.RestSettings;
 

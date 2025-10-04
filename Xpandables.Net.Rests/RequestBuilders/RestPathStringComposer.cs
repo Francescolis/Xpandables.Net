@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 using static Xpandables.Net.Rests.RestSettings;
 
 namespace Xpandables.Net.Rests.RequestBuilders;
@@ -51,7 +53,7 @@ public sealed class RestPathStringComposer<TRestRequest> : IRestRequestComposer<
     /// <param name="path">The base path.</param>
     /// <param name="pathString">The path string parameters to add.</param>
     /// <returns>The path with the added parameters.</returns>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>")]
     public static string AddPathString(
         string path,
         IDictionary<string, string> pathString)

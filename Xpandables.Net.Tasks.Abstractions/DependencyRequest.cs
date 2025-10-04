@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +15,7 @@
  *
 ********************************************************************************/
 
-using System.Net.Optionals;
+using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Tasks;
 

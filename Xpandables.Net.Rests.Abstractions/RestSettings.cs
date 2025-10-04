@@ -16,9 +16,10 @@
  *
 ********************************************************************************/
 using System.Collections.Immutable;
-using System.Net.Abstractions;
-using System.Net.Rests;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Rests;
 
@@ -152,7 +153,7 @@ public static class RestSettings
     /// <summary>
     /// Represents the format of the body content in an HTTP request.
     /// </summary>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "<Pending>")]
+    [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "<Pending>")]
     public enum BodyFormat
     {
         /// <summary>
@@ -238,7 +239,7 @@ public static class RestSettings
     /// <summary>
     /// Provides constants for HTTP content types.
     /// </summary>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
     public static class ContentType
     {
         /// <summary>
@@ -388,7 +389,7 @@ public static class RestSettings
     /// <summary>
     /// Provides constants for HTTP operations used in PATCH requests.
     /// </summary>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
     public static class Operation
     {
         /// <summary>
@@ -521,7 +522,7 @@ public static class RestSettings
     /// <summary>
     /// A helper used to build patch operations.
     /// </summary>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
     public static class Patch
     {
         /// <summary>

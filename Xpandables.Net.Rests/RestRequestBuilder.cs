@@ -15,12 +15,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using Xpandables.Net.Abstractions;
 
 namespace Xpandables.Net.Rests;
 
@@ -40,7 +38,7 @@ public sealed class RestRequestBuilder(
     private readonly IRestAttributeProvider _attributeProvider = attributeProvider;
 
     /// <inheritdoc />
-    [Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public ValueTask<RestRequest> BuildRequestAsync<TRestRequest>(TRestRequest request,
         CancellationToken cancellationToken = default)
         where TRestRequest : class, IRestRequest

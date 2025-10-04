@@ -17,10 +17,8 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Abstractions;
-using System.Net.Abstractions.Collections;
 
-using Xpandables.Net.Abstractions;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests;
 

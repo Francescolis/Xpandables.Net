@@ -17,10 +17,9 @@
 using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Abstractions.Text;
 using System.Runtime.CompilerServices;
 
-using Xpandables.Net.Abstractions.Text;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Repositories;
 
@@ -59,7 +58,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
 
     private static FrozenSet<string> CreateValidStatusNames()
     {
-        return new[] { nameof(ACTIVE), nameof(PENDING), nameof(PROCESSING), nameof(DELETED), 
+        return new[] { nameof(ACTIVE), nameof(PENDING), nameof(PROCESSING), nameof(DELETED),
                       nameof(SUSPENDED), nameof(ONERROR), nameof(PUBLISHED) }
             .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     }
@@ -82,10 +81,10 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
     public static EntityStatus Create(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        
+
         // Use cached values for known statuses for better performance
-        return _statusCache.TryGetValue(value, out var cachedStatus) 
-            ? cachedStatus 
+        return _statusCache.TryGetValue(value, out var cachedStatus)
+            ? cachedStatus
             : new EntityStatus(value);
     }
 
@@ -152,7 +151,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override int GetHashCode() => 
+    public override int GetHashCode() =>
         StringComparer.OrdinalIgnoreCase.GetHashCode(Value ?? string.Empty);
 
     /// <inheritdoc />
@@ -160,7 +159,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
     public override string ToString() => Value ?? string.Empty;
 
     // Comparison operators
-    
+
     /// <summary>
     /// Determines whether one EntityStatus is less than another.
     /// </summary>
@@ -168,7 +167,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
     /// <param name="right">The right EntityStatus to compare.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator <(EntityStatus left, EntityStatus right) => left.CompareTo(right) < 0;
-    
+
     /// <summary>
     /// Determines whether one EntityStatus is less than or equal to another.
     /// </summary>
@@ -176,7 +175,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
     /// <param name="right">The right EntityStatus to compare.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator <=(EntityStatus left, EntityStatus right) => left.CompareTo(right) <= 0;
-    
+
     /// <summary>
     /// Determines whether one EntityStatus is greater than another.
     /// </summary>
@@ -184,7 +183,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
     /// <param name="right">The right EntityStatus to compare.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator >(EntityStatus left, EntityStatus right) => left.CompareTo(right) > 0;
-    
+
     /// <summary>
     /// Determines whether one EntityStatus is greater than or equal to another.
     /// </summary>
@@ -274,7 +273,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
     /// </summary>
     /// <returns>true if the status is terminal; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsTerminal() => 
+    public bool IsTerminal() =>
         Equals(DELETED) || Equals(ONERROR);
 
     /// <summary>
@@ -282,7 +281,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
     /// </summary>
     /// <returns>true if the status is active; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsActive() => 
+    public bool IsActive() =>
         Equals(ACTIVE) || Equals(PUBLISHED);
 
     /// <summary>
@@ -290,7 +289,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>, I
     /// </summary>
     /// <returns>true if the status is transitional; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsTransitional() => 
+    public bool IsTransitional() =>
         Equals(PENDING) || Equals(PROCESSING);
 
     #endregion
@@ -313,7 +312,7 @@ public sealed class EntityStatusValidationAttribute : ValidationAttribute
     public EntityStatusValidationAttribute(bool allowCustomStatuses = false)
     {
         AllowCustomStatuses = allowCustomStatuses;
-        ErrorMessage = allowCustomStatuses 
+        ErrorMessage = allowCustomStatuses
             ? "Status value cannot be null or whitespace."
             : "Status must be one of the predefined values: {0}.";
     }
@@ -348,12 +347,12 @@ public sealed class EntityStatusValidationAttribute : ValidationAttribute
     {
         if (AllowCustomStatuses)
         {
-            return string.Format(System.Globalization.CultureInfo.CurrentCulture, 
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
                 ErrorMessageString, name);
         }
 
         var validStatuses = string.Join(", ", EntityStatus.AllStatuses.Keys);
-        return string.Format(System.Globalization.CultureInfo.CurrentCulture, 
+        return string.Format(System.Globalization.CultureInfo.CurrentCulture,
             ErrorMessageString, validStatuses);
     }
 }

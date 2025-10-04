@@ -17,8 +17,6 @@
 using System.Data;
 using System.Data.Common;
 
-using Xpandables.Net.Abstractions;
-
 namespace Xpandables.Net.Repositories;
 
 /// <summary>

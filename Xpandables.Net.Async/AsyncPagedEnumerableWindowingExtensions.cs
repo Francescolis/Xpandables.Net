@@ -31,7 +31,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Async;
 
@@ -40,7 +41,7 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides windowing and analytical extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableWindowingExtensions
 {
     /// <summary>
@@ -64,7 +65,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<TSource[]> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource[]> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var window = new Queue<TSource>(windowSize);
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -85,7 +86,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TSource[], TSource[]>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -102,7 +103,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(selector);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<int> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<int> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var window = new Queue<int>(windowSize);
                 int currentSum = 0;
@@ -126,7 +127,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<int, int>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -143,7 +144,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(selector);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<long> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<long> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var window = new Queue<long>(windowSize);
                 long currentSum = 0;
@@ -167,7 +168,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<long, long>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -184,7 +185,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(selector);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<double> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<double> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var window = new Queue<double>(windowSize);
                 double currentSum = 0;
@@ -208,7 +209,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<double, double>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -225,7 +226,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(selector);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<double> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<double> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var window = new Queue<double>(windowSize);
                 double currentSum = 0;
@@ -249,7 +250,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<double, double>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -268,7 +269,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(selector);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<TValue> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TValue> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var window = new Queue<TValue>(windowSize);
 
@@ -295,7 +296,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TValue, TValue>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -314,7 +315,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(selector);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<TValue> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TValue> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var window = new Queue<TValue>(windowSize);
 
@@ -341,7 +342,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TValue, TValue>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion
@@ -357,7 +358,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            async IAsyncEnumerable<(TSource Previous, TSource Current)> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<(TSource Previous, TSource Current)> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 TSource? previous = default;
                 bool hasPrevious = false;
@@ -374,7 +375,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<(TSource Previous, TSource Current), (TSource Previous, TSource Current)>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -389,7 +390,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selector);
 
-            async IAsyncEnumerable<TResult> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 TSource? previous = default;
                 bool hasPrevious = false;
@@ -406,7 +407,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion
@@ -426,7 +427,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(func);
 
-            async IAsyncEnumerable<TAccumulate> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TAccumulate> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var accumulator = seed;
                 yield return accumulator;
@@ -440,7 +441,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TAccumulate, TAccumulate>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -454,7 +455,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(func);
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 TSource? accumulator = default;
                 bool hasAccumulator = false;
@@ -477,7 +478,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion

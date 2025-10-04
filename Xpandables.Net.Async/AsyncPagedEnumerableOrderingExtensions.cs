@@ -31,7 +31,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Async;
 namespace Xpandables.Net.Async;
@@ -39,7 +40,7 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides ordering extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableOrderingExtensions
 {
     /// <summary>
@@ -78,7 +79,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
 
             comparer ??= Comparer<TKey>.Default;
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var list = new List<TSource>();
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -97,7 +98,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
 
             comparer ??= Comparer<TKey>.Default;
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var list = new List<TSource>();
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -146,7 +147,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion
@@ -162,7 +163,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            async IAsyncEnumerable<TSource> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 var list = new List<TSource>();
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -179,7 +180,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion

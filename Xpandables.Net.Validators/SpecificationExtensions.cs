@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using Xpandables.Net.Validators;
@@ -23,7 +24,7 @@ namespace Xpandables.Net.Validators;
 /// <summary>
 /// Extension methods for working with specifications.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class SpecificationExtensions
 {
     /// <summary>
@@ -189,7 +190,7 @@ public static class SpecificationExtensions
         /// <param name="specification">The specification to test.</param>
         /// <returns>The single element that satisfies the specification.</returns>
         /// <exception cref="InvalidOperationException">No element or more than one element satisfies the specification.</exception>
-        [Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "<Pending>")]
+        [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "<Pending>")]
         public TSource Single(ISpecification<TSource> specification)
         {
             ArgumentNullException.ThrowIfNull(enumerable);

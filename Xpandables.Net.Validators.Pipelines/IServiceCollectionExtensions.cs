@@ -15,9 +15,10 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Tasks.Pipelines;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using Xpandables.Net.Tasks.Pipelines;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;

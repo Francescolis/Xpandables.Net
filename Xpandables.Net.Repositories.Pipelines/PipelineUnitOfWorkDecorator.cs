@@ -14,10 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.ExecutionResults;
-
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Tasks;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.Tasks.Pipelines;

@@ -16,9 +16,10 @@
 ********************************************************************************/
 
 using System.Collections.ObjectModel;
-using System.Net.Abstractions.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
-using System.Net.Rests;
+
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests;
 
@@ -147,7 +148,7 @@ public interface IRestQueryString : IRestRequest
 /// <summary>
 /// Defines a REST request that provides access to stream-based content.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
 public interface IRestStream : IRestRequest
 {
     /// <summary>

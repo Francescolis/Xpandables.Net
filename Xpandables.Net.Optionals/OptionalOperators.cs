@@ -113,4 +113,4 @@ public readonly partial record struct Optional<T>
     /// </summary>
     /// <param name="optional">The optional to act with.</param>
     public static implicit operator T(Optional<T> optional) => optional.Value;
-}}
+}

@@ -16,9 +16,7 @@
 ********************************************************************************/
 
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Abstractions;
 
-using Xpandables.Net.Abstractions;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Repositories;

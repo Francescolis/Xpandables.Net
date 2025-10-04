@@ -18,11 +18,9 @@
 using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Abstractions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Abstractions;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Repositories;

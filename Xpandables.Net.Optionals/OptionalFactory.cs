@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace Xpandables.Net.Optionals;
 
 /// <summary>
@@ -21,7 +23,7 @@ namespace Xpandables.Net.Optionals;
 /// </summary>
 /// <remarks>The Optional type serves as a non-generic entry point for constructing instances of the generic
 /// <see cref="Optional{T}"/> type. It enables the creation of empty or value-containing optionals in a concise manner.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
+[SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
 public readonly record struct Optional
 {
     /// <summary>

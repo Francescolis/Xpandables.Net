@@ -1,5 +1,3 @@
-using System.Net.Async;
-
 using BenchmarkDotNet.Attributes;
 
 using Xpandables.Net.Async;
@@ -52,7 +50,7 @@ public class PaginationBenchmarks
     {
         var paged = new AsyncPagedEnumerable<int, int>(
             PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(PageContext.Create(pageSize: 256, currentPage: 1, totalCount: Count))
+            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 256, currentPage: 1, totalCount: Count))
         );
         await paged.GetPageContextAsync();
         long sum = 0;
@@ -66,10 +64,10 @@ public class PaginationBenchmarks
     {
         var paged = new AsyncPagedEnumerable<int, int>(
             PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(PageContext.Create(pageSize: 0, currentPage: 0, totalCount: null))
+            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 0, currentPage: 0, totalCount: null))
         );
         var enumerator = paged.GetAsyncEnumerator() as IAsyncPagedEnumerator<int>;
-        enumerator!.WithPageContextStrategy(PageContextStrategy.PerItem);
+        enumerator!.WithPageContextStrategy(PaginationStrategy.PerItem);
         long sum = 0;
         while (await enumerator.MoveNextAsync())
             sum += enumerator.Current;

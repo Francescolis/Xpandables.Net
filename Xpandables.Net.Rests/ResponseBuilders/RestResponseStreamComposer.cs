@@ -15,12 +15,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions;
-using System.Net.Async;
-using System.Net.Async.Json;
 using System.Text.Json;
 
 using Xpandables.Net.Async;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests.ResponseBuilders;
 

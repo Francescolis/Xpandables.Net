@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Abstractions;
-
 namespace Xpandables.Net.Repositories;
 
 /// <summary>

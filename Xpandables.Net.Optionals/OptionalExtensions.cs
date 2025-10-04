@@ -21,7 +21,7 @@ namespace Xpandables.Net.Optionals;
 /// <summary>
 /// Provides extension methods for optional types.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class OptionalExtensions
 {
     /// <summary>
@@ -221,7 +221,7 @@ public static class OptionalExtensions
         public async Task<Optional<T>> MapAsync(Func<T, Task> some)
         {
             ArgumentNullException.ThrowIfNull(optional);
-            ArgumentNullException.ThrowIfNull(some)
+            ArgumentNullException.ThrowIfNull(some);
 
             return await (await optional.ConfigureAwait(false))
                 .MapAsync(some).ConfigureAwait(false);

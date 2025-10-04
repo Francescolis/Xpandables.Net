@@ -31,7 +31,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Async;
 
@@ -40,7 +41,7 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides join extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableJoinExtensions
 {
     /// <summary>
@@ -103,7 +104,7 @@ public static class AsyncPagedEnumerableJoinExtensions
 
             comparer ??= EqualityComparer<TKey>.Default;
 
-            async IAsyncEnumerable<TResult> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 ct.ThrowIfCancellationRequested(); // Check cancellation before starting
 
@@ -137,7 +138,7 @@ public static class AsyncPagedEnumerableJoinExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion
@@ -195,7 +196,7 @@ public static class AsyncPagedEnumerableJoinExtensions
 
             comparer ??= EqualityComparer<TKey>.Default;
 
-            async IAsyncEnumerable<TResult> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 ct.ThrowIfCancellationRequested(); // Check cancellation before starting
 
@@ -223,7 +224,7 @@ public static class AsyncPagedEnumerableJoinExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         #endregion

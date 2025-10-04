@@ -16,11 +16,8 @@
 ********************************************************************************/
 
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Repositories;
 
 using Microsoft.EntityFrameworkCore.Query;
-
-using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Repositories;
 

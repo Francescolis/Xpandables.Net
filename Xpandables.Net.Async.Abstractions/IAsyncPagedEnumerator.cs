@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Net.Async;
-
 namespace Xpandables.Net.Async;
 
 /// <summary>
@@ -32,15 +30,15 @@ public interface IAsyncPagedEnumerator<out T> : IAsyncEnumerator<T>
     /// <summary>
     /// Gets a read-only reference to the current page context.
     /// </summary>
-    ref readonly PageContext PageContext { get; }
+    ref readonly Pagination PageContext { get; }
 
     /// <summary>
     /// Configures the strategy to be used for managing page context during operations.
     /// </summary>
     /// <remarks>The specified strategy influences the behavior of operations that rely on page context.
     /// Ensure the provided strategy aligns with the intended usage scenario.</remarks>
-    /// <param name="strategy">The <see cref="PageContextStrategy"/> to apply. This determines how page context is handled and managed.</param>
-    void WithPageContextStrategy(PageContextStrategy strategy);
+    /// <param name="strategy">The <see cref="PaginationStrategy"/> to apply. This determines how page context is handled and managed.</param>
+    void WithPageContextStrategy(PaginationStrategy strategy);
 }
 
 /// <summary>
@@ -59,12 +57,12 @@ public static class IAsyncPagedEnumeratorExtensions
         where T : allows ref struct
     {
         /// <summary>
-        /// Configures the enumerator to use the specified page context strategy.
+        /// Configures the enumerator to use the specified pagination strategy.
         /// </summary>
-        /// <param name="strategy">The <see cref="PageContextStrategy"/> to use for managing page context during enumeration.</param>
-        /// <returns>The current instance of <see cref="IAsyncPagedEnumerator{T}"/> configured with the specified page context
+        /// <param name="strategy">The <see cref="PaginationStrategy"/> to use for managing page context during enumeration.</param>
+        /// <returns>The current instance of <see cref="IAsyncPagedEnumerator{T}"/> configured with the specified pagination
         /// strategy.</returns>
-        public IAsyncPagedEnumerator<T> WithPageContextStrategy(PageContextStrategy strategy)
+        public IAsyncPagedEnumerator<T> WithPageContextStrategy(PaginationStrategy strategy)
         {
             enumerator.WithPageContextStrategy(strategy);
             return enumerator;

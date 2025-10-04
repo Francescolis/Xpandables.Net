@@ -14,34 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
-
-/*******************************************************************************
- * Copyright (C) 2025 Francis-Black EWANE
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
-********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-
-using Xpandables.Net.Async;
 
 namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Provides extension methods to convert various enumerable types to <see cref="IAsyncPagedEnumerable{T}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerable
 {
     /// <summary>
@@ -61,7 +42,7 @@ public static class AsyncPagedEnumerable
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginationFactory"/> is null.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IAsyncPagedEnumerable<TSource> ToAsyncPagedEnumerable(
-            Func<CancellationToken, ValueTask<PageContext>> paginationFactory)
+            Func<CancellationToken, ValueTask<Pagination>> paginationFactory)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(paginationFactory);
@@ -77,7 +58,7 @@ public static class AsyncPagedEnumerable
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="pagination"/> is null.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IAsyncPagedEnumerable<TSource> ToAsyncPagedEnumerable(
-            PageContext pagination)
+            Pagination pagination)
         {
             ArgumentNullException.ThrowIfNull(source);
 
@@ -99,7 +80,7 @@ public static class AsyncPagedEnumerable
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 source,
-                _ => ValueTask.FromResult(PageContext.Create(totalCount)));
+                _ => ValueTask.FromResult(Pagination.Create(totalCount)));
         }
 
         /// <summary>
@@ -112,7 +93,7 @@ public static class AsyncPagedEnumerable
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IAsyncPagedEnumerable<TResult> ToAsyncPagedEnumerable<TResult>(
-            Func<CancellationToken, ValueTask<PageContext>> paginationFactory,
+            Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
             Func<TSource, TResult> mapper)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -133,7 +114,7 @@ public static class AsyncPagedEnumerable
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IAsyncPagedEnumerable<TResult> ToAsyncPagedEnumerable<TResult>(
-            Func<CancellationToken, ValueTask<PageContext>> paginationFactory,
+            Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
             Func<TSource, CancellationToken, ValueTask<TResult>> asyncMapper)
         {
             ArgumentNullException.ThrowIfNull(source);

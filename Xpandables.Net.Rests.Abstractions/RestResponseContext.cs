@@ -35,6 +35,7 @@
  *
 ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Xpandables.Net.Rests;
@@ -73,7 +74,7 @@ public class RestResponseContext<TResponse> : RestResponseContext
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>")]
     public static RestResponseContext<TResponse> Create(RestResponseContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -100,7 +101,7 @@ public class RestResponseStreamContext<TResponse> : RestResponseContext
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "<Pending>")]
     public static RestResponseStreamContext<TResponse> Create(RestResponseContext context)
     {
         ArgumentNullException.ThrowIfNull(context);

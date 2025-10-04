@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -21,7 +23,7 @@ namespace Xpandables.Net.Events;
 /// </summary>
 /// <remarks>This class contains utility methods to simplify common operations on aggregates that implement the
 /// <see cref="IEventSourcing"/> interface, such as replaying event histories and managing uncommitted events.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IEventSourcingExtensions
 {
     extension(IEventSourcing source)

@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace Xpandables.Net.Optionals;
 
 /// <summary>
@@ -24,7 +26,7 @@ namespace Xpandables.Net.Optionals;
 /// offering convenient patterns for handling sequences that may be empty. Methods in this class can be used with both
 /// LINQ and asynchronous streams to simplify common tasks, such as safely obtaining the first element of a sequence
 /// without throwing exceptions when the sequence is empty.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class EnumerableExtensions
 {
     /// <summary>

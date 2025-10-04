@@ -14,7 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Abstractions;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
+
 namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
@@ -24,7 +26,7 @@ namespace Xpandables.Net.ExecutionResults;
 /// <remarks>These extension methods simplify the process of building execution results that represent successful
 /// or failed HTTP operations. They are intended to be used in scenarios where standardized result handling is required,
 /// such as in web APIs or service layers.</remarks>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class ExecutionResultExtensions
 {
     /// <summary>

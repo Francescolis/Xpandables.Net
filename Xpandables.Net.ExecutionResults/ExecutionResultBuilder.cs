@@ -14,11 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Abstractions;
-using Xpandables.Net.Abstractions.Collections;
-using Xpandables.Net.ExecutionResults;
+using System.Net;
 
 using Microsoft.Extensions.Primitives;
+
+using Xpandables.Net.Collections;
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.ExecutionResults;
 
@@ -271,9 +272,9 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     }
 
     /// <inheritdoc/>
-    public TBuilder WithError(ElementEntry error)
+    public TBuilder WithError(ElementEntry entry)
     {
-        Errors.Add(error);
+        Errors.Add(entry);
         return AsBuilder;
     }
 
@@ -527,4 +528,4 @@ public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode s
             Errors = Errors,
             Value = Result
         };
-}}
+}

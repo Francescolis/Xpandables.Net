@@ -18,7 +18,8 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.ExecutionResults;
+
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.Tasks;
 

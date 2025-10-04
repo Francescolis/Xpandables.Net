@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 
 using static Xpandables.Net.Rests.RestSettings;
@@ -30,7 +31,7 @@ namespace Xpandables.Net.Rests;
 /// authorization header using the specified scheme. This attribute is typically used in conjunction with a REST client
 /// or framework that interprets these settings to construct and send HTTP requests.</remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = true)]
-[Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1813:Avoid unsealed attributes", Justification = "<Pending>")]
+[SuppressMessage("Performance", "CA1813:Avoid unsealed attributes", Justification = "<Pending>")]
 public class RestAttribute : Attribute
 {
     /// <summary>

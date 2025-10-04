@@ -16,7 +16,6 @@
 ********************************************************************************/
 
 using System.Diagnostics.CodeAnalysis;
-using System.Net.DependencyInjection;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

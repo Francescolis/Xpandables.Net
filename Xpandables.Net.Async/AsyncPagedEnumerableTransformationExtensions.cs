@@ -31,7 +31,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Async;
 namespace Xpandables.Net.Async;
@@ -39,7 +40,7 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides transformation extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableTransformationExtensions
 {
     /// <summary>
@@ -63,7 +64,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(collectionSelector);
 
-            async IAsyncEnumerable<TCollection> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TCollection> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -78,7 +79,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
 
             return new AsyncPagedEnumerable<TCollection, TCollection>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -97,7 +98,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
             ArgumentNullException.ThrowIfNull(collectionSelector);
             ArgumentNullException.ThrowIfNull(resultSelector);
 
-            async IAsyncEnumerable<TResult> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -112,7 +113,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(asyncCollectionSelector);
 
-            async IAsyncEnumerable<TCollection> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TCollection> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -139,7 +140,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
 
             return new AsyncPagedEnumerable<TCollection, TCollection>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -157,7 +158,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
             ArgumentNullException.ThrowIfNull(asyncCollectionSelector);
             ArgumentNullException.ThrowIfNull(resultSelector);
 
-            async IAsyncEnumerable<TResult> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -169,7 +170,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -183,7 +184,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(asyncCollectionSelector);
 
-            async IAsyncEnumerable<TCollection> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TCollection> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -195,7 +196,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
 
             return new AsyncPagedEnumerable<TCollection, TCollection>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
 
         /// <summary>
@@ -213,7 +214,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
             ArgumentNullException.ThrowIfNull(asyncCollectionSelector);
             ArgumentNullException.ThrowIfNull(resultSelector);
 
-            async IAsyncEnumerable<TResult> Iterator([Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -225,7 +226,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<PageContext>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
         }
         #endregion
     }

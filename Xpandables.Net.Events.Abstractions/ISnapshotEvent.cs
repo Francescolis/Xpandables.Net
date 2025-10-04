@@ -31,7 +31,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Abstractions.States;
+using Xpandables.Net.States;
 
 namespace Xpandables.Net.Events;
 
