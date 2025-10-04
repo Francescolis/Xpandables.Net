@@ -10,43 +10,43 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Resources.Designer.t4 = Resources.Designer.t4
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Abstractions", "System.Net.Abstractions\System.Net.Abstractions.csproj", "{57EC199B-7E34-E487-E3B8-AF259CC41808}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Abstractions", "Xpandables.Net.Abstractions\Xpandables.Net.Abstractions.csproj", "{57EC199B-7E34-E487-E3B8-AF259CC41808}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Async", "System.Net.Async\System.Net.Async.csproj", "{55A6B34E-D170-D2C8-5D7B-1D8F1C8666BA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async", "Xpandables.Net.Async\Xpandables.Net.Async.csproj", "{55A6B34E-D170-D2C8-5D7B-1D8F1C8666BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Async.Abstractions", "System.Net.Async.Abstractions\System.Net.Async.Abstractions.csproj", "{D93C191A-5E7C-EF91-8B8F-3C5B007DB117}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async.Abstractions", "Xpandables.Net.Async.Abstractions\Xpandables.Net.Async.Abstractions.csproj", "{D93C191A-5E7C-EF91-8B8F-3C5B007DB117}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Async.AspNetCore", "System.Net.Async.AspNetCore\System.Net.Async.AspNetCore.csproj", "{2B2516E8-B9D3-37A1-6355-F46977D953C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async.AspNetCore", "Xpandables.Net.Async.AspNetCore\Xpandables.Net.Async.AspNetCore.csproj", "{2B2516E8-B9D3-37A1-6355-F46977D953C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Async.Json", "System.net.Async.Json\System.Net.Async.Json.csproj", "{7F67628D-85A8-E11A-436D-FB365BEC1D09}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async.Json", "Xpandables.net.Async.Json\Xpandables.Net.Async.Json.csproj", "{7F67628D-85A8-E11A-436D-FB365BEC1D09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Benchmarking", "System.Net.Benchmarking\System.Net.Benchmarking.csproj", "{A690B330-3149-7938-4676-0A9B6F67CB6A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Benchmarking", "Xpandables.Net.Benchmarking\Xpandables.Net.Benchmarking.csproj", "{A690B330-3149-7938-4676-0A9B6F67CB6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Events.Abstractions", "System.Net.Events.Abstractions\System.Net.Events.Abstractions.csproj", "{39A62FE2-8643-66AC-BF7C-E8637EC77B6C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Events.Abstractions", "Xpandables.Net.Events.Abstractions\Xpandables.Net.Events.Abstractions.csproj", "{39A62FE2-8643-66AC-BF7C-E8637EC77B6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.ExecutionResults", "System.Net.ExecutionResults\System.Net.ExecutionResults.csproj", "{BAB0F5E1-69C9-0524-1879-9D12A3B48A45}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.ExecutionResults", "Xpandables.Net.ExecutionResults\Xpandables.Net.ExecutionResults.csproj", "{BAB0F5E1-69C9-0524-1879-9D12A3B48A45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Optionals", "System.Net.Optionals\System.Net.Optionals.csproj", "{F5AD89D8-47FD-B958-4AF3-87FAC11572E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Optionals", "Xpandables.Net.Optionals\Xpandables.Net.Optionals.csproj", "{F5AD89D8-47FD-B958-4AF3-87FAC11572E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Repositories", "System.Net.Repositories\System.Net.Repositories.csproj", "{DA3BB5A2-A258-9CC2-34B3-B6651144770B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Repositories", "Xpandables.Net.Repositories\Xpandables.Net.Repositories.csproj", "{DA3BB5A2-A258-9CC2-34B3-B6651144770B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Repositories.EntityFramework", "System.Net.Repositories.EntityFramework\System.Net.Repositories.EntityFramework.csproj", "{191B6BD9-F1AF-62ED-AF43-2CE22211D58D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Repositories.EntityFramework", "Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj", "{191B6BD9-F1AF-62ED-AF43-2CE22211D58D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Repositories.Pipelines", "System.Net.Repositories.Pipelines\System.Net.Repositories.Pipelines.csproj", "{10B18D61-83F9-7507-D0D5-FF957E184003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Repositories.Pipelines", "Xpandables.Net.Repositories.Pipelines\Xpandables.Net.Repositories.Pipelines.csproj", "{10B18D61-83F9-7507-D0D5-FF957E184003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Rests", "System.Net.Rests\System.Net.Rests.csproj", "{E314F287-30E8-A8B8-5C86-A41C3ECA1D8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Rests", "Xpandables.Net.Rests\Xpandables.Net.Rests.csproj", "{E314F287-30E8-A8B8-5C86-A41C3ECA1D8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Rests.Abstractions", "System.Net.Rests.Abstractions\System.Net.Rests.Abstractions.csproj", "{169E4947-695A-DDBF-FAC5-7819300FE5E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Rests.Abstractions", "Xpandables.Net.Rests.Abstractions\Xpandables.Net.Rests.Abstractions.csproj", "{169E4947-695A-DDBF-FAC5-7819300FE5E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Tasks", "System.Net.Tasks\System.Net.Tasks.csproj", "{785A0FD2-C483-1A64-1E97-26D6F786EF20}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Tasks", "Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj", "{785A0FD2-C483-1A64-1E97-26D6F786EF20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Tasks.Abstractions", "System.Net.Tasks.Abstractions\System.Net.Tasks.Abstractions.csproj", "{374FDF75-3BE7-0E15-C682-79C68EEFD651}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Tasks.Abstractions", "Xpandables.Net.Tasks.Abstractions\Xpandables.Net.Tasks.Abstractions.csproj", "{374FDF75-3BE7-0E15-C682-79C68EEFD651}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.UnitTests", "System.Net.UnitTests\System.Net.UnitTests.csproj", "{5A51210D-287D-FB17-B065-C769170B3A17}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.UnitTests", "Xpandables.Net.UnitTests\Xpandables.Net.UnitTests.csproj", "{5A51210D-287D-FB17-B065-C769170B3A17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Validators", "System.Net.Validators\System.Net.Validators.csproj", "{DC373D07-3FBD-EE3B-413B-CCF55B3DEE75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Validators", "Xpandables.Net.Validators\Xpandables.Net.Validators.csproj", "{DC373D07-3FBD-EE3B-413B-CCF55B3DEE75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Net.Validators.Pipelines", "System.Net.Validators.Pipelines\System.Net.Validators.Pipelines.csproj", "{A4FAABCA-F1F7-44AB-7EFB-6C69D3C42C5B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Validators.Pipelines", "Xpandables.Net.Validators.Pipelines\Xpandables.Net.Validators.Pipelines.csproj", "{A4FAABCA-F1F7-44AB-7EFB-6C69D3C42C5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
