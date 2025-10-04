@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Optionals;
+namespace Xpandables.Net.Optionals;
 
 /// <summary>
 /// Provides extension methods for working with synchronous and asynchronous enumerable sequences, enabling additional

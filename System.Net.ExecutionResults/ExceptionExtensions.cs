@@ -16,13 +16,13 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Net.Abstractions;
-using System.Net.Abstractions.Collections;
+using Xpandables.Net.Abstractions;
+using Xpandables.Net.Abstractions.Collections;
 using System.Security;
 using System.Security.Authentication;
 using System.Text.Json;
 
-namespace System.Net.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// Provides extension methods for mapping exceptions to HTTP status codes.

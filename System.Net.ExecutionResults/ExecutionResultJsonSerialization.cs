@@ -16,13 +16,13 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Net.Abstractions;
-using System.Net.Abstractions.Collections;
+using Xpandables.Net.Abstractions;
+using Xpandables.Net.Abstractions.Collections;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace System.Net.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// A factory for creating JSON converters for <see cref="ExecutionResult{TResult}"/>.
@@ -522,7 +522,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
                     break;
 
                 case "Headers" or "headers":
-                    headers = reader.TokenType == JsonTokenType.Null
+                    headers = reader.TokenType == JsonTokenType Null
                         ? default
                         : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
                     break;

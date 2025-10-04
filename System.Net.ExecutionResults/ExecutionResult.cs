@@ -17,12 +17,12 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Abstractions;
-using System.Net.Abstractions.Collections;
+using Xpandables.Net.Abstractions;
+using Xpandables.Net.Abstractions.Collections;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace System.Net.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// Represents the base type for execution results, encapsulating status, value, errors, headers, and related metadata

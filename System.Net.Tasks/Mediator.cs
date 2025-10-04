@@ -14,12 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.ExecutionResults;
-using System.Net.Tasks;
+using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Provides a sealed implementation of the IMediator interface that dispatches requests to their corresponding pipeline

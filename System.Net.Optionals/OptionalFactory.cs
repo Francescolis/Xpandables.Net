@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Optionals;
+namespace Xpandables.Net.Optionals;
 
 /// <summary>
 /// Provides static methods for creating optional values without specifying a type parameter explicitly.

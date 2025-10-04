@@ -15,9 +15,9 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Net.Abstractions;
-using System.Net.Abstractions.Collections;
-namespace System.Net.ExecutionResults;
+using Xpandables.Net.Abstractions;
+using Xpandables.Net.Abstractions.Collections;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// Provides extension methods for converting collections of <see cref="ValidationResult"/> objects to execution results

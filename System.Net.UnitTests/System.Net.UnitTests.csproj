@@ -8,6 +8,8 @@
 		<LangVersion>preview</LangVersion>
 		<Platforms>x64</Platforms>
 		<NoWarn>CA1859;7</NoWarn>
+        <AssemblyName>Xpandables.Net.UnitTests</AssemblyName>
+        <RootNamespace>Xpandables.Net.UnitTests</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

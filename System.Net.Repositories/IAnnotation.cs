@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions;
+using Xpandables.Net.Abstractions;
 
-namespace System.Net.Repositories;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Marker interface to indicate that a request requires automatic 

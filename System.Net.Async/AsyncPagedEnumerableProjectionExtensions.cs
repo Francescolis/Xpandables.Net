@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Async;
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Provides projection extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.

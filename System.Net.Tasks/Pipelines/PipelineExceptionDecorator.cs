@@ -14,10 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.ExecutionResults;
-using System.Net.Tasks;
+using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Tasks;
 
-namespace System.Net.Tasks.Pipelines;
+namespace Xpandables.Net.Tasks.Pipelines;
 
 /// <summary>
 /// A pipeline decorator that handles exceptions thrown during the execution 

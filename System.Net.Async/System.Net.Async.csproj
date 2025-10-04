@@ -6,11 +6,14 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 
-		<Title>System.Net.Async</Title>
+		<Title>Xpandables.Net.Async</Title>
 		<Description>Provide the IAsyncPagedEnumerable interface.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
+        <AssemblyName>Xpandables.Net.Async</AssemblyName>
+        <RootNamespace>Xpandables.Net.Async</RootNamespace>
+        <PackageId>Xpandables.Net.Async</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/System.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/System.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -58,7 +61,6 @@
 		<IsAotCompatible>true</IsAotCompatible>
 		<WarningLevel>9999</WarningLevel>
 		<Copyright>Copyright © Kamersoft 2024</Copyright>
-		<RootNamespace>System.Net.Async</RootNamespace>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

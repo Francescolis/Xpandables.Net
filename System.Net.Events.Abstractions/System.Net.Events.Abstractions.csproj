@@ -6,11 +6,14 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 
-		<Title>System.Net.Events.Abstractions</Title>
+		<Title>Xpandables.Net.Events.Abstractions</Title>
 		<Description>Provide basic objects.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
+        <AssemblyName>Xpandables.Net.Events.Abstractions</AssemblyName>
+        <RootNamespace>Xpandables.Net.Events</RootNamespace>
+        <PackageId>Xpandables.Net.Events.Abstractions</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/System.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/System.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -57,8 +60,6 @@
 		<IsTrimmable>true</IsTrimmable>
 		<IsAotCompatible>true</IsAotCompatible>
 		<WarningLevel>9999</WarningLevel>
-		<Copyright>Copyright © Kamersoft 2024</Copyright>
-		<RootNamespace>System.Net.Events</RootNamespace>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
-namespace System.Net.Repositories;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents an abstract base class for entities with a specific key type

@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +15,10 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
-using System.Net.Abstractions;
+using Xpandables.Net.Abstractions;
 using System.Runtime.Serialization;
 
-namespace System.Net.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// Represents an exception that is thrown when an execution result has an 
@@ -133,4 +132,4 @@ public sealed class ExecutionResultException : Exception
 
     ///<inheritdoc/>
     public override string ToString() => $"{base.ToString()}{Environment.NewLine}{ExecutionResult}";
-}
+}}

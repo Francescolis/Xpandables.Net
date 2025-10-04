@@ -15,13 +15,13 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Tasks;
-using System.Net.Tasks.Pipelines;
+using Xpandables.Net.Tasks;
+using Xpandables.Net.Tasks.Pipelines;
 
 using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace System.Net.DependencyInjection;
+namespace Xpandables.Net.DependencyInjection;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>

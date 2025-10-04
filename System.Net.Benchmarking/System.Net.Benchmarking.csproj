@@ -9,6 +9,8 @@
     <Configurations>Debug;Release</Configurations>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Platforms>x64</Platforms>
+    <AssemblyName>Xpandables.Net.Benchmarking</AssemblyName>
+    <RootNamespace>Xpandables.Net.Benchmarking</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />

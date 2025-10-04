@@ -14,10 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.ExecutionResults;
-using System.Net.Tasks;
+using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Tasks;
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Represents a sealed class that implements the pipeline request handling mechanism for a given request type.

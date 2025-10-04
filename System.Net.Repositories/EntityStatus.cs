@@ -20,7 +20,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Abstractions.Text;
 using System.Runtime.CompilerServices;
 
-namespace System.Net.Repositories;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents an immutable, high-performance entity status primitive with automatic JSON serialization support.

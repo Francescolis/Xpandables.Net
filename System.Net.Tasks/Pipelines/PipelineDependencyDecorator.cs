@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.ExecutionResults;
+using Xpandables.Net.ExecutionResults;
 
-namespace System.Net.Tasks.Pipelines;
+namespace Xpandables.Net.Tasks.Pipelines;
 
 /// <summary>
 /// Implements a pipeline decorator that resolves and injects dependencies into the request during pipeline execution.

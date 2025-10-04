@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Tasks;
+using Xpandables.Net.Tasks;
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Provides access to registered dependency providers and enables retrieval of providers capable of supplying specific
@@ -55,4 +54,4 @@ public sealed class DependencyManager : IDependencyManager
             ?? throw new InvalidOperationException(
                 $"The dependency provider for the type {dependencyType.Name} is not registered.");
     }
-}
+}}

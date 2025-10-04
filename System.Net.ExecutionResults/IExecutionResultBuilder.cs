@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +15,11 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
-using System.Net.Abstractions.Collections;
+using Xpandables.Net.Abstractions.Collections;
 
 using Microsoft.Extensions.Primitives;
 
-namespace System.Net.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// Base interface for all execution result builders with common functionality.

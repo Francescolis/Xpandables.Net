@@ -15,9 +15,9 @@
  *
 ********************************************************************************/
 
-using System.Net.ExecutionResults;
+using Xpandables.Net.ExecutionResults;
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Defines a contract for sending requests to handlers and receiving execution results asynchronously.

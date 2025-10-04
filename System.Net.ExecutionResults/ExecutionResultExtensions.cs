@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions;
-namespace System.Net.ExecutionResults;
+using Xpandables.Net.Abstractions;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// Provides extension methods for working with <see cref="ExecutionResult"/> instances, enabling the creation and

@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Net.Optionals;
+namespace Xpandables.Net.Optionals;
 
 /// <summary>
 /// Provides extension methods for optional types.
@@ -221,7 +221,7 @@ public static class OptionalExtensions
         public async Task<Optional<T>> MapAsync(Func<T, Task> some)
         {
             ArgumentNullException.ThrowIfNull(optional);
-            ArgumentNullException.ThrowIfNull(some);
+            ArgumentNullException.ThrowIfNull(some)
 
             return await (await optional.ConfigureAwait(false))
                 .MapAsync(some).ConfigureAwait(false);

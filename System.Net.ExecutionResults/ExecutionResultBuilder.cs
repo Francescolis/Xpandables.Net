@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions;
-using System.Net.Abstractions.Collections;
-using System.Net.ExecutionResults;
+using Xpandables.Net.Abstractions;
+using Xpandables.Net.Abstractions.Collections;
+using Xpandables.Net.ExecutionResults;
 
 using Microsoft.Extensions.Primitives;
 
-namespace System.Net.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// Represents a builder for creating successful execution results.
@@ -528,4 +527,4 @@ public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode s
             Errors = Errors,
             Value = Result
         };
-}
+}}

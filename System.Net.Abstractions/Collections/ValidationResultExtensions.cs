@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
-namespace System.Net.Abstractions.Collections;
+namespace Xpandables.Net.Abstractions.Collections;
 
 /// <summary>
 /// Provides extension methods for converting <see cref="ValidationResult"/> instances to <see

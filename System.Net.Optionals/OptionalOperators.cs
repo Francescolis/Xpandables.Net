@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Net.Optionals;
+namespace Xpandables.Net.Optionals;
 
 [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates")]
 public readonly partial record struct Optional<T>
@@ -114,4 +113,4 @@ public readonly partial record struct Optional<T>
     /// </summary>
     /// <param name="optional">The optional to act with.</param>
     public static implicit operator T(Optional<T> optional) => optional.Value;
-}
+}}

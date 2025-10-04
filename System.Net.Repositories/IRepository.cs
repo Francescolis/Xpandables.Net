@@ -18,7 +18,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-namespace System.Net.Repositories;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Defines a generic repository interface for performing asynchronous CRUD operations on entities.

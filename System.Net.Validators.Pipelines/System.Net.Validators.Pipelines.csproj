@@ -6,11 +6,14 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 
-		<Title>System.Net.Validators.Pipelines</Title>
-		<Description>Validation objects for System.Net</Description>
+		<Title>Xpandables.Net.Validators.Pipelines</Title>
+		<Description>Validation objects for Xpandables.Net</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
+        <AssemblyName>Xpandables.Net.Validators.Pipelines</AssemblyName>
+        <RootNamespace>Xpandables.Net.Validators.Pipelines</RootNamespace>
+        <PackageId>Xpandables.Net.Validators.Pipelines</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/System.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/System.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -57,7 +60,6 @@
 		<IsTrimmable>true</IsTrimmable>
 		<IsAotCompatible>true</IsAotCompatible>
 		<WarningLevel>9999</WarningLevel>
-		<Copyright>Copyright © Kamersoft 2024</Copyright>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -76,11 +78,11 @@
 
 	<ItemGroup>
 		<None Include="..\README.md" Link="README.md">
-			<PackagePath>\</PackagePath>
+			<PackagePath>\\</PackagePath>
 			<Pack>true</Pack>
 		</None>
 		<None Include="..\System.Net.png" Link="System.Net.png">
-			<PackagePath>\</PackagePath>
+			<PackagePath>\\</PackagePath>
 			<Pack>true</Pack>
 		</None>
 	</ItemGroup>

@@ -6,11 +6,14 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 
-		<Title>System.Net.Rests.Abstractions</Title>
+		<Title>Xpandables.Net.Rests.Abstractions</Title>
 		<Description>CQRS Mediator Pattern.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
+        <AssemblyName>Xpandables.Net.Rests.Abstractions</AssemblyName>
+        <RootNamespace>Xpandables.Net.Rests</RootNamespace>
+        <PackageId>Xpandables.Net.Rests.Abstractions</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/System.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/System.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -57,8 +60,6 @@
 		<IsTrimmable>true</IsTrimmable>
 		<IsAotCompatible>true</IsAotCompatible>
 		<WarningLevel>9999</WarningLevel>
-		<Copyright>Copyright © Kamersoft 2024</Copyright>
-		<RootNamespace>System.Net.Rests</RootNamespace>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -77,11 +78,11 @@
 
 	<ItemGroup>
 	  <None Include="..\README.md" Link="README.md">
-	    <PackagePath>\</PackagePath>
+	    <PackagePath>\\</PackagePath>
 	    <Pack>true</Pack>
 	  </None>
 	  <None Include="..\System.Net.png" Link="System.Net.png">
-	    <PackagePath>\</PackagePath>
+	    <PackagePath>\\</PackagePath>
 	    <Pack>true</Pack>
 	  </None>
 	</ItemGroup>

@@ -6,11 +6,14 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 
-		<Title>System.Net.ExecutionResults</Title>
+		<Title>Xpandables.Net.ExecutionResults</Title>
 		<Description>Result Pattern.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
+        <AssemblyName>Xpandables.Net.ExecutionResults</AssemblyName>
+        <RootNamespace>Xpandables.Net.ExecutionResults</RootNamespace>
+        <PackageId>Xpandables.Net.ExecutionResults</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/System.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/System.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

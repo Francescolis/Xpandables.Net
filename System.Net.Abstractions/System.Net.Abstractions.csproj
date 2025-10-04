@@ -6,11 +6,14 @@
 	  <Nullable>enable</Nullable>
 	  <LangVersion>preview</LangVersion>
 
-	  <Title>System.Net</Title>
+	  <Title>Xpandables.Net</Title>
 	  <Description>Provide basic objects.</Description>
 	  <Company>Kamersoft</Company>
 	  <Authors>Francescolis</Authors>
 
+      <AssemblyName>Xpandables.Net.Abstractions</AssemblyName>
+      <RootNamespace>Xpandables.Net.Abstractions</RootNamespace>
+      <PackageId>Xpandables.Net.Abstractions</PackageId>
 	  <PackageProjectUrl>https://github.com/Francescolis/System.Net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/Francescolis/System.Net</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
