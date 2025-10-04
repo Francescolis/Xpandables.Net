@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.Net.Abstractions.Collections;
 using System.Net.DependencyInjection;
-using System.Net.Rests;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -24,6 +23,8 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using Xpandables.Net.Rests;
 
 namespace System.Net.UnitTests.Rests;
 

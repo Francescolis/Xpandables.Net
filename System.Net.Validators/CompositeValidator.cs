@@ -17,7 +17,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Net.Validators;
+namespace Xpandables.Net.Validators;
 
 /// <summary>
 /// Provides a validator that combines multiple validators and applies them to a single argument instance.

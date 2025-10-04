@@ -17,7 +17,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 
-namespace System.Net.Validators;
+using Xpandables.Net.Validators;
+
+namespace Xpandables.Net.Validators;
 
 /// <summary>
 /// Provides static factory and combinator methods for creating and composing specifications based on boolean

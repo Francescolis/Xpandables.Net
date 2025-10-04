@@ -14,11 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions.States;
-
 using FluentAssertions;
 
-namespace System.Net.UnitTests.States;
+using Xpandables.Net.Abstractions.States;
+
+namespace Xpandables.Net.UnitTests.States;
 
 public class StateContextTests
 {

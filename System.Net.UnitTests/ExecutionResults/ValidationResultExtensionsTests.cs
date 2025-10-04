@@ -15,12 +15,13 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Net.Abstractions;
 using System.Net.ExecutionResults;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.ExecutionResults;
+namespace Xpandables.Net.UnitTests.ExecutionResults;
 
 /// <summary>
 /// Tests for ValidationResult extension methods.

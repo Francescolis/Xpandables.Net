@@ -2,7 +2,9 @@ using System.Net.Async;
 
 using BenchmarkDotNet.Attributes;
 
-namespace System.Net.Benchmarking;
+using Xpandables.Net.Async;
+
+namespace Xpandables.Net.Benchmarking;
 
 [MemoryDiagnoser]
 [ThreadingDiagnoser]

@@ -19,7 +19,7 @@ using System.Net.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace System.Net.Rests.ResponseBuilders;
+namespace Xpandables.Net.Rests.ResponseBuilders;
 
 /// <summary>
 /// Composes a result RestResponse asynchronously using the provided RestResponseContext.

@@ -14,9 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net;
 using System.Net.Abstractions;
 
-namespace System.Net.Rests;
+using Xpandables.Net.Abstractions;
+
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Provides functionality for sending HTTP requests and receiving responses in a RESTful manner.

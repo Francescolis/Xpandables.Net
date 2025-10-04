@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Provides extension methods for working with event-sourced aggregates.

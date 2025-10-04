@@ -25,7 +25,9 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace System.Net.Async;
+using Xpandables.Net.Async;
+
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Represents an HTTP result that asynchronously writes a paged JSON response containing both page context metadata and

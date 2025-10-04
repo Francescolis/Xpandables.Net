@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Abstractions;
+namespace Xpandables.Net.Abstractions;
 
 /// <summary>
 /// Represents an annotation with metadata about its usage.

@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace System.Net.Abstractions.Text;
+namespace Xpandables.Net.Abstractions.Text;
 
 /// <summary>
 /// Represents a primitive data type with a value.

@@ -14,12 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net.Abstractions.Collections;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
-namespace System.Net.Abstractions.Collections;
+namespace Xpandables.Net.Abstractions.Collections;
 
 /// <summary>
 /// JSON converter factory for ElementEntry types, providing AOT-compatible serialization for .NET 10.

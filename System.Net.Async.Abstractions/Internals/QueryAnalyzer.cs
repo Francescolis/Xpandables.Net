@@ -16,10 +16,11 @@
 ********************************************************************************/
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using System.Net.Async;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace System.Net.Async.Internals;
+namespace Xpandables.Net.Async.Internals;
 
 /// <summary>
 /// Provides optimized query analysis utilities for extracting pagination information.

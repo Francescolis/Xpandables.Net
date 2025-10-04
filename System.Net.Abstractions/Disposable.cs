@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Abstractions;
+namespace Xpandables.Net.Abstractions;
 
 /// <summary>
 /// The default implementation for <see cref="IDisposable"/> interface.

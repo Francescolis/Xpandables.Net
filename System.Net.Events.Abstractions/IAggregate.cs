@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Represents an aggregate root in a domain-driven design (DDD) context,  providing event sourcing capabilities and

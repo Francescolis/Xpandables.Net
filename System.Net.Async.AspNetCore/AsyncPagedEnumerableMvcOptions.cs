@@ -20,7 +20,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace System.Net.Async;
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Provides configuration options to enable JSON output formatting for asynchronous paged enumerables in ASP.NET Core

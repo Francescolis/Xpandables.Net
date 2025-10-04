@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net;
 using System.Net.Abstractions.Collections;
 using System.Net.ExecutionResults;
 
@@ -21,7 +22,7 @@ using FluentAssertions;
 
 using Microsoft.Extensions.Primitives;
 
-namespace System.Net.UnitTests.ExecutionResults;
+namespace Xpandables.Net.UnitTests.ExecutionResults;
 
 /// <summary>
 /// Tests for ExecutionResult builders functionality.

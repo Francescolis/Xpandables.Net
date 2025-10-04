@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Defines a contract for providing dependencies based on specified types or requests.

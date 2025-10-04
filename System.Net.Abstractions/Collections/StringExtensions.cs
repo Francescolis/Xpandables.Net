@@ -16,9 +16,10 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Net.Abstractions.Collections;
 using System.Text.Json;
 
-namespace System.Net.Abstractions.Collections;
+namespace Xpandables.Net.Abstractions.Collections;
 
 /// <summary>
 /// Provides extension methods for working with string values.

@@ -15,11 +15,13 @@
  *
 ********************************************************************************/
 using System.Net.Async;
-using System.Net.Async.Internals;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 
-namespace System.Net.Async;
+using Xpandables.Net.Async;
+using Xpandables.Net.Async.Internals;
+
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Represents an asynchronous, paged enumerable over a source sequence with optional mapping to a result sequence.

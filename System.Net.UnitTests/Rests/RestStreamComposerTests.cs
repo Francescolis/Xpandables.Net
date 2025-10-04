@@ -14,12 +14,13 @@
 * limitations under the License.
 *
 ********************************************************************************/
-using System.Net.Rests;
 using System.Net.Rests.RequestBuilders;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.Rests;
+using Xpandables.Net.Rests;
+
+namespace Xpandables.Net.UnitTests.Rests;
 
 public class RestStreamComposerTests
 {

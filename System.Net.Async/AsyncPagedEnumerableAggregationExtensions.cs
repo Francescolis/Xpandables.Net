@@ -15,7 +15,11 @@
  *
 ********************************************************************************/
 
-namespace System.Net.Async;
+using System.Net.Async;
+
+using Xpandables.Net.Async;
+
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Provides aggregation and ordering extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.

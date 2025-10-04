@@ -20,7 +20,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.ExecutionResults;
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Represents the next delegate to be executed on a pipeline.

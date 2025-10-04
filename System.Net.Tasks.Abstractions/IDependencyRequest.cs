@@ -19,7 +19,7 @@
 using System.ComponentModel;
 using System.Net.Optionals;
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Represents a request for a dependency, providing information about the dependency type, key identifier, and instance

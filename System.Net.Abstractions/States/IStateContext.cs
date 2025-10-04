@@ -17,7 +17,7 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-namespace System.Net.Abstractions.States;
+namespace Xpandables.Net.Abstractions.States;
 
 /// <summary>
 /// Event arguments for state transition events.

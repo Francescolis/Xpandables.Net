@@ -15,10 +15,11 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Validators;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.Validators;
+namespace Xpandables.Net.Validators;
 
 /// <summary>
 /// Provides a mechanism for retrieving validators for types that require validation.

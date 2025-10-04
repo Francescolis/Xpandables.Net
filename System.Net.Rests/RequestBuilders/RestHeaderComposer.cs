@@ -16,9 +16,9 @@
 ********************************************************************************/
 using System.Net.Abstractions.Collections;
 
-using static System.Net.Rests.RestSettings;
+using static Xpandables.Net.Rests.RestSettings;
 
-namespace System.Net.Rests.RequestBuilders;
+namespace Xpandables.Net.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes HTTP request headers from a given RestRequestContext. It adds headers based on the request's model name or

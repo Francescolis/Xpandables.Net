@@ -15,11 +15,12 @@
  *
 ********************************************************************************/
 using System.Net.DependencyInjection;
-using System.Net.Rests;
-using System.Net.Rests.RequestBuilders;
-using System.Net.Rests.ResponseBuilders;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using Xpandables.Net.Rests;
+using Xpandables.Net.Rests.RequestBuilders;
+using Xpandables.Net.Rests.ResponseBuilders;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System.Net.DependencyInjection;

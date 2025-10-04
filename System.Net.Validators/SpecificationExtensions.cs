@@ -16,7 +16,9 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-namespace System.Net.Validators;
+using Xpandables.Net.Validators;
+
+namespace Xpandables.Net.Validators;
 
 /// <summary>
 /// Extension methods for working with specifications.

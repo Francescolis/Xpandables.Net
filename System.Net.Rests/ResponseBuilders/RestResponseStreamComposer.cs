@@ -20,7 +20,9 @@ using System.Net.Async;
 using System.Net.Async.Json;
 using System.Text.Json;
 
-namespace System.Net.Rests.ResponseBuilders;
+using Xpandables.Net.Async;
+
+namespace Xpandables.Net.Rests.ResponseBuilders;
 
 /// <summary>
 /// Composes a stream RestResponse asynchronously using the provided RestResponseContext.

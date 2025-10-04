@@ -18,7 +18,7 @@
 
 using System.Net.Optionals;
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Represents a request for a dependency of a specified type, including its key identifier and an optional instance.

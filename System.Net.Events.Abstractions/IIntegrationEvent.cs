@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Represents an event intended for integration between different systems or services.

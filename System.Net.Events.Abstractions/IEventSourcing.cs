@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Defines the contract for event sourcing capabilities, including managing and retrieving domain events for an

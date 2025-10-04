@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Represents an event model that contains basic event details such as occurrence time, version, and unique identifier.

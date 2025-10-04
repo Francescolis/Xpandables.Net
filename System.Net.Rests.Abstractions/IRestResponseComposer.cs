@@ -16,9 +16,10 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
-using System.Net.Async;
 
-namespace System.Net.Rests;
+using Xpandables.Net.Async;
+
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Defines the contract for a composer responsible for creating REST responses.

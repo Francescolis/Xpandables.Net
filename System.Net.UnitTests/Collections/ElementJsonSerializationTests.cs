@@ -21,7 +21,7 @@ using FluentAssertions;
 
 using Microsoft.Extensions.Primitives;
 
-namespace System.Net.UnitTests.Collections;
+namespace Xpandables.Net.UnitTests.Collections;
 
 /// <summary>
 /// Tests for the ElementEntry and ElementCollection JSON serialization functionality.

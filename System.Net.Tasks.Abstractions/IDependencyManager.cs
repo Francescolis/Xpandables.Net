@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Provides methods to manage and retrieve dependency providers for specified types.

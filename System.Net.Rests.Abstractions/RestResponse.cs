@@ -16,10 +16,13 @@
 ********************************************************************************/
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Abstractions;
 using System.Net.Abstractions.Collections;
 
-namespace System.Net.Rests;
+using Xpandables.Net.Abstractions;
+
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Provides an abstract base class for HTTP response representations, encapsulating status code, headers, result data,

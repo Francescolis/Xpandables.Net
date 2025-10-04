@@ -15,11 +15,14 @@
  *
 ********************************************************************************/
 using System.Net.Async;
-using System.Net.UnitTests.Helpers;
+using System.Net.UnitTests;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests;
+using Xpandables.Net.Async;
+using Xpandables.Net.UnitTests.Helpers;
+
+namespace Xpandables.Net.UnitTests;
 
 /// <summary>
 /// Basic functionality tests for AsyncPagedEnumerableResult to verify core operations work.

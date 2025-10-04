@@ -19,7 +19,9 @@ using System.Net.Validators;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.Validators;
+using Xpandables.Net.Validators;
+
+namespace Xpandables.Net.UnitTests.Validators;
 
 public class CompositeValidatorTests
 {

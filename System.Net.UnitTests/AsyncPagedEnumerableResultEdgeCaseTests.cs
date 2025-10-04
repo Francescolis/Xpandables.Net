@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Net.Async;
-using System.Net.UnitTests.Helpers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,6 +22,9 @@ using FluentAssertions;
 
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+
+using Xpandables.Net.Async;
+using Xpandables.Net.UnitTests.Helpers;
 
 namespace System.Net.UnitTests;
 

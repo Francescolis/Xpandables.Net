@@ -19,7 +19,9 @@ using System.Text.Json;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.Text;
+using Xpandables.Net.Abstractions.Text;
+
+namespace Xpandables.Net.UnitTests.Text;
 
 /// <summary>
 /// Tests for the enhanced IPrimitive functionality and JSON serialization.

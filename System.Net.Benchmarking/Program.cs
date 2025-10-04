@@ -1,6 +1,6 @@
 using BenchmarkDotNet.Running;
 
-namespace System.Net.Benchmarking;
+namespace Xpandables.Net.Benchmarking;
 
 public static class Program
 {

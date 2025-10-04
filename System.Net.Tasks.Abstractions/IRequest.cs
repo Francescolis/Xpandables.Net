@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Represents a request with metadata about its creation time.

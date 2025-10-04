@@ -1,4 +1,4 @@
-﻿namespace System.Net.Abstractions.Collections;
+﻿namespace Xpandables.Net.Abstractions.Collections;
 
 /// <summary>
 /// Provides extension methods for working with <see cref="IEnumerable{T}"/> sequences.

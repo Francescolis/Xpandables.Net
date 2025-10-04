@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using static System.Net.Rests.RestSettings;
+using static Xpandables.Net.Rests.RestSettings;
 
-namespace System.Net.Rests.RequestBuilders;
+namespace Xpandables.Net.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes a request URI by adding path string parameters from the request context. It modifies the base path with

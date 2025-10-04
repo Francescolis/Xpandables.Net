@@ -18,6 +18,8 @@
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 
+using Xpandables.Net.Rests;
+
 namespace System.Net.Rests;
 
 /// <summary>

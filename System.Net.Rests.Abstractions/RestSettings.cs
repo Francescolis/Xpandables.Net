@@ -17,9 +17,10 @@
 ********************************************************************************/
 using System.Collections.Immutable;
 using System.Net.Abstractions;
+using System.Net.Rests;
 using System.Text.Json;
 
-namespace System.Net.Rests;
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Provides with <see cref="RestAttribute"/> behaviors.

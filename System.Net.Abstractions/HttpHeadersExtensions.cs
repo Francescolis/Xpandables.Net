@@ -17,7 +17,7 @@
 using System.Net.Abstractions.Collections;
 using System.Net.Http.Headers;
 
-namespace System.Net.Abstractions;
+namespace Xpandables.Net.Abstractions;
 
 /// <summary>
 /// Provides extension methods for working with HTTP headers collections.

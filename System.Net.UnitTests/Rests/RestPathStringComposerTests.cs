@@ -1,9 +1,9 @@
-using System.Net.Rests;
-using System.Net.Rests.RequestBuilders;
-
 using FluentAssertions;
 
-namespace System.Net.UnitTests.Rests;
+using Xpandables.Net.Rests;
+using Xpandables.Net.Rests.RequestBuilders;
+
+namespace Xpandables.Net.UnitTests.Rests;
 
 public class RestPathStringComposerTests
 {

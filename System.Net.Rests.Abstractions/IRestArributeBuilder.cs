@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Rests;
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Defines a builder for creating <see cref="RestAttribute"/> at runtime.

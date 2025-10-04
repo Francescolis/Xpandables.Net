@@ -17,7 +17,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Defines the contract for a domain event within an event-sourced system, providing properties and methods for event

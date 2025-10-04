@@ -5,7 +5,9 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.UnitTests.Repositories;
+using Xpandables.Net.Repositories;
+
+namespace Xpandables.Net.UnitTests.Repositories;
 
 public sealed class SqliteTestFixture : IAsyncLifetime
 {

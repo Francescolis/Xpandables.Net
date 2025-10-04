@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Represents a wrapper for an event, providing metadata and contextual information about the event.

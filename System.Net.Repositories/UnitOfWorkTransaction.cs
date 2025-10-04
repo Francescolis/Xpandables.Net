@@ -16,9 +16,10 @@
 ********************************************************************************/
 using System.Data;
 using System.Data.Common;
-using System.Net.Abstractions;
 
-namespace System.Net.Repositories;
+using Xpandables.Net.Abstractions;
+
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents a unit of work transaction that encapsulates a database transaction.

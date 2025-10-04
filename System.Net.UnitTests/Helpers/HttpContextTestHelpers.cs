@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
-namespace System.Net.UnitTests.Helpers;
+namespace Xpandables.Net.UnitTests.Helpers;
 
 /// <summary>
 /// Test helpers for ASP.NET Core HTTP context mocking and testing.

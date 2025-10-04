@@ -17,7 +17,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Net.Validators;
+namespace Xpandables.Net.Validators;
 
 /// <summary>
 /// Provides a validator that performs no validation and always returns an empty set of validation results.

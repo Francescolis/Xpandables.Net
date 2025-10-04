@@ -34,9 +34,10 @@
 ********************************************************************************/
 
 using System.ComponentModel;
-using System.Net.Async;
 
-namespace System.Net.Rests;
+using Xpandables.Net.Async;
+
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Defines a contract for RESTful requests. 

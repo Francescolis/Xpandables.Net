@@ -15,10 +15,11 @@
  *
 ********************************************************************************/
 using System.Data;
+using System.Net;
 using System.Security;
 using System.Security.Authentication;
 
-namespace System.Net.Abstractions;
+namespace Xpandables.Net.Abstractions;
 
 /// <summary>
 /// Provides extension methods for working with HTTP status codes.

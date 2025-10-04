@@ -19,7 +19,7 @@ using System.Text.Json;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.Optionals;
+namespace Xpandables.Net.UnitTests.Optionals;
 
 /// <summary>
 /// Tests for the Optional functionality including JSON serialization.

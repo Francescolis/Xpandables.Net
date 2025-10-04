@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Rests;
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Provides with an abstract handler that can be used with 

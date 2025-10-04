@@ -18,7 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.Rests;
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Provides a builder that constructs REST responses by delegating to one of multiple response composers based on the

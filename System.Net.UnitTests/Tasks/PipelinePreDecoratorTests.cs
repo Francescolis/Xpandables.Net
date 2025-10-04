@@ -14,13 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net;
 using System.Net.ExecutionResults;
-using System.Net.Tasks;
 using System.Net.Tasks.Pipelines;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.Tasks;
+using Xpandables.Net.Tasks;
+
+namespace Xpandables.Net.UnitTests.Tasks;
 
 public class PipelinePreDecoratorTests
 {

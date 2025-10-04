@@ -15,7 +15,9 @@
  *
 ********************************************************************************/
 
-namespace System.Net.Async;
+using System.Net.Async;
+
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Represents an asynchronous enumerator that supports pagination, allowing iteration over a sequence of items while

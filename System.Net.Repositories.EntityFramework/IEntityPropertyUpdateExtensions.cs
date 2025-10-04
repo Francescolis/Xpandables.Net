@@ -19,7 +19,7 @@ using System.Reflection;
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace System.Net.Repositories;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Provides extension methods for converting collections of entity property update expressions to the format required

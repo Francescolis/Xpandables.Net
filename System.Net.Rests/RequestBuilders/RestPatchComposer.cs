@@ -15,13 +15,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net.Rests;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-using static System.Net.Rests.RestSettings;
+using static Xpandables.Net.Rests.RestSettings;
 
-namespace System.Net.Rests.RequestBuilders;
+namespace Xpandables.Net.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes the HTTP request body for a PATCH operation based on the provided context. It serializes patch operations

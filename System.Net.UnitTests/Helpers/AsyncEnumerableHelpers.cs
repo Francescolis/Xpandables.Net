@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace System.Net.UnitTests.Helpers;
+namespace Xpandables.Net.UnitTests.Helpers;
 
 internal static class AsyncEnumerableHelpers
 {

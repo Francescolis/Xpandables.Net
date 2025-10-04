@@ -15,9 +15,13 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Abstractions;
+using System.Net.Abstractions.Collections;
 using System.Text.Json;
 
-namespace System.Net.Abstractions.Collections;
+using Xpandables.Net.Abstractions.Collections;
+
+namespace Xpandables.Net.Abstractions.Collections;
 
 /// <summary>
 /// Provides extension methods for ElementCollection objects.

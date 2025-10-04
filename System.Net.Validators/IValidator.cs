@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Net.Validators;
+namespace Xpandables.Net.Validators;
 
 /// <summary>
 /// Defines a contract for validating objects and returning validation results.

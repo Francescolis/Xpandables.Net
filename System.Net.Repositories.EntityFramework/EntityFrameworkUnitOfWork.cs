@@ -19,11 +19,13 @@ using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Abstractions;
-using System.Net.Repositories;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.Repositories;
+using Xpandables.Net.Abstractions;
+using Xpandables.Net.Repositories;
+
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Entity Framework Core implementation of the Unit of Work pattern.

@@ -14,12 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net.Async;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
 
-namespace System.Net.Async;
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Provides extension methods for converting asynchronous paged enumerables to result objects.

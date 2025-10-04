@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Validators;
+namespace Xpandables.Net.Validators;
 
 /// <summary>
 /// Represents a composite validator for objects that require validation.

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Abstractions.Text;
+namespace Xpandables.Net.Abstractions.Text;
 
 /// <summary>
 /// Represents a cache entry that holds a weak reference to a target object of type <typeparamref name="T"/>.

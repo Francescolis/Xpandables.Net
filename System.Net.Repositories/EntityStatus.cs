@@ -20,6 +20,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Abstractions.Text;
 using System.Runtime.CompilerServices;
 
+using Xpandables.Net.Abstractions.Text;
+
 namespace Xpandables.Net.Repositories;
 
 /// <summary>

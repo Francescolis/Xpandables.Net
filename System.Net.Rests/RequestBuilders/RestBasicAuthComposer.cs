@@ -17,9 +17,9 @@
 ********************************************************************************/
 using System.Net.Http.Headers;
 
-using static System.Net.Rests.RestSettings;
+using static Xpandables.Net.Rests.RestSettings;
 
-namespace System.Net.Rests.RequestBuilders;
+namespace Xpandables.Net.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes the authorization header for basic authentication in a REST request. It checks the context for basic

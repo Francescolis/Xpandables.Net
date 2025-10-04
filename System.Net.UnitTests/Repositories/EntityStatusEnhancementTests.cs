@@ -19,7 +19,7 @@ using System.Text.Json;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.Repositories;
+namespace Xpandables.Net.UnitTests.Repositories;
 
 /// <summary>
 /// Comprehensive tests for the enhanced EntityStatus implementation.

@@ -5,7 +5,9 @@ using FluentAssertions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-namespace System.Net.UnitTests.Repositories;
+
+using Xpandables.Net.Repositories;
+namespace Xpandables.Net.UnitTests.Repositories;
 
 [Collection("sqlite-shared-db")]
 public sealed class RepositoryEfCoreTests(SqliteTestFixture fx)

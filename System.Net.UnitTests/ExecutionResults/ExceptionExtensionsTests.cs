@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Net;
 using System.Net.Abstractions.Collections;
 using System.Net.ExecutionResults;
 using System.Security;
@@ -23,7 +24,7 @@ using System.Security.Authentication;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.ExecutionResults;
+namespace Xpandables.Net.UnitTests.ExecutionResults;
 
 /// <summary>
 /// Tests for Exception extension methods.

@@ -18,8 +18,9 @@
 using System.Collections.ObjectModel;
 using System.Net.Abstractions.Collections;
 using System.Net.Http.Headers;
+using System.Net.Rests;
 
-namespace System.Net.Rests;
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Defines a contract for providing HTTP Basic authentication credentials for REST requests.

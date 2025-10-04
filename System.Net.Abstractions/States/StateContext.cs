@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Abstractions.States;
+namespace Xpandables.Net.Abstractions.States;
 
 /// <summary>
 /// Represents the context for managing state transitions with thread-safety.

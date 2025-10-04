@@ -20,7 +20,9 @@ using System.Net.Http.Headers;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.Rests;
+using Xpandables.Net.Abstractions;
+
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Provides a builder for creating REST requests by composing multiple request composers and applying REST-specific

@@ -16,10 +16,11 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
-using System.Net.Async;
 using System.Net.ExecutionResults;
 
-namespace System.Net.Tasks;
+using Xpandables.Net.Async;
+
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Represents a handler to process a request of type <typeparamref name="TRequest" />.

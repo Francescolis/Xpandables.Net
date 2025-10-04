@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Abstractions.States;
+namespace Xpandables.Net.Abstractions.States;
 
 /// <summary>
 /// Represents a memento interface for capturing and restoring the state of 

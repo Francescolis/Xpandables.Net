@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 // Plan (pseudocode):
 // - Core stream operations:

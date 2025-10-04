@@ -1,8 +1,8 @@
-using System.Net.Repositories;
-
 using Microsoft.EntityFrameworkCore;
 
-namespace System.Net.UnitTests.Repositories;
+using Xpandables.Net.Repositories;
+
+namespace Xpandables.Net.UnitTests.Repositories;
 
 public sealed class TestDataContext(DbContextOptions options) : DataContext(options)
 {

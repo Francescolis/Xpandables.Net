@@ -23,6 +23,8 @@ using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
+using Xpandables.Net.Abstractions.Collections;
+
 namespace System.Net.Abstractions.Collections;
 
 /// <summary>

@@ -21,7 +21,9 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace System.Net.Async.Json;
+using Xpandables.Net.Async;
+
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Provides extension methods for reading HTTP content as an asynchronous paged enumerable of JSON objects.

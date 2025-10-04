@@ -1,12 +1,13 @@
 using System.Net.DependencyInjection;
-using System.Net.Repositories;
 
 using FluentAssertions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.UnitTests.Repositories;
+using Xpandables.Net.Repositories;
+
+namespace Xpandables.Net.UnitTests.Repositories;
 
 public interface ICustomRepo : IRepository { }
 public sealed class CustomRepo(TestDataContext ctx) : EntityFrameworkRepository<TestDataContext>(ctx), ICustomRepo { }

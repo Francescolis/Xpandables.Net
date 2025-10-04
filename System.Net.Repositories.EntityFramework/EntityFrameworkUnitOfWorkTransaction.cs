@@ -21,7 +21,10 @@ using System.Net.Repositories;
 
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace System.Net.Repositories;
+using Xpandables.Net.Abstractions;
+using Xpandables.Net.Repositories;
+
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Provides an implementation of the unit of work transaction pattern using an Entity Framework database transaction.

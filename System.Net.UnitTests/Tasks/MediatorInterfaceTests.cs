@@ -15,17 +15,20 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Async;
 using System.Net.DependencyInjection;
 using System.Net.ExecutionResults;
 using System.Net.Optionals;
-using System.Net.Tasks;
 
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.UnitTests.Tasks;
+using Xpandables.Net.Async;
+using Xpandables.Net.Tasks;
+
+namespace Xpandables.Net.UnitTests.Tasks;
 
 public class MediatorInterfaceTests
 {

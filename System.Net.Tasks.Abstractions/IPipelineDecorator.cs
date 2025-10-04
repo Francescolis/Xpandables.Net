@@ -35,7 +35,7 @@
 
 using System.Net.ExecutionResults;
 
-namespace System.Net.Tasks;
+namespace Xpandables.Net.Tasks;
 
 /// <summary>
 /// Defines a contract for decorating a pipeline handler, allowing pre- or post-processing

@@ -15,7 +15,9 @@
  *
 ********************************************************************************/
 using System.Net.ExecutionResults;
-using System.Net.Repositories;
+
+using Xpandables.Net.Repositories;
+using Xpandables.Net.Tasks;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System.Net.Tasks.Pipelines;

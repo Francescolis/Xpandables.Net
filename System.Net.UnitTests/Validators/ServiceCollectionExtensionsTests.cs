@@ -22,7 +22,9 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.UnitTests.Validators;
+using Xpandables.Net.Validators;
+
+namespace Xpandables.Net.UnitTests.Validators;
 
 public class ServiceCollectionExtensionsTests
 {

@@ -18,7 +18,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Abstractions;
 
-namespace System.Net.Repositories;
+using Xpandables.Net.Abstractions;
+using Xpandables.Net.Repositories;
+
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Entity Framework Core implementation of the IRepository interface.

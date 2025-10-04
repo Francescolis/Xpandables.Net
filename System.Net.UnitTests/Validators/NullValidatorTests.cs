@@ -15,9 +15,12 @@
  *
 ********************************************************************************/
 using FluentAssertions;
+
 using System.Net.Validators;
 
-namespace System.Net.UnitTests.Validators;
+using Xpandables.Net.Validators;
+
+namespace Xpandables.Net.UnitTests.Validators;
 
 public class NullValidatorTests
 {

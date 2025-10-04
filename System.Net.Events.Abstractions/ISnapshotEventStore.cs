@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-namespace System.Net.Events;
+namespace Xpandables.Net.Events;
 
 /// <summary>
 /// Defines a contract for an event store that supports storing and retrieving snapshot events in addition to standard

@@ -14,11 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Net;
 using System.Net.ExecutionResults;
 
 using FluentAssertions;
 
-namespace System.Net.UnitTests.ExecutionResults;
+namespace Xpandables.Net.UnitTests.ExecutionResults;
 
 /// <summary>
 /// Tests for ExecutionResultException functionality.

@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-namespace System.Net.Rests;
+namespace Xpandables.Net.Rests;
 
 /// <summary>
 /// Defines a contract for RESTful client operations. It serves as a blueprint for implementing REST client

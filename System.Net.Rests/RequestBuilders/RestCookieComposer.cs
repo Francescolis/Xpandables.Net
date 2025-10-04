@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using static System.Net.Rests.RestSettings;
+using static Xpandables.Net.Rests.RestSettings;
 
-namespace System.Net.Rests.RequestBuilders;
+namespace Xpandables.Net.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes cookies from the request context if the location is set to Cookie. 

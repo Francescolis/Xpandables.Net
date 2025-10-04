@@ -17,10 +17,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Net.DependencyInjection;
-using System.Net.Repositories;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+
+using Xpandables.Net.Repositories;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System.Net.DependencyInjection;

@@ -18,9 +18,9 @@
 using System.Text;
 using System.Text.Encodings.Web;
 
-using static System.Net.Rests.RestSettings;
+using static Xpandables.Net.Rests.RestSettings;
 
-namespace System.Net.Rests.RequestBuilders;
+namespace Xpandables.Net.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes the query string for a REST request based on the provided context. Updates the request URI with the
