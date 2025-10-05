@@ -63,5 +63,23 @@ public static class IServiceCollectionExtensions
 
             return services;
         }
+
+        /// <summary>
+        /// Configures support for asynchronous paged enumerables in MVC by registering required options and services.
+        /// </summary>
+        /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> to use for serializing asynchronous paged enumerable results to JSON.</param>
+        /// <remarks>Call this method during application startup to enable model binding and serialization
+        /// for types implementing <see cref="IAsyncPagedEnumerable{T}"/> in MVC controllers. This configuration is
+        /// required for proper handling of paged asynchronous data in API responses.</remarks>
+        /// <returns>The current <see cref="IServiceCollection"/> instance with asynchronous paged enumerable support configured.</returns>
+        public IServiceCollection ConfigureIAsyncPagedEnumerableMvcOptions(JsonSerializerOptions serializerOptions)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(serializerOptions);
+
+            services.AddSingleton<IConfigureOptions<MvcOptions>>(new AsyncPagedEnumerableMvcOptions(serializerOptions));
+
+            return services;
+        }
     }
 }
