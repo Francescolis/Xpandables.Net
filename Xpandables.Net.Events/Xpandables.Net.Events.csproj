@@ -6,14 +6,13 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 
-		<Title>Xpandables.Net.Tasks</Title>
-		<Description>CQRS Mediator Pattern.</Description>
+		<Title>Xpandables.Net.Events</Title>
+		<Description>Provide basic objects.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-        <AssemblyName>Xpandables.Net.Tasks</AssemblyName>
-        <RootNamespace>Xpandables.Net.Tasks</RootNamespace>
-        <PackageId>Xpandables.Net.Tasks</PackageId>
+		<AssemblyName>Xpandables.Net.Events</AssemblyName>
+		<PackageId>Xpandables.Net.Events</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -21,7 +20,7 @@
 
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IRequestHandler, IMediator, IRequest, IPipeline</PackageTags>
+		<PackageTags>IAggregate, IDomainEvent, IIntegrationEvent, IEventStore, IOutboxStore</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -77,19 +76,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md">
-			<Pack>True</Pack>
+		<None Include="..\README.md" Link="README.md">
 			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
 		</None>
-		<None Include="..\Xpandables.Net.png">
-			<Pack>True</Pack>
+		<None Include="..\Xpandables.Net.png" Link="Xpandables.Net.png">
 			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
 		</None>
 	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Tasks.Abstractions\Xpandables.Net.Tasks.Abstractions.csproj" />
-	</ItemGroup>
-
 
 </Project>

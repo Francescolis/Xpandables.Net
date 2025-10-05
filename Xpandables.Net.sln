@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11018.127 d18.0
+VisualStudioVersion = 18.0.11018.127
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0D6A6CBF-BCC3-4744-9A29-8CF6FDEF7863}"
 	ProjectSection(SolutionItems) = preProject
@@ -47,6 +47,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Validators", "Xpandables.Net.Validators\Xpandables.Net.Validators.csproj", "{DC373D07-3FBD-EE3B-413B-CCF55B3DEE75}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Validators.Pipelines", "Xpandables.Net.Validators.Pipelines\Xpandables.Net.Validators.Pipelines.csproj", "{A4FAABCA-F1F7-44AB-7EFB-6C69D3C42C5B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Events", "Xpandables.Net.Events\Xpandables.Net.Events.csproj", "{9CAF4BDC-0893-4C04-AE1A-F6A1EF72874D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,6 +132,10 @@ Global
 		{A4FAABCA-F1F7-44AB-7EFB-6C69D3C42C5B}.Debug|x64.Build.0 = Debug|x64
 		{A4FAABCA-F1F7-44AB-7EFB-6C69D3C42C5B}.Release|x64.ActiveCfg = Release|x64
 		{A4FAABCA-F1F7-44AB-7EFB-6C69D3C42C5B}.Release|x64.Build.0 = Release|x64
+		{9CAF4BDC-0893-4C04-AE1A-F6A1EF72874D}.Debug|x64.ActiveCfg = Debug|x64
+		{9CAF4BDC-0893-4C04-AE1A-F6A1EF72874D}.Debug|x64.Build.0 = Debug|x64
+		{9CAF4BDC-0893-4C04-AE1A-F6A1EF72874D}.Release|x64.ActiveCfg = Release|x64
+		{9CAF4BDC-0893-4C04-AE1A-F6A1EF72874D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
