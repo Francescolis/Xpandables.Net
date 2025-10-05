@@ -89,11 +89,12 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(selectedEncoding);
+        ArgumentNullException.ThrowIfNull(context.Object);
 
         var httpContext = context.HttpContext;
         var ct = httpContext.RequestAborted;
 
-        var instance = context.Object!;
+        var instance = context.Object;
         var itemType = ((IAsyncPagedEnumerable)instance).Type;
 
         var method = WriteCoreAsyncOpenGeneric.MakeGenericMethod(itemType);
@@ -156,13 +157,14 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
         CancellationToken ct)
     {
         var paged = (IAsyncPagedEnumerable<T>)instance;
-
-        var pageContext = await paged.GetPaginationAsync(ct).ConfigureAwait(false);
+        Delegate @delegate = paged.GetPaginationAsync;
+        var v = @delegate.Method.Invoke(paged, [ct]) as Task<Pagination>;
+        var pagination = await paged.GetPaginationAsync(ct).ConfigureAwait(false);
 
         writer.WriteStartObject();
 
         writer.WritePropertyName("pagination");
-        JsonSerializer.Serialize(writer, pageContext, PaginationSourceGenerationContext.Default.Pagination);
+        JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
 
         writer.WritePropertyName("items");
         writer.WriteStartArray();

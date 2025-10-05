@@ -29,7 +29,7 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
     private readonly Func<TSource, CancellationToken, ValueTask<TResult>>? _mapper;
     private readonly CancellationToken _cancellationToken;
     private PaginationStrategy _strategy;
-    private Pagination _pageContext;
+    private Pagination _pagination;
     private bool _disposed;
     private int _itemIndex; // 1-based logical item counter
 
@@ -40,7 +40,7 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
     /// <remarks>
     /// The default value for <see cref="PaginationStrategy"/> is <see cref="PaginationStrategy.None"/>, meaning no pagination strategy is applied unless explicitly set.
     /// </remarks>
-    public ref readonly Pagination Pagination => ref _pageContext;
+    public ref readonly Pagination Pagination => ref _pagination;
 
     /// <summary>
     /// Gets the current element.
@@ -55,7 +55,7 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
         _sourceEnumerator = null;
         _mapper = null;
         _cancellationToken = default;
-        _pageContext = initialContext;
+        _pagination = initialContext;
     }
 
     internal AsyncPagedEnumerator(
@@ -65,7 +65,7 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
     {
         _sourceEnumerator = sourceEnumerator;
         _cancellationToken = cancellationToken;
-        _pageContext = initialContext;
+        _pagination = initialContext;
     }
 
     internal AsyncPagedEnumerator(
@@ -77,7 +77,7 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
         _sourceEnumerator = sourceEnumerator;
         _mapper = mapper;
         _cancellationToken = cancellationToken;
-        _pageContext = initialContext;
+        _pagination = initialContext;
     }
 
     /// <inheritdoc/>
@@ -95,13 +95,13 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
         if (!await _sourceEnumerator.MoveNextAsync().ConfigureAwait(false))
         {
             // End of sequence: if PerItem strategy and no total count, finalize total
-            if (_strategy == PaginationStrategy.PerItem && _pageContext.TotalCount is null)
+            if (_strategy == PaginationStrategy.PerItem && _pagination.TotalCount is null)
             {
                 int total = _itemIndex;
-                _pageContext = new Pagination
+                _pagination = new Pagination
                 {
-                    PageSize = _pageContext.PageSize == 0 ? 1 : _pageContext.PageSize,
-                    CurrentPage = _pageContext.CurrentPage,
+                    PageSize = _pagination.PageSize == 0 ? 1 : _pagination.PageSize,
+                    CurrentPage = _pagination.CurrentPage,
                     ContinuationToken = null,
                     TotalCount = total
                 };
@@ -127,32 +127,32 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
                 break;
             case PaginationStrategy.PerItem:
                 {
-                    int pageSize = _pageContext.PageSize == 0 ? 1 : _pageContext.PageSize;
+                    int pageSize = _pagination.PageSize == 0 ? 1 : _pagination.PageSize;
                     int currentPage = _itemIndex;
-                    _pageContext = new Pagination
+                    _pagination = new Pagination
                     {
                         PageSize = pageSize,
                         CurrentPage = currentPage,
                         ContinuationToken = null,
                         // Preserve pre-existing total if already known; keep null otherwise until end
-                        TotalCount = _pageContext.TotalCount
+                        TotalCount = _pagination.TotalCount
                     };
                     break;
                 }
 
             case PaginationStrategy.PerPage:
                 {
-                    int pageSize = _pageContext.PageSize;
+                    int pageSize = _pagination.PageSize;
                     if (pageSize > 0)
                     {
                         int zeroBased = _itemIndex - 1;
                         int currentPage = (zeroBased / pageSize) + 1;
-                        _pageContext = new Pagination
+                        _pagination = new Pagination
                         {
                             PageSize = pageSize,
                             CurrentPage = currentPage,
                             ContinuationToken = null,
-                            TotalCount = _pageContext.TotalCount
+                            TotalCount = _pagination.TotalCount
                         };
                     }
                     break;
