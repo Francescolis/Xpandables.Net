@@ -30,6 +30,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// cref="IServiceCollection"/> to simplify service registration and setup in dependency injection scenarios. All
 /// methods are intended to be used as extension methods and should be called on an existing <see
 /// cref="IServiceCollection"/> object.</remarks>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IServiceCollectionExtensions
 {
     /// <summary>

@@ -34,12 +34,15 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork unitOfWork
     /// <inheritdoc/>
     public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        RequestHandler next,
+        RequestHandler nextHandler,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(nextHandler);
+
         try
         {
-            ExecutionResult response = await next(cancellationToken).ConfigureAwait(false);
+            ExecutionResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
             return response;
         }

@@ -43,7 +43,7 @@
 		<Platforms>x64</Platforms>
 
 		<SignAssembly>true</SignAssembly>
-		<AssemblyOriginatorKeyFile>C:\Users\fewan\source\repos\Francescolis\Xpandables.Net\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 
 		<Deterministic>true</Deterministic>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
