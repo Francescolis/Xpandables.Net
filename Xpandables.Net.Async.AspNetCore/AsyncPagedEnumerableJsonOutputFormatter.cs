@@ -169,7 +169,8 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
         writer.WritePropertyName("items");
         writer.WriteStartArray();
 
-        JsonTypeInfo jsonTypeInfo = options.GetTypeInfo(typeof(T));
+        JsonTypeInfo jsonTypeInfo = options.GetTypeInfo(typeof(T))
+            ?? throw new InvalidOperationException($"Cannot get the {typeof(T)} type information.");
         await foreach (var item in paged.WithCancellation(ct).ConfigureAwait(false))
         {
             JsonSerializer.Serialize(writer, item, jsonTypeInfo);
