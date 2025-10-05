@@ -34,11 +34,11 @@ public interface IAsyncPagedEnumerable
     Type Type { get; }
 
     /// <summary>
-    /// Asynchronously retrieves the context information for the current page.
+    /// Asynchronously retrieves the pagination information for the current page.
     /// </summary>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation and yields the current <see cref="Pagination"/>.</returns>
-    Task<Pagination> GetPageContextAsync(CancellationToken cancellationToken = default);
+    Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -46,7 +46,7 @@ public interface IAsyncPagedEnumerable
 /// </summary>
 /// <remarks>This interface extends <see cref="IAsyncEnumerable{T}"/> to provide additional support for paginated
 /// data. It includes metadata about the pagination state and methods to retrieve this metadata asynchronously.
-/// Implementations may compute pagination metadata lazily, and callers should use <see cref="IAsyncPagedEnumerable.GetPageContextAsync"/>  to
+/// Implementations may compute pagination metadata lazily, and callers should use <see cref="IAsyncPagedEnumerable.GetPaginationAsync"/>  to
 /// ensure the metadata is available.</remarks>
 /// <typeparam name="T">The type of elements in the collection.</typeparam>
 public interface IAsyncPagedEnumerable<out T> : IAsyncPagedEnumerable, IAsyncEnumerable<T>

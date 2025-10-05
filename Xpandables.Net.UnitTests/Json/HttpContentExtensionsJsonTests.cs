@@ -14,15 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions;
-using System.Net.Async;
-using System.Net.Async.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 using FluentAssertions;
+
+using Xpandables.Net.Async;
 
 namespace Xpandables.Net.UnitTests;
 
@@ -52,7 +51,7 @@ public class HttpContentExtensionsJsonTests
 
         // Act
         var paged = content.ReadFromJsonAsAsyncPagedEnumerable(HttpContentTestsJsonContext.Default.JsonTestItem);
-        var ctx = await paged.GetPageContextAsync();
+        var ctx = await paged.GetPaginationAsync();
 
         // Assert page context
         ctx.TotalCount.Should().Be(items.Length);
@@ -73,8 +72,8 @@ public class HttpContentExtensionsJsonTests
         // Arrange
         var payload = new
         {
-            pageContext = PageContext.Create(5, 2, null, 42),
-            data = new[]
+            pagination = Pagination.Create(5, 2, null, 42),
+            items = new[]
             {
                 new JsonTestItem(10, "A", true),
                 new JsonTestItem(11, "B", false)
@@ -90,15 +89,15 @@ public class HttpContentExtensionsJsonTests
 
         // Act
         var paged = content.ReadFromJsonAsAsyncPagedEnumerable<JsonTestItem>(options);
-        var ctx = await paged.GetPageContextAsync();
+        var ctx = await paged.GetPaginationAsync();
 
-        // Assert page context comes from payload.pageContext
+        // Assert pagination comes from payload.pagination
         ctx.PageSize.Should().Be(5);
         ctx.CurrentPage.Should().Be(2);
         ctx.TotalCount.Should().Be(42);
         ctx.ContinuationToken.Should().BeNull();
 
-        // Assert data enumeration
+        // Assert items enumeration
         var list = await ToListAsync(paged);
         list.Should().HaveCount(2);
         list[0].Id.Should().Be(10);
@@ -111,7 +110,7 @@ public class HttpContentExtensionsJsonTests
         // Arrange
         var payload = new
         {
-            data = new[]
+            items = new[]
             {
                 new JsonTestItem(1, "X", true),
                 new JsonTestItem(2, "Y", false),
@@ -128,9 +127,9 @@ public class HttpContentExtensionsJsonTests
 
         // Act
         var paged = content.ReadFromJsonAsAsyncPagedEnumerable(HttpContentTestsJsonContext.Default.JsonTestItem);
-        var ctx = await paged.GetPageContextAsync();
+        var ctx = await paged.GetPaginationAsync();
 
-        // Assert page context inferred from data length
+        // Assert page context inferred from items length
         ctx.TotalCount.Should().Be(3);
         ctx.PageSize.Should().Be(0);
         ctx.CurrentPage.Should().Be(0);
@@ -148,7 +147,7 @@ public class HttpContentExtensionsJsonTests
 
         // Act
         var paged = content.ReadFromJsonAsAsyncPagedEnumerable(HttpContentTestsJsonContext.Default.JsonTestItem);
-        var ctx = await paged.GetPageContextAsync();
+        var ctx = await paged.GetPaginationAsync();
 
         // Assert
         ctx.TotalCount.Should().Be(0);
@@ -162,8 +161,8 @@ public class HttpContentExtensionsJsonTests
         // Arrange (note different casing)
         var json = """
         {
-            "PageContext": { "PageSize": 7, "CurrentPage": 3, "TotalCount": 9, "ContinuationToken": null },
-            "Data": [ {"Id": 1, "Name": "n1", "IsActive": true} ]
+            "Pagination": { "PageSize": 7, "CurrentPage": 3, "TotalCount": 9, "ContinuationToken": null },
+            "Items": [ {"Id": 1, "Name": "n1", "IsActive": true} ]
         }
         """;
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -176,7 +175,7 @@ public class HttpContentExtensionsJsonTests
 
         // Act
         var paged = content.ReadFromJsonAsAsyncPagedEnumerable<JsonTestItem>(options);
-        var ctx = await paged.GetPageContextAsync();
+        var ctx = await paged.GetPaginationAsync();
 
         // Assert
         ctx.PageSize.Should().Be(7);
@@ -194,14 +193,14 @@ public class HttpContentExtensionsJsonTests
         // Arrange
         var json = """
         {
-            "pageContext": { "pageSize": 5, "currentPage": 1, "totalCount": 0 }
+            "pagination": { "pageSize": 5, "currentPage": 1, "totalCount": 0 }
         }
         """;
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         // Act
         var paged = content.ReadFromJsonAsAsyncPagedEnumerable(HttpContentTestsJsonContext.Default.JsonTestItem);
-        _ = await paged.GetPageContextAsync();
+        _ = await paged.GetPaginationAsync();
 
         // Assert
         var list = await ToListAsync(paged);

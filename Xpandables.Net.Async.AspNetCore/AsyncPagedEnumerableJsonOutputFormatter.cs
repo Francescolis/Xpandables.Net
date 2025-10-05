@@ -157,7 +157,7 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
     {
         var paged = (IAsyncPagedEnumerable<T>)instance;
 
-        var pageContext = await paged.GetPageContextAsync(ct).ConfigureAwait(false);
+        var pageContext = await paged.GetPaginationAsync(ct).ConfigureAwait(false);
 
         writer.WriteStartObject();
 

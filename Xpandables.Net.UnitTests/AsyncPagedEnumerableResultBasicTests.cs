@@ -14,9 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
-using System.Net.UnitTests;
-
 using FluentAssertions;
 
 using Xpandables.Net.Async;
@@ -115,10 +112,10 @@ public class AsyncPagedEnumerableResultBasicTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         responseBody.Should().NotBeNullOrEmpty();
 
-        // Should be valid JSON with empty data array
+        // Should be valid JSON with empty items array
         var jsonDoc = System.Text.Json.JsonDocument.Parse(responseBody);
-        jsonDoc.RootElement.TryGetProperty("pageContext", out _).Should().BeTrue();
-        jsonDoc.RootElement.TryGetProperty("data", out var dataElement).Should().BeTrue();
+        jsonDoc.RootElement.TryGetProperty("pagination", out _).Should().BeTrue();
+        jsonDoc.RootElement.TryGetProperty("items", out var dataElement).Should().BeTrue();
         dataElement.GetArrayLength().Should().Be(0);
     }
 
@@ -133,6 +130,6 @@ public class AsyncPagedEnumerableResultBasicTests
 
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(pageSize, currentPage, totalCount: totalCount)));
+            ct => ValueTask.FromResult(Pagination.Create(pageSize, currentPage, totalCount: totalCount)));
     }
 }

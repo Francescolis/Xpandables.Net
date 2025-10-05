@@ -118,7 +118,7 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
                 Encoder = _jsonTypeInfo.Options.Encoder
             });
 
-        var pageContext = await _results.GetPageContextAsync(cancellationToken).ConfigureAwait(false);
+        var pageContext = await _results.GetPaginationAsync(cancellationToken).ConfigureAwait(false);
 
         writer.WriteStartObject();
         writer.WritePropertyName("pagination");

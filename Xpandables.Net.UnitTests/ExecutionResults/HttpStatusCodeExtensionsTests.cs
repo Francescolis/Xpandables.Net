@@ -16,8 +16,6 @@
 ********************************************************************************/
 using System.Data;
 using System.Net;
-using System.Net.Abstractions;
-using System.Net.ExecutionResults;
 
 using FluentAssertions;
 

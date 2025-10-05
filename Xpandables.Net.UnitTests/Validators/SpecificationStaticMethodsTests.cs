@@ -27,7 +27,7 @@ public class SpecificationStaticMethodsTests
     {
         // Act
         var spec = Specification.True<TestModel>();
-        var testModel = new TestModel { Name = "Test", Age = -100 }; // Even invalid data
+        var testModel = new TestModel { Name = "Test", Age = -100 }; // Even invalid items
 
         // Assert
         spec.IsSatisfiedBy(testModel).Should().BeTrue();
@@ -38,7 +38,7 @@ public class SpecificationStaticMethodsTests
     {
         // Act
         var spec = Specification.False<TestModel>();
-        var testModel = new TestModel { Name = "Valid", Age = 25 }; // Even valid data
+        var testModel = new TestModel { Name = "Valid", Age = 25 }; // Even valid items
 
         // Assert
         spec.IsSatisfiedBy(testModel).Should().BeFalse();

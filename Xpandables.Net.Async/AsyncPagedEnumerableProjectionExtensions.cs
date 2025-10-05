@@ -45,7 +45,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
             ArgumentNullException.ThrowIfNull(selector);
             return new AsyncPagedEnumerable<TSource, TResult>(
                 source,
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)),
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)),
                 (s, ct) => ValueTask.FromResult(selector(s)));
         }
 
@@ -60,7 +60,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
             ArgumentNullException.ThrowIfNull(selectorAsync);
             return new AsyncPagedEnumerable<TSource, TResult>(
                 source,
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)),
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)),
                 (s, ct) => selectorAsync(s));
         }
 
@@ -75,7 +75,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
             ArgumentNullException.ThrowIfNull(selectorAsync);
             return new AsyncPagedEnumerable<TSource, TResult>(
                 source,
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)),
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)),
                 selectorAsync);
         }
 

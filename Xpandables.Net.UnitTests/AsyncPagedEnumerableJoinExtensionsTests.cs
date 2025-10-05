@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
-
 using FluentAssertions;
 
 using Xpandables.Net.Async;
@@ -41,7 +39,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
         };
         return new AsyncPagedEnumerable<Customer, Customer>(
             customers.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(4, 1, totalCount: 4)));
+            ct => ValueTask.FromResult(Pagination.Create(4, 1, totalCount: 4)));
     }
 
     private static IAsyncEnumerable<Order> CreateOrders()
@@ -67,7 +65,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
     {
         return new AsyncPagedEnumerable<Customer, Customer>(
             AsyncEnumerable.Empty<Customer>(),
-            ct => ValueTask.FromResult(PageContext.Create(0, 0, totalCount: 0)));
+            ct => ValueTask.FromResult(Pagination.Create(0, 0, totalCount: 0)));
     }
 
     #region Join Tests
@@ -418,7 +416,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
         // Arrange
         var customers = CreateCustomers();
         var orders = CreateOrders();
-        var originalPageContext = await customers.GetPageContextAsync();
+        var originalPageContext = await customers.GetPaginationAsync();
 
         // Act
         var joined = customers.JoinPaged(
@@ -427,7 +425,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
             o => o.CustomerId,
             (c, o) => new JoinResult(c.Name, o.Product, o.Amount)
         );
-        var joinedContext = await joined.GetPageContextAsync();
+        var joinedContext = await joined.GetPaginationAsync();
 
         // Assert
         joinedContext.PageSize.Should().Be(originalPageContext.PageSize);
@@ -441,7 +439,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
         // Arrange
         var customers = CreateCustomers();
         var orders = CreateOrders();
-        var originalPageContext = await customers.GetPageContextAsync();
+        var originalPageContext = await customers.GetPaginationAsync();
 
         // Act
         var grouped = customers.GroupJoinPaged(
@@ -450,7 +448,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
             o => o.CustomerId,
             (c, orders) => new GroupJoinResult(c.Name, orders)
         );
-        var groupedContext = await grouped.GetPageContextAsync();
+        var groupedContext = await grouped.GetPaginationAsync();
 
         // Assert
         groupedContext.PageSize.Should().Be(originalPageContext.PageSize);
@@ -493,7 +491,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
         }.ToAsync();
         var pagedCustomers = new AsyncPagedEnumerable<Customer, Customer>(
             customers,
-            ct => ValueTask.FromResult(PageContext.Create(1, 1, totalCount: 1)));
+            ct => ValueTask.FromResult(Pagination.Create(1, 1, totalCount: 1)));
 
         var orders = new[]
         {
@@ -529,7 +527,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
             .ToAsync();
         var pagedCustomers = new AsyncPagedEnumerable<Customer, Customer>(
             customers,
-            ct => ValueTask.FromResult(PageContext.Create(100, 1, totalCount: 100)));
+            ct => ValueTask.FromResult(Pagination.Create(100, 1, totalCount: 100)));
 
         var orders = Enumerable.Range(1, 1000)
             .Select(i => new Order(i, (i % 100) + 1, $"Product{i}", i * 10m))
@@ -559,7 +557,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
         }.ToAsync();
         var pagedCustomers = new AsyncPagedEnumerable<Customer, Customer>(
             customers,
-            ct => ValueTask.FromResult(PageContext.Create(2, 1, totalCount: 2)));
+            ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
 
         var orders = new[]
         {

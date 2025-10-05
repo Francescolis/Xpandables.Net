@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Validators;
-
 using FluentAssertions;
 
 using Xpandables.Net.Validators;

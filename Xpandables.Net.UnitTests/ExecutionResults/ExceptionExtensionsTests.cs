@@ -17,12 +17,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Net;
-using System.Net.Abstractions.Collections;
-using System.Net.ExecutionResults;
 using System.Security;
 using System.Security.Authentication;
 
 using FluentAssertions;
+
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.UnitTests.ExecutionResults;
 

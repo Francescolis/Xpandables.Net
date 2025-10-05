@@ -15,12 +15,13 @@
  *
 ********************************************************************************/
 using System.Net;
-using System.Net.Abstractions.Collections;
-using System.Net.ExecutionResults;
 
 using FluentAssertions;
 
 using Microsoft.Extensions.Primitives;
+
+using Xpandables.Net.Collections;
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.UnitTests.ExecutionResults;
 

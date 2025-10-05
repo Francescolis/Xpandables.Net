@@ -28,9 +28,9 @@ public interface IAsyncPagedEnumerator<out T> : IAsyncEnumerator<T>
     where T : allows ref struct
 {
     /// <summary>
-    /// Gets a read-only reference to the current page context.
+    /// Gets a read-only reference to the current pagination.
     /// </summary>
-    ref readonly Pagination PageContext { get; }
+    ref readonly Pagination Pagination { get; }
 
     /// <summary>
     /// Configures the strategy to be used for managing page context during operations.

@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Net.Validators;
 
 using Xpandables.Net.Validators;
 

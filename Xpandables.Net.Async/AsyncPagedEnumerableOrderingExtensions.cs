@@ -98,7 +98,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion
@@ -180,7 +180,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion

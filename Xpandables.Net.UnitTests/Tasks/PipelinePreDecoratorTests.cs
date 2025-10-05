@@ -15,12 +15,12 @@
  *
 ********************************************************************************/
 using System.Net;
-using System.Net.ExecutionResults;
-using System.Net.Tasks.Pipelines;
 
 using FluentAssertions;
 
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Tasks;
+using Xpandables.Net.Tasks.Pipelines;
 
 namespace Xpandables.Net.UnitTests.Tasks;
 

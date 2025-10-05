@@ -1,10 +1,8 @@
-using System.Net.DependencyInjection;
-using System.Net.Repositories;
-
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.UnitTests.Repositories;

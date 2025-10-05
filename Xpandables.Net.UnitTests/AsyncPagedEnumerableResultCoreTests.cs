@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -108,10 +107,10 @@ public class AsyncPagedEnumerableResultCoreTests
         var jsonDocument = JsonDocument.Parse(responseBody);
 
         // Verify structure exists
-        jsonDocument.RootElement.TryGetProperty("pageContext", out _).Should().BeTrue();
-        jsonDocument.RootElement.TryGetProperty("data", out var dataElement).Should().BeTrue();
+        jsonDocument.RootElement.TryGetProperty("pagination", out _).Should().BeTrue();
+        jsonDocument.RootElement.TryGetProperty("items", out var dataElement).Should().BeTrue();
 
-        // Verify data is an array with correct length
+        // Verify items is an array with correct length
         dataElement.ValueKind.Should().Be(JsonValueKind.Array);
         dataElement.GetArrayLength().Should().Be(2);
 
@@ -137,10 +136,10 @@ public class AsyncPagedEnumerableResultCoreTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        jsonDocument.RootElement.TryGetProperty("data", out var dataElement).Should().BeTrue();
+        jsonDocument.RootElement.TryGetProperty("items", out var dataElement).Should().BeTrue();
         dataElement.GetArrayLength().Should().Be(0);
 
-        jsonDocument.RootElement.TryGetProperty("pageContext", out var pageContextElement).Should().BeTrue();
+        jsonDocument.RootElement.TryGetProperty("pagination", out var pageContextElement).Should().BeTrue();
         pageContextElement.TryGetProperty("TotalCount", out var totalCountElement).Should().BeTrue();
         totalCountElement.GetInt32().Should().Be(0);
     }
@@ -169,10 +168,10 @@ public class AsyncPagedEnumerableResultCoreTests
         // Arrange
         var items = new[] { new TestItem(1, "Item1", true) };
 
-        // Create PageContext explicitly with null TotalCount
+        // Create Pagination explicitly with null TotalCount
         var pagedEnumerable = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(new PageContext { PageSize = 10, CurrentPage = 1, TotalCount = null, ContinuationToken = null }));
+            ct => ValueTask.FromResult(new Pagination { PageSize = 10, CurrentPage = 1, TotalCount = null, ContinuationToken = null }));
 
         var result = pagedEnumerable.ToResult(TestItemJsonContext.Default.TestItem);
         var httpContext = HttpContextTestHelpers.CreateTestHttpContext();
@@ -186,8 +185,8 @@ public class AsyncPagedEnumerableResultCoreTests
 
         // Just verify we can parse the JSON and it has the expected structure
         var jsonDocument = JsonDocument.Parse(responseBody);
-        jsonDocument.RootElement.TryGetProperty("pageContext", out _).Should().BeTrue();
-        jsonDocument.RootElement.TryGetProperty("data", out _).Should().BeTrue();
+        jsonDocument.RootElement.TryGetProperty("pagination", out _).Should().BeTrue();
+        jsonDocument.RootElement.TryGetProperty("items", out _).Should().BeTrue();
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateTestPagedEnumerable(
@@ -201,7 +200,7 @@ public class AsyncPagedEnumerableResultCoreTests
 
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(pageSize, currentPage, totalCount: totalCount)));
+            ct => ValueTask.FromResult(Pagination.Create(pageSize, currentPage, totalCount: totalCount)));
     }
 }
 

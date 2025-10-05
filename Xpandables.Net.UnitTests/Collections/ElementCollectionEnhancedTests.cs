@@ -15,11 +15,12 @@
  *
 ********************************************************************************/
 using System.Collections.ObjectModel;
-using System.Net.Abstractions.Collections;
 
 using FluentAssertions;
 
 using Microsoft.Extensions.Primitives;
+
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.UnitTests.Collections;
 

@@ -28,8 +28,8 @@ namespace Xpandables.Net.Async;
 /// Provides extension methods for reading HTTP content as an asynchronous paged enumerable of JSON objects.
 /// </summary>
 /// <remarks>These extension methods enable efficient, asynchronous processing of large JSON payloads returned
-/// from HTTP responses by exposing the data as an <see cref="IAsyncPagedEnumerable{T}"/>. This is particularly useful when working
-/// with paged or streaming JSON APIs, as it allows consuming data incrementally without loading the entire response
+/// from HTTP responses by exposing the items as an <see cref="IAsyncPagedEnumerable{T}"/>. This is particularly useful when working
+/// with paged or streaming JSON APIs, as it allows consuming items incrementally without loading the entire response
 /// into memory.</remarks>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class HttpContentExtensions
@@ -62,14 +62,14 @@ public static class HttpContentExtensions
         /// Reads the HTTP content as a paged asynchronous sequence of JSON values of type T.
         /// </summary>
         /// <remarks>The method supports JSON content that is either a top-level array or an object
-        /// containing a data array. The returned enumerable allows for efficient, asynchronous iteration over large or
+        /// containing a items array. The returned enumerable allows for efficient, asynchronous iteration over large or
         /// paged JSON responses. The method does not advance the HTTP content stream; it reads the entire content into
         /// memory before deserialization.</remarks>
         /// <typeparam name="T">The type of elements to deserialize from the JSON content.</typeparam>
         /// <param name="jsonTypeInfo">Metadata used to control the deserialization of JSON values to type T. Cannot be null.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is None.</param>
         /// <returns>An asynchronous paged enumerable that yields deserialized values of type T from the JSON content. The
-        /// sequence will be empty if the content is empty or does not contain any matching data.</returns>
+        /// sequence will be empty if the content is empty or does not contain any matching items.</returns>
         public IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
             JsonTypeInfo<T> jsonTypeInfo,
             CancellationToken cancellationToken = default)
@@ -101,8 +101,8 @@ public static class HttpContentExtensions
                     if (maybe.HasValue)
                         return maybe.Value;
 
-                    var data = TryGetDataArray(root, caseInsensitive);
-                    int total = data?.GetArrayLength() ?? 0;
+                    var items = TryGetDataArray(root, caseInsensitive);
+                    int total = items?.GetArrayLength() ?? 0;
                     return Pagination.Create(total);
                 }
 
@@ -136,11 +136,11 @@ public static class HttpContentExtensions
 
                 if (root.ValueKind == JsonValueKind.Object)
                 {
-                    var data = TryGetDataArray(root, caseInsensitive);
-                    if (data is null)
+                    var items = TryGetDataArray(root, caseInsensitive);
+                    if (items is null)
                         yield break;
 
-                    foreach (var el in data.Value.EnumerateArray())
+                    foreach (var el in items.Value.EnumerateArray())
                     {
                         ct.ThrowIfCancellationRequested();
                         yield return el.Deserialize(jsonTypeInfo)!;
@@ -152,14 +152,14 @@ public static class HttpContentExtensions
 
     private static JsonElement? TryGetDataArray(JsonElement obj, bool caseInsensitive)
     {
-        if (obj.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
-            return data;
+        if (obj.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array)
+            return items;
 
         if (!caseInsensitive) return null;
 
         foreach (var prop in obj.EnumerateObject())
         {
-            if (string.Equals(prop.Name, "data", StringComparison.OrdinalIgnoreCase) &&
+            if (string.Equals(prop.Name, "items", StringComparison.OrdinalIgnoreCase) &&
                 prop.Value.ValueKind == JsonValueKind.Array)
                 return prop.Value;
         }

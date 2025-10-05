@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Validators;
-
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -146,7 +144,7 @@ public class ValidatorProviderTests
         var act = () => provider.TryGetValidator(typeof(string));
         act.Should().Throw<ArgumentException>()
            .WithParameterName("type")
-           .WithMessage("The type 'System.String' must implement 'System.Net.Validators.IRequiresValidation'. (Parameter 'type')");
+           .WithMessage("The type 'System.String' must implement 'Xpandables.Net.Validators.IRequiresValidation'. (Parameter 'type')");
     }
 
     [Fact]

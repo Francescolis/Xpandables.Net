@@ -16,16 +16,16 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Async;
-using System.Net.DependencyInjection;
-using System.Net.ExecutionResults;
-using System.Net.Optionals;
 
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Async;
+using Xpandables.Net.Collections;
+using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Optionals;
 using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.UnitTests.Tasks;
@@ -184,7 +184,7 @@ public class MediatorInterfaceTests
                 yield return 3;
             }
 
-            var paged = new AsyncPagedEnumerable<int, int>(Source(), ct => new ValueTask<PageContext>(PageContext.Create(2, 1, null, 3)));
+            var paged = new AsyncPagedEnumerable<int, int>(Source(), ct => new ValueTask<Pagination>(Pagination.Create(2, 1, null, 3)));
             var result = ExecutionResultExtensions.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
             return Task.FromResult(result);
         }
@@ -206,13 +206,14 @@ public class MediatorInterfaceTests
 
         typed.IsSuccess.Should().BeTrue();
         var list = new List<int>();
+        Assert.NotNull(typed.Value);
         await foreach (var i in typed.Value)
         {
             list.Add(i);
         }
         list.Should().Equal(1, 2, 3);
 
-        var ctx = await typed.Value.GetPageContextAsync();
+        var ctx = await typed.Value.GetPaginationAsync();
         ctx.TotalCount.Should().Be(3);
     }
 
@@ -245,7 +246,7 @@ public class MediatorInterfaceTests
                 }
             }
 
-            var paged = new AsyncPagedEnumerable<int, int>(Source(), ct => new ValueTask<PageContext>(PageContext.Create(count, 1, null, count)));
+            var paged = new AsyncPagedEnumerable<int, int>(Source(), ct => new ValueTask<Pagination>(Pagination.Create(count, 1, null, count)));
             var result = ExecutionResultExtensions.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
             return Task.FromResult(result);
         }
@@ -264,6 +265,7 @@ public class MediatorInterfaceTests
 
         ExecutionResult<IAsyncPagedEnumerable<int>> typed = await mediator.SendAsync(new StreamIntsWithContext { Count = 4 });
         var values = new List<int>();
+        Assert.NotNull(typed.Value);
         await foreach (var i in typed.Value)
         {
             values.Add(i);

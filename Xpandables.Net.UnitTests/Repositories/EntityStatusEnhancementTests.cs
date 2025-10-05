@@ -14,10 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Repositories;
 using System.Text.Json;
 
 using FluentAssertions;
+
+using Xpandables.Net.Repositories;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.UnitTests.Repositories;
 
@@ -205,7 +207,7 @@ public class EntityStatusEnhancementTests
         var status = EntityStatus.ACTIVE;
         var options = new JsonSerializerOptions
         {
-            Converters = { new System.Net.Abstractions.Text.PrimitiveJsonConverterFactory() }
+            Converters = { new PrimitiveJsonConverterFactory() }
         };
 
         // Act
@@ -225,7 +227,7 @@ public class EntityStatusEnhancementTests
         var statuses = new[] { EntityStatus.ACTIVE, EntityStatus.PENDING, EntityStatus.DELETED };
         var options = new JsonSerializerOptions
         {
-            Converters = { new System.Net.Abstractions.Text.PrimitiveJsonConverterFactory() }
+            Converters = { new PrimitiveJsonConverterFactory() }
         };
 
         // Act

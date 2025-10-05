@@ -36,7 +36,7 @@ public class MapperBenchmarks
             PlainAsync(),
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
             mapper: x => x + 1);
-        await paged.GetPageContextAsync();
+        await paged.GetPaginationAsync();
         int sum = 0;
         await foreach (var v in paged)
             sum += v;
@@ -50,7 +50,7 @@ public class MapperBenchmarks
             PlainAsync(),
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
             mapper: async (x, ct) => { await Task.CompletedTask; return x + 1; });
-        await paged.GetPageContextAsync();
+        await paged.GetPaginationAsync();
         int sum = 0;
         await foreach (var v in paged)
             sum += v;
@@ -70,7 +70,7 @@ public class MapperBenchmarks
                 await Task.Yield();
                 return r;
             });
-        await paged.GetPageContextAsync();
+        await paged.GetPaginationAsync();
         int sum = 0;
         await foreach (var v in paged)
             sum += v;

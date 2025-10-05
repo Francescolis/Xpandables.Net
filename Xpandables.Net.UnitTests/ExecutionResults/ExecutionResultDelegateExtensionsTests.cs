@@ -16,9 +16,10 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Net.ExecutionResults;
 
 using FluentAssertions;
+
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.UnitTests.ExecutionResults;
 

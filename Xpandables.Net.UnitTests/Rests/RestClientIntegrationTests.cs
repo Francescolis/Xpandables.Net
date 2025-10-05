@@ -14,8 +14,7 @@
 * limitations under the License.
 *
 ********************************************************************************/
-using System.Net.Abstractions.Collections;
-using System.Net.DependencyInjection;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -24,6 +23,7 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Rests;
 
 namespace Xpandables.Net.UnitTests.Rests;

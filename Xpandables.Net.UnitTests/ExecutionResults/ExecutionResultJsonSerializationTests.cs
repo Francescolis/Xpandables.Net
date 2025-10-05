@@ -14,13 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions.Collections;
-using System.Net.ExecutionResults;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 using FluentAssertions;
+
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.UnitTests.ExecutionResults;
 

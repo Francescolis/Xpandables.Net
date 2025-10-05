@@ -14,12 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions.Text;
 using System.Text.Json;
 
 using FluentAssertions;
 
-using Xpandables.Net.Abstractions.Text;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.UnitTests.Text;
 

@@ -40,7 +40,7 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
     /// <remarks>
     /// The default value for <see cref="PaginationStrategy"/> is <see cref="PaginationStrategy.None"/>, meaning no pagination strategy is applied unless explicitly set.
     /// </remarks>
-    public ref readonly Pagination PageContext => ref _pageContext;
+    public ref readonly Pagination Pagination => ref _pageContext;
 
     /// <summary>
     /// Gets the current element.

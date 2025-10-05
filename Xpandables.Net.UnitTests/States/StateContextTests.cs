@@ -16,7 +16,7 @@
 ********************************************************************************/
 using FluentAssertions;
 
-using Xpandables.Net.Abstractions.States;
+using Xpandables.Net.States;
 
 namespace Xpandables.Net.UnitTests.States;
 

@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -57,12 +56,12 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        var dataArray = jsonDocument.RootElement.GetProperty("data");
+        var dataArray = jsonDocument.RootElement.GetProperty("items");
         dataArray.GetArrayLength().Should().Be(3);
 
         // Verify we can parse the JSON and have the expected structure
-        jsonDocument.RootElement.TryGetProperty("pageContext", out _).Should().BeTrue();
-        jsonDocument.RootElement.TryGetProperty("data", out _).Should().BeTrue();
+        jsonDocument.RootElement.TryGetProperty("pagination", out _).Should().BeTrue();
+        jsonDocument.RootElement.TryGetProperty("items", out _).Should().BeTrue();
 
         // Test that the second item (which has valid values) is serialized correctly
         var secondItem = dataArray[1];
@@ -115,8 +114,8 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        jsonDocument.RootElement.GetProperty("data").GetArrayLength().Should().Be(itemCount);
-        jsonDocument.RootElement.GetProperty("pageContext").GetProperty("TotalCount").GetInt32().Should().Be(itemCount);
+        jsonDocument.RootElement.GetProperty("items").GetArrayLength().Should().Be(itemCount);
+        jsonDocument.RootElement.GetProperty("pagination").GetProperty("TotalCount").GetInt32().Should().Be(itemCount);
 
         // Should complete in reasonable time (less than 3 seconds for 5k items)
         stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
@@ -138,10 +137,10 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        var pageContext = jsonDocument.RootElement.GetProperty("pageContext");
-        pageContext.GetProperty("PageSize").GetInt32().Should().Be(0);
-        pageContext.GetProperty("CurrentPage").GetInt32().Should().Be(0);
-        jsonDocument.RootElement.GetProperty("data").GetArrayLength().Should().Be(1);
+        var pagination = jsonDocument.RootElement.GetProperty("pagination");
+        pagination.GetProperty("PageSize").GetInt32().Should().Be(0);
+        pagination.GetProperty("CurrentPage").GetInt32().Should().Be(0);
+        jsonDocument.RootElement.GetProperty("items").GetArrayLength().Should().Be(1);
     }
 
     [Fact]
@@ -167,7 +166,7 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        var dataArray = jsonDocument.RootElement.GetProperty("data");
+        var dataArray = jsonDocument.RootElement.GetProperty("items");
         dataArray[0].GetProperty("NullableName").GetString().Should().Be("中文测试");
         dataArray[1].GetProperty("NullableName").GetString().Should().Be("🚀 Emoji Test 🎉");
         dataArray[2].GetProperty("NullableName").GetString().Should().Be("Åpfel über München");
@@ -201,11 +200,11 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         // Should use camelCase
         responseBody.Should().Contain("\"nullableId\"");
         responseBody.Should().Contain("\"nullableName\"");
-        responseBody.Should().Contain("\"pageContext\"");
+        responseBody.Should().Contain("\"pagination\"");
 
         // Should still parse correctly
         var jsonDocument = JsonDocument.Parse(responseBody);
-        jsonDocument.RootElement.GetProperty("data").GetArrayLength().Should().Be(1);
+        jsonDocument.RootElement.GetProperty("items").GetArrayLength().Should().Be(1);
     }
 
     [Fact]
@@ -239,7 +238,7 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        jsonDocument.RootElement.GetProperty("data").GetArrayLength().Should().Be(3);
+        jsonDocument.RootElement.GetProperty("items").GetArrayLength().Should().Be(3);
 
         // Should take some time due to delays but still complete
         stopwatch.Elapsed.Should().BeGreaterThan(TimeSpan.FromMilliseconds(100));
@@ -259,14 +258,14 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
 
         return new AsyncPagedEnumerable<EdgeCaseItem, EdgeCaseItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(pageSize, currentPage, totalCount: totalCount)));
+            ct => ValueTask.FromResult(Pagination.Create(pageSize, currentPage, totalCount: totalCount)));
     }
 
     private static IAsyncPagedEnumerable<EdgeCaseItem> CreateFaultyPagedEnumerable()
     {
         return new AsyncPagedEnumerable<EdgeCaseItem, EdgeCaseItem>(
             FaultyAsyncEnumerable(),
-            ct => ValueTask.FromResult(PageContext.Create(10, 1, totalCount: 3)));
+            ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
         static async IAsyncEnumerable<EdgeCaseItem> FaultyAsyncEnumerable()
         {
@@ -280,7 +279,7 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
     {
         return new AsyncPagedEnumerable<EdgeCaseItem, EdgeCaseItem>(
             SlowAsyncEnumerable(),
-            ct => ValueTask.FromResult(PageContext.Create(10, 1, totalCount: 3)));
+            ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
         static async IAsyncEnumerable<EdgeCaseItem> SlowAsyncEnumerable()
         {

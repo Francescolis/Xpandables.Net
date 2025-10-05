@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
-
 using FluentAssertions;
 
 using Xpandables.Net.Async;
@@ -39,14 +37,14 @@ public class AsyncPagedEnumerableWindowingExtensionsTests
         };
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(5, 1, totalCount: 5)));
+            ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: 5)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateEmptyTestData()
     {
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             AsyncEnumerable.Empty<TestItem>(),
-            ct => ValueTask.FromResult(PageContext.Create(0, 0, totalCount: 0)));
+            ct => ValueTask.FromResult(Pagination.Create(0, 0, totalCount: 0)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateSingleItemData()
@@ -54,7 +52,7 @@ public class AsyncPagedEnumerableWindowingExtensionsTests
         var items = new[] { new TestItem(42, 420.0, "Single") };
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(1, 1, totalCount: 1)));
+            ct => ValueTask.FromResult(Pagination.Create(1, 1, totalCount: 1)));
     }
 
     #region Window Tests
@@ -479,11 +477,11 @@ public class AsyncPagedEnumerableWindowingExtensionsTests
     {
         // Arrange
         var source = CreateTestData();
-        var originalPageContext = await source.GetPageContextAsync();
+        var originalPageContext = await source.GetPaginationAsync();
 
         // Act
         var windowed = source.WindowPaged(3);
-        var windowedContext = await windowed.GetPageContextAsync();
+        var windowedContext = await windowed.GetPaginationAsync();
 
         // Assert
         windowedContext.PageSize.Should().Be(originalPageContext.PageSize);
@@ -534,7 +532,7 @@ public class AsyncPagedEnumerableWindowingExtensionsTests
             .ToArray();
         var source = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(1000, 1, totalCount: 1000)));
+            ct => ValueTask.FromResult(Pagination.Create(1000, 1, totalCount: 1000)));
 
         // Act
         var windowedSums = await source.WindowedSumPaged(10, x => x.Value).ToListPagedAsync();

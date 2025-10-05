@@ -86,7 +86,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TSource[], TSource[]>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<int, int>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<long, long>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -209,7 +209,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<double, double>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<double, double>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TValue, TValue>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TValue, TValue>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion
@@ -375,7 +375,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<(TSource Previous, TSource Current), (TSource Previous, TSource Current)>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -407,7 +407,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion
@@ -441,7 +441,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TAccumulate, TAccumulate>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -478,7 +478,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion

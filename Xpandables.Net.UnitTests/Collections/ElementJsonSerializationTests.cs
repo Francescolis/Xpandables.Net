@@ -14,12 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Abstractions.Collections;
 using System.Text.Json;
 
 using FluentAssertions;
 
 using Microsoft.Extensions.Primitives;
+
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.UnitTests.Collections;
 

@@ -106,7 +106,7 @@ public sealed class AsyncPagedEnumerable<TSource, TResult> : IAsyncPagedEnumerab
     }
 
     /// <inheritdoc/>
-    public Task<Pagination> GetPageContextAsync(CancellationToken cancellationToken = default)
+    public Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
     {
         // Fast path if already computed.
         if (_paginationState == 2)

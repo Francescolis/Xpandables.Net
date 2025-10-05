@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -48,7 +47,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
 
         var pagedEnumerable = new AsyncPagedEnumerable<Product, Product>(
             products.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(10, 1, totalCount: 3)));
+            ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
         var result = pagedEnumerable.ToResult(ProductContext.Default.Product);
         var httpContext = HttpContextTestHelpers.CreateTestHttpContext();
@@ -60,7 +59,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        var dataArray = jsonDocument.RootElement.GetProperty("data");
+        var dataArray = jsonDocument.RootElement.GetProperty("items");
         dataArray.GetArrayLength().Should().Be(3);
 
         dataArray[0].GetProperty("Id").GetInt32().Should().Be(1);
@@ -80,7 +79,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
 
         var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
             users.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(100, 1, totalCount: itemCount)));
+            ct => ValueTask.FromResult(Pagination.Create(100, 1, totalCount: itemCount)));
 
         var result = pagedEnumerable.ToResult(UserContext.Default.User);
         var httpContext = HttpContextTestHelpers.CreateTestHttpContext();
@@ -94,8 +93,8 @@ public class AsyncPagedEnumerableResultIntegrationTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        jsonDocument.RootElement.GetProperty("data").GetArrayLength().Should().Be(itemCount);
-        jsonDocument.RootElement.GetProperty("pageContext").GetProperty("TotalCount").GetInt32().Should().Be(itemCount);
+        jsonDocument.RootElement.GetProperty("items").GetArrayLength().Should().Be(itemCount);
+        jsonDocument.RootElement.GetProperty("pagination").GetProperty("TotalCount").GetInt32().Should().Be(itemCount);
 
         // Should complete in reasonable time (less than 2 seconds for 1k items)
         stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(2));
@@ -108,7 +107,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
         var users = new[] { new User(1, "TestUser", "test@example.com", true) };
         var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
             users.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(10, 1, totalCount: 1)));
+            ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 1)));
 
         var result = pagedEnumerable.ToResult();
 
@@ -130,7 +129,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
 
         // Should still parse correctly
         var jsonDocument = JsonDocument.Parse(responseBody);
-        jsonDocument.RootElement.GetProperty("data").GetArrayLength().Should().Be(1);
+        jsonDocument.RootElement.GetProperty("items").GetArrayLength().Should().Be(1);
     }
 
     [Fact]
@@ -146,7 +145,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
 
         var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
             users.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(10, 1, totalCount: 3)));
+            ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
         var result = pagedEnumerable.ToResult(UserContext.Default.User);
         var httpContext = HttpContextTestHelpers.CreateTestHttpContext();
@@ -158,7 +157,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var jsonDocument = JsonDocument.Parse(responseBody);
 
-        var dataArray = jsonDocument.RootElement.GetProperty("data");
+        var dataArray = jsonDocument.RootElement.GetProperty("items");
         dataArray[0].GetProperty("Name").GetString().Should().Be("用户");
         dataArray[0].GetProperty("Email").GetString().Should().Be("user@中文.com");
         dataArray[1].GetProperty("Name").GetString().Should().Be("🚀 User");
@@ -178,7 +177,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
 
         var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
             users.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(10, 1, totalCount: 3)));
+            ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
         var result = pagedEnumerable.ToResult(UserContext.Default.User);
         var httpContext = HttpContextTestHelpers.CreateTestHttpContext();
@@ -192,7 +191,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
         // Assert response body can be parsed as JSON
         _ = JsonDocument.Parse(responseBody);
 
-        var dataArray = JsonDocument.Parse(responseBody).RootElement.GetProperty("data");
+        var dataArray = JsonDocument.Parse(responseBody).RootElement.GetProperty("items");
         dataArray[0].GetProperty("Name").GetString().Should().Be("User with \"quotes\"");
         dataArray[1].GetProperty("Name").GetString().Should().Be("User with \n newline");
         dataArray[2].GetProperty("Name").GetString().Should().Be("User with \\ backslash");
@@ -226,7 +225,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
 
         var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
             users.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(5, 1, totalCount: users.Length)));
+            ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: users.Length)));
 
         var httpContext = HttpContextTestHelpers.CreateTestHttpContext();
 
@@ -246,9 +245,9 @@ public class AsyncPagedEnumerableResultIntegrationTests
         // Assert
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         var json = JsonDocument.Parse(responseBody);
-        json.RootElement.GetProperty("data").GetArrayLength().Should().Be(2);
-        json.RootElement.GetProperty("pageContext").GetProperty("TotalCount").GetInt32().Should().Be(2);
-        json.RootElement.GetProperty("data")[0].GetProperty("Name").GetString().Should().Be("Alpha");
+        json.RootElement.GetProperty("items").GetArrayLength().Should().Be(2);
+        json.RootElement.GetProperty("pagination").GetProperty("TotalCount").GetInt32().Should().Be(2);
+        json.RootElement.GetProperty("items")[0].GetProperty("Name").GetString().Should().Be("Alpha");
     }
 
     [Fact]
@@ -263,7 +262,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
 
         var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
             users.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(5, 1, totalCount: users.Length)));
+            ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: users.Length)));
 
         var httpContext = HttpContextTestHelpers.CreateTestHttpContext();
 
@@ -283,9 +282,9 @@ public class AsyncPagedEnumerableResultIntegrationTests
         // Assert
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext, Encoding.Unicode);
         var json = JsonDocument.Parse(responseBody);
-        json.RootElement.GetProperty("data").GetArrayLength().Should().Be(2);
-        json.RootElement.GetProperty("data")[0].GetProperty("Name").GetString().Should().Be("Гамма");
-        json.RootElement.GetProperty("data")[1].GetProperty("Name").GetString().Should().Be("Δέλτα");
+        json.RootElement.GetProperty("items").GetArrayLength().Should().Be(2);
+        json.RootElement.GetProperty("items")[0].GetProperty("Name").GetString().Should().Be("Гамма");
+        json.RootElement.GetProperty("items")[1].GetProperty("Name").GetString().Should().Be("Δέλτα");
     }
 
     [Fact]
@@ -295,7 +294,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
         var users = new[] { new User(1, "CamelCase", "camel@test.com", true) };
         var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
             users.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(10, 1, totalCount: 1)));
+            ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 1)));
 
         var serializerOptions = new JsonSerializerOptions
         {
@@ -315,16 +314,16 @@ public class AsyncPagedEnumerableResultIntegrationTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext);
         responseBody.Should().Contain("  "); // indented
         var json = JsonDocument.Parse(responseBody);
-        json.RootElement.GetProperty("data").GetArrayLength().Should().Be(1);
-        json.RootElement.GetProperty("data")[0].GetProperty("name").GetString().Should().Be("CamelCase");
-        json.RootElement.GetProperty("data")[0].TryGetProperty("Name", out _).Should().BeFalse();
+        json.RootElement.GetProperty("items").GetArrayLength().Should().Be(1);
+        json.RootElement.GetProperty("items")[0].GetProperty("name").GetString().Should().Be("CamelCase");
+        json.RootElement.GetProperty("items")[0].TryGetProperty("Name", out _).Should().BeFalse();
     }
 
     private static IAsyncPagedEnumerable<User> CreateSlowPagedEnumerable()
     {
         return new AsyncPagedEnumerable<User, User>(
             SlowAsyncEnumerable(),
-            ct => ValueTask.FromResult(PageContext.Create(10, 1, totalCount: 3)));
+            ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
         static async IAsyncEnumerable<User> SlowAsyncEnumerable()
         {

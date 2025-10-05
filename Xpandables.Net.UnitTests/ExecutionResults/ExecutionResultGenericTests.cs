@@ -15,10 +15,11 @@
  *
 ********************************************************************************/
 using System.Net;
-using System.Net.Abstractions.Collections;
-using System.Net.ExecutionResults;
 
 using FluentAssertions;
+
+using Xpandables.Net.Collections;
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.UnitTests.ExecutionResults;
 
@@ -142,7 +143,7 @@ public class ExecutionResultGenericTests
         var result = ExecutionResultExtensions
             .Failure<TestModel>(HttpStatusCode.UnprocessableEntity)
             .WithTitle("Validation Error")
-            .WithDetail("The submitted data contains errors")
+            .WithDetail("The submitted items contains errors")
             .WithErrors(errors)
             .Build();
 

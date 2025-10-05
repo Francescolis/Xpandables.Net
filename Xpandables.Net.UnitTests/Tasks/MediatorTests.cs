@@ -15,13 +15,13 @@
  *
 ********************************************************************************/
 using System.Net;
-using System.Net.DependencyInjection;
-using System.Net.ExecutionResults;
 
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.UnitTests.Tasks;

@@ -14,10 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Optionals;
 using System.Text.Json;
 
 using FluentAssertions;
+
+using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.UnitTests.Optionals;
 

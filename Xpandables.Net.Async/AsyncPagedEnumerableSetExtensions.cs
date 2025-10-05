@@ -96,7 +96,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -188,7 +188,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion
@@ -221,7 +221,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -246,7 +246,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -271,7 +271,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource, TSource>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion
@@ -310,7 +310,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ public static class AsyncPagedEnumerableSetExtensions
 
             return new AsyncPagedEnumerable<TSource?, TSource?>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion

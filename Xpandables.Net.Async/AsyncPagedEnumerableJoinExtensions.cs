@@ -138,7 +138,7 @@ public static class AsyncPagedEnumerableJoinExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion
@@ -224,7 +224,7 @@ public static class AsyncPagedEnumerableJoinExtensions
 
             return new AsyncPagedEnumerable<TResult, TResult>(
                 Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPageContextAsync(ct)));
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion

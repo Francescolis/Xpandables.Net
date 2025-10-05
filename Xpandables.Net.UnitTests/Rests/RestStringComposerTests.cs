@@ -14,13 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Rests.RequestBuilders;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using FluentAssertions;
 
 using Xpandables.Net.Rests;
+using Xpandables.Net.Rests.RequestBuilders;
 
 namespace Xpandables.Net.UnitTests.Rests;
 

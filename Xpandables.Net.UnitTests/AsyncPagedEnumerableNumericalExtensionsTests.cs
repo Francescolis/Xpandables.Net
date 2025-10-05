@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
-
 using FluentAssertions;
 
 using Xpandables.Net.Async;
@@ -39,14 +37,14 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
         };
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(4, 1, totalCount: 4)));
+            ct => ValueTask.FromResult(Pagination.Create(4, 1, totalCount: 4)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateEmptyTestData()
     {
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             AsyncEnumerable.Empty<TestItem>(),
-            ct => ValueTask.FromResult(PageContext.Create(0, 0, totalCount: 0)));
+            ct => ValueTask.FromResult(Pagination.Create(0, 0, totalCount: 0)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateAllNullTestData()
@@ -58,7 +56,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
         };
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(2, 1, totalCount: 2)));
+            ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
     }
 
     #region Sum Tests
@@ -210,7 +208,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
         };
         var source = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(2, 1, totalCount: 2)));
+            ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
 
         // Act & Assert
         await Assert.ThrowsAsync<OverflowException>(async () =>
@@ -380,7 +378,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
     [Fact]
     public async Task AveragePagedAsync_WithOverflow_ThrowsOverflowException()
     {
-        // Arrange - Create data that will actually cause long overflow during accumulation
+        // Arrange - Create items that will actually cause long overflow during accumulation
         var items = new[]
         {
             new TestItem(0, null, long.MaxValue, null, 0.0, null, 0m, null),
@@ -388,7 +386,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
         };
         var source = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(2, 1, totalCount: 2)));
+            ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
 
         // Act & Assert - Test long values that will overflow
         await Assert.ThrowsAsync<OverflowException>(async () =>
@@ -516,7 +514,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
             .ToArray();
         var source = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(10000, 1, totalCount: 10000)));
+            ct => ValueTask.FromResult(Pagination.Create(10000, 1, totalCount: 10000)));
 
         // Act
         var sum = await source.SumPagedAsync(x => x.IntValue);
@@ -541,7 +539,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
         };
         var source = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(5, 1, totalCount: 5)));
+            ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: 5)));
 
         // Act
         var intSum = await source.SumPagedAsync(x => x.NullableIntValue);

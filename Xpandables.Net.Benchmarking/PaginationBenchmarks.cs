@@ -52,7 +52,7 @@ public class PaginationBenchmarks
             PlainAsync(),
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 256, currentPage: 1, totalCount: Count))
         );
-        await paged.GetPageContextAsync();
+        await paged.GetPaginationAsync();
         long sum = 0;
         await foreach (var i in paged)
             sum += i;

@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Async;
-
 using FluentAssertions;
 
 using Xpandables.Net.Async;
@@ -40,14 +38,14 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
         };
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(6, 1, totalCount: 6)));
+            ct => ValueTask.FromResult(Pagination.Create(6, 1, totalCount: 6)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateEmptyTestData()
     {
         return new AsyncPagedEnumerable<TestItem, TestItem>(
             AsyncEnumerable.Empty<TestItem>(),
-            ct => ValueTask.FromResult(PageContext.Create(0, 0, totalCount: 0)));
+            ct => ValueTask.FromResult(Pagination.Create(0, 0, totalCount: 0)));
     }
 
     #region GroupBy Tests
@@ -384,11 +382,11 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
     {
         // Arrange
         var source = CreateTestData();
-        var originalPageContext = await source.GetPageContextAsync();
+        var originalPageContext = await source.GetPaginationAsync();
 
         // Act
         var grouped = source.GroupByPaged(x => x.Category);
-        var groupedContext = await grouped.GetPageContextAsync();
+        var groupedContext = await grouped.GetPaginationAsync();
 
         // Assert
         groupedContext.PageSize.Should().Be(originalPageContext.PageSize);
@@ -426,7 +424,7 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
         };
         var source = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(3, 1, totalCount: 3)));
+            ct => ValueTask.FromResult(Pagination.Create(3, 1, totalCount: 3)));
 
         // Act
         var groups = await source.GroupByPaged(x => x.Category).ToListPagedAsync();
@@ -450,7 +448,7 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
             .ToArray();
         var source = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(1000, 1, totalCount: 1000)));
+            ct => ValueTask.FromResult(Pagination.Create(1000, 1, totalCount: 1000)));
 
         // Act
         var groups = await source.GroupByPaged(x => x.Category).ToListPagedAsync();
@@ -472,7 +470,7 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
         };
         var source = new AsyncPagedEnumerable<TestItem, TestItem>(
             items.ToAsync(),
-            ct => ValueTask.FromResult(PageContext.Create(2, 1, totalCount: 2)));
+            ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
 
         // Act
         var lookup = await source.ToLookupPagedAsync(x => x.Category, x => x.Name);

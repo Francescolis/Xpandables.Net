@@ -15,13 +15,12 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Net.DependencyInjection;
-using System.Net.Validators;
 
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.UnitTests.Validators;
