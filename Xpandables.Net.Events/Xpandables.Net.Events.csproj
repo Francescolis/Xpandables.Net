@@ -7,7 +7,7 @@
 		<LangVersion>preview</LangVersion>
 
 		<Title>Xpandables.Net.Events</Title>
-		<Description>Provide basic objects.</Description>
+		<Description>Provide events objects.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
@@ -84,6 +84,10 @@
 			<PackagePath>\</PackagePath>
 			<Pack>True</Pack>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net.Events.Abstractions\Xpandables.Net.Events.Abstractions.csproj" />
 	</ItemGroup>
 
 </Project>
