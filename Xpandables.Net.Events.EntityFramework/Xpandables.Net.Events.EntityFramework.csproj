@@ -87,4 +87,9 @@
 	  </None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net.Events.Abstractions\Xpandables.Net.Events.Abstractions.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj" />
+	</ItemGroup>
+
 </Project>

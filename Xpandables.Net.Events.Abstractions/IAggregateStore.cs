@@ -51,7 +51,9 @@ public interface IAggregateStore
 /// </summary>
 /// <remarks>This interface provides type-safe methods for working with aggregates, enabling implementations to
 /// persist and rehydrate domain objects. It is typically used in event sourcing or domain-driven design scenarios to
-/// abstract the underlying storage details.</remarks>
+/// abstract the underlying storage details.
+/// <para>If you need more fine-grained control over the persistence of aggregates, consider using the <see cref="IEventStore"/> implementation.</para>
+/// </remarks>
 /// <typeparam name="TAggregate">The type of aggregate managed by the store. Must be a class that implements the IAggregate interface and has a
 /// parameterless constructor.</typeparam>
 public interface IAggregateStore<TAggregate> : IAggregateStore
