@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Xpandables.Net.Events;
@@ -54,5 +55,6 @@ public interface IEventConverter
     /// <param name="entityInstance">The entity event to convert. Cannot be null.</param>
     /// <param name="serializerOptions">The serializer options to use when serializing the entity event.</param>
     /// <returns>An event representation of the specified entity event.</returns>
+    [RequiresUnreferencedCode("The type might be removed")]
     IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions serializerOptions);
 }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Xpandables.Net.Events;
@@ -191,5 +192,6 @@ public abstract class EventConverter : IEventConverter
     /// <param name="entityInstance">The entity event instance to convert. Cannot be null.</param>
     /// <param name="serializerOptions">The serializer options to use when converting the entity.</param>
     /// <returns>An event representation of the specified entity event instance.</returns>
+    [RequiresUnreferencedCode("The type might be removed")]
     public abstract IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions serializerOptions);
 }

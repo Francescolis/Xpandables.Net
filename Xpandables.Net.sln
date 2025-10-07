@@ -52,6 +52,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Events", "Xp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Events.EntityFramework", "Xpandables.Net.Events.EntityFramework\Xpandables.Net.Events.EntityFramework.csproj", "{602E1348-4A1F-4AC0-BD76-04A4A0FCE57E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Events.Repositories", "Xpandables.Net.Events.Repositories\Xpandables.Net.Events.Repositories.csproj", "{A089E62A-8E0A-4E82-8D5B-BB2E75EB4501}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -142,6 +144,10 @@ Global
 		{602E1348-4A1F-4AC0-BD76-04A4A0FCE57E}.Debug|x64.Build.0 = Debug|x64
 		{602E1348-4A1F-4AC0-BD76-04A4A0FCE57E}.Release|x64.ActiveCfg = Release|x64
 		{602E1348-4A1F-4AC0-BD76-04A4A0FCE57E}.Release|x64.Build.0 = Release|x64
+		{A089E62A-8E0A-4E82-8D5B-BB2E75EB4501}.Debug|x64.ActiveCfg = Debug|x64
+		{A089E62A-8E0A-4E82-8D5B-BB2E75EB4501}.Debug|x64.Build.0 = Debug|x64
+		{A089E62A-8E0A-4E82-8D5B-BB2E75EB4501}.Release|x64.ActiveCfg = Release|x64
+		{A089E62A-8E0A-4E82-8D5B-BB2E75EB4501}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

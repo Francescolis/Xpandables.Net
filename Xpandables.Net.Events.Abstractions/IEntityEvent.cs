@@ -30,12 +30,12 @@ public interface IEntityEvent : IDisposable
     /// <summary>
     /// Gets the name of the event associated with the current instance.
     /// </summary>
-    string Name { get; }
+    string EventType { get; }
 
     /// <summary>
     /// Gets the event full name, including any relevant namespace or path information.
     /// </summary>
-    string FullName { get; }
+    string EventFullName { get; }
 
     /// <summary>
     /// Gets the current sequence number associated with the instance, which is used to track the order of events.
