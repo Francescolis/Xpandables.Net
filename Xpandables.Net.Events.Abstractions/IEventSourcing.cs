@@ -37,6 +37,11 @@ public interface IEventSourcing
     IReadOnlyCollection<IDomainEvent> GetUncommittedEvents();
 
     /// <summary>
+    /// Returns and clears the uncommitted events.
+    /// </summary>
+    IReadOnlyCollection<IDomainEvent> DequeueUncommittedEvents();
+
+    /// <summary>
     /// Reconstructs the current state by applying a sequence of domain events.
     /// </summary>
     /// <remarks>This method is typically used to restore an aggregate's state from its event history, such as
