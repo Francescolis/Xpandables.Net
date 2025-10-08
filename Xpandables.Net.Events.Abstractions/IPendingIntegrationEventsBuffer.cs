@@ -20,7 +20,7 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Per-request buffer for integration events to be enqueued to the outbox.
 /// </summary>
-public interface IPendingIntegrationEvents
+public interface IPendingIntegrationEventsBuffer
 {
     /// <summary>
     /// Adds the specified integration event to the system for processing.

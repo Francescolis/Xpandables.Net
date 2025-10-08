@@ -47,12 +47,14 @@ namespace Xpandables.Net.Events;
 public interface IEventStore : ISnapshotEventStore
 {
     /// <summary>
-    /// Appends data to the target resource asynchronously using the specified append request.
+    /// Appends the specified data asynchronously using the provided request parameters.
     /// </summary>
-    /// <param name="request">The request containing the data and parameters to append. Cannot be null.</param>
+    /// <param name="request">An <see cref="AppendRequest"/> object that specifies the data and options for the append operation. Cannot be
+    /// null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the append operation.</param>
-    /// <returns>A task that represents the asynchronous append operation.</returns>
-    Task AppendAsync(AppendRequest request, CancellationToken cancellationToken = default);
+    /// <returns>A task that represents the asynchronous append operation. The task result contains an <see cref="AppendResult"/>
+    /// describing the outcome of the operation.</returns>
+    Task<AppendResult> AppendAsync(AppendRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously reads events from a stream according to the specified request parameters.
@@ -64,7 +66,7 @@ public interface IEventStore : ISnapshotEventStore
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous read operation.</param>
     /// <returns>An asynchronous sequence of <see cref="EnvelopeResult"/> objects representing the events read from the stream.
     /// The sequence may be empty if no events are available.</returns>
-    IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(in ReadStreamRequest request, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(ReadStreamRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously reads events from all streams according to the specified request parameters.
@@ -73,7 +75,7 @@ public interface IEventStore : ISnapshotEventStore
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>An asynchronous sequence of <see cref="EnvelopeResult"/> objects representing the events read from all streams.
     /// The sequence may be empty if no events match the request criteria.</returns>
-    IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(in ReadAllStreamsRequest request, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(ReadAllStreamsRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves the current version number of the specified stream.
@@ -99,7 +101,7 @@ public interface IEventStore : ISnapshotEventStore
     /// <param name="request">The request containing the details of the stream to delete. Cannot be null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous delete operation.</returns>
-    Task DeleteStreamAsync(in DeleteStreamRequest request, CancellationToken cancellationToken = default);
+    Task DeleteStreamAsync(DeleteStreamRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously truncates a stream at the specified position, removing all events after that point.

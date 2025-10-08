@@ -23,15 +23,19 @@ using Xpandables.Net.Events;
 namespace Xpandables.Net.Events;
 
 /// <summary>
-/// Represents a store for managing aggregate by providing methods to append and resolve aggregates.
-/// This class is designed for use with event sourcing and domain-driven design concepts.
+/// Provides an implementation of an aggregate store that loads and saves aggregates using an event store and manages
+/// pending domain events.
 /// </summary>
-/// <typeparam name="TAggregate"></typeparam>
-/// <param name="eventStore"></param>
-/// <param name="domainEvents"></param>
+/// <remarks>This class is typically used in domain-driven design architectures to manage the persistence and
+/// reconstruction of aggregates from event streams. It ensures that aggregates are loaded from their event history and
+/// that uncommitted domain events are properly tracked and dispatched after saving.</remarks>
+/// <typeparam name="TAggregate">The type of aggregate managed by the store. Must implement <see cref="IAggregate"/> and have a parameterless
+/// constructor.</typeparam>
+/// <param name="eventStore">The event store used to persist and retrieve aggregate events.</param>
+/// <param name="domainEvents">The collection used to track and dispatch pending domain events after aggregates are saved.</param>
 public sealed class AggregateStore<TAggregate>(
     IEventStore eventStore,
-    IPendingDomainEvents domainEvents) : IAggregateStore<TAggregate>
+    IPendingDomainEventsBuffer domainEvents) : IAggregateStore<TAggregate>
     where TAggregate : class, IAggregate, new()
 {
     private readonly IEventStore _eventStore = eventStore;

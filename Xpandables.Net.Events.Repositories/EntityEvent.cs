@@ -39,7 +39,7 @@ public abstract class EntityEvent : Entity<Guid>, IEntityEvent
     public required string EventFullName { get; init; }
 
     /// <inheritdoc />
-    public required JsonDocument Data { get; init; }
+    public required JsonDocument EventData { get; init; }
 
     /// <inheritdoc />
     public long Sequence { get; init; }
@@ -62,7 +62,7 @@ public abstract class EntityEvent : Entity<Guid>, IEntityEvent
     {
         if (disposing)
         {
-            Data?.Dispose();
+            EventData?.Dispose();
         }
     }
 }

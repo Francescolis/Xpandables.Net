@@ -14,7 +14,16 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace Xpandables.Net.Events;
+
+/// <summary>
+/// Represents an event that has failed, including its unique identifier and an associated error message.
+/// </summary>
+/// <param name="EventId">The unique identifier of the event that failed.</param>
+/// <param name="Error">A message describing the error that caused the event to fail. Cannot be null.</param>
+public readonly record struct FailedEvent(Guid EventId, string Error);
 
 /// <summary>
 /// Defines a contract for an outbox store that manages the reliable enqueueing, retrieval, and state tracking of
@@ -33,6 +42,7 @@ public interface IOutboxStore
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the enqueue operation.</param>
     /// <param name="events">An array of integration events to enqueue. Cannot be null or contain null elements.</param>
     /// <returns>A task that represents the asynchronous enqueue operation.</returns>
+    [RequiresUnreferencedCode("The type might be removed")]
     Task EnqueueAsync(CancellationToken cancellationToken, params IIntegrationEvent[] events);
 
     /// <summary>
@@ -48,6 +58,7 @@ public interface IOutboxStore
     /// specified, a default timeout is used.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of integration
     /// events that were dequeued. The list will be empty if no events are available.</returns>
+    [RequiresUnreferencedCode("The type might be removed")]
     Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
         CancellationToken cancellationToken,
         int maxEvents = 10,
@@ -62,10 +73,10 @@ public interface IOutboxStore
     Task CompleteAsync(CancellationToken cancellationToken, params Guid[] eventIds);
 
     /// <summary>
-    /// Marks the specified <see cref="IIntegrationEvent"/>s as failed asynchronously.
+    /// Marks the specified <see cref="IIntegrationEvent"/> id as failure with the error message.
     /// </summary>
+    /// <param name="failures">A read-only span containing the failed events to be recorded. The span must not be empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <param name="eventIds">An array of event identifiers representing the events to mark as failed. Cannot be null or empty.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    Task FailAsync(CancellationToken cancellationToken, params Guid[] eventIds);
+    Task FailAsync(CancellationToken cancellationToken, params FailedEvent[] failures);
 }

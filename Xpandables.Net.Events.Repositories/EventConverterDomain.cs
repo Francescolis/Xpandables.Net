@@ -58,7 +58,7 @@ public sealed class EventConverterDomain : EventConverter
                 EventType = domainEvent.GetType().Name,
                 EventFullName = domainEvent.GetType().AssemblyQualifiedName!,
                 StreamVersion = domainEvent.StreamVersion,
-                Data = SerializeEventToJsonDocument(domainEvent, serializerOptions)
+                EventData = SerializeEventToJsonDocument(domainEvent, serializerOptions)
             };
         }
         catch (Exception exception)
@@ -88,7 +88,7 @@ public sealed class EventConverterDomain : EventConverter
                 ?? throw new InvalidOperationException(
                     $"The event type '{entityInstance.EventFullName}' could not be found.");
 
-            IEvent @event = DeserializeJsonDocumentToEvent(entityInstance.Data, eventType, serializerOptions);
+            IEvent @event = DeserializeJsonDocumentToEvent(entityInstance.EventData, eventType, serializerOptions);
 
             return (IDomainEvent)@event;
         }

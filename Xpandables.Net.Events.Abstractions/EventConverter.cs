@@ -2,6 +2,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
+using Xpandables.Net.Text;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -17,6 +19,9 @@ namespace Xpandables.Net.Events;
 public abstract class EventConverter : IEventConverter
 {
     private readonly static HashSet<IEventConverter> _converters = [];
+    private static readonly MemoryAwareCache<string, Type> _eventTypeCache = new();
+    private static readonly MemoryAwareCache<(Type Type, JsonSerializerOptions Options), JsonTypeInfo> _typeInfoCache = new();
+    private static readonly MemoryAwareCache<(JsonTypeInfo TypeInfo, JsonSerializerOptions Options), Func<JsonDocument, IEvent>> _deserializerCache = new();
 
     /// <summary>
     /// Registers the specified event converter for use in event serialization and deserialization.
@@ -100,9 +105,7 @@ public abstract class EventConverter : IEventConverter
         try
         {
             Type type = eventInstance.GetType();
-            JsonTypeInfo jsonTypeInfo = serializerOptions.GetTypeInfo(type)
-                ?? throw new InvalidOperationException(
-                    $"No JsonTypeInfo found for the event {type.Name}");
+            JsonTypeInfo jsonTypeInfo = ResolveEventJsonTypeInfo(type, serializerOptions);
 
             byte[] json = JsonSerializer.SerializeToUtf8Bytes(eventInstance, jsonTypeInfo);
             return JsonDocument.Parse(json, documentOptions);
@@ -140,15 +143,9 @@ public abstract class EventConverter : IEventConverter
 
         try
         {
-            JsonTypeInfo jsonTypeInfo = serializerOptions.GetTypeInfo(targetType)
-                ?? throw new InvalidOperationException(
-                    $"No JsonTypeInfo found for the event {targetType.Name}");
-
-            object? @event = eventData.Deserialize(jsonTypeInfo)
-                ?? throw new InvalidOperationException(
-                    $"Failed to deserialize the event data to {targetType.Name}.");
-
-            return (IEvent)@event;
+            JsonTypeInfo jsonTypeInfo = ResolveEventJsonTypeInfo(targetType, serializerOptions);
+            Func<JsonDocument, IEvent> deserializer = ResolveEventDeserializer(jsonTypeInfo, serializerOptions);
+            return deserializer(eventData);
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -157,6 +154,26 @@ public abstract class EventConverter : IEventConverter
                 $"Failed to convert the event entity to {targetType.Name}. " +
                 $"See inner exception for details.", exception);
         }
+    }
+
+    /// <summary>
+    /// Deserializes the event data from an entity event into an instance of the corresponding event type.
+    /// </summary>
+    /// <param name="entityEvent">The entity event containing the event type name and serialized event data to be deserialized. Cannot be null.</param>
+    /// <param name="serializerOptions">The options to use when deserializing the event data. Cannot be null.</param>
+    /// <returns>An instance of the event type represented by the entity event, deserialized from the provided event data.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the event type specified by the entity event cannot be found.</exception>
+    [SuppressMessage("Trimming", "IL2057:Unrecognized value passed to the parameter of method. It's not possible to guarantee the availability of the target type.", Justification = "<Pending>")]
+    public static IEvent DeserializeEntityToEvent(
+        IEntityEvent entityEvent,
+        JsonSerializerOptions serializerOptions)
+    {
+        ArgumentNullException.ThrowIfNull(entityEvent);
+        ArgumentNullException.ThrowIfNull(serializerOptions);
+
+        Type targetType = ResolveEventType(entityEvent.EventFullName);
+
+        return DeserializeJsonDocumentToEvent(entityEvent.EventData, targetType, serializerOptions);
     }
 
     /// <summary>
@@ -171,6 +188,91 @@ public abstract class EventConverter : IEventConverter
         JsonSerializerOptions serializerOptions)
         where TEvent : IEvent =>
         (TEvent)DeserializeJsonDocumentToEvent(eventData, typeof(TEvent), serializerOptions);
+
+    /// <summary>
+    /// Resolves the runtime type of an event given its fully qualified type name.
+    /// </summary>
+    /// <remarks>The resolved type must be accessible and referenced by the application at runtime. The method
+    /// caches resolved types for improved performance on subsequent calls.</remarks>
+    /// <param name="fullName">The fully qualified name of the event type to resolve. Cannot be null.</param>
+    /// <returns>A Type object representing the resolved event type.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the event type specified by fullName cannot be found or is not available at runtime.</exception>
+    [SuppressMessage("Trimming", "IL2057:Unrecognized value passed to the parameter of method. It's not possible to guarantee the availability of the target type.", Justification = "<Pending>")]
+    public static Type ResolveEventType(string fullName)
+    {
+        ArgumentNullException.ThrowIfNull(fullName);
+
+        return _eventTypeCache.GetOrAdd(fullName, static name =>
+        {
+            Type? eventType = Type.GetType(name, true);
+            return eventType ?? throw new InvalidOperationException(
+                $"The event type '{name}' could not be found. Ensure it is referenced and available at runtime.");
+        })
+            ?? Type.GetType(fullName) ?? throw new InvalidOperationException(
+            $"The event type '{fullName}' could not be found. Ensure it is referenced and available at runtime.");
+    }
+
+    /// <summary>
+    /// Resolves the <see cref="JsonTypeInfo"/> for the specified event type using the provided <see
+    /// cref="JsonSerializerOptions"/>.
+    /// </summary>
+    /// <param name="type">The event type for which to resolve the JSON type metadata. Cannot be null.</param>
+    /// <param name="options">The <see cref="JsonSerializerOptions"/> used to obtain the type metadata. Cannot be null.</param>
+    /// <returns>The <see cref="JsonTypeInfo"/> associated with the specified event type and serializer options.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if no <see cref="JsonTypeInfo"/> can be found for the specified event type.</exception>
+    public static JsonTypeInfo ResolveEventJsonTypeInfo(Type type, JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(options);
+
+        var key = (type, options);
+
+        return _typeInfoCache.GetOrAdd(key, static k =>
+        {
+            var (eventType, options) = k;
+            JsonTypeInfo? info = options.GetTypeInfo(eventType);
+            return info ?? throw new InvalidOperationException(
+                $"No JsonTypeInfo found for the event {eventType.Name}");
+        })
+            ?? options.GetTypeInfo(type) ?? throw new InvalidOperationException(
+            $"No JsonTypeInfo found for the event {type.Name}");
+    }
+
+    /// <summary>
+    /// Resolves and returns a delegate that deserializes a JSON event payload into an instance of the specified event
+    /// type.
+    /// </summary>
+    /// <remarks>The returned delegate is cached for each unique combination of event type and serializer
+    /// options to improve performance on repeated calls.</remarks>
+    /// <param name="typeInfo">The metadata describing the event type to deserialize to. Cannot be null.</param>
+    /// <param name="options">The serializer options to use for deserialization. Cannot be null.</param>
+    /// <returns>A delegate that takes a <see cref="JsonDocument"/> and returns an <see cref="IEvent"/> instance representing the
+    /// deserialized event data.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if no deserializer can be found for the specified event type.</exception>
+    public static Func<JsonDocument, IEvent> ResolveEventDeserializer(JsonTypeInfo typeInfo, JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        ArgumentNullException.ThrowIfNull(options);
+
+        var key = (typeInfo, options);
+
+        return _deserializerCache.GetOrAdd(key, static k =>
+        {
+            var (type, options) = k;
+
+            JsonTypeInfo info = ResolveEventJsonTypeInfo(type.Type, options);
+            return new Func<JsonDocument, IEvent>(json =>
+            {
+                object? @event = json.Deserialize(info)
+                    ?? throw new InvalidOperationException(
+                        $"Failed to deserialize the event data to {type.Type.Name}.");
+
+                return (IEvent)@event;
+            });
+        })
+            ?? throw new InvalidOperationException(
+                $"No deserializer found for the event {typeInfo.Type.Name}");
+    }
 
     /// <inheritdoc/>
     public abstract Type EventType { get; }

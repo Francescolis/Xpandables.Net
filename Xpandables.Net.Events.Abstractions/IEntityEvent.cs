@@ -45,5 +45,5 @@ public interface IEntityEvent : IDisposable
     /// <summary>
     /// Gets the JSON data associated with this instance.
     /// </summary>
-    JsonDocument Data { get; }
+    JsonDocument EventData { get; }
 }

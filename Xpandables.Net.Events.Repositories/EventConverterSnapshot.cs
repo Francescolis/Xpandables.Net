@@ -53,7 +53,7 @@ public sealed class EventConverterSnapshot : EventConverter
                 ?? throw new InvalidOperationException(
                     $"The event type '{entityInstance.EventFullName}' could not be found.");
 
-            IEvent @event = DeserializeJsonDocumentToEvent(entityInstance.Data, eventType, serializerOptions);
+            IEvent @event = DeserializeJsonDocumentToEvent(entityInstance.EventData, eventType, serializerOptions);
 
             return (ISnapshotEvent)@event;
         }
@@ -87,7 +87,7 @@ public sealed class EventConverterSnapshot : EventConverter
                 OwnerId = snapshot.OwnerId,
                 EventType = snapshot.GetType().Name,
                 EventFullName = snapshot.GetType().AssemblyQualifiedName!,
-                Data = SerializeEventToJsonDocument(snapshot, serializerOptions)
+                EventData = SerializeEventToJsonDocument(snapshot, serializerOptions)
             };
         }
         catch (Exception exception)

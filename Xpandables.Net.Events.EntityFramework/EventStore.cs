@@ -15,22 +15,133 @@
  *
 ********************************************************************************/
 
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+
+using Microsoft.EntityFrameworkCore;
+
 using Xpandables.Net.Repositories;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Events;
 
+/// <summary>
+/// Provides an implementation of an event store that persists domain events and snapshots using the specified data
+/// context.
+/// </summary>
+/// <remarks>This class enables appending, reading, and managing event streams and snapshots in an event-sourced
+/// system. It is designed to work with a specific data context, allowing integration with various storage backends that
+/// support the DataContext abstraction. All operations are asynchronous and support cancellation via CancellationToken.
+/// This class is not thread-safe; concurrent usage should be managed externally if required.</remarks>
+/// <typeparam name="TDataContext">The type of the data context used for event persistence. Must inherit from DataContext.</typeparam>
+/// <param name="context">The data context instance used to access the underlying event storage. Cannot be null.</param>
 public sealed class EventStore<TDataContext>(TDataContext context) : DisposableAsync, IEventStore
     where TDataContext : DataContext
 {
-    public Task AppendAsync(AppendRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    private readonly TDataContext _db = context
+        ?? throw new ArgumentNullException(nameof(context));
+
+    ///<inheritdoc/>
+    public async Task<AppendResult> AppendAsync(
+        AppendRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var batch = request.Events.OfType<IDomainEvent>().ToArray();
+        if (batch.Length == 0)
+        {
+            return AppendResult.Create(request.ExpectedVersion.GetValueOrDefault() + 1, request.ExpectedVersion.GetValueOrDefault());
+        }
+
+        long current = await GetStreamVersionCoreAsync(request.StreamId, cancellationToken).ConfigureAwait(false);
+        if (request.ExpectedVersion.HasValue && current != request.ExpectedVersion)
+        {
+            // You can choose to throw early, or let DB uniqueness enforce at commit. Early throw is helpful.
+            throw new InvalidOperationException(
+                $"Concurrency violation for aggregate {request.StreamId}. " +
+                $"Expected version {request.ExpectedVersion} but found {current}.");
+        }
+
+        var converter = EventConverter.GetConverterFor<IDomainEvent>();
+        var entities = new List<EntityDomainEvent>(capacity: batch.Length);
+        long next = request.ExpectedVersion.GetValueOrDefault();
+
+        foreach (var @event in batch)
+        {
+            next++;
+
+            var nextEvent = @event
+                .WithStreamId(request.StreamId)
+                .WithStreamVersion(next)
+                .WithStreamName(@event.StreamName);
+
+            var entity = (EntityDomainEvent)converter.ConvertEventToEntity(nextEvent, JsonSerializerOptions.DefaultWeb);
+            entities.Add(entity);
+        }
+
+        await _db.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
+
+        Guid[] guids = [.. entities.ConvertAll(e => e.StreamId)];
+        return AppendResult.Create(guids, next, request.ExpectedVersion.GetValueOrDefault());
+    }
+
+    ///<inheritdoc/>
     public Task AppendSnapshotAsync(ISnapshotEvent snapshotEvent, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    ///<inheritdoc/>
     public Task DeleteStreamAsync(in DeleteStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    ///<inheritdoc/>
     public Task<EnvelopeResult?> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    ///<inheritdoc/>
     public Task<long> GetStreamVersionAsync(Guid streamId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    ///<inheritdoc/>
     public IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(in ReadAllStreamsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-    public IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(in ReadStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    ///<inheritdoc/>
+    public async IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(
+        ReadStreamRequest request,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var query = _db.Set<EntityDomainEvent>()
+            .AsNoTracking()
+            .Where(e => e.StreamId == request.StreamId && e.StreamVersion > request.FromVersion) // exclusive lower bound
+            .OrderBy(e => e.StreamVersion)
+            .Take(request.MaxCount);
+
+        await foreach (var entity in query.AsAsyncEnumerable().ConfigureAwait(false))
+        {
+            yield return new EnvelopeResult
+            {
+                Event = EventConverter.DeserializeEntityToEvent(entity, JsonSerializerOptions.DefaultWeb),
+                EventFullName = entity.EventFullName,
+                EventId = entity.KeyId,
+                EventType = entity.EventType,
+                GlobalPosition = entity.Sequence,
+                OccurredOn = entity.CreatedOn,
+                StreamId = entity.StreamId,
+                StreamName = entity.StreamName,
+                StreamVersion = entity.StreamVersion
+            };
+        }
+    }
+
+    ///<inheritdoc/>
     public Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    ///<inheritdoc/>
     public IAsyncDisposable SubscribeToAllStreams(SubscribeToAllStreamsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    ///<inheritdoc/>
     public IAsyncDisposable SubscribeToStream(SubscribeToStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    ///<inheritdoc/>
     public Task TruncateStreamAsync(TruncateStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+    private async Task<long> GetStreamVersionCoreAsync(
+    Guid streamId, CancellationToken cancellationToken)
+    {
+        var last = await _db.Set<EntityDomainEvent>()
+            .AsNoTracking()
+            .Where(e => e.StreamId == streamId)
+            .OrderByDescending(e => e.StreamVersion)
+            .Select(e => (long?)e.StreamVersion)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return last ?? -1;
+    }
 }

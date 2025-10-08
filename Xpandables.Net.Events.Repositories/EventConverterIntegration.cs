@@ -53,7 +53,7 @@ public sealed class EventConverterIntegration : EventConverter
                 ?? throw new InvalidOperationException(
                     $"The event type '{entityInstance.EventFullName}' could not be found.");
 
-            IEvent @event = DeserializeJsonDocumentToEvent(entityInstance.Data, eventType, serializerOptions);
+            IEvent @event = DeserializeJsonDocumentToEvent(entityInstance.EventData, eventType, serializerOptions);
 
             return (IIntegrationEvent)@event;
         }
@@ -86,7 +86,7 @@ public sealed class EventConverterIntegration : EventConverter
                 KeyId = integrationEvent.EventId,
                 EventType = integrationEvent.GetType().Name,
                 EventFullName = integrationEvent.GetType().AssemblyQualifiedName!,
-                Data = SerializeEventToJsonDocument(integrationEvent, serializerOptions)
+                EventData = SerializeEventToJsonDocument(integrationEvent, serializerOptions)
             };
         }
         catch (Exception exception)

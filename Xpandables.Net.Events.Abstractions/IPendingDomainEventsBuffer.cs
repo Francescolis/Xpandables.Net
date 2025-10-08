@@ -41,7 +41,7 @@ public sealed record PendingDomainEventsBatch
 /// <remarks>This interface provides methods to add domain events to a queue, execute a callback upon successful
 /// commit,  and retrieve and clear pending domain event batches. It is typically used in scenarios where domain events 
 /// need to be managed in a consistent and transactional manner.</remarks>
-public interface IPendingDomainEvents
+public interface IPendingDomainEventsBuffer
 {
     /// <summary>
     /// Adds a collection of domain events to the current context and executes a callback upon successful commit.
