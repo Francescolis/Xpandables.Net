@@ -87,13 +87,41 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     ///<inheritdoc/>
     public Task AppendSnapshotAsync(ISnapshotEvent snapshotEvent, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     ///<inheritdoc/>
-    public Task DeleteStreamAsync(in DeleteStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public Task DeleteStreamAsync(DeleteStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     ///<inheritdoc/>
     public Task<EnvelopeResult?> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     ///<inheritdoc/>
-    public Task<long> GetStreamVersionAsync(Guid streamId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public async Task<long> GetStreamVersionAsync(Guid streamId, CancellationToken cancellationToken = default) =>
+        await GetStreamVersionCoreAsync(streamId, cancellationToken).ConfigureAwait(false);
+
     ///<inheritdoc/>
-    public IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(in ReadAllStreamsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public async IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(
+        ReadAllStreamsRequest request,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var query = _db.Set<EntityDomainEvent>()
+            .AsNoTracking()
+            .Where(e => e.Sequence > request.FromPosition)
+            .OrderBy(e => e.Sequence)
+            .Take(request.MaxCount);
+
+        await foreach (var entity in query.AsAsyncEnumerable().ConfigureAwait(false))
+        {
+            yield return new EnvelopeResult
+            {
+                Event = EventConverter.DeserializeEntityToEvent(entity, JsonSerializerOptions.DefaultWeb),
+                EventFullName = entity.EventFullName,
+                EventId = entity.KeyId,
+                EventType = entity.EventType,
+                GlobalPosition = entity.Sequence,
+                OccurredOn = entity.CreatedOn,
+                StreamId = entity.StreamId,
+                StreamName = entity.StreamName,
+                StreamVersion = entity.StreamVersion
+            };
+        }
+    }
+
     ///<inheritdoc/>
     public async IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(
         ReadStreamRequest request,
@@ -132,7 +160,7 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     public Task TruncateStreamAsync(TruncateStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     private async Task<long> GetStreamVersionCoreAsync(
-    Guid streamId, CancellationToken cancellationToken)
+        Guid streamId, CancellationToken cancellationToken)
     {
         var last = await _db.Set<EntityDomainEvent>()
             .AsNoTracking()
