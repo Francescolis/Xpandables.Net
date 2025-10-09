@@ -1,7 +1,10 @@
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+
 using BenchmarkDotNet.Attributes;
+
 using Xpandables.Net.Async;
 
 namespace Xpandables.Net.Benchmarking;
@@ -9,13 +12,17 @@ namespace Xpandables.Net.Benchmarking;
 [MemoryDiagnoser]
 [ThreadingDiagnoser]
 [HideColumns("Job", "Error", "RatioSD")]
-public class JsonStreamingBenchmarks
+public partial class JsonStreamingBenchmarks
 {
     [Params(1_000, 100_000)]
     public int Count;
 
     private HttpContent _arrayRootContent = default!;
     private JsonSerializerOptions _options = default!;
+
+    [JsonSerializable(typeof(PayloadItem[]))]
+    [JsonSerializable(typeof(PayloadItem))]
+    public partial class PayloadItemContext : JsonSerializerContext { }
 
     public record PayloadItem(int Id, string Name, bool Flag);
 
@@ -32,7 +39,8 @@ public class JsonStreamingBenchmarks
 
         _options = new JsonSerializerOptions
         {
-            PropertyNameCaseInsensitive = false
+            PropertyNameCaseInsensitive = false,
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(PayloadItemContext.Default)
         };
     }
 
@@ -74,7 +82,7 @@ public class JsonStreamingBenchmarks
     public async Task ReadFromJsonAsAsyncPagedEnumerable_ArrayRoot()
     {
         var paged = _arrayRootContent.ReadFromJsonAsAsyncPagedEnumerable<PayloadItem>(
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = false });
+            _options);
         var ctx = await paged.GetPaginationAsync();
         long n = 0;
         await foreach (var _ in paged)
