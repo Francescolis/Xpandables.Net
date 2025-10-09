@@ -10,7 +10,8 @@ public static class Program
         [
             typeof(PaginationBenchmarks),
             typeof(MapperBenchmarks),
-            typeof(StrategyOverheadBenchmarks)
+            typeof(StrategyOverheadBenchmarks),
+            typeof(JsonStreamingBenchmarks)
         ]);
     }
 }
