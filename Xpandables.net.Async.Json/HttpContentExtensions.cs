@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +20,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Xpandables.Net.Async;
+using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Async;
 
@@ -147,6 +147,97 @@ public static class HttpContentExtensions
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Reads the HTTP content as a paged asynchronous sequence of JSON values of type T using true streaming,
+        /// without loading the entire response into memory.
+        /// </summary>
+        /// <remarks>
+        /// This method provides superior memory efficiency compared to <see cref="ReadFromJsonAsAsyncPagedEnumerable{T}(HttpContent, JsonTypeInfo{T}, CancellationToken)"/>
+        /// by streaming and deserializing JSON content incrementally. It's ideal for large payloads or memory-constrained environments.
+        /// The method supports both array-root JSON and object-with-items structures.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements to deserialize from the JSON content.</typeparam>
+        /// <param name="jsonTypeInfo">Metadata used to control the deserialization of JSON values to type T. Cannot be null.</param>
+        /// <param name="arrayPropertyName">
+        /// The name of the property containing the array when JSON root is an object (e.g., "items", "data", "results").
+        /// If null or empty, expects array-root JSON. Default is "items".
+        /// </param>
+        /// <param name="bufferSize">The size of the internal streaming buffer in bytes. Default is 16KB.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// An asynchronous paged enumerable that yields deserialized values of type T from the JSON content.
+        /// The sequence will be empty if the content is empty or does not contain any matching items.
+        /// </returns>
+        public IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerableStreaming<T>(
+            JsonTypeInfo<T> jsonTypeInfo,
+            string? arrayPropertyName = "items",
+            int bufferSize = 16 * 1024,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(content);
+            ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+
+            return new AsyncPagedEnumerable<T, T>(StreamingIterator(cancellationToken), StreamingPaginationFactory);
+
+            async ValueTask<Pagination> StreamingPaginationFactory(CancellationToken ct)
+            {
+                var stream = await content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+                var reader = new Utf8JsonStreamReader(stream, jsonTypeInfo.Options, bufferSize, leaveOpen: false);
+                
+                try
+                {
+                    var pagination = await reader.ExtractPaginationAsync(ct).ConfigureAwait(false);
+                    return pagination ?? Pagination.Empty;
+                }
+                finally
+                {
+                    await reader.DisposeAsync().ConfigureAwait(false);
+                }
+            }
+
+            async IAsyncEnumerable<T> StreamingIterator([EnumeratorCancellation] CancellationToken ct = default)
+            {
+                var stream = await content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+                var reader = new Utf8JsonStreamReader(stream, jsonTypeInfo.Options, bufferSize, leaveOpen: false);
+
+                try
+                {
+                    await foreach (var item in reader.ReadArrayAsync<T>(arrayPropertyName, ct).ConfigureAwait(false))
+                    {
+                        yield return item;
+                    }
+                }
+                finally
+                {
+                    await reader.DisposeAsync().ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the HTTP content as a paged asynchronous sequence of JSON values of type T using true streaming.
+        /// </summary>
+        /// <typeparam name="T">The type of elements to deserialize from the JSON content.</typeparam>
+        /// <param name="options">The options to use for JSON deserialization. Cannot be null.</param>
+        /// <param name="arrayPropertyName">
+        /// The name of the property containing the array when JSON root is an object. Default is "items".
+        /// </param>
+        /// <param name="bufferSize">The size of the internal streaming buffer in bytes. Default is 16KB.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>An asynchronous paged enumerable containing the deserialized objects of type T.</returns>
+        public IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerableStreaming<T>(
+            JsonSerializerOptions options,
+            string? arrayPropertyName = "items",
+            int bufferSize = 16 * 1024,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(content);
+            ArgumentNullException.ThrowIfNull(options);
+
+            var jsonTypeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
+            return ReadFromJsonAsAsyncPagedEnumerableStreaming(content, jsonTypeInfo, arrayPropertyName, bufferSize, cancellationToken);
         }
     }
 

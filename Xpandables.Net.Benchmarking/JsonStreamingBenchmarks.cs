@@ -81,7 +81,7 @@ public partial class JsonStreamingBenchmarks
     [Benchmark]
     public async Task ReadFromJsonAsAsyncPagedEnumerable_ArrayRoot()
     {
-        var paged = _arrayRootContent.ReadFromJsonAsAsyncPagedEnumerable<PayloadItem>(
+        var paged = _arrayRootContent.ReadFromJsonAsAsyncPagedEnumerableStreaming<PayloadItem>(
             _options);
         var ctx = await paged.GetPaginationAsync();
         long n = 0;

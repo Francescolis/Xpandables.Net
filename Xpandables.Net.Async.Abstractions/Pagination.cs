@@ -17,7 +17,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net;
+namespace Xpandables.Net.Async;
 
 /// <summary>
 /// Specifies the strategy for managing pagination in iterators or paginated data contexts.

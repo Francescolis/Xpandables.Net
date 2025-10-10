@@ -161,7 +161,7 @@ public class HttpContentExtensionsJsonTests
         // Arrange (note different casing)
         var json = """
         {
-            "Pagination": { "PageSize": 7, "CurrentPage": 3, "TotalCount": 9, "ContinuationToken": null },
+            "pagination": { "PageSize": 7, "CurrentPage": 3, "TotalCount": 9, "ContinuationToken": null },
             "Items": [ {"Id": 1, "Name": "n1", "IsActive": true} ]
         }
         """;
@@ -170,11 +170,11 @@ public class HttpContentExtensionsJsonTests
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
-            TypeInfoResolver = JsonTypeInfoResolver.Combine(HttpContentTestsJsonContext.Default)
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(HttpContentTestsJsonContext.Default, PaginationSourceGenerationContext.Default)
         };
 
         // Act
-        var paged = content.ReadFromJsonAsAsyncPagedEnumerable<JsonTestItem>(options);
+        var paged = content.ReadFromJsonAsAsyncPagedEnumerableStreaming<JsonTestItem>(options);
         var ctx = await paged.GetPaginationAsync();
 
         // Assert
