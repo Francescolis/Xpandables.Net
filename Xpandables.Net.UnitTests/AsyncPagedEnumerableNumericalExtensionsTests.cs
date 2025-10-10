@@ -35,14 +35,14 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
             new TestItem(30, 30, 300L, 300L, 30.5, 30.5, 30.75m, 30.75m),
             new TestItem(40, 40, 400L, 400L, 40.5, 40.5, 40.00m, 40.00m)
         };
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(4, 1, totalCount: 4)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateEmptyTestData()
     {
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             AsyncEnumerable.Empty<TestItem>(),
             ct => ValueTask.FromResult(Pagination.Create(0, 0, totalCount: 0)));
     }
@@ -54,7 +54,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
             new TestItem(0, null, 0L, null, 0.0, null, 0m, null),
             new TestItem(0, null, 0L, null, 0.0, null, 0m, null)
         };
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
     }
@@ -206,7 +206,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
             new TestItem(int.MaxValue, null, 0L, null, 0.0, null, 0m, null),
             new TestItem(1, null, 0L, null, 0.0, null, 0m, null)
         };
-        var source = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var source = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
 
@@ -384,7 +384,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
             new TestItem(0, null, long.MaxValue, null, 0.0, null, 0m, null),
             new TestItem(0, null, long.MaxValue, null, 0.0, null, 0m, null)
         };
-        var source = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var source = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
 
@@ -512,7 +512,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
         var items = Enumerable.Range(1, 10000)
             .Select(i => new TestItem(i, i % 2 == 0 ? i : null, i * 10L, null, i * 0.1, null, i * 0.01m, null))
             .ToArray();
-        var source = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var source = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(10000, 1, totalCount: 10000)));
 
@@ -537,7 +537,7 @@ public class AsyncPagedEnumerableNumericalExtensionsTests
             new TestItem(0, null, 0L, null, 0.0, null, 0m, null),
             new TestItem(0, 3, 0L, 30L, 0.0, 3.3, 0m, 3.33m)
         };
-        var source = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var source = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: 5)));
 

@@ -184,7 +184,7 @@ public class MediatorInterfaceTests
                 yield return 3;
             }
 
-            var paged = new AsyncPagedEnumerable<int, int>(Source(), ct => new ValueTask<Pagination>(Pagination.Create(2, 1, null, 3)));
+            var paged = new AsyncPagedEnumerable<int>(Source(), ct => new ValueTask<Pagination>(Pagination.Create(2, 1, null, 3)));
             var result = ExecutionResultExtensions.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
             return Task.FromResult(result);
         }
@@ -246,7 +246,7 @@ public class MediatorInterfaceTests
                 }
             }
 
-            var paged = new AsyncPagedEnumerable<int, int>(Source(), ct => new ValueTask<Pagination>(Pagination.Create(count, 1, null, count)));
+            var paged = new AsyncPagedEnumerable<int>(Source(), ct => new ValueTask<Pagination>(Pagination.Create(count, 1, null, count)));
             var result = ExecutionResultExtensions.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
             return Task.FromResult(result);
         }

@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Async;
@@ -42,7 +43,7 @@ public enum PaginationStrategy
 }
 
 /// <summary>
-/// Represents the pagination, including information about the total number of items, page size,
+/// Represents the pagination metadata, including information about the total number of items, page size,
 /// current page, and continuation token for retrieving additional results.
 /// </summary>
 /// <remarks>This type is typically used to manage and navigate paginated data in scenarios where results are
@@ -52,24 +53,190 @@ public enum PaginationStrategy
 public readonly record struct Pagination
 {
     /// <summary>
-    /// The total number of items across all pages.
+    /// Gets the total number of items across all pages. 
+    /// A null value indicates the total count is unknown.
     /// </summary>
-    public readonly required int? TotalCount { get; init; }
+    public required int? TotalCount { get; init; }
 
     /// <summary>
     /// Gets the number of items to include on each page of results.
+    /// Must be zero or greater.
     /// </summary>
-    public readonly required int PageSize { get; init; }
+    public required int PageSize { get; init; }
 
     /// <summary>
     /// Gets the current page number in a paginated collection.
+    /// Must be zero or greater.
     /// </summary>
-    public readonly required int CurrentPage { get; init; }
+    public required int CurrentPage { get; init; }
 
     /// <summary>
     /// Gets the continuation token used to retrieve the next set of results in a paginated operation.
+    /// A null or empty value indicates no continuation token is available.
     /// </summary>
-    public readonly required string? ContinuationToken { get; init; }
+    public required string? ContinuationToken { get; init; }
+
+    /// <summary>
+    /// Gets an empty <see cref="Pagination"/> instance with default values.
+    /// </summary>
+    public static Pagination Empty { get; } = new()
+    {
+        PageSize = 0,
+        CurrentPage = 0,
+        ContinuationToken = null,
+        TotalCount = null
+    };
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="Pagination"/> struct with the specified pagination parameters.
+    /// </summary>
+    /// <param name="pageSize">The number of items per page. Must be zero or greater.</param>
+    /// <param name="currentPage">The current page number. Must be zero or greater.</param>
+    /// <param name="continuationToken">An optional token used to retrieve the next set of results in a paginated sequence. Can be <see
+    /// langword="null"/>.</param>
+    /// <param name="totalCount">An optional total count of items in the paginated collection. Can be <see langword="null"/> if the total
+    /// count is unknown.</param>
+    /// <returns>A new <see cref="Pagination"/> instance initialized with the specified parameters.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="pageSize"/> or <paramref name="currentPage"/> is negative.</exception>
+    public static Pagination Create(
+        int pageSize, 
+        int currentPage, 
+        string? continuationToken = null, 
+        int? totalCount = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(pageSize);
+        ArgumentOutOfRangeException.ThrowIfNegative(currentPage);
+        if (totalCount.HasValue)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(totalCount.Value);
+        }
+
+        return new()
+        {
+            PageSize = pageSize,
+            CurrentPage = currentPage,
+            ContinuationToken = continuationToken,
+            TotalCount = totalCount
+        };
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="Pagination"/> struct with the specified total count only.
+    /// </summary>
+    /// <param name="totalCount">The total number of items to be represented by the <see cref="Pagination"/>. Must be zero or greater.</param>
+    /// <returns>A new <see cref="Pagination"/> instance with the specified total count and default values for other
+    /// properties.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="totalCount"/> is negative.</exception>
+    public static Pagination FromTotalCount(int totalCount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(totalCount);
+        
+        return new()
+        {
+            PageSize = 0,
+            CurrentPage = 0,
+            ContinuationToken = null,
+            TotalCount = totalCount
+        };
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="Pagination"/> instance by advancing to the next page.
+    /// </summary>
+    /// <param name="continuationToken">An optional new continuation token for the next page.</param>
+    /// <returns>A new <see cref="Pagination"/> instance representing the next page.</returns>
+    [MemberNotNullWhen(false, nameof(IsLastPage))]
+    public Pagination NextPage(string? continuationToken = null) => this with
+    {
+        CurrentPage = CurrentPage + 1,
+        ContinuationToken = continuationToken
+    };
+
+    /// <summary>
+    /// Creates a new <see cref="Pagination"/> instance by moving to the previous page.
+    /// </summary>
+    /// <returns>A new <see cref="Pagination"/> instance representing the previous page, 
+    /// or the current instance if already on the first page.</returns>
+    public Pagination PreviousPage() => HasPreviousPage
+        ? this with { CurrentPage = CurrentPage - 1, ContinuationToken = null }
+        : this;
+
+    /// <summary>
+    /// Creates a new <see cref="Pagination"/> instance with an updated total count.
+    /// </summary>
+    /// <param name="totalCount">The new total count value.</param>
+    /// <returns>A new <see cref="Pagination"/> instance with the updated total count.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="totalCount"/> is negative.</exception>
+    public Pagination WithTotalCount(int totalCount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(totalCount);
+        return this with { TotalCount = totalCount };
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the total count is unknown.
+    /// </summary>
+    [MemberNotNullWhen(false, nameof(TotalCount))]
+    public bool IsUnknown => !TotalCount.HasValue || TotalCount.Value < 0;
+
+    /// <summary>
+    /// Gets the number of items to skip based on the current page number and page size.
+    /// </summary>
+    /// <remarks>This property is typically used for pagination scenarios to determine the starting 
+    /// point for retrieving a subset of items from a larger collection.</remarks>
+    public int Skip => CurrentPage > 0 && PageSize > 0 
+        ? (CurrentPage - 1) * PageSize 
+        : 0;
+
+    /// <summary>
+    /// Gets the number of items to retrieve in a single page of results.
+    /// </summary>
+    public int Take => PageSize;
+
+    /// <summary>
+    /// Gets a value indicating whether there is a continuation token available.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(ContinuationToken))]
+    public bool HasContinuation => !string.IsNullOrEmpty(ContinuationToken);
+
+    /// <summary>
+    /// Gets a value indicating whether the current page is the first page.
+    /// </summary>
+    public bool IsFirstPage => CurrentPage <= 1;
+
+    /// <summary>
+    /// Gets a value indicating whether the current page is the last page in the paginated data set.
+    /// </summary>
+    /// <remarks>Returns false if the total count is unknown.</remarks>
+    public bool IsLastPage => TotalCount.HasValue 
+        && PageSize > 0 
+        && CurrentPage * PageSize >= TotalCount.Value;
+
+    /// <summary>
+    /// Gets a value indicating whether there is a previous page available.
+    /// </summary>
+    public bool HasPreviousPage => CurrentPage > 1;
+
+    /// <summary>
+    /// Gets a value indicating whether there is a next page available.
+    /// </summary>
+    /// <remarks>Returns false if the total count is unknown.</remarks>
+    public bool HasNextPage => TotalCount.HasValue 
+        && PageSize > 0 
+        && CurrentPage * PageSize < TotalCount.Value;
+
+    /// <summary>
+    /// Gets a value indicating whether pagination is active in the query.
+    /// </summary>
+    public bool IsPaginated => Skip > 0 || Take > 0;
+
+    /// <summary>
+    /// Gets the total number of pages based on the page size and total count.
+    /// </summary>
+    /// <remarks>Returns null if the total count is unknown or page size is zero.</remarks>
+    public int? TotalPages => TotalCount.HasValue && PageSize > 0
+        ? (int)Math.Ceiling((double)TotalCount.Value / PageSize)
+        : null;
 }
 
 /// <summary>
@@ -82,130 +249,4 @@ public readonly record struct Pagination
 [JsonSerializable(typeof(Pagination))]
 public partial class PaginationSourceGenerationContext : JsonSerializerContext
 {
-}
-
-
-/// <summary>
-/// Provides extension methods for <see cref="Pagination"/> instances.
-/// </summary>
-/// <remarks>This class contains utility methods that extend the functionality of the <see cref="Pagination"/>
-/// type. These methods are designed to simplify common operations and enhance usability.</remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class PaginationInstancesExtensions
-{
-    /// <summary>
-    /// Provides extension methods for <see cref="Pagination"/> instances.
-    /// </summary>
-    extension(Pagination context)
-    {
-        /// <summary>
-        /// Gets a value indicating whether the total count is unknown.
-        /// </summary>
-        public bool IsUnknown => (context.TotalCount ?? -1) < 0;
-
-        /// <summary>
-        /// Gets the number of items to skip based on the current page number and page size.
-        /// </summary>
-        /// <remarks>This property is typically used for pagination scenarios to determine the starting 
-        /// point for retrieving a subset of items from a larger collection.</remarks>
-        public int Skip => (context.CurrentPage - 1) * context.PageSize;
-
-        /// <summary>
-        /// Gets the number of items to retrieve in a single page of results.
-        /// </summary>
-        public int Take => context.PageSize;
-
-        /// <summary>
-        /// Gets a value indicating whether there is a continuation token available.
-        /// </summary>
-        public bool HasContinuation => !string.IsNullOrEmpty(context.ContinuationToken);
-
-        /// <summary>
-        /// Gets a value indicating whether the current page is the first page.
-        /// </summary>
-        public bool IsFirstPage => context.CurrentPage <= 1;
-
-        /// <summary>
-        /// Gets a value indicating whether the current page is the last page in the paginated data set.
-        /// </summary>
-        /// <remarks>The property evaluates whether the total number of items in the data set has been
-        /// reached  based on the current page number and page size.</remarks>
-        public bool IsLastPage => context.CurrentPage * context.PageSize >= (context.TotalCount ?? -1);
-
-        /// <summary>
-        /// A value indicating whether there is a previous page.
-        /// </summary>
-        public bool HasPreviousPage => context.CurrentPage > 1;
-
-        /// <summary>
-        /// A value indicating whether there is a next page.
-        /// </summary>
-        public bool HasNextPage => context.CurrentPage * context.PageSize < (context.TotalCount ?? -1);
-
-        /// <summary>
-        /// A value indicating whether pagination was detected in the query.
-        /// </summary>
-        public bool IsPaginated => context.Skip > 0 || context.Take > 0;
-    }
-}
-
-/// <summary>
-/// Provides extension methods for <see cref="Pagination"/> instances.
-/// </summary>
-/// <remarks>This class contains utility methods that extend the functionality of the <see cref="Pagination"/>
-/// type. These methods are designed to simplify common operations and enhance usability.</remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class PaginationStaticExtensions
-{
-    /// <summary>
-    /// Provides extension methods for <see cref="Pagination"/> instances.
-    /// </summary>
-    extension(Pagination)
-    {
-        /// <summary>
-        /// Creates a new instance of the <see cref="Pagination"/> class with the specified pagination parameters.
-        /// </summary>
-        /// <param name="pageSize">The number of items per page. Must be greater than zero.</param>
-        /// <param name="currentPage">The current page number. Must be zero or greater.</param>
-        /// <param name="continuationToken">An optional token used to retrieve the next set of results in a paginated sequence. Can be <see
-        /// langword="null"/>.</param>
-        /// <param name="totalCount">An optional total count of items in the paginated collection. Can be <see langword="null"/> if the total
-        /// count is unknown.</param>
-        /// <returns>A new <see cref="Pagination"/> instance initialized with the specified parameters.</returns>
-        public static Pagination Create(
-            int pageSize, int currentPage, string? continuationToken = null, int? totalCount = null)
-            => new()
-            {
-                PageSize = pageSize,
-                CurrentPage = currentPage,
-                ContinuationToken = continuationToken,
-                TotalCount = totalCount
-            };
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="Pagination"/> class with the specified total count.
-        /// </summary>
-        /// <param name="totalCount">The total number of items to be represented by the <see cref="Pagination"/>.</param>
-        /// <returns>A new <see cref="Pagination"/> instance with the specified total count and default values for other
-        /// properties.</returns>
-        public static Pagination Create(int totalCount)
-            => new()
-            {
-                PageSize = 0,
-                CurrentPage = 0,
-                ContinuationToken = null,
-                TotalCount = totalCount
-            };
-
-        /// <summary>
-        /// Gets an empty <see cref="Pagination"/> instance with default values.
-        /// </summary>
-        public static Pagination Empty => new()
-        {
-            PageSize = 0,
-            CurrentPage = 0,
-            ContinuationToken = null,
-            TotalCount = null
-        };
-    }
 }

@@ -10,7 +10,7 @@ public class AsyncPagedEnumerableTests
     [Fact]
     public async Task PageContext_Before_Computation_Throws()
     {
-        var enumerable = new AsyncPagedEnumerable<int, int>(
+        var enumerable = new AsyncPagedEnumerable<int>(
             Enumerable.Range(1, 5).ToAsync(),
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: 5))
         );
@@ -25,7 +25,7 @@ public class AsyncPagedEnumerableTests
     public async Task GetPageContextAsync_Computes_Once_Concurrent()
     {
         int calls = 0;
-        var enumerable = new AsyncPagedEnumerable<int, int>(
+        var enumerable = new AsyncPagedEnumerable<int>(
             Enumerable.Range(1, 10).ToAsync(),
             async ct =>
             {
@@ -50,7 +50,7 @@ public class AsyncPagedEnumerableTests
         var items = Enumerable.Range(1, 30).ToList();
         var query = items.AsQueryable().Skip(10).Take(5);
 
-        var enumerable = new AsyncPagedEnumerable<int, int>(query);
+        var enumerable = new AsyncPagedEnumerable<int>(query);
 
         var ctx = await enumerable.GetPaginationAsync();
         ctx.PageSize.Should().Be(5);
@@ -61,14 +61,16 @@ public class AsyncPagedEnumerableTests
     [Fact]
     public async Task AsyncMapper_Projects_Items()
     {
-        var enumerable = new AsyncPagedEnumerable<int, int>(
-            Enumerable.Range(1, 4).ToAsync(),
-            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 4)),
-            mapper: async (x, ct) =>
-            {
-                await Task.Delay(1, ct);
-                return x * 10;
-            });
+        // Use SelectAwait for async mapping
+        var source = Enumerable.Range(1, 4).ToAsyncEnumerable().SelectAwait(async x =>
+        {
+            await Task.Delay(1);
+            return x * 10;
+        });
+
+        var enumerable = new AsyncPagedEnumerable<int>(
+            source,
+            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 4)));
 
         _ = await enumerable.GetPaginationAsync();
 
@@ -82,10 +84,11 @@ public class AsyncPagedEnumerableTests
     [Fact]
     public async Task SyncMapper_Projects_Items()
     {
-        var enumerable = AsyncPagedEnumerable.ToAsyncPagedEnumerable(
-            Enumerable.Range(1, 3).ToAsync(),
-            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(3, 1, totalCount: 3)),
-            mapper: x => x + 100);
+        // Use Select for sync mapping
+        var source = Enumerable.Range(1, 3).Select(x => x + 100).ToAsync();
+        
+        var enumerable = source.ToAsyncPagedEnumerable(
+            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(3, 1, totalCount: 3)));
 
         _ = await enumerable.GetPaginationAsync();
 
@@ -96,7 +99,7 @@ public class AsyncPagedEnumerableTests
     [Fact]
     public async Task Enumerator_Cast_Allows_Strategy_Change()
     {
-        var enumerable = new AsyncPagedEnumerable<int, int>(
+        var enumerable = new AsyncPagedEnumerable<int>(
             Enumerable.Range(1, 3).ToAsync(),
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(3, 1, totalCount: 3)));
 
@@ -105,7 +108,7 @@ public class AsyncPagedEnumerableTests
         var e = enumerable.GetAsyncEnumerator() as IAsyncPagedEnumerator<int>;
         e.Should().NotBeNull();
 
-        e!.WithPageContextStrategy(PaginationStrategy.None);
+        e!.WithStrategy(PaginationStrategy.None);
         while (await e.MoveNextAsync()) { /* iterate */ }
 
         e.Pagination.TotalCount.Should().Be(3);

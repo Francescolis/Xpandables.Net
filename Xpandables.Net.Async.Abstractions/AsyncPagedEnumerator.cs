@@ -19,14 +19,12 @@ using System.Runtime.CompilerServices;
 namespace Xpandables.Net.Async;
 
 /// <summary>
-/// Provides an asynchronous enumerator for paged collections with optional mapping from source to result type.
+/// Provides an asynchronous enumerator for paged collections with pagination strategy support.
 /// </summary>
-/// <typeparam name="TSource">The source element type.</typeparam>
-/// <typeparam name="TResult">The result element type.</typeparam>
-public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerator<TResult>
+/// <typeparam name="T">The element type being enumerated.</typeparam>
+public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
 {
-    private readonly IAsyncEnumerator<TSource>? _sourceEnumerator;
-    private readonly Func<TSource, CancellationToken, ValueTask<TResult>>? _mapper;
+    private readonly IAsyncEnumerator<T>? _sourceEnumerator;
     private readonly CancellationToken _cancellationToken;
     private PaginationStrategy _strategy;
     private Pagination _pagination;
@@ -34,48 +32,50 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
     private int _itemIndex; // 1-based logical item counter
 
     /// <inheritdoc/>
-    public void WithPageContextStrategy(PaginationStrategy strategy) => _strategy = strategy;
+    public PaginationStrategy Strategy => _strategy;
+
+    /// <inheritdoc/>
+    public IAsyncPagedEnumerator<T> WithStrategy(PaginationStrategy strategy)
+    {
+        _strategy = strategy;
+        return this;
+    }
 
     /// <inheritdoc/>
     /// <remarks>
-    /// The default value for <see cref="PaginationStrategy"/> is <see cref="PaginationStrategy.None"/>, meaning no pagination strategy is applied unless explicitly set.
+    /// The default value for <see cref="Strategy"/> is <see cref="PaginationStrategy.None"/>, 
+    /// meaning no pagination strategy is applied unless explicitly set.
     /// </remarks>
     public ref readonly Pagination Pagination => ref _pagination;
 
     /// <summary>
     /// Gets the current element.
     /// </summary>
-    public TResult Current { get; private set; } = default!;
+    public T Current { get; private set; } = default!;
 
     /// <summary>
-    /// Empty enumerator constructor.
+    /// Initializes a new instance for an empty enumerator.
     /// </summary>
+    /// <param name="initialContext">The initial pagination context.</param>
     internal AsyncPagedEnumerator(Pagination initialContext)
     {
         _sourceEnumerator = null;
-        _mapper = null;
         _cancellationToken = default;
         _pagination = initialContext;
     }
 
+    /// <summary>
+    /// Initializes a new instance with a source enumerator.
+    /// </summary>
+    /// <param name="sourceEnumerator">The source enumerator to wrap.</param>
+    /// <param name="initialContext">The initial pagination context.</param>
+    /// <param name="cancellationToken">The cancellation token to observe.</param>
     internal AsyncPagedEnumerator(
-        IAsyncEnumerator<TSource> sourceEnumerator,
+        IAsyncEnumerator<T> sourceEnumerator,
         Pagination initialContext,
         CancellationToken cancellationToken)
     {
         _sourceEnumerator = sourceEnumerator;
-        _cancellationToken = cancellationToken;
-        _pagination = initialContext;
-    }
-
-    internal AsyncPagedEnumerator(
-        IAsyncEnumerator<TSource> sourceEnumerator,
-        Func<TSource, CancellationToken, ValueTask<TResult>> mapper,
-        Pagination initialContext,
-        CancellationToken cancellationToken)
-    {
-        _sourceEnumerator = sourceEnumerator;
-        _mapper = mapper;
         _cancellationToken = cancellationToken;
         _pagination = initialContext;
     }
@@ -97,26 +97,14 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
             // End of sequence: if PerItem strategy and no total count, finalize total
             if (_strategy == PaginationStrategy.PerItem && _pagination.TotalCount is null)
             {
-                int total = _itemIndex;
-                _pagination = new Pagination
-                {
-                    PageSize = _pagination.PageSize == 0 ? 1 : _pagination.PageSize,
-                    CurrentPage = _pagination.CurrentPage,
-                    ContinuationToken = null,
-                    TotalCount = total
-                };
+                _pagination = _pagination.WithTotalCount(_itemIndex);
             }
 
             Current = default!;
             return false;
         }
 
-        Current = _mapper switch
-        {
-            not null => await _mapper(_sourceEnumerator.Current, _cancellationToken).ConfigureAwait(false),
-            _ => (TResult)(object)_sourceEnumerator.Current!
-        };
-
+        Current = _sourceEnumerator.Current;
         _itemIndex++;
 
         // Update page context based on strategy
@@ -125,14 +113,14 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
             case PaginationStrategy.None:
                 // No changes to page context
                 break;
+
             case PaginationStrategy.PerItem:
                 {
                     int pageSize = _pagination.PageSize == 0 ? 1 : _pagination.PageSize;
-                    int currentPage = _itemIndex;
                     _pagination = new Pagination
                     {
                         PageSize = pageSize,
-                        CurrentPage = currentPage,
+                        CurrentPage = _itemIndex,
                         ContinuationToken = null,
                         // Preserve pre-existing total if already known; keep null otherwise until end
                         TotalCount = _pagination.TotalCount
@@ -183,96 +171,36 @@ public sealed class AsyncPagedEnumerator<TSource, TResult> : IAsyncPagedEnumerat
 }
 
 /// <summary>
-/// Provides factory methods for creating instances of <see cref="AsyncPagedEnumerator{TSource, TResult}"/> to
-/// facilitate asynchronous enumeration with paging support.
+/// Provides factory methods for creating instances of <see cref="AsyncPagedEnumerator{T}"/>.
 /// </summary>
-/// <remarks>This class includes methods to create paged enumerators with optional mapping functions, cancellation
-/// token support, and initial paging context. It is designed to simplify the creation of asynchronous paged enumerators
-/// for scenarios involving data streams or collections that require paging.</remarks>
+/// <remarks>
+/// This class simplifies the creation of asynchronous paged enumerators with cancellation token support 
+/// and initial pagination context.
+/// </remarks>
 public static class AsyncPagedEnumerator
 {
     /// <summary>
-    /// Creates a new instance of <see cref="AsyncPagedEnumerator{T, T}"/> to enumerate items asynchronously with paging
-    /// support.
+    /// Creates a new paged enumerator for the specified source.
     /// </summary>
-    /// <typeparam name="TSource">The type of the items being enumerated.</typeparam>
-    /// <param name="sourceEnumerator">The source enumerator providing the items to be paged.</param>
-    /// <param name="initialContext">An optional <see cref="Pagination"/> specifying the initial paging context. If not provided, a default empty
-    /// context is used.</param>
-    /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to observe while enumerating.</param>
-    /// <returns>An <see cref="AsyncPagedEnumerator{T, T}"/> instance configured with the specified source enumerator,
-    /// cancellation token, and paging context.</returns>
+    /// <typeparam name="T">The type of elements being enumerated.</typeparam>
+    /// <param name="sourceEnumerator">The source enumerator to wrap.</param>
+    /// <param name="initialContext">The initial pagination context. If null, <see cref="Pagination.Empty"/> is used.</param>
+    /// <param name="cancellationToken">The cancellation token to observe.</param>
+    /// <returns>A new <see cref="AsyncPagedEnumerator{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static AsyncPagedEnumerator<TSource, TSource> Create<TSource>(
-        IAsyncEnumerator<TSource> sourceEnumerator,
+    public static AsyncPagedEnumerator<T> Create<T>(
+        IAsyncEnumerator<T> sourceEnumerator,
         Pagination? initialContext = null,
         CancellationToken cancellationToken = default) =>
         new(sourceEnumerator, initialContext ?? Pagination.Empty, cancellationToken);
 
     /// <summary>
-    /// Creates a new instance of the <see cref="AsyncPagedEnumerator{TSource, TResult}"/> class,  which asynchronously
-    /// maps and enumerates paged data from the specified source.
+    /// Creates an empty paged enumerator with no data.
     /// </summary>
-    /// <typeparam name="TSource">The type of the elements in the source enumerator.</typeparam>
-    /// <typeparam name="TResult">The type of the elements in the resulting enumeration.</typeparam>
-    /// <param name="sourceEnumerator">The asynchronous enumerator that provides the source data.</param>
-    /// <param name="asyncMapper">A function that asynchronously maps each element of the source data to the resulting type. The function takes a
-    /// source element and a <see cref="CancellationToken"/> as parameters.</param>
-    /// <param name="initialContext">An optional <see cref="Pagination"/> that specifies the initial paging context.  If not provided, an empty
-    /// context is used.</param>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the operation.</param>
-    /// <returns>An <see cref="AsyncPagedEnumerator{TSource, TResult}"/> that asynchronously enumerates  the mapped paged data.</returns>
+    /// <typeparam name="T">The type of elements.</typeparam>
+    /// <param name="initialContext">The initial pagination context. If null, <see cref="Pagination.Empty"/> is used.</param>
+    /// <returns>An empty <see cref="AsyncPagedEnumerator{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static AsyncPagedEnumerator<TSource, TResult> Create<TSource, TResult>(
-        IAsyncEnumerator<TSource> sourceEnumerator,
-        Func<TSource, CancellationToken, ValueTask<TResult>> asyncMapper,
-        Pagination? initialContext = null,
-        CancellationToken cancellationToken = default) =>
-        new(sourceEnumerator, asyncMapper, initialContext ?? Pagination.Empty, cancellationToken);
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="AsyncPagedEnumerator{TSource, TResult}"/> class      to asynchronously
-    /// enumerate pages of data transformed by the specified mapping function.
-    /// </summary>
-    /// <typeparam name="TSource">The type of the elements in the source enumerator.</typeparam>
-    /// <typeparam name="TResult">The type of the elements in the resulting enumeration.</typeparam>
-    /// <param name="sourceEnumerator">The asynchronous enumerator that provides the source data.</param>
-    /// <param name="syncMapper">A synchronous function that maps each source element to a result element.</param>
-    /// <param name="initialContext">An optional <see cref="Pagination"/> that specifies the initial paging context. Defaults to an empty context if
-    /// not provided.</param>
-    /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to observe while enumerating. Defaults to <see
-    /// cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="AsyncPagedEnumerator{TSource, TResult}"/> that asynchronously enumerates the transformed pages of
-    /// data.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static AsyncPagedEnumerator<TSource, TResult> Create<TSource, TResult>(
-        IAsyncEnumerator<TSource> sourceEnumerator,
-        Func<TSource, TResult> syncMapper,
-        Pagination? initialContext = null,
-        CancellationToken cancellationToken = default) =>
-        new(sourceEnumerator, (s, _) => ValueTask.FromResult(syncMapper(s)), initialContext ?? Pagination.Empty, cancellationToken);
-
-    /// <summary>
-    /// Creates an empty <see cref="AsyncPagedEnumerator{TSource, TResult}"/> instance.
-    /// </summary>
-    /// <typeparam name="TSource"></typeparam>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="initialContext">An optional initial <see cref="Pagination"/> to associate with the enumerator. If <paramref
-    /// name="initialContext"/> is <see langword="null"/>, a default empty context is used.</param>
-    /// <returns>An empty <see cref="AsyncPagedEnumerator{TSource, TResult}"/> instance with no data to enumerate.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static AsyncPagedEnumerator<TSource, TResult> Empty<TSource, TResult>(
-        Pagination? initialContext = null) =>
+    public static AsyncPagedEnumerator<T> Empty<T>(Pagination? initialContext = null) =>
         new(initialContext ?? Pagination.Empty);
-
-    /// <summary>
-    /// Wraps an existing enumerator when TSource == TResult without copying logic.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static IAsyncEnumerator<TResult> UnsafePassthrough<TSource, TResult>(
-        IAsyncEnumerator<TSource> source,
-        Pagination initialContext,
-        CancellationToken cancellationToken) =>
-        // We still need a paged enumerator wrapper to expose PageContext & strategy support.
-        new AsyncPagedEnumerator<TSource, TResult>(source, initialContext, cancellationToken);
 }

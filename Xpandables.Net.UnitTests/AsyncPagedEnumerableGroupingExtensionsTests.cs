@@ -36,14 +36,14 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
             new TestItem(5, "B", "Item5", 50),
             new TestItem(6, "A", "Item6", 60)
         };
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(6, 1, totalCount: 6)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateEmptyTestData()
     {
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             AsyncEnumerable.Empty<TestItem>(),
             ct => ValueTask.FromResult(Pagination.Create(0, 0, totalCount: 0)));
     }
@@ -422,7 +422,7 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
             new TestItem(2, "A", "Item2", 20),
             new TestItem(3, "A", "Item3", 30)
         };
-        var source = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var source = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(3, 1, totalCount: 3)));
 
@@ -446,7 +446,7 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
         var items = Enumerable.Range(1, 1000)
             .Select(i => new TestItem(i, i % 10 == 0 ? "A" : "B", $"Item{i}", i))
             .ToArray();
-        var source = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var source = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(1000, 1, totalCount: 1000)));
 
@@ -468,7 +468,7 @@ public class AsyncPagedEnumerableGroupingExtensionsTests
             new TestItem(1, "A", "Item1", 10),
             new TestItem(2, "B", "Item2", 20)
         };
-        var source = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var source = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
 

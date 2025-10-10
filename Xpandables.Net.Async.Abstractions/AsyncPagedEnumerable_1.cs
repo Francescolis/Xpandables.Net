@@ -22,15 +22,15 @@ namespace Xpandables.Net.Async;
 /// <summary>
 /// Provides extension methods to convert various enumerable types to <see cref="IAsyncPagedEnumerable{T}"/>.
 /// </summary>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
+[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Extension pattern with C# 14")]
 public static class AsyncPagedEnumerable
 {
     /// <summary>
-    ///  
+    /// Extension methods for <see cref="IAsyncEnumerable{T}"/>.
     /// </summary>
-    /// <typeparam name="TSource">The type of elements in the collection.</typeparam>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
     /// <param name="source">The source async enumerable.</param>
-    extension<TSource>(IAsyncEnumerable<TSource> source)
+    extension<T>(IAsyncEnumerable<T> source)
     {
         #region IAsyncEnumerable Extensions
 
@@ -41,13 +41,13 @@ public static class AsyncPagedEnumerable
         /// <returns>An async paged enumerable.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginationFactory"/> is null.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TSource> ToAsyncPagedEnumerable(
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
             Func<CancellationToken, ValueTask<Pagination>> paginationFactory)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(paginationFactory);
 
-            return new AsyncPagedEnumerable<TSource, TSource>(source, paginationFactory);
+            return new AsyncPagedEnumerable<T>(source, paginationFactory);
         }
 
         /// <summary>
@@ -55,90 +55,47 @@ public static class AsyncPagedEnumerable
         /// </summary>
         /// <param name="pagination">The pagination metadata.</param>
         /// <returns>An async paged enumerable.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="pagination"/> is null.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TSource> ToAsyncPagedEnumerable(
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
             Pagination pagination)
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            return new AsyncPagedEnumerable<TSource, TSource>(source, _ => ValueTask.FromResult(pagination));
+            return new AsyncPagedEnumerable<T>(source, _ => ValueTask.FromResult(pagination));
         }
 
         /// <summary>
         /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with total count.
         /// </summary>
-        /// <param name="totalCount">The total count of items across all pages.</param>
+        /// <param name="totalCount">The total count of items across all pages. Must be zero or greater.</param>
         /// <returns>An async paged enumerable.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="totalCount"/> is negative.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TSource> ToAsyncPagedEnumerable(
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
             int totalCount)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentOutOfRangeException.ThrowIfNegative(totalCount);
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<T>(
                 source,
-                _ => ValueTask.FromResult(Pagination.Create(totalCount)));
+                _ => ValueTask.FromResult(Pagination.FromTotalCount(totalCount)));
         }
 
-        /// <summary>
-        /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/> with mapping and pagination.
-        /// </summary>
-        /// <typeparam name="TResult">The type of result elements.</typeparam>
-        /// <param name="paginationFactory">Factory to create pagination metadata.</param>
-        /// <param name="mapper">Function to map source elements to result elements.</param>
-        /// <returns>An async paged enumerable of mapped elements.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TResult> ToAsyncPagedEnumerable<TResult>(
-            Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
-            Func<TSource, TResult> mapper)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(paginationFactory);
-            ArgumentNullException.ThrowIfNull(mapper);
-
-            return new AsyncPagedEnumerable<TSource, TResult>(
-                source, paginationFactory, (s, _) => ValueTask.FromResult(mapper(s)));
-        }
-
-        /// <summary>
-        /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/> with async mapping and pagination.
-        /// </summary>
-        /// <typeparam name="TResult">The type of result elements.</typeparam>
-        /// <param name="paginationFactory">Factory to create pagination metadata.</param>
-        /// <param name="asyncMapper">Async function to map source elements to result elements.</param>
-        /// <returns>An async paged enumerable of mapped elements.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TResult> ToAsyncPagedEnumerable<TResult>(
-            Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
-            Func<TSource, CancellationToken, ValueTask<TResult>> asyncMapper)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(paginationFactory);
-            ArgumentNullException.ThrowIfNull(asyncMapper);
-
-            return new AsyncPagedEnumerable<TSource, TResult>(source, paginationFactory, asyncMapper);
-        }
+        #endregion
     }
 
     /// <summary>
-    /// 
+    /// Extension methods for <see cref="IQueryable{T}"/>.
     /// </summary>
-    /// <typeparam name="TSource">The type of elements in the collection.</typeparam>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
     /// <param name="source">The source queryable.</param>
-    extension<TSource>(IQueryable<TSource> source)
+    extension<T>(IQueryable<T> source)
     {
-        #endregion
-
         #region IQueryable Extensions
 
         /// <summary>
         /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/>.
-        /// Pagination metadata is automatically extracted from the query expression.
         /// </summary>
         /// <returns>An async paged enumerable.</returns>
         /// <remarks>
@@ -147,17 +104,17 @@ public static class AsyncPagedEnumerable
         /// For complex queries or non-database sources, consider using the overload with a total factory.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TSource> ToAsyncPagedEnumerable()
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable()
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            return new AsyncPagedEnumerable<TSource, TSource>(source);
+            return new AsyncPagedEnumerable<T>(source);
         }
 
         /// <summary>
         /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with a custom total count factory.
         /// </summary>
-        /// <param name="totalFactory">Factory to compute the total count.</param>
+        /// <param name="totalFactory">Factory to compute the total count asynchronously.</param>
         /// <returns>An async paged enumerable.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="totalFactory"/> is null.</exception>
         /// <remarks>
@@ -165,90 +122,15 @@ public static class AsyncPagedEnumerable
         /// (e.g., for complex queries or non-database sources).
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TSource> ToAsyncPagedEnumerable(
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
             Func<CancellationToken, ValueTask<long>> totalFactory)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(totalFactory);
 
-            return new AsyncPagedEnumerable<TSource, TSource>(source, totalFactory);
+            return new AsyncPagedEnumerable<T>(source, totalFactory);
         }
 
-        /// <summary>
-        /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/> with synchronous mapping.
-        /// </summary>
-        /// <typeparam name="TResult">The type of result elements.</typeparam>
-        /// <param name="mapper">Function to map source elements to result elements.</param>
-        /// <returns>An async paged enumerable of mapped elements.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TResult> ToAsyncPagedEnumerable<TResult>(
-            Func<TSource, TResult> mapper)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(mapper);
-
-            return new AsyncPagedEnumerable<TSource, TResult>(
-                source, null, (s, _) => ValueTask.FromResult(mapper(s)));
-        }
-
-        /// <summary>
-        /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/> with asynchronous mapping.
-        /// </summary>
-        /// <typeparam name="TResult">The type of result elements.</typeparam>
-        /// <param name="asyncMapper">Async function to map source elements to result elements.</param>
-        /// <returns>An async paged enumerable of mapped elements.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TResult> ToAsyncPagedEnumerable<TResult>(
-            Func<TSource, CancellationToken, ValueTask<TResult>> asyncMapper)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(asyncMapper);
-
-            return new AsyncPagedEnumerable<TSource, TResult>(source, null, asyncMapper);
-        }
-
-        /// <summary>
-        /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/> with mapping and custom total factory.
-        /// </summary>
-        /// <typeparam name="TResult">The type of result elements.</typeparam>
-        /// <param name="totalFactory">Factory to compute the total count.</param>
-        /// <param name="mapper">Function to map source elements to result elements.</param>
-        /// <returns>An async paged enumerable of mapped elements.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TResult> ToAsyncPagedEnumerable<TResult>(
-            Func<CancellationToken, ValueTask<long>> totalFactory,
-            Func<TSource, TResult> mapper)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(totalFactory);
-            ArgumentNullException.ThrowIfNull(mapper);
-
-            return new AsyncPagedEnumerable<TSource, TResult>(source, totalFactory, (s, _) => ValueTask.FromResult(mapper(s)));
-        }
-
-        /// <summary>
-        /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{TResult}"/> with async mapping and custom total factory.
-        /// </summary>
-        /// <typeparam name="TResult">The type of result elements.</typeparam>
-        /// <param name="totalFactory">Factory to compute the total count.</param>
-        /// <param name="asyncMapper">Async function to map source elements to result elements.</param>
-        /// <returns>An async paged enumerable of mapped elements.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<TResult> ToAsyncPagedEnumerable<TResult>(
-            Func<CancellationToken, ValueTask<long>> totalFactory,
-            Func<TSource, CancellationToken, ValueTask<TResult>> asyncMapper)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(totalFactory);
-            ArgumentNullException.ThrowIfNull(asyncMapper);
-
-            return new AsyncPagedEnumerable<TSource, TResult>(source, totalFactory, asyncMapper);
-        }
+        #endregion
     }
-
-    #endregion
 }

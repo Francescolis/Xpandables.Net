@@ -180,7 +180,7 @@ public class AsyncPagedEnumerableResultTests
         var items = new[] { new TestItem(1, "Item1", true) };
 
         // Create a Pagination with explicit null TotalCount
-        var pagedEnumerable = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var pagedEnumerable = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(new Pagination
             {
@@ -262,14 +262,14 @@ public class AsyncPagedEnumerableResultTests
         items ??= [new TestItem(1, "DefaultItem", true)];
         totalCount ??= items.Length;
 
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(pageSize, currentPage, totalCount: totalCount)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateSlowPagedEnumerable()
     {
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             SlowAsyncEnumerable(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 

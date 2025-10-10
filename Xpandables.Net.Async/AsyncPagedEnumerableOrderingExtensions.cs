@@ -80,7 +80,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -129,7 +129,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -162,7 +162,7 @@ public static class AsyncPagedEnumerableOrderingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

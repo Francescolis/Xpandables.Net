@@ -77,7 +77,7 @@ public static class HttpContentExtensions
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return new AsyncPagedEnumerable<T, T>(Iterator(cancellationToken), PaginationFactory);
+            return new AsyncPagedEnumerable<T>(Iterator(cancellationToken), PaginationFactory);
 
             async ValueTask<byte[]> ReadBufferAsync(CancellationToken ct)
             {
@@ -89,7 +89,7 @@ public static class HttpContentExtensions
             {
                 var buffer = await ReadBufferAsync(ct).ConfigureAwait(false);
                 if (buffer.Length == 0)
-                    return Pagination.Create(totalCount: 0);
+                    return Pagination.FromTotalCount(0);
 
                 using var doc = JsonDocument.Parse(buffer);
                 var root = doc.RootElement;
@@ -103,15 +103,15 @@ public static class HttpContentExtensions
 
                     var items = TryGetDataArray(root, caseInsensitive);
                     int total = items?.GetArrayLength() ?? 0;
-                    return Pagination.Create(total);
+                    return Pagination.FromTotalCount(total);
                 }
 
                 if (root.ValueKind == JsonValueKind.Array)
                 {
-                    return Pagination.Create(root.GetArrayLength());
+                    return Pagination.FromTotalCount(root.GetArrayLength());
                 }
 
-                return Pagination.Create(totalCount: 0);
+                return Pagination.FromTotalCount(0);
             }
 
             async IAsyncEnumerable<T> Iterator([EnumeratorCancellation] CancellationToken ct = default)
@@ -179,7 +179,7 @@ public static class HttpContentExtensions
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return new AsyncPagedEnumerable<T, T>(StreamingIterator(cancellationToken), StreamingPaginationFactory);
+            return new AsyncPagedEnumerable<T>(StreamingIterator(cancellationToken), StreamingPaginationFactory);
 
             async ValueTask<Pagination> StreamingPaginationFactory(CancellationToken ct)
             {

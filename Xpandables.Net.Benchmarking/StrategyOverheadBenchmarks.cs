@@ -18,14 +18,14 @@ public class StrategyOverheadBenchmarks
     [GlobalSetup]
     public void Setup() => _data = [.. Enumerable.Range(1, Count)];
 
-    private AsyncPagedEnumerable<int, int> CreatePaged(PaginationStrategy strategy)
+    private AsyncPagedEnumerable<int> CreatePaged(PaginationStrategy strategy)
     {
-        var paged = new AsyncPagedEnumerable<int, int>(
+        var paged = new AsyncPagedEnumerable<int>(
             PlainAsync(),
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 128, currentPage: 1, totalCount: Count))
         );
         var e = paged.GetAsyncEnumerator() as IAsyncPagedEnumerator<int>;
-        e!.WithPageContextStrategy(strategy);
+        e!.WithStrategy(strategy);
         return paged;
     }
 

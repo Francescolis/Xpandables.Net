@@ -61,7 +61,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TCollection, TCollection>(
+            return new AsyncPagedEnumerable<TCollection>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -95,7 +95,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult, TResult>(
+            return new AsyncPagedEnumerable<TResult>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -122,7 +122,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TCollection, TCollection>(
+            return new AsyncPagedEnumerable<TCollection>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -152,7 +152,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult, TResult>(
+            return new AsyncPagedEnumerable<TResult>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -178,7 +178,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TCollection, TCollection>(
+            return new AsyncPagedEnumerable<TCollection>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -208,7 +208,7 @@ public static class AsyncPagedEnumerableTransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult, TResult>(
+            return new AsyncPagedEnumerable<TResult>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

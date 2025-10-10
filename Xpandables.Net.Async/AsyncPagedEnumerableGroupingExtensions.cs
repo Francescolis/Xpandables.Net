@@ -228,7 +228,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult, TResult>(
+            return new AsyncPagedEnumerable<TResult>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

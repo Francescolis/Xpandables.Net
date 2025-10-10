@@ -37,7 +37,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
             new Customer(3, "Charlie", "Engineering"),
             new Customer(4, "Diana", "Marketing")
         };
-        return new AsyncPagedEnumerable<Customer, Customer>(
+        return new AsyncPagedEnumerable<Customer>(
             customers.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(4, 1, totalCount: 4)));
     }
@@ -63,7 +63,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
 
     private static IAsyncPagedEnumerable<Customer> CreateEmptyCustomers()
     {
-        return new AsyncPagedEnumerable<Customer, Customer>(
+        return new AsyncPagedEnumerable<Customer>(
             AsyncEnumerable.Empty<Customer>(),
             ct => ValueTask.FromResult(Pagination.Create(0, 0, totalCount: 0)));
     }
@@ -489,7 +489,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
         {
             new Customer(1, "Alice", "Engineering")
         }.ToAsync();
-        var pagedCustomers = new AsyncPagedEnumerable<Customer, Customer>(
+        var pagedCustomers = new AsyncPagedEnumerable<Customer>(
             customers,
             ct => ValueTask.FromResult(Pagination.Create(1, 1, totalCount: 1)));
 
@@ -525,7 +525,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
         var customers = Enumerable.Range(1, 100)
             .Select(i => new Customer(i, $"Customer{i}", "Department"))
             .ToAsync();
-        var pagedCustomers = new AsyncPagedEnumerable<Customer, Customer>(
+        var pagedCustomers = new AsyncPagedEnumerable<Customer>(
             customers,
             ct => ValueTask.FromResult(Pagination.Create(100, 1, totalCount: 100)));
 
@@ -555,7 +555,7 @@ public class AsyncPagedEnumerableJoinExtensionsTests
             new Customer(1, "Alice", "Engineering"),
             new Customer(1, "Alice2", "Engineering") // Duplicate ID
         }.ToAsync();
-        var pagedCustomers = new AsyncPagedEnumerable<Customer, Customer>(
+        var pagedCustomers = new AsyncPagedEnumerable<Customer>(
             customers,
             ct => ValueTask.FromResult(Pagination.Create(2, 1, totalCount: 2)));
 

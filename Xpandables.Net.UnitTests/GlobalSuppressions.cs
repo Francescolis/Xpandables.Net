@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.UnitTests.ExecutionResults.ExecutionResultBuildersTests.ExecutionResultFailureBuilder_WithSuccessStatusCode_ShouldThrow")]
 [assembly: SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "<Pending>", Scope = "member", Target = "~M:Xpandables.Net.UnitTests.ExecutionResults.ExecutionResultBuildersTests.ExecutionResultSuccessBuilder_WithInvalidStatusCode_ShouldThrow")]

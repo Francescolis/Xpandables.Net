@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2025 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
             new Product(3, "Coffee", 12.50m, "Food & Beverage")
         };
 
-        var pagedEnumerable = new AsyncPagedEnumerable<Product, Product>(
+        var pagedEnumerable = new AsyncPagedEnumerable<Product>(
             products.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
@@ -77,7 +77,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
             .Select(i => new User(i, $"User{i}", $"user{i}@example.com", i % 2 == 0))
             .ToArray();
 
-        var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
+        var pagedEnumerable = new AsyncPagedEnumerable<User>(
             users.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(100, 1, totalCount: itemCount)));
 
@@ -105,7 +105,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
     {
         // Arrange
         var users = new[] { new User(1, "TestUser", "test@example.com", true) };
-        var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
+        var pagedEnumerable = new AsyncPagedEnumerable<User>(
             users.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 1)));
 
@@ -138,12 +138,12 @@ public class AsyncPagedEnumerableResultIntegrationTests
         // Arrange
         var users = new[]
         {
-            new User(1, "用户", "user@中文.com", true),
-            new User(2, "🚀 User", "emoji@test.com", false),
-            new User(3, "Müller", "müller@test.de", true)
+            new User(1, "??", "user@??.com", true),
+            new User(2, "?? User", "emoji@test.com", false),
+            new User(3, "M�ller", "m�ller@test.de", true)
         };
 
-        var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
+        var pagedEnumerable = new AsyncPagedEnumerable<User>(
             users.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
@@ -158,10 +158,10 @@ public class AsyncPagedEnumerableResultIntegrationTests
         var jsonDocument = JsonDocument.Parse(responseBody);
 
         var dataArray = jsonDocument.RootElement.GetProperty("items");
-        dataArray[0].GetProperty("Name").GetString().Should().Be("用户");
-        dataArray[0].GetProperty("Email").GetString().Should().Be("user@中文.com");
-        dataArray[1].GetProperty("Name").GetString().Should().Be("🚀 User");
-        dataArray[2].GetProperty("Name").GetString().Should().Be("Müller");
+        dataArray[0].GetProperty("Name").GetString().Should().Be("??");
+        dataArray[0].GetProperty("Email").GetString().Should().Be("user@??.com");
+        dataArray[1].GetProperty("Name").GetString().Should().Be("?? User");
+        dataArray[2].GetProperty("Name").GetString().Should().Be("M�ller");
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
             new User(3, "User with \\ backslash", "backslash@test.com", true)
         };
 
-        var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
+        var pagedEnumerable = new AsyncPagedEnumerable<User>(
             users.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
@@ -223,7 +223,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
             new User(2, "Beta", "beta@test.com", false)
         };
 
-        var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
+        var pagedEnumerable = new AsyncPagedEnumerable<User>(
             users.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: users.Length)));
 
@@ -256,11 +256,11 @@ public class AsyncPagedEnumerableResultIntegrationTests
         // Arrange
         var users = new[]
         {
-            new User(1, "Гамма", "gamma@test.com", true),
-            new User(2, "Δέλτα", "delta@test.com", false)
+            new User(1, "?????", "gamma@test.com", true),
+            new User(2, "???ta", "delta@test.com", false)
         };
 
-        var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
+        var pagedEnumerable = new AsyncPagedEnumerable<User>(
             users.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: users.Length)));
 
@@ -283,8 +283,8 @@ public class AsyncPagedEnumerableResultIntegrationTests
         var responseBody = HttpContextTestHelpers.GetResponseBodyAsString(httpContext, Encoding.Unicode);
         var json = JsonDocument.Parse(responseBody);
         json.RootElement.GetProperty("items").GetArrayLength().Should().Be(2);
-        json.RootElement.GetProperty("items")[0].GetProperty("Name").GetString().Should().Be("Гамма");
-        json.RootElement.GetProperty("items")[1].GetProperty("Name").GetString().Should().Be("Δέλτα");
+        json.RootElement.GetProperty("items")[0].GetProperty("Name").GetString().Should().Be("?????");
+        json.RootElement.GetProperty("items")[1].GetProperty("Name").GetString().Should().Be("???ta");
     }
 
     [Fact]
@@ -292,7 +292,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
     {
         // Arrange
         var users = new[] { new User(1, "CamelCase", "camel@test.com", true) };
-        var pagedEnumerable = new AsyncPagedEnumerable<User, User>(
+        var pagedEnumerable = new AsyncPagedEnumerable<User>(
             users.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 1)));
 
@@ -321,7 +321,7 @@ public class AsyncPagedEnumerableResultIntegrationTests
 
     private static IAsyncPagedEnumerable<User> CreateSlowPagedEnumerable()
     {
-        return new AsyncPagedEnumerable<User, User>(
+        return new AsyncPagedEnumerable<User>(
             SlowAsyncEnumerable(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 

@@ -78,7 +78,7 @@ public static class AsyncPagedEnumerableSetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -124,7 +124,7 @@ public static class AsyncPagedEnumerableSetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -170,7 +170,7 @@ public static class AsyncPagedEnumerableSetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -203,7 +203,7 @@ public static class AsyncPagedEnumerableSetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -228,7 +228,7 @@ public static class AsyncPagedEnumerableSetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -253,7 +253,7 @@ public static class AsyncPagedEnumerableSetExtensions
                 yield return element;
             }
 
-            return new AsyncPagedEnumerable<TSource, TSource>(
+            return new AsyncPagedEnumerable<TSource>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -292,7 +292,7 @@ public static class AsyncPagedEnumerableSetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult, TResult>(
+            return new AsyncPagedEnumerable<TResult>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -346,7 +346,7 @@ public static class AsyncPagedEnumerableSetExtensions
                     yield return defaultValue;
             }
 
-            return new AsyncPagedEnumerable<TSource?, TSource?>(
+            return new AsyncPagedEnumerable<TSource?>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

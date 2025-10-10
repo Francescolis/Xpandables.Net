@@ -35,14 +35,14 @@ public class AsyncPagedEnumerableWindowingExtensionsTests
             new TestItem(40, 400.0, "D"),
             new TestItem(50, 500.0, "E")
         };
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(5, 1, totalCount: 5)));
     }
 
     private static IAsyncPagedEnumerable<TestItem> CreateEmptyTestData()
     {
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             AsyncEnumerable.Empty<TestItem>(),
             ct => ValueTask.FromResult(Pagination.Create(0, 0, totalCount: 0)));
     }
@@ -50,7 +50,7 @@ public class AsyncPagedEnumerableWindowingExtensionsTests
     private static IAsyncPagedEnumerable<TestItem> CreateSingleItemData()
     {
         var items = new[] { new TestItem(42, 420.0, "Single") };
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(1, 1, totalCount: 1)));
     }
@@ -530,7 +530,7 @@ public class AsyncPagedEnumerableWindowingExtensionsTests
         var items = Enumerable.Range(1, 1000)
             .Select(i => new TestItem(i, i * 1.5, $"Item{i}"))
             .ToArray();
-        var source = new AsyncPagedEnumerable<TestItem, TestItem>(
+        var source = new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(1000, 1, totalCount: 1000)));
 

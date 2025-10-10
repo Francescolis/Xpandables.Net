@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2025 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -149,10 +149,10 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         // Arrange
         var items = new[]
         {
-            new EdgeCaseItem(1, "中文测试", DateTime.Now),
-            new EdgeCaseItem(2, "🚀 Emoji Test 🎉", DateTime.Now),
-            new EdgeCaseItem(3, "Åpfel über München", DateTime.Now),
-            new EdgeCaseItem(4, "العربية", DateTime.Now)
+            new EdgeCaseItem(1, "????", DateTime.Now),
+            new EdgeCaseItem(2, "?? Emoji Test ??", DateTime.Now),
+            new EdgeCaseItem(3, "�pfel �ber M�nchen", DateTime.Now),
+            new EdgeCaseItem(4, "???????", DateTime.Now)
         };
 
         var pagedEnumerable = CreateTestPagedEnumerable(items);
@@ -167,10 +167,10 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         var jsonDocument = JsonDocument.Parse(responseBody);
 
         var dataArray = jsonDocument.RootElement.GetProperty("items");
-        dataArray[0].GetProperty("NullableName").GetString().Should().Be("中文测试");
-        dataArray[1].GetProperty("NullableName").GetString().Should().Be("🚀 Emoji Test 🎉");
-        dataArray[2].GetProperty("NullableName").GetString().Should().Be("Åpfel über München");
-        dataArray[3].GetProperty("NullableName").GetString().Should().Be("العربية");
+        dataArray[0].GetProperty("NullableName").GetString().Should().Be("????");
+        dataArray[1].GetProperty("NullableName").GetString().Should().Be("?? Emoji Test ??");
+        dataArray[2].GetProperty("NullableName").GetString().Should().Be("�pfel �ber M�nchen");
+        dataArray[3].GetProperty("NullableName").GetString().Should().Be("???????");
     }
 
     [Fact]
@@ -256,14 +256,14 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
         items ??= [new EdgeCaseItem(1, "DefaultItem", DateTime.Now)];
         totalCount ??= items.Length;
 
-        return new AsyncPagedEnumerable<EdgeCaseItem, EdgeCaseItem>(
+        return new AsyncPagedEnumerable<EdgeCaseItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(pageSize, currentPage, totalCount: totalCount)));
     }
 
     private static IAsyncPagedEnumerable<EdgeCaseItem> CreateFaultyPagedEnumerable()
     {
-        return new AsyncPagedEnumerable<EdgeCaseItem, EdgeCaseItem>(
+        return new AsyncPagedEnumerable<EdgeCaseItem>(
             FaultyAsyncEnumerable(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 
@@ -277,7 +277,7 @@ public class AsyncPagedEnumerableResultEdgeCaseTests
 
     private static IAsyncPagedEnumerable<EdgeCaseItem> CreateSlowPagedEnumerable()
     {
-        return new AsyncPagedEnumerable<EdgeCaseItem, EdgeCaseItem>(
+        return new AsyncPagedEnumerable<EdgeCaseItem>(
             SlowAsyncEnumerable(),
             ct => ValueTask.FromResult(Pagination.Create(10, 1, totalCount: 3)));
 

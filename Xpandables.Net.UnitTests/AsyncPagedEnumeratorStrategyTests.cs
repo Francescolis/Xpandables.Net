@@ -14,10 +14,10 @@ public class AsyncPagedEnumeratorStrategyTests
         var source = Enumerable.Range(1, 5).ToAsync();
         var enumerator = AsyncPagedEnumerator.Create(
             source.GetAsyncEnumerator(),
-            cancellationToken: default,
-            initialContext: initial);
+            initialContext: initial,
+            cancellationToken: default);
 
-        enumerator.WithPageContextStrategy(PaginationStrategy.None);
+        enumerator.WithStrategy(PaginationStrategy.None);
 
         while (await enumerator.MoveNextAsync()) { /* ignore */ }
 
@@ -31,10 +31,10 @@ public class AsyncPagedEnumeratorStrategyTests
         var source = Enumerable.Range(1, 5).ToAsync();
         var enumerator = AsyncPagedEnumerator.Create(
             source.GetAsyncEnumerator(),
-            cancellationToken: default,
-            initialContext: initial);
+            initialContext: initial,
+            cancellationToken: default);
 
-        enumerator.WithPageContextStrategy(PaginationStrategy.PerItem);
+        enumerator.WithStrategy(PaginationStrategy.PerItem);
 
         int observedMax = 0;
         while (await enumerator.MoveNextAsync())
@@ -56,10 +56,10 @@ public class AsyncPagedEnumeratorStrategyTests
         var source = Enumerable.Range(1, 7).ToAsync();
         var enumerator = AsyncPagedEnumerator.Create(
             source.GetAsyncEnumerator(),
-            cancellationToken: default,
-            initialContext: initial);
+            initialContext: initial,
+            cancellationToken: default);
 
-        enumerator.WithPageContextStrategy(PaginationStrategy.PerPage);
+        enumerator.WithStrategy(PaginationStrategy.PerPage);
 
         var pages = new List<int>();
         while (await enumerator.MoveNextAsync())
@@ -78,10 +78,10 @@ public class AsyncPagedEnumeratorStrategyTests
         var source = Enumerable.Range(1, 3).ToAsync();
         var enumerator = AsyncPagedEnumerator.Create(
             source.GetAsyncEnumerator(),
-            cancellationToken: default,
-            initialContext: initial);
+            initialContext: initial,
+            cancellationToken: default);
 
-        enumerator.WithPageContextStrategy(PaginationStrategy.PerItem);
+        enumerator.WithStrategy(PaginationStrategy.PerItem);
 
         while (await enumerator.MoveNextAsync()) { }
 
@@ -91,8 +91,8 @@ public class AsyncPagedEnumeratorStrategyTests
     [Fact]
     public async Task Empty_Source_Returns_False_Immediately()
     {
-        var empty = AsyncPagedEnumerator.Empty<int, int>(Pagination.Empty);
-        empty.WithPageContextStrategy(PaginationStrategy.PerItem);
+        var empty = AsyncPagedEnumerator.Empty<int>(Pagination.Empty);
+        empty.WithStrategy(PaginationStrategy.PerItem);
 
         var moved = await empty.MoveNextAsync();
         moved.Should().BeFalse();

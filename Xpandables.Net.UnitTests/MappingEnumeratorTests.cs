@@ -11,14 +11,13 @@ public class MappingEnumeratorTests
     public async Task Sync_Mapping_Works_With_Strategy_PerPage()
     {
         var initial = Pagination.Create(pageSize: 2, currentPage: 1, totalCount: 4);
-        var src = Enumerable.Range(1, 4).ToAsync();
+        var src = Enumerable.Range(1, 4).Select(x => x * 2).ToAsync();
         var enumerator = AsyncPagedEnumerator.Create(
             src.GetAsyncEnumerator(),
-            syncMapper: x => x * 2,
-            cancellationToken: default,
-            initialContext: initial);
+            initialContext: initial,
+            cancellationToken: default);
 
-        enumerator.WithPageContextStrategy(PaginationStrategy.PerPage);
+        enumerator.WithStrategy(PaginationStrategy.PerPage);
 
         var list = new List<int>();
         while (await enumerator.MoveNextAsync())
@@ -32,18 +31,18 @@ public class MappingEnumeratorTests
     public async Task Async_Mapping_Works_With_Strategy_PerItem()
     {
         var initial = Pagination.Create(pageSize: 0, currentPage: 0, totalCount: null);
-        var src = Enumerable.Range(1, 3).ToAsync();
+        // For async mapping, we can use SelectAwait from System.Linq.Async
+        var src = Enumerable.Range(1, 3).ToAsyncEnumerable().SelectAwait(async x =>
+        {
+            await Task.Delay(1);
+            return x + 5;
+        });
         var enumerator = AsyncPagedEnumerator.Create(
             src.GetAsyncEnumerator(),
-            async (x, ct) =>
-            {
-                await Task.Delay(1, ct);
-                return x + 5;
-            },
-            cancellationToken: default,
-            initialContext: initial);
+            initialContext: initial,
+            cancellationToken: default);
 
-        enumerator.WithPageContextStrategy(PaginationStrategy.PerItem);
+        enumerator.WithStrategy(PaginationStrategy.PerItem);
 
         var values = new List<int>();
         while (await enumerator.MoveNextAsync())
@@ -52,4 +51,4 @@ public class MappingEnumeratorTests
         values.Should().Equal(6, 7, 8);
         enumerator.Pagination.TotalCount.Should().Be(3);
     }
-}
+}}

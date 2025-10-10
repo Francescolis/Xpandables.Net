@@ -128,7 +128,7 @@ public class AsyncPagedEnumerableResultBasicTests
         items ??= [new TestItem(1, "DefaultItem", true)];
         totalCount ??= items.Length;
 
-        return new AsyncPagedEnumerable<TestItem, TestItem>(
+        return new AsyncPagedEnumerable<TestItem>(
             items.ToAsync(),
             ct => ValueTask.FromResult(Pagination.Create(pageSize, currentPage, totalCount: totalCount)));
     }
