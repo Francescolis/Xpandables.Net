@@ -157,6 +157,7 @@ public static class HttpContentExtensions
         /// This method provides superior memory efficiency compared to <see cref="ReadFromJsonAsAsyncPagedEnumerable{T}(HttpContent, JsonTypeInfo{T}, CancellationToken)"/>
         /// by streaming and deserializing JSON content incrementally. It's ideal for large payloads or memory-constrained environments.
         /// The method supports both array-root JSON and object-with-items structures.
+        /// The stream is read only once - pagination metadata is extracted during enumeration automatically.
         /// </remarks>
         /// <typeparam name="T">The type of elements to deserialize from the JSON content.</typeparam>
         /// <param name="jsonTypeInfo">Metadata used to control the deserialization of JSON values to type T. Cannot be null.</param>
@@ -179,39 +180,41 @@ public static class HttpContentExtensions
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return new AsyncPagedEnumerable<T>(StreamingIterator(cancellationToken), StreamingPaginationFactory);
+            // Shared state between pagination factory and iterator
+            var sharedState = new StreamingState<T>(content, jsonTypeInfo, arrayPropertyName, bufferSize);
+
+            return new AsyncPagedEnumerable<T>(
+                StreamingIterator(sharedState, cancellationToken),
+                StreamingPaginationFactory);
 
             async ValueTask<Pagination> StreamingPaginationFactory(CancellationToken ct)
             {
-                var stream = await content.ReadAsStreamAsync(ct).ConfigureAwait(false);
-                var reader = new Utf8JsonStreamReader(stream, jsonTypeInfo.Options, bufferSize, leaveOpen: true);
-                
-                try
+                // Initialize reader if not already done
+                await sharedState.EnsureReaderInitializedAsync(ct).ConfigureAwait(false);
+
+                // If enumeration hasn't started yet, extract pagination explicitly
+                if (!sharedState.IsEnumerationStarted)
                 {
-                    var pagination = await reader.ExtractPaginationAsync(ct).ConfigureAwait(false);
+                    var pagination = await sharedState.Reader!.ExtractPaginationAsync(ct).ConfigureAwait(false);
                     return pagination ?? Pagination.Empty;
                 }
-                finally
-                {
-                    await reader.DisposeAsync().ConfigureAwait(false);
-                }
+
+                // If enumeration has started, pagination was already extracted during ReadArrayAsync
+                return sharedState.Reader!.GetPagination() ?? Pagination.Empty;
             }
 
-            async IAsyncEnumerable<T> StreamingIterator([EnumeratorCancellation] CancellationToken ct = default)
+            async IAsyncEnumerable<T> StreamingIterator(
+                StreamingState<T> state,
+                [EnumeratorCancellation] CancellationToken ct = default)
             {
-                var stream = await content.ReadAsStreamAsync(ct).ConfigureAwait(false);
-                var reader = new Utf8JsonStreamReader(stream, jsonTypeInfo.Options, bufferSize, leaveOpen: false);
+                await state.EnsureReaderInitializedAsync(ct).ConfigureAwait(false);
 
-                try
+                state.IsEnumerationStarted = true;
+
+                // ReadArrayAsync will extract pagination automatically if it encounters it
+                await foreach (var item in state.Reader!.ReadArrayAsync<T>(state.ArrayPropertyName, ct).ConfigureAwait(false))
                 {
-                    await foreach (var item in reader.ReadArrayAsync<T>(arrayPropertyName, ct).ConfigureAwait(false))
-                    {
-                        yield return item;
-                    }
-                }
-                finally
-                {
-                    await reader.DisposeAsync().ConfigureAwait(false);
+                    yield return item;
                 }
             }
         }
@@ -238,6 +241,58 @@ public static class HttpContentExtensions
 
             var jsonTypeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
             return ReadFromJsonAsAsyncPagedEnumerableStreaming(content, jsonTypeInfo, arrayPropertyName, bufferSize, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Shared state for streaming operations to ensure single-pass reading.
+    /// </summary>
+    /// <typeparam name="T">The type of elements being deserialized.</typeparam>
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
+    private sealed class StreamingState<T>
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
+    {
+        private readonly HttpContent _content;
+        private readonly JsonTypeInfo<T> _jsonTypeInfo;
+        private readonly int _bufferSize;
+        private readonly SemaphoreSlim _initLock = new(1, 1);
+        private bool _readerInitialized;
+
+        public string? ArrayPropertyName { get; }
+        public Utf8JsonStreamReader? Reader { get; private set; }
+        public bool IsEnumerationStarted { get; set; }
+
+        public StreamingState(
+            HttpContent content,
+            JsonTypeInfo<T> jsonTypeInfo,
+            string? arrayPropertyName,
+            int bufferSize)
+        {
+            _content = content;
+            _jsonTypeInfo = jsonTypeInfo;
+            ArrayPropertyName = arrayPropertyName;
+            _bufferSize = bufferSize;
+        }
+
+        public async ValueTask EnsureReaderInitializedAsync(CancellationToken cancellationToken)
+        {
+            if (_readerInitialized)
+                return;
+
+            await _initLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (_readerInitialized)
+                    return;
+
+                var stream = await _content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                Reader = new Utf8JsonStreamReader(stream, _jsonTypeInfo.Options, _bufferSize, leaveOpen: false);
+                _readerInitialized = true;
+            }
+            finally
+            {
+                _initLock.Release();
+            }
         }
     }
 

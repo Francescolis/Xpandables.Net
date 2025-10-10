@@ -207,6 +207,171 @@ public class HttpContentExtensionsJsonTests
         list.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task ReadFromJsonAsAsyncPagedEnumerableStreaming_PaginationFirst_ShouldWork()
+    {
+        // Arrange
+        var json = """
+        {
+            "pagination": { "pageSize": 10, "currentPage": 2, "totalCount": 50, "continuationToken": null },
+            "items": [ 
+                {"Id": 1, "Name": "Item1", "IsActive": true},
+                {"Id": 2, "Name": "Item2", "IsActive": false}
+            ]
+        }
+        """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(HttpContentTestsJsonContext.Default, PaginationSourceGenerationContext.Default)
+        };
+
+        // Act - Get pagination FIRST
+        var paged = content.ReadFromJsonAsAsyncPagedEnumerableStreaming<JsonTestItem>(options);
+        var ctx = await paged.GetPaginationAsync();
+
+        // Assert pagination
+        ctx.PageSize.Should().Be(10);
+        ctx.CurrentPage.Should().Be(2);
+        ctx.TotalCount.Should().Be(50);
+
+        // Then enumerate
+        var list = await ToListAsync(paged);
+        list.Should().HaveCount(2);
+        list[0].Name.Should().Be("Item1");
+        list[1].Name.Should().Be("Item2");
+    }
+
+    [Fact]
+    public async Task ReadFromJsonAsAsyncPagedEnumerableStreaming_EnumerationFirst_ShouldWork()
+    {
+        // Arrange
+        var json = """
+        {
+            "pagination": { "pageSize": 10, "currentPage": 1, "totalCount": 25, "continuationToken": null },
+            "items": [ 
+                {"Id": 100, "Name": "First", "IsActive": true},
+                {"Id": 200, "Name": "Second", "IsActive": false},
+                {"Id": 300, "Name": "Third", "IsActive": true}
+            ]
+        }
+        """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(HttpContentTestsJsonContext.Default, PaginationSourceGenerationContext.Default)
+        };
+
+        // Act - Enumerate FIRST
+        var paged = content.ReadFromJsonAsAsyncPagedEnumerableStreaming<JsonTestItem>(options);
+        var list = await ToListAsync(paged);
+
+        // Assert items
+        list.Should().HaveCount(3);
+        list[0].Id.Should().Be(100);
+        list[1].Id.Should().Be(200);
+        list[2].Id.Should().Be(300);
+
+        // Then get pagination (should still work)
+        var ctx = await paged.GetPaginationAsync();
+        ctx.PageSize.Should().Be(10);
+        ctx.CurrentPage.Should().Be(1);
+        ctx.TotalCount.Should().Be(25);
+    }
+
+    [Fact]
+    public async Task ReadFromJsonAsAsyncPagedEnumerableStreaming_ArrayRoot_ShouldWork()
+    {
+        // Arrange
+        var items = new[]
+        {
+            new JsonTestItem(1, "A", true),
+            new JsonTestItem(2, "B", false),
+            new JsonTestItem(3, "C", true)
+        };
+
+        var json = JsonSerializer.Serialize(items, DefaultOptions);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act - Use streaming with array root (no property name)
+        var paged = content.ReadFromJsonAsAsyncPagedEnumerableStreaming(
+            HttpContentTestsJsonContext.Default.JsonTestItem,
+            arrayPropertyName: null);
+
+        var list = await ToListAsync(paged);
+
+        // Assert
+        list.Should().HaveCount(3);
+        list.Should().BeEquivalentTo(items);
+
+        var ctx = await paged.GetPaginationAsync();
+        ctx.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ReadFromJsonAsAsyncPagedEnumerableStreaming_EmptyContent_ShouldReturnEmpty()
+    {
+        // Arrange
+        using var content = new StringContent(string.Empty, Encoding.UTF8, "application/json");
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(HttpContentTestsJsonContext.Default, PaginationSourceGenerationContext.Default)
+        };
+
+        // Act
+        var paged = content.ReadFromJsonAsAsyncPagedEnumerableStreaming<JsonTestItem>(options);
+        var list = await ToListAsync(paged);
+
+        // Assert
+        list.Should().BeEmpty();
+
+        var ctx = await paged.GetPaginationAsync();
+        ctx.Should().Be(Pagination.Empty);
+    }
+
+    [Fact]
+    public async Task ReadFromJsonAsAsyncPagedEnumerableStreaming_CustomPropertyName_ShouldWork()
+    {
+        // Arrange
+        var json = """
+        {
+            "pagination": { "pageSize": 5, "currentPage": 1, "totalCount": 15 },
+            "results": [ 
+                {"Id": 1, "Name": "Custom1", "IsActive": true},
+                {"Id": 2, "Name": "Custom2", "IsActive": false}
+            ]
+        }
+        """;
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(HttpContentTestsJsonContext.Default, PaginationSourceGenerationContext.Default)
+        };
+
+        // Act - Use custom property name "results"
+        var paged = content.ReadFromJsonAsAsyncPagedEnumerableStreaming<JsonTestItem>(
+            options,
+            arrayPropertyName: "results");
+
+        var ctx = await paged.GetPaginationAsync();
+
+        // Assert
+        ctx.PageSize.Should().Be(5);
+        ctx.TotalCount.Should().Be(15);
+
+        var list = await ToListAsync(paged);
+        list.Should().HaveCount(2);
+        list[0].Name.Should().Be("Custom1");
+    }
+
     private static async Task<List<JsonTestItem>> ToListAsync(IAsyncEnumerable<JsonTestItem> source)
     {
         var list = new List<JsonTestItem>();
@@ -215,6 +380,7 @@ public class HttpContentExtensionsJsonTests
         return list;
     }
 }
+
 
 internal record JsonTestItem(int Id, string Name, bool IsActive);
 
