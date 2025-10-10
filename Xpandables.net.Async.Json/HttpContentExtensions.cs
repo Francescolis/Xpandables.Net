@@ -207,14 +207,17 @@ public static class HttpContentExtensions
                 StreamingState<T> state,
                 [EnumeratorCancellation] CancellationToken ct = default)
             {
-                await state.EnsureReaderInitializedAsync(ct).ConfigureAwait(false);
-
-                state.IsEnumerationStarted = true;
-
-                // ReadArrayAsync will extract pagination automatically if it encounters it
-                await foreach (var item in state.Reader!.ReadArrayAsync<T>(state.ArrayPropertyName, ct).ConfigureAwait(false))
+                await using (state.ConfigureAwait(false))
                 {
-                    yield return item;
+                    await state.EnsureReaderInitializedAsync(ct).ConfigureAwait(false);
+
+                    state.IsEnumerationStarted = true;
+
+                    // ReadArrayAsync will extract pagination automatically if it encounters it
+                    await foreach (var item in state.Reader!.ReadArrayAsync<T>(state.ArrayPropertyName, ct).ConfigureAwait(false))
+                    {
+                        yield return item;
+                    }
                 }
             }
         }
@@ -248,20 +251,20 @@ public static class HttpContentExtensions
     /// Shared state for streaming operations to ensure single-pass reading.
     /// </summary>
     /// <typeparam name="T">The type of elements being deserialized.</typeparam>
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable
-    private sealed class StreamingState<T>
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable
+    private sealed class StreamingState<T> : IAsyncDisposable
     {
         private readonly HttpContent _content;
         private readonly JsonTypeInfo<T> _jsonTypeInfo;
         private readonly int _bufferSize;
         private readonly SemaphoreSlim _initLock = new(1, 1);
         private bool _readerInitialized;
+        private bool _disposed;
 
         public string? ArrayPropertyName { get; }
         public Utf8JsonStreamReader? Reader { get; private set; }
         public bool IsEnumerationStarted { get; set; }
 
+        [SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
         public StreamingState(
             HttpContent content,
             JsonTypeInfo<T> jsonTypeInfo,
@@ -276,6 +279,8 @@ public static class HttpContentExtensions
 
         public async ValueTask EnsureReaderInitializedAsync(CancellationToken cancellationToken)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             if (_readerInitialized)
                 return;
 
@@ -293,6 +298,21 @@ public static class HttpContentExtensions
             {
                 _initLock.Release();
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            if (Reader is not null)
+            {
+                await Reader.DisposeAsync().ConfigureAwait(false);
+            }
+
+            _initLock.Dispose();
         }
     }
 
