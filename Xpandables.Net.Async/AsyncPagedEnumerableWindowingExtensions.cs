@@ -357,7 +357,7 @@ public static class AsyncPagedEnumerableWindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<(TSource Previous, TSource Current), (TSource Previous, TSource Current)>(
+            return new AsyncPagedEnumerable<(TSource Previous, TSource Current)>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

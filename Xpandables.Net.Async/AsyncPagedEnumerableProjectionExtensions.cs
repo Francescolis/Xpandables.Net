@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Xpandables.Net.Async;
 
@@ -35,7 +36,6 @@ public static class AsyncPagedEnumerableProjectionExtensions
 
         /// <summary>
         /// Projects each element of the asynchronous paged sequence into a new form using a synchronous selector.
-        /// Reuses <see cref="AsyncPagedEnumerable{TSource, TResult}"/> for enumeration and pagination propagation.
         /// </summary>
         /// <typeparam name="TResult">Result element type.</typeparam>
         /// <param name="selector">Synchronous projection function.</param>
@@ -43,10 +43,10 @@ public static class AsyncPagedEnumerableProjectionExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selector);
-            return new AsyncPagedEnumerable<TSource, TResult>(
-                source,
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)),
-                (s, ct) => ValueTask.FromResult(selector(s)));
+            
+            return new AsyncPagedEnumerable<TResult>(
+                source.Select(selector),
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -58,10 +58,18 @@ public static class AsyncPagedEnumerableProjectionExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selectorAsync);
-            return new AsyncPagedEnumerable<TSource, TResult>(
-                source,
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)),
-                (s, ct) => selectorAsync(s));
+            
+            async IAsyncEnumerable<TResult> ProjectAsync([EnumeratorCancellation] CancellationToken ct = default)
+            {
+                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                {
+                    yield return await selectorAsync(item).ConfigureAwait(false);
+                }
+            }
+            
+            return new AsyncPagedEnumerable<TResult>(
+                ProjectAsync(),
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         /// <summary>
@@ -73,10 +81,18 @@ public static class AsyncPagedEnumerableProjectionExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selectorAsync);
-            return new AsyncPagedEnumerable<TSource, TResult>(
-                source,
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)),
-                selectorAsync);
+            
+            async IAsyncEnumerable<TResult> ProjectAsync([EnumeratorCancellation] CancellationToken ct = default)
+            {
+                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                {
+                    yield return await selectorAsync(item, ct).ConfigureAwait(false);
+                }
+            }
+            
+            return new AsyncPagedEnumerable<TResult>(
+                ProjectAsync(),
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
         #endregion

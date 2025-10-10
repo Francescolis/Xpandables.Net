@@ -91,7 +91,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<IGrouping<TKey, TSource>, IGrouping<TKey, TSource>>(
+            return new AsyncPagedEnumerable<IGrouping<TKey, TSource>>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -160,7 +160,7 @@ public static class AsyncPagedEnumerableGroupingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>>(
+            return new AsyncPagedEnumerable<IGrouping<TKey, TElement>>(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

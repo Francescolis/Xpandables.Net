@@ -48,7 +48,7 @@ public class PaginationBenchmarks
     [Benchmark]
     public async Task Paged_PreComputed_PerPage()
     {
-        var paged = new AsyncPagedEnumerable<int, int>(
+        var paged = new AsyncPagedEnumerable<int>(
             PlainAsync(),
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 256, currentPage: 1, totalCount: Count))
         );
@@ -62,12 +62,12 @@ public class PaginationBenchmarks
     [Benchmark]
     public async Task Paged_PerItem_Strategy()
     {
-        var paged = new AsyncPagedEnumerable<int, int>(
+        var paged = new AsyncPagedEnumerable<int>(
             PlainAsync(),
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 0, currentPage: 0, totalCount: null))
         );
         var enumerator = paged.GetAsyncEnumerator() as IAsyncPagedEnumerator<int>;
-        enumerator!.WithPageContextStrategy(PaginationStrategy.PerItem);
+        enumerator!.WithStrategy(PaginationStrategy.PerItem);
         long sum = 0;
         while (await enumerator.MoveNextAsync())
             sum += enumerator.Current;

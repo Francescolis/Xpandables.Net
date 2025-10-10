@@ -29,13 +29,24 @@ public class MapperBenchmarks
         }
     }
 
+    private static async IAsyncEnumerable<TResult> SelectAsync<TSource, TResult>(
+        IAsyncEnumerable<TSource> source,
+        Func<TSource, CancellationToken, ValueTask<TResult>> selector,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            yield return await selector(item, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
     [Benchmark(Baseline = true)]
     public async Task Sync_Map()
     {
-        var paged = AsyncPagedEnumerable.ToAsyncPagedEnumerable(
-            PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
-            mapper: x => x + 1);
+        var paged = PlainAsync()
+            .Select(x => x + 1)
+            .ToAsyncPagedEnumerable(
+                paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)));
         await paged.GetPaginationAsync();
         int sum = 0;
         await foreach (var v in paged)
@@ -46,10 +57,9 @@ public class MapperBenchmarks
     [Benchmark]
     public async Task Async_Map_MinimalAwait()
     {
-        var paged = new AsyncPagedEnumerable<int, int>(
-            PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
-            mapper: async (x, ct) => { await Task.CompletedTask; return x + 1; });
+        var paged = SelectAsync(PlainAsync(), async (x, ct) => { await Task.CompletedTask; return x + 1; })
+            .ToAsyncPagedEnumerable(
+                paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)));
         await paged.GetPaginationAsync();
         int sum = 0;
         await foreach (var v in paged)
@@ -60,16 +70,15 @@ public class MapperBenchmarks
     [Benchmark]
     public async Task Async_Map_WithWork()
     {
-        var paged = new AsyncPagedEnumerable<int, int>(
-            PlainAsync(),
-            paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)),
-            mapper: async (x, ct) =>
+        var paged = SelectAsync(PlainAsync(), async (x, ct) =>
             {
                 // Simulate small async CPU-bound then I/O-like yield
                 int r = x * 2 + 3;
                 await Task.Yield();
                 return r;
-            });
+            })
+            .ToAsyncPagedEnumerable(
+                paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 512, currentPage: 1, totalCount: Count)));
         await paged.GetPaginationAsync();
         int sum = 0;
         await foreach (var v in paged)
