@@ -99,9 +99,9 @@ public readonly record struct Pagination
     /// <returns>A new <see cref="Pagination"/> instance initialized with the specified parameters.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="pageSize"/> or <paramref name="currentPage"/> is negative.</exception>
     public static Pagination Create(
-        int pageSize, 
-        int currentPage, 
-        string? continuationToken = null, 
+        int pageSize,
+        int currentPage,
+        string? continuationToken = null,
         int? totalCount = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(pageSize);
@@ -130,7 +130,7 @@ public readonly record struct Pagination
     public static Pagination FromTotalCount(int totalCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(totalCount);
-        
+
         return new()
         {
             PageSize = 0,
@@ -184,8 +184,8 @@ public readonly record struct Pagination
     /// </summary>
     /// <remarks>This property is typically used for pagination scenarios to determine the starting 
     /// point for retrieving a subset of items from a larger collection.</remarks>
-    public int Skip => CurrentPage > 0 && PageSize > 0 
-        ? (CurrentPage - 1) * PageSize 
+    public int Skip => CurrentPage > 0 && PageSize > 0
+        ? (CurrentPage - 1) * PageSize
         : 0;
 
     /// <summary>
@@ -208,8 +208,8 @@ public readonly record struct Pagination
     /// Gets a value indicating whether the current page is the last page in the paginated data set.
     /// </summary>
     /// <remarks>Returns false if the total count is unknown.</remarks>
-    public bool IsLastPage => TotalCount.HasValue 
-        && PageSize > 0 
+    public bool IsLastPage => TotalCount.HasValue
+        && PageSize > 0
         && CurrentPage * PageSize >= TotalCount.Value;
 
     /// <summary>
@@ -221,8 +221,8 @@ public readonly record struct Pagination
     /// Gets a value indicating whether there is a next page available.
     /// </summary>
     /// <remarks>Returns false if the total count is unknown.</remarks>
-    public bool HasNextPage => TotalCount.HasValue 
-        && PageSize > 0 
+    public bool HasNextPage => TotalCount.HasValue
+        && PageSize > 0
         && CurrentPage * PageSize < TotalCount.Value;
 
     /// <summary>
@@ -246,6 +246,7 @@ public readonly record struct Pagination
 /// <remarks>This context enables high-performance JSON serialization for the Pagination type by
 /// leveraging source generation. Use this context with System.Text.Json APIs to improve serialization speed and
 /// reduce runtime reflection overhead.</remarks>
+[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(Pagination))]
 public partial class PaginationSourceGenerationContext : JsonSerializerContext
 {

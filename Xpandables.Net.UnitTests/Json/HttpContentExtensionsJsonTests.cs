@@ -162,7 +162,7 @@ public class HttpContentExtensionsJsonTests
         var json = """
         {
             "pagination": { "PageSize": 7, "CurrentPage": 3, "TotalCount": 9, "ContinuationToken": null },
-            "Items": [ {"Id": 1, "Name": "n1", "IsActive": true} ]
+            "items": [ {"Id": 1, "Name": "n1", "IsActive": true} ]
         }
         """;
         using var content = new StringContent(json, Encoding.UTF8, "application/json");

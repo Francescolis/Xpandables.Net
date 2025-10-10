@@ -184,7 +184,7 @@ public static class HttpContentExtensions
             async ValueTask<Pagination> StreamingPaginationFactory(CancellationToken ct)
             {
                 var stream = await content.ReadAsStreamAsync(ct).ConfigureAwait(false);
-                var reader = new Utf8JsonStreamReader(stream, jsonTypeInfo.Options, bufferSize, leaveOpen: false);
+                var reader = new Utf8JsonStreamReader(stream, jsonTypeInfo.Options, bufferSize, leaveOpen: true);
                 
                 try
                 {
