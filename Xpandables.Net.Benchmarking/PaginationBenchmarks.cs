@@ -67,9 +67,9 @@ public class PaginationBenchmarks
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(pageSize: 0, currentPage: 0, totalCount: null))
         );
         var enumerator = paged.GetAsyncEnumerator() as IAsyncPagedEnumerator<int>;
-        enumerator!.WithStrategy(PaginationStrategy.PerItem);
+        enumerator!.WithPerItemStrategy();
         long sum = 0;
-        while (await enumerator.MoveNextAsync())
+        while (await enumerator!.MoveNextAsync())
             sum += enumerator.Current;
         await enumerator.DisposeAsync();
         GC.KeepAlive(sum);

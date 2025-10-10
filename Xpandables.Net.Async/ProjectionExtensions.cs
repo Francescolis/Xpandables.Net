@@ -23,7 +23,7 @@ namespace Xpandables.Net.Async;
 /// Provides projection extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class AsyncPagedEnumerableProjectionExtensions
+public static class ProjectionExtensions
 {
     /// <summary>
     /// Projection operations over an <see cref="IAsyncPagedEnumerable{TSource}"/>.
@@ -43,7 +43,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selector);
-            
+
             return new AsyncPagedEnumerable<TResult>(
                 source.Select(selector),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
@@ -58,7 +58,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selectorAsync);
-            
+
             async IAsyncEnumerable<TResult> ProjectAsync([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -66,7 +66,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
                     yield return await selectorAsync(item).ConfigureAwait(false);
                 }
             }
-            
+
             return new AsyncPagedEnumerable<TResult>(
                 ProjectAsync(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
@@ -81,7 +81,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selectorAsync);
-            
+
             async IAsyncEnumerable<TResult> ProjectAsync([EnumeratorCancellation] CancellationToken ct = default)
             {
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -89,7 +89,7 @@ public static class AsyncPagedEnumerableProjectionExtensions
                     yield return await selectorAsync(item, ct).ConfigureAwait(false);
                 }
             }
-            
+
             return new AsyncPagedEnumerable<TResult>(
                 ProjectAsync(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));

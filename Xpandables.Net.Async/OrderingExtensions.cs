@@ -25,7 +25,7 @@ namespace Xpandables.Net.Async;
 /// Provides ordering extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class AsyncPagedEnumerableOrderingExtensions
+public static class OrderingExtensions
 {
     /// <summary>
     /// Ordering operations over an <see cref="IAsyncPagedEnumerable{TSource}"/>.

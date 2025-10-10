@@ -17,6 +17,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xpandables.Net.Async\Xpandables.Net.Async.csproj" />
-    <ProjectReference Include="..\Xpandables.net.Async.Json\Xpandables.Net.Async.Json.csproj" />
   </ItemGroup>
 </Project>

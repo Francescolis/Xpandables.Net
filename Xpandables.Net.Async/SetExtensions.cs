@@ -25,7 +25,7 @@ namespace Xpandables.Net.Async;
 /// Provides set operation and joining extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class AsyncPagedEnumerableSetExtensions
+public static class SetExtensions
 {
     /// <summary>
     /// Set operation and joining operations over an <see cref="IAsyncPagedEnumerable{TSource}"/>.

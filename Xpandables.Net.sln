@@ -18,8 +18,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async.Abstra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async.AspNetCore", "Xpandables.Net.Async.AspNetCore\Xpandables.Net.Async.AspNetCore.csproj", "{2B2516E8-B9D3-37A1-6355-F46977D953C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async.Json", "Xpandables.net.Async.Json\Xpandables.Net.Async.Json.csproj", "{7F67628D-85A8-E11A-436D-FB365BEC1D09}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Benchmarking", "Xpandables.Net.Benchmarking\Xpandables.Net.Benchmarking.csproj", "{A690B330-3149-7938-4676-0A9B6F67CB6A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Events.Abstractions", "Xpandables.Net.Events.Abstractions\Xpandables.Net.Events.Abstractions.csproj", "{39A62FE2-8643-66AC-BF7C-E8637EC77B6C}"
@@ -76,10 +74,6 @@ Global
 		{2B2516E8-B9D3-37A1-6355-F46977D953C7}.Debug|x64.Build.0 = Debug|x64
 		{2B2516E8-B9D3-37A1-6355-F46977D953C7}.Release|x64.ActiveCfg = Release|x64
 		{2B2516E8-B9D3-37A1-6355-F46977D953C7}.Release|x64.Build.0 = Release|x64
-		{7F67628D-85A8-E11A-436D-FB365BEC1D09}.Debug|x64.ActiveCfg = Debug|x64
-		{7F67628D-85A8-E11A-436D-FB365BEC1D09}.Debug|x64.Build.0 = Debug|x64
-		{7F67628D-85A8-E11A-436D-FB365BEC1D09}.Release|x64.ActiveCfg = Release|x64
-		{7F67628D-85A8-E11A-436D-FB365BEC1D09}.Release|x64.Build.0 = Release|x64
 		{A690B330-3149-7938-4676-0A9B6F67CB6A}.Debug|x64.ActiveCfg = Debug|x64
 		{A690B330-3149-7938-4676-0A9B6F67CB6A}.Debug|x64.Build.0 = Debug|x64
 		{A690B330-3149-7938-4676-0A9B6F67CB6A}.Release|x64.ActiveCfg = Release|x64

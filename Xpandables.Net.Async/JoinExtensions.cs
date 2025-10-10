@@ -26,7 +26,7 @@ namespace Xpandables.Net.Async;
 /// Provides join extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class AsyncPagedEnumerableJoinExtensions
+public static class JoinExtensions
 {
     /// <summary>
     /// Join operations over an <see cref="IAsyncPagedEnumerable{TSource}"/>.

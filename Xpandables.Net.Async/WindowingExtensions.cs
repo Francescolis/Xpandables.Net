@@ -26,7 +26,7 @@ namespace Xpandables.Net.Async;
 /// Provides windowing and analytical extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class AsyncPagedEnumerableWindowingExtensions
+public static class WindowingExtensions
 {
     /// <summary>
     /// Windowing and analytical operations over an <see cref="IAsyncPagedEnumerable{TSource}"/>.

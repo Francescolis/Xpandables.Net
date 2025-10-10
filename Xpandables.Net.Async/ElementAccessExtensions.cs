@@ -24,7 +24,7 @@ namespace Xpandables.Net.Async;
 /// Provides element access extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class AsyncPagedEnumerableElementAccessExtensions
+public static class ElementAccessExtensions
 {
     /// <summary>
     /// Element access operations over an <see cref="IAsyncPagedEnumerable{TSource}"/>.
