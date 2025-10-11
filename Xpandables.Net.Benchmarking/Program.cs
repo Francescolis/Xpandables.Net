@@ -8,9 +8,9 @@ public static class Program
     {
         BenchmarkRunner.Run(
         [
-            //typeof(PaginationBenchmarks),
-            //typeof(MapperBenchmarks),
-            //typeof(StrategyOverheadBenchmarks),
+            typeof(PaginationBenchmarks),
+            typeof(MapperBenchmarks),
+            typeof(StrategyOverheadBenchmarks),
             typeof(JsonStreamingBenchmarks)
         ]);
     }
