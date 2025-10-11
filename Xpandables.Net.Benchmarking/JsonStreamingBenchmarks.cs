@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -71,9 +72,9 @@ public partial class JsonStreamingBenchmarks
     [Benchmark(Baseline = true)]
     public async Task DeserializeAsyncEnumerable_ArrayRoot()
     {
-        var stream = await _arrayRootContent.ReadAsStreamAsync();
+        var stream = _arrayRootContent.ReadFromJsonAsAsyncEnumerable<PayloadItem>(_options);
         long n = 0;
-        await foreach (var _ in JsonSerializer.DeserializeAsyncEnumerable<PayloadItem>(stream, _options))
+        await foreach (var _ in stream)
             n++;
         GC.KeepAlive(n);
     }
@@ -83,7 +84,8 @@ public partial class JsonStreamingBenchmarks
     {
         var paged = _arrayRootContent.ReadFromJsonAsAsyncPagedEnumerable<PayloadItem>(
             _options);
-        var ctx = await paged.GetPaginationAsync();
+        //var ctx = await paged.GetPaginationAsync();
+        var ctx = paged.Pagination;
         long n = 0;
         await foreach (var _ in paged)
             n++;

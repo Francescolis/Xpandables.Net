@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -56,7 +57,7 @@ public static class HttpContentExtensions
         }
 
         /// <summary>
-        /// Reads the HTTP content as a paged asynchronous sequence of JSON values of type T.
+        /// Reads the HTTP content as a paged asynchronous sequence of JSON values of type T using streaming deserialization.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -76,7 +77,7 @@ public static class HttpContentExtensions
         /// </item>
         /// <item>
         /// <description>
-        /// Structured response without pagination metadata (TotalCount will be set to items array length):
+        /// Structured response without pagination metadata (TotalCount will be computed during enumeration):
         /// <code>
         /// {
         ///   "items": [ { ... }, { ... } ]
@@ -86,7 +87,7 @@ public static class HttpContentExtensions
         /// </item>
         /// <item>
         /// <description>
-        /// Top-level array (TotalCount will be set to array length):
+        /// Top-level array (TotalCount will be computed during enumeration):
         /// <code>
         /// [ { ... }, { ... } ]
         /// </code>
@@ -94,23 +95,22 @@ public static class HttpContentExtensions
         /// </item>
         /// </list>
         /// <para>
-        /// The method parses the entire response into a <see cref="JsonDocument"/> for efficient random access
-        /// to both pagination metadata and items. The pagination metadata is extracted eagerly and cached,
-        /// while items are deserialized on-demand during enumeration to minimize memory pressure.
+        /// This method uses streaming deserialization via <see langword="JsonSerializer.DeserializeAsyncEnumerable{T}"/>
+        /// to minimize memory allocation. Items are deserialized on-demand as they are enumerated. Pagination metadata
+        /// is extracted from the JSON structure and cached for efficient access.
         /// </para>
         /// <para>
         /// Performance characteristics:
-        /// - Single HTTP read operation
-        /// - Pagination metadata immediately available via <see cref="IAsyncPagedEnumerable{T}.Pagination"/>
-        /// - Items deserialized lazily during enumeration
-        /// - JSON document lifecycle managed automatically
+        /// - Streaming deserialization with minimal memory overhead
+        /// - Items deserialized on-demand during enumeration
+        /// - Pagination metadata extracted eagerly and cached
+        /// - Comparable performance to System.Net.Http.Json.HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable
         /// </para>
         /// </remarks>
         /// <typeparam name="T">The type of elements to deserialize from the JSON content.</typeparam>
         /// <param name="jsonTypeInfo">Metadata used to control the deserialization of JSON values to type T. Cannot be null.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is None.</param>
-        /// <returns>An asynchronous paged enumerable that yields deserialized values of type T from the JSON content. The
-        /// sequence will be empty if the content is empty or does not contain any matching items.</returns>
+        /// <returns>An asynchronous paged enumerable containing the deserialized objects of type T.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsonTypeInfo"/> is null.</exception>
         /// <exception cref="JsonException">Thrown when the JSON content is malformed or cannot be parsed.</exception>
         public IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
@@ -120,263 +120,210 @@ public static class HttpContentExtensions
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return new HttpContentAsyncPagedEnumerable<T>(content, jsonTypeInfo, cancellationToken);
+            // Create a lazy task that buffers the content once
+            var bufferTask = new Lazy<Task<byte[]>>(async () =>
+            {
+                Stream contentStream = await GetContentStreamAsync(content, cancellationToken).ConfigureAwait(false);
+                using var bufferedStream = new MemoryStream();
+                await contentStream.CopyToAsync(bufferedStream, cancellationToken).ConfigureAwait(false);
+                await contentStream.DisposeAsync().ConfigureAwait(false);
+                return bufferedStream.ToArray();
+            });
+
+            // Create the async enumerable source for items
+            IAsyncEnumerable<T> itemsSource = CreateItemsEnumerableAsync(bufferTask, jsonTypeInfo, cancellationToken);
+
+            // Create the pagination factory
+            Func<CancellationToken, ValueTask<Pagination>> paginationFactory = ct =>
+                ExtractPaginationAsync(bufferTask, ct);
+
+            // Return an AsyncPagedEnumerable that wraps both
+            return new AsyncPagedEnumerable<T>(itemsSource, paginationFactory);
         }
     }
 
-    private sealed class HttpContentAsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposable
+    /// <summary>
+    /// Creates an async enumerable that streams items from the buffered content.
+    /// </summary>
+    private static async IAsyncEnumerable<T> CreateItemsEnumerableAsync<T>(
+        Lazy<Task<byte[]>> bufferTask,
+        JsonTypeInfo<T> jsonTypeInfo,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        private readonly HttpContent _content;
-        private readonly JsonTypeInfo<T> _jsonTypeInfo;
-        private readonly CancellationToken _cancellationToken;
-        private readonly SemaphoreSlim _initLock = new(1, 1);
-        
-        private volatile bool _initialized;
-        private volatile bool _disposed;
-        private JsonDocument? _document;
-        private Pagination _pagination = Pagination.Empty;
-        private JsonElement _itemsElement;
-        private ResponseStructure _structure = ResponseStructure.Unknown;
+        // Get the buffered content
+        byte[] buffer = await bufferTask.Value.ConfigureAwait(false);
 
-        public HttpContentAsyncPagedEnumerable(
-            HttpContent content,
-            JsonTypeInfo<T> jsonTypeInfo,
-            CancellationToken cancellationToken)
+        // Handle empty buffer
+        if (buffer.Length == 0)
         {
-            _content = content;
-            _jsonTypeInfo = jsonTypeInfo;
-            _cancellationToken = cancellationToken;
+            yield break;
         }
 
-        public Type Type => typeof(T);
+        // Parse structure and extract items stream
+        using var itemsStream = await ExtractItemsStreamAsync(buffer, cancellationToken).ConfigureAwait(false);
 
-        public Pagination Pagination
+        // Don't try to deserialize empty streams
+        if (itemsStream.Length == 0)
         {
-            get
-            {
-                // If not initialized, block and initialize synchronously for immediate access
-                if (!_initialized && !_disposed)
-                {
-                    EnsureInitializedAsync(_cancellationToken).GetAwaiter().GetResult();
-                }
-                return _pagination;
-            }
+            yield break;
         }
 
-        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken ct = default)
+        // Stream deserialize the items
+        await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable(itemsStream, jsonTypeInfo, cancellationToken).ConfigureAwait(false))
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            
-            await EnsureInitializedAsync(ct).ConfigureAwait(false);
-
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, ct);
-            var token = linkedCts.Token;
-
-            if (_document is null)
+            if (item is not null)
             {
-                yield break;
-            }
-
-            switch (_structure)
-            {
-                case ResponseStructure.ObjectWithItems:
-                    foreach (var item in _itemsElement.EnumerateArray())
-                    {
-                        token.ThrowIfCancellationRequested();
-                        T? value = DeserializeElement(item);
-                        if (value is not null)
-                        {
-                            yield return value;
-                        }
-                    }
-                    break;
-
-                case ResponseStructure.Array:
-                    foreach (var item in _document.RootElement.EnumerateArray())
-                    {
-                        token.ThrowIfCancellationRequested();
-                        T? value = DeserializeElement(item);
-                        if (value is not null)
-                        {
-                            yield return value;
-                        }
-                    }
-                    break;
-
-                case ResponseStructure.Empty:
-                case ResponseStructure.ObjectWithoutItems:
-                    // No items to enumerate
-                    yield break;
+                yield return item;
             }
         }
+    }
 
-        public async Task<Pagination> GetPaginationAsync(CancellationToken ct = default)
+    /// <summary>
+    /// Extracts the items stream from the buffered content.
+    /// </summary>
+    private static async ValueTask<Stream> ExtractItemsStreamAsync(
+        byte[] buffer,
+        CancellationToken cancellationToken)
+    {
+        JsonDocument? document;
+        try
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            
-            await EnsureInitializedAsync(ct).ConfigureAwait(false);
-            return _pagination;
+            document = await JsonDocument.ParseAsync(new MemoryStream(buffer), default, cancellationToken).ConfigureAwait(false);
+        }
+        catch (JsonException)
+        {
+            return new MemoryStream();
         }
 
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            _document?.Dispose();
-            _initLock.Dispose();
-        }
-
-        private async Task EnsureInitializedAsync(CancellationToken ct)
-        {
-            if (_initialized)
-            {
-                return;
-            }
-
-            await _initLock.WaitAsync(ct).ConfigureAwait(false);
-            try
-            {
-                if (_initialized)
-                {
-                    return;
-                }
-
-                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, ct);
-                var token = linkedCts.Token;
-
-                Stream stream = await _content.ReadAsStreamAsync(token).ConfigureAwait(false);
-                
-                try
-                {
-                    // Check if stream is empty
-                    if (stream.Length == 0 || (stream.CanSeek && stream.Position >= stream.Length))
-                    {
-                        _structure = ResponseStructure.Empty;
-                        _pagination = Pagination.FromTotalCount(0);
-                        _initialized = true;
-                        return;
-                    }
-
-                    _document = await JsonDocument.ParseAsync(stream, default, token).ConfigureAwait(false);
-                    ParseDocument(_document);
-                }
-                catch (JsonException)
-                {
-                    _document?.Dispose();
-                    _document = null;
-                    _structure = ResponseStructure.Empty;
-                    _pagination = Pagination.FromTotalCount(0);
-                }
-                finally
-                {
-                    await stream.DisposeAsync().ConfigureAwait(false);
-                }
-
-                _initialized = true;
-            }
-            finally
-            {
-                _initLock.Release();
-            }
-        }
-
-        private void ParseDocument(JsonDocument document)
+        using (document)
         {
             var root = document.RootElement;
 
-            if (root.ValueKind == JsonValueKind.Object)
+            if (root.ValueKind == JsonValueKind.Array)
             {
-                // Try to get items array first
-                bool hasItems = root.TryGetProperty("items", out var itemsElement) && 
-                               itemsElement.ValueKind == JsonValueKind.Array;
-
-                if (hasItems)
+                // Top-level array - return the whole buffer
+                return new MemoryStream(buffer, writable: false);
+            }
+            else if (root.ValueKind == JsonValueKind.Object)
+            {
+                // Extract items array if exists
+                if (root.TryGetProperty("items", out var itemsElement) &&
+                    itemsElement.ValueKind == JsonValueKind.Array)
                 {
-                    _structure = ResponseStructure.ObjectWithItems;
-                    _itemsElement = itemsElement;
-                    int itemsCount = itemsElement.GetArrayLength();
-
-                    // Try to extract pagination metadata
-                    if (root.TryGetProperty("pagination", out var paginationElement))
-                    {
-                        _pagination = DeserializePagination(paginationElement);
-                    }
-                    else
-                    {
-                        // No pagination metadata, create pagination with totalCount = items.length
-                        _pagination = Pagination.FromTotalCount(itemsCount);
-                    }
-                }
-                else
-                {
-                    // Object without items array
-                    _structure = ResponseStructure.ObjectWithoutItems;
-                    
-                    // Check if there's pagination metadata
-                    if (root.TryGetProperty("pagination", out var paginationElement))
-                    {
-                        _pagination = DeserializePagination(paginationElement);
-                    }
-                    else
-                    {
-                        _pagination = Pagination.Empty;
-                    }
+                    // Create a new stream with just the items array
+                    var itemsJson = itemsElement.GetRawText();
+                    return new MemoryStream(Encoding.UTF8.GetBytes(itemsJson));
                 }
             }
-            else if (root.ValueKind == JsonValueKind.Array)
-            {
-                _structure = ResponseStructure.Array;
-                int arrayLength = root.GetArrayLength();
-                // For top-level arrays, set totalCount to array length
-                _pagination = Pagination.FromTotalCount(arrayLength);
-            }
-            else
-            {
-                // Single value or other type - treat as empty
-                _structure = ResponseStructure.Empty;
-                _pagination = Pagination.Empty;
-            }
+
+            // No items found
+            return new MemoryStream();
+        }
+    }
+
+    /// <summary>
+    /// Extracts pagination metadata from the buffered content.
+    /// </summary>
+    private static async ValueTask<Pagination> ExtractPaginationAsync(
+        Lazy<Task<byte[]>> bufferTask,
+        CancellationToken cancellationToken)
+    {
+        // Get the buffered content
+        byte[] buffer = await bufferTask.Value.ConfigureAwait(false);
+
+        // Handle empty buffer
+        if (buffer.Length == 0)
+        {
+            return Pagination.FromTotalCount(0);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Pagination DeserializePagination(JsonElement element)
+        JsonDocument? document;
+        try
         {
-            try
+            document = await JsonDocument.ParseAsync(new MemoryStream(buffer), default, cancellationToken).ConfigureAwait(false);
+        }
+        catch (JsonException)
+        {
+            return Pagination.FromTotalCount(0);
+        }
+
+        using (document)
+        {
+            var root = document.RootElement;
+
+            if (root.ValueKind == JsonValueKind.Array)
             {
-                return JsonSerializer.Deserialize(
-                    element.GetRawText(),
-                    PaginationSourceGenerationContext.Default.Pagination);
+                // Top-level array
+                return Pagination.FromTotalCount(root.GetArrayLength());
             }
-            catch (JsonException)
+            else if (root.ValueKind == JsonValueKind.Object)
             {
+                // Try to extract pagination metadata
+                if (root.TryGetProperty("pagination", out var paginationElement))
+                {
+                    try
+                    {
+                        return JsonSerializer.Deserialize(
+                            paginationElement.GetRawText(),
+                            PaginationSourceGenerationContext.Default.Pagination);
+                    }
+                    catch (JsonException)
+                    {
+                        // Fall through to compute from items
+                    }
+                }
+
+                // Try to get items array to compute total count
+                if (root.TryGetProperty("items", out var itemsElement) &&
+                    itemsElement.ValueKind == JsonValueKind.Array)
+                {
+                    return Pagination.FromTotalCount(itemsElement.GetArrayLength());
+                }
+
+                // Object without items
                 return Pagination.Empty;
             }
+
+            return Pagination.FromTotalCount(0);
+        }
+    }
+
+    internal static ValueTask<Stream> GetContentStreamAsync(HttpContent content, CancellationToken cancellationToken)
+    {
+        Task<Stream> task = ReadHttpContentStreamAsync(content, cancellationToken);
+
+        return GetEncoding(content) is Encoding sourceEncoding && sourceEncoding != Encoding.UTF8
+            ? GetTranscodingStreamAsync(task, sourceEncoding)
+            : new(task);
+    }
+
+    private static Task<Stream> ReadHttpContentStreamAsync(HttpContent content, CancellationToken cancellationToken)
+    {
+        return content.ReadAsStreamAsync(cancellationToken);
+    }
+
+    private static async ValueTask<Stream> GetTranscodingStreamAsync(Task<Stream> task, Encoding sourceEncoding)
+    {
+        Stream contentStream = await task.ConfigureAwait(false);
+        return Encoding.CreateTranscodingStream(contentStream, innerStreamEncoding: sourceEncoding, outerStreamEncoding: Encoding.UTF8);
+    }
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
+    private static Encoding? GetEncoding(HttpContent content)
+    {
+        string? charset = content.Headers.ContentType?.CharSet;
+        if (string.IsNullOrEmpty(charset))
+        {
+            return null;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T? DeserializeElement(JsonElement element)
+        try
         {
-            try
-            {
-                return JsonSerializer.Deserialize(element.GetRawText(), _jsonTypeInfo);
-            }
-            catch (JsonException)
-            {
-                return default;
-            }
+            return Encoding.GetEncoding(charset);
         }
-
-        private enum ResponseStructure
+        catch
         {
-            Unknown,
-            ObjectWithItems,
-            ObjectWithoutItems,
-            Array,
-            Empty
+            return null;
         }
     }
 }
