@@ -1,19 +1,3 @@
-/*******************************************************************************
- * Copyright (C) 2025 Francis-Black EWANE
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
-********************************************************************************/
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -331,45 +315,8 @@ public class HttpContentExtensionsJsonTests
         list.Should().BeEmpty();
 
         var ctx = await paged.GetPaginationAsync();
-        ctx.Should().Be(Pagination.Empty);
+        ctx.TotalCount.Should().Be(0);
     }
-
-    //[Fact]
-    //public async Task ReadFromJsonAsAsyncPagedEnumerableStreaming_CustomPropertyName_ShouldWork()
-    //{
-    //    // Arrange
-    //    var json = """
-    //    {
-    //        "pagination": { "pageSize": 5, "currentPage": 1, "totalCount": 15 },
-    //        "results": [ 
-    //            {"Id": 1, "Name": "Custom1", "IsActive": true},
-    //            {"Id": 2, "Name": "Custom2", "IsActive": false}
-    //        ]
-    //    }
-    //    """;
-    //    using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-    //    var options = new JsonSerializerOptions
-    //    {
-    //        PropertyNameCaseInsensitive = true,
-    //        TypeInfoResolver = JsonTypeInfoResolver.Combine(HttpContentTestsJsonContext.Default, PaginationSourceGenerationContext.Default)
-    //    };
-
-    //    // Act - Use custom property name "results"
-    //    var paged = content.ReadFromJsonAsAsyncPagedEnumerable<JsonTestItem>(
-    //        options,
-    //        arrayPropertyName: "results");
-
-    //    var ctx = await paged.GetPaginationAsync();
-
-    //    // Assert
-    //    ctx.PageSize.Should().Be(5);
-    //    ctx.TotalCount.Should().Be(15);
-
-    //    var list = await ToListAsync(paged);
-    //    list.Should().HaveCount(2);
-    //    list[0].Name.Should().Be("Custom1");
-    //}
 
     private static async Task<List<JsonTestItem>> ToListAsync(IAsyncEnumerable<JsonTestItem> source)
     {

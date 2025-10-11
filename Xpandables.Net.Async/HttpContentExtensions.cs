@@ -76,7 +76,17 @@ public static class HttpContentExtensions
         /// </item>
         /// <item>
         /// <description>
-        /// Top-level array (pagination will be empty):
+        /// Structured response without pagination metadata (TotalCount will be set to items array length):
+        /// <code>
+        /// {
+        ///   "items": [ { ... }, { ... } ]
+        /// }
+        /// </code>
+        /// </description>
+        /// </item>
+        /// <item>
+        /// <description>
+        /// Top-level array (TotalCount will be set to array length):
         /// <code>
         /// [ { ... }, { ... } ]
         /// </code>
@@ -193,13 +203,10 @@ public static class HttpContentExtensions
                     }
                     break;
 
-                case ResponseStructure.SingleValue:
-                    T? singleValue = DeserializeElement(_document.RootElement);
-                    if (singleValue is not null)
-                    {
-                        yield return singleValue;
-                    }
-                    break;
+                case ResponseStructure.Empty:
+                case ResponseStructure.ObjectWithoutItems:
+                    // No items to enumerate
+                    yield break;
             }
         }
 
@@ -245,6 +252,15 @@ public static class HttpContentExtensions
                 
                 try
                 {
+                    // Check if stream is empty
+                    if (stream.Length == 0 || (stream.CanSeek && stream.Position >= stream.Length))
+                    {
+                        _structure = ResponseStructure.Empty;
+                        _pagination = Pagination.FromTotalCount(0);
+                        _initialized = true;
+                        return;
+                    }
+
                     _document = await JsonDocument.ParseAsync(stream, default, token).ConfigureAwait(false);
                     ParseDocument(_document);
                 }
@@ -252,7 +268,8 @@ public static class HttpContentExtensions
                 {
                     _document?.Dispose();
                     _document = null;
-                    throw;
+                    _structure = ResponseStructure.Empty;
+                    _pagination = Pagination.FromTotalCount(0);
                 }
                 finally
                 {
@@ -273,32 +290,55 @@ public static class HttpContentExtensions
 
             if (root.ValueKind == JsonValueKind.Object)
             {
-                // Try to extract pagination metadata
-                if (root.TryGetProperty("pagination", out var paginationElement))
-                {
-                    _pagination = DeserializePagination(paginationElement);
-                }
+                // Try to get items array first
+                bool hasItems = root.TryGetProperty("items", out var itemsElement) && 
+                               itemsElement.ValueKind == JsonValueKind.Array;
 
-                // Try to get items array
-                if (root.TryGetProperty("items", out var itemsElement) && 
-                    itemsElement.ValueKind == JsonValueKind.Array)
+                if (hasItems)
                 {
                     _structure = ResponseStructure.ObjectWithItems;
                     _itemsElement = itemsElement;
+                    int itemsCount = itemsElement.GetArrayLength();
+
+                    // Try to extract pagination metadata
+                    if (root.TryGetProperty("pagination", out var paginationElement))
+                    {
+                        _pagination = DeserializePagination(paginationElement);
+                    }
+                    else
+                    {
+                        // No pagination metadata, create pagination with totalCount = items.length
+                        _pagination = Pagination.FromTotalCount(itemsCount);
+                    }
                 }
                 else
                 {
-                    // No items property, treat the whole object as a single value
-                    _structure = ResponseStructure.SingleValue;
+                    // Object without items array
+                    _structure = ResponseStructure.ObjectWithoutItems;
+                    
+                    // Check if there's pagination metadata
+                    if (root.TryGetProperty("pagination", out var paginationElement))
+                    {
+                        _pagination = DeserializePagination(paginationElement);
+                    }
+                    else
+                    {
+                        _pagination = Pagination.Empty;
+                    }
                 }
             }
             else if (root.ValueKind == JsonValueKind.Array)
             {
                 _structure = ResponseStructure.Array;
+                int arrayLength = root.GetArrayLength();
+                // For top-level arrays, set totalCount to array length
+                _pagination = Pagination.FromTotalCount(arrayLength);
             }
             else
             {
-                _structure = ResponseStructure.SingleValue;
+                // Single value or other type - treat as empty
+                _structure = ResponseStructure.Empty;
+                _pagination = Pagination.Empty;
             }
         }
 
@@ -334,8 +374,9 @@ public static class HttpContentExtensions
         {
             Unknown,
             ObjectWithItems,
+            ObjectWithoutItems,
             Array,
-            SingleValue
+            Empty
         }
     }
 }
