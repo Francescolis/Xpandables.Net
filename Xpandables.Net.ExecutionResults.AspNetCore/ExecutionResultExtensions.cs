@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using System.Net;
+
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -16,6 +18,76 @@ namespace Xpandables.Net.ExecutionResults;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class ExecutionResultExtensions
 {
+    /// <summary>
+    /// Converts the specified model state to an execution result containing validation errors and an HTTP status code.
+    /// </summary>
+    /// <remarks>Only model state entries with one or more errors are included in the execution result. This
+    /// method is typically used to translate model validation errors into a standardized error response.</remarks>
+    /// <param name="modelState">The model state dictionary containing validation errors to include in the execution result. Cannot be null.</param>
+    /// <param name="statusCode">The HTTP status code to associate with the execution result. The default is BadRequest (400).</param>
+    /// <returns>An execution result representing a failure, populated with validation errors from the model state and the
+    /// specified HTTP status code.</returns>
+    public static ExecutionResult ToExecutionResult(
+        this ModelStateDictionary modelState,
+        HttpStatusCode statusCode = HttpStatusCode.BadRequest)
+    {
+        ArgumentNullException.ThrowIfNull(modelState);
+
+        return ExecutionResult
+            .Failure(statusCode)
+            .WithErrors(ElementCollection.With(
+                [.. modelState
+                    .Keys
+                    .Where(key => modelState[key]!.Errors.Count > 0)
+                    .Select(key =>
+                        new ElementEntry(
+                            key,
+                            [.. modelState[key]!.Errors.Select(error => error.ErrorMessage)]))]))
+            .Build();
+    }
+
+    /// <summary>
+    /// Converts a BadHttpRequestException to an ExecutionResult representing a standardized HTTP bad request error
+    /// response.
+    /// </summary>
+    /// <remarks>In development environments, the error detail will include the full exception message. In
+    /// other environments, a generic error detail is provided. The resulting ExecutionResult includes the parameter
+    /// name and error message extracted from the exception, if available.</remarks>
+    /// <param name="exception">The BadHttpRequestException instance to convert. Cannot be null.</param>
+    /// <returns>An ExecutionResult containing details about the bad HTTP request, including status code, error title, and error
+    /// details.</returns>
+    public static ExecutionResult ToExecutionResult(this BadHttpRequestException exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        bool isDevelopment = (Environment.GetEnvironmentVariable(
+            "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
+            Environments.Development;
+
+        int startParameterNameIndex = exception.Message
+            .IndexOf('"', StringComparison.InvariantCulture) + 1;
+
+        int endParameterNameIndex = exception.Message
+            .IndexOf('"', startParameterNameIndex);
+
+        string parameterName = exception
+            .Message[startParameterNameIndex..endParameterNameIndex];
+
+        parameterName = parameterName.Trim();
+
+        string errorMessage = exception.Message
+            .Replace("\\", string.Empty, StringComparison.InvariantCulture)
+            .Replace("\"", string.Empty, StringComparison.InvariantCulture);
+
+        return ExecutionResult
+            .BadRequest()
+            .WithTitle(((HttpStatusCode)exception.StatusCode).Title)
+            .WithDetail(isDevelopment ? exception.Message : ((HttpStatusCode)exception.StatusCode).Detail)
+            .WithStatusCode((HttpStatusCode)exception.StatusCode)
+            .WithError(parameterName, errorMessage)
+            .Build();
+    }
+
     /// <summary>
     /// Extensions for <see cref="ExecutionResult"/>.
     /// </summary>   
@@ -43,6 +115,31 @@ public static class ExecutionResultExtensions
             }
 
             return modelStateDictionary;
+        }
+
+        /// <summary>
+        /// Creates an <see cref="IActionResult"/> that represents the current execution result, including its status
+        /// code and content.
+        /// </summary>
+        /// <returns>An <see cref="ObjectResult"/> containing the execution result and its associated status code.</returns>
+        public IActionResult ToActionResult()
+        {
+            ArgumentNullException.ThrowIfNull(executionResult);
+            return new ObjectResult(executionResult)
+            {
+                StatusCode = (int)executionResult.StatusCode,
+            };
+        }
+
+        /// <summary>
+        /// Converts the current execution result to a minimal API result suitable for use with ASP.NET Core endpoints.
+        /// </summary>
+        /// <returns>An <see cref="IResult"/> instance that represents the execution result in a format compatible with minimal
+        /// APIs.</returns>
+        public IResult ToMinimalResult()
+        {
+            ArgumentNullException.ThrowIfNull(executionResult);
+            return new ExecutionResultMinimalResult(executionResult);
         }
 
         /// <summary>

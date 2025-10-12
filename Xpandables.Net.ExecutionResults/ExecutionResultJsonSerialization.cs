@@ -238,6 +238,8 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
     }
 
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public override void Write(Utf8JsonWriter writer, ExecutionResult value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(writer);
@@ -352,10 +354,11 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
                 }
                 else
                 {
-                    JsonTypeInfo jsonTypeInfo = options.TypeInfoResolver?.GetTypeInfo(value.GetType(), options)
-                        ?? throw new JsonException($"No JSON type info found for type {value.GetType().Name}.");
-
-                    JsonSerializer.Serialize(writer, value.Value, jsonTypeInfo);
+                    JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(value.GetType());
+                    if (jsonTypeInfo is null)
+                        JsonSerializer.Serialize(writer, value.Value, value.Value.GetType(), options);
+                    else
+                        JsonSerializer.Serialize(writer, value.Value, jsonTypeInfo);
                 }
             }
 
@@ -397,6 +400,8 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
     public bool UseAspNetCoreCompatibility { get; } = useAspNetCoreCompatibility;
 
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public override ExecutionResult<TResult>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
@@ -509,10 +514,12 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
                         }
                         else
                         {
-                            JsonTypeInfo jsonTypeInfo = options.TypeInfoResolver?.GetTypeInfo(typeof(TResult), options)
-                                ?? throw new JsonException($"No JSON type info found for type {typeof(TResult).Name}.");
-
-                            valueT = (TResult?)JsonSerializer.Deserialize(ref reader, jsonTypeInfo);
+                            JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(typeof(TResult));
+                            valueT = jsonTypeInfo switch
+                            {
+                                not null => (TResult?)JsonSerializer.Deserialize(ref reader, jsonTypeInfo),
+                                _ => JsonSerializer.Deserialize<TResult?>(ref reader, options)
+                            };
                         }
                     }
                     break;
@@ -556,6 +563,8 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
     }
 
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public override void Write(Utf8JsonWriter writer, ExecutionResult<TResult> value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(writer);
@@ -606,10 +615,11 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
                 }
                 else
                 {
-                    JsonTypeInfo jsonTypeInfo = options.TypeInfoResolver?.GetTypeInfo(typeof(TResult), options)
-                        ?? throw new JsonException($"No JSON type info found for type {typeof(TResult).Name}.");
-
-                    JsonSerializer.Serialize(writer, value.Value, jsonTypeInfo);
+                    JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(typeof(TResult));
+                    if (jsonTypeInfo is null)
+                        JsonSerializer.Serialize(writer, value.Value, options);
+                    else
+                        JsonSerializer.Serialize(writer, value.Value, jsonTypeInfo);
                 }
             }
         }
