@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
@@ -29,35 +28,45 @@ using Xpandables.Net.Async;
 namespace Xpandables.Net.Async;
 
 /// <summary>
-/// Provides functionality to format and serialize objects implementing <see cref="IAsyncPagedEnumerable{T}"/>  to JSON
+/// Provides functionality to format and serialize objects implementing <see cref="IAsyncPagedEnumerable{T}"/> to JSON
 /// in an asynchronous manner. This formatter is specifically designed for paginated data streams.
 /// </summary>
-/// <remarks>This formatter supports the "application/json", "text/json;" and "application/*+json" media types, 
-/// and encodings such as UTF-8 and Unicode. It is intended for use in scenarios where paginated data  needs to be
-/// serialized and streamed efficiently to the response body.  The formatter writes the JSON output in the following
-/// structure: <code> {   "pageContext": { ... },   "data": [ ... ] } </code> The "pageContext" property contains metadata
-/// about the paginated data, while the "data" property  contains the serialized items in the paginated
-/// collection.</remarks>
+/// <remarks>
+/// This formatter supports the "application/json", "text/json" and "application/*+json" media types, 
+/// and encodings such as UTF-8 and Unicode. It is intended for use in scenarios where paginated data needs to be
+/// serialized and streamed efficiently to the response body. The formatter writes the JSON output in the following
+/// structure:
+/// <code>
+/// {
+///   "pagination": { "pageSize": 10, "currentPage": 1, "totalCount": 100, ... },
+///   "items": [ { ... }, { ... } ]
+/// }
+/// </code>
+/// The "pagination" property contains metadata about the paginated data, while the "items" property
+/// contains the serialized items in the paginated collection.
+/// <para>
+/// Note: This implementation uses minimal reflection to handle generic type enumeration. 
+/// For fully AOT-compatible scenarios, consider using specific JsonTypeInfo registration.
+/// </para>
+/// </remarks>
 public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatter
 {
-    static readonly MethodInfo WriteCoreAsyncOpenGeneric =
-        typeof(AsyncPagedEnumerableJsonOutputFormatter)
-            .GetMethod(nameof(WriteCoreAsync), BindingFlags.NonPublic | BindingFlags.Static)!
-            .GetGenericMethodDefinition();
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AsyncPagedEnumerableJsonOutputFormatter"/> class.
     /// </summary>
-    /// <remarks>This formatter supports the "application/json" and "application/json; charset=utf-8" media
-    /// types, and the UTF-8 and Unicode encodings. It is designed to handle JSON output for asynchronous paged
-    /// enumerable data.</remarks>
+    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization.</param>
+    /// <remarks>
+    /// This formatter supports the "application/json", "text/json" and "application/*+json" media types,
+    /// and the UTF-8 and Unicode encodings. It is designed to handle JSON output for asynchronous paged
+    /// enumerable data.
+    /// </remarks>
     public AsyncPagedEnumerableJsonOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
     {
         SerializerOptions = jsonSerializerOptions ?? throw new ArgumentNullException(nameof(jsonSerializerOptions));
         jsonSerializerOptions.MakeReadOnly();
 
         SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
-        SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json;"));
+        SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json"));
         SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+json"));
         SupportedEncodings.Add(Encoding.UTF8);
         SupportedEncodings.Add(Encoding.Unicode);
@@ -82,7 +91,7 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
     }
 
     /// <inheritdoc/>
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -90,57 +99,58 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
         ArgumentNullException.ThrowIfNull(context.Object);
 
         var httpContext = context.HttpContext;
-        var ct = httpContext.RequestAborted;
-
-        var instance = context.Object;
-        var itemType = ((IAsyncPagedEnumerable)instance).Type;
-
-        var method = WriteCoreAsyncOpenGeneric.MakeGenericMethod(itemType);
 
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
             {
-                using var writer = new Utf8JsonWriter(httpContext.Response.BodyWriter.AsStream(),
-                    new JsonWriterOptions
-                    {
-                        Indented = SerializerOptions.WriteIndented,
-                        Encoder = SerializerOptions.Encoder
-                    });
-
-                await ((Task)method.Invoke(null, [writer, instance, SerializerOptions, ct])!).ConfigureAwait(false);
+                var responseWriter = httpContext.Response.BodyWriter;
+                await WritePagedResponseAsync(responseWriter.AsStream(), context.Object, httpContext.RequestAborted)
+                    .ConfigureAwait(false);
             }
-            catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
+            catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
+            {
+                // Client disconnected
+            }
         }
         else
         {
-            var transcodingStream = Encoding.CreateTranscodingStream(httpContext.Response.Body, selectedEncoding, Encoding.UTF8, leaveOpen: true);
-
+            // JsonSerializer only emits UTF8 encoded output, but we need to write the response in the encoding specified by selectedEncoding
+            Stream? transcodingStream = null;
             ExceptionDispatchInfo? exceptionDispatchInfo = null;
 
             try
             {
-                using var writer = new Utf8JsonWriter(transcodingStream,
-                    new JsonWriterOptions
-                    {
-                        Indented = SerializerOptions.WriteIndented,
-                        Encoder = SerializerOptions.Encoder
-                    });
+                transcodingStream = Encoding.CreateTranscodingStream(
+                    httpContext.Response.Body,
+                    selectedEncoding,
+                    Encoding.UTF8,
+                    leaveOpen: true);
 
-                await ((Task)method.Invoke(null, [writer, instance, SerializerOptions, ct])!).ConfigureAwait(false);
+                await WritePagedResponseAsync(transcodingStream, context.Object, httpContext.RequestAborted)
+                    .ConfigureAwait(false);
+
+                await transcodingStream.FlushAsync(httpContext.RequestAborted).ConfigureAwait(false);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
+                // TranscodingStream may write to the inner stream as part of its disposal.
+                // We do not want this exception "ex" to be eclipsed by any exception encountered during the write.
+                // We will stash it and explicitly rethrow it during the finally block.
+                exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
             }
             finally
             {
-                try
+                if (transcodingStream is not null)
                 {
-                    await transcodingStream.DisposeAsync().ConfigureAwait(false);
-                }
-                catch when (exceptionDispatchInfo != null)
-                {
+                    try
+                    {
+                        await transcodingStream.DisposeAsync().ConfigureAwait(false);
+                    }
+                    catch when (exceptionDispatchInfo is not null)
+                    {
+                        // Suppress disposal exceptions if we already captured a more important exception
+                    }
                 }
 
                 exceptionDispatchInfo?.Throw();
@@ -148,36 +158,99 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
         }
     }
 
-    internal static async Task WriteCoreAsync<T>(
-        Utf8JsonWriter writer,
+    private async Task WritePagedResponseAsync(
+        Stream stream,
         object instance,
-        JsonSerializerOptions options,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
-        var paged = (IAsyncPagedEnumerable<T>)instance;
-        Delegate @delegate = paged.GetPaginationAsync;
-        var v = @delegate.Method.Invoke(paged, [ct]) as Task<Pagination>;
-        var pagination = await paged.GetPaginationAsync(ct).ConfigureAwait(false);
+        // Cast to non-generic interface to access metadata
+        var pagedEnumerable = (IAsyncPagedEnumerable)instance;
+        Type itemType = pagedEnumerable.Type;
 
-        writer.WriteStartObject();
-
-        writer.WritePropertyName("pagination");
-        JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
-
-        writer.WritePropertyName("items");
-        writer.WriteStartArray();
-
-        JsonTypeInfo jsonTypeInfo = options.GetTypeInfo(typeof(T))
-            ?? throw new InvalidOperationException($"Cannot get the {typeof(T)} type information.");
-        await foreach (var item in paged.WithCancellation(ct).ConfigureAwait(false))
+        // Get JsonTypeInfo for the item type
+        JsonTypeInfo? itemJsonTypeInfo = SerializerOptions.GetTypeInfo(itemType);
+        if (itemJsonTypeInfo is null)
         {
-            JsonSerializer.Serialize(writer, item, jsonTypeInfo);
-            await writer.FlushAsync(ct).ConfigureAwait(false);
+            throw new InvalidOperationException(
+                $"Cannot get JsonTypeInfo for type {itemType.Name}. Ensure the type is registered in the JsonSerializerOptions.");
         }
 
-        writer.WriteEndArray();
-        writer.WriteEndObject();
+        var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+        {
+            Indented = SerializerOptions.WriteIndented,
+            Encoder = SerializerOptions.Encoder
+        });
 
-        await writer.FlushAsync(ct).ConfigureAwait(false);
+        try
+        {
+            writer.WriteStartObject();
+
+            // Write pagination metadata
+            writer.WritePropertyName("pagination"u8);
+            var pagination = await pagedEnumerable
+                .GetPaginationAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            // Serialize pagination using source generation context for optimal performance
+            JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
+
+            // Write items array
+            writer.WritePropertyName("items"u8);
+            writer.WriteStartArray();
+
+            // Stream serialize items using IAsyncEnumerable<T>
+            await SerializeItemsAsync(instance, itemType, writer, itemJsonTypeInfo, cancellationToken)
+                .ConfigureAwait(false);
+
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+
+            await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            await writer.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2060:Call to 'MakeGenericMethod' can not be statically analyzed",
+        Justification = "The Type parameter is guaranteed to be the element type of IAsyncPagedEnumerable<T> which must be registered in JsonSerializerOptions")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling",
+        Justification = "Generic instantiation is required for type-safe enumeration. For full AOT support, ensure all types used in IAsyncPagedEnumerable<T> are registered")]
+    private static async Task SerializeItemsAsync(
+        object instance,
+        Type itemType,
+        Utf8JsonWriter writer,
+        JsonTypeInfo itemJsonTypeInfo,
+        CancellationToken cancellationToken)
+    {
+        // Use the helper method pattern to enable generic enumeration
+        // This approach uses a small amount of reflection but is necessary for type-safe enumeration
+        var helperMethod = typeof(AsyncPagedEnumerableJsonOutputFormatter)
+            .GetMethod(nameof(SerializeItemsInternalAsync), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+            .MakeGenericMethod(itemType);
+
+        var task = (Task)helperMethod.Invoke(null, [instance, writer, itemJsonTypeInfo, cancellationToken])!;
+        await task.ConfigureAwait(false);
+    }
+
+    private static async Task SerializeItemsInternalAsync<T>(
+        object instance,
+        Utf8JsonWriter writer,
+        JsonTypeInfo itemJsonTypeInfo,
+        CancellationToken cancellationToken)
+    {
+        // Cast to the specific generic type for type-safe enumeration
+        var typedEnumerable = (IAsyncEnumerable<T>)instance;
+
+        // Enumerate and serialize each item
+        await foreach (var item in typedEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (item is not null)
+            {
+                JsonSerializer.Serialize(writer, item, itemJsonTypeInfo);
+                await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 }
