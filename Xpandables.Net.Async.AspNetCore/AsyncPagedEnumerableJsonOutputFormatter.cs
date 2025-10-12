@@ -83,8 +83,6 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
 
     /// <inheritdoc/>
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    [SuppressMessage("Trimming", "IL2060:Call to 'System.Reflection.MethodInfo.MakeGenericMethod' can not be statically analyzed. It's not possible to guarantee the availability of requirements of the generic method.", Justification = "<Pending>")]
     public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
         ArgumentNullException.ThrowIfNull(context);

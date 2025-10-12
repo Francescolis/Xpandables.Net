@@ -51,7 +51,7 @@ public static class ElementCollectionExtensions
         /// empty string.</remarks>
         /// <returns>An <see cref="IDictionary{TKey, TValue}"/> containing all keys from the source collection. If the source is
         /// empty, returns an empty dictionary.</returns>
-        public IDictionary<string, object?> ToDictionary()
+        public IDictionary<string, object?> ToDictionaryObject()
         {
             if (!source.Any())
             {

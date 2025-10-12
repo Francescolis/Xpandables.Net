@@ -344,4 +344,22 @@ public static class ExecutionResultExtensions
         public static IExecutionResultFailureBuilder<TResult> ServiceUnavailable<TResult>() =>
             Failure<TResult>(HttpStatusCode.ServiceUnavailable);
     }
+
+    /// <summary>
+    /// Provides extension methods for <see cref="ExecutionResult{TResult}"/> instances.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="execution">The execution result instance to extend.</param>"
+    extension<TResult>(ExecutionResult<TResult> execution)
+    {
+        /// <summary>
+        /// Creates a new ExecutionResultException that represents the current execution result.
+        /// </summary>
+        /// <returns>An ExecutionResultException initialized with the current execution result.</returns>
+        public ExecutionResultException ToExecutionResultException()
+        {
+            ArgumentNullException.ThrowIfNull(execution);
+            return new ExecutionResultException(execution);
+        }
+    }
 }

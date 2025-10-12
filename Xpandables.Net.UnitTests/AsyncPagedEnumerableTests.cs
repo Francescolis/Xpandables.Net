@@ -2,7 +2,6 @@ using FluentAssertions;
 
 using Xpandables.Net.Async;
 using Xpandables.Net.UnitTests.Helpers;
-using System.Linq;
 
 namespace Xpandables.Net.UnitTests;
 
@@ -63,7 +62,7 @@ public class AsyncPagedEnumerableTests
     public async Task AsyncMapper_Projects_Items()
     {
         // Use local async enumerable method for async mapping
-        async IAsyncEnumerable<int> MapAsync(IAsyncEnumerable<int> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        static async IAsyncEnumerable<int> MapAsync(IAsyncEnumerable<int> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
         {
             await foreach (var x in source.WithCancellation(ct))
             {
@@ -92,7 +91,7 @@ public class AsyncPagedEnumerableTests
     {
         // Use Select for sync mapping
         var source = Enumerable.Range(1, 3).Select(x => x + 100).ToAsync();
-        
+
         var enumerable = source.ToAsyncPagedEnumerable(
             paginationFactory: ct => ValueTask.FromResult(Pagination.Create(3, 1, totalCount: 3)));
 

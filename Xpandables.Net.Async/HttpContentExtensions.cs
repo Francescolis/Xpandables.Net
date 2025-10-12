@@ -171,6 +171,7 @@ public static class HttpContentExtensions
         }
 
         [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "Method must return interface type for API compatibility")]
+        [SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
         private static IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
             HttpContent httpContent,
             JsonTypeInfo<T> jsonTypeInfo,
@@ -202,6 +203,7 @@ public static class HttpContentExtensions
         private int _bufferLength;
         private int _state; // 0 = not loaded, 1 = loading, 2 = loaded
 
+        [SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
         public StreamState(HttpContent content, CancellationToken cancellationToken)
         {
             _content = content;

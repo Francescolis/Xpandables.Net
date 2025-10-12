@@ -2,7 +2,6 @@ using FluentAssertions;
 
 using Xpandables.Net.Async;
 using Xpandables.Net.UnitTests.Helpers;
-using System.Linq;
 
 namespace Xpandables.Net.UnitTests;
 
@@ -34,7 +33,7 @@ public class MappingEnumeratorTests
         var initial = Pagination.Create(pageSize: 0, currentPage: 0, totalCount: null);
 
         // For async mapping, create a local async enumerable method
-        async IAsyncEnumerable<int> MapAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        static async IAsyncEnumerable<int> MapAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
         {
             foreach (var x in Enumerable.Range(1, 3))
             {
