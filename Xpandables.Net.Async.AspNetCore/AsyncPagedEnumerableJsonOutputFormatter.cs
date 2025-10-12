@@ -92,6 +92,7 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
 
     /// <inheritdoc/>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
     public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
         ArgumentNullException.ThrowIfNull(context);

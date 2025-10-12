@@ -43,13 +43,21 @@ public static class JsonSerializerExtensions
         /// <param name="jsonTypeInfo">Metadata used to control the JSON serialization of elements of type TValue. Must not be null.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is None.</param>
         /// <returns>A task that represents the asynchronous serialization operation.</returns>
-        public static Task SerializeAsyncPaged<TValue>(
+        public static async Task SerializeAsyncPaged<TValue>(
             PipeWriter utf8Json,
             IAsyncPagedEnumerable<TValue> pagedEnumerable,
             JsonTypeInfo<TValue> jsonTypeInfo,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+            ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+
+            Stream stream = utf8Json.AsStream();
+            await using (stream.ConfigureAwait(false))
+            {
+                await SerializeAsyncPagedCore(stream, pagedEnumerable, jsonTypeInfo, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -64,13 +72,19 @@ public static class JsonSerializerExtensions
         /// <returns>A task that represents the asynchronous serialization operation.</returns>
         [RequiresDynamicCode("Dynamic serialization is required for this operation.")]
         [RequiresUnreferencedCode("Dynamic serialization is required for this operation.")]
-        public static Task SerializeAsyncPaged<TValue>(
+        public static async Task SerializeAsyncPaged<TValue>(
             PipeWriter utf8Json,
             IAsyncPagedEnumerable<TValue> pagedEnumerable,
             JsonSerializerOptions? options = null,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+
+            options ??= JsonSerializerOptions.Default;
+            JsonTypeInfo<TValue> jsonTypeInfo = (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue));
+
+            await SerializeAsyncPaged(utf8Json, pagedEnumerable, jsonTypeInfo, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -82,13 +96,21 @@ public static class JsonSerializerExtensions
         /// <param name="jsonTypeInfo">The metadata that defines how to serialize the elements of the enumerable.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
         /// <returns>A task that represents the asynchronous serialization operation.</returns>
-        public static Task SerializeAsyncPaged(
+        public static async Task SerializeAsyncPaged(
             PipeWriter utf8Json,
             IAsyncPagedEnumerable pagedEnumerable,
             JsonTypeInfo jsonTypeInfo,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+            ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+
+            Stream stream = utf8Json.AsStream();
+            await using (stream.ConfigureAwait(false))
+            {
+                await SerializeAsyncPagedNonGenericCore(stream, pagedEnumerable, jsonTypeInfo, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -100,13 +122,20 @@ public static class JsonSerializerExtensions
         /// <param name="context">The source-generated JSON serialization context that provides metadata for serializing the elements.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>A task that represents the asynchronous serialization operation.</returns>
-        public static Task SerializeAsyncPaged(
+        public static async Task SerializeAsyncPaged(
             PipeWriter utf8Json,
             IAsyncPagedEnumerable pagedEnumerable,
             JsonSerializerContext context,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+            ArgumentNullException.ThrowIfNull(context);
+
+            JsonTypeInfo jsonTypeInfo = context.GetTypeInfo(pagedEnumerable.Type)
+                ?? throw new InvalidOperationException($"Type information for '{pagedEnumerable.Type}' not found in the provided context.");
+
+            await SerializeAsyncPaged(utf8Json, pagedEnumerable, jsonTypeInfo, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -118,13 +147,21 @@ public static class JsonSerializerExtensions
         /// <param name="options">Options to control the behavior of the JSON serialization. If null, default serialization options are used.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation is canceled if the token is triggered.</param>
         /// <returns>A task that represents the asynchronous serialization operation.</returns>
-        public static Task SerializeAsyncPaged(
+        [RequiresDynamicCode("Dynamic serialization is required for this operation.")]
+        [RequiresUnreferencedCode("Dynamic serialization is required for this operation.")]
+        public static async Task SerializeAsyncPaged(
             PipeWriter utf8Json,
             IAsyncPagedEnumerable pagedEnumerable,
             JsonSerializerOptions? options = null,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+
+            options ??= JsonSerializerOptions.Default;
+            JsonTypeInfo jsonTypeInfo = options.GetTypeInfo(pagedEnumerable.Type);
+
+            await SerializeAsyncPaged(utf8Json, pagedEnumerable, jsonTypeInfo, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -143,7 +180,11 @@ public static class JsonSerializerExtensions
             JsonTypeInfo<TValue> jsonTypeInfo,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+            ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+
+            return SerializeAsyncPagedCore(utf8Json, pagedEnumerable, jsonTypeInfo, cancellationToken);
         }
 
         /// <summary>
@@ -167,7 +208,13 @@ public static class JsonSerializerExtensions
             JsonSerializerOptions? options = null,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+
+            options ??= JsonSerializerOptions.Default;
+            JsonTypeInfo<TValue> jsonTypeInfo = (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue));
+
+            return SerializeAsyncPaged(utf8Json, pagedEnumerable, jsonTypeInfo, cancellationToken);
         }
 
         /// <summary>
@@ -186,7 +233,11 @@ public static class JsonSerializerExtensions
             JsonTypeInfo jsonTypeInfo,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+            ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+
+            return SerializeAsyncPagedNonGenericCore(utf8Json, pagedEnumerable, jsonTypeInfo, cancellationToken);
         }
 
         /// <summary>
@@ -206,7 +257,14 @@ public static class JsonSerializerExtensions
             JsonSerializerContext context,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+            ArgumentNullException.ThrowIfNull(context);
+
+            JsonTypeInfo jsonTypeInfo = context.GetTypeInfo(pagedEnumerable.Type)
+                ?? throw new InvalidOperationException($"Type information for '{pagedEnumerable.Type}' not found in the provided context.");
+
+            return SerializeAsyncPaged(utf8Json, pagedEnumerable, jsonTypeInfo, cancellationToken);
         }
 
         /// <summary>
@@ -217,13 +275,156 @@ public static class JsonSerializerExtensions
         /// <param name="options">Optional serialization options to control JSON formatting and behavior. If null, default options are used.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>A task that represents the asynchronous serialization operation.</returns>
+        [RequiresDynamicCode("Dynamic serialization is required for this operation.")]
+        [RequiresUnreferencedCode("Dynamic serialization is required for this operation.")]
         public static Task SerializeAsyncPaged(
             Stream utf8Json,
             IAsyncPagedEnumerable pagedEnumerable,
             JsonSerializerOptions? options = null,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(pagedEnumerable);
+
+            options ??= JsonSerializerOptions.Default;
+            JsonTypeInfo jsonTypeInfo = options.GetTypeInfo(pagedEnumerable.Type);
+
+            return SerializeAsyncPaged(utf8Json, pagedEnumerable, jsonTypeInfo, cancellationToken);
+        }
+
+        private static async Task SerializeAsyncPagedCore<TValue>(
+            Stream utf8Json,
+            IAsyncPagedEnumerable<TValue> pagedEnumerable,
+            JsonTypeInfo<TValue> jsonTypeInfo,
+            CancellationToken cancellationToken)
+        {
+            Utf8JsonWriter writer = new(utf8Json, new JsonWriterOptions
+            {
+                Indented = jsonTypeInfo.Options.WriteIndented,
+                Encoder = jsonTypeInfo.Options.Encoder
+            });
+
+            await using (writer.ConfigureAwait(false))
+            {
+                Pagination pagination = await pagedEnumerable
+                    .GetPaginationAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                writer.WriteStartObject();
+                
+                writer.WritePropertyName("pagination");
+                JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
+
+                writer.WritePropertyName("items");
+                writer.WriteStartArray();
+
+                await foreach (TValue item in pagedEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
+                {
+                    JsonSerializer.Serialize(writer, item, jsonTypeInfo);
+                    await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Non-generic serialization requires runtime type information")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Non-generic serialization requires runtime type information")]
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Reflection is required for non-generic async enumerable serialization")]
+        private static async Task SerializeAsyncPagedNonGenericCore(
+            Stream utf8Json,
+            IAsyncPagedEnumerable pagedEnumerable,
+            JsonTypeInfo jsonTypeInfo,
+            CancellationToken cancellationToken)
+        {
+            Utf8JsonWriter writer = new(utf8Json, new JsonWriterOptions
+            {
+                Indented = jsonTypeInfo.Options.WriteIndented,
+                Encoder = jsonTypeInfo.Options.Encoder
+            });
+
+            await using (writer.ConfigureAwait(false))
+            {
+                Pagination pagination = await pagedEnumerable
+                    .GetPaginationAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                writer.WriteStartObject();
+                
+                writer.WritePropertyName("pagination");
+                JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
+
+                writer.WritePropertyName("items");
+                writer.WriteStartArray();
+
+                // Get the strongly-typed generic interface for enumeration
+                Type enumerableType = pagedEnumerable.GetType();
+                Type? asyncEnumerableInterface = Array.Find(
+                    enumerableType.GetInterfaces(),
+                    static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>));
+
+                if (asyncEnumerableInterface is not null)
+                {
+                    // Get GetAsyncEnumerator method from the interface
+                    System.Reflection.MethodInfo? getEnumeratorMethod = asyncEnumerableInterface.GetMethod("GetAsyncEnumerator");
+                    
+                    if (getEnumeratorMethod is not null)
+                    {
+                        object? enumerator = getEnumeratorMethod.Invoke(pagedEnumerable, [cancellationToken]);
+                        
+                        if (enumerator is not null)
+                        {
+                            Type enumeratorType = enumerator.GetType();
+                            Type? asyncEnumeratorInterface = Array.Find(
+                                enumeratorType.GetInterfaces(),
+                                static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>));
+
+                            if (asyncEnumeratorInterface is not null)
+                            {
+                                System.Reflection.MethodInfo? moveNextMethod = asyncEnumeratorInterface.GetMethod("MoveNextAsync");
+                                System.Reflection.PropertyInfo? currentProperty = asyncEnumeratorInterface.GetProperty("Current");
+
+                                if (moveNextMethod is not null && currentProperty is not null)
+                                {
+                                    try
+                                    {
+                                        while (true)
+                                        {
+                                            object? moveNextResult = moveNextMethod.Invoke(enumerator, null);
+                                            
+                                            if (moveNextResult is ValueTask<bool> valueTask)
+                                            {
+                                                bool hasNext = await valueTask.ConfigureAwait(false);
+                                                if (!hasNext)
+                                                    break;
+
+                                                object? current = currentProperty.GetValue(enumerator);
+                                                JsonSerializer.Serialize(writer, current, jsonTypeInfo);
+                                                await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                                            }
+                                            else
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        if (enumerator is IAsyncDisposable asyncDisposable)
+                                        {
+                                            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
         }
     }
 }
