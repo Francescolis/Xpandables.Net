@@ -32,16 +32,16 @@ namespace Xpandables.Net.Async;
 /// Represents an HTTP result that asynchronously writes a paged JSON response containing both page context metadata and
 /// a sequence of data items to the response stream.
 /// </summary>
-/// <remarks>The response is formatted as a JSON object with a 'pageContext' property describing pagination
-/// metadata and a 'data' array containing the serialized items. The response content type defaults to
+/// <remarks>The response is formatted as a JSON object with a 'pagination' property describing pagination
+/// metadata and an 'items' array containing the serialized items. The response content type defaults to
 /// 'application/json; charset=utf-8' unless overridden by endpoint metadata. The operation observes the request's
 /// cancellation token and may be canceled if the client disconnects.</remarks>
 /// <typeparam name="TResult">The type of the data items included in the paged response.</typeparam>
 public sealed class AsyncPagedEnumerableResult<TResult> : IResult
 {
     private readonly IAsyncPagedEnumerable<TResult> _results;
-    private JsonTypeInfo<TResult>? _jsonTypeInfo;
-    private JsonSerializerOptions? _jsonSerializerOptions;
+    private readonly JsonTypeInfo<TResult>? _jsonTypeInfo;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
     /// <summary>
     /// Initializes a new instance of the AsyncPagedEnumerableResult class with the specified asynchronous paged
@@ -88,56 +88,53 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
     /// <summary>
     /// Asynchronously writes a JSON response containing the page context and data to the HTTP response stream.
     /// </summary>
-    /// <remarks>The response is written in JSON format with a 'pageContext' property and a 'data' array. The
+    /// <remarks>The response is written in JSON format with a 'pagination' property and an 'items' array. The
     /// response content type is set to 'application/json; charset=utf-8' unless overridden. The operation observes the
     /// request's cancellation token and may be canceled if the client disconnects.</remarks>
     /// <param name="httpContext">The HTTP context for the current request. Cannot be null.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "JSON serialization is handled by extension methods with appropriate trimming annotations")]
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JSON serialization is handled by extension methods with appropriate AOT annotations")]
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
         httpContext.Response.ContentType ??= GetContentType(httpContext) ?? "application/json; charset=utf-8";
 
-        if (_jsonTypeInfo is null)
-        {
-            _jsonSerializerOptions ??= GetJsonOptions(httpContext)
-                ?? throw new InvalidOperationException("Either JsonSerializerOptions or JsonTypeInfo must be provided.");
-
-            _jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(typeof(TResult)) as JsonTypeInfo<TResult>
-                ?? throw new InvalidOperationException($"JsonTypeInfo for type '{typeof(TResult)}' could not be obtained from the provided JsonSerializerOptions.");
-        }
-
         CancellationToken cancellationToken = httpContext.RequestAborted;
 
-        using Utf8JsonWriter writer = new(
-            httpContext.Response.BodyWriter.AsStream(),
-            new JsonWriterOptions
-            {
-                Indented = _jsonTypeInfo.Options.WriteIndented,
-                Encoder = _jsonTypeInfo.Options.Encoder
-            });
+        // Use Stream directly to avoid disposal issues with PipeWriter.AsStream()
+        Stream responseStream = httpContext.Response.BodyWriter.AsStream(leaveOpen: true);
 
-        var pageContext = await _results.GetPaginationAsync(cancellationToken).ConfigureAwait(false);
-
-        writer.WriteStartObject();
-        writer.WritePropertyName("pagination");
-        JsonSerializer.Serialize(writer, pageContext, PaginationSourceGenerationContext.Default.Pagination);
-
-        writer.WritePropertyName("items");
-        writer.WriteStartArray();
-
-        await foreach (TResult item in _results.WithCancellation(cancellationToken).ConfigureAwait(false))
+        // Use the appropriate SerializeAsyncPaged overload based on what's available
+        if (_jsonTypeInfo is not null)
         {
-            JsonSerializer.Serialize(writer, item, _jsonTypeInfo);
-
-            await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsyncPaged(
+                responseStream,
+                _results,
+                _jsonTypeInfo,
+                cancellationToken).ConfigureAwait(false);
         }
+        else if (_jsonSerializerOptions is not null)
+        {
+            await JsonSerializer.SerializeAsyncPaged(
+                responseStream,
+                _results,
+                _jsonSerializerOptions,
+                cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            // Fallback: get options from the HTTP context
+            JsonSerializerOptions? options = GetJsonOptions(httpContext)
+                ?? throw new InvalidOperationException("Either JsonSerializerOptions or JsonTypeInfo must be provided.");
 
-        writer.WriteEndArray();
-        writer.WriteEndObject();
-
-        await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsyncPaged(
+                responseStream,
+                _results,
+                options,
+                cancellationToken).ConfigureAwait(false);
+        }
     }
 
     static string? GetContentType(HttpContext context)

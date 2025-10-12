@@ -298,12 +298,15 @@ public static class JsonSerializerExtensions
             JsonTypeInfo<TValue> jsonTypeInfo,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             Utf8JsonWriter writer = new(utf8Json, new JsonWriterOptions
             {
                 Indented = jsonTypeInfo.Options.WriteIndented,
                 Encoder = jsonTypeInfo.Options.Encoder
             });
 
+            cancellationToken.ThrowIfCancellationRequested();
             await using (writer.ConfigureAwait(false))
             {
                 Pagination pagination = await pagedEnumerable
@@ -311,7 +314,7 @@ public static class JsonSerializerExtensions
                     .ConfigureAwait(false);
 
                 writer.WriteStartObject();
-                
+                cancellationToken.ThrowIfCancellationRequested();
                 writer.WritePropertyName("pagination");
                 JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
 
@@ -320,6 +323,7 @@ public static class JsonSerializerExtensions
 
                 await foreach (TValue item in pagedEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     JsonSerializer.Serialize(writer, item, jsonTypeInfo);
                     await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -338,12 +342,14 @@ public static class JsonSerializerExtensions
             JsonTypeInfo jsonTypeInfo,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Utf8JsonWriter writer = new(utf8Json, new JsonWriterOptions
             {
                 Indented = jsonTypeInfo.Options.WriteIndented,
                 Encoder = jsonTypeInfo.Options.Encoder
             });
 
+            cancellationToken.ThrowIfCancellationRequested();
             await using (writer.ConfigureAwait(false))
             {
                 Pagination pagination = await pagedEnumerable
@@ -351,7 +357,7 @@ public static class JsonSerializerExtensions
                     .ConfigureAwait(false);
 
                 writer.WriteStartObject();
-                
+                cancellationToken.ThrowIfCancellationRequested();
                 writer.WritePropertyName("pagination");
                 JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
 
@@ -363,28 +369,28 @@ public static class JsonSerializerExtensions
                 Type? asyncEnumerableInterface = Array.Find(
                     enumerableType.GetInterfaces(),
                     static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>));
-
+                cancellationToken.ThrowIfCancellationRequested();
                 if (asyncEnumerableInterface is not null)
                 {
                     // Get GetAsyncEnumerator method from the interface
                     System.Reflection.MethodInfo? getEnumeratorMethod = asyncEnumerableInterface.GetMethod("GetAsyncEnumerator");
-                    
+
                     if (getEnumeratorMethod is not null)
                     {
                         object? enumerator = getEnumeratorMethod.Invoke(pagedEnumerable, [cancellationToken]);
-                        
+                        cancellationToken.ThrowIfCancellationRequested();
                         if (enumerator is not null)
                         {
                             Type enumeratorType = enumerator.GetType();
                             Type? asyncEnumeratorInterface = Array.Find(
                                 enumeratorType.GetInterfaces(),
                                 static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>));
-
+                            cancellationToken.ThrowIfCancellationRequested();
                             if (asyncEnumeratorInterface is not null)
                             {
                                 System.Reflection.MethodInfo? moveNextMethod = asyncEnumeratorInterface.GetMethod("MoveNextAsync");
                                 System.Reflection.PropertyInfo? currentProperty = asyncEnumeratorInterface.GetProperty("Current");
-
+                                cancellationToken.ThrowIfCancellationRequested();
                                 if (moveNextMethod is not null && currentProperty is not null)
                                 {
                                     try
@@ -392,7 +398,7 @@ public static class JsonSerializerExtensions
                                         while (true)
                                         {
                                             object? moveNextResult = moveNextMethod.Invoke(enumerator, null);
-                                            
+                                            cancellationToken.ThrowIfCancellationRequested();
                                             if (moveNextResult is ValueTask<bool> valueTask)
                                             {
                                                 bool hasNext = await valueTask.ConfigureAwait(false);
