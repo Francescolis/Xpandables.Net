@@ -88,7 +88,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Tasks.Abstractions\Xpandables.Net.Tasks.Abstractions.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj" />
 	  <ProjectReference Include="..\Xpandables.Net.Validators\Xpandables.Net.Validators.csproj" />
 	</ItemGroup>
 

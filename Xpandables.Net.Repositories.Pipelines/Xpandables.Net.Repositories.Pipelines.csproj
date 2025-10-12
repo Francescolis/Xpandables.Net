@@ -81,7 +81,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Xpandables.Net.Repositories\Xpandables.Net.Repositories.csproj" />
-		<ProjectReference Include="..\Xpandables.Net.Tasks.Abstractions\Xpandables.Net.Tasks.Abstractions.csproj" />
+		<ProjectReference Include="..\Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj" />
 	</ItemGroup>
 
 </Project>

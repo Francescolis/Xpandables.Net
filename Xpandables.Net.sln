@@ -14,8 +14,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Abstractions
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async", "Xpandables.Net.Async\Xpandables.Net.Async.csproj", "{55A6B34E-D170-D2C8-5D7B-1D8F1C8666BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async.Abstractions", "Xpandables.Net.Async.Abstractions\Xpandables.Net.Async.Abstractions.csproj", "{D93C191A-5E7C-EF91-8B8F-3C5B007DB117}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Async.AspNetCore", "Xpandables.Net.Async.AspNetCore\Xpandables.Net.Async.AspNetCore.csproj", "{2B2516E8-B9D3-37A1-6355-F46977D953C7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Benchmarking", "Xpandables.Net.Benchmarking\Xpandables.Net.Benchmarking.csproj", "{A690B330-3149-7938-4676-0A9B6F67CB6A}"
@@ -37,8 +35,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Rests.Abstractions", "Xpandables.Net.Rests.Abstractions\Xpandables.Net.Rests.Abstractions.csproj", "{169E4947-695A-DDBF-FAC5-7819300FE5E3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Tasks", "Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj", "{785A0FD2-C483-1A64-1E97-26D6F786EF20}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Tasks.Abstractions", "Xpandables.Net.Tasks.Abstractions\Xpandables.Net.Tasks.Abstractions.csproj", "{374FDF75-3BE7-0E15-C682-79C68EEFD651}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.UnitTests", "Xpandables.Net.UnitTests\Xpandables.Net.UnitTests.csproj", "{5A51210D-287D-FB17-B065-C769170B3A17}"
 EndProject
@@ -68,10 +64,6 @@ Global
 		{55A6B34E-D170-D2C8-5D7B-1D8F1C8666BA}.Debug|x64.Build.0 = Debug|x64
 		{55A6B34E-D170-D2C8-5D7B-1D8F1C8666BA}.Release|x64.ActiveCfg = Release|x64
 		{55A6B34E-D170-D2C8-5D7B-1D8F1C8666BA}.Release|x64.Build.0 = Release|x64
-		{D93C191A-5E7C-EF91-8B8F-3C5B007DB117}.Debug|x64.ActiveCfg = Debug|x64
-		{D93C191A-5E7C-EF91-8B8F-3C5B007DB117}.Debug|x64.Build.0 = Debug|x64
-		{D93C191A-5E7C-EF91-8B8F-3C5B007DB117}.Release|x64.ActiveCfg = Release|x64
-		{D93C191A-5E7C-EF91-8B8F-3C5B007DB117}.Release|x64.Build.0 = Release|x64
 		{2B2516E8-B9D3-37A1-6355-F46977D953C7}.Debug|x64.ActiveCfg = Debug|x64
 		{2B2516E8-B9D3-37A1-6355-F46977D953C7}.Debug|x64.Build.0 = Debug|x64
 		{2B2516E8-B9D3-37A1-6355-F46977D953C7}.Release|x64.ActiveCfg = Release|x64
@@ -116,10 +108,6 @@ Global
 		{785A0FD2-C483-1A64-1E97-26D6F786EF20}.Debug|x64.Build.0 = Debug|x64
 		{785A0FD2-C483-1A64-1E97-26D6F786EF20}.Release|x64.ActiveCfg = Release|x64
 		{785A0FD2-C483-1A64-1E97-26D6F786EF20}.Release|x64.Build.0 = Release|x64
-		{374FDF75-3BE7-0E15-C682-79C68EEFD651}.Debug|x64.ActiveCfg = Debug|x64
-		{374FDF75-3BE7-0E15-C682-79C68EEFD651}.Debug|x64.Build.0 = Debug|x64
-		{374FDF75-3BE7-0E15-C682-79C68EEFD651}.Release|x64.ActiveCfg = Release|x64
-		{374FDF75-3BE7-0E15-C682-79C68EEFD651}.Release|x64.Build.0 = Release|x64
 		{5A51210D-287D-FB17-B065-C769170B3A17}.Debug|x64.ActiveCfg = Debug|x64
 		{5A51210D-287D-FB17-B065-C769170B3A17}.Debug|x64.Build.0 = Debug|x64
 		{5A51210D-287D-FB17-B065-C769170B3A17}.Release|x64.ActiveCfg = Release|x64

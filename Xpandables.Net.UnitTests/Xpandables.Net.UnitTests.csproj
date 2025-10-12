@@ -30,7 +30,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Xpandables.Net.Async.AspNetCore\Xpandables.Net.Async.AspNetCore.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Async\Xpandables.Net.Async.csproj" />
 	  <ProjectReference Include="..\Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj" />
 	  <ProjectReference Include="..\Xpandables.Net.Rests\Xpandables.Net.Rests.csproj" />
 	  <ProjectReference Include="..\Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj" />
