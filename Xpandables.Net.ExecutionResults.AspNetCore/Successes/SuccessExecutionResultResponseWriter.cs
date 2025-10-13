@@ -38,7 +38,7 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
     public override bool CanWrite(ExecutionResult executionResult)
     {
         ArgumentNullException.ThrowIfNull(executionResult);
-        Type valueType = executionResult.Value?.GetType() ?? typeof(object);
+
         return executionResult.StatusCode.IsSuccess
             && executionResult.StatusCode != System.Net.HttpStatusCode.NoContent
             && (executionResult.Value is null || executionResult.Value is not IAsyncPagedEnumerable);
