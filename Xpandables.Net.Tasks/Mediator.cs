@@ -14,10 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.Tasks;
+using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.Tasks;
 
@@ -29,10 +30,14 @@ namespace Xpandables.Net.Tasks;
 public sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
     public async Task<ExecutionResult> SendAsync<TRequest>(
         TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         try
         {
             IPipelineRequestHandler<TRequest> handler =
@@ -40,8 +45,17 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
 
             return await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
         }
+        catch (ExecutionResultException)
+        {
+            throw;
+        }
+        catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
+        {
+            // Don't convert cancellation to ExecutionResult
+            throw;
+        }
         catch (Exception exception)
-            when (exception is not ExecutionResultException)
         {
             return exception.ToExecutionResult();
         }
