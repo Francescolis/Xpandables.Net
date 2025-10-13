@@ -14,9 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -37,6 +39,9 @@ namespace Xpandables.Net.ExecutionResults;
 /// </remarks>
 public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
 {
+    // Cache converters for better performance
+    private static readonly ConcurrentDictionary<(Type Type, bool UseAspNetCore), JsonConverter> _converterCache = new();
+
     /// <summary>
     /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
     /// </summary>
@@ -46,6 +51,7 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
     public bool UseAspNetCoreCompatibility { get; init; }
 
     /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool CanConvert(Type typeToConvert)
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
@@ -56,7 +62,12 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
     }
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050", Justification = "The converter factory is designed for known Optional<T> types only")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070",
+        Justification = "The generic arguments are validated during CanConvert")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2071",
+        Justification = "ExecutionResult types are constrained to known types")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050",
+        Justification = "ExecutionResult JSON converter factory is designed for known result types")]
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
@@ -64,19 +75,18 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
 
         options.TypeInfoResolver ??= ExecutionResultJsonContext.Default;
 
-        if (typeToConvert == typeof(ExecutionResult))
+        return _converterCache.GetOrAdd((typeToConvert, UseAspNetCoreCompatibility), key =>
         {
-            return new ExecutionResultJsonConverter() { UseAspNetCoreCompatibility = UseAspNetCoreCompatibility };
-        }
+            if (key.Type == typeof(ExecutionResult))
+            {
+                return new ExecutionResultJsonConverter { UseAspNetCoreCompatibility = key.UseAspNetCore };
+            }
 
-        Type resultType = typeToConvert.GetGenericArguments()[0];
-        Type converterType = typeof(ExecutionResultJsonConverter<>).MakeGenericType(resultType);
+            Type resultType = key.Type.GetGenericArguments()[0];
+            Type converterType = typeof(ExecutionResultJsonConverter<>).MakeGenericType(resultType);
 
-        JsonConverter converter = (JsonConverter)Activator.CreateInstance(
-            converterType,
-            [UseAspNetCoreCompatibility])!;
-
-        return converter;
+            return (JsonConverter)Activator.CreateInstance(converterType, [key.UseAspNetCore])!;
+        });
     }
 }
 
@@ -107,7 +117,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
         {
             // In ASP.NET Core compatibility mode, only the "Value" is written.
             // Deserialization is ambiguous without surrounding metadata.
-            throw new NotSupportedException();
+            throw new NotSupportedException("Deserialization is not supported in ASP.NET Core compatibility mode.");
         }
 
         if (reader.TokenType == JsonTokenType.Null)
@@ -116,7 +126,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException("Expected StartObject token for ExecutionResult.");
 
-        // Known properties
+        // Initialize with default values
         HttpStatusCode statusCode = HttpStatusCode.OK;
         string? title = null;
         string? detail = null;
@@ -141,34 +151,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
             switch (prop)
             {
                 case "StatusCode" or "statusCode":
-                    switch (reader.TokenType)
-                    {
-                        case JsonTokenType.String:
-                            {
-                                string? s = reader.GetString();
-                                if (!string.IsNullOrWhiteSpace(s))
-                                {
-                                    if (Enum.TryParse<HttpStatusCode>(s, true, out var sc))
-                                    {
-                                        statusCode = sc;
-                                    }
-                                    else if (int.TryParse(s, out int codeInt) && Enum.IsDefined(typeof(HttpStatusCode), codeInt))
-                                    {
-                                        statusCode = (HttpStatusCode)codeInt;
-                                    }
-                                }
-                                break;
-                            }
-                        case JsonTokenType.Number:
-                            {
-                                if (reader.TryGetInt32(out int codeInt) && Enum.IsDefined(typeof(HttpStatusCode), codeInt))
-                                    statusCode = (HttpStatusCode)codeInt;
-                                break;
-                            }
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    statusCode = ReadStatusCode(ref reader);
                     break;
 
                 case "Title" or "title":
@@ -180,17 +163,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
                     break;
 
                 case "Location" or "location":
-                    if (reader.TokenType == JsonTokenType.Null)
-                    {
-                        location = null;
-                    }
-                    else
-                    {
-                        string? s = reader.GetString();
-                        location = !string.IsNullOrEmpty(s) && Uri.TryCreate(s, UriKind.RelativeOrAbsolute, out var uri)
-                            ? uri
-                            : null;
-                    }
+                    location = ReadLocation(ref reader);
                     break;
 
                 case "Value" or "value":
@@ -200,25 +173,19 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
                     break;
 
                 case "Errors" or "errors":
-                    errors = reader.TokenType == JsonTokenType.Null
-                        ? default
-                        : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
+                    errors = ReadElementCollection(ref reader);
                     break;
 
                 case "Headers" or "headers":
-                    headers = reader.TokenType == JsonTokenType.Null
-                        ? default
-                        : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
+                    headers = ReadElementCollection(ref reader);
                     break;
 
                 case "Extensions" or "extensions":
-                    extensions = reader.TokenType == JsonTokenType.Null
-                        ? default
-                        : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
+                    extensions = ReadElementCollection(ref reader);
                     break;
 
                 default:
-                    // Skip unknown/ignored properties (IsSuccess, IsGeneric, Exception, etc.)
+                    // Skip unknown/ignored properties
                     reader.Skip();
                     break;
             }
@@ -238,8 +205,6 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
     }
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public override void Write(Utf8JsonWriter writer, ExecutionResult value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(writer);
@@ -250,52 +215,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
         {
             if (value.Value is not null)
             {
-                Type resultType = value.Value.GetType();
-                if (resultType is { IsPrimitive: true } || resultType == typeof(string))
-                {
-                    switch (value.Value)
-                    {
-                        case string strValue:
-                            writer.WriteStringValue(strValue);
-                            break;
-                        case bool boolValue:
-                            writer.WriteBooleanValue(boolValue);
-                            break;
-                        case int intValue:
-                            writer.WriteNumberValue(intValue);
-                            break;
-                        case long longValue:
-                            writer.WriteNumberValue(longValue);
-                            break;
-                        case double doubleValue:
-                            writer.WriteNumberValue(doubleValue);
-                            break;
-                        case decimal decimalValue:
-                            writer.WriteNumberValue(decimalValue);
-                            break;
-                        case float floatValue:
-                            writer.WriteNumberValue(floatValue);
-                            break;
-                        case DateTime dateTimeValue:
-                            writer.WriteStringValue(dateTimeValue);
-                            break;
-                        case DateTimeOffset dateTimeOffsetValue:
-                            writer.WriteStringValue(dateTimeOffsetValue);
-                            break;
-                        case Guid guidValue:
-                            writer.WriteStringValue(guidValue);
-                            break;
-                        default:
-                            throw new NotSupportedException($"Type {resultType.Name} is not supported for direct serialization.");
-                    }
-                }
-                else
-                {
-                    JsonTypeInfo jsonTypeInfo = options.TypeInfoResolver?.GetTypeInfo(value.GetType(), options)
-                        ?? throw new JsonException($"No JSON type info found for type {value.GetType().Name}.");
-
-                    JsonSerializer.Serialize(writer, value.Value, jsonTypeInfo);
-                }
+                SerializationHelper.WriteValue(writer, value.Value, options);
             }
         }
         else
@@ -313,53 +233,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
             if (value.Value is not null)
             {
                 writer.WritePropertyName("value");
-                Type resultType = value.Value.GetType();
-                if (resultType is { IsPrimitive: true } || resultType == typeof(string))
-                {
-                    switch (value.Value)
-                    {
-                        case string strValue:
-                            writer.WriteStringValue(strValue);
-                            break;
-                        case bool boolValue:
-                            writer.WriteBooleanValue(boolValue);
-                            break;
-                        case int intValue:
-                            writer.WriteNumberValue(intValue);
-                            break;
-                        case long longValue:
-                            writer.WriteNumberValue(longValue);
-                            break;
-                        case double doubleValue:
-                            writer.WriteNumberValue(doubleValue);
-                            break;
-                        case decimal decimalValue:
-                            writer.WriteNumberValue(decimalValue);
-                            break;
-                        case float floatValue:
-                            writer.WriteNumberValue(floatValue);
-                            break;
-                        case DateTime dateTimeValue:
-                            writer.WriteStringValue(dateTimeValue);
-                            break;
-                        case DateTimeOffset dateTimeOffsetValue:
-                            writer.WriteStringValue(dateTimeOffsetValue);
-                            break;
-                        case Guid guidValue:
-                            writer.WriteStringValue(guidValue);
-                            break;
-                        default:
-                            throw new NotSupportedException($"Type {resultType.Name} is not supported for direct serialization.");
-                    }
-                }
-                else
-                {
-                    JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(value.GetType());
-                    if (jsonTypeInfo is null)
-                        JsonSerializer.Serialize(writer, value.Value, value.Value.GetType(), options);
-                    else
-                        JsonSerializer.Serialize(writer, value.Value, jsonTypeInfo);
-                }
+                SerializationHelper.WriteValue(writer, value.Value, options);
             }
 
             writer.WritePropertyName("errors");
@@ -373,6 +247,61 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
 
             writer.WriteEndObject();
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static HttpStatusCode ReadStatusCode(ref Utf8JsonReader reader)
+    {
+        return reader.TokenType switch
+        {
+            JsonTokenType.String => ParseStatusCodeFromString(reader.GetString()),
+            JsonTokenType.Number => ParseStatusCodeFromNumber(ref reader),
+            _ => HttpStatusCode.OK
+        };
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static HttpStatusCode ParseStatusCodeFromString(string? s)
+    {
+        if (string.IsNullOrWhiteSpace(s))
+            return HttpStatusCode.OK;
+
+        if (Enum.TryParse<HttpStatusCode>(s, true, out var sc))
+            return sc;
+
+        if (int.TryParse(s, out int codeInt) && Enum.IsDefined(typeof(HttpStatusCode), codeInt))
+            return (HttpStatusCode)codeInt;
+
+        return HttpStatusCode.OK;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static HttpStatusCode ParseStatusCodeFromNumber(ref Utf8JsonReader reader)
+    {
+        if (reader.TryGetInt32(out int codeInt) && Enum.IsDefined(typeof(HttpStatusCode), codeInt))
+            return (HttpStatusCode)codeInt;
+
+        return HttpStatusCode.OK;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Uri? ReadLocation(ref Utf8JsonReader reader)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+            return null;
+
+        string? s = reader.GetString();
+        return !string.IsNullOrEmpty(s) && Uri.TryCreate(s, UriKind.RelativeOrAbsolute, out var uri)
+            ? uri
+            : null;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static ElementCollection ReadElementCollection(ref Utf8JsonReader reader)
+    {
+        return reader.TokenType == JsonTokenType.Null
+            ? default
+            : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
     }
 }
 
@@ -400,8 +329,6 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
     public bool UseAspNetCoreCompatibility { get; } = useAspNetCoreCompatibility;
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public override ExecutionResult<TResult>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
@@ -411,7 +338,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
         {
             // In ASP.NET Core compatibility mode, only the "Value" is written.
             // Deserialization is ambiguous without surrounding metadata.
-            throw new NotSupportedException();
+            throw new NotSupportedException("Deserialization is not supported in ASP.NET Core compatibility mode.");
         }
 
         if (reader.TokenType == JsonTokenType.Null)
@@ -420,7 +347,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException("Expected StartObject token for ExecutionResult.");
 
-        // Known properties
+        // Initialize with default values
         HttpStatusCode statusCode = HttpStatusCode.OK;
         string? title = null;
         string? detail = null;
@@ -445,34 +372,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
             switch (prop)
             {
                 case "StatusCode" or "statusCode":
-                    switch (reader.TokenType)
-                    {
-                        case JsonTokenType.String:
-                            {
-                                string? s = reader.GetString();
-                                if (!string.IsNullOrWhiteSpace(s))
-                                {
-                                    if (Enum.TryParse<HttpStatusCode>(s, true, out var sc))
-                                    {
-                                        statusCode = sc;
-                                    }
-                                    else if (int.TryParse(s, out int codeInt) && Enum.IsDefined(typeof(HttpStatusCode), codeInt))
-                                    {
-                                        statusCode = (HttpStatusCode)codeInt;
-                                    }
-                                }
-                                break;
-                            }
-                        case JsonTokenType.Number:
-                            {
-                                if (reader.TryGetInt32(out int codeInt) && Enum.IsDefined(typeof(HttpStatusCode), codeInt))
-                                    statusCode = (HttpStatusCode)codeInt;
-                                break;
-                            }
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    statusCode = ExecutionResultJsonConverter.ReadStatusCode(ref reader);
                     break;
 
                 case "Title" or "title":
@@ -484,66 +384,27 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
                     break;
 
                 case "Location" or "location":
-                    if (reader.TokenType == JsonTokenType.Null)
-                    {
-                        location = null;
-                    }
-                    else
-                    {
-                        string? s = reader.GetString();
-                        location = !string.IsNullOrEmpty(s) && Uri.TryCreate(s, UriKind.RelativeOrAbsolute, out var uri)
-                            ? uri
-                            : null;
-                    }
+                    location = ExecutionResultJsonConverter.ReadLocation(ref reader);
                     break;
 
                 case "Value" or "value":
-                    if (reader.TokenType == JsonTokenType.Null)
-                    {
-                        valueT = default;
-                    }
-                    else
-                    {
-                        if (typeof(TResult) is { IsPrimitive: true } || typeof(TResult) == typeof(string))
-                        {
-                            string? json = reader.GetString();
-                            if (!string.IsNullOrWhiteSpace(json))
-                            {
-                                valueT = (TResult?)Convert.ChangeType(json, typeof(TResult?), CultureInfo.InvariantCulture);
-                            }
-                        }
-                        else
-                        {
-                            JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(typeof(TResult));
-                            valueT = jsonTypeInfo switch
-                            {
-                                not null => (TResult?)JsonSerializer.Deserialize(ref reader, jsonTypeInfo),
-                                _ => JsonSerializer.Deserialize<TResult?>(ref reader, options)
-                            };
-                        }
-                    }
+                    valueT = ReadTypedValue(ref reader, options);
                     break;
 
                 case "Errors" or "errors":
-                    errors = reader.TokenType == JsonTokenType.Null
-                        ? default
-                        : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
+                    errors = ExecutionResultJsonConverter.ReadElementCollection(ref reader);
                     break;
 
                 case "Headers" or "headers":
-                    headers = reader.TokenType == JsonTokenType.Null
-                        ? default
-                        : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
+                    headers = ExecutionResultJsonConverter.ReadElementCollection(ref reader);
                     break;
 
                 case "Extensions" or "extensions":
-                    extensions = reader.TokenType == JsonTokenType.Null
-                        ? default
-                        : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
+                    extensions = ExecutionResultJsonConverter.ReadElementCollection(ref reader);
                     break;
 
                 default:
-                    // Skip unknown/ignored properties (IsSuccess, IsGeneric, Exception, etc.)
+                    // Skip unknown/ignored properties
                     reader.Skip();
                     break;
             }
@@ -563,8 +424,6 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
     }
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public override void Write(Utf8JsonWriter writer, ExecutionResult<TResult> value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(writer);
@@ -575,52 +434,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
         {
             if (value.Value is not null)
             {
-                if (typeof(TResult) is { IsPrimitive: true } || typeof(TResult) == typeof(string))
-                {
-                    switch (value.Value)
-                    {
-                        case string strValue:
-                            writer.WriteStringValue(strValue);
-                            break;
-                        case bool boolValue:
-                            writer.WriteBooleanValue(boolValue);
-                            break;
-                        case int intValue:
-                            writer.WriteNumberValue(intValue);
-                            break;
-                        case long longValue:
-                            writer.WriteNumberValue(longValue);
-                            break;
-                        case double doubleValue:
-                            writer.WriteNumberValue(doubleValue);
-                            break;
-                        case decimal decimalValue:
-                            writer.WriteNumberValue(decimalValue);
-                            break;
-                        case float floatValue:
-                            writer.WriteNumberValue(floatValue);
-                            break;
-                        case DateTime dateTimeValue:
-                            writer.WriteStringValue(dateTimeValue);
-                            break;
-                        case DateTimeOffset dateTimeOffsetValue:
-                            writer.WriteStringValue(dateTimeOffsetValue);
-                            break;
-                        case Guid guidValue:
-                            writer.WriteStringValue(guidValue);
-                            break;
-                        default:
-                            throw new NotSupportedException($"Type {typeof(TResult).Name} is not supported for direct serialization.");
-                    }
-                }
-                else
-                {
-                    JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(typeof(TResult));
-                    if (jsonTypeInfo is null)
-                        JsonSerializer.Serialize(writer, value.Value, options);
-                    else
-                        JsonSerializer.Serialize(writer, value.Value, jsonTypeInfo);
-                }
+                SerializationHelper.WriteTypedValue(writer, value.Value, options);
             }
         }
         else
@@ -638,52 +452,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
             if (value.Value is not null)
             {
                 writer.WritePropertyName("value");
-
-                if (typeof(TResult) is { IsPrimitive: true } || typeof(TResult) == typeof(string))
-                {
-                    switch (value.Value)
-                    {
-                        case string strValue:
-                            writer.WriteStringValue(strValue);
-                            break;
-                        case bool boolValue:
-                            writer.WriteBooleanValue(boolValue);
-                            break;
-                        case int intValue:
-                            writer.WriteNumberValue(intValue);
-                            break;
-                        case long longValue:
-                            writer.WriteNumberValue(longValue);
-                            break;
-                        case double doubleValue:
-                            writer.WriteNumberValue(doubleValue);
-                            break;
-                        case decimal decimalValue:
-                            writer.WriteNumberValue(decimalValue);
-                            break;
-                        case float floatValue:
-                            writer.WriteNumberValue(floatValue);
-                            break;
-                        case DateTime dateTimeValue:
-                            writer.WriteStringValue(dateTimeValue);
-                            break;
-                        case DateTimeOffset dateTimeOffsetValue:
-                            writer.WriteStringValue(dateTimeOffsetValue);
-                            break;
-                        case Guid guidValue:
-                            writer.WriteStringValue(guidValue);
-                            break;
-                        default:
-                            throw new NotSupportedException($"Type {typeof(TResult).Name} is not supported for direct serialization.");
-                    }
-                }
-                else
-                {
-                    JsonTypeInfo jsonTypeInfo = options.TypeInfoResolver?.GetTypeInfo(typeof(TResult), options)
-                        ?? throw new JsonException($"No JSON type info found for type {typeof(TResult).Name}.");
-
-                    JsonSerializer.Serialize(writer, value.Value, jsonTypeInfo);
-                }
+                SerializationHelper.WriteTypedValue(writer, value.Value, options);
             }
 
             writer.WritePropertyName("errors");
@@ -696,6 +465,122 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
             JsonSerializer.Serialize(writer, value.Extensions, typeof(ElementCollection), ElementCollectionContext.Default);
 
             writer.WriteEndObject();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+        Justification = "Uses TypeInfoResolver when available, falls back to dynamic deserialization for non-AOT scenarios")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050",
+        Justification = "Dynamic code generation is only used as fallback for non-AOT scenarios")]
+    private static TResult? ReadTypedValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+            return default;
+
+        if (typeof(TResult).IsPrimitive || typeof(TResult) == typeof(string))
+        {
+            string? json = reader.GetString();
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                return (TResult?)Convert.ChangeType(json, typeof(TResult), CultureInfo.InvariantCulture);
+            }
+            return default;
+        }
+
+        JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(typeof(TResult));
+        return jsonTypeInfo switch
+        {
+            not null => (TResult?)JsonSerializer.Deserialize(ref reader, jsonTypeInfo),
+            _ => JsonSerializer.Deserialize<TResult?>(ref reader, options)
+        };
+    }
+}
+
+/// <summary>
+/// Internal helper class for common serialization operations.
+/// </summary>
+internal static class SerializationHelper
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+        Justification = "Uses TypeInfoResolver when available, falls back to dynamic serialization for non-AOT scenarios")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050",
+        Justification = "Dynamic code generation is only used as fallback for non-AOT scenarios")]
+    internal static void WriteValue(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+    {
+        Type resultType = value.GetType();
+        
+        if (TryWritePrimitiveValue(writer, value, resultType))
+            return;
+
+        // For complex types, use TypeInfoResolver
+        JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(resultType);
+        if (jsonTypeInfo is null)
+            JsonSerializer.Serialize(writer, value, resultType, options);
+        else
+            JsonSerializer.Serialize(writer, value, jsonTypeInfo);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+        Justification = "Uses TypeInfoResolver when available, falls back to dynamic serialization for non-AOT scenarios")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050",
+        Justification = "Dynamic code generation is only used as fallback for non-AOT scenarios")]
+    internal static void WriteTypedValue<TResult>(Utf8JsonWriter writer, TResult value, JsonSerializerOptions options)
+    {
+        if (TryWritePrimitiveValue(writer, value!, typeof(TResult)))
+            return;
+
+        // For complex types, use TypeInfoResolver
+        JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(typeof(TResult));
+        if (jsonTypeInfo is null)
+            JsonSerializer.Serialize(writer, value, options);
+        else
+            JsonSerializer.Serialize(writer, value, jsonTypeInfo);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryWritePrimitiveValue(Utf8JsonWriter writer, object value, Type type)
+    {
+        if (!type.IsPrimitive && type != typeof(string) && type != typeof(DateTime) && 
+            type != typeof(DateTimeOffset) && type != typeof(Guid))
+            return false;
+
+        switch (value)
+        {
+            case string strValue:
+                writer.WriteStringValue(strValue);
+                return true;
+            case bool boolValue:
+                writer.WriteBooleanValue(boolValue);
+                return true;
+            case int intValue:
+                writer.WriteNumberValue(intValue);
+                return true;
+            case long longValue:
+                writer.WriteNumberValue(longValue);
+                return true;
+            case double doubleValue:
+                writer.WriteNumberValue(doubleValue);
+                return true;
+            case decimal decimalValue:
+                writer.WriteNumberValue(decimalValue);
+                return true;
+            case float floatValue:
+                writer.WriteNumberValue(floatValue);
+                return true;
+            case DateTime dateTimeValue:
+                writer.WriteStringValue(dateTimeValue);
+                return true;
+            case DateTimeOffset dateTimeOffsetValue:
+                writer.WriteStringValue(dateTimeOffsetValue);
+                return true;
+            case Guid guidValue:
+                writer.WriteStringValue(guidValue);
+                return true;
+            default:
+                return false;
         }
     }
 }
@@ -725,15 +610,24 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
 [JsonSerializable(typeof(ExecutionResult<DateTimeOffset>))]
 [JsonSerializable(typeof(ExecutionResult<Guid>))]
 [JsonSerializable(typeof(ExecutionResult<object>))]
-[JsonSerializable(typeof(ExecutionResult<string>[]))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<string>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<int>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<long>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<double>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<decimal>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<bool>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<DateTime>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<DateTimeOffset>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<Guid>>))]
-[JsonSerializable(typeof(ExecutionResult<IAsyncEnumerable<object>>))]
+[JsonSerializable(typeof(ExecutionResult<List<string>>))]
+[JsonSerializable(typeof(ExecutionResult<List<int>>))]
+[JsonSerializable(typeof(ExecutionResult<List<long>>))]
+[JsonSerializable(typeof(ExecutionResult<List<double>>))]
+[JsonSerializable(typeof(ExecutionResult<List<decimal>>))]
+[JsonSerializable(typeof(ExecutionResult<List<bool>>))]
+[JsonSerializable(typeof(ExecutionResult<List<DateTime>>))]
+[JsonSerializable(typeof(ExecutionResult<List<DateTimeOffset>>))]
+[JsonSerializable(typeof(ExecutionResult<List<Guid>>))]
+[JsonSerializable(typeof(ExecutionResult<object[]>))]
+[JsonSerializable(typeof(ExecutionResult<string[]>))]
+[JsonSerializable(typeof(ExecutionResult<int[]>))]
+[JsonSerializable(typeof(ExecutionResult<long[]>))]
+[JsonSerializable(typeof(ExecutionResult<double[]>))]
+[JsonSerializable(typeof(ExecutionResult<decimal[]>))]
+[JsonSerializable(typeof(ExecutionResult<bool[]>))]
+[JsonSerializable(typeof(ExecutionResult<DateTime[]>))]
+[JsonSerializable(typeof(ExecutionResult<DateTimeOffset[]>))]
+[JsonSerializable(typeof(ExecutionResult<Guid[]>))]
+[JsonSerializable(typeof(ExecutionResult<object[]>))]
 public partial class ExecutionResultJsonContext : JsonSerializerContext { }
