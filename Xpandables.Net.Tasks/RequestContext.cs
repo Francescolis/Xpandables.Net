@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +15,8 @@
  *
 ********************************************************************************/
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 using Xpandables.Net.ExecutionResults;
 
@@ -36,19 +35,37 @@ public delegate Task<ExecutionResult> RequestHandler(CancellationToken cancellat
 /// <typeparam name="TRequest">The type of the request, which must implement <see cref="IRequest"/>.</typeparam>
 /// <remarks>
 /// Initializes a new instance of the <see cref="RequestContext{TRequest}"/> class with the specified request.
+/// This implementation uses lazy initialization and a regular Dictionary for better performance in the common case
+/// where contexts are not shared across threads (request-scoped).
 /// </remarks>
 /// <param name="request">The request to associate with this context.</param>
 /// <exception cref="ArgumentNullException">Thrown when the request is null.</exception>
 public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<KeyValuePair<string, object>>
     where TRequest : class, IRequest
 {
-    private readonly ConcurrentDictionary<string, object> Items = new();
+    // Lazy initialization - many requests don't use context items
+    private Dictionary<string, object>? _items;
 
     /// <summary>
     /// The request associated with this context.
     /// </summary>
     public TRequest Request { get; } = request
         ?? throw new ArgumentNullException(nameof(request), "Request cannot be null.");
+
+    /// <summary>
+    /// Gets the items dictionary, creating it if necessary.
+    /// </summary>
+    [MemberNotNull(nameof(_items))]
+    private Dictionary<string, object> Items
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _items ??= new Dictionary<string, object>(StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether this context has any items.
+    /// </summary>
+    public bool HasItems => _items is not null && _items.Count > 0;
 
     /// <summary>
     /// Gets or sets the value associated with the specified key in the collection.
@@ -58,7 +75,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <exception cref="ArgumentNullException">Thrown when the key/value is <see langword="null"/>.</exception>
     public object? this[string key]
     {
-        get => Items.TryGetValue(key, out var value) ? value : null;
+        get => _items is not null && _items.TryGetValue(key, out var value) ? value : null;
         set => Items[key] = value ?? throw new ArgumentNullException(nameof(value), "Value cannot be null.");
     }
 
@@ -67,7 +84,13 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// </summary>
     /// <param name="key">The key for the item.</param>
     /// <param name="value">The value to associate with the key.</param>
-    public void AddItem(string key, object value) => Items[key] = value;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AddItem(string key, object value)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
+        Items[key] = value;
+    }
 
     /// <summary>
     /// Attempts to retrieve the value associated with the specified key from the collection.
@@ -79,8 +102,17 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <see langword="null"/>. This parameter is passed uninitialized.</param>
     /// <returns><see langword="true"/> if the collection contains an item with the specified key; otherwise, <see
     /// langword="false"/>.</returns>
-    public bool TryGetItem(string key, [NotNullWhen(true)] out object? value) =>
-        Items.TryGetValue(key, out value);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryGetItem(string key, [NotNullWhen(true)] out object? value)
+    {
+        if (_items is not null)
+        {
+            return _items.TryGetValue(key, out value);
+        }
+
+        value = null;
+        return false;
+    }
 
     /// <summary>
     /// Attempts to retrieve an item of the specified type from the collection using the provided key.
@@ -95,9 +127,10 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// name="TItem"/>.</param>
     /// <returns><see langword="true"/> if an item with the specified key exists in the collection and is of type <typeparamref
     /// name="TItem"/>; otherwise, <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetItem<TItem>(string key, [NotNullWhen(true)] out TItem? item)
     {
-        if (Items.TryGetValue(key, out var value) && value is TItem castedItem)
+        if (_items is not null && _items.TryGetValue(key, out var value) && value is TItem castedItem)
         {
             item = castedItem;
             return true;
@@ -115,6 +148,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <returns>The item of type <typeparamref name="TItem"/> associated with the specified key.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if no item is found with the specified key or if the item cannot be cast to the specified type
     /// <typeparamref name="TItem"/>.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TItem GetItem<TItem>(string key)
     {
         if (TryGetItem<TItem>(key, out var value))
@@ -130,12 +164,20 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// </summary>
     /// <param name="key">The key of the item to remove. Cannot be <see langword="null"/> or empty.</param>
     /// <returns><see langword="true"/> if the item was successfully removed; otherwise, <see langword="false"/>.</returns>
-    public bool RemoveItem(string key) => Items.TryRemove(key, out _);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool RemoveItem(string key)
+    {
+        return _items is not null && _items.Remove(key);
+    }
 
     /// <summary>
     /// Removes all items from the request context.
     /// </summary>
-    public void ClearItems() => Items.Clear();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ClearItems()
+    {
+        _items?.Clear();
+    }
 
     /// <summary>
     /// Returns an enumerator that iterates through the collection of key-value pairs.
@@ -144,7 +186,14 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// iteration.</remarks>
     /// <returns>An enumerator for the collection of key-value pairs, where each pair consists of a string key and an associated
     /// object value.</returns>
-    public IEnumerator<KeyValuePair<string, object>> GetEnumerator() =>
-        Items.GetEnumerator();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+    {
+        return _items is not null
+            ? _items.GetEnumerator()
+            : Enumerable.Empty<KeyValuePair<string, object>>().GetEnumerator();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

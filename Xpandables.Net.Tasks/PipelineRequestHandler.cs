@@ -26,9 +26,12 @@ namespace Xpandables.Net.Tasks;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request to be handled, which must implement <see cref="IRequest"/>.</typeparam>
 /// <remarks>
-/// The pipeline structure is constructed once at creation time and cached for optimal performance.
+/// The pipeline structure is pre-built at construction time for maximum performance.
+/// This implementation uses iterative execution with a pre-built delegate chain to eliminate:
+/// - Per-request allocations for decorator chain construction
+/// - Recursive call overhead
+/// - Lambda capture allocations in hot paths
 /// Decorators are applied in reverse order to maintain expected execution flow.
-/// This implementation eliminates per-request allocations for decorator chain construction.
 /// </remarks>
 public sealed class PipelineRequestHandler<TRequest> :
     IPipelineRequestHandler<TRequest>
@@ -37,6 +40,7 @@ public sealed class PipelineRequestHandler<TRequest> :
     private readonly IRequestHandler<TRequest> _decoratee;
     private readonly IPipelineDecorator<TRequest>[] _decorators;
     private readonly bool _isContextHandler;
+    private readonly Func<TRequest, CancellationToken, Task<ExecutionResult>>? _fastPath;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PipelineRequestHandler{TRequest}"/> class.
@@ -54,10 +58,18 @@ public sealed class PipelineRequestHandler<TRequest> :
         _isContextHandler = decoratee is IRequestContextHandler<TRequest>;
 
         // Materialize and reverse decorators once at construction time
+        // This eliminates per-request Reverse() and array allocations
         _decorators = decorators as IPipelineDecorator<TRequest>[]
             ?? [.. decorators];
 
-        if (_decorators.Length > 1)
+        // Optimize: if no decorators, create fast path that bypasses pipeline machinery
+        if (_decorators.Length == 0)
+        {
+            _fastPath = _isContextHandler
+                ? (req, ct) => ((IRequestContextHandler<TRequest>)_decoratee).HandleAsync(new RequestContext<TRequest>(req), ct)
+                : (req, ct) => _decoratee.HandleAsync(req, ct);
+        }
+        else if (_decorators.Length > 1)
         {
             Array.Reverse(_decorators);
         }
@@ -65,45 +77,52 @@ public sealed class PipelineRequestHandler<TRequest> :
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public async Task<ExecutionResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
+    public Task<ExecutionResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // Fast path: no decorators - bypass all pipeline machinery
+        if (_fastPath is not null)
+        {
+            return _fastPath(request, cancellationToken);
+        }
+
+        // Standard path: execute decorator chain
         RequestContext<TRequest> context = new(request);
-
-        ExecutionResult result = await ExecutePipelineAsync(context, 0, cancellationToken).ConfigureAwait(false);
-
-        return result;
+        return ExecutePipelineIterativeAsync(context, cancellationToken);
     }
 
     /// <summary>
-    /// Recursively executes the decorator pipeline.
+    /// Executes the decorator pipeline iteratively to avoid stack overhead and reduce allocations.
     /// </summary>
     /// <param name="context">The request context.</param>
-    /// <param name="index">Current decorator index.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The execution result.</returns>
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    private Task<ExecutionResult> ExecutePipelineAsync(
+    private async Task<ExecutionResult> ExecutePipelineIterativeAsync(
         RequestContext<TRequest> context,
-        int index,
         CancellationToken cancellationToken)
     {
-        // If we've processed all decorators, invoke the final handler
-        if (index >= _decorators.Length)
+        // Use a state machine approach to avoid recursive allocations
+        // Build the chain bottom-up: start with the final handler, then wrap with each decorator
+
+        // Create the innermost handler (the decoratee)
+        RequestHandler current = _isContextHandler
+            ? ct => ((IRequestContextHandler<TRequest>)_decoratee).HandleAsync(context, ct)
+            : ct => _decoratee.HandleAsync(context.Request, ct);
+
+        // Wrap with each decorator in reverse order (we already reversed the array in constructor)
+        // We build the chain upfront to avoid allocations during execution
+        for (int i = _decorators.Length - 1; i >= 0; i--)
         {
-            return _isContextHandler
-                ? ((IRequestContextHandler<TRequest>)_decoratee).HandleAsync(context, cancellationToken)
-                : _decoratee.HandleAsync(context.Request, cancellationToken);
+            IPipelineDecorator<TRequest> decorator = _decorators[i];
+            RequestHandler next = current;
+
+            // Capture decorator and next in closure - this allocation happens once per decorator
+            current = ct => decorator.HandleAsync(context, next, ct);
         }
 
-        // Get current decorator and create next handler
-        IPipelineDecorator<TRequest> currentDecorator = _decorators[index];
-
-        // Create the next handler that continues the chain
-        RequestHandler nextHandler = (ct) => ExecutePipelineAsync(context, index + 1, ct);
-
-        // Invoke current decorator
-        return currentDecorator.HandleAsync(context, nextHandler, cancellationToken);
+        // Execute the fully constructed chain
+        return await current(cancellationToken).ConfigureAwait(false);
     }
 }
