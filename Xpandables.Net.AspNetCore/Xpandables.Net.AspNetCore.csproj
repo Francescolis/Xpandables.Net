@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 
-		<Title>Xpandables.Net</Title>
+		<Title>Xpandables.Net.AspNetCore</Title>
 		<Description>Provide basic objects.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net.Abstractions</AssemblyName>
-		<RootNamespace>Xpandables.Net.Abstractions</RootNamespace>
-		<PackageId>Xpandables.Net.Abstractions</PackageId>
+		<AssemblyName>Xpandables.Net.AspNetCore</AssemblyName>
+		<RootNamespace>Xpandables.Net.AspNetCore</RootNamespace>
+		<PackageId>Xpandables.Net.AspNetCore</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -21,7 +21,7 @@
 
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>ElementEntry, ElementCollection</PackageTags>
+		<PackageTags>IAddService, LazyResolved</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -64,33 +64,27 @@
 		<RootNamespace>Xpandables.Net</RootNamespace>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	</PropertyGroup>
-
 	<ItemGroup>
 	  <Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="..\README.md">
-	    <Pack>True</Pack>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\README.md" Link="README.md">
 	    <PackagePath>\</PackagePath>
+	    <Pack>True</Pack>
 	  </None>
-	  <None Include="..\Xpandables.Net.png">
-	    <Pack>True</Pack>
+	  <None Include="..\Xpandables.Net.png" Link="Xpandables.Net.png">
 	    <PackagePath>\</PackagePath>
+	    <Pack>True</Pack>
 	  </None>
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Primitives" Version="10.0.0-rc.2.25502.107" />
+	  <PackageReference Include="System.ComponentModel.Composition" Version="10.0.0-rc.2.25502.107" />
 	</ItemGroup>
-
+	
 </Project>
