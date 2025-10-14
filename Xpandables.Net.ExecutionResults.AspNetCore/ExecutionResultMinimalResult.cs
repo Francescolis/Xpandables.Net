@@ -35,6 +35,14 @@ namespace Xpandables.Net.ExecutionResults;
 /// <param name="executionResult">The execution result to be written to the HTTP response. Cannot be null.</param>
 public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult) : IResult
 {
+    private sealed class HeaderOnlyExecutor : ExecutionResultResponseWriter
+    {
+        public override bool CanWrite(ExecutionResult executionResult) => true;
+        // Do not override ExecuteAsync: base implementation sets headers and authentication challenges.
+    }
+
+    private static readonly ExecutionResultResponseWriter FallbackExecutor = new HeaderOnlyExecutor();
+
     /// <summary>
     /// Executes the result operation asynchronously and writes the response to the specified HTTP context.
     /// </summary>
@@ -45,7 +53,7 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
     /// <returns>A task that represents the asynchronous execution operation.</returns>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    public Task ExecuteAsync(HttpContext httpContext)
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
@@ -61,24 +69,29 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
                     .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions?
                     .GetTypeInfo(executionResult.Value.GetType());
 
+                await FallbackExecutor.WriteAsync(httpContext, executionResult).ConfigureAwait(false);
+
                 if (jsonTypeInfo is null)
-                    return httpContext.Response.WriteAsJsonAsync(
+                    await httpContext.Response.WriteAsJsonAsync(
                     executionResult.Value,
                     executionResult.Value.GetType(),
-                    httpContext.RequestAborted);
+                    httpContext.RequestAborted).ConfigureAwait(false);
                 else
-                    return httpContext.Response.WriteAsJsonAsync(
+                    await httpContext.Response.WriteAsJsonAsync(
                     executionResult.Value,
                     jsonTypeInfo,
-                    cancellationToken: httpContext.RequestAborted);
+                    cancellationToken: httpContext.RequestAborted).ConfigureAwait(false);
             }
             else
             {
-                return httpContext.Response
-                    .CompleteAsync();
+                await httpContext.Response
+                    .CompleteAsync()
+                    .ConfigureAwait(false);
             }
+
+            return;
         }
 
-        return responseWriter.WriteAsync(httpContext, executionResult);
+        await responseWriter.WriteAsync(httpContext, executionResult).ConfigureAwait(false);
     }
 }

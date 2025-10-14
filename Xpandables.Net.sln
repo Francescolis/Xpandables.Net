@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Events.Repos
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.ExecutionResults.AspNetCore", "Xpandables.Net.ExecutionResults.AspNetCore\Xpandables.Net.ExecutionResults.AspNetCore.csproj", "{64BFE2F8-B78C-4062-8035-311469DEE604}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Validators.AspNetCore", "Xpandables.Net.Validators.AspNetCore\Xpandables.Net.Validators.AspNetCore.csproj", "{BD17A24C-6E6B-4DBB-9BEB-90BB10BB1B29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -136,6 +138,10 @@ Global
 		{64BFE2F8-B78C-4062-8035-311469DEE604}.Debug|x64.Build.0 = Debug|x64
 		{64BFE2F8-B78C-4062-8035-311469DEE604}.Release|x64.ActiveCfg = Release|x64
 		{64BFE2F8-B78C-4062-8035-311469DEE604}.Release|x64.Build.0 = Release|x64
+		{BD17A24C-6E6B-4DBB-9BEB-90BB10BB1B29}.Debug|x64.ActiveCfg = Debug|x64
+		{BD17A24C-6E6B-4DBB-9BEB-90BB10BB1B29}.Debug|x64.Build.0 = Debug|x64
+		{BD17A24C-6E6B-4DBB-9BEB-90BB10BB1B29}.Release|x64.ActiveCfg = Release|x64
+		{BD17A24C-6E6B-4DBB-9BEB-90BB10BB1B29}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
