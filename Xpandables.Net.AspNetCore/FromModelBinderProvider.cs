@@ -15,6 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -36,6 +38,8 @@ public sealed class FromModelBinderProvider : IModelBinderProvider
     /// <param name="context">The <see cref="ModelBinderProviderContext" />
     /// .</param>
     /// <returns>An <see cref="IModelBinder" />.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
         _ = context ?? throw new ArgumentNullException(nameof(context));

@@ -86,5 +86,9 @@
 	<ItemGroup>
 	  <PackageReference Include="System.ComponentModel.Composition" Version="10.0.0-rc.2.25502.107" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net.Abstractions\Xpandables.Net.Abstractions.csproj" />
+	</ItemGroup>
 	
 </Project>

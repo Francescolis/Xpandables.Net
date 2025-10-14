@@ -15,6 +15,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
@@ -66,6 +67,8 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
      where TAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider, new()
 {
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
         ArgumentNullException.ThrowIfNull(bindingContext);
@@ -87,7 +90,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
 
     private static void BindingWithModelType(
         ModelBindingContext bindingContext,
-        Type modelType)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type modelType)
     {
         List<PropertyInfo> modelProperties = [.. modelType.GetProperties().Where(p => p.GetSetMethod()?.IsPublic == true)];
 
@@ -141,6 +144,8 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         }
     }
 
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize(String, Type, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize(String, Type, JsonSerializerOptions)")]
     private static void BindingWithModelName(
         ModelBindingContext bindingContext,
         string modelName,
@@ -177,7 +182,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
 
     private static object? CreateDefaultInstance(
         ModelBindingContext bindingContext,
-        Type modelType)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type modelType)
     {
         object? model = default;
         if (modelType.GetConstructor(Type.EmptyTypes) is not null)
@@ -206,6 +211,8 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
         return model;
     }
 
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     private static object? CreateDeserializedInstance(
         ModelBindingContext bindingContext,
         Type modelType,
@@ -236,7 +243,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
 
     private static object? CreateConstructorInstance(
         ModelBindingContext bindingContext,
-        Type modelType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type modelType,
         Dictionary<string, object?> propertyValues)
     {
         if (bindingContext.ModelState.IsValid)
@@ -268,7 +275,7 @@ public sealed class FromModelBinder<TAttribute> : FromModelBinder, IModelBinder
 
     private static object? CreateParameterlessInstance(
         ModelBindingContext bindingContext,
-        Type modelType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type modelType,
         List<PropertyInfo> propertyInfos,
         Dictionary<string, object?> propertyValues)
     {
