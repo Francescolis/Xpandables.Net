@@ -46,6 +46,12 @@ public readonly record struct SubscribeToStreamRequest
     public readonly required long FromVersion { get; init; } = 0;
 
     /// <summary>
+    /// Gets the interval at which polling operations are performed.
+    /// </summary>
+    /// <remarks>The default value is set to 1 second.</remarks> 
+    public readonly TimeSpan PollingInterval { get; init; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
     /// Gets the callback function to invoke when an event is received.
     /// </summary>
     public readonly required Func<IDomainEvent, ValueTask> OnEvent { get; init; }

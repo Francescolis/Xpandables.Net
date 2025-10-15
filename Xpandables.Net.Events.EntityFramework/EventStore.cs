@@ -347,10 +347,10 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
                         lastProcessedVersion = entity.StreamVersion;
                     }
 
-                    // Wait before polling again (adjust interval as needed)
+                    // Wait before polling again using the configured polling interval
                     if (events.Count == 0)
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(1), _cts.Token).ConfigureAwait(false);
+                        await Task.Delay(_request.PollingInterval, _cts.Token).ConfigureAwait(false);
                     }
                 }
             }
@@ -419,10 +419,10 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
                         lastProcessedSequence = entity.Sequence;
                     }
 
-                    // Wait before polling again (adjust interval as needed)
+                    // Wait before polling again using the configured polling interval
                     if (events.Count == 0)
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(1), _cts.Token).ConfigureAwait(false);
+                        await Task.Delay(_request.PollingInterval, _cts.Token).ConfigureAwait(false);
                     }
                 }
             }
