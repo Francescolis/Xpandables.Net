@@ -49,6 +49,7 @@ public static class IRepositoryExtensions
         /// <param name="context">The <see cref="DataContext"/> to inject into the repository. Cannot be null.</param>
         /// <exception cref="InvalidOperationException">Thrown if the repository does not have a writable property or accessible field of type <see
         /// cref="DataContext"/>, or if the injection fails due to type incompatibility or access restrictions.</exception>
+        [RequiresUnreferencedCode("Injecting repository may need unreerenced code.")]
         public void InjectAmbientContext(DataContext context)
         {
             var repositoryType = repository.GetType();

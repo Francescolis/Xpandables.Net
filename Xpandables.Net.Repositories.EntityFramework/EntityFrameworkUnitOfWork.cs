@@ -44,6 +44,7 @@ public class EntityFrameworkUnitOfWork(DataContext context, IServiceProvider ser
     private readonly ConcurrentDictionary<Type, IRepository> _repositories = [];
 
     /// <inheritdoc />
+    [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public virtual TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
         where TRepository : class, IRepository
     {
