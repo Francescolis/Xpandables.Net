@@ -121,14 +121,17 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
 
         if (request.HardDelete)
         {
+            // Hard delete: permanently remove events from the database
             _db.RemoveRange(events);
         }
         else
         {
-            // Soft delete: mark as deleted if your entity supports it
-            // For now, we'll perform hard delete as Entity doesn't have a soft delete flag
-            // You might want to extend EntityDomainEvent with IsDeleted property for soft delete
-            _db.RemoveRange(events);
+            // Soft delete: mark events as deleted using EntityStatus.DELETED
+            foreach (var entity in events)
+            {
+                entity.SetStatus(EntityStatus.DELETED);
+            }
+            _db.UpdateRange(events);
         }
 
         // defer SaveChanges to Unit of Work
@@ -255,10 +258,10 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
             return;
         }
 
-        // Remove all events from this stream (truncate means remove all)
-        // If you want to keep events up to a certain version, you'd need to add a TruncateBeforeVersion property to TruncateStreamRequest
+        // Remove all events from this stream that are before the specified version
+        // TruncateBeforeVersion means: remove all events with StreamVersion < TruncateBeforeVersion
         var events = await _db.Set<EntityDomainEvent>()
-            .Where(e => e.StreamId == request.StreamId)
+            .Where(e => e.StreamId == request.StreamId && e.StreamVersion < request.TruncateBeforeVersion)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
