@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -42,7 +40,6 @@ public interface IOutboxStore
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the enqueue operation.</param>
     /// <param name="events">An array of integration events to enqueue. Cannot be null or contain null elements.</param>
     /// <returns>A task that represents the asynchronous enqueue operation.</returns>
-    [RequiresUnreferencedCode("The type might be removed")]
     Task EnqueueAsync(CancellationToken cancellationToken, params IIntegrationEvent[] events);
 
     /// <summary>
@@ -58,7 +55,6 @@ public interface IOutboxStore
     /// specified, a default timeout is used.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of integration
     /// events that were dequeued. The list will be empty if no events are available.</returns>
-    [RequiresUnreferencedCode("The type might be removed")]
     Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
         CancellationToken cancellationToken,
         int maxEvents = 10,

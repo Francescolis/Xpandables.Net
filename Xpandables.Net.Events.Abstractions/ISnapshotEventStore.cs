@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using Xpandables.Net.Optionals;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -32,9 +34,9 @@ public interface ISnapshotEventStore
     /// </summary>
     /// <param name="ownerId">The unique identifier of the owner whose snapshot event is to be retrieved. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the latest <see cref="EnvelopeResult"/>
-    /// for the specified owner, or null if no snapshot exists.</returns>
-    Task<EnvelopeResult?> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default);
+    /// <returns>A task that represents the asynchronous operation. The task result contains an optional <see cref="EnvelopeResult"/> representing 
+    /// the latest snapshot event if found; otherwise, an empty optional.</returns>
+    Task<Optional<EnvelopeResult>> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously appends a snapshot event to the store.

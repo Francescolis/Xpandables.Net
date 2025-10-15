@@ -16,6 +16,8 @@
 ********************************************************************************/
 using System.Text.Json;
 
+using Xpandables.Net.Repositories;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -25,7 +27,7 @@ namespace Xpandables.Net.Events;
 /// qualified name, sequence number, and associated data. The interface inherits from <see cref="IDisposable"/>,
 /// indicating that resources associated with the event may need to be released when the event is no longer
 /// needed.</remarks>
-public interface IEntityEvent : IDisposable
+public interface IEntityEvent : IEntity, IDisposable
 {
     /// <summary>
     /// Gets the name of the event associated with the current instance.

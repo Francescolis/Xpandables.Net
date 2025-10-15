@@ -15,13 +15,13 @@
  *
 ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore;
 
+using Xpandables.Net.Optionals;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Events;
 
@@ -42,7 +42,9 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
         ?? throw new ArgumentNullException(nameof(context));
 
     ///<inheritdoc/>
-    public async Task<AppendResult> AppendAsync(
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    public async Task<AppendResult> AppendToStreamAsync(
         AppendRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -74,7 +76,7 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
                 .WithStreamVersion(next)
                 .WithStreamName(@event.StreamName);
 
-            var entity = (EntityDomainEvent)converter.ConvertEventToEntity(nextEvent, JsonSerializerOptions.DefaultWeb);
+            var entity = (EntityDomainEvent)converter.ConvertEventToEntity(nextEvent);
             entities.Add(entity);
         }
 
@@ -85,16 +87,62 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     }
 
     ///<inheritdoc/>
-    public Task AppendSnapshotAsync(ISnapshotEvent snapshotEvent, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    public async Task AppendSnapshotAsync(
+        ISnapshotEvent snapshotEvent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(snapshotEvent);
+
+        var converter = EventConverter.GetConverterFor<ISnapshotEvent>();
+        var entity = (EntitySnapshotEvent)converter.ConvertEventToEntity(snapshotEvent);
+
+        await _db.AddAsync(entity, cancellationToken).ConfigureAwait(false);
+        // defer SaveChanges to Unit of Work
+    }
+
     ///<inheritdoc/>
     public Task DeleteStreamAsync(DeleteStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
     ///<inheritdoc/>
-    public Task<EnvelopeResult?> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    public async Task<Optional<EnvelopeResult>> GetLatestSnapshotAsync(
+        Guid ownerId,
+        CancellationToken cancellationToken = default)
+    {
+        var last = await _db.Set<EntitySnapshotEvent>()
+            .AsNoTracking()
+            .Where(e => e.OwnerId == ownerId)
+            .OrderByDescending(e => e.Sequence)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (last == null)
+            return Optional.Empty<EnvelopeResult>();
+
+        return Optional.Some(new EnvelopeResult
+        {
+            Event = EventConverter.DeserializeEntityToEvent(last),
+            EventFullName = last.EventFullName,
+            EventId = last.KeyId,
+            EventType = last.EventType,
+            GlobalPosition = last.Sequence,
+            OccurredOn = last.CreatedOn,
+            StreamId = last.OwnerId,
+            StreamName = null,
+            StreamVersion = last.Sequence
+        });
+    }
+
     ///<inheritdoc/>
     public async Task<long> GetStreamVersionAsync(Guid streamId, CancellationToken cancellationToken = default) =>
         await GetStreamVersionCoreAsync(streamId, cancellationToken).ConfigureAwait(false);
 
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(
         ReadAllStreamsRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -109,7 +157,7 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
         {
             yield return new EnvelopeResult
             {
-                Event = EventConverter.DeserializeEntityToEvent(entity, JsonSerializerOptions.DefaultWeb),
+                Event = EventConverter.DeserializeEntityToEvent(entity),
                 EventFullName = entity.EventFullName,
                 EventId = entity.KeyId,
                 EventType = entity.EventType,
@@ -123,6 +171,8 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     }
 
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(
         ReadStreamRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -137,7 +187,7 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
         {
             yield return new EnvelopeResult
             {
-                Event = EventConverter.DeserializeEntityToEvent(entity, JsonSerializerOptions.DefaultWeb),
+                Event = EventConverter.DeserializeEntityToEvent(entity),
                 EventFullName = entity.EventFullName,
                 EventId = entity.KeyId,
                 EventType = entity.EventType,
@@ -151,9 +201,23 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     }
 
     ///<inheritdoc/>
-    public Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public async Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default)
+    {
+        return await _db.Set<EntityDomainEvent>()
+            .AsNoTracking()
+            .AnyAsync(e => e.StreamId == streamId, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     ///<inheritdoc/>
-    public IAsyncDisposable SubscribeToAllStreams(SubscribeToAllStreamsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public IAsyncDisposable SubscribeToAllStreams(
+        SubscribeToAllStreamsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+    }
+
     ///<inheritdoc/>
     public IAsyncDisposable SubscribeToStream(SubscribeToStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     ///<inheritdoc/>

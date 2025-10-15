@@ -96,7 +96,7 @@ public sealed class AggregateStore<TAggregate>(
             ExpectedVersion = expectedVersion
         };
 
-        await _eventStore.AppendAsync(request, cancellationToken).ConfigureAwait(false);
+        await _eventStore.AppendToStreamAsync(request, cancellationToken).ConfigureAwait(false);
 
         domainEvents.AddRange(pending, aggregate.MarkEventsAsCommitted);
     }

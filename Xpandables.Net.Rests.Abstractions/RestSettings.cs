@@ -28,7 +28,7 @@ namespace Xpandables.Net.Rests;
 /// </summary>
 public static class RestSettings
 {
-    private static JsonSerializerOptions _serializerOptions = JsonSerializerOptions.DefaultWeb;
+    private static JsonSerializerOptions _serializerOptions = SerializationDefaultOptions.Value;
 
     /// <summary>
     /// Gets or sets the default options used for JSON serialization and deserialization operations.

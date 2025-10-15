@@ -47,14 +47,14 @@ namespace Xpandables.Net.Events;
 public interface IEventStore : ISnapshotEventStore
 {
     /// <summary>
-    /// Appends the specified data asynchronously using the provided request parameters.
+    /// Appends events to a stream as specified by the provided <see cref="AppendRequest"/>.
     /// </summary>
     /// <param name="request">An <see cref="AppendRequest"/> object that specifies the data and options for the append operation. Cannot be
     /// null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the append operation.</param>
     /// <returns>A task that represents the asynchronous append operation. The task result contains an <see cref="AppendResult"/>
     /// describing the outcome of the operation.</returns>
-    Task<AppendResult> AppendAsync(AppendRequest request, CancellationToken cancellationToken = default);
+    Task<AppendResult> AppendToStreamAsync(AppendRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously reads events from a stream according to the specified request parameters.

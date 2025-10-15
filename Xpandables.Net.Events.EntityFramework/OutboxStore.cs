@@ -16,14 +16,12 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net;
 using Xpandables.Net.Events;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Events;
 
@@ -44,7 +42,8 @@ public sealed class OutboxStore<TDataContext>(TDataContext context) : IOutboxSto
         ?? throw new ArgumentNullException(nameof(context));
 
     /// <inheritdoc />
-    [RequiresUnreferencedCode("The type might be removed")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task EnqueueAsync(
         CancellationToken cancellationToken,
         params IIntegrationEvent[] events)
@@ -57,7 +56,7 @@ public sealed class OutboxStore<TDataContext>(TDataContext context) : IOutboxSto
 
         foreach (var @event in events)
         {
-            var entity = (EntityIntegrationEvent)converter.ConvertEventToEntity(@event, JsonSerializerOptions.DefaultWeb);
+            var entity = (EntityIntegrationEvent)converter.ConvertEventToEntity(@event);
             entity.SetStatus(EntityStatus.PENDING);
             list.Add(entity);
         }
@@ -67,7 +66,8 @@ public sealed class OutboxStore<TDataContext>(TDataContext context) : IOutboxSto
     }
 
     /// <inheritdoc />
-    [RequiresUnreferencedCode("The type might be removed")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public async Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
         CancellationToken cancellationToken,
         int maxEvents = 10,
@@ -116,7 +116,7 @@ public sealed class OutboxStore<TDataContext>(TDataContext context) : IOutboxSto
         var list = new List<IIntegrationEvent>(claimed.Count);
         foreach (var entity in claimed)
         {
-            if (converter.ConvertEntityToEvent(entity, JsonSerializerOptions.DefaultWeb) is IIntegrationEvent ie)
+            if (converter.ConvertEntityToEvent(entity) is IIntegrationEvent ie)
             {
                 list.Add(ie);
             }
