@@ -103,7 +103,36 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     }
 
     ///<inheritdoc/>
-    public Task DeleteStreamAsync(DeleteStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    public async Task DeleteStreamAsync(
+        DeleteStreamRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var events = await _db.Set<EntityDomainEvent>()
+            .Where(e => e.StreamId == request.StreamId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (events.Count == 0)
+        {
+            return;
+        }
+
+        if (request.HardDelete)
+        {
+            _db.RemoveRange(events);
+        }
+        else
+        {
+            // Soft delete: mark as deleted if your entity supports it
+            // For now, we'll perform hard delete as Entity doesn't have a soft delete flag
+            // You might want to extend EntityDomainEvent with IsDeleted property for soft delete
+            _db.RemoveRange(events);
+        }
+
+        // defer SaveChanges to Unit of Work
+    }
 
     ///<inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
@@ -210,18 +239,52 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     }
 
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    public async Task TruncateStreamAsync(
+        TruncateStreamRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        // Get the current stream version to determine which events exist
+        var currentVersion = await GetStreamVersionCoreAsync(request.StreamId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (currentVersion == -1)
+        {
+            // Stream doesn't exist
+            return;
+        }
+
+        // Remove all events from this stream (truncate means remove all)
+        // If you want to keep events up to a certain version, you'd need to add a TruncateBeforeVersion property to TruncateStreamRequest
+        var events = await _db.Set<EntityDomainEvent>()
+            .Where(e => e.StreamId == request.StreamId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (events.Count > 0)
+        {
+            _db.RemoveRange(events);
+        }
+
+        // defer SaveChanges to Unit of Work
+    }
+
+    ///<inheritdoc/>
+    public IAsyncDisposable SubscribeToStream(
+        SubscribeToStreamRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        return new StreamSubscription(_db, request, cancellationToken);
+    }
+
+    ///<inheritdoc/>
     public IAsyncDisposable SubscribeToAllStreams(
         SubscribeToAllStreamsRequest request,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
+        return new AllStreamsSubscription(_db, request, cancellationToken);
     }
-
-    ///<inheritdoc/>
-    public IAsyncDisposable SubscribeToStream(SubscribeToStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-    ///<inheritdoc/>
-    public Task TruncateStreamAsync(TruncateStreamRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
     private async Task<long> GetStreamVersionCoreAsync(
         Guid streamId, CancellationToken cancellationToken)
@@ -235,5 +298,149 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
             .ConfigureAwait(false);
 
         return last ?? -1;
+    }
+
+    // Subscription implementation for a single stream
+    private sealed class StreamSubscription : IAsyncDisposable
+    {
+        private readonly TDataContext _context;
+        private readonly SubscribeToStreamRequest _request;
+        private readonly CancellationTokenSource _cts;
+        private readonly Task _subscriptionTask;
+
+        public StreamSubscription(
+            TDataContext context,
+            SubscribeToStreamRequest request,
+            CancellationToken cancellationToken)
+        {
+            _context = context;
+            _request = request;
+            _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _subscriptionTask = RunSubscriptionAsync();
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+        private async Task RunSubscriptionAsync()
+        {
+            long lastProcessedVersion = -1;
+
+            try
+            {
+                while (!_cts.Token.IsCancellationRequested)
+                {
+                    var events = await _context.Set<EntityDomainEvent>()
+                        .AsNoTracking()
+                        .Where(e => e.StreamId == _request.StreamId && e.StreamVersion > lastProcessedVersion)
+                        .OrderBy(e => e.StreamVersion)
+                        .Take(100) // Process in batches
+                        .ToListAsync(_cts.Token)
+                        .ConfigureAwait(false);
+
+                    foreach (var entity in events)
+                    {
+                        var domainEvent = (IDomainEvent)EventConverter.DeserializeEntityToEvent(entity);
+                        await _request.OnEvent(domainEvent).ConfigureAwait(false);
+                        lastProcessedVersion = entity.StreamVersion;
+                    }
+
+                    // Wait before polling again (adjust interval as needed)
+                    if (events.Count == 0)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(1), _cts.Token).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when disposed
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _cts.CancelAsync().ConfigureAwait(false);
+            try
+            {
+                await _subscriptionTask.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected
+            }
+            _cts.Dispose();
+        }
+    }
+
+    // Subscription implementation for all streams
+    private sealed class AllStreamsSubscription : IAsyncDisposable
+    {
+        private readonly TDataContext _context;
+        private readonly SubscribeToAllStreamsRequest _request;
+        private readonly CancellationTokenSource _cts;
+        private readonly Task _subscriptionTask;
+
+        public AllStreamsSubscription(
+            TDataContext context,
+            SubscribeToAllStreamsRequest request,
+            CancellationToken cancellationToken)
+        {
+            _context = context;
+            _request = request;
+            _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _subscriptionTask = RunSubscriptionAsync();
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+        private async Task RunSubscriptionAsync()
+        {
+            long lastProcessedSequence = 0;
+
+            try
+            {
+                while (!_cts.Token.IsCancellationRequested)
+                {
+                    var events = await _context.Set<EntityDomainEvent>()
+                        .AsNoTracking()
+                        .Where(e => e.Sequence > lastProcessedSequence)
+                        .OrderBy(e => e.Sequence)
+                        .Take(100) // Process in batches
+                        .ToListAsync(_cts.Token)
+                        .ConfigureAwait(false);
+
+                    foreach (var entity in events)
+                    {
+                        var domainEvent = (IDomainEvent)EventConverter.DeserializeEntityToEvent(entity);
+                        await _request.OnEvent(domainEvent).ConfigureAwait(false);
+                        lastProcessedSequence = entity.Sequence;
+                    }
+
+                    // Wait before polling again (adjust interval as needed)
+                    if (events.Count == 0)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(1), _cts.Token).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when disposed
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _cts.CancelAsync().ConfigureAwait(false);
+            try
+            {
+                await _subscriptionTask.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected
+            }
+            _cts.Dispose();
+        }
     }
 }

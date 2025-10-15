@@ -33,7 +33,9 @@ public readonly record struct TruncateStreamRequest
     public readonly required Guid StreamId { get; init; }
 
     /// <summary>
-    /// Gets the version up to which events should be truncated (inclusive).
+    /// Gets the version number before which all events should be truncated.
     /// </summary>
-    public readonly required long ToVersionInclusive { get; init; } = 0;
+    /// <remarks>Use this property to specify the cutoff version for event retention. Events with a version
+    /// less than this value are considered eligible for truncation and may be removed from storage.</remarks>
+    public readonly required long TruncateBeforeVersion { get; init; } = 0;
 }

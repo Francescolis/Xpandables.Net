@@ -44,6 +44,9 @@ public abstract class Entity<TKey> : IEntity<TKey>
     /// <inheritdoc />
     public DateTime? DeletedOn { get; set; }
 
+    /// <inheritdoc/>
+    public bool IsDeleted => Status == EntityStatus.DELETED;
+
     /// <inheritdoc />
     [Key]
     public required TKey KeyId { get; init; }

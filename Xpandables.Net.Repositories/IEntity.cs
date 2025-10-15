@@ -52,6 +52,11 @@ public interface IEntity
     /// </summary>  
     DateTime? DeletedOn { get; set; }
 
+    /// <summary>
+    /// Gets a value indicating whether the entity has been marked as deleted.
+    /// </summary>
+    bool IsDeleted { get; }
+
     /// <summary>  
     /// Sets the status of the underlying instance.  
     /// </summary>  
