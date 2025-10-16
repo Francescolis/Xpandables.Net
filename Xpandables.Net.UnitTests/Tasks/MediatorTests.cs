@@ -61,4 +61,144 @@ public class MediatorTests
         public Task<ExecutionResult> HandleAsync(RequestContext<Ping> context, RequestHandler nextHandler, CancellationToken cancellationToken)
             => nextHandler(cancellationToken);
     }
+
+    // ========== Additional Mediator Completion Tests ==========
+
+    [Fact]
+    public async Task Mediator_NoHandler_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddXMediator();
+        services.AddXPipelineRequestHandler();
+        var mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();
+
+        // Act
+        var act = async () => await mediator.SendAsync(new Ping());
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Mediator_MultipleHandlersRegistered_ShouldUseFirst()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddXMediator();
+        services.AddXPipelineRequestHandler();
+        services.AddTransient<IRequestHandler<Ping>, PingHandler>();
+        services.AddTransient<IRequestHandler<Ping>, PingHandler>(); // Duplicate
+        var mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();
+
+        // Act
+        var result = await mediator.SendAsync(new Ping());
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    private sealed class SlowRequest : IRequest { }
+
+    private sealed class SlowHandler : IRequestHandler<SlowRequest>
+    {
+        public async Task<ExecutionResult> HandleAsync(SlowRequest request, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(100, cancellationToken);
+            return ExecutionResultExtensions.Ok().Build();
+        }
+    }
+
+    [Fact]
+    public async Task Mediator_CancellationRequested_ShouldCancel()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddXMediator();
+        services.AddXPipelineRequestHandler();
+        services.AddTransient<IRequestHandler<SlowRequest>, SlowHandler>();
+        var mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(10);
+
+        // Act
+        var act = async () => await mediator.SendAsync(new SlowRequest(), cts.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<TaskCanceledException>();
+    }
+
+    private sealed class DataRequest : IRequest<string>
+    {
+        public required string Value { get; init; }
+    }
+
+    private sealed class DataHandler : IRequestHandler<DataRequest, string>
+    {
+        public Task<ExecutionResult<string>> HandleAsync(DataRequest request, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(ExecutionResultExtensions.Ok($"Processed: {request.Value}").Build());
+        }
+    }
+
+    [Fact]
+    public async Task Mediator_GenericRequest_ShouldReturnTypedResult()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddXMediator();
+        services.AddXPipelineRequestHandler();
+        services.AddTransient<IRequestHandler<DataRequest>, DataHandler>();
+        var mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();
+
+        // Act
+        ExecutionResult<string> result = await mediator.SendAsync(new DataRequest { Value = "test" });
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be("Processed: test");
+    }
+
+    private sealed class ValidatedRequest : IRequest { }
+
+    private sealed class ValidationDecorator : IPipelineDecorator<ValidatedRequest>
+    {
+        public Task<ExecutionResult> HandleAsync(
+            RequestContext<ValidatedRequest> context,
+            RequestHandler nextHandler,
+            CancellationToken cancellationToken)
+        {
+            context["validated"] = true;
+            return nextHandler(cancellationToken);
+        }
+    }
+
+    private sealed class ValidatedHandler : IRequestContextHandler<ValidatedRequest>
+    {
+        public Task<ExecutionResult> HandleAsync(RequestContext<ValidatedRequest> context, CancellationToken cancellationToken = default)
+        {
+            context.TryGetItem("validated", out object? value).Should().BeTrue();
+            value.Should().Be(true);
+            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+        }
+    }
+
+    [Fact]
+    public async Task Mediator_DecoratorSetsContext_HandlerReceivesIt()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddXMediator();
+        services.AddXPipelineRequestHandler();
+        services.AddTransient<IPipelineDecorator<ValidatedRequest>, ValidationDecorator>();
+        services.AddTransient<IRequestHandler<ValidatedRequest>, ValidatedHandler>();
+        var mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();
+
+        // Act
+        var result = await mediator.SendAsync(new ValidatedRequest());
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
 }
