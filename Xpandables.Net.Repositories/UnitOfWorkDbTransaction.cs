@@ -26,7 +26,7 @@ namespace Xpandables.Net.Repositories;
 /// proper transactional behavior. It also implements asynchronous disposal to  ensure that resources are released
 /// properly in both synchronous and asynchronous contexts.</remarks>
 /// <param name="dbTransaction"></param>
-public sealed class UnitOfWorkTransaction(DbTransaction dbTransaction) : DisposableAsync, IUnitOfWorkTransaction
+public sealed class UnitOfWorkDbTransaction(DbTransaction dbTransaction) : DisposableAsync, IUnitOfWorkTransaction
 {
     private readonly DbTransaction _dbTransaction = dbTransaction;
     private bool _committed;
