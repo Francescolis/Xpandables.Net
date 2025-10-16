@@ -87,7 +87,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Events.Abstractions\Xpandables.Net.Events.Abstractions.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.Abstractions\Xpandables.Net.Abstractions.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.Optionals\Xpandables.Net.Optionals.csproj" />
 	</ItemGroup>
 
 </Project>
