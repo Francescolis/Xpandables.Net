@@ -32,12 +32,12 @@ namespace Xpandables.Net.Repositories;
 /// It manages the DbContext lifecycle and ensures that all operations within a unit of work are executed within
 /// the same transaction context.</remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="EntityFrameworkUnitOfWork"/> class.
+/// Initializes a new instance of the <see cref="UnitOfWork"/> class.
 /// </remarks>
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <param name="serviceProvider">service provider for dependency injection of repositories.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class EntityFrameworkUnitOfWork(DataContext context, IServiceProvider serviceProvider) :
+public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     DisposableAsync, IUnitOfWork
 {
     private readonly DataContext _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -57,7 +57,7 @@ public class EntityFrameworkUnitOfWork(DataContext context, IServiceProvider ser
             IRepository? service;
             if (repositoryType == typeof(IRepository))
             {
-                service = new EntityFrameworkRepository(context);
+                service = new Repository(context);
                 return service;
             }
 
@@ -101,7 +101,7 @@ public class EntityFrameworkUnitOfWork(DataContext context, IServiceProvider ser
             .BeginTransactionAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return new EntityFrameworkUnitOfWorkTransaction(transaction);
+        return new UnitOfWorkTransaction(transaction);
     }
 
     /// <inheritdoc />
@@ -110,7 +110,7 @@ public class EntityFrameworkUnitOfWork(DataContext context, IServiceProvider ser
         ThrowIfDisposed();
 
         var transaction = _context.Database.BeginTransaction();
-        return new EntityFrameworkUnitOfWorkTransaction(transaction);
+        return new UnitOfWorkTransaction(transaction);
     }
 
     /// <inheritdoc />
@@ -126,7 +126,7 @@ public class EntityFrameworkUnitOfWork(DataContext context, IServiceProvider ser
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException("Failed to use transaction.");
 
-        return new EntityFrameworkUnitOfWorkTransaction(efTransaction);
+        return new UnitOfWorkTransaction(efTransaction);
     }
 
     /// <inheritdoc />
@@ -138,7 +138,7 @@ public class EntityFrameworkUnitOfWork(DataContext context, IServiceProvider ser
         var efTransaction = _context.Database.UseTransaction(transaction)
             ?? throw new InvalidOperationException("Failed to use transaction.");
 
-        return new EntityFrameworkUnitOfWorkTransaction(efTransaction);
+        return new UnitOfWorkTransaction(efTransaction);
     }
 
     /// <inheritdoc />
@@ -262,13 +262,13 @@ public class EntityFrameworkUnitOfWork(DataContext context, IServiceProvider ser
 /// <remarks>This implementation provides the same functionality as EntityFrameworkUnitOfWork but with
 /// strong typing for the specific DbContext type.</remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="EntityFrameworkUnitOfWork{TDataContext}"/> class.
+/// Initializes a new instance of the <see cref="UnitOfWork{TDataContext}"/> class.
 /// </remarks>
 /// <param name="context">The strongly-typed Entity Framework DbContext.</param>
 /// <param name="serviceProvider">Optional service provider for dependency injection of repositories.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class EntityFrameworkUnitOfWork<TDataContext>(TDataContext context, IServiceProvider serviceProvider) :
-    EntityFrameworkUnitOfWork(context, serviceProvider), IUnitOfWork<TDataContext>
+public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider serviceProvider) :
+    UnitOfWork(context, serviceProvider), IUnitOfWork<TDataContext>
     where TDataContext : DataContext
 {
     /// <inheritdoc />

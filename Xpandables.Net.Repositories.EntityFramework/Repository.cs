@@ -28,11 +28,11 @@ namespace Xpandables.Net.Repositories;
 /// in a relational database. It uses <see cref="DataContext"/> to interact with the database and supports all standard
 /// repository operations including querying, adding, updating, and deleting entities asynchronously.</remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="EntityFrameworkRepository"/> class.
+/// Initializes a new instance of the <see cref="Repository"/> class.
 /// </remarks>
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class EntityFrameworkRepository(DataContext context) : DisposableAsync, IRepository
+public class Repository(DataContext context) : DisposableAsync, IRepository
 {
     /// <summary>
     /// Gets a value indicating whether operations are executed within a unit of work context.
@@ -364,7 +364,7 @@ public class EntityFrameworkRepository(DataContext context) : DisposableAsync, I
 /// <typeparam name="TDataContext">The type of the Entity Framework data context to be used by the repository. Must inherit from <see
 /// cref="DataContext"/>.</typeparam>
 /// <param name="context">The data context instance used to access and manage entities within the repository. Cannot be null.</param>
-public class EntityFrameworkRepository<TDataContext>(TDataContext context) : EntityFrameworkRepository(context), IRepository<TDataContext>
+public class Repository<TDataContext>(TDataContext context) : Repository(context), IRepository<TDataContext>
     where TDataContext : DataContext
 {
     /// <summary>

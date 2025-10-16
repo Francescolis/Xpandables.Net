@@ -9,7 +9,7 @@ using Xpandables.Net.Repositories;
 namespace Xpandables.Net.UnitTests.Repositories;
 
 public interface ICustomRepo : IRepository { }
-public sealed class CustomRepo(TestDataContext ctx) : EntityFrameworkRepository<TestDataContext>(ctx), ICustomRepo { }
+public sealed class CustomRepo(TestDataContext ctx) : Repository<TestDataContext>(ctx), ICustomRepo { }
 
 public sealed class ServiceRegistrationTests
 {

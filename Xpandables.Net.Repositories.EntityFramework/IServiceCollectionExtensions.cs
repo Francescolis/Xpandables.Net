@@ -66,8 +66,8 @@ public static class IServiceCollectionExtensions
         {
             ArgumentNullException.ThrowIfNull(services);
 
-            services.TryAddScoped<IRepository, EntityFrameworkRepository>();
-            services.TryAddScoped<IUnitOfWork, EntityFrameworkUnitOfWork>();
+            services.TryAddScoped<IRepository, Repository>();
+            services.TryAddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }
@@ -86,25 +86,25 @@ public static class IServiceCollectionExtensions
             services.TryAddScoped<IRepository>(provider =>
             {
                 var context = provider.GetRequiredService<TDataContext>();
-                return new EntityFrameworkRepository(context);
+                return new Repository(context);
             });
 
             services.TryAddScoped<IRepository<TDataContext>>(provider =>
             {
                 var context = provider.GetRequiredService<TDataContext>();
-                return new EntityFrameworkRepository<TDataContext>(context);
+                return new Repository<TDataContext>(context);
             });
 
             services.TryAddScoped<IUnitOfWork>(provider =>
             {
                 var context = provider.GetRequiredService<TDataContext>();
-                return new EntityFrameworkUnitOfWork(context, provider);
+                return new UnitOfWork(context, provider);
             });
 
             services.TryAddScoped<IUnitOfWork<TDataContext>>(provider =>
             {
                 var context = provider.GetRequiredService<TDataContext>();
-                return new EntityFrameworkUnitOfWork<TDataContext>(context, provider);
+                return new UnitOfWork<TDataContext>(context, provider);
             });
 
             return services;

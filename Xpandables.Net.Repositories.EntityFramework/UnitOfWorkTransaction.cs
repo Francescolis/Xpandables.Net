@@ -31,7 +31,7 @@ namespace Xpandables.Net.Repositories;
 /// underlying database transaction. Instances of this class are intended to be used within a single transaction scope
 /// and should be disposed when no longer needed.</remarks>
 /// <param name="transaction">The underlying Entity Framework database transaction to be managed by this unit of work transaction. Cannot be null.</param>
-public sealed class EntityFrameworkUnitOfWorkTransaction(IDbContextTransaction transaction) : DisposableAsync, IUnitOfWorkTransaction
+public sealed class UnitOfWorkTransaction(IDbContextTransaction transaction) : DisposableAsync, IUnitOfWorkTransaction
 {
     private readonly IDbContextTransaction _transaction = transaction;
 
