@@ -52,6 +52,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Validators.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.AspNetCore", "Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj", "{772F0174-CFA9-443F-912A-228A5FAC6954}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpandables.Net.Events.Pipelines", "Xpandables.Net.Events.Pipelines\Xpandables.Net.Events.Pipelines.csproj", "{59C6A845-E401-4F0F-A720-B135A0A19889}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -142,6 +144,10 @@ Global
 		{772F0174-CFA9-443F-912A-228A5FAC6954}.Debug|x64.Build.0 = Debug|x64
 		{772F0174-CFA9-443F-912A-228A5FAC6954}.Release|x64.ActiveCfg = Release|x64
 		{772F0174-CFA9-443F-912A-228A5FAC6954}.Release|x64.Build.0 = Release|x64
+		{59C6A845-E401-4F0F-A720-B135A0A19889}.Debug|x64.ActiveCfg = Debug|x64
+		{59C6A845-E401-4F0F-A720-B135A0A19889}.Debug|x64.Build.0 = Debug|x64
+		{59C6A845-E401-4F0F-A720-B135A0A19889}.Release|x64.ActiveCfg = Release|x64
+		{59C6A845-E401-4F0F-A720-B135A0A19889}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
