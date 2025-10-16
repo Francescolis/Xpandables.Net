@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
+using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,6 +41,8 @@ public sealed class AggregateRequestPostHandler<TRequest>(IServiceProvider servi
     where TRequest : class, IDependencyRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The DependencyType is guaranteed to be an IAggregate implementation which is preserved by the dependency injection container.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The DependencyType is guaranteed to be an IAggregate implementation which is preserved by the dependency injection container.")]
     public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
         ExecutionResult response,
@@ -48,7 +51,7 @@ public sealed class AggregateRequestPostHandler<TRequest>(IServiceProvider servi
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(response);
 
-        if (response.IsSuccess)
+        if (response.IsSuccess && context.Request.DependencyInstance.IsNotEmpty)
         {
             Type aggregateStoreType = typeof(IAggregateStore<>)
                 .MakeGenericType(context.Request.DependencyType);
@@ -56,10 +59,10 @@ public sealed class AggregateRequestPostHandler<TRequest>(IServiceProvider servi
             IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
                 .GetRequiredService(aggregateStoreType);
 
-            object aggregate = context.Request.DependencyInstance.Value;
+            IAggregate aggregate = (IAggregate)context.Request.DependencyInstance.Value;
 
             await aggregateStore
-                .SaveAsync((Aggregate)aggregate, cancellationToken)
+                .SaveAsync(aggregate, cancellationToken)
                 .ConfigureAwait(false);
         }
 

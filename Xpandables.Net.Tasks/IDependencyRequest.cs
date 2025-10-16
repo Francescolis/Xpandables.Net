@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +16,7 @@
 ********************************************************************************/
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 using Xpandables.Net.Optionals;
 
@@ -34,6 +34,9 @@ public interface IDependencyRequest : IRequest
     /// <summary>
     /// The dependency type.
     /// </summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors 
+        | DynamicallyAccessedMemberTypes.PublicMethods 
+        | DynamicallyAccessedMemberTypes.PublicProperties)]
     Type DependencyType { get; }
 
     /// <summary>
@@ -52,15 +55,23 @@ public interface IDependencyRequest : IRequest
 /// instance.
 /// </summary>
 /// <typeparam name="TDependency">The type of the dependency to be requested. Must be a reference type.</typeparam>
-public interface IDependencyRequest<TDependency> : IDependencyRequest
+public interface IDependencyRequest<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors 
+    | DynamicallyAccessedMemberTypes.PublicMethods 
+    | DynamicallyAccessedMemberTypes.PublicProperties)] TDependency> : IDependencyRequest
     where TDependency : class
 {
     /// <summary>
     /// The type of the dependency.
     /// </summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors 
+        | DynamicallyAccessedMemberTypes.PublicMethods 
+        | DynamicallyAccessedMemberTypes.PublicProperties)]
     public new Type DependencyType => typeof(TDependency);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors 
+        | DynamicallyAccessedMemberTypes.PublicMethods 
+        | DynamicallyAccessedMemberTypes.PublicProperties)]
     Type IDependencyRequest.DependencyType => DependencyType;
 
     /// <summary>

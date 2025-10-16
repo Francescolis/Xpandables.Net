@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
+
 using Xpandables.Net.Optionals;
 
 namespace Xpandables.Net.Tasks;
@@ -23,7 +25,9 @@ namespace Xpandables.Net.Tasks;
 /// Represents a request for a dependency of a specified type, including its key identifier and an optional instance.
 /// </summary>
 /// <typeparam name="TDependency">The type of the dependency being requested. Must be a reference type.</typeparam>
-public abstract record DependencyRequest<TDependency> : IDependencyRequest<TDependency>
+public abstract record DependencyRequest<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors 
+    | DynamicallyAccessedMemberTypes.PublicMethods 
+    | DynamicallyAccessedMemberTypes.PublicProperties)] TDependency> : IDependencyRequest<TDependency>
     where TDependency : class
 {
     /// <inheritdoc />

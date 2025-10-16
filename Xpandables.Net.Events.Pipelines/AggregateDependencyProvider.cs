@@ -1,5 +1,4 @@
-﻿
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net;
@@ -41,11 +42,19 @@ public sealed class AggregateDependencyProvider(IServiceProvider serviceProvider
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The DependencyType is guaranteed to be an IAggregate implementation which is preserved by the dependency injection container.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The DependencyType is guaranteed to be an IAggregate implementation which is preserved by the dependency injection container.")]
     public async Task<object> GetDependencyAsync(
         IDependencyRequest request,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        if (request.DependencyKeyId is not Guid streamId || streamId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                $"The dependency key ID must be a non-empty Guid for aggregate type '{request.DependencyType.Name}'.");
+        }
 
         Type aggregateStoreType = typeof(IAggregateStore<>)
             .MakeGenericType(request.DependencyType);
@@ -53,8 +62,12 @@ public sealed class AggregateDependencyProvider(IServiceProvider serviceProvider
         IAggregateStore aggregateStore = (IAggregateStore)serviceProvider
             .GetRequiredService(aggregateStoreType);
 
-        return await aggregateStore
-            .LoadAsync((Guid)request.DependencyKeyId, cancellationToken)
+        // LoadAsync will throw ValidationException if aggregate is not found
+        // This is intentional - the caller should handle aggregate not found scenarios
+        IAggregate aggregate = await aggregateStore
+            .LoadAsync(streamId, cancellationToken)
             .ConfigureAwait(false);
+
+        return aggregate;
     }
 }
