@@ -1,4 +1,4 @@
-# ?? Xpandables.Net.Optionals
+#  Xpandables.Net.Optionals
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -7,22 +7,22 @@
 
 ---
 
-## ?? Overview
+##  Overview
 
 `Xpandables.Net.Optionals` provides a robust `Optional<T>` type that represents values that may or may not exist. Say goodbye to null reference exceptions and defensive `null` checks—embrace explicit, type-safe handling of optional values.
 
-### ? Key Features
+### Key Features
 
-- ? **Null Safety** - Explicit handling of missing values
-- ?? **Type-Safe** - Compile-time checks for value presence
-- ?? **Functional Operators** - Map, Bind, Match, and more
-- ?? **JSON Serialization** - Seamless System.Text.Json support
-- ?? **Performance** - Zero-allocation struct-based design
-- ?? **LINQ Integration** - Works with standard LINQ operators
+-  **Null Safety** - Explicit handling of missing values
+-  **Type-Safe** - Compile-time checks for value presence
+-  **Functional Operators** - Map, Bind, Match, and more
+-  **JSON Serialization** - Seamless System.Text.Json support
+-  **Performance** - Zero-allocation struct-based design
+-  **LINQ Integration** - Works with standard LINQ operators
 
 ---
 
-## ?? Getting Started
+##  Getting Started
 
 ### Installation
 
@@ -46,15 +46,14 @@ if (someUser.IsNotEmpty)
 }
 
 // Pattern matching
-string message = someUser.Match(
-    onSome: user => $"Hello, {user.Name}!",
-    onEmpty: () => "No user found"
-);
+string message = someUser
+    .Map(user => $"Hello, {user.Name}")
+    .Empty(() => "No user found");
 ```
 
 ---
 
-## ?? Core Concepts
+##  Core Concepts
 
 ### Creating Optionals
 
@@ -94,7 +93,7 @@ if (user.IsEmpty)
 
 ---
 
-## ?? Functional Operations
+##  Functional Operations
 
 ### Map - Transform the Value
 
@@ -150,7 +149,7 @@ Optional<int> oddNumber = number.Filter(n => n % 2 != 0);  // Empty
 
 ---
 
-## ?? Advanced Examples
+##  Advanced Examples
 
 ### Example 1: Safe Dictionary Lookup
 
@@ -220,7 +219,7 @@ List<User> users = optionalUsers.Choose(); // Built-in helper
 
 ---
 
-## ?? Utility Methods
+##  Utility Methods
 
 ### GetValueOrDefault
 
@@ -250,26 +249,26 @@ bool greater = a > b; // false
 
 ---
 
-## ?? Best Practices
+##  Best Practices
 
 1. **Prefer Optional over null**: Make optionality explicit
    ```csharp
-   // ? Don't
+   // Don't
    User? GetUser(int id);
    
-   // ? Do
+   // Do
    Optional<User> GetUser(int id);
    ```
 
 2. **Use Match for branching**: Avoid direct `.Value` access
    ```csharp
-   // ? Don't
+   // Don't
    if (optional.IsNotEmpty)
    {
        DoSomething(optional.Value);
    }
    
-   // ? Do
+   // Do
    optional.Match(
        onSome: value => DoSomething(value),
        onEmpty: () => HandleEmpty()
@@ -286,14 +285,14 @@ bool greater = a > b; // false
 
 4. **Return Empty instead of null**: Be consistent
    ```csharp
-   // ? Explicit and safe
+   // Explicit and safe
    if (user == null)
        return Optional.Empty<User>();
    ```
 
 ---
 
-## ?? Integration with Other Packages
+##  Integration with Other Packages
 
 ### With ExecutionResults
 
@@ -325,7 +324,7 @@ Optional<Profile> profile = await user.BindAsync(async u =>
 
 ---
 
-## ?? JSON Serialization
+##  JSON Serialization
 
 Optionals are automatically serialized/deserialized:
 
@@ -348,13 +347,13 @@ string json = JsonSerializer.Serialize(dto);
 
 ---
 
-## ?? Related Packages
+##  Related Packages
 
 - [`Xpandables.Net.ExecutionResults`](../Xpandables.Net.ExecutionResults/README.md) - Result pattern
 - [`Xpandables.Net.Tasks`](../Xpandables.Net.Tasks/README.md) - Mediator pattern
 
 ---
 
-## ?? License
+##  License
 
-Apache License 2.0 - Copyright © Kamersoft 2024
+Apache License 2.0 - Copyright © Kamersoft 2025

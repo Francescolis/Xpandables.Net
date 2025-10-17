@@ -144,4 +144,4 @@ This package is a dependency for:
 
 ## ?? License
 
-Apache License 2.0 - Copyright © Kamersoft 2024
+Apache License 2.0 - Copyright © Kamersoft 2025

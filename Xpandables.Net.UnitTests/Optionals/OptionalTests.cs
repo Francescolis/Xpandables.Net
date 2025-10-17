@@ -34,6 +34,9 @@ public class OptionalTests
         var some = Optional.Some("test");
         var none = Optional.Empty<string>();
 
+        string value = some.Map(v => $"home {v}").Empty(() => "no value");
+        value.Should().Be("home test");
+
         // Act & Assert
         some.TryGetValue(out var value1).Should().BeTrue();
         value1.Should().Be("test");

@@ -60,7 +60,7 @@
 		<IsTrimmable>true</IsTrimmable>
 		<IsAotCompatible>true</IsAotCompatible>
 		<WarningLevel>9999</WarningLevel>
-		<Copyright>Copyright © Kamersoft 2024</Copyright>
+		<Copyright>Copyright © Kamersoft 2025</Copyright>
 		<RootNamespace>Xpandables.Net</RootNamespace>
 	</PropertyGroup>
 

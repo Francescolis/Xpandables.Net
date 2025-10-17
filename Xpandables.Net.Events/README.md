@@ -440,4 +440,4 @@ See [`Xpandables.Net.Events.EntityFramework`](../Xpandables.Net.Events.EntityFra
 
 ## ?? License
 
-Apache License 2.0 - Copyright © Kamersoft 2024
+Apache License 2.0 - Copyright © Kamersoft 2025
