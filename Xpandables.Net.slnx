@@ -1,0 +1,76 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="README.md" />
+    <File Path="Resources.Designer.t4" />
+  </Folder>
+  <Project Path="Xpandables.Net.Abstractions/Xpandables.Net.Abstractions.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.AspNetCore/Xpandables.Net.AspNetCore.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Async.AspNetCore/Xpandables.Net.Async.AspNetCore.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Async/Xpandables.Net.Async.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Benchmarking/Xpandables.Net.Benchmarking.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Events.EntityFramework/Xpandables.Net.Events.EntityFramework.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Events.Pipelines/Xpandables.Net.Events.Pipelines.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Events.Repositories/Xpandables.Net.Events.Repositories.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Events/Xpandables.Net.Events.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.ExecutionResults.AspNetCore/Xpandables.Net.ExecutionResults.AspNetCore.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.ExecutionResults/Xpandables.Net.ExecutionResults.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Optionals/Xpandables.Net.Optionals.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Repositories.EntityFramework/Xpandables.Net.Repositories.EntityFramework.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Repositories.Pipelines/Xpandables.Net.Repositories.Pipelines.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Repositories/Xpandables.Net.Repositories.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Rests.Abstractions/Xpandables.Net.Rests.Abstractions.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Rests/Xpandables.Net.Rests.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Tasks/Xpandables.Net.Tasks.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.UnitTests/Xpandables.Net.UnitTests.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Validators.AspNetCore/Xpandables.Net.Validators.AspNetCore.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Validators.Pipelines/Xpandables.Net.Validators.Pipelines.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Xpandables.Net.Validators/Xpandables.Net.Validators.csproj">
+    <Platform Project="x64" />
+  </Project>
+</Solution>
