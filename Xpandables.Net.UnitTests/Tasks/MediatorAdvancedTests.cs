@@ -278,7 +278,7 @@ public class MediatorAdvancedTests
         // Assert
         items.Should().HaveCount(15);
         items.Should().BeInAscendingOrder();
-        
+
         var pagination = await result.Value!.GetPaginationAsync();
         pagination.TotalCount.Should().Be(15);
     }
@@ -370,7 +370,7 @@ public class MediatorAdvancedTests
             CancellationToken cancellationToken = default)
         {
             context.TryGetItem("firstHandled", out object? first).Should().BeTrue();
-            
+
             return Task.FromResult(ExecutionResultExtensions
                 .Failure(HttpStatusCode.InternalServerError)
                 .WithDetail(exception.Message)
