@@ -11,13 +11,13 @@
 
 Provides a complete Entity Framework Core implementation of `IRepository` with support for CRUD operations, bulk updates, transactions, and the Unit of Work pattern.
 
-### ? Key Features
+### ?? Key Features
 
 - ??? **EF Core Integration** - Full DbContext support
 - ?? **Unit of Work** - Transaction management
 - ? **Bulk Operations** - Efficient batch operations
 - ?? **LINQ Support** - Full queryable support
-- ?? **Testable** - Easy to mock and test
+- ? **Testable** - Easy to mock and test
 
 ---
 

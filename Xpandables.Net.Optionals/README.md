@@ -1,4 +1,4 @@
-#  Xpandables.Net.Optionals
+# ?? Xpandables.Net.Optionals
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -7,22 +7,22 @@
 
 ---
 
-##  Overview
+## ?? Overview
 
 `Xpandables.Net.Optionals` provides a robust `Optional<T>` type that represents values that may or may not exist. Say goodbye to null reference exceptions and defensive `null` checks—embrace explicit, type-safe handling of optional values.
 
-### Key Features
+### ?? Key Features
 
--  **Null Safety** - Explicit handling of missing values
--  **Type-Safe** - Compile-time checks for value presence
--  **Functional Operators** - Map, Bind, Empty, and more
--  **JSON Serialization** - Seamless System.Text.Json support
--  **Performance** - Zero-allocation struct-based design
--  **LINQ Integration** - Works with standard LINQ operators
+- ?? **Null Safety** - Explicit handling of missing values
+- ?? **Type-Safe** - Compile-time checks for value presence
+- ?? **Functional Operators** - Map, Bind, Empty, and more
+- ?? **JSON Serialization** - Seamless System.Text.Json support
+- ? **Performance** - Zero-allocation struct-based design
+- ?? **LINQ Integration** - Works with standard LINQ operators
 
 ---
 
-##  Getting Started
+## ?? Getting Started
 
 ### Installation
 
@@ -53,7 +53,7 @@ string message = someUser
 
 ---
 
-##  Core Concepts
+## ??? Core Concepts
 
 ### Creating Optionals
 
@@ -99,7 +99,7 @@ if (user.TryGetValue(out User value))
 
 ---
 
-##  Functional Operations
+## ?? Functional Operations
 
 ### Map - Transform the Value
 
@@ -167,7 +167,7 @@ Optional<int> oddNumber = number.Where(n => n % 2 != 0);  // Empty
 
 ---
 
-##  Advanced Examples
+## ?? Advanced Examples
 
 ### Example 1: Safe Dictionary Lookup
 
@@ -243,7 +243,7 @@ var userNames = optionalUsers
 
 ---
 
-##  Utility Methods
+## ??? Utility Methods
 
 ### GetValueOrDefault
 
@@ -288,7 +288,7 @@ bool greater = a > b; // false
 
 ---
 
-##  Best Practices
+## ?? Best Practices
 
 1. **Prefer Optional over null**: Make optionality explicit
    ```csharp
@@ -339,7 +339,7 @@ bool greater = a > b; // false
 
 ---
 
-##  Integration with Other Packages
+## ?? Integration with Other Packages
 
 ### With ExecutionResults
 
@@ -383,7 +383,7 @@ var result = await user
 
 ---
 
-##  JSON Serialization
+## ?? JSON Serialization
 
 Optionals are automatically serialized/deserialized:
 
@@ -406,7 +406,7 @@ string json = JsonSerializer.Serialize(dto);
 
 ---
 
-##  Complete API Reference
+## ?? Complete API Reference
 
 ### Optional<T> Methods
 
@@ -440,13 +440,13 @@ string json = JsonSerializer.Serialize(dto);
 
 ---
 
-##  Related Packages
+## ?? Related Packages
 
 - [`Xpandables.Net.ExecutionResults`](../Xpandables.Net.ExecutionResults/README.md) - Result pattern
 - [`Xpandables.Net.Tasks`](../Xpandables.Net.Tasks/README.md) - Mediator pattern
 
 ---
 
-##  License
+## ?? License
 
 Apache License 2.0 - Copyright © Kamersoft 2025

@@ -11,13 +11,13 @@
 
 Provides a generic repository pattern implementation with support for advanced querying, bulk operations, and transaction management through Unit of Work.
 
-### ? Key Features
+### ?? Key Features
 
 - ?? **Generic Repository** - Type-safe data access
 - ?? **Unit of Work** - Transaction management
 - ?? **LINQ Support** - Queryable filters
 - ? **Bulk Operations** - Efficient updates and deletes
-- ?? **Testable** - Easy mocking and testing
+- ? **Testable** - Easy mocking and testing
 
 ---
 

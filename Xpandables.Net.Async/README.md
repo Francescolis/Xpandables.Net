@@ -11,7 +11,7 @@
 
 Comprehensive async enumerable extensions providing LINQ-like operations, pagination, grouping, and transformations for asynchronous data streams.
 
-### ? Key Features
+### ?? Key Features
 
 - ?? **Async LINQ** - Full async enumerable support
 - ?? **Pagination** - Built-in paging with `IAsyncPagedEnumerable<T>`

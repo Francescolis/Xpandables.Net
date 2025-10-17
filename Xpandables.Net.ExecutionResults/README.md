@@ -1,4 +1,4 @@
-# ?? Xpandables.Net.ExecutionResults
+# ? Xpandables.Net.ExecutionResults
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -11,15 +11,15 @@
 
 `Xpandables.Net.ExecutionResults` provides a comprehensive result pattern implementation that eliminates the need for exceptions in expected error scenarios. It encapsulates operation outcomes with status codes, error details, headers, and metadata—perfect for building resilient APIs and applications.
 
-### ? Key Features
+### ?? Key Features
 
-- ? **HTTP-Aware Results** - Built-in `HttpStatusCode` support
+- ?? **HTTP-Aware Results** - Built-in `HttpStatusCode` support
 - ?? **Generic and Non-Generic** - `ExecutionResult` and `ExecutionResult<T>`
 - ?? **Rich Metadata** - Headers, extensions, errors, and location support
 - ?? **Fluent API** - Builder pattern for result construction
 - ?? **Chainable Operations** - Railway-oriented programming support
 - ?? **JSON Serialization** - Full System.Text.Json support
-- ?? **Performance Optimized** - Record types with value semantics
+- ? **Performance Optimized** - Record types with value semantics
 
 ---
 
@@ -57,7 +57,7 @@ ExecutionResult<User> notFoundResult = ExecutionResult
 
 ---
 
-## ?? Core Concepts
+## ??? Core Concepts
 
 ### ExecutionResult Types
 
@@ -187,7 +187,7 @@ public async Task<ExecutionResult<Data>> GetDataAsync(string id)
    // ? Don't
    return ExecutionResult.Failure();
    
-   // ? Do
+   // ?? Do
    return ExecutionResult.NotFound();
    ```
 

@@ -11,13 +11,13 @@
 
 `Xpandables.Net.Tasks` provides a robust implementation of the Mediator pattern, enabling loose coupling between components through a central request/response pipeline. Perfect for implementing CQRS, command handlers, and complex business workflows.
 
-### ? Key Features
+### ?? Key Features
 
 - ?? **Mediator Pattern** - Decoupled request/response handling
 - ?? **CQRS Support** - Commands and queries separation
 - ?? **Pipeline Behaviors** - Pre/post processing, validation, logging
 - ?? **Decorator Pattern** - Extensible request handlers
-- ?? **Async First** - Built for asynchronous operations
+- ? **Async First** - Built for asynchronous operations
 - ?? **Dependency Injection** - Seamless DI integration
 - ? **High Performance** - Minimal overhead
 
@@ -89,7 +89,7 @@ public class UserController
 
 ---
 
-## ?? Core Concepts
+## ??? Core Concepts
 
 ### Requests
 

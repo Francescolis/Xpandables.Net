@@ -11,17 +11,17 @@
 
 The foundational package containing core abstractions, element collections, state management patterns, and utility extensions that power the entire Xpandables.Net library suite.
 
-### ? Key Features
+### ?? Key Features
 
 - ?? **ElementCollection** - Type-safe key-value collections with JSON support
 - ?? **State Pattern** - `IState`, `IStateContext` for state management
-- ?? **Disposable Helpers** - Base classes for proper resource disposal
+- ??? **Disposable Helpers** - Base classes for proper resource disposal
 - ?? **HTTP Extensions** - Status code helpers and utilities
 - ?? **Serialization** - JSON serialization support with System.Text.Json
 
 ---
 
-## ?? Core Types
+## ??? Core Types
 
 ### ElementCollection
 

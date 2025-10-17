@@ -1,4 +1,4 @@
-# ? Xpandables.Net.Validators
+# ?? Xpandables.Net.Validators
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -11,13 +11,13 @@
 
 A lightweight, extensible validation framework that supports both synchronous and asynchronous validation with specification pattern integration.
 
-### ? Key Features
+### ?? Key Features
 
-- ? **Specification Pattern** - Composable business rules
+- ?? **Specification Pattern** - Composable business rules
 - ?? **Sync/Async Support** - Both validation modes
 - ?? **Type-Safe** - Generic validation with compile-time checks
 - ?? **Composable** - Combine validators with AND/OR logic
-- ?? **Standard Results** - Uses `ValidationResult` from System.ComponentModel.DataAnnotations
+- ? **Standard Results** - Uses `ValidationResult` from System.ComponentModel.DataAnnotations
 
 ---
 

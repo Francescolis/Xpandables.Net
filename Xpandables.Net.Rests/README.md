@@ -11,13 +11,13 @@
 
 `Xpandables.Net.Rests` provides an attribute-based REST client that eliminates boilerplate HTTP code. Define your API contracts with attributes and let the framework handle serialization, authentication, headers, and error handling automatically.
 
-### ? Key Features
+### ?? Key Features
 
-- ?? **Attribute-Based** - Declare API contracts with attributes
+- ??? **Attribute-Based** - Declare API contracts with attributes
 - ?? **Built-in Authentication** - OAuth, Bearer, Basic auth support
 - ?? **Multiple Content Types** - JSON, Form, Multipart, Byte arrays
 - ?? **Automatic Serialization** - System.Text.Json integration
-- ?? **Performance** - Minimal allocations, reusable HTTP clients
+- ? **Performance** - Minimal allocations, reusable HTTP clients
 - ? **Type-Safe** - Compile-time checking of requests/responses
 
 ---
