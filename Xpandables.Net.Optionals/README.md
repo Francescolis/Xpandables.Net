@@ -15,7 +15,7 @@
 
 -  **Null Safety** - Explicit handling of missing values
 -  **Type-Safe** - Compile-time checks for value presence
--  **Functional Operators** - Map, Bind, Match, and more
+-  **Functional Operators** - Map, Bind, Empty, and more
 -  **JSON Serialization** - Seamless System.Text.Json support
 -  **Performance** - Zero-allocation struct-based design
 -  **LINQ Integration** - Works with standard LINQ operators
@@ -45,7 +45,7 @@ if (someUser.IsNotEmpty)
     Console.WriteLine(someUser.Value.Name); // Safe access
 }
 
-// Pattern matching
+// Pattern matching with Map and Empty
 string message = someUser
     .Map(user => $"Hello, {user.Name}")
     .Empty(() => "No user found");
@@ -64,9 +64,9 @@ Optional<string> some = Optional.Some("Hello");
 // Empty optional
 Optional<string> empty = Optional.Empty<string>();
 
-// From a nullable value
+// From a nullable value using extension method
 string? nullable = GetNullableString();
-Optional<string> optional = Optional.FromNullable(nullable);
+Optional<string> optional = nullable.ToOptional();
 
 // Implicit conversion
 Optional<int> number = 42; // Automatically wrapped
@@ -89,6 +89,12 @@ if (user.IsEmpty)
     // Handle missing value
     Console.WriteLine("User not found");
 }
+
+// Try to get value safely
+if (user.TryGetValue(out User value))
+{
+    Console.WriteLine(value.Name);
+}
 ```
 
 ---
@@ -100,15 +106,19 @@ if (user.IsEmpty)
 ```csharp
 Optional<int> number = Optional.Some(5);
 
-Optional<string> text = number.Map(n => n.ToString()); // Optional.Some("5")
-Optional<int> doubled = number.Map(n => n * 2);        // Optional.Some(10)
+// Map to a different value of the same type
+Optional<int> doubled = number.Map(n => n * 2); // Optional.Some(10)
 
 // Empty optionals remain empty
 Optional<int> empty = Optional.Empty<int>();
-Optional<string> stillEmpty = empty.Map(n => n.ToString()); // Still empty
+Optional<int> stillEmpty = empty.Map(n => n * 2); // Still empty
+
+// Execute action on value
+Optional<User> user = Optional.Some(new User { Name = "John" });
+user.Map(u => Console.WriteLine(u.Name)); // Prints "John"
 ```
 
-### Bind - Chain Optional Operations
+### Bind - Chain Optional Operations and Transform Types
 
 ```csharp
 Optional<User> GetUser(int id) => /* ... */;
@@ -116,35 +126,43 @@ Optional<Address> GetAddress(User user) => /* ... */;
 
 Optional<int> userId = Optional.Some(123);
 
+// Bind allows you to transform to a different type
 Optional<Address> address = userId
-    .Bind(GetUser)           // Optional<User>
-    .Bind(GetAddress);       // Optional<Address>
+    .Bind(GetUser)           // Transform int to User
+    .Bind(GetAddress);       // Transform User to Address
+
+// Simple type transformation
+Optional<int> number = Optional.Some(42);
+Optional<string> text = number.Bind(n => n.ToString()); // Optional.Some("42")
 ```
 
-### Match - Pattern Matching
+### Empty - Handle Missing Values (Pattern Matching)
 
 ```csharp
 Optional<User> user = GetUser(userId);
 
-string greeting = user.Match(
-    onSome: u => $"Welcome back, {u.Name}!",
-    onEmpty: () => "Please log in"
-);
+// Provide a default value when empty
+string greeting = user
+    .Map(u => $"Welcome back, {u.Name}!")
+    .Empty(() => "Please log in");
 
-// Execute actions based on state
-user.Match(
-    onSome: u => Console.WriteLine($"Found: {u.Name}"),
-    onEmpty: () => Console.WriteLine("User not found")
-);
+// Execute action when empty
+user
+    .Map(u => Console.WriteLine($"Found: {u.Name}"))
+    .Empty(() => Console.WriteLine("User not found"));
+
+// Return alternative optional when empty
+Optional<User> foundUser = user
+    .Empty(() => GetDefaultUser());
 ```
 
-### Filter - Conditional Optionals
+### Where - Conditional Optionals
 
 ```csharp
 Optional<int> number = Optional.Some(42);
 
-Optional<int> evenNumber = number.Filter(n => n % 2 == 0); // Some(42)
-Optional<int> oddNumber = number.Filter(n => n % 2 != 0);  // Empty
+Optional<int> evenNumber = number.Where(n => n % 2 == 0); // Some(42)
+Optional<int> oddNumber = number.Where(n => n % 2 != 0);  // Empty
 ```
 
 ---
@@ -156,11 +174,13 @@ Optional<int> oddNumber = number.Filter(n => n % 2 != 0);  // Empty
 ```csharp
 Dictionary<string, User> users = GetUsers();
 
-Optional<User> user = users.TryGetOptional("john");
+Optional<User> user = users.TryGetValue("john", out User foundUser)
+    ? Optional.Some(foundUser)
+    : Optional.Empty<User>();
 
 string email = user
-    .Map(u => u.Email)
-    .GetValueOrDefault("no-reply@example.com");
+    .Bind(u => u.Email)
+    .Empty(() => "no-reply@example.com");
 ```
 
 ### Example 2: Chaining Database Operations
@@ -168,14 +188,15 @@ string email = user
 ```csharp
 public async Task<Optional<OrderDto>> GetOrderDetailsAsync(Guid orderId)
 {
-    return await _repository
-        .FindByIdAsync(orderId)                    // Optional<Order>
-        .BindAsync(order => GetCustomerAsync(order.CustomerId))  // Optional<Customer>
-        .MapAsync(customer => new OrderDto
+    Optional<Order> order = await _repository.FindByIdAsync(orderId);
+    
+    return await order
+        .BindAsync(o => GetCustomerAsync(o.CustomerId))  // Optional<Customer>
+        .BindAsync(customer => Task.FromResult(new OrderDto
         {
             OrderId = orderId,
             CustomerName = customer.Name
-        });
+        }));
 }
 ```
 
@@ -190,16 +211,15 @@ public async Task<Optional<WeatherData>> GetWeatherAsync(string city)
         return Optional.Empty<WeatherData>();
     
     var data = await response.Content.ReadFromJsonAsync<WeatherData>();
-    return Optional.FromNullable(data);
+    return data.ToOptional();
 }
 
 // Usage
 var weather = await GetWeatherAsync("London");
 
-weather.Match(
-    onSome: data => Console.WriteLine($"Temperature: {data.Temperature}°C"),
-    onEmpty: () => Console.WriteLine("Weather data not available")
-);
+weather
+    .Map(data => Console.WriteLine($"Temperature: {data.Temperature}°C"))
+    .Empty(() => Console.WriteLine("Weather data not available"));
 ```
 
 ### Example 4: LINQ Integration
@@ -213,8 +233,12 @@ List<User> validUsers = optionalUsers
     .Select(opt => opt.Value)
     .ToList();
 
-// Using extension methods
-List<User> users = optionalUsers.Choose(); // Built-in helper
+// Using LINQ Select and SelectMany with optionals
+var userNames = optionalUsers
+    .Select(opt => opt.Bind(u => u.Name))
+    .Where(opt => opt.IsNotEmpty)
+    .Select(opt => opt.Value)
+    .ToList();
 ```
 
 ---
@@ -232,6 +256,21 @@ string displayName = name.GetValueOrDefault("Anonymous");
 // Provide a default value factory
 string computed = name.GetValueOrDefault(() => 
     ExpensiveDefaultComputation());
+```
+
+### TryGetValue
+
+```csharp
+Optional<User> user = GetUser();
+
+if (user.TryGetValue(out User foundUser))
+{
+    Console.WriteLine($"Found: {foundUser.Name}");
+}
+else
+{
+    Console.WriteLine("No user found");
+}
 ```
 
 ### Operators
@@ -260,7 +299,7 @@ bool greater = a > b; // false
    Optional<User> GetUser(int id);
    ```
 
-2. **Use Match for branching**: Avoid direct `.Value` access
+2. **Use Map().Empty() for branching**: Chain operations explicitly
    ```csharp
    // Don't
    if (optional.IsNotEmpty)
@@ -269,18 +308,17 @@ bool greater = a > b; // false
    }
    
    // Do
-   optional.Match(
-       onSome: value => DoSomething(value),
-       onEmpty: () => HandleEmpty()
-   );
+   optional
+       .Map(value => DoSomething(value))
+       .Empty(() => HandleEmpty());
    ```
 
 3. **Chain operations**: Use Map and Bind for transformations
    ```csharp
    return user
-       .Map(u => u.Address)
-       .Filter(a => a.IsValid)
-       .Map(a => a.ToString());
+       .Bind(u => u.Address)
+       .Where(a => a.IsValid)
+       .Bind(a => a.ToString());
    ```
 
 4. **Return Empty instead of null**: Be consistent
@@ -288,6 +326,15 @@ bool greater = a > b; // false
    // Explicit and safe
    if (user == null)
        return Optional.Empty<User>();
+   ```
+
+5. **Use Bind for type transformations**: Use Map for same-type operations
+   ```csharp
+   // Bind changes the type
+   Optional<string> text = number.Bind(n => n.ToString());
+   
+   // Map keeps the same type
+   Optional<int> doubled = number.Map(n => n * 2);
    ```
 
 ---
@@ -301,25 +348,37 @@ public async Task<ExecutionResult<User>> GetUserAsync(Guid id)
 {
     Optional<User> user = await _repository.FindAsync(id);
     
-    return user.Match(
-        onSome: u => ExecutionResult.Success(u),
-        onEmpty: () => ExecutionResult.NotFound<User>()
-            .WithTitle("User not found")
-    );
+    return user
+        .Map(u => ExecutionResult.Success(u))
+        .Empty(() => ExecutionResult.NotFound<User>()
+            .WithTitle("User not found"));
 }
 ```
 
 ### With Async Operations
 
 ```csharp
-// Async Map
+// Async Map - transform the value asynchronously
 Optional<User> user = await GetUserAsync(id);
-Optional<UserDto> dto = await user.MapAsync(async u => 
-    await ConvertToDtoAsync(u));
+Optional<User> processed = await user.MapAsync(async u => 
+{
+    await ProcessUserAsync(u);
+    return u;
+});
 
-// Async Bind
+// Async Bind - transform to a different type asynchronously
 Optional<Profile> profile = await user.BindAsync(async u => 
     await GetProfileAsync(u.Id));
+
+// Async Empty - provide default value asynchronously
+Optional<User> userWithDefault = await user.EmptyAsync(async () =>
+    await GetDefaultUserAsync());
+
+// Chain async operations
+var result = await user
+    .MapAsync(async u => await ValidateUserAsync(u))
+    .BindAsync(async u => await GetUserDetailsAsync(u))
+    .EmptyAsync(async () => await CreateDefaultDetailsAsync());
 ```
 
 ---
@@ -344,6 +403,40 @@ var dto = new UserDto
 string json = JsonSerializer.Serialize(dto);
 // { "middleName": "James", "age": null }
 ```
+
+---
+
+##  Complete API Reference
+
+### Optional<T> Methods
+
+| Method | Description |
+|--------|-------------|
+| `Map(Func<T, T>)` | Transform the value to the same type |
+| `Map(Func<T, Optional<T>>)` | Transform the value to an optional of the same type |
+| `Map(Action<T>)` | Execute an action on the value |
+| `Map(Action)` | Execute an action if value exists |
+| `Bind<TU>(Func<T, TU>)` | Transform to a different type |
+| `Bind<TU>(Func<T, Optional<TU>>)` | Transform to an optional of a different type |
+| `Empty(Func<T>)` | Provide value when empty |
+| `Empty(Func<Optional<T>>)` | Provide optional when empty |
+| `Empty(Action)` | Execute action when empty |
+| `Where(Func<T, bool>)` | Filter based on predicate |
+| `GetValueOrDefault(T)` | Get value or default |
+| `GetValueOrDefault(Func<T>)` | Get value or compute default |
+| `TryGetValue(out T)` | Try to get the value safely |
+| `MapAsync(...)` | Async version of Map |
+| `BindAsync<TU>(...)` | Async version of Bind |
+| `EmptyAsync(...)` | Async version of Empty |
+
+### Extension Methods (LINQ)
+
+| Method | Description |
+|--------|-------------|
+| `ToOptional<T>()` | Convert nullable to Optional |
+| `Select<TU>(...)` | LINQ projection (same as Bind) |
+| `SelectMany<TU>(...)` | LINQ monadic binding |
+| `Where(...)` | LINQ filtering |
 
 ---
 
