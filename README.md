@@ -104,7 +104,7 @@ public sealed class GetUserHandler : IRequestHandler<GetUserQuery>
         
         return user
             .Map(u => ExecutionResult.Success(u))
-            .Empty(() => ExecutionResult.NotFound("User not found"));
+            .Empty(() => ExecutionResult.NotFound().WithError("userId","key not exists").Build());
     }
 }
 ```
