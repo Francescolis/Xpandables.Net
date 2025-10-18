@@ -51,7 +51,7 @@
 ### Prerequisites
 
 - **.NET 10 SDK** or later
-- **Visual Studio 2025** or **JetBrains Rider** (recommended)
+- **Visual Studio 2022, 2026** or **JetBrains Rider** (recommended)
 - Basic understanding of C# and async/await patterns
 
 ### Installation
@@ -204,7 +204,7 @@ public async Task<ExecutionResult<Order>> CreateOrderAsync(CreateOrderRequest re
         .BindAsync(ProcessPayment)
         .BindAsync(SendConfirmationEmail)
         .Map(order => ExecutionResult.Created(order))
-        .Empty(() => ExecutionResult.BadRequest("Failed to create order"));
+        .Empty(() => ExecutionResult.BadRequest(request.Id,"Failed to create order").Build());
 }
 ```
 
@@ -215,8 +215,8 @@ public async Task<ExecutionResult<Order>> CreateOrderAsync(CreateOrderRequest re
 public sealed record CreateUserRequest(string Name, string Email) 
     : IRestRequest<User>, IRestString;
 
-var response = await _restClient.SendAsync(new CreateUserRequest("John", "john@example.com"));
-var user = response.To<User>();
+restResponse<User> response = await _restClient.SendAsync(new CreateUserRequest("John", "john@example.com"));
+var user = response.Result;
 ```
 
 ### 3. Fluent Validation with Specifications
