@@ -1,4 +1,4 @@
-# ?? Xpandables.Net.Abstractions
+﻿# 🔧 Xpandables.Net.Abstractions
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -7,36 +7,32 @@
 
 ---
 
-## ?? Overview
+## 📋 Overview
 
 The foundational package containing core abstractions, element collections, state management patterns, and utility extensions that power the entire Xpandables.Net library suite.
 
-### ?? Key Features
+### 🎯 Key Features
 
-- ?? **ElementCollection** - Type-safe key-value collections with JSON support
-- ?? **State Pattern** - `IState`, `IStateContext` for state management
-- ??? **Disposable Helpers** - Base classes for proper resource disposal
-- ?? **HTTP Extensions** - Status code helpers and utilities
-- ?? **Serialization** - JSON serialization support with System.Text.Json
+- 📦 **ElementCollection** - Type-safe key-value collections with JSON support
+- 🔄 **State Pattern** - `IState`, `IStateContext` for state management
+- 🗑️ **Disposable Helpers** - Base classes for proper resource disposal
+- 🌐 **HTTP Extensions** - Status code helpers and utilities
+- 📝 **Serialization** - JSON serialization support with System.Text.Json
 
 ---
 
-## ??? Core Types
+## 🏗️ Core Types
 
 ### ElementCollection
 
 ```csharp
 // Type-safe key-value collection
-var collection = new ElementCollection
-{
-    ["key1"] = "value1",
-    ["key2"] = 42,
-    ["key3"] = new { Name = "Test", Id = 1 }
-};
 
-// Access values
-string? value = collection["key1"]?.Value as string;
-int? number = collection["key2"]?.ToInt32();
+var collection = new ElementCollection();
+collection.Add("key1", "value1");
+collection.Add("key2", "42");
+ElementEntry? entry = collection["key1"];
+string? value = entry?.Values.ToString();
 
 // JSON serialization
 string json = JsonSerializer.Serialize(collection);
@@ -62,6 +58,11 @@ public sealed class PendingOrderState : State<Order>, IOrderState
     
     public void Ship() => throw new InvalidOperationException();
     public void Cancel() => Context.SetState(new CancelledOrderState());
+}
+
+public sealed class OrderContext : StateContext<IOrderState>
+{
+    public OrderContext(IOrderState initialState) : base(initialState) { }
 }
 ```
 
@@ -90,13 +91,13 @@ public sealed class MyResource : Disposable
 
 ---
 
-## ?? HTTP Utilities
+## 🌐 HTTP Utilities
 
 ```csharp
 // Status code helpers
-bool isSuccess = statusCode.IsSuccess(); // 2xx
-bool isClientError = statusCode.IsClientError(); // 4xx
-bool isServerError = statusCode.IsServerError(); // 5xx
+HttpStatusCode statusCode = HttpStatusCode.OK;
+bool isSuccess = statusCode.IsSuccess; // Extension property
+statusCode.EnsureSuccess(); // Throws if not successful
 
 // Headers extensions
 IDictionary<string, string> headers = response.Headers.ToDictionary();
@@ -105,23 +106,30 @@ ElementCollection headerCollection = response.Headers.ToElementCollection();
 
 ---
 
-## ?? Serialization Helpers
+## 📝 Serialization Helpers
 
 ```csharp
 // Primitive type wrapping with JSON support
-public sealed record UserId : IPrimitive<Guid>
+
+[PrimitiveJsonConverter]
+public readonly record struct UserId : IPrimitive<UserId, Guid>
 {
-    public Guid Value { get; init; }
+    private UserId(Guid value) => Value = value;
+    public Guid Value { get;}
+    public static UserId Create(Guid value) => new(value);
+    public static implicit operator Guid(UserId userId) => userId.Value;
+    public static implicit operator UserId(Guid value) => Create(value);
+    public static implicit operator string(UserId userId) => userId.Value.ToString();
 }
 
 // Automatic JSON serialization/deserialization
-var userId = new UserId { Value = Guid.NewGuid() };
+var userId = UserId.Create(Guid.NewGuid());
 string json = JsonSerializer.Serialize(userId);
 ```
 
 ---
 
-## ?? Use Cases
+## 💡 Use Cases
 
 1. **Building Blocks**: Used by all other Xpandables.Net packages
 2. **ElementCollection**: Storing flexible key-value metadata
@@ -131,7 +139,7 @@ string json = JsonSerializer.Serialize(userId);
 
 ---
 
-## ?? Used By
+## 📚 Used By
 
 This package is a dependency for:
 - `Xpandables.Net.ExecutionResults`
@@ -142,6 +150,6 @@ This package is a dependency for:
 
 ---
 
-## ?? License
+## 📄 License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © Kamersoft 2025
