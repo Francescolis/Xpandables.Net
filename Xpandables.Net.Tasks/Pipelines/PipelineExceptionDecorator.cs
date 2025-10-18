@@ -41,7 +41,7 @@ public sealed class PipelineExceptionDecorator<TRequest>(
         {
             return await nextHandler(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is not ExecutionResultException && exceptionHandler is not null)
+        catch (Exception exception) when (exception is not ExecutionResultException)
         {
             if (exceptionHandler is not null)
             {

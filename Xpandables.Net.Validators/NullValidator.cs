@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Xpandables.Net.Validators;
 
@@ -28,6 +27,5 @@ public sealed class NullValidator<TArgument> : Validator<TArgument>
 {
     /// <inheritdoc/>
     /// Does nothing and returns an empty collection of validation results.
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance) => [];
 }

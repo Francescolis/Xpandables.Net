@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.Events;
 using Xpandables.Net.Tasks;
+using Xpandables.Net.Tasks.Pipelines;
 
 namespace Xpandables.Net.DependencyInjection;
 #pragma warning restore IDE0130 // Namespace does not match folder structure

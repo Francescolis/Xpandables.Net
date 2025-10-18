@@ -369,7 +369,9 @@ public class MediatorAdvancedTests
             Exception exception,
             CancellationToken cancellationToken = default)
         {
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
             context.TryGetItem("firstHandled", out object? first).Should().BeTrue();
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
 
             return Task.FromResult(ExecutionResultExtensions
                 .Failure(HttpStatusCode.InternalServerError)

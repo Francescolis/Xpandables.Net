@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Xpandables.Net.Validators;
 
@@ -35,7 +34,6 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
         ?? throw new ArgumentNullException(nameof(validators));
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
@@ -52,7 +50,6 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     }
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     public override async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
     {
         List<ValidationResult> validationResults = [];

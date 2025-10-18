@@ -17,6 +17,7 @@
 ********************************************************************************/
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Events;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Repositories;
 

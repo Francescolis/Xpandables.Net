@@ -50,7 +50,7 @@ public class Validator<TArgument> : IValidator<TArgument>
         ServiceProvider = serviceProvider;
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public virtual IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
@@ -67,7 +67,6 @@ public class Validator<TArgument> : IValidator<TArgument>
     }
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     public virtual ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
     {
         IReadOnlyCollection<ValidationResult> result = Validate(instance);

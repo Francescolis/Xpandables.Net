@@ -17,7 +17,6 @@
 ********************************************************************************/
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Xpandables.Net.Validators;
 
@@ -35,7 +34,6 @@ public interface IValidator
     /// <param name="instance">The object to validate. Cannot be null.</param>
     /// <returns>A read-only collection of <see cref="ValidationResult"/> objects that describe any validation errors. The
     /// collection is empty if the instance is valid.</returns>
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     IReadOnlyCollection<ValidationResult> Validate(object instance);
 
     /// <summary>
@@ -48,7 +46,6 @@ public interface IValidator
     /// <returns>A value task that represents the asynchronous validation operation. The result contains a read-only collection
     /// of <see cref="ValidationResult"/> objects describing any validation errors. The collection is empty if the
     /// object is valid.</returns>
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     public ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(object instance)
     {
         IReadOnlyCollection<ValidationResult> result = Validate(instance);
@@ -73,10 +70,8 @@ public interface IValidator<in TArgument> : IValidator
     /// <param name="instance">The object to validate. Cannot be null.</param>
     /// <returns>A read-only collection of <see cref="ValidationResult"/> objects that describe any validation errors. The
     /// collection is empty if the instance is valid.</returns>
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     IReadOnlyCollection<ValidationResult> Validate(TArgument instance);
 
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     IReadOnlyCollection<ValidationResult> IValidator.Validate(object instance) =>
         Validate((TArgument)instance);
@@ -88,10 +83,8 @@ public interface IValidator<in TArgument> : IValidator
     /// <returns>A task that represents the asynchronous validation operation. The task result contains a read-only collection of
     /// <see cref="ValidationResult"/> objects describing any validation errors. The collection is empty if the argument
     /// is valid.</returns>
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance);
 
-    [RequiresUnreferencedCode("Validation may not work correctly if the object graph is modified.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     ValueTask<IReadOnlyCollection<ValidationResult>> IValidator.ValidateAsync(object instance) =>
         ValidateAsync((TArgument)instance);

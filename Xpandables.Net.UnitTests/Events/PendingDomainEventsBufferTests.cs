@@ -43,7 +43,9 @@ public class PendingDomainEventsBufferTests
                 InitialBalance = 1000m
             }
         };
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
         var commitCalled = false;
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
         Action onCommit = () => commitCalled = true;
 
         // Act
@@ -70,7 +72,7 @@ public class PendingDomainEventsBufferTests
                 Amount = 500m
             }
         };
-        
+
         buffer.AddRange(events, () => { });
 
         // Act
@@ -99,7 +101,7 @@ public class PendingDomainEventsBufferTests
         };
         var commitCalled = false;
         Action onCommit = () => commitCalled = true;
-        
+
         buffer.AddRange(events, onCommit);
         var batches = buffer.Drain();
 
@@ -120,7 +122,7 @@ public class PendingDomainEventsBufferTests
         var buffer = new PendingDomainEventsBuffer();
         var streamId1 = Guid.NewGuid();
         var streamId2 = Guid.NewGuid();
-        
+
         var batch1 = new List<IDomainEvent>
         {
             new BankAccountCreatedEvent
@@ -132,7 +134,7 @@ public class PendingDomainEventsBufferTests
                 InitialBalance = 1000m
             }
         };
-        
+
         var batch2 = new List<IDomainEvent>
         {
             new BankAccountCreatedEvent
