@@ -1,4 +1,4 @@
-﻿# ?? Xpandables.Net.Events.Repositories
+﻿# 📦 Xpandables.Net.Events.Repositories
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -7,20 +7,20 @@
 
 ---
 
-## ?? Overview
+## 📋 Overview
 
 Provides the foundational abstractions and interfaces for building event store implementations, including event storage, retrieval, and subscription contracts.
 
-### ?? Key Features
+### 🎯 Key Features
 
-- ?? **Event Store Contracts** - Core interfaces
-- ?? **Subscription Abstractions** - Event streaming
-- ?? **Snapshot Support** - Performance optimization contracts
-- ??? **Outbox Pattern** - Integration event abstractions
+- 📦 **Event Store Contracts** - Core interfaces
+- 🔗 **Subscription Abstractions** - Event streaming
+- 📸 **Snapshot Support** - Performance optimization contracts
+- 📤 **Outbox Pattern** - Integration event abstractions
 
 ---
 
-## ??? Core Interfaces
+## 🏗️ Core Interfaces
 
 ```csharp
 public interface IEventStore
@@ -39,6 +39,6 @@ public interface ISnapshotEventStore
 
 ---
 
-## ?? License
+## 📄 License
 
-Apache License 2.0 - Copyright © � Kamersoft 2025
+Apache License 2.0 - Copyright © Kamersoft 2025

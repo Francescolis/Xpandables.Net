@@ -1,4 +1,4 @@
-﻿# ??? Xpandables.Net.Events.EntityFramework
+﻿# 🗄️ Xpandables.Net.Events.EntityFramework
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -7,21 +7,21 @@
 
 ---
 
-## ?? Overview
+## 📋 Overview
 
 Provides a complete Entity Framework Core implementation of event store interfaces, enabling event sourcing patterns with persistent storage, snapshots, and optimistic concurrency control.
 
-### ?? Key Features
+### 🎯 Key Features
 
-- ??? **EF Core Storage** - Persistent event storage
-- ?? **Snapshot Support** - Performance optimization
-- ?? **Optimistic Concurrency** - Stream version management
-- ?? **Event Subscriptions** - Real-time event notifications
-- ?? **Outbox Pattern** - Reliable integration event publishing
+- 🗄️ **EF Core Storage** - Persistent event storage
+- 📸 **Snapshot Support** - Performance optimization
+- 🔒 **Optimistic Concurrency** - Stream version management
+- 🔔 **Event Subscriptions** - Real-time event notifications
+- 📤 **Outbox Pattern** - Reliable integration event publishing
 
 ---
 
-## ?? Quick Start
+## 🚀 Quick Start
 
 ```csharp
 // DbContext setup
@@ -50,6 +50,6 @@ var loadedOrder = await _aggregateStore.ReadAsync<Order>(orderId);
 
 ---
 
-## ?? License
+## 📄 License
 
-Apache License 2.0 - Copyright © � Kamersoft 2025
+Apache License 2.0 - Copyright © Kamersoft 2025
