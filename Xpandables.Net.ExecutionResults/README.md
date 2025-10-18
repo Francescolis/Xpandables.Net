@@ -1,4 +1,4 @@
-# ? Xpandables.Net.ExecutionResults
+﻿# ✅ Xpandables.Net.ExecutionResults
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -7,23 +7,23 @@
 
 ---
 
-## ?? Overview
+## 📋 Overview
 
-`Xpandables.Net.ExecutionResults` provides a comprehensive result pattern implementation that eliminates the need for exceptions in expected error scenarios. It encapsulates operation outcomes with status codes, error details, headers, and metadata�perfect for building resilient APIs and applications.
+`Xpandables.Net.ExecutionResults` provides a comprehensive result pattern implementation that eliminates the need for exceptions in expected error scenarios. It encapsulates operation outcomes with status codes, error details, headers, and metadata—perfect for building resilient APIs and applications.
 
-### ?? Key Features
+### 🎯 Key Features
 
-- ?? **HTTP-Aware Results** - Built-in `HttpStatusCode` support
-- ?? **Generic and Non-Generic** - `ExecutionResult` and `ExecutionResult<T>`
-- ?? **Rich Metadata** - Headers, extensions, errors, and location support
-- ?? **Fluent API** - Builder pattern for result construction
-- ?? **Chainable Operations** - Railway-oriented programming support
-- ?? **JSON Serialization** - Full System.Text.Json support
-- ? **Performance Optimized** - Record types with value semantics
+- 🌐 **HTTP-Aware Results** - Built-in `HttpStatusCode` support
+- 📦 **Generic and Non-Generic** - `ExecutionResult` and `ExecutionResult<T>`
+- 📝 **Rich Metadata** - Headers, extensions, errors, and location support
+- 🔗 **Fluent API** - Builder pattern for result construction
+- 🔄 **Chainable Operations** - Railway-oriented programming support
+- 📄 **JSON Serialization** - Full System.Text.Json support
+- ⚡ **Performance Optimized** - Record types with value semantics
 
 ---
 
-## ?? Getting Started
+## 🚀 Getting Started
 
 ### Installation
 
@@ -38,8 +38,7 @@ using Xpandables.Net.ExecutionResults;
 
 // Success result
 ExecutionResult<User> successResult = ExecutionResult
-    .Success(new User { Id = 1, Name = "John" })
-    .WithTitle("User retrieved successfully");
+    .Success(new User { Id = 1, Name = "John" });
 
 // Failure result
 ExecutionResult failureResult = ExecutionResult
@@ -57,7 +56,7 @@ ExecutionResult<User> notFoundResult = ExecutionResult
 
 ---
 
-## ??? Core Concepts
+## 🏗️ Core Concepts
 
 ### ExecutionResult Types
 
@@ -93,7 +92,7 @@ ExecutionResult.ServiceUnavailable();          // 503
 
 ---
 
-## ?? Advanced Examples
+## 💎 Advanced Examples
 
 ### Example 1: Building a Complex Result
 
@@ -110,8 +109,6 @@ public async Task<ExecutionResult<Order>> CreateOrderAsync(CreateOrderRequest re
 
     return ExecutionResult
         .Created(order)
-        .WithTitle("Order Created")
-        .WithDetail($"Order #{order.Id} has been created successfully")
         .WithLocation(new Uri($"/api/orders/{order.Id}", UriKind.Relative))
         .WithHeader("X-Order-Id", order.Id.ToString())
         .WithExtension("processingTime", "125ms");
@@ -180,14 +177,14 @@ public async Task<ExecutionResult<Data>> GetDataAsync(string id)
 
 ---
 
-## ?? Best Practices
+## 💡 Best Practices
 
 1. **Use Specific Status Codes**: Choose the most appropriate HTTP status code
    ```csharp
-   // ? Don't
+   // ❌ Don't
    return ExecutionResult.Failure();
    
-   // ?? Do
+   // ✔️ Do
    return ExecutionResult.NotFound();
    ```
 
@@ -207,6 +204,6 @@ public async Task<ExecutionResult<Data>> GetDataAsync(string id)
 
 ---
 
-## ?? License
+## 📄 License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © Kamersoft 2025

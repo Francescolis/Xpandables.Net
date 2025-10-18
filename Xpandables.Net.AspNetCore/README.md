@@ -1,4 +1,4 @@
-# ?? Xpandables.Net.AspNetCore
+﻿# ?? Xpandables.Net.AspNetCore
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -11,7 +11,7 @@
 
 Provides foundational ASP.NET Core integrations including middleware, filters, and extension methods for seamless integration of Xpandables.Net features into ASP.NET Core applications.
 
-### ? Key Features
+### ?? Key Features
 
 - ?? **Middleware** - Custom middleware components
 - ?? **Filters** - Action and exception filters
@@ -36,4 +36,4 @@ app.Run();
 
 ## ?? License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © � Kamersoft 2025

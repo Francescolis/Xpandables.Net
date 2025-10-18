@@ -1,4 +1,4 @@
-# ?? Xpandables.Net.Events
+﻿# 📝 Xpandables.Net.Events
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -7,23 +7,23 @@
 
 ---
 
-## ?? Overview
+## 📋 Overview
 
 `Xpandables.Net.Events` provides a production-ready event sourcing framework that enables building applications using Domain-Driven Design (DDD) and Event Sourcing patterns. Store state as a sequence of events rather than current state.
 
-### ? Key Features
+### 🎯 Key Features
 
-- ?? **Aggregate Roots** - Event-sourced aggregates with business logic
-- ?? **Event Store** - Persistent event storage and retrieval
-- ?? **Event Replay** - Rebuild state from historical events
-- ?? **Domain Events** - Internal domain event handling
-- ?? **Integration Events** - Cross-boundary event communication
-- ?? **Snapshots** - Performance optimization for large streams
-- ?? **Optimistic Concurrency** - Stream versioning support
+- 📦 **Aggregate Roots** - Event-sourced aggregates with business logic
+- 💾 **Event Store** - Persistent event storage and retrieval
+- 🔄 **Event Replay** - Rebuild state from historical events
+- 📨 **Domain Events** - Internal domain event handling
+- 🔗 **Integration Events** - Cross-boundary event communication
+- 📸 **Snapshots** - Performance optimization for large streams
+- 🔒 **Optimistic Concurrency** - Stream versioning support
 
 ---
 
-## ?? Getting Started
+## 🚀 Getting Started
 
 ### Installation
 
@@ -109,7 +109,7 @@ await _aggregateStore.AppendAsync(order);
 
 ---
 
-## ?? Core Concepts
+## 🏗️ Core Concepts
 
 ### Aggregates
 
@@ -209,7 +209,7 @@ await foreach (var envelope in events)
 
 ---
 
-## ?? Advanced Features
+## 💎 Advanced Features
 
 ### Snapshots for Performance
 
@@ -305,7 +305,7 @@ await _eventStore.SubscribeToAllStreamsAsync(new SubscribeToAllStreamsRequest
 
 ---
 
-## ?? Complete Example: E-Commerce Order
+## 💡 Complete Example: E-Commerce Order
 
 ```csharp
 // Events
@@ -422,13 +422,13 @@ public sealed class OrderService
 
 ---
 
-## ?? Entity Framework Integration
+## 🗄️ Entity Framework Integration
 
 See [`Xpandables.Net.Events.EntityFramework`](../Xpandables.Net.Events.EntityFramework/README.md) for EF Core event store implementation.
 
 ---
 
-## ?? Best Practices
+## 💡 Best Practices
 
 1. **Events are Immutable**: Never modify events after creation
 2. **Small, Focused Events**: One event per business fact
@@ -438,6 +438,6 @@ See [`Xpandables.Net.Events.EntityFramework`](../Xpandables.Net.Events.EntityFra
 
 ---
 
-## ?? License
+## 📄 License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © Kamersoft 2025

@@ -18,9 +18,10 @@
 using Xpandables.Net;
 using Xpandables.Net.Events;
 using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.Tasks;
 
-namespace Xpandables.Net.Events;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Xpandables.Net.Tasks.Pipelines;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// A pipeline decorator that processes and publishes domain events after the execution of a request handler.

@@ -1,4 +1,4 @@
-# ?? Xpandables.Net.Rests.Abstractions
+﻿# ?? Xpandables.Net.Rests.Abstractions
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -11,7 +11,7 @@
 
 Provides the foundational abstractions, interfaces, and attributes used by the REST client implementation. Use this package when you want to define REST contracts without taking a dependency on the implementation.
 
-### ? Key Features
+### ?? Key Features
 
 - ?? **Interface Definitions** - Core REST client contracts
 - ??? **Attribute System** - REST endpoint decoration
@@ -20,7 +20,7 @@ Provides the foundational abstractions, interfaces, and attributes used by the R
 
 ---
 
-## ?? Core Interfaces
+## ??? Core Interfaces
 
 ```csharp
 // Request marker
@@ -50,4 +50,4 @@ public interface IRestPathString
 
 ## ?? License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © � Kamersoft 2025

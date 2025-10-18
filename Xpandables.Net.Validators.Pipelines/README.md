@@ -1,4 +1,4 @@
-# ? Xpandables.Net.Validators.Pipelines
+﻿# ?? Xpandables.Net.Validators.Pipelines
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -11,7 +11,7 @@
 
 Provides pipeline decorators that automatically validate requests implementing `IRequiresValidation` before they reach their handlers, ensuring data integrity and clean separation of concerns.
 
-### ? Key Features
+### ?? Key Features
 
 - ? **Automatic Validation** - Validate requests in the pipeline
 - ?? **Decorator Pattern** - Non-invasive validation
@@ -56,4 +56,4 @@ public sealed class CreateUserValidator : Validator<CreateUserCommand>
 
 ## ?? License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © � Kamersoft 2025

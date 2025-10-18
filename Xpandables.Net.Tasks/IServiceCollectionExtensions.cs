@@ -46,15 +46,27 @@ public static class IServiceCollectionExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Adds Mediator services to the current <see cref="IServiceCollection"/> instance using the default <see
-        /// cref="Mediator"/> implementation.
+        /// Adds Mediator and related pipeline request handler services to the current service collection.
         /// </summary>
-        /// <remarks>Call this method during application startup to enable XMediator-based request and
-        /// notification handling. This overload registers the default mediator implementation; use the generic overload
-        /// to specify a custom mediator type if needed.</remarks>
-        /// <returns>The <see cref="IServiceCollection"/> instance with XMediator services registered.</returns>
+        /// <remarks>it also registers the pipeline request handler services.
+        /// <para>The registration of default pipeline decorators is not included in this method.
+        /// You should add them in this order : </para>
+        /// <list type="bullet">
+        /// <item>ExceptionDecorator</item>
+        /// <item>ValidationDecorator</item>
+        /// <item>UnitOfWork</item>
+        /// <item>DependencyDecorator</item>
+        /// <item>PreDecorator</item>
+        /// <item>PostDecorator</item>
+        /// <item>DependencyManager</item>
+        /// </list>
+        /// In order to register custom pipeline decorators, use the <see cref="AddXPipelineDecorator(IServiceCollection, Type)"/> method.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with Mediator services registered. This enables further
+        /// configuration of dependency injection.</returns>
         public IServiceCollection AddXMediator() =>
-            services.AddXMediator<Mediator>();
+            services
+                .AddXMediator<Mediator>()
+                .AddXPipelineRequestHandler();
 
         /// <summary>
         /// Adds the default dependency manager implementation to the service collection.
@@ -62,7 +74,7 @@ public static class IServiceCollectionExtensions
         /// <remarks>This method registers <see cref="DependencyManager"/> as the implementation for X
         /// dependency management. Call this method during application startup to enable X dependency
         /// features.</remarks>
-        /// <returns>The updated <see cref="IServiceCollection"/> instance with the X dependency manager registered.</returns>
+        /// <returns>The updated <see cref="IServiceCollection"/> instance with the dependency manager registered.</returns>
         public IServiceCollection AddXDependencyManager() =>
             services.AddXDependencyManager<DependencyManager>();
 

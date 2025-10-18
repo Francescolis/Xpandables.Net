@@ -1,4 +1,4 @@
-# ? Xpandables.Net.Validators.AspNetCore
+﻿# ?? Xpandables.Net.Validators.AspNetCore
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -11,7 +11,7 @@
 
 Integrates the Xpandables.Net validation framework with ASP.NET Core's validation pipeline, providing automatic request validation with clean error responses.
 
-### ? Key Features
+### ?? Key Features
 
 - ?? **Action Filters** - Automatic model validation
 - ?? **ProblemDetails** - RFC 7807 compliant errors
@@ -47,4 +47,4 @@ public sealed class UsersController : ControllerBase
 
 ## ?? License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © � Kamersoft 2025

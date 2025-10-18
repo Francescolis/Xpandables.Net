@@ -19,9 +19,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Tasks;
 
-namespace Xpandables.Net.Events;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Xpandables.Net.Tasks.Pipelines;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Provides a pipeline decorator that ensures domain events are committed to the event store after handling a request
