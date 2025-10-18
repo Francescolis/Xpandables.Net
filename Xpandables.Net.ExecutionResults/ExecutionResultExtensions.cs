@@ -216,6 +216,115 @@ public static class ExecutionResultExtensions
         }
 
         /// <summary>
+        /// Creates an <see cref="ExecutionResult"/> representing a not found error with the specified key and message.
+        /// </summary>
+        /// <param name="key">The error key that identifies the specific not found condition. Cannot be <see langword="null"/>.</param>
+        /// <param name="message">The error message describing the not found condition. Cannot be <see langword="null"/>.</param>
+        /// <returns>An <see cref="ExecutionResult"/> instance containing the not found error information.</returns>
+        public static ExecutionResult NotFound(string key, string message)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            ArgumentNullException.ThrowIfNull(message);
+
+            return NotFound()
+                .WithError(key, message)
+                .Build();
+        }
+
+        /// <summary>
+        /// Creates an execution result indicating that the requested resource was not found, and attaches an error with
+        /// the specified key and message.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result value associated with the execution result.</typeparam>
+        /// <param name="key">The error key that identifies the type or source of the not found error. Cannot be null.</param>
+        /// <param name="message">The error message that describes the not found condition. Cannot be null.</param>
+        /// <returns>An <see cref="ExecutionResult{TResult}"/> representing a not found result, containing the specified error
+        /// key and message.</returns>
+        public static ExecutionResult<TResult> NotFound<TResult>(string key, string message)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            ArgumentNullException.ThrowIfNull(message);
+
+            return NotFound<TResult>()
+                .WithError(key, message)
+                .Build();
+        }
+
+        /// <summary>
+        /// Creates an execution result that represents a conflict error with a specified key and message.
+        /// </summary>
+        /// <param name="key">The error key that identifies the source or type of the conflict. Cannot be null.</param>
+        /// <param name="message">The error message that describes the conflict. Cannot be null.</param>
+        /// <returns>An ExecutionResult instance containing the conflict error with the provided key and message.</returns>
+        public static ExecutionResult Conflict(string key, string message)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            ArgumentNullException.ThrowIfNull(message);
+
+            return Conflict()
+                .WithError(key, message)
+                .Build();
+        }
+
+        /// <summary>
+        /// Creates an execution result that represents a conflict error with the specified key and message.
+        /// </summary>
+        /// <remarks>Use this method to indicate that an operation could not be completed due to a
+        /// conflict, such as a resource state or data integrity issue. The returned result will include the provided
+        /// error information and can be used to communicate conflict details to the caller.</remarks>
+        /// <typeparam name="TResult">The type of the result value associated with the execution result.</typeparam>
+        /// <param name="key">A string that identifies the error. Cannot be null.</param>
+        /// <param name="message">A descriptive message explaining the nature of the conflict. Cannot be null.</param>
+        /// <returns>An <see cref="ExecutionResult{TResult}"/> representing a conflict error containing the specified key and
+        /// message.</returns>
+        public static ExecutionResult<TResult> Conflict<TResult>(string key, string message)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            ArgumentNullException.ThrowIfNull(message);
+
+            return Conflict<TResult>()
+                .WithError(key, message)
+                .Build();
+        }
+
+        /// <summary>
+        /// Creates an execution result representing an internal server error and associates it with the specified
+        /// exception.
+        /// </summary>
+        /// <param name="exception">The exception that caused the internal server error. Cannot be null.</param>
+        /// <returns>An <see cref="ExecutionResult"/> instance representing an internal server error, containing details from the
+        /// provided exception.</returns>
+        public static ExecutionResult InternalServerError(Exception exception)
+        {
+            ArgumentNullException.ThrowIfNull(exception);
+
+            return InternalServerError()
+                .WithException(exception)
+                .Build();
+        }
+
+        /// <summary>
+        /// Creates an execution result representing an internal server error with the specified error key, message, and
+        /// associated exception.
+        /// </summary>
+        /// <param name="key">The unique key identifying the error. Cannot be null.</param>
+        /// <param name="message">The error message describing the internal server error. Cannot be null.</param>
+        /// <param name="exception">The exception that caused the internal server error. Cannot be null.</param>
+        /// <returns>An ExecutionResult instance containing details about the internal server error, including the error key,
+        /// message, and exception.</returns>
+        public static ExecutionResult InternalServerError(string key, string message, Exception exception)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            ArgumentNullException.ThrowIfNull(message);
+            ArgumentNullException.ThrowIfNull(exception);
+
+            return InternalServerError()
+                .WithError(key, message)
+                .WithException(exception)
+                .Build();
+        }
+
+        /// <summary>
         /// Creates a builder for an execution result that represents a failure with the specified HTTP status code.
         /// </summary>
         /// <param name="statusCode">The HTTP status code to associate with the failure result. This value determines the type of failure
