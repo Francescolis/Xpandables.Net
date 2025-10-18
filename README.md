@@ -226,14 +226,36 @@ public sealed class UserValidator : Validator<CreateUserRequest>
 {
     public override IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
     {
-        var spec = new Specification<CreateUserRequest>()
-            .And(u => !string.IsNullOrEmpty(u.Name), "Name is required")
-            .And(u => u.Email.Contains("@"), "Invalid email format");
-            
-        return spec.IsSatisfiedBy(instance) 
-            ? [] 
-            : spec.GetErrors();
+        // Using static factory methods to create specifications
+        var nameSpec = Specification.IsNotNull<CreateUserRequest, string>(u => u.Name);
+        var emailSpec = Specification.Contains<CreateUserRequest>(u => u.Email, "@");
+        var ageSpec = Specification.GreaterThan<CreateUserRequest, int>(u => u.Age, 18);
+        
+        // Combine specifications using static methods or operators
+        var combinedSpec = Specification.All(nameSpec, emailSpec, ageSpec);
+        
+        if (!combinedSpec.IsSatisfiedBy(instance))
+        {
+            return new List<ValidationResult>
+            {
+                new ValidationResult("Name is required", [nameof(instance.Name)]),
+                new ValidationResult("Invalid email format", [nameof(instance.Email)]),
+                new ValidationResult("Must be 18 or older", [nameof(instance.Age)])
+            };
+        }
+        
+        return [];
     }
+}
+
+// Alternative: Using expressions directly
+var spec = new Specification<CreateUserRequest>(u => !string.IsNullOrEmpty(u.Name))
+    .And(u => u.Email.Contains("@"))
+    .And(u => u.Age >= 18);
+
+if (spec.IsSatisfiedBy(request))
+{
+    // Valid request
 }
 ```
 
