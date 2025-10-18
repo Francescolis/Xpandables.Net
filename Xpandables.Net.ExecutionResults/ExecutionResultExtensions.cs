@@ -325,6 +325,24 @@ public static class ExecutionResultExtensions
         }
 
         /// <summary>
+        /// Creates an <see cref="ExecutionResult"/> that represents a successful operation with an HTTP 202 Accepted
+        /// status.
+        /// </summary>
+        /// <remarks>Use this method to signal that the request was valid and has been accepted, but
+        /// processing is not yet complete. This is commonly used in asynchronous or deferred processing
+        /// scenarios.</remarks>
+        /// <returns>An <see cref="ExecutionResult"/> indicating that the request has been accepted for processing.</returns>
+        public static ExecutionResult Accepted() => Success(HttpStatusCode.Accepted).Build();
+
+        /// <summary>
+        /// Creates an execution result that represents an HTTP 202 Accepted response with no content.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result value associated with the execution result.</typeparam>
+        /// <returns>An <see cref="ExecutionResult{TResult}"/> indicating that the request was accepted for processing, but no
+        /// result content is provided.</returns>
+        public static ExecutionResult<TResult> Accepted<TResult>() => Success<TResult>(HttpStatusCode.Accepted).Build();
+
+        /// <summary>
         /// Creates a builder for an execution result that represents a failure with the specified HTTP status code.
         /// </summary>
         /// <param name="statusCode">The HTTP status code to associate with the failure result. This value determines the type of failure
@@ -410,6 +428,48 @@ public static class ExecutionResultExtensions
         /// <returns>An <see cref="IExecutionResultFailureBuilder{TResult}"/> representing an unauthorized failure result.</returns>
         public static IExecutionResultFailureBuilder<TResult> Unauthorized<TResult>() =>
            Failure<TResult>(HttpStatusCode.Unauthorized);
+
+        /// <summary>
+        /// Creates a failure result indicating that the operation is forbidden.
+        /// </summary>
+        /// <remarks>Use this method to signal that the current request is not permitted due to
+        /// insufficient permissions. The resulting failure can be further customized before being returned to the
+        /// client.</remarks>
+        /// <returns>An <see cref="IExecutionResultFailureBuilder"/> representing a failure with HTTP status code 403
+        /// (Forbidden).</returns>
+        public static IExecutionResultFailureBuilder Forbidden() => Failure(HttpStatusCode.Forbidden);
+
+        /// <summary>
+        /// Creates a failure result indicating that the operation is forbidden (HTTP 403).
+        /// </summary>
+        /// <remarks>Use this method to signal that the requested action is not permitted due to
+        /// insufficient permissions or access rights. The returned failure corresponds to the HTTP 403 Forbidden status
+        /// code.</remarks>
+        /// <typeparam name="TResult">The type of the result value associated with the failure.</typeparam>
+        /// <returns>An <see cref="IExecutionResultFailureBuilder{TResult}"/> representing a forbidden operation failure.</returns>
+        public static IExecutionResultFailureBuilder<TResult> Forbidden<TResult>() => Failure<TResult>(HttpStatusCode.Forbidden);
+
+        /// <summary>
+        /// Creates a failure result indicating that the request could not be processed due to semantic errors,
+        /// corresponding to HTTP status code 422 (Unprocessable Entity).
+        /// </summary>
+        /// <remarks>Use this method to signal that the server understands the content type and syntax of
+        /// the request, but was unable to process the contained instructions. This is typically used for validation
+        /// errors or business rule violations that prevent successful processing.</remarks>
+        /// <returns>An <see cref="IExecutionResultFailureBuilder"/> representing an unprocessable entity failure response.</returns>
+        public static IExecutionResultFailureBuilder UnprocessableEntity() => Failure((HttpStatusCode)422);
+
+        /// <summary>
+        /// Creates a failure result indicating that the request could not be processed due to semantic errors, using
+        /// HTTP status code 422 (Unprocessable Entity).
+        /// </summary>
+        /// <remarks>Use this method to signal that the server understands the request but cannot process
+        /// it due to semantic issues, such as validation errors. This is commonly used in APIs to indicate that the
+        /// request is well-formed but contains invalid data.</remarks>
+        /// <typeparam name="TResult">The type of the result value associated with the failure.</typeparam>
+        /// <returns>An <see cref="IExecutionResultFailureBuilder{TResult}"/> representing a failure with status code 422
+        /// (Unprocessable Entity).</returns>
+        public static IExecutionResultFailureBuilder<TResult> UnprocessableEntity<TResult>() => Failure<TResult>((HttpStatusCode)422);
 
         /// <summary>
         /// Creates a failure result builder representing an internal server error (HTTP 500).
