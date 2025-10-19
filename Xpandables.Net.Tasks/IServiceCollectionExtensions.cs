@@ -218,7 +218,7 @@ public static class IServiceCollectionExtensions
         }
 
         /// <summary>
-        /// Registers all sealed handler types from the specified assemblies with the dependency injection container as
+        /// Registers all sealed request handler types from the specified assemblies with the dependency injection container as
         /// transient services.
         /// </summary>
         /// <remarks>Handler types are identified by their implementation of supported handler interfaces,
@@ -231,7 +231,7 @@ public static class IServiceCollectionExtensions
         /// <returns>The <see cref="IServiceCollection"/> instance with handler services registered.</returns>
         [RequiresDynamicCode("Dynamic code generation is required for this method.")]
         [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
-        public IServiceCollection AddXHandlers(params Assembly[] assemblies)
+        public IServiceCollection AddXRequestHandlers(params Assembly[] assemblies)
         {
             assemblies = assemblies is { Length: > 0 } ? assemblies : [Assembly.GetCallingAssembly()];
 
