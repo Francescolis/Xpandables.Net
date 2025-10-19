@@ -28,17 +28,14 @@ namespace Xpandables.Net.Events;
 /// <summary>
 /// Provides an implementation of an outbox pattern for managing integration events.
 /// </summary>
-/// <remarks>The <see cref="OutboxStore{TDataContext}"/> class is designed to facilitate reliable event processing
+/// <remarks>The <see cref="OutboxStore"/> class is designed to facilitate reliable event processing
 /// by implementing the outbox pattern. It ensures that integration events are stored, claimed, and processed in a
 /// consistent and fault-tolerant manner. This class supports operations such as enqueuing events, claiming pending
 /// events for processing, marking events as completed, and handling event failures.</remarks>
-/// <typeparam name="TDataContext">The type of the data context used to interact with the underlying database. Must derive from <see
-/// cref="DataContext"/>.</typeparam>
-/// <param name="context"></param>
-public sealed class OutboxStore<TDataContext>(TDataContext context) : IOutboxStore
-    where TDataContext : DataContext
+/// <param name="context">The data context used for accessing the outbox store.</param>
+public sealed class OutboxStore(OutboxStoreDataContext context) : IOutboxStore
 {
-    private readonly TDataContext _db = context
+    private readonly OutboxStoreDataContext _db = context
         ?? throw new ArgumentNullException(nameof(context));
 
     /// <inheritdoc />

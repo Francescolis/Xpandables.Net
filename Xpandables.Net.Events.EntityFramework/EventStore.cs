@@ -33,12 +33,10 @@ namespace Xpandables.Net.Events;
 /// system. It is designed to work with a specific data context, allowing integration with various storage backends that
 /// support the DataContext abstraction. All operations are asynchronous and support cancellation via CancellationToken.
 /// This class is not thread-safe; concurrent usage should be managed externally if required.</remarks>
-/// <typeparam name="TDataContext">The type of the data context used for event persistence. Must inherit from DataContext.</typeparam>
 /// <param name="context">The data context instance used to access the underlying event storage. Cannot be null.</param>
-public sealed class EventStore<TDataContext>(TDataContext context) : DisposableAsync, IEventStore
-    where TDataContext : DataContext
+public sealed class EventStore(EventStoreDataContext context) : DisposableAsync, IEventStore
 {
-    private readonly TDataContext _db = context
+    private readonly EventStoreDataContext _db = context
         ?? throw new ArgumentNullException(nameof(context));
 
     ///<inheritdoc/>
@@ -306,13 +304,13 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     // Subscription implementation for a single stream
     private sealed class StreamSubscription : IAsyncDisposable
     {
-        private readonly TDataContext _context;
+        private readonly EventStoreDataContext _context;
         private readonly SubscribeToStreamRequest _request;
         private readonly CancellationTokenSource _cts;
         private readonly Task _subscriptionTask;
 
         public StreamSubscription(
-            TDataContext context,
+            EventStoreDataContext context,
             SubscribeToStreamRequest request,
             CancellationToken cancellationToken)
         {
@@ -378,13 +376,13 @@ public sealed class EventStore<TDataContext>(TDataContext context) : DisposableA
     // Subscription implementation for all streams
     private sealed class AllStreamsSubscription : IAsyncDisposable
     {
-        private readonly TDataContext _context;
+        private readonly EventStoreDataContext _context;
         private readonly SubscribeToAllStreamsRequest _request;
         private readonly CancellationTokenSource _cts;
         private readonly Task _subscriptionTask;
 
         public AllStreamsSubscription(
-            TDataContext context,
+            EventStoreDataContext context,
             SubscribeToAllStreamsRequest request,
             CancellationToken cancellationToken)
         {
