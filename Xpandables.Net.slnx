@@ -2,10 +2,7 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
-  <Folder Name="/Real Example/">
-    <Project Path="Xpandables.Net.Api/Xpandables.Net.Api.csproj" />
-    <Project Path="Xpandables.Net.BlazorClient/Xpandables.Net.BlazorClient.csproj" />
-  </Folder>
+  <Folder Name="/Real Example/" />
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="README.md" />
