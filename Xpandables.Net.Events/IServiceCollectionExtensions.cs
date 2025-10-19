@@ -45,9 +45,9 @@ public static class IServiceCollectionExtensions
         /// <summary>
         /// Registers an aggregate store for the specified aggregate type in the dependency injection container.
         /// </summary>
-        /// <remarks>Use this method to enable dependency injection of IAggregateStore for the
-        /// specified aggregate type. The registration is added with scoped lifetime.</remarks>
-        /// <typeparam name="TAggregate">The aggregate type to register. Must implement both IAggregate and IAggregateFactory<TAggregate>.</typeparam>
+        /// <remarks>Use this method to enable dependency injection of IAggregateStore for the specified
+        /// aggregate type. The registration is added with scoped lifetime.</remarks>
+        /// <typeparam name="TAggregate">The aggregate type to register. Must implement both IAggregate and <see cref="IAggregateFactory{TAggregate}"/> .</typeparam>
         /// <returns>The IServiceCollection instance with the aggregate store registration added.</returns>
         public IServiceCollection AddXAggregateStore<TAggregate>()
             where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
