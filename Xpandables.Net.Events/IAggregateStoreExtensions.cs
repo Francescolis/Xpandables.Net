@@ -41,7 +41,7 @@ public static class IAggregateStoreExtensions
         /// <exception cref="InvalidOperationException">Thrown if the aggregate store does not support the specified aggregate type.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
         public async Task<TAggregate> LoadAsync<TAggregate>(Guid streamId, CancellationToken cancellationToken = default)
-            where TAggregate : class, IAggregate, new()
+            where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
             => (aggregateStore ?? throw new ArgumentNullException(nameof(aggregateStore))) switch
             {
                 IAggregateStore<TAggregate> typedStore => await typedStore.LoadAsync(streamId, cancellationToken).ConfigureAwait(false),
@@ -57,7 +57,7 @@ public static class IAggregateStoreExtensions
         /// <returns>A task that represents the asynchronous save operation.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the underlying aggregate store does not support the specified aggregate type.</exception>
         public async Task SaveAsync<TAggregate>(TAggregate aggregate, CancellationToken cancellationToken = default)
-            where TAggregate : class, IAggregate, new()
+            where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
         {
             ArgumentNullException.ThrowIfNull(aggregateStore);
             if (aggregateStore is not IAggregateStore<TAggregate> typedStored)

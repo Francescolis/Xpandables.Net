@@ -54,10 +54,10 @@ public interface IAggregateStore
 /// abstract the underlying storage details.
 /// <para>If you need more fine-grained control over the persistence of aggregates, consider using the <see cref="IEventStore"/> implementation.</para>
 /// </remarks>
-/// <typeparam name="TAggregate">The type of aggregate managed by the store. Must be a class that implements the IAggregate interface and has a
-/// parameterless constructor.</typeparam>
+/// <typeparam name="TAggregate">The type of aggregate managed by the store. Must be a class that implements the <see cref="IAggregateFactory{TAggregate}"/> 
+/// interface.</typeparam>
 public interface IAggregateStore<TAggregate> : IAggregateStore
-    where TAggregate : class, IAggregate, new()
+    where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
 {
     /// <summary>
     /// Asynchronously saves the specified aggregate to the underlying data store.

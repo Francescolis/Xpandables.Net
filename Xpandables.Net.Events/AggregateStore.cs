@@ -36,7 +36,7 @@ namespace Xpandables.Net.Events;
 public sealed class AggregateStore<TAggregate>(
     IEventStore eventStore,
     IPendingDomainEventsBuffer domainEvents) : IAggregateStore<TAggregate>
-    where TAggregate : class, IAggregate, new()
+    where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
 {
     private readonly IEventStore _eventStore = eventStore;
 
@@ -61,7 +61,7 @@ public sealed class AggregateStore<TAggregate>(
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var aggregate = new TAggregate();
+        var aggregate = TAggregate.Create();
 
         aggregate.Replay(history);
 
