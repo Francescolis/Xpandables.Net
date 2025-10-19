@@ -242,19 +242,11 @@ public class AggregateTests
 
         // Act
         aggregate.Deposit(500m);
+        var uncommittedEvents = aggregate.GetUncommittedEvents().ToList();
         aggregate.MarkEventsAsCommitted();
-        var history = new List<IDomainEvent>
-        {
-            new MoneyDepositedEvent
-            {
-                StreamId = streamId,
-                StreamName = "BankAccount",
-                StreamVersion = 1,
-                Amount = 500m
-            }
-        };
+        
         var newAggregate = new BankAccountAggregate();
-        newAggregate.Replay(history.Prepend(aggregate.DequeueUncommittedEvents().First()));
+        newAggregate.Replay(uncommittedEvents);
 
         // Assert - Business version increments during replay of significant events
         newAggregate.BusinessVersion.Should().BeGreaterThan(initialBusinessVersion);

@@ -65,19 +65,21 @@ public class MediatorTests
     // ========== Additional Mediator Completion Tests ==========
 
     [Fact]
-    public async Task Mediator_NoHandler_ShouldThrowInvalidOperationException()
+    public async Task Mediator_NoHandler_ShouldReturnFailureResult()
     {
         // Arrange
         var services = new ServiceCollection();
         services.AddXMediator();
         services.AddXPipelineRequestHandler();
+        // No handler registered
         var mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();
 
         // Act
-        var act = async () => await mediator.SendAsync(new Ping());
+        var result = await mediator.SendAsync(new Ping());
 
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        // Assert - When no handler is registered, the mediator should return a failure result
+        // rather than throwing an exception
+        result.IsSuccess.Should().BeFalse();
     }
 
     [Fact]
