@@ -20,7 +20,6 @@ using System.Runtime.CompilerServices;
 using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -188,7 +187,7 @@ public sealed class AggregateStoreTests
 
         var aggregate = BankAccountAggregate.Create(streamId, "ACC001", "John Doe", 1000m);
         var aggregateStore = new AggregateStore<BankAccountAggregate>(eventStore, domainEvents);
-        
+
         await aggregateStore.SaveAsync(aggregate);
         aggregate.MarkEventsAsCommitted();
 
@@ -217,7 +216,7 @@ public sealed class SnapshotStoreTests
         // Arrange
         var streamId = Guid.NewGuid();
         var options = Options.Create(new SnapshotOptions { IsSnapshotEnabled = false });
-        
+
         var eventStore = new InMemoryEventStore();
         var domainEvents = new PendingDomainEventsBuffer();
         var innerAggregateStore = new AggregateStore<TestSnapshotAggregate>(eventStore, domainEvents);
@@ -246,7 +245,7 @@ public sealed class SnapshotStoreTests
         // Arrange
         var streamId = Guid.NewGuid();
         var options = Options.Create(new SnapshotOptions { IsSnapshotEnabled = true, SnapshotFrequency = 10 });
-        
+
         var eventStore = new InMemoryEventStore();
         var domainEvents = new PendingDomainEventsBuffer();
         var innerAggregateStore = new AggregateStore<TestSnapshotAggregate>(eventStore, domainEvents);
@@ -284,7 +283,7 @@ public sealed class SnapshotStoreTests
         // Arrange
         var streamId = Guid.NewGuid();
         var options = Options.Create(new SnapshotOptions { IsSnapshotEnabled = true, SnapshotFrequency = 2 });
-        
+
         var eventStore = new InMemoryEventStore();
         var domainEvents = new PendingDomainEventsBuffer();
         var innerAggregateStore = new AggregateStore<TestSnapshotAggregate>(eventStore, domainEvents);
@@ -312,7 +311,7 @@ public sealed class SnapshotStoreTests
         // Arrange
         var streamId = Guid.NewGuid();
         var options = Options.Create(new SnapshotOptions { IsSnapshotEnabled = true, SnapshotFrequency = 10 });
-        
+
         var eventStore = new InMemoryEventStore();
         var domainEvents = new PendingDomainEventsBuffer();
         var innerAggregateStore = new AggregateStore<TestSnapshotAggregate>(eventStore, domainEvents);
@@ -338,7 +337,7 @@ public sealed class SnapshotStoreTests
         // Arrange
         var streamId = Guid.NewGuid();
         var options = Options.Create(new SnapshotOptions { IsSnapshotEnabled = false });
-        
+
         var eventStore = new InMemoryEventStore();
         var domainEvents = new PendingDomainEventsBuffer();
         var innerAggregateStore = new AggregateStore<TestSnapshotAggregate>(eventStore, domainEvents);
@@ -371,7 +370,7 @@ public sealed class SnapshotStoreTests
         public static TestSnapshotAggregate CreateWithVersion(Guid streamId, long version)
         {
             var aggregate = new TestSnapshotAggregate();
-            
+
             for (long i = 0; i <= version; i++)
             {
                 var evt = new TestDomainEvent
@@ -381,7 +380,7 @@ public sealed class SnapshotStoreTests
                 };
                 aggregate.PushVersioningEvent(evt);
             }
-            
+
             // Don't mark as committed so events can be saved
             return aggregate;
         }
@@ -389,7 +388,7 @@ public sealed class SnapshotStoreTests
         public static TestSnapshotAggregate CreateWithVersionForSnapshot(Guid streamId, long version)
         {
             var aggregate = new TestSnapshotAggregate();
-            
+
             for (long i = 0; i <= version; i++)
             {
                 var evt = new TestDomainEvent
@@ -399,7 +398,7 @@ public sealed class SnapshotStoreTests
                 };
                 aggregate.PushVersioningEvent(evt);
             }
-            
+
             // Mark as committed since these tests just check snapshot creation
             aggregate.MarkEventsAsCommitted();
             return aggregate;
@@ -517,7 +516,7 @@ public sealed class PublisherSubscriberTests
         // Arrange
         var serviceProvider = new ServiceCollection().BuildServiceProvider();
         var publisherSubscriber = new PublisherSubscriber(serviceProvider);
-        
+
         Action<TestEvent> handler = e => { };
         publisherSubscriber.Subscribe(handler);
 
@@ -604,10 +603,10 @@ public sealed class SchedulerTests
         // Arrange
         var options = new SchedulerOptions { IsEventSchedulerEnabled = false };
         var mockOptionsMonitor = CreateOptionsMonitor(options);
-        
+
         var outbox = new InMemoryOutboxStore();
         var publisher = new PublisherSubscriber(new ServiceCollection().BuildServiceProvider());
-        
+
         var serviceProvider = CreateServiceProvider(outbox, publisher);
         var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         var logger = serviceProvider.GetRequiredService<ILogger<Scheduler>>();
@@ -627,10 +626,10 @@ public sealed class SchedulerTests
         // Arrange
         var options = new SchedulerOptions { IsEventSchedulerEnabled = true, BatchSize = 10 };
         var mockOptionsMonitor = CreateOptionsMonitor(options);
-        
+
         var outbox = new InMemoryOutboxStore();
         var publisher = new PublisherSubscriber(new ServiceCollection().BuildServiceProvider());
-        
+
         var serviceProvider = CreateServiceProvider(outbox, publisher);
         var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         var logger = serviceProvider.GetRequiredService<ILogger<Scheduler>>();
@@ -661,7 +660,7 @@ public sealed class SchedulerTests
         services.AddSingleton<IEventHandler<TestIntegrationEvent>>(
             new TestIntegrationEventHandler(() => handlerInvoked = true));
         var publisher = new PublisherSubscriber(services.BuildServiceProvider());
-        
+
         var serviceProvider = CreateServiceProvider(outbox, publisher);
         var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         var logger = serviceProvider.GetRequiredService<ILogger<Scheduler>>();
@@ -680,9 +679,9 @@ public sealed class SchedulerTests
     public async Task ScheduleAsync_WhenEventPublishingFails_MarksAsFailedInOutbox()
     {
         // Arrange
-        var options = new SchedulerOptions 
-        { 
-            IsEventSchedulerEnabled = true, 
+        var options = new SchedulerOptions
+        {
+            IsEventSchedulerEnabled = true,
             BatchSize = 10,
             EventProcessingTimeout = 5000
         };
@@ -696,7 +695,7 @@ public sealed class SchedulerTests
         services.AddSingleton<IEventHandler<TestIntegrationEvent>>(
             new TestIntegrationEventHandler(() => throw new InvalidOperationException("Publishing failed")));
         var publisher = new PublisherSubscriber(services.BuildServiceProvider());
-        
+
         var serviceProvider = CreateServiceProvider(outbox, publisher);
         var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         var logger = serviceProvider.GetRequiredService<ILogger<Scheduler>>();
@@ -728,11 +727,9 @@ public sealed class SchedulerTests
     // Test helper classes
     private sealed record TestIntegrationEvent : IntegrationEvent;
 
-    private sealed class TestIntegrationEventHandler : IEventHandler<TestIntegrationEvent>
+    private sealed class TestIntegrationEventHandler(Action onInvoke) : IEventHandler<TestIntegrationEvent>
     {
-        private readonly Action _onInvoke;
-
-        public TestIntegrationEventHandler(Action onInvoke) => _onInvoke = onInvoke;
+        private readonly Action _onInvoke = onInvoke;
 
         public Task HandleAsync(TestIntegrationEvent @event, CancellationToken cancellationToken = default)
         {
@@ -741,11 +738,9 @@ public sealed class SchedulerTests
         }
     }
 
-    private sealed class TestOptionsMonitor<T> : IOptionsMonitor<T> where T : class
+    private sealed class TestOptionsMonitor<T>(T value) : IOptionsMonitor<T> where T : class
     {
-        private readonly T _value;
-
-        public TestOptionsMonitor(T value) => _value = value;
+        private readonly T _value = value;
 
         public T CurrentValue => _value;
         public T Get(string? name) => _value;
@@ -757,27 +752,27 @@ public sealed class SchedulerTests
 
 internal sealed class InMemoryEventStore : IEventStore
 {
-    private readonly Dictionary<Guid, List<IDomainEvent>> _streams = new();
-    private readonly Dictionary<Guid, ISnapshotEvent> _snapshots = new();
+    private readonly Dictionary<Guid, List<IDomainEvent>> _streams = [];
+    private readonly Dictionary<Guid, ISnapshotEvent> _snapshots = [];
     private long _globalPosition;
 
     public Task<AppendResult> AppendToStreamAsync(AppendRequest request, CancellationToken cancellationToken = default)
     {
-        if (!_streams.ContainsKey(request.StreamId))
+        if (!_streams.TryGetValue(request.StreamId, out List<IDomainEvent>? stream))
         {
-            _streams[request.StreamId] = new List<IDomainEvent>();
+            stream = [];
+            _streams[request.StreamId] = stream;
         }
 
-        var stream = _streams[request.StreamId];
         long currentVersion = stream.Count == 0 ? -1 : stream[^1].StreamVersion;
-        
+
         var versionedEvents = new List<IDomainEvent>();
         foreach (var evt in request.Events.OfType<IDomainEvent>())
         {
             currentVersion++;
             // Ensure the event has the correct stream version
-            var versionedEvent = evt.StreamVersion != currentVersion 
-                ? evt.WithStreamVersion(currentVersion) 
+            var versionedEvent = evt.StreamVersion != currentVersion
+                ? evt.WithStreamVersion(currentVersion)
                 : evt;
             stream.Add(versionedEvent);
             versionedEvents.Add(versionedEvent);
@@ -787,22 +782,21 @@ internal sealed class InMemoryEventStore : IEventStore
         var lastVersion = stream.Count - 1;
 
         return Task.FromResult(AppendResult.Create(
-            versionedEvents.Select(e => e.EventId).ToList(),
+            [.. versionedEvents.Select(e => e.EventId)],
             firstVersion,
             lastVersion));
     }
 
     public async IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(
-        ReadStreamRequest request, 
+        ReadStreamRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (!_streams.ContainsKey(request.StreamId))
+        if (!_streams.TryGetValue(request.StreamId, out List<IDomainEvent>? value))
         {
             yield break;
         }
 
-        var events = _streams[request.StreamId]
-            .Where(e => e.StreamVersion >= request.FromVersion)
+        var events = value.Where(e => e.StreamVersion >= request.FromVersion)
             .OrderBy(e => e.StreamVersion);
 
         foreach (var evt in events)
@@ -852,27 +846,27 @@ internal sealed class InMemoryEventStore : IEventStore
     }
 
     // Not implemented for these tests
-    public IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(ReadAllStreamsRequest request, CancellationToken cancellationToken = default) 
+    public IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(ReadAllStreamsRequest request, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
-    public Task<long> GetStreamVersionAsync(Guid streamId, CancellationToken cancellationToken = default) 
+    public Task<long> GetStreamVersionAsync(Guid streamId, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
-    public Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default) 
+    public Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
-    public Task DeleteStreamAsync(DeleteStreamRequest request, CancellationToken cancellationToken = default) 
+    public Task DeleteStreamAsync(DeleteStreamRequest request, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
-    public Task TruncateStreamAsync(TruncateStreamRequest request, CancellationToken cancellationToken = default) 
+    public Task TruncateStreamAsync(TruncateStreamRequest request, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
-    public IAsyncDisposable SubscribeToStream(SubscribeToStreamRequest request, CancellationToken cancellationToken = default) 
+    public IAsyncDisposable SubscribeToStream(SubscribeToStreamRequest request, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
-    public IAsyncDisposable SubscribeToAllStreams(SubscribeToAllStreamsRequest request, CancellationToken cancellationToken = default) 
+    public IAsyncDisposable SubscribeToAllStreams(SubscribeToAllStreamsRequest request, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 }
 
 internal sealed class InMemoryOutboxStore : IOutboxStore
 {
-    private readonly List<IIntegrationEvent> _events = new();
-    private readonly HashSet<Guid> _completed = new();
-    private readonly List<FailedEvent> _failed = new();
+    private readonly List<IIntegrationEvent> _events = [];
+    private readonly HashSet<Guid> _completed = [];
+    private readonly List<FailedEvent> _failed = [];
 
     public int DequeueCount { get; private set; }
     public IReadOnlyCollection<Guid> CompletedEvents => _completed;
@@ -905,6 +899,6 @@ internal sealed class InMemoryOutboxStore : IOutboxStore
         return Task.CompletedTask;
     }
 
-    public Task EnqueueAsync(CancellationToken cancellationToken = default, params IIntegrationEvent[] events) 
+    public Task EnqueueAsync(CancellationToken cancellationToken = default, params IIntegrationEvent[] events)
         => throw new NotImplementedException();
 }

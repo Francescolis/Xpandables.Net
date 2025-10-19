@@ -88,18 +88,18 @@ public class MediatorAdvancedTests
     {
         // Arrange
         var executionOrder = new List<string>();
-        
+
         var services = new ServiceCollection();
         services.AddXMediator();
         services.AddXPipelineRequestHandler();
         services.AddTransient<IRequestHandler<ChainedRequest>, ChainedHandler>();
-        
+
         // Register decorators - they execute in reverse order of registration
-        services.AddTransient<IPipelineDecorator<ChainedRequest>>(sp => 
+        services.AddTransient<IPipelineDecorator<ChainedRequest>>(sp =>
             new TestDecorator("first", executionOrder));
-        services.AddTransient<IPipelineDecorator<ChainedRequest>>(sp => 
+        services.AddTransient<IPipelineDecorator<ChainedRequest>>(sp =>
             new TestDecorator("second", executionOrder));
-        services.AddTransient<IPipelineDecorator<ChainedRequest>>(sp => 
+        services.AddTransient<IPipelineDecorator<ChainedRequest>>(sp =>
             new TestDecorator("third", executionOrder));
 
         var mediator = services.BuildServiceProvider().GetRequiredService<IMediator>();
@@ -112,16 +112,10 @@ public class MediatorAdvancedTests
         executionOrder.Should().HaveCountGreaterThanOrEqualTo(3);
     }
 
-    private sealed class TestDecorator : IPipelineDecorator<ChainedRequest>
+    private sealed class TestDecorator(string name, List<string> executionOrder) : IPipelineDecorator<ChainedRequest>
     {
-        private readonly string _name;
-        private readonly List<string> _executionOrder;
-
-        public TestDecorator(string name, List<string> executionOrder)
-        {
-            _name = name;
-            _executionOrder = executionOrder;
-        }
+        private readonly string _name = name;
+        private readonly List<string> _executionOrder = executionOrder;
 
         public async Task<ExecutionResult> HandleAsync(
             RequestContext<ChainedRequest> context,
@@ -419,7 +413,7 @@ public class MediatorAdvancedTests
         services.AddXMediator();
         services.AddXPipelineRequestHandler();
         services.AddXPipelineExceptionDecorator();
-        
+
         // Register exception handlers - first handler will rethrow, second will handle
         services.AddTransient<IRequestExceptionHandler<MultiExceptionRequest>, FirstExceptionHandler>();
         services.AddTransient<IRequestExceptionHandler<MultiExceptionRequest>, SecondExceptionHandler>();
