@@ -1,25 +1,24 @@
-﻿# 📝 Xpandables.Net.Events
+﻿# 🌐 Xpandables.Net.AspNetCore
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Event Sourcing & CQRS** - Complete event sourcing implementation with aggregate roots, event stores, domain events, and integration events.
+> **ASP.NET Core Extensions** - Modular service registration, dependency injection enhancements, and endpoint routing utilities for building maintainable ASP.NET Core applications.
 
 ---
 
 ## 📋 Overview
 
-`Xpandables.Net.Events` provides a production-ready event sourcing framework that enables building applications using Domain-Driven Design (DDD) and Event Sourcing patterns. Store state as a sequence of events rather than current state.
+`Xpandables.Net.AspNetCore` provides a comprehensive set of tools to simplify and enhance ASP.NET Core application development. It enables modular service registration through interfaces and MEF-based exports, supports decorator patterns for cross-cutting concerns, and offers lazy dependency resolution.
 
 ### 🎯 Key Features
 
-- 📦 **Aggregate Roots** - Event-sourced aggregates with business logic
-- 💾 **Event Store** - Persistent event storage and retrieval
-- 🔄 **Event Replay** - Rebuild state from historical events
-- 📨 **Domain Events** - Internal domain event handling
-- 🔗 **Integration Events** - Cross-boundary event communication
-- 📸 **Snapshots** - Performance optimization for large streams
-- 🔒 **Optimistic Concurrency** - Stream versioning support
+- 🔌 **Modular Service Registration** - Interface-based service configuration (`IAddService`, `IUseService`)
+- 📦 **MEF Integration** - Managed Extensibility Framework (MEF) for plugin-based architectures
+- 🎨 **Decorator Pattern** - Apply cross-cutting concerns without modifying existing code
+- ⏱️ **Lazy Resolution** - Deferred dependency instantiation with `LazyResolved<T>`
+- 🛣️ **Endpoint Routing** - Simplified endpoint configuration with `IEndpointRoute`
+- 🏗️ **Assembly Scanning** - Automatic service discovery and registration
 
 ---
 
@@ -28,182 +27,145 @@
 ### Installation
 
 ```bash
-dotnet add package Xpandables.Net.Events
-dotnet add package Xpandables.Net.Events.EntityFramework
+dotnet add package Xpandables.Net.AspNetCore
 ```
 
 ### Basic Usage
 
 ```csharp
-// 1. Define events
-public sealed record OrderCreatedEvent(
-    Guid OrderId,
-    Guid CustomerId,
-    decimal Total) : IDomainEvent;
+using Xpandables.Net;
+using Xpandables.Net.DependencyInjection;
 
-public sealed record OrderItemAddedEvent(
-    Guid OrderId,
-    Guid ProductId,
-    int Quantity,
-    decimal Price) : IDomainEvent;
+var builder = WebApplication.CreateBuilder(args);
 
-// 2. Create an aggregate
-public sealed class Order : Aggregate
-{
-    private Guid _customerId;
-    private decimal _total;
-    private List<OrderItem> _items = [];
-    
-    // For reconstitution
-    private Order() { }
-    
-    // Create new order
-    public static Order Create(Guid customerId)
-    {
-        var order = new Order();
-        order.RaiseEvent(new OrderCreatedEvent(
-            Guid.NewGuid(),
-            customerId,
-            0));
-        return order;
-    }
-    
-    // Add item
-    public void AddItem(Guid productId, int quantity, decimal price)
-    {
-        RaiseEvent(new OrderItemAddedEvent(
-            StreamId,
-            productId,
-            quantity,
-            price));
-    }
-    
-    // Event handlers (rebuild state)
-    protected override void On(IEvent @event)
-    {
-        switch (@event)
-        {
-            case OrderCreatedEvent created:
-                StreamId = created.OrderId;
-                _customerId = created.CustomerId;
-                _total = created.Total;
-                break;
-                
-            case OrderItemAddedEvent itemAdded:
-                _items.Add(new OrderItem(
-                    itemAdded.ProductId,
-                    itemAdded.Quantity,
-                    itemAdded.Price));
-                _total += itemAdded.Quantity * itemAdded.Price;
-                break;
-        }
-    }
-}
+// Register lazy resolution support
+builder.Services.AddXLazyResolved();
 
-// 3. Use the aggregate
-var order = Order.Create(customerId);
-order.AddItem(productId, quantity: 2, price: 19.99m);
+// Scan assemblies and register IAddService implementations
+builder.Services.AddXServiceExports(
+    builder.Configuration,
+    typeof(Program).Assembly);
 
-await _aggregateStore.AppendAsync(order);
+var app = builder.Build();
+
+app.Run();
 ```
 
 ---
 
 ## 🏗️ Core Concepts
 
-### Aggregates
+### Modular Service Registration
+
+#### IAddService - Configure Dependencies
+
+Implement `IAddService` to encapsulate service registration logic in modular components.
 
 ```csharp
-public sealed class BankAccount : Aggregate
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Xpandables.Net;
+
+public sealed class DatabaseServiceModule : IAddService
 {
-    private decimal _balance;
-    private bool _isActive;
-    
-    private BankAccount() { } // For reconstitution
-    
-    public static BankAccount Open(string accountNumber, decimal initialDeposit)
+    public void AddServices(
+        IServiceCollection services,
+        IConfiguration configuration)
     {
-        var account = new BankAccount();
-        account.RaiseEvent(new AccountOpenedEvent(
-            Guid.NewGuid(),
-            accountNumber,
-            initialDeposit));
-        return account;
+        // Register database services
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection")));
+        
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
     }
-    
-    public void Deposit(decimal amount)
+}
+
+public sealed class CachingServiceModule : IAddService
+{
+    public void AddServices(IServiceCollection services)
     {
-        if (!_isActive)
-            throw new InvalidOperationException("Account is closed");
-        
-        if (amount <= 0)
-            throw new ArgumentException("Amount must be positive");
-        
-        RaiseEvent(new MoneyDepositedEvent(StreamId, amount));
+        services.AddMemoryCache();
+        services.AddSingleton<ICacheService, InMemoryCacheService>();
     }
-    
-    public void Withdraw(decimal amount)
+}
+```
+
+#### IUseService - Configure Middleware
+
+Implement `IUseService` to modularize middleware configuration.
+
+```csharp
+using Microsoft.AspNetCore.Builder;
+using Xpandables.Net;
+
+public sealed class SecurityMiddlewareModule : IUseService
+{
+    public void UseServices(WebApplication application)
     {
-        if (!_isActive)
-            throw new InvalidOperationException("Account is closed");
-        
-        if (amount <= 0)
-            throw new ArgumentException("Amount must be positive");
-        
-        if (_balance < amount)
-            throw new InvalidOperationException("Insufficient funds");
-        
-        RaiseEvent(new MoneyWithdrawnEvent(StreamId, amount));
+        application.UseHttpsRedirection();
+        application.UseHsts();
+        application.UseCors("AllowSpecificOrigins");
     }
-    
-    protected override void On(IEvent @event)
+}
+
+public sealed class DevelopmentMiddlewareModule : IUseService
+{
+    public void UseServices(WebApplication application)
     {
-        switch (@event)
+        if (application.Environment.IsDevelopment())
         {
-            case AccountOpenedEvent opened:
-                StreamId = opened.AccountId;
-                _balance = opened.InitialDeposit;
-                _isActive = true;
-                break;
-                
-            case MoneyDepositedEvent deposited:
-                _balance += deposited.Amount;
-                break;
-                
-            case MoneyWithdrawnEvent withdrawn:
-                _balance -= withdrawn.Amount;
-                break;
-                
-            case AccountClosedEvent:
-                _isActive = false;
-                break;
+            application.UseDeveloperExceptionPage();
+            application.UseSwagger();
+            application.UseSwaggerUI();
         }
     }
 }
 ```
 
-### Event Store Operations
+#### IEndpointRoute - Define Endpoints
+
+Combine service registration, middleware, and endpoint configuration.
 
 ```csharp
-// Append events
-var order = Order.Create(customerId);
-order.AddItem(productId, 2, 19.99m);
-await _aggregateStore.AppendAsync(order);
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Xpandables.Net;
 
-// Load aggregate from events
-var loadedOrder = await _aggregateStore
-    .ReadAsync<Order>(orderId);
-
-// Read events from stream
-var events = await _eventStore.ReadAsync(new ReadStreamRequest
+public sealed class UserEndpoints : IEndpointRoute
 {
-    StreamId = orderId,
-    FromVersion = 0
-});
+    public void AddServices(IServiceCollection services)
+    {
+        // Register endpoint-specific services
+        services.AddScoped<IUserService, UserService>();
+    }
 
-await foreach (var envelope in events)
-{
-    Console.WriteLine($"Event: {envelope.Event.GetType().Name}");
+    public void UseServices(WebApplication application)
+    {
+        // Configure middleware if needed
+    }
+
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        var users = app.MapGroup("/api/users");
+
+        users.MapGet("/", async (IUserService service) =>
+            await service.GetAllUsersAsync());
+
+        users.MapGet("/{id:guid}", async (Guid id, IUserService service) =>
+            await service.GetUserByIdAsync(id));
+
+        users.MapPost("/", async (CreateUserRequest request, IUserService service) =>
+            await service.CreateUserAsync(request));
+
+        users.MapPut("/{id:guid}", async (Guid id, UpdateUserRequest request, IUserService service) =>
+            await service.UpdateUserAsync(id, request));
+
+        users.MapDelete("/{id:guid}", async (Guid id, IUserService service) =>
+            await service.DeleteUserAsync(id));
+    }
 }
 ```
 
@@ -211,230 +173,451 @@ await foreach (var envelope in events)
 
 ## 💎 Advanced Features
 
-### Snapshots for Performance
+### Lazy Dependency Resolution
+
+Defer expensive service instantiation until actually needed.
 
 ```csharp
-public sealed record OrderSnapshot(
-    Guid OrderId,
-    Guid CustomerId,
-    decimal Total,
-    List<OrderItem> Items) : ISnapshotEvent;
+using Xpandables.Net;
 
-public sealed class Order : Aggregate
-{
-    protected override void On(IEvent @event)
-    {
-        if (@event is OrderSnapshot snapshot)
-        {
-            StreamId = snapshot.OrderId;
-            _customerId = snapshot.CustomerId;
-            _total = snapshot.Total;
-            _items = snapshot.Items;
-            return;
-        }
-        
-        // Handle other events...
-    }
-    
-    protected override ISnapshotEvent? CreateSnapshot()
-    {
-        return new OrderSnapshot(
-            StreamId,
-            _customerId,
-            _total,
-            _items);
-    }
-}
-
-// Snapshots are created automatically every N events
-```
-
-### Integration Events
-
-```csharp
-// Define integration event
-public sealed record OrderCreatedIntegrationEvent(
-    Guid OrderId,
-    Guid CustomerId,
-    decimal Total) : IIntegrationEvent;
-
-// Raise from aggregate
-public sealed class Order : Aggregate
-{
-    public static Order Create(Guid customerId)
-    {
-        var order = new Order();
-        order.RaiseEvent(new OrderCreatedEvent(...));
-        
-        // Raise integration event for external systems
-        order.RaiseIntegrationEvent(new OrderCreatedIntegrationEvent(
-            order.StreamId,
-            customerId,
-            0));
-        
-        return order;
-    }
-}
-
-// Integration events are stored in outbox for reliable publishing
-```
-
-### Event Subscriptions
-
-```csharp
-// Subscribe to specific stream
-await _eventStore.SubscribeToStreamAsync(new SubscribeToStreamRequest
-{
-    StreamId = orderId,
-    OnEvent = async (envelope, ct) =>
-    {
-        Console.WriteLine($"New event: {envelope.Event.GetType().Name}");
-        await ProcessEventAsync(envelope.Event);
-    }
-});
-
-// Subscribe to all streams
-await _eventStore.SubscribeToAllStreamsAsync(new SubscribeToAllStreamsRequest
-{
-    OnEvent = async (envelope, ct) =>
-    {
-        await UpdateReadModelAsync(envelope);
-    }
-});
-```
-
----
-
-## 💡 Complete Example: E-Commerce Order
-
-```csharp
-// Events
-public sealed record OrderCreatedEvent(Guid OrderId, Guid CustomerId) 
-    : IDomainEvent;
-
-public sealed record OrderItemAddedEvent(
-    Guid OrderId, Guid ProductId, int Quantity, decimal UnitPrice) 
-    : IDomainEvent;
-
-public sealed record OrderShippedEvent(
-    Guid OrderId, string TrackingNumber) 
-    : IDomainEvent;
-
-// Aggregate
-public sealed class Order : Aggregate
-{
-    public enum OrderStatus { Created, Shipped, Delivered, Cancelled }
-    
-    private Guid _customerId;
-    private List<OrderItem> _items = [];
-    private OrderStatus _status;
-    private string? _trackingNumber;
-    
-    private Order() { }
-    
-    public static Order Create(Guid customerId)
-    {
-        var order = new Order();
-        order.RaiseEvent(new OrderCreatedEvent(Guid.NewGuid(), customerId));
-        return order;
-    }
-    
-    public void AddItem(Guid productId, int quantity, decimal unitPrice)
-    {
-        if (_status != OrderStatus.Created)
-            throw new InvalidOperationException("Cannot modify shipped order");
-        
-        RaiseEvent(new OrderItemAddedEvent(
-            StreamId, productId, quantity, unitPrice));
-    }
-    
-    public void Ship(string trackingNumber)
-    {
-        if (_status != OrderStatus.Created)
-            throw new InvalidOperationException("Order already shipped");
-        
-        if (!_items.Any())
-            throw new InvalidOperationException("Cannot ship empty order");
-        
-        RaiseEvent(new OrderShippedEvent(StreamId, trackingNumber));
-        
-        // Raise integration event
-        RaiseIntegrationEvent(new OrderShippedIntegrationEvent(
-            StreamId, trackingNumber, _customerId));
-    }
-    
-    protected override void On(IEvent @event)
-    {
-        switch (@event)
-        {
-            case OrderCreatedEvent created:
-                StreamId = created.OrderId;
-                _customerId = created.CustomerId;
-                _status = OrderStatus.Created;
-                break;
-                
-            case OrderItemAddedEvent itemAdded:
-                _items.Add(new OrderItem(
-                    itemAdded.ProductId,
-                    itemAdded.Quantity,
-                    itemAdded.UnitPrice));
-                break;
-                
-            case OrderShippedEvent shipped:
-                _status = OrderStatus.Shipped;
-                _trackingNumber = shipped.TrackingNumber;
-                break;
-        }
-    }
-}
-
-// Usage
 public sealed class OrderService
 {
-    private readonly IAggregateStore _aggregateStore;
-    
-    public async Task<Guid> CreateOrderAsync(
-        Guid customerId,
-        List<OrderItemDto> items)
+    private readonly Lazy<IEmailService> _emailService;
+    private readonly Lazy<INotificationService> _notificationService;
+
+    public OrderService(
+        LazyResolved<IEmailService> emailService,
+        LazyResolved<INotificationService> notificationService)
     {
-        var order = Order.Create(customerId);
-        
-        foreach (var item in items)
-        {
-            order.AddItem(item.ProductId, item.Quantity, item.UnitPrice);
-        }
-        
-        await _aggregateStore.AppendAsync(order);
-        
-        return order.StreamId;
+        _emailService = emailService;
+        _notificationService = notificationService;
     }
-    
-    public async Task ShipOrderAsync(Guid orderId, string trackingNumber)
+
+    public async Task ProcessOrderAsync(Order order)
     {
-        var order = await _aggregateStore.ReadAsync<Order>(orderId);
+        // Email service only instantiated when Value is accessed
+        if (order.SendConfirmation)
+        {
+            await _emailService.Value.SendOrderConfirmationAsync(order);
+        }
+
+        // Notification service may never be instantiated
+        if (order.IsUrgent)
+        {
+            await _notificationService.Value.NotifyWarehouseAsync(order);
+        }
+    }
+}
+
+// Registration
+builder.Services.AddXLazyResolved();
+```
+
+### Decorator Pattern
+
+Apply cross-cutting concerns like logging, caching, or validation without modifying existing implementations.
+
+```csharp
+using Xpandables.Net.DependencyInjection;
+
+// Original interface
+public interface IProductService
+{
+    Task<Product> GetProductAsync(Guid id);
+    Task<IEnumerable<Product>> GetAllProductsAsync();
+}
+
+// Original implementation
+public sealed class ProductService : IProductService
+{
+    private readonly IProductRepository _repository;
+
+    public ProductService(IProductRepository repository)
+        => _repository = repository;
+
+    public async Task<Product> GetProductAsync(Guid id)
+        => await _repository.GetByIdAsync(id);
+
+    public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        => await _repository.GetAllAsync();
+}
+
+// Caching decorator
+public sealed class CachedProductService : IProductService
+{
+    private readonly IProductService _inner;
+    private readonly ICacheService _cache;
+
+    public CachedProductService(
+        IProductService inner,
+        ICacheService cache)
+    {
+        _inner = inner;
+        _cache = cache;
+    }
+
+    public async Task<Product> GetProductAsync(Guid id)
+    {
+        string key = $"product:{id}";
         
-        order.Ship(trackingNumber);
+        if (_cache.TryGet<Product>(key, out var cached))
+            return cached!;
+
+        var product = await _inner.GetProductAsync(id);
+        _cache.Set(key, product, TimeSpan.FromMinutes(10));
         
-        await _aggregateStore.AppendAsync(order);
+        return product;
+    }
+
+    public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        => await _inner.GetAllProductsAsync();
+}
+
+// Logging decorator
+public sealed class LoggedProductService : IProductService
+{
+    private readonly IProductService _inner;
+    private readonly ILogger<LoggedProductService> _logger;
+
+    public LoggedProductService(
+        IProductService inner,
+        ILogger<LoggedProductService> logger)
+    {
+        _inner = inner;
+        _logger = logger;
+    }
+
+    public async Task<Product> GetProductAsync(Guid id)
+    {
+        _logger.LogInformation("Fetching product {ProductId}", id);
+        
+        try
+        {
+            var product = await _inner.GetProductAsync(id);
+            _logger.LogInformation("Successfully fetched product {ProductId}", id);
+            return product;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching product {ProductId}", id);
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<Product>> GetAllProductsAsync()
+    {
+        _logger.LogInformation("Fetching all products");
+        return await _inner.GetAllProductsAsync();
+    }
+}
+
+// Registration - decorators are applied in order
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.XTryDecorate<IProductService, CachedProductService>();
+builder.Services.XTryDecorate<IProductService, LoggedProductService>();
+
+// Resolved service: LoggedProductService -> CachedProductService -> ProductService
+```
+
+#### Decorator with Functions
+
+```csharp
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+// Add timing decorator using a function
+builder.Services.XTryDecorate<IOrderService>((inner, provider) =>
+{
+    var logger = provider.GetRequiredService<ILogger<IOrderService>>();
+    
+    return new TimedOrderService(inner, logger);
+});
+
+public sealed class TimedOrderService : IOrderService
+{
+    private readonly IOrderService _inner;
+    private readonly ILogger _logger;
+
+    public TimedOrderService(IOrderService inner, ILogger logger)
+    {
+        _inner = inner;
+        _logger = logger;
+    }
+
+    public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
+    {
+        var sw = Stopwatch.StartNew();
+        try
+        {
+            return await _inner.CreateOrderAsync(request);
+        }
+        finally
+        {
+            sw.Stop();
+            _logger.LogInformation(
+                "CreateOrderAsync completed in {ElapsedMs}ms",
+                sw.ElapsedMilliseconds);
+        }
     }
 }
 ```
 
 ---
 
-## 🗄️ Entity Framework Integration
+## 📦 MEF-Based Service Exports
 
-See [`Xpandables.Net.Events.EntityFramework`](../Xpandables.Net.Events.EntityFramework/README.md) for EF Core event store implementation.
+Use Managed Extensibility Framework (MEF) for plugin-based architectures.
+
+### Export Services from External Assemblies
+
+```csharp
+using System.ComponentModel.Composition;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Xpandables.Net;
+
+// In plugin assembly
+[Export(typeof(IAddServiceExport))]
+public sealed class PluginServiceExport : IAddServiceExport
+{
+    public void AddServices(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddScoped<IPluginService, PluginService>();
+    }
+}
+
+// In host application
+using Xpandables.Net.DependencyInjection;
+
+builder.Services.AddXServiceExports(
+    builder.Configuration,
+    options =>
+    {
+        options.Path = Path.Combine(AppContext.BaseDirectory, "Plugins");
+        options.SearchPattern = "*.Plugin.dll";
+        options.SearchSubDirectories = true;
+    });
+```
+
+### Export Middleware Configuration
+
+```csharp
+using System.ComponentModel.Composition;
+using Microsoft.AspNetCore.Builder;
+using Xpandables.Net;
+
+[Export(typeof(IUseServiceExport))]
+public sealed class PluginMiddlewareExport : IUseServiceExport
+{
+    public void UseServices(WebApplication application)
+    {
+        application.UseMiddleware<CustomPluginMiddleware>();
+    }
+}
+```
+
+---
+
+## 💡 Complete Example: Modular E-Commerce API
+
+```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Xpandables.Net;
+using Xpandables.Net.DependencyInjection;
+
+// === Service Modules ===
+
+public sealed class DatabaseModule : IAddService
+{
+    public void AddServices(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddDbContext<ECommerceDbContext>(options =>
+            options.UseSqlServer(
+                configuration.GetConnectionString("ECommerce")));
+    }
+}
+
+public sealed class RepositoryModule : IAddService
+{
+    public void AddServices(IServiceCollection services)
+    {
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+    }
+}
+
+public sealed class ServiceModule : IAddService
+{
+    public void AddServices(IServiceCollection services)
+    {
+        // Register services
+        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IOrderService, OrderService>();
+        
+        // Add decorators
+        services.XTryDecorate<IProductService, CachedProductService>();
+        services.XTryDecorate<IOrderService, LoggedOrderService>();
+        
+        // External services
+        services.AddSingleton<IEmailService, SendGridEmailService>();
+        services.AddSingleton<IPaymentService, StripePaymentService>();
+    }
+}
+
+// === Endpoint Routes ===
+
+public sealed class ProductEndpoints : IEndpointRoute
+{
+    public void AddServices(IServiceCollection services) { }
+    
+    public void UseServices(WebApplication application) { }
+    
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        var products = app.MapGroup("/api/products")
+            .WithTags("Products");
+
+        products.MapGet("/", async (IProductService service) =>
+            Results.Ok(await service.GetAllProductsAsync()));
+
+        products.MapGet("/{id:guid}", async (Guid id, IProductService service) =>
+        {
+            var product = await service.GetProductAsync(id);
+            return product is not null 
+                ? Results.Ok(product) 
+                : Results.NotFound();
+        });
+
+        products.MapPost("/", async (CreateProductRequest request, IProductService service) =>
+        {
+            var product = await service.CreateProductAsync(request);
+            return Results.Created($"/api/products/{product.Id}", product);
+        });
+    }
+}
+
+public sealed class OrderEndpoints : IEndpointRoute
+{
+    public void AddServices(IServiceCollection services) { }
+    
+    public void UseServices(WebApplication application) { }
+    
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        var orders = app.MapGroup("/api/orders")
+            .WithTags("Orders")
+            .RequireAuthorization();
+
+        orders.MapGet("/", async (IOrderService service, ClaimsPrincipal user) =>
+        {
+            var customerId = Guid.Parse(user.FindFirst("sub")!.Value);
+            return Results.Ok(await service.GetOrdersByCustomerAsync(customerId));
+        });
+
+        orders.MapPost("/", async (CreateOrderRequest request, IOrderService service) =>
+        {
+            var order = await service.CreateOrderAsync(request);
+            return Results.Created($"/api/orders/{order.Id}", order);
+        });
+    }
+}
+
+// === Application Setup ===
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add lazy resolution support
+builder.Services.AddXLazyResolved();
+
+// Scan and register all IAddService implementations
+builder.Services.AddXServiceExports(
+    builder.Configuration,
+    typeof(Program).Assembly);
+
+// Add authentication, authorization, etc.
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+
+var app = builder.Build();
+
+// Configure middleware
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Map all IEndpointRoute implementations
+app.MapEndpointRoutes();
+
+app.Run();
+```
+
+---
+
+## 🔧 Extension Methods Reference
+
+### Service Registration
+
+```csharp
+// Lazy resolution
+services.AddXLazyResolved();
+
+// Assembly scanning
+services.AddXServiceExports(configuration, typeof(Program).Assembly);
+
+// MEF-based exports
+services.AddXServiceExports(configuration, options =>
+{
+    options.Path = "path/to/plugins";
+    options.SearchPattern = "*.dll";
+    options.SearchSubDirectories = true;
+});
+```
+
+### Decorator Registration
+
+```csharp
+// Type-based decorator
+services.XTryDecorate<TService, TDecorator>();
+
+// Function-based decorator
+services.XTryDecorate<TService>((inner, provider) => 
+    new DecoratorImpl(inner));
+
+// Generic decorator with marker interface
+services.XTryDecorate<IHandler<>, LoggingHandler<>, ICommand>();
+```
+
+### Endpoint Routing
+
+```csharp
+// Map all IEndpointRoute implementations
+app.MapEndpointRoutes();
+```
 
 ---
 
 ## 💡 Best Practices
 
-1. **Events are Immutable**: Never modify events after creation
-2. **Small, Focused Events**: One event per business fact
-3. **Version Your Events**: Plan for schema evolution
-4. **Use Snapshots**: For aggregates with many events
-5. **Optimistic Concurrency**: Handle version conflicts
+1. **Organize by Feature**: Group related services, endpoints, and middleware in modules
+2. **Use Lazy Resolution**: Defer expensive services until needed
+3. **Apply Decorators Thoughtfully**: Keep decorator order in mind (first registered wraps the original)
+4. **Leverage MEF for Plugins**: Use exports for extensible, modular architectures
+5. **Separate Concerns**: Keep service registration, middleware, and routing logic separate
+
+---
+
+## 📚 Related Packages
+
+- **Xpandables.Net.Abstractions** - Core abstractions and interfaces
+- **Xpandables.Net.ExecutionResults.AspNetCore** - Result pattern for ASP.NET Core
+- **Xpandables.Net.Validators.AspNetCore** - Validation pipeline integration
 
 ---
 
