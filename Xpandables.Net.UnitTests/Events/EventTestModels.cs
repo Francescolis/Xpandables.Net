@@ -37,7 +37,7 @@ public sealed record MoneyWithdrawnEvent : DomainEvent
 }
 
 // Aggregate
-public sealed class BankAccountAggregate : Aggregate
+public sealed class BankAccountAggregate : Aggregate, IAggregateFactory<BankAccountAggregate>
 {
     private string _accountNumber = string.Empty;
     private string _owner = string.Empty;
@@ -53,6 +53,8 @@ public sealed class BankAccountAggregate : Aggregate
     public string AccountNumber => _accountNumber;
     public string Owner => _owner;
     public decimal Balance => _balance;
+
+    public static BankAccountAggregate Create() => new();
 
     public static BankAccountAggregate Create(Guid streamId, string accountNumber, string owner, decimal initialBalance)
     {
