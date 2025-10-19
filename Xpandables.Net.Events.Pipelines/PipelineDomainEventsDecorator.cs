@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
+
 using Xpandables.Net;
 using Xpandables.Net.Events;
 using Xpandables.Net.ExecutionResults;
@@ -42,6 +44,7 @@ public sealed class PipelineDomainEventsDecorator<TRequest>(
     where TRequest : class, IRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,

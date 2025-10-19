@@ -15,6 +15,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -35,6 +37,7 @@ public interface IPublisher
     /// <exception cref="InvalidOperationException">
     /// Thrown when publishing the event fails. See inner exception for additional details.
     /// </exception>
+    [RequiresDynamicCode("Calls System.Type.MakeGenericType(params Type[])")]
     Task PublishAsync<TEvent>(TEvent eventInstance, CancellationToken cancellationToken = default)
         where TEvent : class, IEvent;
 }
