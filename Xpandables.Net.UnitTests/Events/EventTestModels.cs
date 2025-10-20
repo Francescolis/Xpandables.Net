@@ -54,7 +54,7 @@ public sealed class BankAccountAggregate : Aggregate, IAggregateFactory<BankAcco
     public string Owner => _owner;
     public decimal Balance => _balance;
 
-    public static BankAccountAggregate Create() => new();
+    public static BankAccountAggregate Initialize() => new();
 
     public static BankAccountAggregate Create(Guid streamId, string accountNumber, string owner, decimal initialBalance)
     {

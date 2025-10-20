@@ -35,10 +35,10 @@ namespace Xpandables.Net.DependencyInjection;
 /// registering default or custom implementations with the dependency injection container. Use these methods to add
 /// support for event storage and outbox processing in your application's service pipeline.</remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class IServiceCollectionExtensions
+public static class IEventExtensions
 {
     internal static readonly MethodInfo AddEventHandlerMethod =
-        typeof(IServiceCollectionExtensions).GetMethod(nameof(AddXEventHandler))!;
+        typeof(IEventExtensions).GetMethod(nameof(AddXEventHandler))!;
 
     extension(IServiceCollection services)
     {

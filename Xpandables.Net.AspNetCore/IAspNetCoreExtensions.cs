@@ -19,7 +19,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// implement specific export interfaces. Some methods perform assembly scanning and may be affected by trimming when
 /// publishing applications; ensure that all required types are preserved if trimming is enabled.</remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class IServiceCollectionExtensions
+public static class IAspNetCoreExtensions
 {
     extension(IServiceCollection services)
     {

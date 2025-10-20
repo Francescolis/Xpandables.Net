@@ -31,7 +31,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// additional service registration patterns and configuration options commonly used in dependency injection
 /// scenarios.</remarks>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class IServiceCollectionExtensions
+public static class IRestAbstractionsExtensions
 {
     /// <summary>
     /// Provides extensions methods for <see cref="IServiceCollection"/>.

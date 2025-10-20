@@ -365,7 +365,7 @@ public sealed class SnapshotStoreTests
             On<TestDomainEvent>(Apply);
         }
 
-        public static TestSnapshotAggregate Create() => new();
+        public static TestSnapshotAggregate Initialize() => new();
 
         public static TestSnapshotAggregate CreateWithVersion(Guid streamId, long version)
         {

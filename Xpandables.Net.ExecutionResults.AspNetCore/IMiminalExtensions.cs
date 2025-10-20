@@ -21,16 +21,19 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.ExecutionResults.Failures;
 using Xpandables.Net.ExecutionResults.Successes;
 
-namespace Xpandables.Net.ExecutionResults;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Xpandables.Net.DependencyInjection;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
-/// Provides extension methods for registering XExecutionResult response writers and related configuration with an
+/// Provides extension methods for registering ExecutionResult response writers and related configuration with an
 /// IServiceCollection.
 /// </summary>
-/// <remarks>These extension methods simplify the setup of XExecutionResult support in ASP.NET Core applications,
+/// <remarks>These extension methods simplify the setup of ExecutionResult support in ASP.NET Core applications,
 /// including registration of response writers, controller MVC options, and minimal JSON serialization options. Call
 /// these methods during application startup to enable XExecutionResult features as needed.</remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]

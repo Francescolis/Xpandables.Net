@@ -105,7 +105,7 @@ public sealed class SnapshotStore<TAggregate>(
         }
 
         // Rehydrate from snapshot
-        var aggregate = TAggregate.Create();
+        var aggregate = TAggregate.Initialize();
         aggregate.Restore(snapshot.Memento);
 
         // Replay events after snapshot’s version (assuming Restore set StreamVersion to snapshot version)

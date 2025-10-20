@@ -61,7 +61,7 @@ public sealed class AggregateStore<TAggregate>(
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var aggregate = TAggregate.Create();
+        var aggregate = TAggregate.Initialize();
 
         aggregate.Replay(history);
 

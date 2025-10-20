@@ -1,0 +1,27 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+using Xpandables.Net.SampleApi.EnumerationTypes;
+using Xpandables.Net.Tasks;
+
+namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
+
+public sealed class CreateBankAccountCommand : IRequest<CreateBankAccountResult>
+{
+    [Required, StringLength(byte.MaxValue, MinimumLength = 3)]
+    public required string Owner { get; init; }
+
+    [Required]
+    public required AccountType AccountType { get; init; }
+
+    [Required, EmailAddress]
+    public required string Email { get; init; }
+
+    [Range(0, double.MaxValue)]
+    public decimal InitialBalance { get; init; }
+}
+
+public readonly record struct CreateBankAccountResult
+{
+    public readonly required string AccountId { get; init; }
+    public readonly required string AccountNumber { get; init; }
+}

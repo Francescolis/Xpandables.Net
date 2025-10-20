@@ -45,6 +45,9 @@ public abstract class Aggregate : IAggregate
     public Guid StreamId { get; protected set; } = Guid.Empty;
 
     /// <inheritdoc />
+    public virtual string StreamName => GetType().Name;
+
+    /// <inheritdoc />
     public long StreamVersion { get; protected set; } = -1;
 
     /// <inheritdoc />
@@ -136,6 +139,11 @@ public abstract class Aggregate : IAggregate
             domainEvent = domainEvent.WithStreamId(StreamId);
         }
 
+        if (string.IsNullOrWhiteSpace(domainEvent.StreamName))
+        {
+            domainEvent = domainEvent.WithStreamName(StreamName);
+        }
+
         domainEvent = domainEvent.WithStreamVersion(nextStreamVersion);
         Apply(domainEvent);
     }
@@ -160,15 +168,20 @@ public abstract class Aggregate : IAggregate
             domainEvent = (TEvent)domainEvent.WithStreamId(StreamId);
         }
 
+        if (string.IsNullOrWhiteSpace(domainEvent.StreamName))
+        {
+            domainEvent = (TEvent)domainEvent.WithStreamName(StreamName);
+        }
+
         domainEvent = (TEvent)domainEvent.WithStreamVersion(nextStreamVersion);
         Apply(domainEvent);
     }
 
     /// <summary>
-    /// Registers an event handler for a specific event type.
+    /// When receiving an event of type <typeparamref name="TEvent"/>, invokes the specified delegate.
     /// </summary>
-    /// <typeparam name="TEvent">The type of the event.</typeparam>
-    /// <param name="handler">The event handler.</param>
+    /// <typeparam name="TEvent">The type of domain event to handle. Must implement IDomainEvent and cannot be null.</typeparam>
+    /// <param name="handler">The delegate to invoke when an event of type TEvent is raised. Cannot be null.</param>
     protected void On<TEvent>(Action<TEvent> handler)
         where TEvent : notnull, IDomainEvent
     {
@@ -177,7 +190,7 @@ public abstract class Aggregate : IAggregate
     }
 
     /// <summary>
-    /// Registers the delegate for the specified event type.
+    /// When receiving an event of type <typeparamref name="TEvent"/>, invokes the specified delegate.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     /// <param name="handler">The event handler.</param>
@@ -189,7 +202,7 @@ public abstract class Aggregate : IAggregate
     }
 
     /// <summary>
-    /// Registers the delegate for the specified event type.
+    /// when receiving an event of the specified <paramref name="eventType"/>, invokes the specified <paramref name="handler"/>.
     /// </summary>
     /// <param name="eventType">The type of the event.</param>
     /// <param name="handler">The event handler.</param>

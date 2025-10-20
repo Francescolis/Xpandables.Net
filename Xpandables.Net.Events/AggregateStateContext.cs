@@ -28,7 +28,7 @@ namespace Xpandables.Net.Events;
 /// implement custom logic. State transitions are validated using <see cref="CanTransitionTo(TState)"/>, and both pre-
 /// and post-transition hooks are available for extensibility.</remarks>
 /// <typeparam name="TState">The type of the state managed by the aggregate. Must implement <see cref="IState"/>.</typeparam>
-public abstract class AggregateState<TState> : Aggregate, IStateContext<TState>
+public abstract class AggregateStateContext<TState> : Aggregate, IStateContext<TState>
     where TState : class, IState
 {
     private readonly Lock _stateLock = new();
@@ -36,10 +36,10 @@ public abstract class AggregateState<TState> : Aggregate, IStateContext<TState>
 
     /// <summary>
     /// Initializes a new instance of the 
-    /// <see cref="AggregateState{TState}"/> class.
+    /// <see cref="AggregateStateContext{TState}"/> class.
     /// </summary>
     /// <param name="initialState">The initial state of the aggregate.</param>
-    protected AggregateState(TState initialState) =>
+    protected AggregateStateContext(TState initialState) =>
         TransitionToState(initialState);
 
     /// <inheritdoc/>

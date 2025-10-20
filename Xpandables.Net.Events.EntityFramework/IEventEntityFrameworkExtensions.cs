@@ -35,7 +35,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>These extension methods simplify the configuration of event sourcing and outbox services by
 /// registering default or custom implementations with the dependency injection container. Use these methods to add
 /// support for event storage and outbox processing in your application's service pipeline.</remarks>
-public static class IServiceCollectionExtensions
+public static class IEventEntityFrameworkExtensions
 {
     /// <summary>
     /// Adds the <see cref="EventStoreDataContext"/>to the service collection with the specified 

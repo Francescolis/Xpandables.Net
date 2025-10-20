@@ -117,7 +117,7 @@ public abstract record DomainEvent : BaseEvent, IDomainEvent
     public required Guid StreamId { get; init; }
 
     /// <inheritdoc />
-    public required string StreamName { get; init; }
+    public string StreamName { get; init; } = string.Empty;
 
     /// <inheritdoc/>
     public long StreamVersion { get; init; }

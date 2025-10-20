@@ -27,12 +27,12 @@ namespace Xpandables.Net.Events;
 public interface IAggregateFactory
 {
     /// <summary>
-    /// Creates a new instance of an aggregate that implements the <see cref="IAggregate"/> interface.
+    /// Initializes a new instance of an aggregate.
     /// </summary>
     /// <remarks>This method is typically used to instantiate a default or empty aggregate. The specific type
     /// and initial state of the returned aggregate depend on the implementing class.</remarks>
     /// <returns>An <see cref="IAggregate"/> instance representing a newly created aggregate.</returns>
-    static abstract IAggregate Create();
+    static abstract IAggregate Initialize();
 }
 
 /// <summary>
@@ -47,15 +47,15 @@ public interface IAggregateFactory<TAggregate> : IAggregateFactory
     where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
 {
     /// <summary>
-    /// Creates a new instance of an aggregate of type <typeparamref name="TAggregate"/>.
+    /// Initializes a new instance of an aggregate of type <typeparamref name="TAggregate"/>.
     /// </summary>
     /// <remarks>This method is typically used to instantiate a default or empty aggregate of the specified type.
     /// The specific initial state of the returned aggregate depends on the implementing class.</remarks>
     /// <returns>An instance of <typeparamref name="TAggregate"/> representing a newly created aggregate.</returns>
-    static new abstract TAggregate Create();
+    static new abstract TAggregate Initialize();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    static IAggregate IAggregateFactory.Create() => TAggregate.Create();
+    static IAggregate IAggregateFactory.Initialize() => TAggregate.Initialize();
 }
 
 /// <summary>
@@ -72,6 +72,11 @@ public interface IAggregate : IEventSourcing
     /// Gets the unique identifier for the stream.
     /// </summary>
     Guid StreamId { get; }
+
+    /// <summary>
+    /// Gets the name of the stream associated with this instance.
+    /// </summary>
+    string StreamName { get; }
 
     /// <summary>
     /// Current persisted version of the stream (-1 if new stream is also acceptable, here 0-based).

@@ -30,7 +30,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// Extension methods for registering Entity Framework repository services.
 /// </summary>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class IServiceCollectionExtensions
+public static class IRepoEntityFrameworkExtensions
 {
     /// <summary>
     /// </summary>

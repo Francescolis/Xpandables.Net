@@ -35,7 +35,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// methods are intended to be used as extension methods and should be called on an existing <see
 /// cref="IServiceCollection"/> object.</remarks>
 [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
-public static class IServiceCollectionExtensions
+public static class ITaskExtensions
 {
     internal readonly record struct HandlerType(Type Type, IEnumerable<Type> Interfaces);
 

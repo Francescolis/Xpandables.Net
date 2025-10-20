@@ -2,7 +2,11 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
-  <Folder Name="/Real Example/" />
+  <Folder Name="/Real Example/">
+    <Project Path="Xpandables.Net.SampleApi/Xpandables.Net.SampleApi.csproj" Id="829a0c40-2dec-4ab0-9b14-5979b806c738">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="README.md" />

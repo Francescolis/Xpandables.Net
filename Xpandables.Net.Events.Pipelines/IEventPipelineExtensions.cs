@@ -33,7 +33,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// event dispatching by registering the necessary pipeline components and buffers. These extensions are intended to be
 /// called during application startup to configure event processing pipelines in distributed or event-driven
 /// applications.</remarks>
-public static class IServiceCollectionExtensions
+public static class IEventPipelineExtensions
 {
     /// <summary>
     /// Registers the XPipeline event store event decorator in the dependency injection container.

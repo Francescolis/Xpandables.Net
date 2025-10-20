@@ -63,7 +63,7 @@ public static class IServiceExportCollectionExtensions
             ExportOptions options = new();
             configureOptions(options);
 
-            IServiceCollectionExtensions.ApplyServiceExports<IUseServiceExport>(
+            IAspNetCoreExtensions.ApplyServiceExports<IUseServiceExport>(
                 options, exports =>
                 {
                     foreach (IUseServiceExport export in exports)
