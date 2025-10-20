@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
 // Configure SQLite database for event sourcing
 builder.Services.AddXEventStoreDataContext(options =>
     options
-        .UseSqlite(builder.Configuration.GetConnectionString("BankingDb") ?? "Data Source=banking.db")
+        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"))
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging()
         .EnableServiceProviderCaching());
@@ -78,6 +78,13 @@ app.UseSwagger()
         options.DocExpansion(DocExpansion.None);
         options.RoutePrefix = routePrefix;
     });
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var dataContext = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
+    //await dataContext.Database.EnsureCreatedAsync();
+}
 
 app.UseXEndpointRoutes();
 

@@ -49,6 +49,7 @@ public sealed class EventStoreDataContext(DbContextOptions<EventStoreDataContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
+        modelBuilder.HasDefaultSchema("Events");
 
         _ = modelBuilder.ApplyConfiguration(new EntityDomainEventTypeConfiguration());
         _ = modelBuilder.ApplyConfiguration(new EntitySnapShotEventTypeConfiguration());

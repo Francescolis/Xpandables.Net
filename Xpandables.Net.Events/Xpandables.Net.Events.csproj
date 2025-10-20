@@ -52,12 +52,9 @@
 		<AnalysisLevel>latest</AnalysisLevel>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
-		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 		<AnalysisMode>All</AnalysisMode>
 		<EnablePackageValidation>false</EnablePackageValidation>
 		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-		<IsTrimmable>true</IsTrimmable>
-		<IsAotCompatible>true</IsAotCompatible>
 		<WarningLevel>9999</WarningLevel>
 	</PropertyGroup>
 
