@@ -51,14 +51,15 @@ public static class ITaskExtensions
             where TMediator : class, IMediator =>
             services
                 .AddScoped<IMediator, TMediator>()
-                .AddXPipelineExceptionDecorator()
-                .AddXPipelineValidationDecorator()
+                .AddXPipelineDomainEventsDecorator()
                 .AddXPipelineIntegrationOutboxDecorator()
                 .AddXPipelineUnitOfWorkDecorator()
-                .AddXPipelineDomainEventsDecorator()
-                .AddXPipelineDependencyDecorator()
                 .AddXPipelinePreDecorator()
                 .AddXPipelinePostDecorator()
+                .AddXPipelineEventStoreEventDecorator()
+                .AddXPipelineDependencyDecorator()
+                .AddXPipelineValidationDecorator()
+                .AddXPipelineExceptionDecorator()
                 .AddXPipelineRequestHandler()
                 .AddXDependencyManager();
 

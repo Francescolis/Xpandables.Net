@@ -43,10 +43,9 @@ public sealed class EventConverterSnapshot : EventConverter
     /// <returns>An event representation of the specified entity event instance.</returns>
     [RequiresUnreferencedCode("May use unreferenced code to convert IEntityEvent to IEvent.")]
     [RequiresDynamicCode("May use dynamic code to convert IEntityEvent to IEvent.")]
-    public sealed override IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default)
+    public sealed override IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions serializerOptions)
     {
         ArgumentNullException.ThrowIfNull(entityInstance);
-        ArgumentNullException.ThrowIfNull(serializerOptions);
 
         try
         {
@@ -71,15 +70,14 @@ public sealed class EventConverterSnapshot : EventConverter
     /// Converts the specified event instance to an entity event representation.
     /// </summary>
     /// <param name="eventInstance">The event instance to convert. Cannot be null.</param>
-    /// <param name="serializerOptions">Optional JSON serializer options to use during conversion.</param>
+    /// <param name="serializerOptions">JSON serializer options to use during conversion.</param>
     /// <returns>An <see cref="IEntityEvent"/> that represents the converted event.</returns>
 
     [RequiresUnreferencedCode("May use unreferenced code to convert IEntityEvent to IEvent.")]
     [RequiresDynamicCode("May use dynamic code to convert IEntityEvent to IEvent.")]
-    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default)
+    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions serializerOptions)
     {
         ArgumentNullException.ThrowIfNull(eventInstance);
-        ArgumentNullException.ThrowIfNull(serializerOptions);
 
         try
         {

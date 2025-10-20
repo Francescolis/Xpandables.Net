@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Cqrs;
+using Xpandables.Net.Events;
 using Xpandables.Net.SampleApi.EnumerationTypes;
+using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
 
-public sealed class CreateBankAccountCommand : IRequest<CreateBankAccountResult>
+public sealed class CreateBankAccountCommand :
+    IRequest<CreateBankAccountResult>, IRequiresValidation, IRequiresEventStorage
 {
     [Required, StringLength(byte.MaxValue, MinimumLength = 3)]
     public required string Owner { get; init; }

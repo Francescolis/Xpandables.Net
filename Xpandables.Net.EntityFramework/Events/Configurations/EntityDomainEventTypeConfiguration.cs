@@ -38,7 +38,7 @@ public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfigur
 
         builder.Property(e => e.StreamId).IsRequired();
         builder.Property(e => e.StreamVersion).IsRequired();
-        builder.Property(e => e.StreamName).IsRequired().HasMaxLength(short.MaxValue / 8);
+        builder.Property(e => e.StreamName).IsRequired();
 
         // PRIMARY KEY is already configured in base class as KeyId
         // Create unique constraint for event sourcing optimistic concurrency

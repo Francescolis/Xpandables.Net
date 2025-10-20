@@ -48,8 +48,8 @@ public interface IEventConverter
     /// <param name="serializerOptions">The serializer options to use when converting the event.</param>
     /// <returns>An <see cref="IEntityEvent"/> that represents the converted event.</returns>
     [RequiresUnreferencedCode("May use unreferenced code to convert IEntityEvent to IEvent.")]
-    [RequiresDynamicCode("May use dynamic code to convert IENtityEvent to IEvent.")]
-    IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default);
+    [RequiresDynamicCode("May use dynamic code to convert IEntityEvent to IEvent.")]
+    IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions serializerOptions);
 
     /// <summary>
     /// Converts the specified entity event to an event representation.
@@ -59,5 +59,5 @@ public interface IEventConverter
     /// <returns>An event representation of the specified entity event.</returns>
     [RequiresUnreferencedCode("May use unreferenced code to convert IEntityEvent to IEvent.")]
     [RequiresDynamicCode("May use dynamic code to convert IEntityEvent to IEvent.")]
-    IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default);
+    IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions serializerOptions);
 }

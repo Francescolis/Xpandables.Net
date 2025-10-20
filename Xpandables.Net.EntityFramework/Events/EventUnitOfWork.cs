@@ -14,6 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+
 namespace Xpandables.Net.Events;
 
 /// <summary>
@@ -47,34 +50,41 @@ public sealed class EventUnitOfWork(
     {
         // persist using transaction
 
-        using var transaction = await eventStoreData.Database
-            .BeginTransactionAsync(cancellationToken)
+        IExecutionStrategy strategy = eventStoreData.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
+            {
+                using var transaction = await eventStoreData.Database
+                    .BeginTransactionAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                try
+                {
+                    var result = await base
+                        .SaveChangesAsync(cancellationToken)
+                        .ConfigureAwait(false);
+
+                    await _outboxStoreData
+                        .SaveChangesAsync(cancellationToken)
+                        .ConfigureAwait(false);
+
+                    await transaction
+                        .CommitAsync(cancellationToken)
+                        .ConfigureAwait(false);
+
+                    return result;
+                }
+                catch
+                {
+                    await transaction
+                        .RollbackAsync(cancellationToken)
+                        .ConfigureAwait(false);
+
+                    throw;
+                }
+            })
             .ConfigureAwait(false);
 
-        try
-        {
-            var result = await base
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            await _outboxStoreData
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            await transaction
-                .CommitAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            return result;
-        }
-        catch
-        {
-            await transaction
-                .RollbackAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            throw;
-        }
     }
 
     /// <summary>

@@ -75,7 +75,7 @@ public sealed class EventStore(EventStoreDataContext context) : DisposableAsync,
                 .WithStreamVersion(next)
                 .WithStreamName(@event.StreamName);
 
-            var entity = (EntityDomainEvent)converter.ConvertEventToEntity(nextEvent);
+            var entity = (EntityDomainEvent)converter.ConvertEventToEntity(nextEvent, EventConverter.SerializerOptions);
             entities.Add(entity);
         }
 
@@ -95,7 +95,7 @@ public sealed class EventStore(EventStoreDataContext context) : DisposableAsync,
         ArgumentNullException.ThrowIfNull(snapshotEvent);
 
         var converter = EventConverter.GetConverterFor<ISnapshotEvent>();
-        var entity = (EntitySnapshotEvent)converter.ConvertEventToEntity(snapshotEvent);
+        var entity = (EntitySnapshotEvent)converter.ConvertEventToEntity(snapshotEvent, EventConverter.SerializerOptions);
 
         await _db.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         // defer SaveChanges to Unit of Work

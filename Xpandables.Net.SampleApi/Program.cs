@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -7,6 +8,7 @@ using Xpandables.Net.DependencyInjection;
 
 using Xpandables.Net.Events;
 using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.SampleApi.EventStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,17 +26,29 @@ builder.Services.AddCors(options =>
 // Configure SqlServer database for event sourcing
 builder.Services.AddXEventStoreDataContext(options =>
     options
-        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"))
+        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
+        options => options
+            .EnableRetryOnFailure()
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+            .MigrationsHistoryTable("__EventStoreMigrations")
+            .MigrationsAssembly("Xpandables.Net.SampleApi"))
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging()
-        .EnableServiceProviderCaching());
+        .EnableServiceProviderCaching()
+        .ReplaceService<IModelCustomizer, EventStoreModelCustomizer>());
 
 builder.Services.AddXOutboxStoreDataContext(options =>
     options
-        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"))
+        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
+        options => options
+            .EnableRetryOnFailure()
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+            .MigrationsHistoryTable("__OutboxStoreMigrations")
+            .MigrationsAssembly("Xpandables.Net.SampleApi"))
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging()
-        .EnableServiceProviderCaching());
+        .EnableServiceProviderCaching()
+        .ReplaceService<IModelCustomizer, OutboxStoreModelCustomizer>());
 
 // Register Xpandables.Net services
 builder.Services
@@ -43,6 +57,7 @@ builder.Services
     .AddXMediatorWithEventSourcing()
     .AddXRequestHandlers()
     .AddXEventUnitOfWork()
+    .AddXPublisher()
     .AddXAggregateStore()
     .AddXEventStore()
     .AddXOutboxStore();
@@ -90,8 +105,10 @@ app.UseSwagger()
 
 using (var scope = app.Services.CreateScope())
 {
-    var dataContext = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
-    await dataContext.Database.EnsureCreatedAsync();
+    var eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
+    var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
+    await eventDb.Database.MigrateAsync().ConfigureAwait(false);
+    await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
 app.UseXEndpointRoutes();

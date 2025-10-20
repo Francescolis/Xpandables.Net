@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using Xpandables.Net.Events.Repositories;
+using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events.Configurations;
 
@@ -41,14 +42,14 @@ public abstract class EntityEventTypeConfiguration<[DynamicallyAccessedMembers(D
         _ = builder.Property(e => e.KeyId).IsRequired();
         _ = builder.Property(e => e.Sequence).ValueGeneratedOnAdd();
         _ = builder.Property(e => e.EventType).IsRequired().HasMaxLength(byte.MaxValue);
-        _ = builder.Property(e => e.EventFullName).IsRequired().HasMaxLength(short.MaxValue / 8);
+        _ = builder.Property(e => e.EventFullName).IsRequired();
         _ = builder.Property(e => e.EventData).IsRequired();
         _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.CreatedOn).IsRequired();
         _ = builder.Property(e => e.UpdatedOn).IsRequired(false);
         _ = builder.Property(e => e.DeletedOn).IsRequired(false);
 
-        _ = builder.HasQueryFilter(e => !e.IsDeleted);
+        _ = builder.HasQueryFilter(e => e.Status != EntityStatus.DELETED.Value);
 
         // Global ordering/reads
         _ = builder.HasIndex(e => e.Sequence);

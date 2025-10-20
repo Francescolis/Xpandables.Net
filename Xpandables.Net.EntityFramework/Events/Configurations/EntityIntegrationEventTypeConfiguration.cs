@@ -38,7 +38,7 @@ public sealed class EntityIntegrationEventTypeConfiguration : EntityEventTypeCon
         builder.Property(e => e.ClaimId).IsRequired(false);
         builder.Property(e => e.AttemptCount).HasDefaultValue(0);
         builder.Property(e => e.NextAttemptOn).IsRequired(false);
-        builder.Property(e => e.ErrorMessage).IsRequired(false).HasMaxLength(int.MaxValue);
+        builder.Property(e => e.ErrorMessage).IsRequired(false);
 
         // Cross-database concurrency control using UpdatedOn timestamp
         // Critical for outbox pattern to prevent double-processing

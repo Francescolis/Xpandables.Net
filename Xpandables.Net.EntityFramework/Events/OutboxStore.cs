@@ -54,7 +54,7 @@ public sealed class OutboxStore(OutboxStoreDataContext context) : IOutboxStore
 
         foreach (var @event in events)
         {
-            var entity = (EntityIntegrationEvent)converter.ConvertEventToEntity(@event);
+            var entity = (EntityIntegrationEvent)converter.ConvertEventToEntity(@event, EventConverter.SerializerOptions);
             entity.SetStatus(EntityStatus.PENDING);
             list.Add(entity);
         }
@@ -114,7 +114,7 @@ public sealed class OutboxStore(OutboxStoreDataContext context) : IOutboxStore
         var list = new List<IIntegrationEvent>(claimed.Count);
         foreach (var entity in claimed)
         {
-            if (converter.ConvertEntityToEvent(entity) is IIntegrationEvent ie)
+            if (converter.ConvertEntityToEvent(entity, EventConverter.SerializerOptions) is IIntegrationEvent ie)
             {
                 list.Add(ie);
             }

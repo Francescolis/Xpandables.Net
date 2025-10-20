@@ -45,6 +45,8 @@ public sealed class OutboxStoreDataContext(DbContextOptions<OutboxStoreDataConte
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
+        modelBuilder.HasDefaultSchema("Events");
+
         _ = modelBuilder.ApplyConfiguration(new EntityIntegrationEventTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
