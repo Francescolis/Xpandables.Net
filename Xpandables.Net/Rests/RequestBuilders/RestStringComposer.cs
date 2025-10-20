@@ -45,12 +45,16 @@ public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRes
             return;
         }
 
-        JsonTypeInfo<TRestRequest> jsonTypeInfo = (JsonTypeInfo<TRestRequest>)context.SerializerOptions.GetTypeInfo(typeof(TRestRequest));
+        JsonTypeInfo<TRestRequest>? jsonTypeInfo = (JsonTypeInfo<TRestRequest>?)context.SerializerOptions.GetTypeInfo(typeof(TRestRequest));
 
         StringContent content = new(
-            JsonSerializer.Serialize(
-                ((IRestString)context.Request).GetStringContent(),
-                jsonTypeInfo),
+            jsonTypeInfo switch
+            {
+                not null => JsonSerializer.Serialize(
+                ((IRestString)context.Request).GetStringContent(), jsonTypeInfo),
+                _ => JsonSerializer.Serialize(
+                 ((IRestString)context.Request).GetStringContent(), context.SerializerOptions)
+            },
             Encoding.UTF8,
             context.Attribute.ContentType);
 

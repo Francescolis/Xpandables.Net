@@ -76,16 +76,26 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
         }
 
         Type type = executionResult.Value.GetType();
-        JsonTypeInfo jsonTypeInfo = context.RequestServices
-            .GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions
-            .GetTypeInfo(type)
-            ?? throw new InvalidOperationException(
-                $"JsonTypeInfo for type '{type.Name}' " +
-                $"could not be obtained from the provided JsonSerializerOptions.");
+        JsonTypeInfo? jsonTypeInfo = context.RequestServices
+            .GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions
+            .GetTypeInfo(type);
 
-        await context.Response.WriteAsJsonAsync(
-            executionResult.Value,
-            jsonTypeInfo,
-            cancellationToken: context.RequestAborted).ConfigureAwait(false);
+        if (jsonTypeInfo is not null)
+        {
+            await context.Response
+                .WriteAsJsonAsync(
+                    executionResult.Value,
+                    jsonTypeInfo,
+                    cancellationToken: context.RequestAborted)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await context.Response
+                .WriteAsJsonAsync(
+                    executionResult.Value,
+                    cancellationToken: context.RequestAborted)
+                .ConfigureAwait(false);
+        }
     }
 }

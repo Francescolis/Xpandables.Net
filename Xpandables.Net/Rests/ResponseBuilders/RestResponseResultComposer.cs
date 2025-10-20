@@ -72,8 +72,9 @@ public sealed class RestResponseResultComposer<TResult> : IRestResponseResultCom
                 };
             }
 
-            JsonTypeInfo<TResult> jsonTypeInfo = (JsonTypeInfo<TResult>)options.GetTypeInfo(typeof(TResult));
-            TResult? typedResult = JsonSerializer.Deserialize(stringContent, jsonTypeInfo);
+            JsonTypeInfo<TResult>? jsonTypeInfo = (JsonTypeInfo<TResult>?)options.GetTypeInfo(typeof(TResult));
+            TResult? typedResult = jsonTypeInfo is not null ? JsonSerializer.Deserialize(stringContent, jsonTypeInfo) :
+                JsonSerializer.Deserialize<TResult>(stringContent, options);
 
             return new RestResponse
             {
