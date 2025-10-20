@@ -32,7 +32,7 @@ public class ExecutionResultGenericTests
     public void ExecutionResult_Generic_SuccessStatus_ShouldReturnTrue()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK, "test value")
             .Build();
 
@@ -46,7 +46,7 @@ public class ExecutionResultGenericTests
     public void ExecutionResult_Generic_FailureStatus_ShouldReturnFalse()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Failure<string>(HttpStatusCode.BadRequest)
             .Build();
 
@@ -59,7 +59,7 @@ public class ExecutionResultGenericTests
     public void ExecutionResult_Generic_EnsureSuccess_WhenSuccessful_ShouldNotThrow()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK, 42)
             .Build();
 
@@ -72,7 +72,7 @@ public class ExecutionResultGenericTests
     public void ExecutionResult_Generic_EnsureSuccess_WhenFailed_ShouldThrow()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Failure<string>(HttpStatusCode.NotFound)
             .Build();
 
@@ -86,7 +86,7 @@ public class ExecutionResultGenericTests
     public void ExecutionResult_Generic_ToExecutionResult_ShouldConvertToNonGeneric()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.Created, "created resource")
             .Build();
 
@@ -104,7 +104,7 @@ public class ExecutionResultGenericTests
     {
         // Arrange
         var complexValue = new TestModel { Id = 1, Name = "Test Model", Active = true };
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK, complexValue)
             .Build();
 
@@ -120,7 +120,7 @@ public class ExecutionResultGenericTests
     public void ExecutionResult_Generic_WithNullValue_ShouldAllowNull()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.NoContent, (string?)null)
             .Build();
 
@@ -140,7 +140,7 @@ public class ExecutionResultGenericTests
             { "business", "Business rule violation" }
         };
 
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Failure<TestModel>(HttpStatusCode.UnprocessableEntity)
             .WithTitle("Validation Error")
             .WithDetail("The submitted items contains errors")
@@ -159,7 +159,7 @@ public class ExecutionResultGenericTests
     {
         // Arrange
         var location = new Uri("https://api.example.com/resources/123");
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.Created, new TestModel { Id = 123, Name = "Created Resource" })
             .WithLocation(location)
             .Build();

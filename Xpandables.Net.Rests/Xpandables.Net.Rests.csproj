@@ -84,9 +84,5 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Rests.Abstractions\Xpandables.Net.Rests.Abstractions.csproj" />
-	</ItemGroup>
-
 
 </Project>

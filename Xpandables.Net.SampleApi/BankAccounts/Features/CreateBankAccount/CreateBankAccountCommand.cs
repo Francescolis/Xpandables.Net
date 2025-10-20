@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using Xpandables.Net.Cqrs;
 using Xpandables.Net.SampleApi.EnumerationTypes;
-using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
 

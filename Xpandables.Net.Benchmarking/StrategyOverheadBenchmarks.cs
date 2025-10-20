@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 using BenchmarkDotNet.Attributes;
 
-using Xpandables.Net.Async;
+using Xpandables.Net.Collections.Generic;
 
 namespace Xpandables.Net.Benchmarking;
 

@@ -29,15 +29,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Async.AspNetCore\Xpandables.Net.Async.AspNetCore.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Rests\Xpandables.Net.Rests.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Validators.Pipelines\Xpandables.Net.Validators.Pipelines.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Events\Xpandables.Net.Events.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Events.EntityFramework\Xpandables.Net.Events.EntityFramework.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Events.Pipelines\Xpandables.Net.Events.Pipelines.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Events.Repositories\Xpandables.Net.Events.Repositories.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -6,7 +6,7 @@ using System.Text.Json.Serialization.Metadata;
 
 using BenchmarkDotNet.Attributes;
 
-using Xpandables.Net.Async;
+using Xpandables.Net.Collections.Generic.Extensions;
 
 namespace Xpandables.Net.Benchmarking;
 

@@ -85,13 +85,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Async.AspNetCore\Xpandables.Net.Async.AspNetCore.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Events.Pipelines\Xpandables.Net.Events.Pipelines.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.ExecutionResults.AspNetCore\Xpandables.Net.ExecutionResults.AspNetCore.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Repositories.Pipelines\Xpandables.Net.Repositories.Pipelines.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Validators.AspNetCore\Xpandables.Net.Validators.AspNetCore.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Validators.Pipelines\Xpandables.Net.Validators.Pipelines.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
 	</ItemGroup>
 	
 </Project>

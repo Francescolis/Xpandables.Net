@@ -93,7 +93,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Xpandables.Net.Abstractions\Xpandables.Net.Abstractions.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Async\Xpandables.Net.Async.csproj" />
 	</ItemGroup>
 
 

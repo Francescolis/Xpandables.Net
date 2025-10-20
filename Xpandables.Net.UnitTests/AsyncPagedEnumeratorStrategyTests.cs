@@ -1,6 +1,6 @@
 using FluentAssertions;
 
-using Xpandables.Net.Async;
+using Xpandables.Net.Collections.Generic;
 using Xpandables.Net.UnitTests.Helpers;
 
 namespace Xpandables.Net.UnitTests;

@@ -88,10 +88,5 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Xpandables.Net.ExecutionResults.AspNetCore\Xpandables.Net.ExecutionResults.AspNetCore.csproj" />
-		<ProjectReference Include="..\Xpandables.Net.Validators\Xpandables.Net.Validators.csproj" />
-	</ItemGroup>
-
 
 </Project>

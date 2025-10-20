@@ -16,6 +16,7 @@
     <PackageReference Include="BenchmarkDotNet" Version="0.15.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xpandables.Net.Async\Xpandables.Net.Async.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj" />
   </ItemGroup>
 </Project>

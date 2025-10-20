@@ -6,6 +6,7 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using Xpandables.Net.DependencyInjection;
 
 using Xpandables.Net.Events;
+using Xpandables.Net.ExecutionResults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,7 +84,7 @@ app.UseSwagger()
 using (var scope = app.Services.CreateScope())
 {
     var dataContext = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
-    //await dataContext.Database.EnsureCreatedAsync();
+    await dataContext.Database.EnsureCreatedAsync();
 }
 
 app.UseXEndpointRoutes();

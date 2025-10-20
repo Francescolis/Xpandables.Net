@@ -18,8 +18,8 @@ using System.Net;
 
 using FluentAssertions;
 
+using Xpandables.Net.Cqrs;
 using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.Tasks;
 using Xpandables.Net.Tasks.Pipelines;
 
 namespace Xpandables.Net.UnitTests.Tasks;
@@ -31,13 +31,13 @@ public class PipelinePreDecoratorTests
     private sealed class SuccessPreHandler : IRequestPreHandler<TestRequest>
     {
         public Task<ExecutionResult> HandleAsync(RequestContext<TestRequest> context, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            => Task.FromResult(ExecutionResult.Ok().Build());
     }
 
     private sealed class FailurePreHandler : IRequestPreHandler<TestRequest>
     {
         public Task<ExecutionResult> HandleAsync(RequestContext<TestRequest> context, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.BadRequest().Build());
+            => Task.FromResult(ExecutionResult.BadRequest().Build());
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class PipelinePreDecoratorTests
         Task<ExecutionResult> Next(CancellationToken ct)
         {
             nextCalled = true;
-            return Task.FromResult(ExecutionResultExtensions.Created().Build());
+            return Task.FromResult(ExecutionResult.Created().Build());
         }
 
         // Act
@@ -80,7 +80,7 @@ public class PipelinePreDecoratorTests
         Task<ExecutionResult> Next(CancellationToken ct)
         {
             nextCalled = true;
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
 
         // Act

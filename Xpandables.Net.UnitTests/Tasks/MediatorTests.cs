@@ -20,9 +20,11 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Cqrs;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Tasks;
+using Xpandables.Net.Tasks.Pipelines;
 
 namespace Xpandables.Net.UnitTests.Tasks;
 
@@ -33,7 +35,7 @@ public class MediatorTests
     private sealed class PingHandler : IRequestHandler<Ping>
     {
         public Task<ExecutionResult> HandleAsync(Ping request, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            => Task.FromResult(ExecutionResult.Ok().Build());
     }
 
     [Fact]
@@ -107,7 +109,7 @@ public class MediatorTests
         public async Task<ExecutionResult> HandleAsync(SlowRequest request, CancellationToken cancellationToken = default)
         {
             await Task.Delay(100, cancellationToken);
-            return ExecutionResultExtensions.Ok().Build();
+            return ExecutionResult.Ok().Build();
         }
     }
 
@@ -140,7 +142,7 @@ public class MediatorTests
     {
         public Task<ExecutionResult<string>> HandleAsync(DataRequest request, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(ExecutionResultExtensions.Ok($"Processed: {request.Value}").Build());
+            return Task.FromResult(ExecutionResult.Ok($"Processed: {request.Value}").Build());
         }
     }
 
@@ -182,7 +184,7 @@ public class MediatorTests
         {
             context.TryGetItem("validated", out object? value).Should().BeTrue();
             value.Should().Be(true);
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 

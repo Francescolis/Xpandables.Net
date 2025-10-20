@@ -5,7 +5,8 @@ using System.Text.Json.Serialization.Metadata;
 
 using FluentAssertions;
 
-using Xpandables.Net.Async;
+using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.Collections.Generic.Extensions;
 
 namespace Xpandables.Net.UnitTests;
 

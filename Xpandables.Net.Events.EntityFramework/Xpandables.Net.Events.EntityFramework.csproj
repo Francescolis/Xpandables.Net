@@ -84,9 +84,4 @@
 	  </None>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Events.Repositories\Xpandables.Net.Events.Repositories.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj" />
-	</ItemGroup>
-
 </Project>

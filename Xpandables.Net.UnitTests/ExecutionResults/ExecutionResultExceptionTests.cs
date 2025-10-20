@@ -62,7 +62,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_WithExecutionResult_ShouldStoreResult()
     {
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.BadRequest)
             .WithTitle("Validation Error")
             .WithDetail("The request contains validation errors")
@@ -80,7 +80,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_WithExecutionResultAndMessage_ShouldStoreResultAndMessage()
     {
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.NotFound)
             .WithTitle("Not Found")
             .WithDetail("Resource not found")
@@ -99,7 +99,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_WithExecutionResultMessageAndInnerException_ShouldStoreAll()
     {
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.InternalServerError)
             .WithTitle("Server Error")
             .Build();
@@ -147,7 +147,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_WithSuccessExecutionResult_ShouldThrow()
     {
         // Arrange
-        var successResult = ExecutionResultExtensions
+        var successResult = ExecutionResult
             .Success(HttpStatusCode.OK)
             .Build();
 
@@ -161,7 +161,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_MessageProperty_WithExecutionResultTitle_ShouldIncludeStatusCode()
     {
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.BadRequest)
             .WithTitle("Bad Request Title")
             .WithDetail("Detailed error description")
@@ -178,7 +178,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_MessageProperty_WithoutExecutionResultTitle_ShouldUseStatusCode()
     {
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.BadRequest)
             .Build();
 
@@ -196,7 +196,7 @@ public class ExecutionResultExceptionTests
         // For now, we'll just verify the property is maintained
 
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.Conflict)
             .WithTitle("Conflict")
             .WithDetail("Resource conflict detected")
@@ -216,7 +216,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_ToString_ShouldIncludeExecutionResultInfo()
     {
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.UnprocessableEntity)
             .WithTitle("Validation Failed")
             .WithDetail("Multiple validation errors occurred")
@@ -236,7 +236,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_WithGenericExecutionResult_ShouldWork()
     {
         // Arrange
-        var genericResult = ExecutionResultExtensions
+        var genericResult = ExecutionResult
             .Failure<string>(HttpStatusCode.BadRequest)
             .WithTitle("Generic Error")
             .Build();
@@ -254,7 +254,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_ConstructorValidation_ShouldEnsureFailureStatus()
     {
         // Arrange
-        var failureResult = ExecutionResultExtensions
+        var failureResult = ExecutionResult
             .Failure(HttpStatusCode.NotFound)
             .WithTitle("Resource Not Found")
             .Build();
@@ -272,7 +272,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_WithCustomMessage_ShouldOverrideDefaultMessage()
     {
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.InternalServerError)
             .WithTitle("Server Error")
             .Build();
@@ -290,7 +290,7 @@ public class ExecutionResultExceptionTests
     public void ExecutionResultException_WithInnerException_ShouldPreserveInnerException()
     {
         // Arrange
-        var executionResult = ExecutionResultExtensions
+        var executionResult = ExecutionResult
             .Failure(HttpStatusCode.BadGateway)
             .WithTitle("Gateway Error")
             .Build();

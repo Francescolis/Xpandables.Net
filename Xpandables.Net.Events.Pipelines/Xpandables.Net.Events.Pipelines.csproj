@@ -86,7 +86,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Xpandables.Net.Events\Xpandables.Net.Events.csproj" />
-		<ProjectReference Include="..\Xpandables.Net.Repositories\Xpandables.Net.Repositories.csproj" />
 		<ProjectReference Include="..\Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj" />
 	</ItemGroup>
 

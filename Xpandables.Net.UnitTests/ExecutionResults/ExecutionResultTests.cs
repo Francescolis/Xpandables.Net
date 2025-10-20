@@ -32,7 +32,7 @@ public class ExecutionResultTests
     public void ExecutionResult_SuccessStatus_ShouldReturnTrue()
     {
         // Arrange
-        var result = ExecutionResultExtensions.Success(HttpStatusCode.OK).Build();
+        var result = ExecutionResult.Success(HttpStatusCode.OK).Build();
 
         // Act & Assert
         result.IsSuccess.Should().BeTrue();
@@ -43,7 +43,7 @@ public class ExecutionResultTests
     public void ExecutionResult_FailureStatus_ShouldReturnFalse()
     {
         // Arrange
-        var result = ExecutionResultExtensions.Failure(HttpStatusCode.BadRequest).Build();
+        var result = ExecutionResult.Failure(HttpStatusCode.BadRequest).Build();
 
         // Act & Assert
         result.IsSuccess.Should().BeFalse();
@@ -70,7 +70,7 @@ public class ExecutionResultTests
             { "X-Custom-Header", "Custom value" }
         };
 
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Failure(HttpStatusCode.BadRequest)
             .WithTitle("Validation Failed")
             .WithDetail("The request contains validation errors")
@@ -94,7 +94,7 @@ public class ExecutionResultTests
     public void ExecutionResult_EnsureSuccess_WhenSuccessful_ShouldNotThrow()
     {
         // Arrange
-        var result = ExecutionResultExtensions.Success(HttpStatusCode.OK).Build();
+        var result = ExecutionResult.Success(HttpStatusCode.OK).Build();
 
         // Act & Assert
         result.Invoking(r => r.EnsureSuccess()).Should().NotThrow();
@@ -104,7 +104,7 @@ public class ExecutionResultTests
     public void ExecutionResult_EnsureSuccess_WhenFailed_ShouldThrow()
     {
         // Arrange
-        var result = ExecutionResultExtensions.Failure(HttpStatusCode.BadRequest).Build();
+        var result = ExecutionResult.Failure(HttpStatusCode.BadRequest).Build();
 
         // Act & Assert
         result.Invoking(r => r.EnsureSuccess())
@@ -116,7 +116,7 @@ public class ExecutionResultTests
     public void ExecutionResult_ToHttpStatusCode_ShouldReturnStatusCode()
     {
         // Arrange
-        var result = ExecutionResultExtensions.Success(HttpStatusCode.Created).Build();
+        var result = ExecutionResult.Success(HttpStatusCode.Created).Build();
 
         // Act
         var statusCode = result.ToHttpStatusCode();
@@ -129,7 +129,7 @@ public class ExecutionResultTests
     public void ExecutionResult_ToExecutionResult_ShouldConvertToGeneric()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK)
             .WithResult("test value")
             .Build();
@@ -147,7 +147,7 @@ public class ExecutionResultTests
     public void ExecutionResult_IsGeneric_ShouldReturnFalse()
     {
         // Arrange
-        var result = ExecutionResultExtensions.Success(HttpStatusCode.OK).Build();
+        var result = ExecutionResult.Success(HttpStatusCode.OK).Build();
 
         // Act & Assert
         result.IsGeneric.Should().BeFalse();
@@ -158,7 +158,7 @@ public class ExecutionResultTests
     {
         // Arrange
         var testValue = new { Name = "Test", Id = 1 };
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK)
             .WithResult(testValue)
             .Build();

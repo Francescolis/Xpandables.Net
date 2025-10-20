@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.Rests;
@@ -30,7 +28,6 @@ namespace Xpandables.Net.Rests;
 public sealed class RestResponseBuilder(IServiceProvider serviceProvider) : IRestResponseBuilder
 {
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async ValueTask<RestResponse> BuildResponseAsync(
         RestResponseContext context, CancellationToken cancellationToken = default)
     {

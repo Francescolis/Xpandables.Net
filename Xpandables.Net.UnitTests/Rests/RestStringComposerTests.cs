@@ -20,6 +20,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 
 using Xpandables.Net.Rests;
+using Xpandables.Net.Rests.Abstractions;
 using Xpandables.Net.Rests.RequestBuilders;
 
 namespace Xpandables.Net.UnitTests.Rests;

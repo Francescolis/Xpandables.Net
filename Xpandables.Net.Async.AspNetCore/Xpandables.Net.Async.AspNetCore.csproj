@@ -88,9 +88,5 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Async\Xpandables.Net.Async.csproj" />
-	</ItemGroup>
-
 
 </Project>

@@ -21,8 +21,9 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Async;
 using Xpandables.Net.Collections;
+using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.Cqrs;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Optionals;
@@ -38,7 +39,7 @@ public class MediatorInterfaceTests
     private sealed class SimpleHandler : IRequestHandler<Simple>
     {
         public Task<ExecutionResult> HandleAsync(Simple request, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            => Task.FromResult(ExecutionResult.Ok().Build());
     }
 
     [Fact]
@@ -66,7 +67,7 @@ public class MediatorInterfaceTests
         public Task<ExecutionResult> HandleAsync(RequestContext<ContextReq> context, CancellationToken cancellationToken = default)
         {
             context["pre"] = 1;
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -76,7 +77,7 @@ public class MediatorInterfaceTests
         {
             context.TryGetItem("pre", out object? value).Should().BeTrue();
             value.Should().Be(1);
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -103,7 +104,7 @@ public class MediatorInterfaceTests
     private sealed class EchoStringHandler : IRequestHandler<EchoString, string>
     {
         public Task<ExecutionResult<string>> HandleAsync(EchoString request, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Ok("hello").Build());
+            => Task.FromResult(ExecutionResult.Ok("hello").Build());
     }
 
     [Fact]
@@ -137,7 +138,7 @@ public class MediatorInterfaceTests
         {
             // put a context item that handler will read
             context["sum"] = context.Request.A + context.Request.B;
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -148,7 +149,7 @@ public class MediatorInterfaceTests
             int sum = (context.TryGetItem("sum", out object? value) && value is int s)
                 ? s
                 : context.Request.A + context.Request.B;
-            return Task.FromResult(ExecutionResultExtensions.Ok(sum).Build());
+            return Task.FromResult(ExecutionResult.Ok(sum).Build());
         }
     }
 
@@ -185,7 +186,7 @@ public class MediatorInterfaceTests
             }
 
             var paged = new AsyncPagedEnumerable<int>(Source(), ct => new ValueTask<Pagination>(Pagination.Create(2, 1, null, 3)));
-            var result = ExecutionResultExtensions.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
+            var result = ExecutionResult.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
             return Task.FromResult(result);
         }
 
@@ -228,7 +229,7 @@ public class MediatorInterfaceTests
         public Task<ExecutionResult> HandleAsync(RequestContext<StreamIntsWithContext> context, CancellationToken cancellationToken = default)
         {
             context["count"] = context.Request.Count;
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -247,7 +248,7 @@ public class MediatorInterfaceTests
             }
 
             var paged = new AsyncPagedEnumerable<int>(Source(), ct => new ValueTask<Pagination>(Pagination.Create(count, 1, null, count)));
-            var result = ExecutionResultExtensions.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
+            var result = ExecutionResult.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
             return Task.FromResult(result);
         }
     }
@@ -279,7 +280,7 @@ public class MediatorInterfaceTests
     private sealed class PostHandler : IRequestHandler<PostReq>
     {
         public Task<ExecutionResult> HandleAsync(PostReq request, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            => Task.FromResult(ExecutionResult.Ok().Build());
     }
 
     private sealed class PostDecoratorHandler : IRequestPostHandler<PostReq>
@@ -288,7 +289,7 @@ public class MediatorInterfaceTests
         {
             if (context.TryGetItem("makeFailure", out object? v) && v is true)
             {
-                return Task.FromResult(ExecutionResultExtensions.Failure(HttpStatusCode.BadRequest).Build());
+                return Task.FromResult(ExecutionResult.Failure(HttpStatusCode.BadRequest).Build());
             }
 
             return Task.FromResult(response);
@@ -300,7 +301,7 @@ public class MediatorInterfaceTests
         public Task<ExecutionResult> HandleAsync(RequestContext<PostReq> context, CancellationToken cancellationToken = default)
         {
             context["makeFailure"] = true;
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -335,7 +336,7 @@ public class MediatorInterfaceTests
     private sealed class ExceptHandler : IRequestExceptionHandler<ExceptReq>
     {
         public Task<ExecutionResult> HandleAsync(RequestContext<ExceptReq> context, Exception exception, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Failure(HttpStatusCode.Conflict).WithDetail(exception.Message).Build());
+            => Task.FromResult(ExecutionResult.Failure(HttpStatusCode.Conflict).WithDetail(exception.Message).Build());
     }
 
     [Fact]
@@ -383,7 +384,7 @@ public class MediatorInterfaceTests
         {
             request.DependencyInstance.TryGetValue(out MyService? service).Should().BeTrue();
             service!.Name.Should().StartWith("dep-");
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -393,7 +394,7 @@ public class MediatorInterfaceTests
         {
             context.Request.DependencyInstance.TryGetValue(out MyService? service).Should().BeTrue();
             service!.Name.Should().StartWith("dep-");
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -459,7 +460,7 @@ public class MediatorInterfaceTests
     private sealed class PreFailingPreHandler : IRequestPreHandler<PreFailReq>
     {
         public Task<ExecutionResult> HandleAsync(RequestContext<PreFailReq> context, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Failure(HttpStatusCode.BadRequest).WithDetail("blocked").Build());
+            => Task.FromResult(ExecutionResult.Failure(HttpStatusCode.BadRequest).WithDetail("blocked").Build());
     }
 
     private sealed class ShouldNotBeCalledHandler : IRequestHandler<PreFailReq>
@@ -468,7 +469,7 @@ public class MediatorInterfaceTests
         public Task<ExecutionResult> HandleAsync(PreFailReq request, CancellationToken cancellationToken = default)
         {
             Interlocked.Increment(ref CallCount);
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -528,13 +529,13 @@ public class MediatorInterfaceTests
     private sealed class PostChainMainHandler : IRequestHandler<PostChainReq>
     {
         public Task<ExecutionResult> HandleAsync(PostChainReq request, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            => Task.FromResult(ExecutionResult.Ok().Build());
     }
 
     private sealed class FirstFailingPostHandler : IRequestPostHandler<PostChainReq>
     {
         public Task<ExecutionResult> HandleAsync(RequestContext<PostChainReq> context, ExecutionResult response, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Failure(HttpStatusCode.Conflict).Build());
+            => Task.FromResult(ExecutionResult.Failure(HttpStatusCode.Conflict).Build());
     }
 
     private sealed class SecondPostHandlerShouldNotRun : IRequestPostHandler<PostChainReq>

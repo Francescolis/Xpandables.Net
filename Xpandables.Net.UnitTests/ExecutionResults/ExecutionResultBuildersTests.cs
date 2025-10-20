@@ -229,7 +229,7 @@ public class ExecutionResultBuildersTests
     public void ExecutionResultBuilder_Merge_ShouldCombineFailureResults()
     {
         // Arrange
-        var existingResult = ExecutionResultExtensions
+        var existingResult = ExecutionResult
             .Failure(HttpStatusCode.BadRequest)
             .WithTitle("Original Title")
             .WithError("field1", "Original error")
@@ -253,7 +253,7 @@ public class ExecutionResultBuildersTests
     public void ExecutionResultBuilder_Merge_WithSuccessResult_ShouldThrow()
     {
         // Arrange
-        var successResult = ExecutionResultExtensions
+        var successResult = ExecutionResult
             .Success(HttpStatusCode.OK)
             .Build();
 

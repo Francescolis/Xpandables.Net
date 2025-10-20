@@ -89,9 +89,4 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Xpandables.Net.Async.AspNetCore\Xpandables.Net.Async.AspNetCore.csproj" />
-		<ProjectReference Include="..\Xpandables.Net.ExecutionResults\Xpandables.Net.ExecutionResults.csproj" />
-	</ItemGroup>
-
 </Project>

@@ -1,7 +1,7 @@
-﻿using Xpandables.Net.Events;
+﻿using Xpandables.Net.Cqrs;
+using Xpandables.Net.Events;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
-using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
 

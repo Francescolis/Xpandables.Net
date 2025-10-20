@@ -90,8 +90,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Xpandables.Net.Async\Xpandables.Net.Async.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.ExecutionResults\Xpandables.Net.ExecutionResults.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.Optionals\Xpandables.Net.Optionals.csproj" />
 	</ItemGroup>
 
 

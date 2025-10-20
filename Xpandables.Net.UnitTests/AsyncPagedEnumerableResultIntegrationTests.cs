@@ -24,7 +24,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Async;
+using Xpandables.Net.Collections.Generic;
 using Xpandables.Net.UnitTests.Helpers;
 
 namespace Xpandables.Net.UnitTests;

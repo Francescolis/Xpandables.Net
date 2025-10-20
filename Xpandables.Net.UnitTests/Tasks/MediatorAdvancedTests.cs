@@ -20,11 +20,13 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Async;
 using Xpandables.Net.Collections;
+using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.Cqrs;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Tasks;
+using Xpandables.Net.Tasks.Pipelines;
 
 namespace Xpandables.Net.UnitTests.Tasks;
 
@@ -40,7 +42,7 @@ public class MediatorAdvancedTests
     private sealed class ChainedHandler : IRequestHandler<ChainedRequest>
     {
         public Task<ExecutionResult> HandleAsync(ChainedRequest request, CancellationToken cancellationToken = default)
-            => Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            => Task.FromResult(ExecutionResult.Ok().Build());
     }
 
     private sealed class FirstDecorator : IPipelineDecorator<ChainedRequest>
@@ -138,7 +140,7 @@ public class MediatorAdvancedTests
             CancellationToken cancellationToken = default)
         {
             await Task.Delay(5000, cancellationToken);
-            return ExecutionResultExtensions.Ok().Build();
+            return ExecutionResult.Ok().Build();
         }
     }
 
@@ -171,7 +173,7 @@ public class MediatorAdvancedTests
             CancellationToken cancellationToken = default)
         {
             context["data"] = new List<string> { "pre1" };
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -185,7 +187,7 @@ public class MediatorAdvancedTests
             {
                 list.Add("pre2");
             }
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -199,7 +201,7 @@ public class MediatorAdvancedTests
             {
                 list.Add("main");
             }
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -273,7 +275,7 @@ public class MediatorAdvancedTests
                     null,
                     request.TotalItems)));
 
-            var result = ExecutionResultExtensions.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
+            var result = ExecutionResult.Ok<IAsyncPagedEnumerable<int>>(paged).Build();
             return Task.FromResult(result);
         }
     }
@@ -316,7 +318,7 @@ public class MediatorAdvancedTests
             RequestContext<ErrorPropagationRequest> context,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(ExecutionResultExtensions
+            return Task.FromResult(ExecutionResult
                 .Failure(HttpStatusCode.Unauthorized)
                 .WithDetail("Unauthorized access")
                 .WithError("AUTH_ERROR", "User not authenticated")
@@ -333,7 +335,7 @@ public class MediatorAdvancedTests
             CancellationToken cancellationToken = default)
         {
             WasCalled = true;
-            return Task.FromResult(ExecutionResultExtensions.Ok().Build());
+            return Task.FromResult(ExecutionResult.Ok().Build());
         }
     }
 
@@ -397,7 +399,7 @@ public class MediatorAdvancedTests
             context.TryGetItem("firstHandled", out object? first).Should().BeTrue();
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
 
-            return Task.FromResult(ExecutionResultExtensions
+            return Task.FromResult(ExecutionResult
                 .Failure(HttpStatusCode.InternalServerError)
                 .WithDetail(exception.Message)
                 .WithError("HANDLED", "Exception was handled by second handler")
@@ -443,7 +445,7 @@ public class MediatorAdvancedTests
             CancellationToken cancellationToken = default)
         {
             var result = $"Number is: {request.Number}";
-            return Task.FromResult(ExecutionResultExtensions.Ok(result).Build());
+            return Task.FromResult(ExecutionResult.Ok(result).Build());
         }
     }
 
@@ -459,7 +461,7 @@ public class MediatorAdvancedTests
             if (typedResponse.IsSuccess && typedResponse.Value != null)
             {
                 var transformed = typedResponse.Value.ToUpper();
-                return Task.FromResult<ExecutionResult>(ExecutionResultExtensions.Ok(transformed).Build());
+                return Task.FromResult<ExecutionResult>(ExecutionResult.Ok(transformed).Build());
             }
             return Task.FromResult(response);
         }
@@ -505,7 +507,7 @@ public class MediatorAdvancedTests
         {
             await Task.Delay(10, cancellationToken);
             var value = Interlocked.Increment(ref _counter);
-            return ExecutionResultExtensions.Ok(value).Build();
+            return ExecutionResult.Ok(value).Build();
         }
     }
 

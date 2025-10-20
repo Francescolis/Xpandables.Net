@@ -21,6 +21,7 @@ using System.Text.Json.Serialization.Metadata;
 
 using FluentAssertions;
 
+using Xpandables.Net;
 using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.UnitTests.ExecutionResults;
@@ -157,7 +158,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResult_Serialize_WithDefaultOptions_ShouldSerializeCorrectly()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK)
             .Build();
 
@@ -173,7 +174,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResult_Serialize_WithAspNetCoreCompatibility_ShouldSerializeOnlyValue()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK, "test value")
             .Build();
 
@@ -188,7 +189,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResult_Serialize_WithAspNetCoreCompatibilityAndNullValue_ShouldNotSerialize()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.NoContent)
             .Build();
 
@@ -241,7 +242,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResultGeneric_Serialize_WithDefaultOptions_ShouldSerializeCorrectly()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.Created, new TestModel { Id = 1, Name = "Test" })
             .Build();
 
@@ -260,7 +261,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResultGeneric_Serialize_WithAspNetCoreCompatibility_ShouldSerializeOnlyValue()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK, new TestModel { Id = 42, Name = "Answer" })
             .Build();
 
@@ -278,7 +279,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResultGeneric_Serialize_WithAspNetCoreCompatibilityAndNullValue_ShouldNotSerialize()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success<TestModel?>(HttpStatusCode.NoContent, null)
             .Build();
 
@@ -341,7 +342,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResult_SerializeWithErrors_ShouldIncludeErrorsInJson()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Failure(HttpStatusCode.BadRequest)
             .WithTitle("Validation Failed")
             .WithError("field1", "Field is required")
@@ -365,7 +366,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResult_SerializeWithHeaders_ShouldIncludeHeadersInJson()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK)
             .WithHeader("X-Custom-Header", "custom-value")
             .WithHeader("X-Multi-Header", "value1", "value2")
@@ -388,7 +389,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResult_SerializeWithExtensions_ShouldIncludeExtensionsInJson()
     {
         // Arrange
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.OK)
             .WithExtension("traceId", "12345")
             .WithExtension("requestId", "abc-def-ghi")
@@ -411,7 +412,7 @@ public partial class ExecutionResultJsonSerializationTests
     {
         // Arrange
         var location = new Uri("https://api.example.com/resources/123");
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Success(HttpStatusCode.Created)
             .WithLocation(location)
             .Build();
@@ -430,7 +431,7 @@ public partial class ExecutionResultJsonSerializationTests
     {
         // Arrange
         var exception = new InvalidOperationException("Test exception");
-        var result = ExecutionResultExtensions
+        var result = ExecutionResult
             .Failure(HttpStatusCode.InternalServerError)
             .WithException(exception)
             .Build();
@@ -463,7 +464,7 @@ public partial class ExecutionResultJsonSerializationTests
     {
         // Arrange
         var converter = new ExecutionResultJsonConverter();
-        var result = ExecutionResultExtensions.Success();
+        var result = ExecutionResult.Success();
         using var stream = new MemoryStream();
         using var writer = new Utf8JsonWriter(stream);
 
@@ -490,7 +491,7 @@ public partial class ExecutionResultJsonSerializationTests
     {
         // Arrange
         var converter = new ExecutionResultJsonConverter<string>(false);
-        var result = ExecutionResultExtensions.Success("test");
+        var result = ExecutionResult.Success("test");
         using var stream = new MemoryStream();
         using var writer = new Utf8JsonWriter(stream);
 
@@ -552,7 +553,7 @@ public partial class ExecutionResultJsonSerializationTests
     public void ExecutionResult_RoundTripSerialization_ShouldPreserveAllProperties()
     {
         // Arrange
-        var originalResult = ExecutionResultExtensions
+        var originalResult = ExecutionResult
             .Failure(HttpStatusCode.BadRequest)
             .WithTitle("Validation Error")
             .WithDetail("Multiple validation errors occurred")
@@ -583,7 +584,7 @@ public partial class ExecutionResultJsonSerializationTests
     {
         // Arrange
         var testModel = new TestModel { Id = 42, Name = "Test Model" };
-        var originalResult = ExecutionResultExtensions
+        var originalResult = ExecutionResult
             .Success(HttpStatusCode.Created, testModel)
             .WithHeader("Location", "https://example.com/resources/42")
             .WithExtension("createdBy", "system")

@@ -63,7 +63,7 @@ public class ExecutionResultDelegateExtensionsTests
     public void ToExecutionResult_Action_WhenThrowsExecutionResultException_ShouldNotWrap()
     {
         // Arrange
-        var originalResult = ExecutionResultExtensions.BadRequest().Build();
+        var originalResult = ExecutionResult.BadRequest().Build();
         var executionException = new ExecutionResultException(originalResult);
         Action action = () => throw executionException;
 
@@ -122,7 +122,7 @@ public class ExecutionResultDelegateExtensionsTests
     public void ToExecutionResult_ActionWithParameter_WhenThrowsExecutionResultException_ShouldReturnOriginalResult()
     {
         // Arrange
-        var originalResult = ExecutionResultExtensions.NotFound().Build();
+        var originalResult = ExecutionResult.NotFound().Build();
         var executionException = new ExecutionResultException(originalResult);
         Action<string> action = _ => throw executionException;
 
@@ -168,7 +168,7 @@ public class ExecutionResultDelegateExtensionsTests
     public async Task ToExecutionResultAsync_Task_WhenThrowsExecutionResultException_ShouldNotWrap()
     {
         // Arrange
-        var originalResult = ExecutionResultExtensions.BadRequest().Build();
+        var originalResult = ExecutionResult.BadRequest().Build();
         var executionException = new ExecutionResultException(originalResult);
         Task task = Task.Run(() => throw executionException);
 
@@ -213,7 +213,7 @@ public class ExecutionResultDelegateExtensionsTests
     public async Task ToExecutionResultAsync_TaskWithResult_WhenThrowsExecutionResultException_ShouldNotWrap()
     {
         // Arrange
-        var originalResult = ExecutionResultExtensions.BadRequest().Build();
+        var originalResult = ExecutionResult.BadRequest().Build();
         var executionException = new ExecutionResultException(originalResult);
         Task<string> task = Task.Run<string>((Func<string>)(() => throw executionException));
 
@@ -257,7 +257,7 @@ public class ExecutionResultDelegateExtensionsTests
     public void ToExecutionResult_Func_WhenThrowsExecutionResultException_ShouldNotWrap()
     {
         // Arrange
-        var originalResult = ExecutionResultExtensions.BadRequest().Build();
+        var originalResult = ExecutionResult.BadRequest().Build();
         var executionException = new ExecutionResultException(originalResult);
         Func<string> func = () => throw executionException;
 

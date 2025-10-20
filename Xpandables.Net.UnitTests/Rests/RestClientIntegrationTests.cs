@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Rests;
+using Xpandables.Net.Rests.Abstractions;
 
 namespace Xpandables.Net.UnitTests.Rests;
 
