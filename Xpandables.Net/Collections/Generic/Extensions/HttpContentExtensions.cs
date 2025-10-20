@@ -97,13 +97,13 @@ public static class HttpContentExtensions
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>An asynchronous paged enumerable containing the deserialized objects of type T.</returns>
         public IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
-            JsonSerializerOptions options,
+            JsonSerializerOptions? options,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(options);
 
-            var jsonTypeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
+            var jsonTypeInfo = (JsonTypeInfo<T>?)options?.GetTypeInfo(typeof(T));
             return ReadFromJsonAsAsyncPagedEnumerable(content, jsonTypeInfo, options, cancellationToken);
         }
 
@@ -164,7 +164,7 @@ public static class HttpContentExtensions
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsonTypeInfo"/> is null.</exception>
         /// <exception cref="JsonException">Thrown when the JSON content is malformed or cannot be parsed.</exception>
         public IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
-            JsonTypeInfo<T> jsonTypeInfo,
+            JsonTypeInfo<T>? jsonTypeInfo,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(content);
@@ -177,7 +177,7 @@ public static class HttpContentExtensions
         [SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
         private static IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
             HttpContent httpContent,
-            JsonTypeInfo<T> jsonTypeInfo,
+            JsonTypeInfo<T>? jsonTypeInfo,
             JsonSerializerOptions? options,
             CancellationToken cancellationToken)
         {
@@ -293,7 +293,7 @@ public static class HttpContentExtensions
     /// </summary>
     private static async IAsyncEnumerable<T> StreamItemsAsync<T>(
         StreamState streamState,
-        JsonTypeInfo<T> jsonTypeInfo,
+        JsonTypeInfo<T>? jsonTypeInfo,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var (buffer, length) = await streamState.GetBufferAsync().ConfigureAwait(false);
@@ -315,11 +315,24 @@ public static class HttpContentExtensions
         {
             // Top-level array - stream directly
             using var stream = new MemoryStream(buffer, 0, length, writable: false);
-            await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable(stream, jsonTypeInfo, cancellationToken).ConfigureAwait(false))
+            if (jsonTypeInfo is null)
             {
-                if (item is not null)
+                await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<T>(stream, cancellationToken: cancellationToken).ConfigureAwait(false))
                 {
-                    yield return item;
+                    if (item is not null)
+                    {
+                        yield return item;
+                    }
+                }
+            }
+            else
+            {
+                await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable(stream, jsonTypeInfo, cancellationToken).ConfigureAwait(false))
+                {
+                    if (item is not null)
+                    {
+                        yield return item;
+                    }
                 }
             }
         }
@@ -352,11 +365,24 @@ public static class HttpContentExtensions
             if (itemsStart >= 0 && itemsLength > 0)
             {
                 using var itemsStream = new MemoryStream(buffer, itemsStart, itemsLength, writable: false);
-                await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable(itemsStream, jsonTypeInfo, cancellationToken).ConfigureAwait(false))
+                if (jsonTypeInfo is null)
                 {
-                    if (item is not null)
+                    await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<T>(itemsStream, cancellationToken: cancellationToken).ConfigureAwait(false))
                     {
-                        yield return item;
+                        if (item is not null)
+                        {
+                            yield return item;
+                        }
+                    }
+                }
+                else
+                {
+                    await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable(itemsStream, jsonTypeInfo, cancellationToken).ConfigureAwait(false))
+                    {
+                        if (item is not null)
+                        {
+                            yield return item;
+                        }
                     }
                 }
             }
