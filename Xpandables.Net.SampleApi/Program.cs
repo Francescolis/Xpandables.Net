@@ -21,8 +21,15 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowCredentials()));
 
-// Configure SQLite database for event sourcing
+// Configure SqlServer database for event sourcing
 builder.Services.AddXEventStoreDataContext(options =>
+    options
+        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"))
+        .EnableDetailedErrors()
+        .EnableSensitiveDataLogging()
+        .EnableServiceProviderCaching());
+
+builder.Services.AddXOutboxStoreDataContext(options =>
     options
         .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"))
         .EnableDetailedErrors()
