@@ -9,7 +9,7 @@
 
 **A comprehensive, modular .NET library for building modern, scalable applications with clean architecture patterns**
 
-[Features](#-key-features) • [Getting Started](#-getting-started) • [Documentation](#-documentation) • [Architecture](#-architecture) • [Contributing](#-contributing)
+[Features](#-key-features) • [Getting Started](#-getting-started) • [Documentation](#-documentation) • [Real-World Example](#-real-world-example) • [Architecture](#-architecture) • [Contributing](#-contributing)
 
 </div>
 
@@ -90,24 +90,75 @@ using Xpandables.Net.Optionals;
 using Xpandables.Net.Tasks;
 
 // Define a request
-public sealed record GetUserQuery(Guid UserId) : IRequest;
+public sealed record GetUserQuery(Guid UserId) : IRequest<User>;
 
 // Handle the request
-public sealed class GetUserHandler : IRequestHandler<GetUserQuery>
+public sealed class GetUserHandler : IRequestHandler<GetUserQuery, User>
 {
-    public async Task<ExecutionResult> HandleAsync(
+    private readonly IUserRepository _repository;
+    
+    public GetUserHandler(IUserRepository repository) 
+        => _repository = repository;
+    
+    public async Task<ExecutionResult<User>> HandleAsync(
         GetUserQuery request, 
         CancellationToken cancellationToken)
     {
         // Fetch user with Optional to handle null cases
-        Optional<User> user = await _repository.FindByIdAsync(request.UserId);
+        Optional<User> user = await _repository
+            .FindByIdAsync(request.UserId, cancellationToken);
         
         return user
             .Map(u => ExecutionResult.Success(u))
-            .Empty(() => ExecutionResult.NotFound().WithError("userId","key not exists").Build());
+            .Empty(() => ExecutionResult
+                .NotFound()
+                .WithError("userId", "User not found")
+                .Build<User>());
     }
 }
 ```
+
+---
+
+## 💼 Real-World Example
+
+This repository includes a complete **Event Sourcing Banking Sample API** that demonstrates how to build a production-ready application using Xpandables.Net. See the [SampleApi README](./Xpandables.Net.SampleApi/README.md) for a detailed walkthrough.
+
+### Sample API Highlights
+
+The `Xpandables.Net.SampleApi` project showcases:
+
+✅ **Event Sourcing & CQRS** - Complete bank account management with domain events  
+✅ **Minimal API Endpoints** - Clean, modular endpoint definitions with `IEndpointRoute`  
+✅ **EF Core Integration** - Event store and outbox pattern with SQL Server  
+✅ **Swagger Documentation** - Fully documented API with OpenAPI support  
+✅ **Docker Support** - Production-ready containerization  
+
+### Running the Sample
+
+```bash
+# Clone the repository
+git clone https://github.com/Francescolis/Xpandables.Net.git
+cd Xpandables.Net
+
+# Navigate to sample project
+cd Xpandables.Net.SampleApi
+
+# Update connection string in appsettings.json
+# Run migrations (automatic on startup)
+
+# Run the application
+dotnet run
+
+# Navigate to Swagger UI
+# https://localhost:5001/swagger
+```
+
+**Key Files to Explore:**
+
+- `Program.cs` - Application setup with event sourcing
+- `BankAccounts/Features/CreateBankAccount/` - Complete CQRS command example
+- `EventStorage/` - Event store and outbox configuration
 
 ---
 
@@ -204,7 +255,10 @@ public async Task<ExecutionResult<Order>> CreateOrderAsync(CreateOrderRequest re
         .BindAsync(ProcessPayment)
         .BindAsync(SendConfirmationEmail)
         .Map(order => ExecutionResult.Created(order))
-        .Empty(() => ExecutionResult.BadRequest(request.Id,"Failed to create order").Build());
+        .Empty(() => ExecutionResult
+            .BadRequest()
+            .WithError("request", "Failed to create order")
+            .Build<Order>());
 }
 ```
 
@@ -215,7 +269,9 @@ public async Task<ExecutionResult<Order>> CreateOrderAsync(CreateOrderRequest re
 public sealed record CreateUserRequest(string Name, string Email) 
     : IRestRequest<User>, IRestString;
 
-restResponse<User> response = await _restClient.SendAsync(new CreateUserRequest("John", "john@example.com"));
+var response = await _restClient.SendAsync(
+    new CreateUserRequest("John", "john@example.com"));
+    
 var user = response.Result;
 ```
 
@@ -224,38 +280,35 @@ var user = response.Result;
 ```csharp
 public sealed class UserValidator : Validator<CreateUserRequest>
 {
-    public override IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
+    public override IReadOnlyCollection<ValidationResult> Validate(
+        CreateUserRequest instance)
     {
         // Using static factory methods to create specifications
-        var nameSpec = Specification.IsNotNull<CreateUserRequest, string>(u => u.Name);
-        var emailSpec = Specification.Contains<CreateUserRequest>(u => u.Email, "@");
-        var ageSpec = Specification.GreaterThan<CreateUserRequest, int>(u => u.Age, 18);
+        var nameSpec = Specification
+            .IsNotNull<CreateUserRequest, string>(u => u.Name);
+        var emailSpec = Specification
+            .Contains<CreateUserRequest>(u => u.Email, "@");
+        var ageSpec = Specification
+            .GreaterThan<CreateUserRequest, int>(u => u.Age, 18);
         
-        // Combine specifications using static methods or operators
+        // Combine specifications
         var combinedSpec = Specification.All(nameSpec, emailSpec, ageSpec);
         
         if (!combinedSpec.IsSatisfiedBy(instance))
         {
-            return new List<ValidationResult>
-            {
-                new ValidationResult("Name is required", [nameof(instance.Name)]),
-                new ValidationResult("Invalid email format", [nameof(instance.Email)]),
-                new ValidationResult("Must be 18 or older", [nameof(instance.Age)])
-            };
+            return
+            [
+                new ValidationResult("Name is required", 
+                    [nameof(instance.Name)]),
+                new ValidationResult("Invalid email format", 
+                    [nameof(instance.Email)]),
+                new ValidationResult("Must be 18 or older", 
+                    [nameof(instance.Age)])
+            ];
         }
         
         return [];
     }
-}
-
-// Alternative: Using expressions directly
-var spec = new Specification<CreateUserRequest>(u => !string.IsNullOrEmpty(u.Name))
-    .And(u => u.Email.Contains("@"))
-    .And(u => u.Age >= 18);
-
-if (spec.IsSatisfiedBy(request))
-{
-    // Valid request
 }
 ```
 
@@ -286,7 +339,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
    git clone https://github.com/Francescolis/Xpandables.Net.git
    ```
 
-2. Open in Visual Studio 2025 or Rider
+2. Open in Visual Studio 2026 or Rider
 
 3. Build the solution
    ```bash
