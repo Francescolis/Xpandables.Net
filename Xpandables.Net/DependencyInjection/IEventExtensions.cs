@@ -43,6 +43,16 @@ public static class IEventExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
+        /// Adds the default <see cref="AggregateStore"/> implementation to the service collection for dependency injection.
+        /// </summary>
+        /// <remarks>Use this method to register the AggregateStore as the implementation for
+        /// AggregateStore when configuring services. This enables consuming components to resolve AggregateStore via
+        /// dependency injection.</remarks>
+        /// <returns>The updated IServiceCollection instance with the AggregateStore service registered.</returns>
+        public IServiceCollection AddXAggregateStore()
+            => services.AddXAggregateStore<AggregateStore>();
+
+        /// <summary>
         /// Registers the specified aggregate store implementation as a scoped service for the <see
         /// cref="IAggregateStore"/> interface.
         /// </summary>

@@ -33,12 +33,15 @@ namespace Xpandables.Net.Events;
 /// that uncommitted domain events are properly tracked and dispatched after saving.</remarks>
 /// <param name="eventStore">The event store used to persist and retrieve aggregate events.</param>
 /// <param name="domainEvents">The collection used to track and dispatch pending domain events after aggregates are saved.</param>
+/// <param name="cacheTypeResolver">The type resolver used to resolve aggregate types by name.</param>
 public sealed class AggregateStore(
     IEventStore eventStore,
-    IPendingDomainEventsBuffer domainEvents) : IAggregateStore
+    IPendingDomainEventsBuffer domainEvents,
+    ICacheTypeResolver cacheTypeResolver) : IAggregateStore
 {
     private static readonly MemoryAwareCache<string, MethodInfo> _aggregateTypeCache = new();
     private readonly IEventStore _eventStore = eventStore;
+    private readonly ICacheTypeResolver _cacheTypeResolver = cacheTypeResolver;
 
     /// <inheritdoc />
     public async Task<IAggregate> LoadAsync(
@@ -124,13 +127,13 @@ public sealed class AggregateStore(
     /// static Initialize method.</exception>
     [RequiresUnreferencedCode("May use unreferenced code to resolve type.")]
     [RequiresDynamicCode("May use dynamic code to resolve type.")]
-    public static MethodInfo ResolveAggregateFactoryMethod(string name)
+    public MethodInfo ResolveAggregateFactoryMethod(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        return _aggregateTypeCache.GetOrAdd(name, static name =>
+        return _aggregateTypeCache.GetOrAdd(name, name =>
         {
-            Type eventType = Type.GetType(name, true)
+            Type eventType = _cacheTypeResolver.TryResolve(name)
             ?? throw new InvalidOperationException(
                 $"The aggregate type '{name}' could not be found. Ensure it is referenced and available at runtime.");
 

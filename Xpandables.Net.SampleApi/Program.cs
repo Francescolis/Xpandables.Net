@@ -58,9 +58,12 @@ builder.Services
     .AddXRequestHandlers()
     .AddXEventUnitOfWork()
     .AddXPublisher()
+    .AddXAggregateStore()
     .AddXAggregateStoreFor()
     .AddXEventStore()
-    .AddXOutboxStore();
+    .AddXOutboxStore()
+    .AddMemoryCache()
+    .AddXCacheTypeResolver();
 
 builder.Services.AddSwaggerGen(options =>
 {
