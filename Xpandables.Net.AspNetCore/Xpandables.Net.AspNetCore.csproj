@@ -7,7 +7,7 @@
 		<LangVersion>preview</LangVersion>
 
 		<Title>Xpandables.Net.AspNetCore</Title>
-		<Description>Provide basic objects.</Description>
+		<Description>Provide AspNetCore objects.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 

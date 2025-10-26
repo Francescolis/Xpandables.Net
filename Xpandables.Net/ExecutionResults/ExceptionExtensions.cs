@@ -77,14 +77,15 @@ public static class ExceptionExtensions
 
             statusCode ??= exception.GetHttpStatusCode();
 
-            return ExecutionResult
+            var builder = ExecutionResult
                 .Failure(statusCode.Value)
                 .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
                 .WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.Detail)
-                .WithErrors(GetElementEntries(exception))
-                .WithException(exception)
-                .Build();
+                .WithErrors(GetElementEntries(exception));
 
+            return exception is ValidationException
+                ? builder.Build()
+                : builder.WithException(exception).Build();
         }
 
         /// <summary>

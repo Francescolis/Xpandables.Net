@@ -39,14 +39,9 @@ public static class IAggregateStoreExtensions
         /// instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if the aggregate store has not been initialized.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the aggregate store does not support the specified aggregate type.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
         public async Task<TAggregate> LoadAsync<TAggregate>(Guid streamId, CancellationToken cancellationToken = default)
             where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
-            => (aggregateStore ?? throw new ArgumentNullException(nameof(aggregateStore))) switch
-            {
-                IAggregateStore<TAggregate> typedStore => await typedStore.LoadAsync(streamId, cancellationToken).ConfigureAwait(false),
-                _ => throw new InvalidOperationException($"The aggregate store must be of type '{typeof(IAggregateStore<TAggregate>)}'.")
-            };
+            => (TAggregate)await aggregateStore.LoadAsync(streamId, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Asynchronously saves the specified aggregate instance to the underlying aggregate store.
@@ -60,10 +55,7 @@ public static class IAggregateStoreExtensions
             where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
         {
             ArgumentNullException.ThrowIfNull(aggregateStore);
-            if (aggregateStore is not IAggregateStore<TAggregate> typedStored)
-                throw new InvalidOperationException($"The aggregate store must be of type '{typeof(IAggregateStore<TAggregate>)}'.");
-
-            await typedStored.SaveAsync(aggregate, cancellationToken).ConfigureAwait(false);
+            await aggregateStore.SaveAsync(aggregate, cancellationToken).ConfigureAwait(false);
         }
     }
 }

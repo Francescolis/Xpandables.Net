@@ -89,9 +89,8 @@ var app = builder.Build();
 //    app.MapOpenApi();
 //}
 
-app.UseXExecutionResultMinimalMiddleware();
-
 app.UseHttpsRedirection();
+app.UseXExecutionResultMinimalMiddleware();
 app.UseSwagger()
     .UseSwaggerUI(options =>
     {
