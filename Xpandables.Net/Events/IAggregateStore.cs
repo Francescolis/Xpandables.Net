@@ -39,6 +39,8 @@ public interface IAggregateStore
     /// <summary>
     /// Asynchronously loads the aggregate associated with the specified stream identifier.
     /// </summary>
+    /// <remarks>The aggregate type must implement the <see cref="IAggregateFactory"/> interface to allow for proper
+    /// initialization and reconstruction from its event history.</remarks>
     /// <param name="streamId">The unique identifier of the stream from which to load the aggregate.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation. The default value is <see
     /// cref="CancellationToken.None"/>.</param>

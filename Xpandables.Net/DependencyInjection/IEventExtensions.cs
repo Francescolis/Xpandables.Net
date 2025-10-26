@@ -43,13 +43,49 @@ public static class IEventExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Registers an aggregate store for the specified aggregate type in the dependency injection container.
+        /// Registers the specified aggregate store implementation as a scoped service for the <see
+        /// cref="IAggregateStore"/> interface.
+        /// </summary>
+        /// <remarks>Use this method to configure dependency injection for aggregate store
+        /// implementations. Each request will receive a new instance of <typeparamref name="TAggregateStore"/> when
+        /// resolving <see cref="IAggregateStore"/>.</remarks>
+        /// <typeparam name="TAggregateStore">The type of the aggregate store to register. Must implement <see cref="IAggregateStore"/> and be a reference
+        /// type.</typeparam>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the aggregate store service registration added.</returns>
+        public IServiceCollection AddXAggregateStore<TAggregateStore>()
+            where TAggregateStore : class, IAggregateStore
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IAggregateStore, TAggregateStore>();
+            return services;
+        }
+
+        /// <summary>
+        /// Registers the specified aggregate store implementation as the scoped service for <see
+        /// cref="IAggregateStore"/> in the dependency injection container.
+        /// </summary>
+        /// <remarks>If an <see cref="IAggregateStore"/> service is already registered, this method will
+        /// not overwrite the existing registration. The aggregate store type must be compatible with <see
+        /// cref="IAggregateStore"/> and have accessible public constructors for instantiation by the service
+        /// provider.</remarks>
+        /// <param name="aggregateStoreType">The <see cref="Type"/> representing the aggregate store implementation to register. Must have public
+        /// constructors and implement <see cref="IAggregateStore"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the aggregate store service registered.</returns>
+        public IServiceCollection AddXAggregateStore([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type aggregateStoreType)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped(typeof(IAggregateStore), aggregateStoreType);
+            return services;
+        }
+
+        /// <summary>
+        /// Registers an <see cref="AggregateStore{TAggregate}"/> for the specified aggregate type in the dependency injection container.
         /// </summary>
         /// <remarks>Use this method to enable dependency injection of IAggregateStore for the specified
         /// aggregate type. The registration is added with scoped lifetime.</remarks>
         /// <typeparam name="TAggregate">The aggregate type to register. Must implement both IAggregate and <see cref="IAggregateFactory{TAggregate}"/> .</typeparam>
         /// <returns>The IServiceCollection instance with the aggregate store registration added.</returns>
-        public IServiceCollection AddXAggregateStore<TAggregate>()
+        public IServiceCollection AddXAggregateStoreFor<TAggregate>()
             where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
         {
             ArgumentNullException.ThrowIfNull(services);
@@ -58,7 +94,7 @@ public static class IEventExtensions
         }
 
         /// <summary>
-        /// Registers the specified aggregate store implementation as a scoped service for IAggregateStore in the
+        /// Registers the specified aggregate store implementation as a scoped service for <see cref="IAggregateStore{TAggregate}"/> in the
         /// dependency injection container.
         /// </summary>
         /// <remarks>Use this method to configure a custom aggregate store for dependency injection. The
@@ -67,7 +103,7 @@ public static class IEventExtensions
         /// IAggregateStore for the relevant aggregate types.</param>
         /// <returns>The IServiceCollection instance with the aggregate store registration added. This enables further chaining
         /// of service registrations.</returns>
-        public IServiceCollection AddXAggregateStore([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type aggregateStoreType)
+        public IServiceCollection AddXAggregateStoreFor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type aggregateStoreType)
         {
             ArgumentNullException.ThrowIfNull(services);
             services.TryAddScoped(typeof(IAggregateStore<>), aggregateStoreType);
@@ -75,14 +111,14 @@ public static class IEventExtensions
         }
 
         /// <summary>
-        /// Adds the default AggregateStore implementation to the service collection for dependency injection.
+        /// Adds the default <see cref="AggregateStore{TAggregate}"/> implementation to the service collection for dependency injection.
         /// </summary>
         /// <remarks>This method registers the generic AggregateStore implementation as the service for
         /// XAggregateStore. Call this method during application startup to enable aggregate store functionality in your
         /// application.</remarks>
         /// <returns>The updated IServiceCollection instance with the AggregateStore service registered.</returns>
-        public IServiceCollection AddXAggregateStore() =>
-            services.AddXAggregateStore(typeof(AggregateStore<>));
+        public IServiceCollection AddXAggregateStoreFor() =>
+            services.AddXAggregateStoreFor(typeof(AggregateStore<>));
 
         /// <summary>
         /// Adds a snapshot-based implementation of the aggregate store to the service collection, enabling support for

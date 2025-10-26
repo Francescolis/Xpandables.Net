@@ -58,7 +58,7 @@ builder.Services
     .AddXRequestHandlers()
     .AddXEventUnitOfWork()
     .AddXPublisher()
-    .AddXAggregateStore()
+    .AddXAggregateStoreFor()
     .AddXEventStore()
     .AddXOutboxStore();
 
