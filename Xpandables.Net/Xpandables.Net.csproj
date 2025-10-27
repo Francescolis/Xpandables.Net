@@ -71,6 +71,30 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Cqrs\**" />
+	  <Compile Remove="DependencyInjection\**" />
+	  <Compile Remove="Events\**" />
+	  <Compile Remove="Repositories\**" />
+	  <Compile Remove="Rests\**" />
+	  <Compile Remove="Tasks\**" />
+	  <Compile Remove="Validators\**" />
+	  <EmbeddedResource Remove="Cqrs\**" />
+	  <EmbeddedResource Remove="DependencyInjection\**" />
+	  <EmbeddedResource Remove="Events\**" />
+	  <EmbeddedResource Remove="Repositories\**" />
+	  <EmbeddedResource Remove="Rests\**" />
+	  <EmbeddedResource Remove="Tasks\**" />
+	  <EmbeddedResource Remove="Validators\**" />
+	  <None Remove="Cqrs\**" />
+	  <None Remove="DependencyInjection\**" />
+	  <None Remove="Events\**" />
+	  <None Remove="Repositories\**" />
+	  <None Remove="Rests\**" />
+	  <None Remove="Tasks\**" />
+	  <None Remove="Validators\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
