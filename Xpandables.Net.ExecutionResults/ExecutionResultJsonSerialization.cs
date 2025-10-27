@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
@@ -40,7 +39,7 @@ namespace Xpandables.Net.ExecutionResults;
 public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
 {
     // Cache converters for better performance
-    private static readonly ConcurrentDictionary<(Type Type, bool UseAspNetCore), JsonConverter> _converterCache = new();
+    private static readonly MemoryAwareCache<(Type Type, bool UseAspNetCore), JsonConverter> _converterCache = new();
 
     /// <summary>
     /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
@@ -75,7 +74,7 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
 
         options.TypeInfoResolver ??= ExecutionResultJsonContext.Default;
 
-        return _converterCache.GetOrAdd((typeToConvert, UseAspNetCoreCompatibility), key =>
+        return _converterCache.GetOrAdd((typeToConvert, UseAspNetCoreCompatibility), static key =>
         {
             if (key.Type == typeof(ExecutionResult))
             {
@@ -185,7 +184,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
                     break;
 
                 default:
-                    // Skip unknown/ignored properties
+                    // Skip unknown/ignored properties like Exception
                     reader.Skip();
                     break;
             }
@@ -244,6 +243,12 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
 
             writer.WritePropertyName("extensions");
             JsonSerializer.Serialize(writer, value.Extensions, typeof(ElementCollection), ElementCollectionContext.Default);
+
+            if (value.Exception is not null)
+            {
+                writer.WritePropertyName("exception");
+                SerializationHelper.WriteValue(writer, value.Exception, options);
+            }
 
             writer.WriteEndObject();
         }
@@ -404,7 +409,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
                     break;
 
                 default:
-                    // Skip unknown/ignored properties
+                    // Skip unknown/ignored properties like Exception
                     reader.Skip();
                     break;
             }
@@ -463,6 +468,12 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
 
             writer.WritePropertyName("extensions");
             JsonSerializer.Serialize(writer, value.Extensions, typeof(ElementCollection), ElementCollectionContext.Default);
+
+            if (value.Exception is not null)
+            {
+                writer.WritePropertyName("exception");
+                SerializationHelper.WriteValue(writer, value.Exception, options);
+            }
 
             writer.WriteEndObject();
         }

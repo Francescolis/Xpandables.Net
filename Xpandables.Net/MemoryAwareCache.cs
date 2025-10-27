@@ -69,15 +69,15 @@ public sealed class MemoryAwareCache<TKey, TValue> : IDisposable
     /// <param name="factory">A function that generates a new value to add to the cache if the key does not exist. The function takes the key
     /// as a parameter and returns the value to be added.</param>
     /// <returns>The value associated with the specified key. If the cache has been disposed, returns <see langword="null"/>.</returns>
-    public TValue? GetOrAdd(TKey key, Func<TKey, TValue> factory)
+    public TValue GetOrAdd(TKey key, Func<TKey, TValue> factory)
     {
         ArgumentNullException.ThrowIfNull(factory);
-        if (_disposed) return null;
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (_cache.TryGetValue(key, out var entry)
             && entry.TryGetValue(out var existingValue))
         {
-            return existingValue;
+            return existingValue!;
         }
 
         var newValue = factory(key);

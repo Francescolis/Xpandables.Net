@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 using Xpandables.Net.Collections;
@@ -28,7 +27,6 @@ namespace Xpandables.Net.ExecutionResults;
 /// <remarks>These extension methods facilitate mapping validation errors to standardized execution result
 /// formats, enabling consistent error handling in API endpoints. The methods are intended to be used with collections
 /// of <see cref="ValidationResult"/> produced by validation frameworks.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class ValidationResultExtensions
 {
     ///<summary>

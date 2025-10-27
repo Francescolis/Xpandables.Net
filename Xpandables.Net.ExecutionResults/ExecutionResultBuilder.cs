@@ -133,6 +133,11 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     protected ElementCollection Errors { get; } = [];
 
     /// <summary>
+    /// Gets the exception associated with the execution result.
+    /// </summary>
+    protected Exception? Exception { get; private set; }
+
+    /// <summary>
     /// Gets or sets the HTTP status code for the execution result.
     /// </summary>
     protected HttpStatusCode StatusCode { get; private set; } = statusCode;
@@ -173,7 +178,8 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
             Location = Location,
             Headers = Headers,
             Extensions = Extensions,
-            Errors = Errors
+            Errors = Errors,
+            Exception = Exception
         };
 
     /// <inheritdoc/>
@@ -188,6 +194,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
         Detail = null;
         Location = null;
         Result = null;
+        Exception = null;
 
         return AsBuilder;
     }
@@ -231,6 +238,13 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
         Headers.Merge(execution.Headers);
         Extensions.Merge(execution.Extensions);
         Errors.Merge(execution.Errors);
+        Exception = (execution.Exception, Exception) switch
+        {
+            (null, null) => null,
+            (not null, null) => execution.Exception,
+            (null, not null) => Exception,
+            (not null, not null) => new AggregateException(execution.Exception, Exception)
+        };
 
         return AsBuilder;
     }
@@ -317,30 +331,8 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithException(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
-
-        const string exceptionKey = nameof(Exception);
-        ElementEntry? entry = Errors.FirstOrDefault(e => e.Key == exceptionKey);
-
-        if (entry is { Key: not null })
-        {
-            Errors.Remove(entry.Value.Key);
-            entry = entry.Value with
-            {
-                Values = StringValues.Concat(entry.Value.Values, new StringValues(FormatException(exception)))
-            };
-        }
-        else
-        {
-            entry = new ElementEntry(exceptionKey, FormatException(exception));
-        }
-
-        Errors.Add(entry.Value);
+        Exception = exception;
         return AsBuilder;
-
-        static string FormatException(Exception exception) =>
-            exception is AggregateException aggregateException
-                ? string.Join(Environment.NewLine, aggregateException.Flatten().InnerExceptions.Select(e => e.ToString()))
-                : exception.ToString();
     }
 
     /// <inheritdoc/>
@@ -526,6 +518,7 @@ public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode s
             Headers = Headers,
             Extensions = Extensions,
             Errors = Errors,
-            Value = Result
+            Value = Result,
+            Exception = Exception
         };
 }

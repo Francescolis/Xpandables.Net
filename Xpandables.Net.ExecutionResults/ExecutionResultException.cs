@@ -84,7 +84,7 @@ public sealed class ExecutionResultException : Exception
         ExecutionResult = executionResult;
     }
 
-    [Obsolete("Use constructor with IOperationResult")]
+    [Obsolete("Use constructor with ExecutionResult")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     private ExecutionResultException(
         SerializationInfo serializationInfo,
@@ -101,7 +101,7 @@ public sealed class ExecutionResultException : Exception
     /// </summary>
     /// <param name="info">The object that holds the serialized object data.</param>
     /// <param name="context">The contextual information about the source or destination.</param>
-    [Obsolete("Use constructor with IOperationResult")]
+    [Obsolete("Use constructor with ExecutionResult")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {

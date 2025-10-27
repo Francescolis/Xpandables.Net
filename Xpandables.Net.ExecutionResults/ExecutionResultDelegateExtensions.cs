@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations;
-
 namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
@@ -46,6 +44,10 @@ public static class ExecutionResultDelegateExtensions
             action();
             return ExecutionResult.Success();
         }
+        catch (ExecutionResultException executionException)
+        {
+            return executionException.ExecutionResult;
+        }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
         {
@@ -59,10 +61,7 @@ public static class ExecutionResultDelegateExtensions
     /// <typeparam name="T">The type of the argument passed to the action.</typeparam>
     /// <param name="action">The action to execute.</param>
     /// <param name="args">The argument to pass to the action.</param>
-    /// <returns>
-    /// An <see cref="ExecutionResult" /> representing the result
-    /// of the action.
-    /// </returns>
+    /// <returns> An <see cref="ExecutionResult" /> representing the result of the action.</returns>
     public static ExecutionResult ToExecutionResult<T>(this Action<T> action, T args)
     {
         ArgumentNullException.ThrowIfNull(action);
@@ -71,10 +70,6 @@ public static class ExecutionResultDelegateExtensions
         {
             action(args);
             return ExecutionResult.Ok().Build();
-        }
-        catch (ValidationException validationException)
-        {
-            return validationException.ToExecutionResult();
         }
         catch (ExecutionResultException executionException)
         {
@@ -88,14 +83,10 @@ public static class ExecutionResultDelegateExtensions
     }
 
     /// <summary>
-    /// Converts a <see cref="Task" /> to an <see cref="ExecutionResult" />
-    /// asynchronously.
+    /// Converts a <see cref="Task" /> to an <see cref="ExecutionResult" /> asynchronously.
     /// </summary>
     /// <param name="task">The task to execute.</param>
-    /// <returns>
-    /// A <see cref="Task{IOperationResult}" /> representing the result
-    /// of the task.
-    /// </returns>
+    /// <returns> A <see cref="Task{IOperationResult}" /> representing the result of the task.</returns>
     public static async Task<ExecutionResult> ToExecutionResultAsync(this Task task)
     {
         ArgumentNullException.ThrowIfNull(task);
@@ -105,6 +96,10 @@ public static class ExecutionResultDelegateExtensions
             await task.ConfigureAwait(false);
             return ExecutionResult.Ok().Build();
         }
+        catch (ExecutionResultException executionException)
+        {
+            return executionException.ExecutionResult;
+        }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
         {
@@ -113,9 +108,7 @@ public static class ExecutionResultDelegateExtensions
     }
 
     /// <summary>
-    /// Converts a <see cref="Task{TResult}" /> to an
-    /// <see cref="ExecutionResult{TResult}" />
-    /// asynchronously.
+    /// Converts a <see cref="Task{TResult}" /> to an <see cref="ExecutionResult{TResult}" /> asynchronously.
     /// </summary>
     /// <typeparam name="TResult">The type of the result produced by the task.</typeparam>
     /// <param name="task">The task to execute.</param>
@@ -132,6 +125,10 @@ public static class ExecutionResultDelegateExtensions
                 .Ok(result)
                 .Build();
         }
+        catch (ExecutionResultException executionException)
+        {
+            return executionException.ExecutionResult.ToExecutionResult<TResult>();
+        }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
         {
@@ -140,18 +137,11 @@ public static class ExecutionResultDelegateExtensions
     }
 
     /// <summary>
-    /// Converts a <see cref="Func{TResult}" /> to an
-    /// <see cref="ExecutionResult{TResult}" />.
+    /// Converts a <see cref="Func{TResult}" /> to an <see cref="ExecutionResult{TResult}" />.
     /// </summary>
-    /// <typeparam name="TResult">
-    /// The type of the result produced by the
-    /// function.
-    /// </typeparam>
+    /// <typeparam name="TResult">The type of the result produced by the function.</typeparam>
     /// <param name="func">The function to execute.</param>
-    /// <returns>
-    /// An <see cref="ExecutionResult{TResult}" /> representing the
-    /// result of the function.
-    /// </returns>
+    /// <returns>An <see cref="ExecutionResult{TResult}" /> representing the result of the function.</returns>
     public static ExecutionResult<TResult> ToExecutionResult<TResult>(this Func<TResult> func)
     {
         ArgumentNullException.ThrowIfNull(func);
@@ -162,6 +152,10 @@ public static class ExecutionResultDelegateExtensions
             return ExecutionResult
                 .Ok(result)
                 .Build();
+        }
+        catch (ExecutionResultException executionException)
+        {
+            return executionException.ExecutionResult.ToExecutionResult<TResult>();
         }
         catch (Exception exception)
             when (exception is not ExecutionResultException)
