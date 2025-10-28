@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ namespace Xpandables.Net.Collections;
 /// <remarks>This class contains methods that extend the functionality of the string type, enabling additional
 /// operations such as deserialization or conversion. All methods are static and are intended to be used as extension
 /// methods on string instances.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class StringExtensions
 {
     /// <summary>
@@ -34,14 +33,6 @@ public static class StringExtensions
     /// <param name="value">The string value.</param>
     extension(string value)
     {
-        /// <summary>
-        /// Deserializes the current JSON string value to an instance of the ElementCollection class.
-        /// </summary>
-        /// <returns>An ElementCollection object representing the deserialized JSON value, or null if the value cannot be
-        /// deserialized.</returns>
-        public ElementCollection ToElementCollection() =>
-            JsonSerializer.Deserialize(value, ElementCollectionContext.Default.ElementCollection);
-
         /// <summary>
         /// Deserializes the JSON string value into an anonymous object of type <typeparamref name="T"/> using the
         /// specified options.
@@ -54,20 +45,13 @@ public static class StringExtensions
         /// <param name="options">Options to control the behavior of the JSON deserialization. If null, default options are used.</param>
         /// <returns>An instance of type <typeparamref name="T"/> populated with data from the JSON string, or null if the JSON
         /// is empty or invalid.</returns>
+        /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized to the specified type.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the type <typeparamref name="T"/> is not supported for deserialization.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the string value is null.</exception>
         [RequiresUnreferencedCode("Dynamic code may be generated at runtime.")]
         [RequiresDynamicCode("Dynamic code may be generated at runtime.")]
-        public T? AnonymousFromJsonString<T>(T _, JsonSerializerOptions? options = null)
-        {
-            try
-            {
-                return JsonSerializer.Deserialize<T>(value, options);
-            }
-            catch (Exception exception) when (exception is not ArgumentNullException)
-            {
-                return default;
-            }
-        }
-
+        public T? AnonymousFromJsonString<T>(T _, JsonSerializerOptions? options = null) =>
+            JsonSerializer.Deserialize<T>(value, options);
 
         /// <summary>
         /// Formats the current string using the specified culture and the provided arguments.
@@ -79,6 +63,8 @@ public static class StringExtensions
         /// <param name="args">An array of objects to format. Each object will be replaced in the string according to its corresponding
         /// format item.</param>
         /// <returns>A formatted string that incorporates the specified arguments, using the provided culture for formatting.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the string value or <paramref name="cultureInfo"/> is null.</exception>
+        /// <exception cref="FormatException">Thrown when the format string is invalid or when an argument is missing.</exception>
         public string StringFormat(CultureInfo cultureInfo, params object[] args)
         {
             ArgumentNullException.ThrowIfNull(value);
@@ -96,6 +82,8 @@ public static class StringExtensions
         /// <param name="args">An array of objects to format and insert into the string. Each object will replace a corresponding format
         /// item in the string.</param>
         /// <returns>A formatted string with each format item replaced by the corresponding value from <paramref name="args"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the string value is null.</exception>
+        /// <exception cref="FormatException">Thrown when the format string is invalid or when an argument is missing.</exception>
         public string StringFormat(params object[] args)
         {
             ArgumentNullException.ThrowIfNull(value);

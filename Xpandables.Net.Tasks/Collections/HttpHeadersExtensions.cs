@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Net.Http.Headers;
 
-namespace Xpandables.Net.Collections;
+namespace Xpandables.Net.Tasks.Collections;
 
 /// <summary>
 /// Provides extension methods for working with HTTP headers collections.
@@ -24,7 +24,6 @@ namespace Xpandables.Net.Collections;
 /// <remarks>This class contains static methods that extend the functionality of <see cref="HttpHeaders"/>
 /// instances, enabling convenient manipulation and conversion of HTTP header data. All methods are thread-safe and do
 /// not modify the original headers collection.</remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class HttpHeadersExtensions
 {
     ///<summary>

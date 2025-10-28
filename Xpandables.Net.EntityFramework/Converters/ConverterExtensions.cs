@@ -19,6 +19,8 @@ using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using Xpandables.Net.Primitives;
+
 namespace Xpandables.Net.Converters;
 
 /// <summary>

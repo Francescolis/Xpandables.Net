@@ -63,11 +63,15 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>1701;1702;CA1034;</NoWarn>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>1701;1702;CA1034;</NoWarn>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>

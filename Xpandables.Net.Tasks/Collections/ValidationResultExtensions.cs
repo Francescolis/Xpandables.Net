@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
-using Xpandables.Net.Collections;
+using Xpandables.Net.Tasks.Collections;
 
-namespace Xpandables.Net.Collections;
+namespace Xpandables.Net.Tasks.Collections;
 
 /// <summary>
 /// Provides extension methods for converting <see cref="ValidationResult"/> instances to <see
 /// cref="ElementCollection"/> objects.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class ValidationResultExtensions
 {
     /// <summary>
@@ -68,7 +67,6 @@ public static class ValidationResultExtensions
 /// Provides extension methods for converting <see cref="ValidationResult"/> instances to <see
 /// cref="ElementCollection"/> objects.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class EnumerableValidationResultExtensions
 {
     /// <summary>

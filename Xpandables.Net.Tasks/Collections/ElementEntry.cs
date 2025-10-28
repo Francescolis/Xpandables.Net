@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
-namespace Xpandables.Net.Collections;
+namespace Xpandables.Net.Tasks.Collections;
 
 /// <summary>
 /// Represents an entry consisting of a key and associated values.

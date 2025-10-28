@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,17 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-using Xpandables.Net;
-using Xpandables.Net.Collections;
+using Xpandables.Net.Tasks.Collections;
 
-namespace Xpandables.Net.Collections;
+namespace Xpandables.Net.Tasks.Collections;
 
 /// <summary>
 /// Provides extension methods for ElementCollection objects.
 /// </summary>
 /// <remarks>These extension methods automatically use the ElementCollectionContext for optimal performance
 /// and AOT compatibility when working with ElementCollection serialization.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class ElementCollectionExtensions
 {
     /// <summary>
@@ -39,11 +36,13 @@ public static class ElementCollectionExtensions
         /// Serializes the element collection to a JSON-formatted string.
         /// </summary>
         /// <returns>A string containing the JSON representation of the element collection.</returns>
-        public string ToJsonString() =>
-            JsonSerializer.Serialize(source, ElementCollectionContext.Default.ElementCollection);
+        /// <exception cref="JsonException">Thrown when serialization fails.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the type of the element collection is not supported for serialization.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the element collection contains invalid data that cannot be serialized.</exception>
+        public string ToJsonString() => JsonSerializer.Serialize(source, ElementCollectionContext.Default.ElementCollection);
 
         /// <summary>
-        /// Converts the current collection to a dictionary with string keys and object values, concatenating multiple
+        /// Converts the current collection to a dictionary with string keys and string values, concatenating multiple
         /// values for each key into a single space-separated string.
         /// </summary>
         /// <remarks>Each entry in the returned dictionary has a key from the source and a value that is a
@@ -51,17 +50,20 @@ public static class ElementCollectionExtensions
         /// empty string.</remarks>
         /// <returns>An <see cref="IDictionary{TKey, TValue}"/> containing all keys from the source collection. If the source is
         /// empty, returns an empty dictionary.</returns>
-        public IDictionary<string, object?> ToDictionaryObject()
+        /// <exception cref="ArgumentNullException">Thrown when the source collection is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when there are duplicate keys in the source collection.</exception>
+        /// <exception cref="ArgumentException">Thrown when the source collection contains invalid data that cannot be converted to a dictionary.</exception>
+        public IDictionary<string, string> ToDictionaryObject()
         {
             if (!source.Any())
             {
-                return new Dictionary<string, object?>();
+                return new Dictionary<string, string>();
             }
 
             return source
                 .ToDictionary(
                     entry => entry.Key,
-                    entry => (object?)entry.Values.StringJoin(" "));
+                    entry => entry.Values.StringJoin(" "));
         }
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
-namespace Xpandables.Net.Collections;
+using Xpandables.Net.Tasks.Collections;
+
+namespace Xpandables.Net.Tasks.Collections;
 
 /// <summary>
 /// JSON converter factory for ElementEntry types, providing AOT-compatible serialization for .NET 10.
@@ -39,7 +41,11 @@ public sealed class ElementEntryJsonConverterFactory : JsonConverterFactory
         ArgumentNullException.ThrowIfNull(typeToConvert);
         ArgumentNullException.ThrowIfNull(options);
 
-        options.TypeInfoResolver ??= ElementEntryContext.Default;
+        if (options.TypeInfoResolverChain.FirstOrDefault(resolver => resolver is ElementEntryContext) is null)
+        {
+            options.TypeInfoResolverChain.Add(ElementEntryContext.Default);
+        }
+
         return new ElementEntryJsonConverter();
     }
 }

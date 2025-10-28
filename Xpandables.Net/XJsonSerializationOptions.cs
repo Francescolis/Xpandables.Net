@@ -15,9 +15,8 @@
  *
 ********************************************************************************/
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Text;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Provides access to the default JSON serialization options used for web-based scenarios.
@@ -26,7 +25,7 @@ namespace Xpandables.Net.Text;
 /// typical web applications, such as those built with ASP.NET Core. Modifying these options affects the default
 /// behavior of JSON serialization and deserialization throughout the application wherever these defaults are
 /// used.</remarks>
-public static class SerializationDefaultOptions
+public static class XJsonSerializationOptions
 {
     /// <summary>
     /// Gets or sets the default <see cref="JsonSerializerOptions"/> used for web-based JSON serialization and
@@ -49,16 +48,4 @@ public static class SerializationDefaultOptions
             PropertyNamingPolicy = null,
             WriteIndented = true
         };
-}
-
-/// <summary>
-/// Provides serialization context for types using source-generated JSON serialization.
-/// </summary>
-/// <remarks>This class is typically used to supply serialization metadata and options for the System.Text.Json
-/// source generator. It enables efficient, strongly-typed serialization and deserialization of objects at runtime. Use
-/// this context when working with APIs that require a JsonSerializerContext instance for custom serialization
-/// scenarios.</remarks>
-[JsonSerializable(typeof(object))]
-public partial class ObjectContext : JsonSerializerContext
-{
 }

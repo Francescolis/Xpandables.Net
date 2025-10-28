@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ namespace Xpandables.Net.Collections;
 /// <remarks>This class includes utility methods that extend the functionality of enumerable collections, enabling
 /// additional operations such as joining elements into a single string. These methods are intended to simplify common
 /// tasks when working with sequences.</remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class EnumerableExtensions
 {
     /// <summary>
@@ -38,6 +37,10 @@ public static class EnumerableExtensions
         /// has more than one element. Can be null, in which case an empty string is used as the separator.</param>
         /// <returns>A string that consists of the elements of the collection delimited by the separator string. Returns an empty
         /// string if the collection contains no elements.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when an element in the source does not implement <see cref="IFormattable"/>.</exception>
+        /// <exception cref="FormatException">Thrown when an element in the source is not in a valid format.</exception>
+        /// <exception cref="OverflowException">Thrown when an element in the source represents a number that is out of the range of the <see cref="int"/> type.</exception>
         public string StringJoin(string separator) => string.Join(separator, source);
 
         /// <summary>
@@ -46,6 +49,10 @@ public static class EnumerableExtensions
         /// <param name="separator">The character to use as a separator between each element in the resulting string.</param>
         /// <returns>A string that consists of the elements in the source collection delimited by the specified separator.
         /// Returns an empty string if the source collection contains no elements.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when an element in the source does not implement <see cref="IFormattable"/>.</exception>
+        /// <exception cref="FormatException">Thrown when an element in the source is not in a valid format.</exception>
+        /// <exception cref="OverflowException">Thrown when an element in the source represents a number that is out of the range of the <see cref="int"/> type.</exception>        /// 
         public string StringJoin(char separator) => string.Join(separator, source);
     }
 }

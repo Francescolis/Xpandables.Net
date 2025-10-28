@@ -17,6 +17,8 @@
 ********************************************************************************/
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+using Xpandables.Net.Primitives;
+
 namespace Xpandables.Net.Converters;
 
 /// <summary>

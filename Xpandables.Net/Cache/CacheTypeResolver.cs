@@ -14,11 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Xpandables.Net.Text;
+namespace Xpandables.Net.Cache;
 
 /// <summary>
 /// Provides functionality to resolve .NET types by name, using a memory cache to optimize repeated lookups across
@@ -60,6 +61,7 @@ public sealed class CacheTypeResolver(IMemoryCache memoryCache) : ICacheTypeReso
     }
 
     /// <inheritdoc/>
+    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     public Type Resolve(string typeName)
     {
         return TryResolve(typeName)
@@ -67,6 +69,7 @@ public sealed class CacheTypeResolver(IMemoryCache memoryCache) : ICacheTypeReso
     }
 
     /// <inheritdoc/>
+    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     public Type? TryResolve(string typeName)
     {
         ArgumentNullException.ThrowIfNull(typeName);
@@ -80,6 +83,7 @@ public sealed class CacheTypeResolver(IMemoryCache memoryCache) : ICacheTypeReso
             });
     }
 
+    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     private Type? ResolveType(string typeName)
     {
         return _assemblies

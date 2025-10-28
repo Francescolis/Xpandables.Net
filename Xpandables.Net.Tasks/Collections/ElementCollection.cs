@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
-using Xpandables.Net.Collections;
+using Xpandables.Net.Tasks.Collections;
 
-namespace Xpandables.Net.Collections;
+namespace Xpandables.Net.Tasks.Collections;
 
 /// <summary>
 /// Represents a collection of ElementEntry objects, allowing for addition, removal, and merging of entries. 
@@ -608,12 +608,10 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
 [JsonSerializable(typeof(List<ElementCollection>))]
 [JsonSerializable(typeof(IEnumerable<ElementCollection>))]
 [JsonSerializable(typeof(Dictionary<string, ElementCollection>))]
-[JsonSerializable(typeof(ElementCollectionJsonConverterFactory))]
 [JsonSerializable(typeof(ElementEntry))]
 [JsonSerializable(typeof(ElementEntry[]))]
 [JsonSerializable(typeof(List<ElementEntry>))]
 [JsonSerializable(typeof(IEnumerable<ElementEntry>))]
-[JsonSerializable(typeof(ElementEntryJsonConverterFactory))]
 [JsonSerializable(typeof(StringValues))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(string))]

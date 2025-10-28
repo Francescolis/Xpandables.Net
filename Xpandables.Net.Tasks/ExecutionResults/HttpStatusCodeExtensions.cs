@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ using System.Net;
 using System.Security;
 using System.Security.Authentication;
 
-namespace Xpandables.Net;
+namespace Xpandables.Net.Tasks.ExecutionResults;
 
 /// <summary>
 /// Provides extension methods for working with HTTP status codes.
@@ -27,7 +27,6 @@ namespace Xpandables.Net;
 /// <remarks>This class contains static methods that extend the functionality of the <see
 /// cref="HttpStatusCode"/> enumeration, enabling additional operations and convenience methods when handling
 /// HTTP responses.</remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class HttpStatusCodeExtensions
 {
     /// <summary>
