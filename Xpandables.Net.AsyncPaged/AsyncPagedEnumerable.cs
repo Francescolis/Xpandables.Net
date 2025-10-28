@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 ********************************************************************************/
 using System.Runtime.ExceptionServices;
 
-using Xpandables.Net;
-using Xpandables.Net.Collections.Generic;
-using Xpandables.Net.Collections.Generic.Internals;
+using Xpandables.Net.AsyncPaged.Internals;
 
-namespace Xpandables.Net.Collections.Generic;
+namespace Xpandables.Net.AsyncPaged;
 
 /// <summary>
 /// Represents an asynchronous, paged enumerable over a sequence with lazy pagination metadata computation.

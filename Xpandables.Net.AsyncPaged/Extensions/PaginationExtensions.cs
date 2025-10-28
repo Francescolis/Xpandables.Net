@@ -15,17 +15,14 @@
  *
 ********************************************************************************/
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-using Xpandables.Net;
-using Xpandables.Net.Collections.Generic.Extensions;
-namespace Xpandables.Net.Collections.Generic.Extensions;
+using Xpandables.Net.AsyncPaged.Extensions;
+namespace Xpandables.Net.AsyncPaged.Extensions;
 
 /// <summary>
 /// Provides pagination and filtering extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class PaginationExtensions
 {
     /// <summary>

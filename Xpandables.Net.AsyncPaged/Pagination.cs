@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Collections.Generic;
+namespace Xpandables.Net.AsyncPaged;
 
 /// <summary>
 /// Specifies the strategy for managing pagination in iterators or paginated data contexts.

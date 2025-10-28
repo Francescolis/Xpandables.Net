@@ -19,9 +19,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using Xpandables.Net;
-
-namespace Xpandables.Net.Collections.Generic.Internals;
+namespace Xpandables.Net.AsyncPaged.Internals;
 
 /// <summary>
 /// Provides optimized query analysis utilities for extracting pagination information.

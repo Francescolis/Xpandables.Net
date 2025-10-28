@@ -20,12 +20,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Xpandables.Net.Collections.Generic.Extensions;
+using Xpandables.Net.AsyncPaged.Extensions;
+
+namespace Xpandables.Net.AsyncPaged.Extensions;
 
 /// <summary>
 /// Provides extension methods for the JsonSerializer class to simplify JSON <see cref="IAsyncPagedEnumerable{T}"/> serialization tasks.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class JsonSerializerExtensions
 {
     /// <summary>

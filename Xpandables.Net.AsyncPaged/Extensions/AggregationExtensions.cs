@@ -15,14 +15,13 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Collections.Generic.Extensions;
+using Xpandables.Net.AsyncPaged.Extensions;
 
-namespace Xpandables.Net.Collections.Generic.Extensions;
+namespace Xpandables.Net.AsyncPaged.Extensions;
 
 /// <summary>
 /// Provides aggregation and ordering extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AggregationExtensions
 {
     /// <summary>

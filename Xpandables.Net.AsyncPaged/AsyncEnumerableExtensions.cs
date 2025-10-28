@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2025 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-using Xpandables.Net;
-using Xpandables.Net.Collections.Generic;
-
-namespace Xpandables.Net.Collections.Generic;
+namespace Xpandables.Net.AsyncPaged;
 
 /// <summary>
-/// Provides extension methods to convert various enumerable types to <see cref="IAsyncPagedEnumerable{T}"/>.
+/// Provides extension methods for working with <see cref="IAsyncEnumerable{T}"/> sequences, enabling conversion to
+/// paged asynchronous enumerables with pagination metadata.
 /// </summary>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Extension pattern with C# 14")]
-public static class AsyncPagedEnumerable
+/// <remarks>These extension methods facilitate the transformation of asynchronous enumerables into paged
+/// enumerables, allowing for the inclusion of pagination information such as total item count or custom pagination
+/// metadata. This is useful when implementing APIs or data sources that support paged results in asynchronous
+/// scenarios.</remarks>
+public static class AsyncEnumerableExtensions
 {
     /// <summary>
     /// Extension methods for <see cref="IAsyncEnumerable{T}"/>.
@@ -35,8 +35,6 @@ public static class AsyncPagedEnumerable
     /// <param name="source">The source async enumerable.</param>
     extension<T>(IAsyncEnumerable<T> source)
     {
-        #region IAsyncEnumerable Extensions
-
         /// <summary>
         /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with pagination metadata.
         /// </summary>
@@ -44,8 +42,7 @@ public static class AsyncPagedEnumerable
         /// <returns>An async paged enumerable.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginationFactory"/> is null.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
-            Func<CancellationToken, ValueTask<Pagination>> paginationFactory)
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(Func<CancellationToken, ValueTask<Pagination>> paginationFactory)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(paginationFactory);
@@ -59,8 +56,7 @@ public static class AsyncPagedEnumerable
         /// <param name="pagination">The pagination metadata.</param>
         /// <returns>An async paged enumerable.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
-            Pagination pagination)
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(Pagination pagination)
         {
             ArgumentNullException.ThrowIfNull(source);
 
@@ -74,8 +70,7 @@ public static class AsyncPagedEnumerable
         /// <returns>An async paged enumerable.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="totalCount"/> is negative.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
-            int totalCount)
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(int totalCount)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentOutOfRangeException.ThrowIfNegative(totalCount);
@@ -84,56 +79,5 @@ public static class AsyncPagedEnumerable
                 source,
                 _ => ValueTask.FromResult(Pagination.FromTotalCount(totalCount)));
         }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// Extension methods for <see cref="IQueryable{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">The type of elements in the collection.</typeparam>
-    /// <param name="source">The source queryable.</param>
-    extension<T>(IQueryable<T> source)
-    {
-        #region IQueryable Extensions
-
-        /// <summary>
-        /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/>.
-        /// </summary>
-        /// <returns>An async paged enumerable.</returns>
-        /// <remarks>
-        /// This method automatically extracts Skip/Take operations from the query expression 
-        /// and computes the total count by executing the base query without pagination.
-        /// For complex queries or non-database sources, consider using the overload with a total factory.
-        /// </remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable()
-        {
-            ArgumentNullException.ThrowIfNull(source);
-
-            return new AsyncPagedEnumerable<T>(source);
-        }
-
-        /// <summary>
-        /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with a custom total count factory.
-        /// </summary>
-        /// <param name="totalFactory">Factory to compute the total count asynchronously.</param>
-        /// <returns>An async paged enumerable.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="totalFactory"/> is null.</exception>
-        /// <remarks>
-        /// Use this overload when the automatic count computation might fail 
-        /// (e.g., for complex queries or non-database sources).
-        /// </remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
-            Func<CancellationToken, ValueTask<long>> totalFactory)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(totalFactory);
-
-            return new AsyncPagedEnumerable<T>(source, totalFactory);
-        }
-
-        #endregion
     }
 }

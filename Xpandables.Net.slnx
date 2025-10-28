@@ -15,13 +15,13 @@
   <Project Path="Xpandables.Net.AspNetCore/Xpandables.Net.AspNetCore.csproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="Xpandables.Net.AsyncPaged/Xpandables.Net.AsyncPaged.csproj" Id="3237d074-8229-48dd-95a1-134e61676939">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="Xpandables.Net.Benchmarking/Xpandables.Net.Benchmarking.csproj">
     <Platform Project="x64" />
   </Project>
   <Project Path="Xpandables.Net.EntityFramework/Xpandables.Net.EntityFramework.csproj" Id="026ee8a6-7cae-49c5-af37-082a8313d285">
-    <Platform Project="x64" />
-  </Project>
-  <Project Path="Xpandables.Net.ExecutionResults/Xpandables.Net.ExecutionResults.csproj" Id="b12799a5-ad11-403f-91dd-ff8b2cf11525">
     <Platform Project="x64" />
   </Project>
   <Project Path="Xpandables.Net.Tasks/Xpandables.Net.Tasks.csproj" Id="7fd9c142-688b-4b5e-9e22-50be8b2a83e8">

@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.ComponentModel;
 
-namespace Xpandables.Net.Collections.Generic;
+namespace Xpandables.Net.AsyncPaged;
 
 /// <summary>
 /// Represents a sequence of elements that can be asynchronously enumerated in discrete pages.

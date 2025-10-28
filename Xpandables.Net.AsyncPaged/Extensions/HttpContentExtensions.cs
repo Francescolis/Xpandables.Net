@@ -21,10 +21,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-using Xpandables.Net;
-using Xpandables.Net.Collections.Generic.Extensions;
+using Xpandables.Net.AsyncPaged.Extensions;
 
-namespace Xpandables.Net.Collections.Generic.Extensions;
+namespace Xpandables.Net.AsyncPaged.Extensions;
 
 /// <summary>
 /// Provides extension methods for reading HTTP content as an asynchronous paged enumerable of JSON objects.
@@ -33,7 +32,6 @@ namespace Xpandables.Net.Collections.Generic.Extensions;
 /// from HTTP responses by exposing the items as an <see cref="IAsyncPagedEnumerable{T}"/>. This is particularly useful when working
 /// with paged or streaming JSON APIs, as it allows consuming items incrementally without loading the entire response
 /// into memory.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class HttpContentExtensions
 {
     /// <summary>
@@ -96,6 +94,8 @@ public static class HttpContentExtensions
         /// <param name="options">The options to use for JSON deserialization. Cannot be null.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>An asynchronous paged enumerable containing the deserialized objects of type T.</returns>
+        [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(Stream, JsonSerializerOptions, CancellationToken)")]
+        [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(Stream, JsonSerializerOptions, CancellationToken)")]
         public IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
             JsonSerializerOptions? options,
             CancellationToken cancellationToken = default)
@@ -163,8 +163,10 @@ public static class HttpContentExtensions
         /// <returns>An asynchronous paged enumerable containing the deserialized objects of type T.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsonTypeInfo"/> is null.</exception>
         /// <exception cref="JsonException">Thrown when the JSON content is malformed or cannot be parsed.</exception>
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
         public IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
-            JsonTypeInfo<T>? jsonTypeInfo,
+            JsonTypeInfo<T> jsonTypeInfo,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(content);
@@ -173,9 +175,9 @@ public static class HttpContentExtensions
             return ReadFromJsonAsAsyncPagedEnumerable(content, jsonTypeInfo, null, cancellationToken);
         }
 
-        [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "Method must return interface type for API compatibility")]
-        [SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
-        private static IAsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
+        [RequiresUnreferencedCode("Calls Xpandables.Net.AsyncPaged.Extensions.HttpContentExtensions.StreamItemsAsync<T>(StreamState, JsonTypeInfo<T>, JsonSerializerOptions, CancellationToken)")]
+        [RequiresDynamicCode("Calls Xpandables.Net.AsyncPaged.Extensions.HttpContentExtensions.StreamItemsAsync<T>(StreamState, JsonTypeInfo<T>, JsonSerializerOptions, CancellationToken)")]
+        private static AsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
             HttpContent httpContent,
             JsonTypeInfo<T>? jsonTypeInfo,
             JsonSerializerOptions? options,
@@ -185,7 +187,7 @@ public static class HttpContentExtensions
             var streamState = new StreamState(httpContent, cancellationToken);
 
             // Create the async enumerable source for items - this will stream directly
-            IAsyncEnumerable<T> itemsSource = StreamItemsAsync(streamState, jsonTypeInfo, cancellationToken);
+            IAsyncEnumerable<T> itemsSource = StreamItemsAsync(streamState, jsonTypeInfo, options, cancellationToken);
 
             // Create the pagination factory - only executed if GetPaginationAsync is called
             Func<CancellationToken, ValueTask<Pagination>> paginationFactory = ct => ExtractPaginationAsync(streamState, options, ct);
@@ -198,20 +200,13 @@ public static class HttpContentExtensions
     /// <summary>
     /// Shared state for streaming operations.
     /// </summary>
-    private sealed class StreamState
+    private sealed class StreamState(HttpContent content, CancellationToken cancellationToken)
     {
-        private readonly HttpContent _content;
-        private readonly CancellationToken _cancellationToken;
+        private readonly HttpContent _content = content;
+        private readonly CancellationToken _cancellationToken = cancellationToken;
         private byte[]? _buffer;
         private int _bufferLength;
         private int _state; // 0 = not loaded, 1 = loading, 2 = loaded
-
-        [SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
-        public StreamState(HttpContent content, CancellationToken cancellationToken)
-        {
-            _content = content;
-            _cancellationToken = cancellationToken;
-        }
 
         public async ValueTask<(byte[] Buffer, int Length)> GetBufferAsync()
         {
@@ -291,9 +286,12 @@ public static class HttpContentExtensions
     /// <summary>
     /// Streams items directly from the content without pre-parsing.
     /// </summary>
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(Stream, JsonSerializerOptions, CancellationToken)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<TValue>(Stream, JsonSerializerOptions, CancellationToken)")]
     private static async IAsyncEnumerable<T> StreamItemsAsync<T>(
         StreamState streamState,
         JsonTypeInfo<T>? jsonTypeInfo,
+        JsonSerializerOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var (buffer, length) = await streamState.GetBufferAsync().ConfigureAwait(false);
@@ -317,7 +315,7 @@ public static class HttpContentExtensions
             using var stream = new MemoryStream(buffer, 0, length, writable: false);
             if (jsonTypeInfo is null)
             {
-                await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<T>(stream, cancellationToken: cancellationToken).ConfigureAwait(false))
+                await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<T>(stream, options, cancellationToken).ConfigureAwait(false))
                 {
                     if (item is not null)
                     {
@@ -365,6 +363,7 @@ public static class HttpContentExtensions
             if (itemsStart >= 0 && itemsLength > 0)
             {
                 using var itemsStream = new MemoryStream(buffer, itemsStart, itemsLength, writable: false);
+
                 if (jsonTypeInfo is null)
                 {
                     await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<T>(itemsStream, cancellationToken: cancellationToken).ConfigureAwait(false))
