@@ -177,6 +177,7 @@ public static class HttpContentExtensions
 
         [RequiresUnreferencedCode("Calls Xpandables.Net.AsyncPaged.Extensions.HttpContentExtensions.StreamItemsAsync<T>(StreamState, JsonTypeInfo<T>, JsonSerializerOptions, CancellationToken)")]
         [RequiresDynamicCode("Calls Xpandables.Net.AsyncPaged.Extensions.HttpContentExtensions.StreamItemsAsync<T>(StreamState, JsonTypeInfo<T>, JsonSerializerOptions, CancellationToken)")]
+        [SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
         private static AsyncPagedEnumerable<T> ReadFromJsonAsAsyncPagedEnumerable<T>(
             HttpContent httpContent,
             JsonTypeInfo<T>? jsonTypeInfo,
