@@ -1,6 +1,6 @@
 using BenchmarkDotNet.Attributes;
 
-using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.AsyncPaged;
 
 namespace Xpandables.Net.Benchmarking;
 

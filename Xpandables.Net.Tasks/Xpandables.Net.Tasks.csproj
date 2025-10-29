@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
-		<LangVersion>latest</LangVersion>
+		<LangVersion>preview</LangVersion>
 		<Title>Xpandables.Net.Tasks</Title>
 		<Description>IMediator implementation.</Description>
 		<Company>Kamersoft</Company>
