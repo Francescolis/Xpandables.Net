@@ -44,7 +44,10 @@ public sealed class OptionalJsonConverterFactory : JsonConverterFactory
         ArgumentNullException.ThrowIfNull(typeToConvert);
         ArgumentNullException.ThrowIfNull(options);
 
-        options.TypeInfoResolver ??= OptionalJsonContext.Default;
+        if (options.TypeInfoResolverChain.FirstOrDefault(resolver => resolver is OptionalJsonContext) is null)
+        {
+            options.TypeInfoResolverChain.Add(OptionalJsonContext.Default);
+        }
 
         var valueType = typeToConvert.GetGenericArguments()[0];
         var converterType = typeof(OptionalJsonConverter<>).MakeGenericType(valueType);

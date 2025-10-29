@@ -21,7 +21,6 @@ namespace Xpandables.Net.Optionals;
 /// <summary>
 /// Provides extension methods for optional types.
 /// </summary>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class OptionalExtensions
 {
     /// <summary>
