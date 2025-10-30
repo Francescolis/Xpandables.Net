@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
-namespace Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Tasks.ExecutionResults;
+
+namespace Xpandables.Net.ExecutionResults.Minimals;
 
 /// <summary>
 /// Configures JSON serialization options for handling <see cref="ExecutionResult"/> instances in an ASP.NET Core application.

@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.ExecutionResults.Collections;
 
 namespace Xpandables.Net.ExecutionResults;
 
@@ -31,7 +32,6 @@ namespace Xpandables.Net.ExecutionResults;
 /// Provides extension methods for the ExecutionResult type to facilitate integration with ASP.NET Core model validation
 /// and related workflows.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class ExecutionResultExtensions
 {
     /// <summary>

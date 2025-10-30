@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Reflection;
 
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults.Minimals;
 
 /// <summary>
 /// Middleware that processes HTTP requests by invoking the next component in the pipeline and handles exceptions by

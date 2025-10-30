@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.ExecutionResults.Successes;
+using Xpandables.Net.ExecutionResults;
+
+namespace Xpandables.Net.ExecutionResults.ResponseWriters;
 
 /// <summary>
 /// Provides an execution result response writer that streams file content to the HTTP response when the execution

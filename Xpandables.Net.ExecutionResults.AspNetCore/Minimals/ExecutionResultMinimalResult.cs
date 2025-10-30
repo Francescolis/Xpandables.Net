@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
@@ -23,7 +23,9 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Xpandables.Net.ExecutionResults;
+using Xpandables.Net.ExecutionResults;
+
+namespace Xpandables.Net.ExecutionResults.Minimals;
 
 /// <summary>
 /// Represents an ASP.NET Core result that writes an execution result to the HTTP response using a registered response
@@ -51,8 +53,6 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
     /// with no content.</remarks>
     /// <param name="httpContext">The HTTP context for the current request. Cannot be null.</param>
     /// <returns>A task that represents the asynchronous execution operation.</returns>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -65,22 +65,25 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
         {
             if (executionResult.Value is not null)
             {
-                JsonTypeInfo? jsonTypeInfo = httpContext.RequestServices
-                    .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions?
-                    .GetTypeInfo(executionResult.Value.GetType());
+                var options = GetJsonSerializerOptions(httpContext);
+
+                Type type = executionResult.Value.GetType();
+                JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(type);
 
                 await FallbackExecutor.WriteAsync(httpContext, executionResult).ConfigureAwait(false);
 
                 if (jsonTypeInfo is null)
-                    await httpContext.Response.WriteAsJsonAsync(
-                    executionResult.Value,
-                    executionResult.Value.GetType(),
-                    httpContext.RequestAborted).ConfigureAwait(false);
+                    await WriteAsJsonAsync(
+                        httpContext,
+                        type,
+                        executionResult)
+                        .ConfigureAwait(false);
                 else
-                    await httpContext.Response.WriteAsJsonAsync(
-                    executionResult.Value,
-                    jsonTypeInfo,
-                    cancellationToken: httpContext.RequestAborted).ConfigureAwait(false);
+                    await WriteAsJsonAsync(
+                        httpContext,
+                        jsonTypeInfo,
+                        executionResult)
+                        .ConfigureAwait(false);
             }
             else
             {
@@ -93,5 +96,35 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
         }
 
         await responseWriter.WriteAsync(httpContext, executionResult).ConfigureAwait(false);
+    }
+
+    static async Task WriteAsJsonAsync(HttpContext httpContext, JsonTypeInfo jsonTypeInfo, ExecutionResult executionResult)
+    {
+        await httpContext.Response.WriteAsJsonAsync(
+            executionResult.Value,
+            jsonTypeInfo,
+            cancellationToken: httpContext.RequestAborted).ConfigureAwait(false);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static async Task WriteAsJsonAsync(HttpContext httpContext, Type type, ExecutionResult executionResult)
+    {
+        await httpContext.Response.WriteAsJsonAsync(
+            executionResult.Value,
+            type,
+            httpContext.RequestAborted).ConfigureAwait(false);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
+    {
+        var options = httpContext.RequestServices
+            .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions
+            ?? JsonSerializerOptions.Default;
+
+        options.MakeReadOnly(true);
+        return options;
     }
 }

@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
@@ -21,9 +23,9 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.ExecutionResults.Successes;
+namespace Xpandables.Net.ExecutionResults.ResponseWriters;
 
 /// <summary>
 /// Provides an HTTP response writer that serializes successful GraphQL execution results to JSON and writes them to the
@@ -39,9 +41,7 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
     {
         ArgumentNullException.ThrowIfNull(executionResult);
 
-        return executionResult.StatusCode.IsSuccess
-            && executionResult.StatusCode != System.Net.HttpStatusCode.NoContent
-            && (executionResult.Value is null || executionResult.Value is not IAsyncPagedEnumerable);
+        return executionResult.StatusCode.IsSuccess;
     }
 
     /// <summary>
@@ -76,9 +76,8 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
         }
 
         Type type = executionResult.Value.GetType();
-        JsonTypeInfo? jsonTypeInfo = context.RequestServices
-            .GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions
-            .GetTypeInfo(type);
+        var options = GetJsonSerializerOptions(context);
+        JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(type);
 
         if (jsonTypeInfo is not null)
         {
@@ -91,11 +90,29 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
         }
         else
         {
-            await context.Response
-                .WriteAsJsonAsync(
-                    executionResult.Value,
-                    cancellationToken: context.RequestAborted)
-                .ConfigureAwait(false);
+            await WriteAsJsonAsync(context, type, executionResult).ConfigureAwait(false);
         }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static async Task WriteAsJsonAsync(HttpContext httpContext, Type type, ExecutionResult executionResult)
+    {
+        await httpContext.Response.WriteAsJsonAsync(
+            executionResult.Value,
+            type,
+            httpContext.RequestAborted).ConfigureAwait(false);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
+    {
+        var options = httpContext.RequestServices
+            .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions
+            ?? JsonSerializerOptions.Default;
+
+        options.MakeReadOnly(true);
+        return options;
     }
 }

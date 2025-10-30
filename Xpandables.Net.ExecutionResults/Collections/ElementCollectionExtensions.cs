@@ -42,7 +42,7 @@ public static class ElementCollectionExtensions
         public string ToJsonString() => JsonSerializer.Serialize(source, ElementCollectionContext.Default.ElementCollection);
 
         /// <summary>
-        /// Converts the current collection to a dictionary with string keys and string values, concatenating multiple
+        /// Converts the current collection to a dictionary with string keys and object values, concatenating multiple
         /// values for each key into a single space-separated string.
         /// </summary>
         /// <remarks>Each entry in the returned dictionary has a key from the source and a value that is a
@@ -53,7 +53,29 @@ public static class ElementCollectionExtensions
         /// <exception cref="ArgumentNullException">Thrown when the source collection is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown when there are duplicate keys in the source collection.</exception>
         /// <exception cref="ArgumentException">Thrown when the source collection contains invalid data that cannot be converted to a dictionary.</exception>
-        public IDictionary<string, string> ToDictionaryObject()
+        public IDictionary<string, object?> ToDictionaryObject()
+        {
+            if (!source.Any())
+            {
+                return new Dictionary<string, object?>();
+            }
+
+            return source
+                .ToDictionary(
+                    entry => entry.Key,
+                    entry => (object?)entry.Values.StringJoin(" "));
+        }
+
+        /// <summary>
+        /// Converts the current collection to a dictionary of strings, concatenating multiple values for each key into
+        /// a single space-separated string.
+        /// </summary>
+        /// <remarks>This method is useful for scenarios where multiple values per key need to be
+        /// represented as a single string, such as preparing data for query strings or logging. The order of
+        /// concatenated values follows their original sequence in the collection.</remarks>
+        /// <returns>A dictionary containing each key from the collection mapped to a space-separated string of its associated
+        /// values. Returns an empty dictionary if the collection contains no entries.</returns>
+        public IDictionary<string, string> ToDictionaryString()
         {
             if (!source.Any())
             {

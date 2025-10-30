@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace Xpandables.Net.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults.Controllers;
 
 /// <summary>
 /// Provides configuration options for MVC controllers that return execution results, customizing MVC behavior to

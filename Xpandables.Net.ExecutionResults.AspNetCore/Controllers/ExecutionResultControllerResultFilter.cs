@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
@@ -23,7 +24,9 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Xpandables.Net.ExecutionResults;
+using Xpandables.Net.ExecutionResults;
+
+namespace Xpandables.Net.ExecutionResults.Controllers;
 
 /// <summary>
 /// Implements an ASP.NET Core result filter that processes controller results containing an ExecutionResult, formatting
@@ -45,11 +48,7 @@ public sealed class ExecutionResultControllerResultFilter : IAsyncAlwaysRunResul
     private static readonly ExecutionResultResponseWriter FallbackExecutor = new HeaderOnlyExecutor();
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "AOT already apply on the JsonSerializer method")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "AOT already apply on the JsonSerializer method")]
-    public async Task OnResultExecutionAsync(
-        ResultExecutingContext context,
-        ResultExecutionDelegate next)
+    public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
@@ -69,9 +68,9 @@ public sealed class ExecutionResultControllerResultFilter : IAsyncAlwaysRunResul
 
                 if (executionResult.Value is not null)
                 {
-                    JsonTypeInfo? jsonTypeInfo = context.HttpContext.RequestServices
-                        .GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions?
-                        .GetTypeInfo(executionResult.Value.GetType());
+                    var options = GetJsonSerializerOptions(context.HttpContext);
+                    Type type = executionResult.Value.GetType();
+                    JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(type);
 
                     if (jsonTypeInfo is not null)
                     {
@@ -82,9 +81,10 @@ public sealed class ExecutionResultControllerResultFilter : IAsyncAlwaysRunResul
                     }
                     else
                     {
-                        await context.HttpContext.Response.WriteAsJsonAsync(
-                            executionResult.Value,
-                            executionResult.Value.GetType())
+                        await WriteAsJsonAsync(
+                            context.HttpContext,
+                            type,
+                            executionResult)
                             .ConfigureAwait(false);
                     }
                 }
@@ -98,5 +98,27 @@ public sealed class ExecutionResultControllerResultFilter : IAsyncAlwaysRunResul
         }
 
         await next().ConfigureAwait(false);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static async Task WriteAsJsonAsync(HttpContext httpContext, Type type, ExecutionResult executionResult)
+    {
+        await httpContext.Response.WriteAsJsonAsync(
+            executionResult.Value,
+            type,
+            httpContext.RequestAborted).ConfigureAwait(false);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
+    {
+        var options = httpContext.RequestServices
+            .GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions
+            ?? JsonSerializerOptions.Default;
+
+        options.MakeReadOnly(true);
+        return options;
     }
 }
