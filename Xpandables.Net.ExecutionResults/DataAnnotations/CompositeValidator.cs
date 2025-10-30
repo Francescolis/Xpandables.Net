@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
-namespace Xpandables.Net.DataAnnotations;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Provides a validator that combines multiple validators and applies them to a single argument instance.

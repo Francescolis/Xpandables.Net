@@ -14,18 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations;
-
-namespace Xpandables.Net.DataAnnotations;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
-/// Provides a validator that performs no validation and always returns an empty set of validation results.
+/// Represents a composite validator for objects that require validation.
 /// </summary>
-/// <typeparam name="TArgument">The type of object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
-public sealed class NullValidator<TArgument> : Validator<TArgument>
-    where TArgument : class, IRequiresValidation
-{
-    /// <inheritdoc/>
-    /// Does nothing and returns an empty collection of validation results.
-    public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance) => [];
-}
+/// <remarks>This interface extends <see cref="IValidator{TArgument}"/> to provide a mechanism for combining
+/// multiple validators into a single validation operation for objects of type <typeparamref
+/// name="TArgument"/>.</remarks>
+/// <typeparam name="TArgument">The type of the object to be validated. Must be a class that implements <see cref="IRequiresValidation"/>.</typeparam>
+public interface ICompositeValidator<in TArgument> : IValidator<TArgument>
+    where TArgument : class, IRequiresValidation;

@@ -17,7 +17,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Xpandables.Net.DataAnnotations;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Defines a contract for validating objects and returning validation results.

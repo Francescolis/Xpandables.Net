@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+ * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,17 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.DataAnnotations;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
-/// Represents a composite validator for objects that require validation.
+/// Represents an annotation with metadata about its usage.
 /// </summary>
-/// <remarks>This interface extends <see cref="IValidator{TArgument}"/> to provide a mechanism for combining
-/// multiple validators into a single validation operation for objects of type <typeparamref
-/// name="TArgument"/>.</remarks>
-/// <typeparam name="TArgument">The type of the object to be validated. Must be a class that implements <see cref="IRequiresValidation"/>.</typeparam>
-public interface ICompositeValidator<in TArgument> : IValidator<TArgument>
-    where TArgument : class, IRequiresValidation;
+/// <remarks>This interface provides a mechanism to associate metadata, such as the usage timestamp, with an
+/// annotation.</remarks>
+public interface IAnnotation
+{
+    /// <summary>
+    /// The date and time when the annotation was used.
+    /// </summary>
+    public DateTime UsedOn => DateTime.UtcNow;
+}

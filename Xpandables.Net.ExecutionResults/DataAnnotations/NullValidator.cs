@@ -14,12 +14,18 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
 
-namespace Xpandables.Net.DataAnnotations;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
-/// Represents an interface that indicates a requirement for validation capabilities.
+/// Provides a validator that performs no validation and always returns an empty set of validation results.
 /// </summary>
-/// <remarks>Implementing this interface suggests that the object supports or requires validation processes,
-/// typically to ensure that its state or data meets certain criteria.</remarks>
-public interface IRequiresValidation : IAnnotation;
+/// <typeparam name="TArgument">The type of object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
+public sealed class NullValidator<TArgument> : Validator<TArgument>
+    where TArgument : class, IRequiresValidation
+{
+    /// <inheritdoc/>
+    /// Does nothing and returns an empty collection of validation results.
+    public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance) => [];
+}

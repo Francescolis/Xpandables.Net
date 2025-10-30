@@ -93,19 +93,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="DependencyInjection\ICacheTypeResolverExtensions.cs" />
-	  <Compile Remove="DependencyInjection\ICqrsExtensions.cs" />
-	  <Compile Remove="DependencyInjection\IEventExtensions.cs" />
-	  <Compile Remove="DependencyInjection\IEventPipelineExtensions.cs" />
-	  <Compile Remove="DependencyInjection\IPipelineExtensions.cs" />
-	  <Compile Remove="DependencyInjection\IRepositoryExtensions.cs" />
-	  <Compile Remove="DependencyInjection\IRestAbstractionsExtensions.cs" />
-	  <Compile Remove="DependencyInjection\IRestExtensions.cs" />
-	  <Compile Remove="DependencyInjection\IServiceDecoratorExtensions.cs" />
-	  <Compile Remove="DependencyInjection\ITaskExtensions.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 

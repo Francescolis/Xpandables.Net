@@ -18,9 +18,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.DataAnnotations;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Provides static factory and combinator methods for creating and composing specifications based on boolean

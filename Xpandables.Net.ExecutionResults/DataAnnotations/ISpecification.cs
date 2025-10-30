@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-namespace Xpandables.Net.DataAnnotations;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Defines a contract for evaluating whether an object satisfies a set of criteria.

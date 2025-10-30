@@ -20,8 +20,8 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.ExecutionResults.DataAnnotations;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;

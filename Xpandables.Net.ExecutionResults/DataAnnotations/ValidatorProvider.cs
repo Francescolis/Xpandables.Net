@@ -18,9 +18,10 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.ExecutionResults.DataAnnotations;
 
-namespace Xpandables.Net.DataAnnotations;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Provides a mechanism for retrieving validators for types that require validation.
