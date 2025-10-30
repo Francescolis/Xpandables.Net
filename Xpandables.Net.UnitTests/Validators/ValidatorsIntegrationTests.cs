@@ -20,8 +20,8 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.UnitTests.Validators;
 

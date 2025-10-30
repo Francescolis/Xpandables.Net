@@ -18,7 +18,7 @@ using System.ComponentModel.DataAnnotations;
 
 using FluentAssertions;
 
-using Xpandables.Net.Validators;
+using Xpandables.Net.DataAnnotations;
 
 namespace Xpandables.Net.UnitTests.Validators;
 

@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-using Xpandables.Net.Validators;
+using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.DependencyInjection;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;
@@ -32,7 +33,6 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>This static class contains helper methods that extend the functionality of IServiceCollection,
 /// enabling additional service registration patterns and configuration options commonly used in dependency injection
 /// scenarios.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IValiadatorExtensions
 {
     /// <summary>

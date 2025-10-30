@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,6 @@
 ********************************************************************************/
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 using Microsoft.Extensions.DependencyInjection;
-
-using Xpandables.Net.Cqrs;
-using Xpandables.Net.Events;
-using Xpandables.Net.Tasks.Dependencies;
-using Xpandables.Net.Tasks.Pipelines;
-using Xpandables.Net.Tasks.PostHandlers;
 
 namespace Xpandables.Net.DependencyInjection;
 #pragma warning restore IDE0130 // Namespace does not match folder structure

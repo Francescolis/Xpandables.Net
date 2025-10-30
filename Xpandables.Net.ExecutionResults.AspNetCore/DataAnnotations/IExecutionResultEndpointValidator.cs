@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Defines a contract for validating the result of an endpoint execution within an endpoint filter pipeline.
@@ -34,7 +32,5 @@ public interface IExecutionResultEndpointValidator
     /// <param name="context">Provides the context for the current endpoint filter invocation.</param>
     /// <param name="nextDelegate">Represents the next delegate in the endpoint filter pipeline to be invoked.</param>
     /// <returns>Returns a ValueTask that resolves to an object or null after validation.</returns>
-    [RequiresDynamicCode("Use dynamic code access")]
-    [RequiresUnreferencedCode("Use unreferenced code access")]
     ValueTask<object?> ValidateAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate nextDelegate);
 }

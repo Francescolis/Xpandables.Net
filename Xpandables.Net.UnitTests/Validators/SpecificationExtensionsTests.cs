@@ -18,6 +18,7 @@ using System.Linq.Expressions;
 
 using FluentAssertions;
 
+using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Validators;
 
 namespace Xpandables.Net.UnitTests.Validators;

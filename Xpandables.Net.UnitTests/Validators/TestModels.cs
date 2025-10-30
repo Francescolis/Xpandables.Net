@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
-using Xpandables.Net.Validators;
+using Xpandables.Net.DataAnnotations;
 
 namespace Xpandables.Net.UnitTests.Validators;
 

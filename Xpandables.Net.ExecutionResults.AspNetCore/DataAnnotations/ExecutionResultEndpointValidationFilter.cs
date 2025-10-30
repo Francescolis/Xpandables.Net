@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Provides an endpoint filter that validates the execution result using a registered
@@ -34,8 +32,6 @@ public sealed class ExecutionResultEndpointValidationFilter : IEndpointFilter
     /// <param name="next">The delegate to invoke the next filter in the pipeline.</param>
     /// <returns>A task that represents the asynchronous execution, containing 
     /// the result of the filter invocation.</returns>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)

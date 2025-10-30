@@ -15,6 +15,9 @@
   <Project Path="Xpandables.Net.AspNetCore/Xpandables.Net.AspNetCore.csproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="Xpandables.Net.AsyncPaged.AspNetCore/Xpandables.Net.AsyncPaged.AspNetCore.csproj" Id="a014accc-ba4b-4760-8a82-4d13f3c56cba">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="Xpandables.Net.AsyncPaged/Xpandables.Net.AsyncPaged.csproj" Id="3237d074-8229-48dd-95a1-134e61676939">
     <Platform Project="x64" />
   </Project>

@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Provides a validator that combines multiple validators and applies them to a single argument instance.

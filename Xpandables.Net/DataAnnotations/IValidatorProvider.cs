@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Defines a mechanism for retrieving validators for specific types or arguments that require validation.
@@ -32,7 +32,8 @@ public interface IValidatorProvider
     /// <param name="type">The type for which to retrieve a validator. Cannot be null.</param>
     /// <returns>An instance of <see cref="IValidator"/> for the specified type if one is available; otherwise, <see
     /// langword="null"/>.</returns>
-    [RequiresDynamicCode("The native code for an IEnumerable<serviceType> might not be available at runtime.")]
+    [RequiresDynamicCode("The native code for Activator.CreateInstance might not be available at runtime.")]
+    [RequiresUnreferencedCode("The validator type might be removed by the linker.")]
     IValidator? TryGetValidator(Type type);
 
     /// <summary>
@@ -41,7 +42,8 @@ public interface IValidatorProvider
     /// <typeparam name="TArgument">The type of argument for which to retrieve a validator. Must be a reference type that implements
     /// IRequiresValidation.</typeparam>
     /// <returns>An instance of IValidator for the specified argument type if one is available; otherwise, null.</returns>
-    [RequiresDynamicCode("The native code for an IEnumerable<serviceType> might not be available at runtime.")]
+    [RequiresDynamicCode("The native code for Activator.CreateInstance might not be available at runtime.")]
+    [RequiresUnreferencedCode("The validator type might be removed by the linker.")]
     IValidator? TryGetValidator<TArgument>()
         where TArgument : class, IRequiresValidation;
 }

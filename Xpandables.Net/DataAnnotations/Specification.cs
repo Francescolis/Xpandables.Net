@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-using Xpandables.Net.Validators;
+using Xpandables.Net.DataAnnotations;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Provides static factory and combinator methods for creating and composing specifications based on boolean

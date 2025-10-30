@@ -1,6 +1,5 @@
-﻿
-/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+﻿/*******************************************************************************
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace Xpandables.Net.Collections.Generic;
+using Xpandables.Net.AsyncPaged.Controllers;
+
+namespace Xpandables.Net.AsyncPaged;
 
 /// <summary>
 /// Provides configuration options to enable JSON output formatting for asynchronous paged enumerables in ASP.NET Core
@@ -29,15 +28,13 @@ namespace Xpandables.Net.Collections.Generic;
 /// <remarks>This options class is typically registered to configure MVC so that actions returning asynchronous
 /// paged enumerables are correctly formatted as JSON responses. The specified serializer options control how the paged
 /// data is serialized.</remarks>
-/// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> to use for serializing asynchronous paged enumerable results to JSON. Cannot
-/// be null.</param>
-public sealed class AsyncPagedEnumerableMvcOptions(JsonSerializerOptions serializerOptions) : IConfigureOptions<MvcOptions>
+public sealed class AsyncPagedEnumerableMvcOptions() : IConfigureOptions<MvcOptions>
 {
     /// <inheritdoc/>
     public void Configure(MvcOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        options.OutputFormatters.Insert(0, new AsyncPagedEnumerableJsonOutputFormatter(serializerOptions));
+        options.OutputFormatters.Insert(0, new AsyncPagedEnumerableJsonOutputFormatter());
     }
 }

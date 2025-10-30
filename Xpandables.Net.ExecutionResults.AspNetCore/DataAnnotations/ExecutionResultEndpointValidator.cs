@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,10 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Http;
 
+using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Provides validation for endpoint execution results by applying registered validators to endpoint arguments that
@@ -36,8 +37,6 @@ namespace Xpandables.Net.Validators;
 public sealed class ExecutionResultEndpointValidator(IValidatorProvider validatorProvider) : IExecutionResultEndpointValidator
 {
     /// <inheritdoc/>
-    [RequiresDynamicCode("Calls Xpandables.Net.Validators.IValidator.ValidateAsync(Object)")]
-    [RequiresUnreferencedCode("Calls Xpandables.Net.Validators.IValidator.ValidateAsync(Object)")]
     public async ValueTask<object?> ValidateAsync(
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate nextDelegate)
@@ -64,7 +63,7 @@ public sealed class ExecutionResultEndpointValidator(IValidatorProvider validato
         return await nextDelegate(context).ConfigureAwait(false);
     }
 
-    [RequiresUnreferencedCode("Calls Xpandables.Net.Validators.IValidator.ValidateAsync(Object)")]
+
     static async Task<ExecutionResult> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
     {
         IExecutionResultFailureBuilder failureBuilder = ExecutionResult.BadRequest();
@@ -120,7 +119,8 @@ public sealed class ExecutionResultEndpointValidator(IValidatorProvider validato
         return [.. arguments];
     }
 
-    [RequiresDynamicCode("Calls Xpandables.Net.Validators.IValidatorProvider.TryGetValidator(Type)")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     static ImmutableHashSet<ValidatorDescriptor> GetAppropriateValidators(
         ImmutableHashSet<ArgumentDescriptor> arguments, IValidatorProvider provider)
     {

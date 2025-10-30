@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,18 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
-using Xpandables.Net;
-using Xpandables.Net.Collections.Generic;
-using Xpandables.Net.Collections.Generic.Extensions;
+using Xpandables.Net.AsyncPaged.Extensions;
 
-namespace Xpandables.Net.Collections.Generic;
+namespace Xpandables.Net.AsyncPaged.Controllers;
 
 /// <summary>
 /// Provides functionality to format and serialize objects implementing <see cref="IAsyncPagedEnumerable{T}"/> to JSON
@@ -51,32 +54,19 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
     /// <summary>
     /// Initializes a new instance of the <see cref="AsyncPagedEnumerableJsonOutputFormatter"/> class.
     /// </summary>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization.</param>
     /// <remarks>
     /// This formatter supports the "application/json", "text/json" and "application/*+json" media types,
     /// and the UTF-8 and Unicode encodings. It is designed to handle JSON output for asynchronous paged
     /// enumerable data.
     /// </remarks>
-    public AsyncPagedEnumerableJsonOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
+    public AsyncPagedEnumerableJsonOutputFormatter()
     {
-        SerializerOptions = jsonSerializerOptions ?? throw new ArgumentNullException(nameof(jsonSerializerOptions));
-        jsonSerializerOptions.MakeReadOnly();
-
         SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
         SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json"));
         SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+json"));
         SupportedEncodings.Add(Encoding.UTF8);
         SupportedEncodings.Add(Encoding.Unicode);
     }
-
-    /// <summary>
-    /// Gets the <see cref="JsonSerializerOptions"/> used to configure the <see cref="JsonSerializer"/>.
-    /// </summary>
-    /// <remarks>
-    /// A single instance of this formatter is used for all JSON formatting. Any
-    /// changes to the options will affect all output formatting.
-    /// </remarks>
-    public JsonSerializerOptions SerializerOptions { get; }
 
     /// <inheritdoc/>
     protected override bool CanWriteType(Type? type)
@@ -88,14 +78,6 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
     }
 
     /// <inheritdoc/>
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "")]
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Dispose on finally")]
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "AOT already apply on the JsonSerializer mehtod")]
-    [UnconditionalSuppressMessage("AOT",
-        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
-        Justification = "AOT already apply on the JsonSerializer mehtod")]
     public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -105,6 +87,10 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
         var httpContext = context.HttpContext;
         var pagedEnumerable = (IAsyncPagedEnumerable)context.Object;
 
+        Type itemType = pagedEnumerable.Type;
+        var options = GetJsonSerializerOptions(httpContext);
+        JsonTypeInfo? jsonTypeInfo = options.TypeInfoResolver?.GetTypeInfo(itemType, options);
+
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
@@ -112,11 +98,24 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
                 // Use Stream with leaveOpen to avoid disposal issues
                 Stream responseStream = httpContext.Response.BodyWriter.AsStream(leaveOpen: true);
 
-                await JsonSerializer.SerializeAsyncPaged(
-                    responseStream,
-                    pagedEnumerable,
-                    SerializerOptions,
-                    httpContext.RequestAborted).ConfigureAwait(false);
+                if (jsonTypeInfo is not null)
+                {
+                    await WriteAsJsonTypeInfoAsync(
+                        responseStream,
+                        jsonTypeInfo,
+                        pagedEnumerable,
+                        httpContext.RequestAborted).ConfigureAwait(false);
+                    return;
+                }
+                else
+                {
+                    await WriteAsJsonOptionsAsync(
+                        responseStream,
+                        pagedEnumerable,
+                        options,
+                        httpContext.RequestAborted).ConfigureAwait(false);
+                    return;
+                }
             }
             catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
             {
@@ -131,18 +130,30 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
 
             try
             {
+#pragma warning disable CA2000 // Dispose objects before losing scope
                 transcodingStream = Encoding.CreateTranscodingStream(
                     httpContext.Response.Body,
                     selectedEncoding,
                     Encoding.UTF8,
                     leaveOpen: true);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-                // Use the extension method with transcoding stream
-                await JsonSerializer.SerializeAsyncPaged(
-                    transcodingStream,
-                    pagedEnumerable,
-                    SerializerOptions,
-                    httpContext.RequestAborted).ConfigureAwait(false);
+                if (jsonTypeInfo is not null)
+                {
+                    await WriteAsJsonTypeInfoAsync(
+                        transcodingStream,
+                        jsonTypeInfo,
+                        pagedEnumerable,
+                        httpContext.RequestAborted).ConfigureAwait(false);
+                }
+                else
+                {
+                    await WriteAsJsonOptionsAsync(
+                        transcodingStream,
+                        pagedEnumerable,
+                        options,
+                        httpContext.RequestAborted).ConfigureAwait(false);
+                }
 
                 await transcodingStream.FlushAsync(httpContext.RequestAborted).ConfigureAwait(false);
             }
@@ -158,6 +169,7 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
             {
                 if (transcodingStream is not null)
                 {
+#pragma warning disable CA1031 // Do not catch general exception types
                     try
                     {
                         await transcodingStream.DisposeAsync().ConfigureAwait(false);
@@ -166,10 +178,51 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
                     {
                         // Suppress disposal exceptions if we already captured a more important exception
                     }
+#pragma warning restore CA1031 // Do not catch general exception types
                 }
 
                 exceptionDispatchInfo?.Throw();
             }
         }
+    }
+
+    static Task WriteAsJsonTypeInfoAsync(
+        Stream stream,
+        JsonTypeInfo jsonTypeInfo,
+        IAsyncPagedEnumerable pagedEnumerable,
+        CancellationToken cancellationToken)
+    {
+        return JsonSerializer.SerializeAsyncPaged(
+                stream,
+                pagedEnumerable,
+                jsonTypeInfo,
+                cancellationToken);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static Task WriteAsJsonOptionsAsync(
+        Stream stream,
+        IAsyncPagedEnumerable pagedEnumerable,
+        JsonSerializerOptions options,
+        CancellationToken cancellationToken)
+    {
+        return JsonSerializer.SerializeAsyncPaged(
+            stream,
+            pagedEnumerable,
+            options,
+            cancellationToken);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
+    {
+        var options = httpContext.RequestServices
+            .GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions
+            ?? JsonSerializerOptions.Default;
+
+        options.MakeReadOnly(true);
+        return options;
     }
 }

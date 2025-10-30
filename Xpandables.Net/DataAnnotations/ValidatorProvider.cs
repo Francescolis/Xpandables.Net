@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Validators;
+using Xpandables.Net.DataAnnotations;
+
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Provides a mechanism for retrieving validators for types that require validation.
@@ -34,7 +36,8 @@ public sealed class ValidatorProvider(IServiceProvider? serviceProvider = null) 
     private readonly IServiceProvider? _serviceProvider = serviceProvider;
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("The native code for an IEnumerable<serviceType> might not be available at runtime.")]
+    [RequiresDynamicCode("The native code for Activator.CreateInstance might not be available at runtime.")]
+    [RequiresUnreferencedCode("The native code for Activator.CreateInstance might not be available at runtime.")]
     public IValidator? TryGetValidator(Type type)
     {
         ArgumentNullException.ThrowIfNull(type, nameof(type));
@@ -56,7 +59,8 @@ public sealed class ValidatorProvider(IServiceProvider? serviceProvider = null) 
     }
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("The native code for an IEnumerable<serviceType> might not be available at runtime.")]
+    [RequiresDynamicCode("The native code for Activator.CreateInstance might not be available at runtime.")]
+    [RequiresUnreferencedCode("The native code for Activator.CreateInstance might not be available at runtime.")]
     public IValidator? TryGetValidator<TArgument>()
         where TArgument : class, IRequiresValidation => TryGetValidator(typeof(TArgument));
 

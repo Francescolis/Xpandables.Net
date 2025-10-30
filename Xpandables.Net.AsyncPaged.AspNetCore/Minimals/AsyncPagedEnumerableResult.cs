@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -24,11 +24,9 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net;
-using Xpandables.Net.Collections.Generic;
-using Xpandables.Net.Collections.Generic.Extensions;
+using Xpandables.Net.AsyncPaged.Extensions;
 
-namespace Xpandables.Net.Collections.Generic;
+namespace Xpandables.Net.AsyncPaged.Minimals;
 
 /// <summary>
 /// Represents an HTTP result that asynchronously writes a paged JSON response containing both page context metadata and
@@ -95,8 +93,6 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
     /// request's cancellation token and may be canceled if the client disconnects.</remarks>
     /// <param name="httpContext">The HTTP context for the current request. Cannot be null.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "JSON serialization is handled by extension methods with appropriate trimming annotations")]
-    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JSON serialization is handled by extension methods with appropriate AOT annotations")]
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -109,35 +105,51 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
         Stream responseStream = httpContext.Response.BodyWriter.AsStream(leaveOpen: true);
 
         // Use the appropriate SerializeAsyncPaged overload based on what's available
-        if (_jsonTypeInfo is not null)
+
+        Task task = (_jsonTypeInfo, _jsonSerializerOptions) switch
         {
-            await JsonSerializer.SerializeAsyncPaged(
+            (not null, _) => SerializeAsyncPagedJsonTypeInfo(
                 responseStream,
                 _results,
                 _jsonTypeInfo,
-                cancellationToken).ConfigureAwait(false);
-        }
-        else if (_jsonSerializerOptions is not null)
-        {
-            await JsonSerializer.SerializeAsyncPaged(
+                cancellationToken),
+            (_, not null) => SerializeAsyncPagedJsonSerializerOptions(
                 responseStream,
                 _results,
                 _jsonSerializerOptions,
-                cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            // Fallback: get options from the HTTP context
-            JsonSerializerOptions? options = GetJsonOptions(httpContext)
-                ?? throw new InvalidOperationException("Either JsonSerializerOptions or JsonTypeInfo must be provided.");
-
-            await JsonSerializer.SerializeAsyncPaged(
-                responseStream,
+                cancellationToken),
+            _ => SerializeAsyncPagedJsonSerializerOptions(responseStream,
                 _results,
-                options,
-                cancellationToken).ConfigureAwait(false);
-        }
+                GetJsonOptions(httpContext),
+                cancellationToken)
+        };
+
+        await task.ConfigureAwait(false);
     }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static Task SerializeAsyncPagedJsonSerializerOptions(
+        Stream utf8Json,
+        IAsyncPagedEnumerable<TResult> results,
+        JsonSerializerOptions options,
+        CancellationToken cancellationToken) =>
+        JsonSerializer.SerializeAsyncPaged(
+            utf8Json,
+            results,
+            options,
+            cancellationToken);
+
+    static Task SerializeAsyncPagedJsonTypeInfo(
+        Stream utf8Json,
+        IAsyncPagedEnumerable<TResult> results,
+        JsonTypeInfo<TResult> jsonTypeInfo,
+        CancellationToken cancellationToken) =>
+        JsonSerializer.SerializeAsyncPaged(
+            utf8Json,
+            results,
+            jsonTypeInfo,
+            cancellationToken);
 
     static string? GetContentType(HttpContext context)
     {
@@ -149,11 +161,15 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
             .FirstOrDefault();
     }
 
-    static JsonSerializerOptions? GetJsonOptions(HttpContext context)
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    static JsonSerializerOptions GetJsonOptions(HttpContext context)
     {
-        JsonSerializerOptions? options = context.RequestServices
+        JsonSerializerOptions options = context.RequestServices
             .GetService<IOptions<JsonOptions>>()
-            ?.Value?.SerializerOptions;
+            ?.Value?.SerializerOptions ?? JsonSerializerOptions.Default;
+
+        options.MakeReadOnly(true);
 
         return options;
     }

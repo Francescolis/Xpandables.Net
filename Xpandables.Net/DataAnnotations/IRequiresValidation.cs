@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Validators;
+
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
-/// Represents a composite validator for objects that require validation.
+/// Represents an interface that indicates a requirement for validation capabilities.
 /// </summary>
-/// <remarks>This interface extends <see cref="IValidator{TArgument}"/> to provide a mechanism for combining
-/// multiple validators into a single validation operation for objects of type <typeparamref
-/// name="TArgument"/>.</remarks>
-/// <typeparam name="TArgument">The type of the object to be validated. Must be a class that implements <see cref="IRequiresValidation"/>.</typeparam>
-public interface ICompositeValidator<in TArgument> : IValidator<TArgument>
-    where TArgument : class, IRequiresValidation;
+/// <remarks>Implementing this interface suggests that the object supports or requires validation processes,
+/// typically to ensure that its state or data meets certain criteria.</remarks>
+public interface IRequiresValidation : IAnnotation;

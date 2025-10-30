@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 
 /// <summary>
 /// Provides a factory for creating endpoint filter delegates that perform execution result validation on incoming
@@ -33,8 +31,6 @@ public static class ExecutionResultEndpointValidationFilterFactory
     /// <param name="context">The context for the endpoint filter factory.</param>  
     /// <param name="next">The next endpoint filter delegate in the pipeline.</param>  
     /// <returns>An endpoint filter delegate that validates the execution result.</returns>  
-    [RequiresDynamicCode("Use dynamic code access")]
-    [RequiresUnreferencedCode("Use unreferenced code access")]
     public static EndpointFilterDelegate FilterFactory(
         EndpointFilterFactoryContext context,
         EndpointFilterDelegate next)

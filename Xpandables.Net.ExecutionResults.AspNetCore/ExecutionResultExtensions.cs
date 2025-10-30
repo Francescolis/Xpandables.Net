@@ -25,6 +25,7 @@ using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
 using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.ExecutionResults.Minimals;
 
 namespace Xpandables.Net.ExecutionResults;
 

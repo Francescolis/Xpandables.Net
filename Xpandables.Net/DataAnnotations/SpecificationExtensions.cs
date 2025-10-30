@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-using Xpandables.Net.Validators;
+using Xpandables.Net.DataAnnotations;
 
-namespace Xpandables.Net.Validators;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Extension methods for working with specifications.
 /// </summary>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class SpecificationExtensions
 {
     /// <summary>

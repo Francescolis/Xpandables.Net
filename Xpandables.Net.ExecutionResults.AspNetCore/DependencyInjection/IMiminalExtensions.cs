@@ -21,11 +21,12 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.ExecutionResults.Failures;
-using Xpandables.Net.ExecutionResults.Successes;
+using Xpandables.Net.ExecutionResults.Controllers;
+using Xpandables.Net.ExecutionResults.DataAnnotations;
+using Xpandables.Net.ExecutionResults.Minimals;
+using Xpandables.Net.ExecutionResults.ResponseWriters;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;
@@ -97,7 +98,6 @@ public static class IMiminalExtensions
         public IServiceCollection AddXExecutionResultResponseWriters()
         {
             ArgumentNullException.ThrowIfNull(services);
-            services.AddScoped<IExecutionResultResponseWriter, AsyncPagedExecutionResultResponseWriter>();
             services.AddScoped<IExecutionResultResponseWriter, FileExecutionResultResponseWriter>();
             services.AddScoped<IExecutionResultResponseWriter, SuccessExecutionResultResponseWriter>();
             services.AddScoped<IExecutionResultResponseWriter, FailureExecutionResultResponseWriter>();
@@ -140,6 +140,35 @@ public static class IMiminalExtensions
         {
             ArgumentNullException.ThrowIfNull(services);
             return services.AddScoped<ExecutionResultMinimalMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds the necessary services for execution result validation to the service collection.
+        /// </summary>
+        /// <remarks>This method registers the required services and dependencies needed for
+        /// execution result validation in the application's dependency injection container. Use this method
+        /// during application startup to ensure that all necessary components are available for validation
+        /// operations.</remarks>
+        /// <returns>The updated service collection with execution result validation services added.</returns>
+        public IServiceCollection AddXExecutionResultEndpointValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TExecutionResultEndpointValidator>()
+            where TExecutionResultEndpointValidator : class, IExecutionResultEndpointValidator
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddScoped<IExecutionResultEndpointValidator, TExecutionResultEndpointValidator>();
+        }
+
+        /// <summary>
+        /// Adds the default implementation of the X execution result endpoint validator to the service collection.
+        /// </summary>
+        /// <remarks>Call this method to register the standard execution result endpoint validator for use
+        /// in dependency injection. This method is typically used during application startup when configuring
+        /// services.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the endpoint validator service registered. This enables
+        /// further configuration of services.</returns>
+        public IServiceCollection AddXExecutionResultEndpointValidator()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXExecutionResultEndpointValidator<ExecutionResultEndpointValidator>();
         }
     }
 }

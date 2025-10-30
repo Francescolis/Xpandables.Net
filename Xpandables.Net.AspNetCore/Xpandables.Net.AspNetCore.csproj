@@ -87,5 +87,9 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Collections\" />
+	</ItemGroup>
 	
 </Project>

@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using Xpandables.Net.Tasks;
-using Xpandables.Net.Tasks.Pipelines;
 
 namespace Xpandables.Net.DependencyInjection;
 

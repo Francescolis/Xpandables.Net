@@ -18,7 +18,7 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Validators;
+using Xpandables.Net.DataAnnotations;
 
 namespace Xpandables.Net.UnitTests.Validators;
 
