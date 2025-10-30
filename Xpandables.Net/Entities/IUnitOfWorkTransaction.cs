@@ -1,6 +1,5 @@
-﻿
-/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+﻿/*******************************************************************************
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Data.Common;
 
-namespace Xpandables.Net.Repositories;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
 /// Represents a unit of work transaction that encapsulates a database transaction,  providing methods to commit or roll

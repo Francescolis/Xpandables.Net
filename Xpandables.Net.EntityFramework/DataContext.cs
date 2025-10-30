@@ -20,7 +20,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Entities;
 
 namespace Xpandables.Net;
 

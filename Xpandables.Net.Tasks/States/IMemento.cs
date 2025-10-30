@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.States;
+namespace Xpandables.Net.Tasks.States;
 
 /// <summary>
 /// Represents a memento interface for capturing and restoring the state of 

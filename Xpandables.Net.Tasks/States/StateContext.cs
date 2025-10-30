@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.States;
+namespace Xpandables.Net.Tasks.States;
 
 /// <summary>
 /// Represents the context for managing state transitions with thread-safety.

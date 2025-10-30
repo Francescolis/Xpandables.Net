@@ -20,7 +20,7 @@ using System.Reflection;
 
 using Microsoft.EntityFrameworkCore.Query;
 
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Entities;
 
 namespace Xpandables.Net;
 

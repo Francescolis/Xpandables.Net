@@ -18,7 +18,7 @@
 
 using System.ComponentModel;
 
-namespace Xpandables.Net.States;
+namespace Xpandables.Net.Tasks.States;
 
 /// <summary>
 /// Represents a state within a state machine or similar context.

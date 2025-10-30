@@ -22,8 +22,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net;
+using Xpandables.Net.Entities;
 using Xpandables.Net.Events;
-using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.DependencyInjection;
 

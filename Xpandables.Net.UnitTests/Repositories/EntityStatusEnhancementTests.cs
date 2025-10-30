@@ -18,7 +18,7 @@ using System.Text.Json;
 
 using FluentAssertions;
 
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Entities;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.UnitTests.Repositories;

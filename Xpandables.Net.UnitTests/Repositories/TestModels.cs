@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Entities;
 
 namespace Xpandables.Net.UnitTests.Repositories;
 

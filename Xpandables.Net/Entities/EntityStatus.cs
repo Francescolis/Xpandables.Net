@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ using System.Runtime.CompilerServices;
 
 using Xpandables.Net.Text;
 
-namespace Xpandables.Net.Repositories;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
 /// Represents an immutable, high-performance entity status primitive with automatic JSON serialization support.

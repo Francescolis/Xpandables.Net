@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.States;
+namespace Xpandables.Net.Tasks.States;
 
 /// <summary>
 /// Represents an originator that can save and restore its state.

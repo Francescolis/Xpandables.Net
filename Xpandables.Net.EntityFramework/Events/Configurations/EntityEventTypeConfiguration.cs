@@ -20,8 +20,8 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using Xpandables.Net.Entities;
 using Xpandables.Net.Events.Repositories;
-using Xpandables.Net.Repositories;
 
 namespace Xpandables.Net.Events.Configurations;
 

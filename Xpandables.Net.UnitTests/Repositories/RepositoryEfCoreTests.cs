@@ -3,7 +3,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Entities;
 namespace Xpandables.Net.UnitTests.Repositories;
 
 [Collection("sqlite-shared-db")]

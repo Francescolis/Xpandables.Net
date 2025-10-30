@@ -17,7 +17,7 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-namespace Xpandables.Net.States;
+namespace Xpandables.Net.Tasks.States;
 
 /// <summary>
 /// Event arguments for state transition events.

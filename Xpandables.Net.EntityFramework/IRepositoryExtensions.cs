@@ -18,7 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Xpandables.Net;
-using Xpandables.Net.Repositories;
+using Xpandables.Net.Entities;
 
 namespace Xpandables.Net;
 
