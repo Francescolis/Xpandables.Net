@@ -15,18 +15,16 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 using Xpandables.Net.Cache;
-using Xpandables.Net.Collections;
-using Xpandables.Net.Text;
+using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.ExecutionResults.Collections;
 
-namespace Xpandables.Net.ExecutionResults;
+namespace Xpandables.Net.Tasks.ExecutionResults;
 
 /// <summary>
 /// A factory for creating JSON converters for <see cref="ExecutionResult{TResult}"/>.
@@ -73,7 +71,10 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
         ArgumentNullException.ThrowIfNull(typeToConvert);
         ArgumentNullException.ThrowIfNull(options);
 
-        options.TypeInfoResolver ??= ExecutionResultJsonContext.Default;
+        if (options.TypeInfoResolverChain.FirstOrDefault(resolver => resolver is ExecutionResultJsonContext) is null)
+        {
+            options.TypeInfoResolverChain.Add(ExecutionResultJsonContext.Default);
+        }
 
         return _converterCache.GetOrAdd((typeToConvert, UseAspNetCoreCompatibility), static key =>
         {
@@ -110,98 +111,7 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
     /// <inheritdoc/>
     public override ExecutionResult? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        ArgumentNullException.ThrowIfNull(typeToConvert);
-        ArgumentNullException.ThrowIfNull(options);
-
-        if (UseAspNetCoreCompatibility)
-        {
-            // In ASP.NET Core compatibility mode, only the "Value" is written.
-            // Deserialization is ambiguous without surrounding metadata.
-            throw new NotSupportedException("Deserialization is not supported in ASP.NET Core compatibility mode.");
-        }
-
-        if (reader.TokenType == JsonTokenType.Null)
-            return null;
-
-        if (reader.TokenType != JsonTokenType.StartObject)
-            throw new JsonException("Expected StartObject token for ExecutionResult.");
-
-        // Initialize with default values
-        HttpStatusCode statusCode = HttpStatusCode.OK;
-        string? title = null;
-        string? detail = null;
-        Uri? location = null;
-        object? valueObj = null;
-        ElementCollection errors = [];
-        ElementCollection headers = [];
-        ElementCollection extensions = [];
-
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonTokenType.EndObject)
-                break;
-
-            if (reader.TokenType != JsonTokenType.PropertyName)
-                throw new JsonException("Expected a property name while reading ExecutionResult.");
-
-            string? prop = reader.GetString();
-            if (!reader.Read())
-                throw new JsonException("Unexpected end while reading ExecutionResult property value.");
-
-            switch (prop)
-            {
-                case "StatusCode" or "statusCode":
-                    statusCode = ReadStatusCode(ref reader);
-                    break;
-
-                case "Title" or "title":
-                    title = reader.TokenType == JsonTokenType.Null ? null : reader.GetString();
-                    break;
-
-                case "Detail" or "detail":
-                    detail = reader.TokenType == JsonTokenType.Null ? null : reader.GetString();
-                    break;
-
-                case "Location" or "location":
-                    location = ReadLocation(ref reader);
-                    break;
-
-                case "Value" or "value":
-                    valueObj = reader.TokenType == JsonTokenType.Null
-                        ? null
-                        : JsonSerializer.Deserialize(ref reader, ObjectContext.Default.Object);
-                    break;
-
-                case "Errors" or "errors":
-                    errors = ReadElementCollection(ref reader);
-                    break;
-
-                case "Headers" or "headers":
-                    headers = ReadElementCollection(ref reader);
-                    break;
-
-                case "Extensions" or "extensions":
-                    extensions = ReadElementCollection(ref reader);
-                    break;
-
-                default:
-                    // Skip unknown/ignored properties like Exception
-                    reader.Skip();
-                    break;
-            }
-        }
-
-        return new ExecutionResult
-        {
-            StatusCode = statusCode,
-            Title = title,
-            Detail = detail,
-            Location = location,
-            Value = valueObj,
-            Errors = errors,
-            Headers = headers,
-            Extensions = extensions
-        };
+        throw new NotSupportedException($"Deserialization of {nameof(ExecutionResult)} is not supported.");
     }
 
     /// <inheritdoc/>
@@ -254,61 +164,6 @@ public sealed class ExecutionResultJsonConverter : JsonConverter<ExecutionResult
             writer.WriteEndObject();
         }
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static HttpStatusCode ReadStatusCode(ref Utf8JsonReader reader)
-    {
-        return reader.TokenType switch
-        {
-            JsonTokenType.String => ParseStatusCodeFromString(reader.GetString()),
-            JsonTokenType.Number => ParseStatusCodeFromNumber(ref reader),
-            _ => HttpStatusCode.OK
-        };
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static HttpStatusCode ParseStatusCodeFromString(string? s)
-    {
-        if (string.IsNullOrWhiteSpace(s))
-            return HttpStatusCode.OK;
-
-        if (Enum.TryParse<HttpStatusCode>(s, true, out var sc))
-            return sc;
-
-        if (int.TryParse(s, out int codeInt) && Enum.IsDefined(typeof(HttpStatusCode), codeInt))
-            return (HttpStatusCode)codeInt;
-
-        return HttpStatusCode.OK;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static HttpStatusCode ParseStatusCodeFromNumber(ref Utf8JsonReader reader)
-    {
-        if (reader.TryGetInt32(out int codeInt) && Enum.IsDefined(typeof(HttpStatusCode), codeInt))
-            return (HttpStatusCode)codeInt;
-
-        return HttpStatusCode.OK;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Uri? ReadLocation(ref Utf8JsonReader reader)
-    {
-        if (reader.TokenType == JsonTokenType.Null)
-            return null;
-
-        string? s = reader.GetString();
-        return !string.IsNullOrEmpty(s) && Uri.TryCreate(s, UriKind.RelativeOrAbsolute, out var uri)
-            ? uri
-            : null;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ElementCollection ReadElementCollection(ref Utf8JsonReader reader)
-    {
-        return reader.TokenType == JsonTokenType.Null
-            ? default
-            : (ElementCollection)JsonSerializer.Deserialize(ref reader, typeof(ElementCollection), ElementCollectionContext.Default)!;
-    }
 }
 
 /// <summary>
@@ -337,96 +192,7 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
     /// <inheritdoc/>
     public override ExecutionResult<TResult>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        ArgumentNullException.ThrowIfNull(typeToConvert);
-        ArgumentNullException.ThrowIfNull(options);
-
-        if (UseAspNetCoreCompatibility)
-        {
-            // In ASP.NET Core compatibility mode, only the "Value" is written.
-            // Deserialization is ambiguous without surrounding metadata.
-            throw new NotSupportedException("Deserialization is not supported in ASP.NET Core compatibility mode.");
-        }
-
-        if (reader.TokenType == JsonTokenType.Null)
-            return null;
-
-        if (reader.TokenType != JsonTokenType.StartObject)
-            throw new JsonException("Expected StartObject token for ExecutionResult.");
-
-        // Initialize with default values
-        HttpStatusCode statusCode = HttpStatusCode.OK;
-        string? title = null;
-        string? detail = null;
-        Uri? location = null;
-        TResult? valueT = default;
-        ElementCollection errors = [];
-        ElementCollection headers = [];
-        ElementCollection extensions = [];
-
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonTokenType.EndObject)
-                break;
-
-            if (reader.TokenType != JsonTokenType.PropertyName)
-                throw new JsonException("Expected a property name while reading ExecutionResult.");
-
-            string? prop = reader.GetString();
-            if (!reader.Read())
-                throw new JsonException("Unexpected end while reading ExecutionResult property value.");
-
-            switch (prop)
-            {
-                case "StatusCode" or "statusCode":
-                    statusCode = ExecutionResultJsonConverter.ReadStatusCode(ref reader);
-                    break;
-
-                case "Title" or "title":
-                    title = reader.TokenType == JsonTokenType.Null ? null : reader.GetString();
-                    break;
-
-                case "Detail" or "detail":
-                    detail = reader.TokenType == JsonTokenType.Null ? null : reader.GetString();
-                    break;
-
-                case "Location" or "location":
-                    location = ExecutionResultJsonConverter.ReadLocation(ref reader);
-                    break;
-
-                case "Value" or "value":
-                    valueT = ReadTypedValue(ref reader, options);
-                    break;
-
-                case "Errors" or "errors":
-                    errors = ExecutionResultJsonConverter.ReadElementCollection(ref reader);
-                    break;
-
-                case "Headers" or "headers":
-                    headers = ExecutionResultJsonConverter.ReadElementCollection(ref reader);
-                    break;
-
-                case "Extensions" or "extensions":
-                    extensions = ExecutionResultJsonConverter.ReadElementCollection(ref reader);
-                    break;
-
-                default:
-                    // Skip unknown/ignored properties like Exception
-                    reader.Skip();
-                    break;
-            }
-        }
-
-        return new ExecutionResult<TResult>
-        {
-            StatusCode = statusCode,
-            Title = title,
-            Detail = detail,
-            Location = location,
-            Value = valueT,
-            Errors = errors,
-            Headers = headers,
-            Extensions = extensions
-        };
+        throw new NotSupportedException($"Deserialization of {nameof(ExecutionResult<>)} is not supported.");
     }
 
     /// <inheritdoc/>
@@ -478,34 +244,6 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
 
             writer.WriteEndObject();
         }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
-        Justification = "Uses TypeInfoResolver when available, falls back to dynamic deserialization for non-AOT scenarios")]
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050",
-        Justification = "Dynamic code generation is only used as fallback for non-AOT scenarios")]
-    private static TResult? ReadTypedValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
-    {
-        if (reader.TokenType == JsonTokenType.Null)
-            return default;
-
-        if (typeof(TResult).IsPrimitive || typeof(TResult) == typeof(string))
-        {
-            string? json = reader.GetString();
-            if (!string.IsNullOrWhiteSpace(json))
-            {
-                return (TResult?)Convert.ChangeType(json, typeof(TResult), CultureInfo.InvariantCulture);
-            }
-            return default;
-        }
-
-        JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(typeof(TResult));
-        return jsonTypeInfo switch
-        {
-            not null => (TResult?)JsonSerializer.Deserialize(ref reader, jsonTypeInfo),
-            _ => JsonSerializer.Deserialize<TResult?>(ref reader, options)
-        };
     }
 }
 

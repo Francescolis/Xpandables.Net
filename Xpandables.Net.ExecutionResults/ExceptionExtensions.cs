@@ -16,14 +16,13 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security;
 using System.Security.Authentication;
 using System.Text.Json;
 
-using Xpandables.Net;
-using Xpandables.Net.Collections;
+using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.ExecutionResults.Collections;
 
 namespace Xpandables.Net.ExecutionResults;
 
@@ -34,7 +33,6 @@ namespace Xpandables.Net.ExecutionResults;
 /// which can be useful when building web APIs or services that need to communicate error conditions to clients. The
 /// mappings are based on typical usage patterns and may be customized as needed for specific application
 /// requirements.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class ExceptionExtensions
 {
     /// <summary>

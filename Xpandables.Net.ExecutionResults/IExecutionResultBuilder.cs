@@ -19,7 +19,7 @@ using System.Net;
 
 using Microsoft.Extensions.Primitives;
 
-using Xpandables.Net.Collections;
+using Xpandables.Net.ExecutionResults.Collections;
 
 namespace Xpandables.Net.ExecutionResults;
 

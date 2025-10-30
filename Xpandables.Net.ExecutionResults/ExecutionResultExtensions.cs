@@ -53,7 +53,7 @@ public static class ExecutionResultExtensions
         /// errors.
         /// </summary>
         /// <remarks>Use this method to indicate that an operation has succeeded. The returned result will
-        /// have a status code of <see cref="System.Net.HttpStatusCode.OK"/> and no error information.</remarks>
+        /// have a status code of <see cref="HttpStatusCode.OK"/> and no error information.</remarks>
         /// <returns>An <see cref="ExecutionResult"/> indicating a successful outcome with an HTTP status code of 200 (OK).</returns>
         public static ExecutionResult Success() => Success(HttpStatusCode.OK).Build();
 
@@ -171,7 +171,7 @@ public static class ExecutionResultExtensions
         /// Creates an execution result representing a failed operation with a specified error key and message.
         /// </summary>
         /// <remarks>The returned result uses a status code of <see
-        /// cref="System.Net.HttpStatusCode.BadRequest"/>. Use this method to report validation or client-side errors
+        /// cref="HttpStatusCode.BadRequest"/>. Use this method to report validation or client-side errors
         /// with a specific error key and message.</remarks>
         /// <param name="key">The key that identifies the type or category of the error. Cannot be null.</param>
         /// <param name="message">The error message describing the reason for the failure. Cannot be null.</param>

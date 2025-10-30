@@ -18,6 +18,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+using Xpandables.Net.Tasks.ExecutionResults;
+
 namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
