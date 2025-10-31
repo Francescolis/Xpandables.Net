@@ -20,7 +20,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-using Xpandables.Net.Cache;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.ExecutionResults.Collections;
 
@@ -37,9 +36,6 @@ namespace Xpandables.Net.Tasks.ExecutionResults;
 /// </remarks>
 public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
 {
-    // Cache converters for better performance
-    private static readonly MemoryAwareCache<(Type Type, bool UseAspNetCore), JsonConverter> _converterCache = new();
-
     /// <summary>
     /// Gets or sets a value indicating whether to use ASP.NET Core compatibility.
     /// </summary>
@@ -60,12 +56,6 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
     }
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070",
-        Justification = "The generic arguments are validated during CanConvert")]
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2071",
-        Justification = "ExecutionResult types are constrained to known types")]
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050",
-        Justification = "ExecutionResult JSON converter factory is designed for known result types")]
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
@@ -76,18 +66,8 @@ public sealed class ExecutionResultJsonConverterFactory : JsonConverterFactory
             options.TypeInfoResolverChain.Add(ExecutionResultJsonContext.Default);
         }
 
-        return _converterCache.GetOrAdd((typeToConvert, UseAspNetCoreCompatibility), static key =>
-        {
-            if (key.Type == typeof(ExecutionResult))
-            {
-                return new ExecutionResultJsonConverter { UseAspNetCoreCompatibility = key.UseAspNetCore };
-            }
-
-            Type resultType = key.Type.GetGenericArguments()[0];
-            Type converterType = typeof(ExecutionResultJsonConverter<>).MakeGenericType(resultType);
-
-            return (JsonConverter)Activator.CreateInstance(converterType, [key.UseAspNetCore])!;
-        });
+        Type resultType = typeToConvert.GetGenericArguments()[0];
+        return (JsonConverter)SerializationHelper.CreateInstance(resultType, UseAspNetCoreCompatibility);
     }
 }
 
@@ -252,6 +232,15 @@ public sealed class ExecutionResultJsonConverter<TResult>(bool useAspNetCoreComp
 /// </summary>
 internal static class SerializationHelper
 {
+    [UnconditionalSuppressMessage("AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "<Pending>")]
+    internal static object CreateInstance(Type type, bool useAspNetCoreCompatibility)
+    {
+        var converterType = typeof(ExecutionResultJsonConverter<>).MakeGenericType(type);
+        return Activator.CreateInstance(converterType, useAspNetCoreCompatibility)!;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
         Justification = "Uses TypeInfoResolver when available, falls back to dynamic serialization for non-AOT scenarios")]

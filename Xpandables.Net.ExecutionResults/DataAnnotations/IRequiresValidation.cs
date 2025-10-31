@@ -40,4 +40,6 @@ namespace Xpandables.Net.ExecutionResults.DataAnnotations;
 /// </summary>
 /// <remarks>Implementing this interface suggests that the object supports or requires validation processes,
 /// typically to ensure that its state or data meets certain criteria.</remarks>
-public interface IRequiresValidation : IAnnotation;
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequiresValidation;
+#pragma warning restore CA1040 // Avoid empty interfaces

@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
+using Xpandables.Net.Primitives;
 using Xpandables.Net.Text;
 
 namespace Xpandables.Net.Entities;

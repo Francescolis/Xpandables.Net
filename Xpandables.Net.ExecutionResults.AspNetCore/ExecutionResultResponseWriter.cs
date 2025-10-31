@@ -22,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-using Xpandables.Net.Collections;
 using Xpandables.Net.ExecutionResults.Collections;
 
 namespace Xpandables.Net.ExecutionResults;

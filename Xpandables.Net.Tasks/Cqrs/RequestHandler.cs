@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.ExecutionResults.DataAnnotations;
+using Xpandables.Net.ExecutionResults;
+
+namespace Xpandables.Net.Tasks.Cqrs;
 
 /// <summary>
-/// Represents an annotation with metadata about its usage.
+/// Represents the next delegate to be executed on a pipeline.
 /// </summary>
-/// <remarks>This interface provides a mechanism to associate metadata, such as the usage timestamp, with an
-/// annotation.</remarks>
-public interface IAnnotation
-{
-    /// <summary>
-    /// The date and time when the annotation was used.
-    /// </summary>
-    public DateTime UsedOn => DateTime.UtcNow;
-}
+/// <param name="cancellationToken">Optional cancellation token to observe for cancellation requests.</param>
+public delegate Task<ExecutionResult> RequestHandler(CancellationToken cancellationToken = default);

@@ -1,6 +1,5 @@
-﻿
-/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+﻿/*******************************************************************************
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +16,26 @@
 ********************************************************************************/
 using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.Cqrs;
+namespace Xpandables.Net.Tasks.Cqrs;
 
 /// <summary>
-/// Defines a contract for handling a request asynchronously before it is processed.
+/// Defines a handler for managing exceptions that occur during the processing of a request.
 /// </summary>
-/// <remarks>Implementations of this interface are responsible for performing any necessary pre-processing on the
-/// request before it is passed to the main processing logic. This can include validation, logging, or other preparatory
-/// tasks.</remarks>
-/// <typeparam name="TRequest">The type of the request to be handled. Must implement <see cref="IRequest"/>.</typeparam>
-public interface IRequestPreHandler<TRequest>
+/// <typeparam name="TRequest">The type of the request being processed. Must implement <see cref="IRequest"/>.</typeparam>
+public interface IRequestExceptionHandler<TRequest>
     where TRequest : class, IRequest
 {
     /// <summary>
-    /// Asynchronously handles the specified request before it is processed.
+    /// Handles exceptions that occur during the processing of the specified request.
     /// </summary>
-    /// <param name="context">The context to be processed. Cannot be null.</param>
+    /// <param name="context">The context of the request being processed.</param>
+    /// <param name="exception">The exception that occurred during processing.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="ExecutionResult"/> of
-    /// the request processing.</returns>
+    /// <returns>A task representing the asynchronous operation. The task result contains the execution result of type
+    /// <see cref="ExecutionResult"/>.</returns>
     Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
+        Exception exception,
         CancellationToken cancellationToken = default);
 }

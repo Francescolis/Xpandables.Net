@@ -4,52 +4,47 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<Platforms>x64</Platforms>
 		<LangVersion>preview</LangVersion>
-
-		<Title>Xpandables.Net</Title>
-		<Description>Provide Xpandables objects.</Description>
+		<Title>Xpandables.Net.Requests</Title>
+		<Description>Request pattern implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net</AssemblyName>
-		<RootNamespace>Xpandables.Net</RootNamespace>
-		<PackageId>Xpandables.Net</PackageId>
+		<AssemblyName>Xpandables.Net.Requests</AssemblyName>
+		<RootNamespace>Xpandables.Net.Requests</RootNamespace>
+		<PackageId>Xpandables.Net.Requests</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<IncludeSource>true</IncludeSource>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
+		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>ElementEntry, ElementCollection</PackageTags>
+		<PackageTags>IRequest, IStreamRequest</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<DebugType>portable</DebugType>
 
 		<Version>1.0.0-preview.1</Version>
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
 		<FileVersion>1.0.0.0</FileVersion>
 		<PackageVersion>1.0.0-preview.1</PackageVersion>
 
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<IncludeSource>true</IncludeSource>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
-		<Platforms>x64</Platforms>
-
-		<SignAssembly>true</SignAssembly>
-		<AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
-
-		<Deterministic>true</Deterministic>
-		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-		<DebugType>portable</DebugType>
-
-		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
@@ -75,21 +70,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Events\**" />
-	  <Compile Remove="Repositories\**" />
-	  <Compile Remove="Rests\**" />
-	  <Compile Remove="Tasks\**" />
-	  <EmbeddedResource Remove="Events\**" />
-	  <EmbeddedResource Remove="Repositories\**" />
-	  <EmbeddedResource Remove="Rests\**" />
-	  <EmbeddedResource Remove="Tasks\**" />
-	  <None Remove="Events\**" />
-	  <None Remove="Repositories\**" />
-	  <None Remove="Rests\**" />
-	  <None Remove="Tasks\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
@@ -98,18 +78,10 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-		<None Include="..\Xpandables.Net.png">
-			<Pack>True</Pack>
+		<None Include="..\Xpandables.Net.png" Link="Xpandables.Net.png">
 			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0-rc.2.25502.107" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-rc.2.25502.107" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0-rc.2.25502.107" />
-		<PackageReference Include="Microsoft.Extensions.Primitives" Version="10.0.0-rc.2.25502.107" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0-rc.2.25502.107" />
 	</ItemGroup>
 
 </Project>

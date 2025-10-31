@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,9 @@ using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Cqrs;
 
-namespace Xpandables.Net.Cqrs;
-
-/// <summary>
-/// Represents the next delegate to be executed on a pipeline.
-/// </summary>
-/// <param name="cancellationToken">Optional cancellation token to observe for cancellation requests.</param>
-public delegate Task<ExecutionResult> RequestHandler(CancellationToken cancellationToken = default);
+namespace Xpandables.Net.Tasks.Cqrs;
 
 /// <summary>
 /// Represents a context for a request, encapsulating the request itself and providing a collection for storing 
