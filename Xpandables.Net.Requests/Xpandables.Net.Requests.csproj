@@ -30,7 +30,7 @@
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IRequest, IStreamRequest</PackageTags>
+		<PackageTags>IRequest, IStreamRequest, IPipeline</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -82,6 +82,15 @@
 			<PackagePath>\</PackagePath>
 			<Pack>True</Pack>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net.AsyncPaged\Xpandables.Net.AsyncPaged.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.ExecutionResults\Xpandables.Net.ExecutionResults.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Pipelines\" />
 	</ItemGroup>
 
 </Project>

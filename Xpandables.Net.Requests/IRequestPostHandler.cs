@@ -16,26 +16,26 @@
 ********************************************************************************/
 using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.Tasks.Cqrs;
+namespace Xpandables.Net.Requests;
 
 /// <summary>
-/// Defines a handler for managing exceptions that occur during the processing of a request.
+/// Defines a handler for processing requests after they have been executed.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request being processed. Must implement <see cref="IRequest"/>.</typeparam>
-public interface IRequestExceptionHandler<TRequest>
+/// <typeparam name="TRequest">The type of request to be handled. 
+/// Must implement the <see cref="IRequest"/> interface.</typeparam>
+public interface IRequestPostHandler<TRequest>
     where TRequest : class, IRequest
 {
     /// <summary>
-    /// Handles exceptions that occur during the processing of the specified request.
+    /// Asynchronously handles the specified request after it has been executed.
     /// </summary>
-    /// <param name="context">The context of the request being processed.</param>
-    /// <param name="exception">The exception that occurred during processing.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. 
-    /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task representing the asynchronous operation. The task result contains the execution result of type
-    /// <see cref="ExecutionResult"/>.</returns>
+    /// <param name="context">The context of the request, containing necessary information for processing.</param>
+    /// <param name="response">The initial execution result to be modified or used during processing.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests, allowing the operation to be cancelled.</param>
+    /// <returns>A task representing the asynchronous operation, containing the final execution result after processing the
+    /// request.</returns>
     Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
-        Exception exception,
+        ExecutionResult response,
         CancellationToken cancellationToken = default);
 }

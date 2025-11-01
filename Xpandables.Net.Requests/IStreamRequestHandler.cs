@@ -19,7 +19,7 @@ using System.ComponentModel;
 using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.Tasks.Cqrs;
+namespace Xpandables.Net.Requests;
 
 /// <summary>
 /// Defines a handler for processing stream requests asynchronously, producing a stream of responses.

@@ -33,7 +33,7 @@
   <Project Path="Xpandables.Net.ExecutionResults/Xpandables.Net.ExecutionResults.csproj">
     <Platform Project="x64" />
   </Project>
-  <Project Path="Xpandables.Net.Requests/Xpandables.Net.Requests.csproj" Id="cf6b31d1-36aa-448e-a373-e60e4aeb4856">
+  <Project Path="Xpandables.Net.Requests/Xpandables.Net.Requests.csproj">
     <Platform Project="x64" />
   </Project>
   <Project Path="Xpandables.Net.Tasks/Xpandables.Net.Tasks.csproj" Id="7fd9c142-688b-4b5e-9e22-50be8b2a83e8">

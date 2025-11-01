@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Cqrs;
+namespace Xpandables.Net.Requests;
 
 /// <summary>
 /// Represents a request with metadata about its creation time.

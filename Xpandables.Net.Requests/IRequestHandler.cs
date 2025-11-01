@@ -16,7 +16,7 @@
 ********************************************************************************/
 using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.Tasks.Cqrs;
+namespace Xpandables.Net.Requests;
 
 /// <summary>
 /// Represents a handler to process a request of type <typeparamref name="TRequest" />.

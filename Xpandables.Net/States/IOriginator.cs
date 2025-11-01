@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,22 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Tasks.States;
+namespace Xpandables.Net.States;
 
 /// <summary>
-/// Represents a memento interface for capturing and restoring the state of 
-/// an object.
+/// Represents an originator that can save and restore its state.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "<Pending>")]
-public interface IMemento;
+public interface IOriginator
+{
+    /// <summary>
+    /// Saves the current state of the originator.
+    /// </summary>
+    /// <returns>A memento containing the saved state.</returns>
+    IMemento Save();
+
+    /// <summary>
+    /// Restores the state of the originator from the given memento.
+    /// </summary>
+    /// <param name="memento">The memento containing the state to restore.</param>
+    void Restore(IMemento memento);
+}

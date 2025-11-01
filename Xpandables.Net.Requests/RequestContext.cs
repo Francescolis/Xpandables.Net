@@ -18,9 +18,7 @@ using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-using Xpandables.Net.Cqrs;
-
-namespace Xpandables.Net.Tasks.Cqrs;
+namespace Xpandables.Net.Requests;
 
 /// <summary>
 /// Represents a context for a request, encapsulating the request itself and providing a collection for storing 
