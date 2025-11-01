@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.States;
+using Xpandables.Net.Events.States;
 
 namespace Xpandables.Net.Events;
 

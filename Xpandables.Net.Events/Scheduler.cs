@@ -245,6 +245,8 @@ public sealed class Scheduler : BackgroundService, IScheduler
 
     /// <inheritdoc />
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
+    [RequiresDynamicCode("The implementation may use reflection or dynamic code generation.")]
+    [RequiresUnreferencedCode("The implementation may access members that are not statically referenced.")]
     public async Task ScheduleAsync(CancellationToken cancellationToken = default)
     {
         if (!_options.IsEventSchedulerEnabled)
@@ -326,6 +328,8 @@ public sealed class Scheduler : BackgroundService, IScheduler
 
     /// <inheritdoc />
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         LogBackgroundServiceStarting(_logger, null);

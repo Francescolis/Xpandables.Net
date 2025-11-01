@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-
-using Xpandables.Net.Entities;
 
 namespace Xpandables.Net.Events.Repositories;
 
@@ -29,8 +28,41 @@ namespace Xpandables.Net.Events.Repositories;
 /// Instances are typically used in event sourcing, auditing, or integration scenarios where tracking entity changes is
 /// required. The class implements IDisposable to ensure proper release of resources associated with the event
 /// data.</remarks>
-public abstract class EntityEvent : Entity<Guid>, IEntityEvent
+public abstract class EntityEvent : IEntityEvent
 {
+    /// <summary>
+    /// Initializes a new instance of <see cref="EntityEvent" />.
+    /// </summary>
+    protected EntityEvent() { }
+
+    /// <inheritdoc />
+    [EventStatusValidation(allowCustomStatuses: true)]
+    public string Status { get; set; } = EventStatus.ACTIVE;
+
+    /// <inheritdoc />
+    public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+
+    /// <inheritdoc />
+    public DateTime? UpdatedOn { get; set; }
+
+    /// <inheritdoc />
+    public DateTime? DeletedOn { get; set; }
+
+    /// <inheritdoc/>
+    public bool IsDeleted => Status == EventStatus.DELETED;
+
+    /// <inheritdoc />
+    [Key]
+    public required Guid KeyId { get; init; }
+
+    /// <inheritdoc />
+    public void SetStatus(string status)
+    {
+        Status = status;
+        DeletedOn = status == EventStatus.DELETED
+            ? DateTime.UtcNow
+            : null;
+    }
     /// <inheritdoc />
     public required string EventType { get; init; }
 

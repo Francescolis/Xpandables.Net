@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Optionals;
-
 namespace Xpandables.Net.Events.Aggregates;
 
 /// <summary>
@@ -35,7 +33,7 @@ public interface ISnapshotEventStore
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an optional <see cref="EnvelopeResult"/> representing 
     /// the latest snapshot event if found; otherwise, an empty optional.</returns>
-    Task<Optional<EnvelopeResult>> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default);
+    Task<EnvelopeResult?> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously appends a snapshot event to the store.

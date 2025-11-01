@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.Collections.Concurrent;
 
-using Xpandables.Net.Collections;
 using Xpandables.Net.Events;
 
 namespace Xpandables.Net.Events.Aggregates;

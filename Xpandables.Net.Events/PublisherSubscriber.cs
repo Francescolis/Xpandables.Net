@@ -28,7 +28,7 @@ namespace Xpandables.Net.Events;
 /// Manages subscriptions for various event types and facilitates publishing events
 /// to the subscribed handlers.
 /// </summary>
-public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disposable, IPublisher, ISubscriber
+public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : IPublisher, ISubscriber
 {
     private readonly ConcurrentDictionary<Type, EventHandlerCollection> _subscribers = new();
     private readonly ConcurrentDictionary<Type, object[]> _serviceHandlerCache = new();
@@ -169,15 +169,10 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : Disp
         handlers.RemoveServiceHandler(handler);
 
     /// <inheritdoc />
-    protected override void Dispose(bool disposing)
+    public void Dispose()
     {
-        if (disposing)
-        {
-            _subscribers.Clear();
-            _serviceHandlerCache.Clear();
-        }
-
-        base.Dispose(disposing);
+        _subscribers.Clear();
+        _serviceHandlerCache.Clear();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

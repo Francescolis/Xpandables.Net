@@ -16,8 +16,6 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.Entities;
-
 namespace Xpandables.Net.Events.Repositories;
 
 /// <summary>
@@ -27,8 +25,42 @@ namespace Xpandables.Net.Events.Repositories;
 /// qualified name, sequence number, and associated data. The interface inherits from <see cref="IDisposable"/>,
 /// indicating that resources associated with the event may need to be released when the event is no longer
 /// needed.</remarks>
-public interface IEntityEvent : IEntity, IDisposable
+public interface IEntityEvent : IDisposable
 {
+    /// <summary>
+    /// Gets the object unique identity.
+    /// </summary>
+    Guid KeyId { get; }
+
+    /// <summary>  
+    /// Get a value indicating the state of the underlying instance.  
+    /// </summary>  
+    string Status { get; set; }
+
+    /// <summary>  
+    /// Gets the creation date of the underlying instance.  
+    /// </summary>  
+    DateTime CreatedOn { get; set; }
+
+    /// <summary>  
+    /// Gets the last update date of the underlying instance if exist.  
+    /// </summary>  
+    DateTime? UpdatedOn { get; set; }
+
+    /// <summary>  
+    /// Gets the deletion date of the underlying instance if exist.  
+    /// </summary>  
+    DateTime? DeletedOn { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the entity has been marked as deleted.
+    /// </summary>
+    bool IsDeleted { get; }
+
+    /// <summary>  
+    /// Sets the status of the underlying instance.  
+    /// </summary>  
+    void SetStatus(string status);
     /// <summary>
     /// Gets the name of the event associated with the current instance.
     /// </summary>

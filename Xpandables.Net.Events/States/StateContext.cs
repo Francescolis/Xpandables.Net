@@ -14,35 +14,28 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Events.States;
 
-namespace Xpandables.Net.Events.Aggregates;
+namespace Xpandables.Net.Events.States;
 
 /// <summary>
-/// Provides a base class for aggregates that manage their state using a state machine pattern. Enables controlled
-/// transitions between states and exposes events for state changes.
+/// Represents the context for managing state transitions with thread-safety.
 /// </summary>
-/// <remarks>This class facilitates state management for aggregates by encapsulating state transitions and
-/// providing thread-safe access to the current state. It raises events before and after state transitions, allowing
-/// subscribers to react to state changes. Derived classes can override transition validation and lifecycle hooks to
-/// implement custom logic. State transitions are validated using <see cref="CanTransitionTo(TState)"/>, and both pre-
-/// and post-transition hooks are available for extensibility.</remarks>
-/// <typeparam name="TState">The type of the state managed by the aggregate. Must implement <see cref="IState"/>.</typeparam>
-public abstract class AggregateStateContext<TState> : Aggregate, IStateContext<TState>
+/// <typeparam name="TState">The type of the state.</typeparam>
+public abstract class StateContext<TState> : IStateContext<TState>
     where TState : class, IState
 {
     private readonly Lock _stateLock = new();
     private volatile TState _currentState = null!;
 
-    /// <summary>
-    /// Initializes a new instance of the 
-    /// <see cref="AggregateStateContext{TState}"/> class.
-    /// </summary>
-    /// <param name="initialState">The initial state of the aggregate.</param>
-    protected AggregateStateContext(TState initialState) =>
-        TransitionToState(initialState);
+    /// <inheritdoc/>
+    public event EventHandler<StateTransitionEventArgs>? StateTransitioning;
 
     /// <inheritdoc/>
+    public event EventHandler<StateTransitionEventArgs>? StateTransitioned;
+
+    /// <summary>
+    /// Gets the current state in a thread-safe manner.
+    /// </summary>
     public TState CurrentState
     {
         get
@@ -54,13 +47,20 @@ public abstract class AggregateStateContext<TState> : Aggregate, IStateContext<T
         }
     }
 
-    /// <inheritdoc/>
-    public event EventHandler<StateTransitionEventArgs>? StateTransitioning;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StateContext{TState}"/> 
+    /// class with the specified initial state.
+    /// </summary>
+    /// <param name="initialState">The initial state.</param>
+    protected StateContext(TState initialState) =>
+        TransitionToState(initialState);
 
-    /// <inheritdoc/>
-    public event EventHandler<StateTransitionEventArgs>? StateTransitioned;
-
-    /// <inheritdoc/>
+    /// <summary>
+    /// Transitions to the specified state with thread-safety and validation.
+    /// </summary>
+    /// <param name="state">The state to transition to.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the state is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when transition is not allowed.</exception>
     public void TransitionToState(TState state)
     {
         ArgumentNullException.ThrowIfNull(state);
@@ -111,7 +111,6 @@ public abstract class AggregateStateContext<TState> : Aggregate, IStateContext<T
 
     /// <summary>
     /// Called after successful state transition. Override to implement post-transition logic.
-    /// Override this method to push domain events for state changes.
     /// </summary>
     /// <param name="previousState">The previous state.</param>
     /// <param name="currentState">The current state.</param>

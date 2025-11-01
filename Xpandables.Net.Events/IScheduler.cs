@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.Hosting;
 
 namespace Xpandables.Net.Events;
@@ -32,5 +34,7 @@ public interface IScheduler : IHostedService, IDisposable
     /// </summary>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the scheduling operation.</param>
     /// <returns>A task that represents the asynchronous scheduling operation.</returns>
+    [RequiresDynamicCode("The implementation may use reflection or dynamic code generation.")]
+    [RequiresUnreferencedCode("The implementation may access members that are not statically referenced.")]
     Task ScheduleAsync(CancellationToken cancellationToken = default);
 }

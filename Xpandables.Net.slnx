@@ -27,6 +27,9 @@
   <Project Path="Xpandables.Net.EntityFramework/Xpandables.Net.EntityFramework.csproj" Id="026ee8a6-7cae-49c5-af37-082a8313d285">
     <Platform Project="x64" />
   </Project>
+  <Project Path="Xpandables.Net.Events.EntityFramework/Xpandables.Net.Events.EntityFramework.csproj" Id="b3ea1318-2447-44df-aac0-d249f4e08b4e">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="Xpandables.Net.Events/Xpandables.Net.Events.csproj" Id="46ffaab1-f5fa-41f7-8361-2668dc6f0ede">
     <Platform Project="x64" />
   </Project>

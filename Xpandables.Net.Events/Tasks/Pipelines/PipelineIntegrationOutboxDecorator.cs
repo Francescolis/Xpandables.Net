@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.ExecutionResults;
@@ -44,6 +46,8 @@ public sealed class PipelineIntegrationOutboxDecorator<TRequest>(
     private readonly IOutboxStore _outbox = outbox;
 
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,

@@ -14,27 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Repositories;
+namespace Xpandables.Net.Events.States;
 
 /// <summary>
-/// Represents an integration event entity.
+/// Represents a memento interface for capturing and restoring the state of 
+/// an object.
 /// </summary>
-public sealed class EntityIntegrationEvent : EntityEvent, IEntityEventIntegration
-{
-    /// <summary>
-    /// Constructs a new instance of the <see cref="EntityIntegrationEvent" /> class.
-    /// </summary>
-    public EntityIntegrationEvent() => SetStatus(EventStatus.PENDING);
-
-    /// <inheritdoc/>
-    public string? ErrorMessage { get; init; }
-
-    /// <inheritdoc/>
-    public int AttemptCount { get; init; }
-
-    /// <inheritdoc/>
-    public DateTime? NextAttemptOn { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? ClaimId { get; init; }
-}
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "<Pending>")]
+public interface IMemento;

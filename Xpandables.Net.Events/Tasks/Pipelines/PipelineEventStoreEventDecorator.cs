@@ -14,11 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.Extensions.DependencyInjection;
-
-using Xpandables.Net.Entities;
 using Xpandables.Net.Events;
-using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Events.Repositories;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Requests;
 using Xpandables.Net.Requests.Pipelines;
@@ -32,12 +29,12 @@ namespace Xpandables.Net.Tasks.Pipelines;
 /// requiring event storage.
 /// </summary>
 /// <remarks>This decorator should be placed in the pipeline for requests that generate domain events requiring
-/// persistence. The <see cref="IUnitOfWork"/> is a keyed service named <see cref="IEventStore"/>. After the request is handled, 
+/// persistence. After the request is handled, 
 /// all pending changes are saved to the event store, and committed domain events are notified. 
 /// The decorator is thread-safe and intended for use in event-driven architectures.</remarks>
 /// <typeparam name="TRequest">The type of request being handled. Must implement <see cref="IRequest"/> and <see cref="IRequiresEventStorage"/>.</typeparam>
 /// <param name="unitOfWork">The unit of work used to persist changes to the event store after the request is processed.</param>
-public sealed class PipelineEventStoreEventDecorator<TRequest>([FromKeyedServices(nameof(IEventStore))] IUnitOfWork unitOfWork) :
+public sealed class PipelineEventStoreEventDecorator<TRequest>(IEventUnitOfWork unitOfWork) :
     IPipelineDecorator<TRequest>
     where TRequest : class, IRequest, IRequiresEventStorage
 {

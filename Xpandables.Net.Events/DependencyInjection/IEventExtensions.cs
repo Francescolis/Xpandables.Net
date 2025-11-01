@@ -22,7 +22,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.States;
+using Xpandables.Net.Events.Internals;
 using Xpandables.Net.Tasks.Pipelines;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -43,6 +43,33 @@ public static class IEventExtensions
 
     extension(IServiceCollection services)
     {
+        /// <summary>
+        /// Registers a singleton implementation of the specified event cache type resolver in the service collection.
+        /// </summary>
+        /// <remarks>Use this method to configure dependency injection for event cache type resolution. If
+        /// an IEventCacheTypeResolver is already registered, this method will not overwrite the existing
+        /// registration.</remarks>
+        /// <typeparam name="TEventCacheTypeResolver">The type of the event cache type resolver to register. Must implement the IEventCacheTypeResolver interface
+        /// and have a public constructor.</typeparam>
+        /// <returns>The IServiceCollection instance with the event cache type resolver registered.</returns>
+        public IServiceCollection AddXEventCacheTypeResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventCacheTypeResolver>()
+            where TEventCacheTypeResolver : class, IEventCacheTypeResolver
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddSingleton<IEventCacheTypeResolver, TEventCacheTypeResolver>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the default Event cache type resolver to the service collection.
+        /// </summary>
+        /// <remarks>This method registers the EventCacheTypeResolver as the implementation for Event
+        /// cache type resolution. Call this method during application startup to enable Event cache type resolution
+        /// services.</remarks>
+        /// <returns>The same IServiceCollection instance, allowing for method chaining.</returns>
+        public IServiceCollection AddXEventCacheTypeResolver()
+            => services.AddXEventCacheTypeResolver<EventCacheTypeResolver>();
+
         /// <summary>
         /// Adds the default <see cref="AggregateStore"/> implementation to the service collection for dependency injection.
         /// </summary>
@@ -174,24 +201,6 @@ public static class IEventExtensions
                 .AddXPipelineDecorator(typeof(PipelineIntegrationOutboxDecorator<>))
                 .AddScoped<IPendingIntegrationEventsBuffer, PendingIntegrationEventsBuffer>();
         }
-
-
-        /// <summary>
-        /// Adds a snapshot-based implementation of the aggregate store to the service collection, enabling support for
-        /// aggregate snapshots in the application's event sourcing infrastructure.
-        /// </summary>
-        /// <remarks>This method decorates the existing <see cref="IAggregateStore{T}"/> registration with
-        /// a snapshot store implementation. Snapshot support can improve performance for aggregates with large event
-        /// histories by reducing the number of events that must be replayed. Use this method when you want to enable
-        /// snapshotting for aggregates that implement <see cref="IOriginator"/>.</remarks>
-        /// <returns>The same <see cref="IServiceCollection"/> instance, allowing for method chaining.</returns>
-        [RequiresUnreferencedCode("The snapshot store may not be fully referenced.")]
-        [RequiresDynamicCode("The snapshot store may not be fully dynamic.")]
-        public IServiceCollection AddXSnapshotStore() =>
-            services.XTryDecorate(
-                typeof(IAggregateStore<>),
-                typeof(SnapshotStore<>),
-                typeof(IOriginator));
 
         /// <summary>
         /// Registers the specified subscriber type as an implementation of <see cref="ISubscriber"/> with scoped

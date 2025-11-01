@@ -90,10 +90,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Xpandables.Net.Requests\Xpandables.Net.Requests.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Pipelines\" />
+	  <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
 	</ItemGroup>
 
 </Project>

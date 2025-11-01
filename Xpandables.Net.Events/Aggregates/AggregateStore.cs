@@ -18,9 +18,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-using Xpandables.Net.Cache;
 using Xpandables.Net.Events;
-using Xpandables.Net.Events.Aggregates;
+using Xpandables.Net.Events.Internals;
 
 namespace Xpandables.Net.Events.Aggregates;
 
@@ -37,11 +36,11 @@ namespace Xpandables.Net.Events.Aggregates;
 public sealed class AggregateStore(
     IEventStore eventStore,
     IPendingDomainEventsBuffer domainEvents,
-    ICacheTypeResolver cacheTypeResolver) : IAggregateStore
+    IEventCacheTypeResolver cacheTypeResolver) : IAggregateStore
 {
     private static readonly MemoryAwareCache<string, MethodInfo> _aggregateTypeCache = new();
     private readonly IEventStore _eventStore = eventStore;
-    private readonly ICacheTypeResolver _cacheTypeResolver = cacheTypeResolver;
+    private readonly IEventCacheTypeResolver _cacheTypeResolver = cacheTypeResolver;
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("May use unreferenced code to resolve type.")]

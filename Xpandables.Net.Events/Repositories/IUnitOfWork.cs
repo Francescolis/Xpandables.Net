@@ -17,24 +17,19 @@
 namespace Xpandables.Net.Events.Repositories;
 
 /// <summary>
-/// Represents an integration event entity.
+/// Defines a unit of work for event-related operations, providing method to persist changes to the underlying data
+/// store.
 /// </summary>
-public sealed class EntityIntegrationEvent : EntityEvent, IEntityEventIntegration
+/// <remarks>Implementations of this interface coordinate the saving of changes made within a transactional scope.
+/// Typically, changes are not committed until this method is called.</remarks>
+public interface IEventUnitOfWork
 {
     /// <summary>
-    /// Constructs a new instance of the <see cref="EntityIntegrationEvent" /> class.
+    /// Saves all changes made in this unit of work.
     /// </summary>
-    public EntityIntegrationEvent() => SetStatus(EventStatus.PENDING);
-
-    /// <inheritdoc/>
-    public string? ErrorMessage { get; init; }
-
-    /// <inheritdoc/>
-    public int AttemptCount { get; init; }
-
-    /// <inheritdoc/>
-    public DateTime? NextAttemptOn { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? ClaimId { get; init; }
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The number of state entries written to the database.</returns>
+    /// <exception cref="InvalidOperationException">All exceptions 
+    /// related to the operation.</exception>
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

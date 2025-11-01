@@ -14,27 +14,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Events.Repositories;
+
+namespace Xpandables.Net.Events.States;
 
 /// <summary>
-/// Represents an integration event entity.
+/// Represents an originator that can save and restore its state.
 /// </summary>
-public sealed class EntityIntegrationEvent : EntityEvent, IEntityEventIntegration
+public interface IOriginator
 {
     /// <summary>
-    /// Constructs a new instance of the <see cref="EntityIntegrationEvent" /> class.
+    /// Saves the current state of the originator.
     /// </summary>
-    public EntityIntegrationEvent() => SetStatus(EventStatus.PENDING);
+    /// <returns>A memento containing the saved state.</returns>
+    IMemento Save();
 
-    /// <inheritdoc/>
-    public string? ErrorMessage { get; init; }
-
-    /// <inheritdoc/>
-    public int AttemptCount { get; init; }
-
-    /// <inheritdoc/>
-    public DateTime? NextAttemptOn { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? ClaimId { get; init; }
+    /// <summary>
+    /// Restores the state of the originator from the given memento.
+    /// </summary>
+    /// <param name="memento">The memento containing the state to restore.</param>
+    void Restore(IMemento memento);
 }

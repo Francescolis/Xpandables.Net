@@ -18,7 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-using Xpandables.Net.Cache;
+using Xpandables.Net.Events.Internals;
 
 namespace Xpandables.Net.Events.Repositories;
 
@@ -44,7 +44,12 @@ public abstract class EventConverter : IEventConverter
     private static readonly MemoryAwareCache<(Type Type, JsonSerializerOptions Options), JsonTypeInfo> _typeInfoCache = new();
     private static readonly MemoryAwareCache<(JsonTypeInfo TypeInfo, JsonSerializerOptions Options), Func<JsonDocument, IEvent>> _deserializerCache = new();
 
-    private static JsonSerializerOptions _serializerOptions = XJsonSerializationOptions.Value;
+    private static JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = null,
+        WriteIndented = true
+    };
 
     /// <summary>
     /// Gets or sets the default options used for JSON serialization and deserialization operations.

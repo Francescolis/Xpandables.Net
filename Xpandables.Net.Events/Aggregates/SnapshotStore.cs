@@ -21,8 +21,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.Events;
-using Xpandables.Net.Events.Aggregates;
-using Xpandables.Net.States;
+using Xpandables.Net.Events.States;
 
 namespace Xpandables.Net.Events.Aggregates;
 
@@ -108,7 +107,7 @@ public sealed class SnapshotStore<TAggregate>(
             .GetLatestSnapshotAsync(streamId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (!envelope.IsEmpty)
+        if (!envelope.HasValue)
         {
             // No snapshot: fallback
             return await aggregateStore
