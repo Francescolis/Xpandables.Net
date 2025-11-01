@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>preview</LangVersion>
-		<Title>Xpandables.Net.AsyncPaged</Title>
-		<Description>IAsyncPagedEnumerable implementation.</Description>
+		<Title>Xpandables.Net.Rests</Title>
+		<Description>Restfull execution.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net.AsyncPaged</AssemblyName>
-		<RootNamespace>Xpandables.Net.AsyncPaged</RootNamespace>
-		<PackageId>Xpandables.Net.AsyncPaged</PackageId>
+		<AssemblyName>Xpandables.Net.Rests</AssemblyName>
+		<RootNamespace>Xpandables.Net.Rests</RootNamespace>
+		<PackageId>Xpandables.Net.Rests</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -30,7 +30,7 @@
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IAsyncPagedEnumerable, IAsyncPagedEnumerator</PackageTags>
+		<PackageTags>IRestRequest, RestResponse, IRestClient</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -82,6 +82,14 @@
 			<PackagePath>\</PackagePath>
 			<Pack>True</Pack>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Xpandables.Net.Rests.Abstractions\Xpandables.Net.Rests.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0-rc.2.25502.107" />
 	</ItemGroup>
 
 </Project>

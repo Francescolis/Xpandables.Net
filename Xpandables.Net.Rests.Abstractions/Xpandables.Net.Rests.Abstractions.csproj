@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net10.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <Platforms>x64</Platforms>
+	  <LangVersion>preview</LangVersion>
+	  <Title>Xpandables.Net.Rests.Abstractions</Title>
+	  <Description>Restfull execution.</Description>
+	  <Company>Kamersoft</Company>
+	  <Authors>Francescolis</Authors>
+
+	  <AssemblyName>Xpandables.Net.Rests.Abstractions</AssemblyName>
+	  <RootNamespace>Xpandables.Net.Rests</RootNamespace>
+	  <PackageId>Xpandables.Net.Rests.Abstractions</PackageId>
+	  <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	  <IncludeSymbols>true</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <IncludeSource>true</IncludeSource>
+	  <EmbedUntrackedSources>true</EmbedUntrackedSources>
+	  <SignAssembly>True</SignAssembly>
+	  <AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+	  <PackageIcon>Xpandables.Net.png</PackageIcon>
+	  <ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <PackageTags>IRestRequest, RestResponse, IRestClient</PackageTags>
+	  <NeutralLanguage>en-US</NeutralLanguage>
+	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+	  <Deterministic>true</Deterministic>
+	  <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	  <DebugType>portable</DebugType>
+
+	  <Version>1.0.0-preview.1</Version>
+	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  <FileVersion>1.0.0.0</FileVersion>
+	  <PackageVersion>1.0.0-preview.1</PackageVersion>
+
+	  <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+	  <AnalysisLevel>latest</AnalysisLevel>
+	  <EnableNETAnalyzers>true</EnableNETAnalyzers>
+	  <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
+	  <AnalysisMode>All</AnalysisMode>
+	  <EnablePackageValidation>false</EnablePackageValidation>
+	  <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+	  <WarningLevel>9999</WarningLevel>
+	  <Copyright>Copyright © Kamersoft 2025</Copyright>
+  </PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>1701;1702;CA1034;</NoWarn>
+		<IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>1701;1702;CA1034;</NoWarn>
+		<IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="Xpandables.Net.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\Xpandables.Net.png" Link="Xpandables.Net.png">
+			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net.ExecutionResults\Xpandables.Net.ExecutionResults.csproj" />
+	</ItemGroup>
+
+</Project>
