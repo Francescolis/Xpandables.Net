@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.States;
+using Xpandables.Net.Tasks.Pipelines;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;
@@ -129,6 +130,51 @@ public static class IEventExtensions
         /// <returns>The updated IServiceCollection instance with the AggregateStore service registered.</returns>
         public IServiceCollection AddXAggregateStoreFor() =>
             services.AddXAggregateStoreFor(typeof(AggregateStore<>));
+
+        /// <summary>
+        /// Registers the XPipeline event store event decorator in the dependency injection container.
+        /// </summary>
+        /// <remarks>This method adds the PipelineEventStoreEventDecorator to the service collection, allowing
+        /// event store events to be processed through the XPipeline decorator mechanism. Use this method to enable event
+        /// decoration in XPipeline-based event store scenarios.</remarks>
+        /// <returns>The same IServiceCollection instance, enabling method chaining.</returns>
+        public IServiceCollection AddXPipelineEventStoreEventDecorator()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXPipelineDecorator(typeof(PipelineEventStoreEventDecorator<>));
+        }
+
+        /// <summary>
+        /// Registers the domain events pipeline decorator and its dependencies with the specified service collection.
+        /// </summary>
+        /// <remarks>This method adds the generic PipelineDomainEventsDecorator to the pipeline and registers the
+        /// PendingDomainEventsBuffer for managing pending domain events. Call this method during application startup to
+        /// enable domain event handling in the pipeline.</remarks>
+        /// <returns>The same service collection instance, with the domain events pipeline decorator and its dependencies registered.</returns>
+        public IServiceCollection AddXPipelineDomainEventsDecorator()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services
+                .AddXPipelineDecorator(typeof(PipelineDomainEventsDecorator<>))
+                .AddScoped<IPendingDomainEventsBuffer, PendingDomainEventsBuffer>();
+        }
+
+        /// <summary>
+        /// Adds the outbox decorator for pipeline integration to the service collection, enabling buffering and reliable
+        /// dispatch of integration events within the pipeline.
+        /// </summary>
+        /// <remarks>This method registers the outbox decorator and a scoped buffer for pending integration
+        /// events, supporting reliable event handling in distributed systems. Call this method during application startup
+        /// to ensure integration events are buffered and dispatched as part of the pipeline execution.</remarks>
+        /// <returns>The same service collection instance, configured with the outbox decorator and event buffering services.</returns>
+        public IServiceCollection AddXPipelineIntegrationOutboxDecorator()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services
+                .AddXPipelineDecorator(typeof(PipelineIntegrationOutboxDecorator<>))
+                .AddScoped<IPendingIntegrationEventsBuffer, PendingIntegrationEventsBuffer>();
+        }
+
 
         /// <summary>
         /// Adds a snapshot-based implementation of the aggregate store to the service collection, enabling support for

@@ -1,6 +1,5 @@
-﻿
-/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+﻿/*******************************************************************************
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Cqrs;
 using Xpandables.Net.Events;
+using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Requests;
+using Xpandables.Net.Requests.Pipelines;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.Tasks.Pipelines;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Provides a pipeline decorator that ensures integration events generated during request processing are reliably

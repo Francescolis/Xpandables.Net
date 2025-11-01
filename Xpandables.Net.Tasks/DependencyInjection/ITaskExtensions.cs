@@ -56,7 +56,7 @@ public static class ITaskExtensions
         /// <item>PreDecorator</item>
         /// <item>PostDecorator</item>
         /// </list>
-        /// In order to register custom pipeline decorators, use the <see cref="AddXPipelineDecorator(IServiceCollection, Type)"/> method.</remarks>
+        /// In order to register custom pipeline decorators, use the <see langword="AddXPipelineDecorator(IServiceCollection, Type)"/> method.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with Mediator services registered. This enables further
         /// configuration of dependency injection.</returns>
         public IServiceCollection AddXMediator() =>
@@ -154,33 +154,6 @@ public static class ITaskExtensions
             }
 
             return services.AddTransient(typeof(IPipelineRequestHandler<>), type);
-        }
-
-        /// <summary>
-        /// Registers the specified pipeline decorator type as a transient implementation of the <see cref="IPipelineDecorator{TRequest}"/>
-        /// interface in the service collection.
-        /// </summary>
-        /// <remarks>Use this method to add custom pipeline decorators to the dependency injection
-        /// container. The decorator type must implement the <see cref="IPipelineDecorator{TRequest}"/> interface to be registered
-        /// successfully.</remarks>
-        /// <param name="pipeline">The type of the pipeline decorator to register. Must implement the <see cref="IPipelineDecorator{TRequest}"/> interface and have
-        /// public constructors.</param>
-        /// <returns>The updated IServiceCollection instance with the pipeline decorator registered.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if pipeline does not implement the <see cref="IPipelineDecorator{TRequest}"/> interface.</exception>
-        public IServiceCollection AddXPipelineDecorator([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicConstructors)] Type pipeline)
-        {
-            ArgumentNullException.ThrowIfNull(pipeline);
-            ArgumentNullException.ThrowIfNull(services);
-
-            if (!pipeline.GetInterfaces().Any(i =>
-                    i.IsGenericType
-                    && i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<>)))
-            {
-                throw new InvalidOperationException(
-                    $"{pipeline.Name} does not implement IPipelineDecorator<,> interface.");
-            }
-
-            return services.AddTransient(typeof(IPipelineDecorator<>), pipeline);
         }
     }
 }

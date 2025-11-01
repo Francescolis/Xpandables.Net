@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,24 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Cqrs;
+using Xpandables.Net.Entities;
 using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Requests;
+using Xpandables.Net.Requests.Pipelines;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.Tasks.Pipelines;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
-/// Implements a pipeline decorator that resolves and injects dependencies into the request during pipeline execution.
+/// The PipelineUnitOfWorkDecorator class is a pipeline decorator that ensures
+/// changes are saved to the database context via the <see cref="IUnitOfWork"/>
+/// after processing the request and response in a pipeline execution.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request object, which must implement <see cref="IDependencyRequest"/>.</typeparam>
-public sealed class PipelineDependencyDecorator<TRequest>(
-    IDependencyManager dependencyManager) : IPipelineDecorator<TRequest>
-    where TRequest : class, IDependencyRequest
+/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresUnitOfWork"/>.</typeparam>
+public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork unitOfWork) :
+    IPipelineDecorator<TRequest>
+    where TRequest : class, IRequest, IRequiresUnitOfWork
 {
     /// <inheritdoc/>
     public async Task<ExecutionResult> HandleAsync(
@@ -36,15 +42,17 @@ public sealed class PipelineDependencyDecorator<TRequest>(
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nextHandler);
 
-        IDependencyProvider dependencyProvider = dependencyManager
-            .GetDependencyProvider(context.Request.DependencyType);
+        try
+        {
+            ExecutionResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-        object dependency = await dependencyProvider
-            .GetDependencyAsync(context.Request, cancellationToken)
-            .ConfigureAwait(false);
-
-        context.Request.DependencyInstance = dependency;
-
-        return await nextHandler(cancellationToken).ConfigureAwait(false);
+            return response;
+        }
+        finally
+        {
+            await unitOfWork
+                .SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 }

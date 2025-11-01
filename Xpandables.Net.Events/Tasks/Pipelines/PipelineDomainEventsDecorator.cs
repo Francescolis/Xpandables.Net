@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Diagnostics.CodeAnalysis;
 
-using Xpandables.Net;
-using Xpandables.Net.Cqrs;
 using Xpandables.Net.Events;
 using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Requests;
+using Xpandables.Net.Requests.Pipelines;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.Tasks.Pipelines;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// A pipeline decorator that processes and publishes domain events after the execution of a request handler.
@@ -44,6 +45,7 @@ public sealed class PipelineDomainEventsDecorator<TRequest>(
 {
     /// <inheritdoc/>
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
