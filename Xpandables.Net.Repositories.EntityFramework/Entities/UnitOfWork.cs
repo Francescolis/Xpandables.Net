@@ -22,9 +22,9 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Entities;
+using Xpandables.Net.Repositories.Entities;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories.Entities;
 
 /// <summary>
 /// Entity Framework Core implementation of the Unit of Work pattern.
@@ -38,11 +38,17 @@ namespace Xpandables.Net.Entities;
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <param name="serviceProvider">service provider for dependency injection of repositories.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
-    DisposableAsync, IUnitOfWork
+public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) : IUnitOfWork
 {
     private readonly DataContext _context = context ?? throw new ArgumentNullException(nameof(context));
     private readonly ConcurrentDictionary<Type, IRepository> _repositories = [];
+
+    /// <summary>
+    /// Gets a value indicating whether the object has been disposed.
+    /// </summary>
+    /// <remarks>Use this property to determine if the object is no longer usable due to disposal. Accessing
+    /// members after disposal may result in exceptions or undefined behavior.</remarks>
+    protected bool IsDisposed { get; set; }
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("Requires unreferenced code.")]
@@ -226,8 +232,24 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
         // base class's Dispose(boolean) method
     }
 
-    /// <inheritdoc />
-    protected override async ValueTask DisposeAsync(bool disposing)
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true).ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Asynchronously releases the unmanaged resources used by the object and, optionally, releases the managed
+    /// resources.
+    /// </summary>
+    /// <remarks>This method is intended to be called by derived classes to implement asynchronous resource
+    /// cleanup. If disposing is true, both managed and unmanaged resources are released; otherwise, only unmanaged
+    /// resources are released. Multiple calls to this method have no effect after the object has been
+    /// disposed.</remarks>
+    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+    /// <returns>A ValueTask that represents the asynchronous dispose operation.</returns>
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (!disposing)
             return;

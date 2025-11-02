@@ -20,7 +20,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Xpandables.Net.Converters;
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
 /// Converts a <see cref="JsonDocument"/> to a <see cref="string"/> and vice versa.

@@ -19,9 +19,7 @@ using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Xpandables.Net.Primitives;
-
-namespace Xpandables.Net.Converters;
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
 /// Provides extension methods for configuring property conversions.
@@ -54,23 +52,6 @@ public static class ConverterExtensions
         builder.Metadata.SetValueComparer(new JsonDocumentValueComparer());
     }
 
-
-    /// <summary>
-    /// Configures the property to use a <see cref="PrimitiveValueConverter{TPrimitive, TValue}"/> 
-    /// for conversion.
-    /// </summary>
-    /// <typeparam name="TPrimitive">The primitive type.</typeparam>
-    /// <typeparam name="TValue">The value type.</typeparam>
-    /// <param name="builder">The property builder to configure.</param>
-    /// <returns>The configured property builder.</returns>
-    public static PropertyBuilder<TPrimitive> HasPrimitiveConversion<TPrimitive, TValue>(
-        this PropertyBuilder<TPrimitive> builder)
-        where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
-        where TValue : notnull
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        return builder.HasConversion<PrimitiveValueConverter<TPrimitive, TValue>>();
-    }
 
     /// <summary>
     /// Configures the property to use a <see cref="ReadOnlyMemoryToByteArrayConverter"/> 

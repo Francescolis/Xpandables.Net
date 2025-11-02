@@ -19,9 +19,9 @@ using System.Data.Common;
 
 using Microsoft.EntityFrameworkCore.Storage;
 
-using Xpandables.Net.Entities;
+using Xpandables.Net.Repositories.Entities;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories.Entities;
 
 /// <summary>
 /// Provides an implementation of the unit of work transaction pattern using an Entity Framework database transaction.
@@ -31,7 +31,7 @@ namespace Xpandables.Net.Entities;
 /// underlying database transaction. Instances of this class are intended to be used within a single transaction scope
 /// and should be disposed when no longer needed.</remarks>
 /// <param name="transaction">The underlying Entity Framework database transaction to be managed by this unit of work transaction. Cannot be null.</param>
-public sealed class UnitOfWorkTransaction(IDbContextTransaction transaction) : DisposableAsync, IUnitOfWorkTransaction
+public sealed class UnitOfWorkTransaction(IDbContextTransaction transaction) : IUnitOfWorkTransaction
 {
     private readonly IDbContextTransaction _transaction = transaction;
 
@@ -56,6 +56,13 @@ public sealed class UnitOfWorkTransaction(IDbContextTransaction transaction) : D
         _transaction.RollbackAsync(cancellationToken);
 
     /// <inheritdoc/>
-    protected override ValueTask DisposeAsync(bool disposing) =>
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true).ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <inheritdoc/>
+    private ValueTask DisposeAsync(bool disposing) =>
         disposing ? _transaction.DisposeAsync() : ValueTask.CompletedTask;
 }

@@ -20,9 +20,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-using Xpandables.Net.Entities;
-
-namespace Xpandables.Net;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents a custom database context that extends <see cref="DbContext"/> to manage entity tracking and state

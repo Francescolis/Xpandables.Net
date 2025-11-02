@@ -20,9 +20,9 @@ using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 
-using Xpandables.Net;
+using Xpandables.Net.Repositories.Entities;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories.Entities;
 
 /// <summary>
 /// Entity Framework Core implementation of the IRepository interface.
@@ -35,8 +35,15 @@ namespace Xpandables.Net.Entities;
 /// </remarks>
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class Repository(DataContext context) : DisposableAsync, IRepository
+public class Repository(DataContext context) : IRepository
 {
+    /// <summary>
+    /// Gets a value indicating whether the object has been disposed.
+    /// </summary>
+    /// <remarks>Use this property to determine if the object is no longer usable due to disposal. Accessing
+    /// members of a disposed object may result in exceptions or undefined behavior.</remarks>
+    protected bool IsDisposed { get; set; }
+
     /// <summary>
     /// Gets a value indicating whether operations are executed within a unit of work context.
     /// </summary>
@@ -224,7 +231,22 @@ public class Repository(DataContext context) : DisposableAsync, IRepository
     }
 
     /// <inheritdoc />
-    protected override ValueTask DisposeAsync(bool disposing)
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true).ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Asynchronously releases resources used by the object, optionally performing a full disposal based on the
+    /// specified flag.
+    /// </summary>
+    /// <remarks>This method does not dispose the associated DbContext. The DbContext should be managed by the
+    /// UnitOfWork or dependency injection container. Override this method to dispose additional resources as
+    /// needed.</remarks>
+    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+    /// <returns>A ValueTask that represents the asynchronous dispose operation.</returns>
+    protected virtual ValueTask DisposeAsync(bool disposing)
     {
         if (!disposing)
             return ValueTask.CompletedTask;

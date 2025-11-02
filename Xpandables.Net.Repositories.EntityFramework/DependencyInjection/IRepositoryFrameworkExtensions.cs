@@ -21,14 +21,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-using Xpandables.Net.Entities;
+using Xpandables.Net.Repositories.DependencyInjection;
+using Xpandables.Net.Repositories.Entities;
 
-namespace Xpandables.Net.DependencyInjection;
+namespace Xpandables.Net.Repositories.DependencyInjection;
 
 /// <summary>
 /// Extension methods for registering Entity Framework repository services.
 /// </summary>
-public static class IEntityFrameworkExtensions
+public static class IRepositoryFrameworkExtensions
 {
     /// <summary>
     /// </summary>

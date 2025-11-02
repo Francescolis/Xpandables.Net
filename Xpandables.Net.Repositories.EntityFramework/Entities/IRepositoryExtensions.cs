@@ -17,9 +17,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-using Xpandables.Net.Entities;
+using Xpandables.Net.Repositories.Entities;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories.Entities;
 
 /// <summary>
 /// Provides extension methods for repository types to enable advanced behaviors such as ambient context injection.
@@ -28,7 +28,6 @@ namespace Xpandables.Net.Entities;
 /// implementations, allowing them to participate in shared data contexts and other coordinated operations. These
 /// extensions are intended to simplify repository integration with infrastructure components such as ambient
 /// contexts.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IRepositoryExtensions
 {
     /// <summary>

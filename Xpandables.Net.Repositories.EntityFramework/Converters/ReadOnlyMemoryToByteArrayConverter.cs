@@ -17,7 +17,7 @@
 ********************************************************************************/
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Xpandables.Net.Converters;
+namespace Xpandables.Net.Repositories.Converters;
 
 /// <summary>
 /// Converts a <see cref="ReadOnlyMemory{T}"/> of byte to a byte array and vice versa.

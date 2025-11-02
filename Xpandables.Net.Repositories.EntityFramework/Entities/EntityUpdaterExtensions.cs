@@ -19,7 +19,9 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace Xpandables.Net.Entities;
+using Xpandables.Net.Repositories.Entities;
+
+namespace Xpandables.Net.Repositories.Entities;
 
 /// <summary>
 /// Provides extension methods for the EntityUpdater type to facilitate dynamic property update operations.
