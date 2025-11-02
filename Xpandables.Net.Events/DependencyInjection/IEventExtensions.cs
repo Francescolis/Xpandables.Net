@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.Events.Internals;
+using Xpandables.Net.Events.Repositories;
 using Xpandables.Net.Tasks.Pipelines;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -44,6 +45,34 @@ public static class IEventExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
+        /// Registers the specified event converter factory type as a singleton implementation of <see
+        /// cref="IEventConverterFactory"/> in the service collection.
+        /// </summary>
+        /// <remarks>If an <see cref="IEventConverterFactory"/> service is already registered, this method
+        /// does not overwrite the existing registration. This method is typically used to enable custom event
+        /// conversion logic in applications that consume event data.</remarks>
+        /// <typeparam name="TEventConverterFactory">The type of the event converter factory to register. Must be a class that implements <see
+        /// cref="IEventConverterFactory"/> and has a public constructor.</typeparam>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the event converter factory registration added.</returns>
+        public IServiceCollection AddXEventConverterFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventConverterFactory>()
+            where TEventConverterFactory : class, IEventConverterFactory
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddSingleton<IEventConverterFactory, TEventConverterFactory>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the default XEvent converter factory to the service collection.
+        /// </summary>
+        /// <remarks>Use this method to enable XEvent conversion capabilities in the application's
+        /// dependency injection container. This is typically required for components that process or convert XEvent
+        /// data.</remarks>
+        /// <returns>The updated service collection with the XEvent converter factory registered.</returns>
+        public IServiceCollection AddXEventConverterFactory() =>
+            services.AddXEventConverterFactory<EventConverterFactory>();
+
+        /// <summary>
         /// Registers a singleton implementation of the specified event cache type resolver in the service collection.
         /// </summary>
         /// <remarks>Use this method to configure dependency injection for event cache type resolution. If
@@ -63,12 +92,25 @@ public static class IEventExtensions
         /// <summary>
         /// Adds the default Event cache type resolver to the service collection.
         /// </summary>
+        /// <param name="assemblies">An optional array of assemblies to register for type resolution. If no assemblies are provided, all non-legacy
+        /// assemblies will be registered.</param>
         /// <remarks>This method registers the EventCacheTypeResolver as the implementation for Event
         /// cache type resolution. Call this method during application startup to enable Event cache type resolution
         /// services.</remarks>
         /// <returns>The same IServiceCollection instance, allowing for method chaining.</returns>
-        public IServiceCollection AddXEventCacheTypeResolver()
-            => services.AddXEventCacheTypeResolver<EventCacheTypeResolver>();
+        [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
+        public IServiceCollection AddXEventCacheTypeResolver(params Assembly[] assemblies)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddSingleton<IEventCacheTypeResolver>(_ =>
+            {
+                var resolver = new EventCacheTypeResolver();
+                resolver.RegisterAssemblies(assemblies);
+                return resolver;
+            });
+
+            return services;
+        }
 
         /// <summary>
         /// Adds the default <see cref="AggregateStore"/> implementation to the service collection for dependency injection.

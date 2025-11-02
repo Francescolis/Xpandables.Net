@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Xpandables.Net.Events.Internals;
 
@@ -32,14 +31,12 @@ namespace Xpandables.Net.Events.Internals;
 /// <remarks>
 /// Initializes a new instance of the CacheTypeResolver class using the specified memory cache.
 /// </remarks>
-/// <param name="memoryCache">The memory cache instance used to store and retrieve type resolution data. Cannot be null.</param>
-/// <exception cref="ArgumentNullException">Thrown if <paramref name="memoryCache"/> is null.</exception>
-public sealed class EventCacheTypeResolver(IMemoryCache memoryCache) : IEventCacheTypeResolver
+public sealed class EventCacheTypeResolver : IEventCacheTypeResolver
 {
-    private readonly IMemoryCache _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+    private readonly ConcurrentDictionary<string, Type> _typeCache = new();
     private Assembly[] _assemblies = [];
     private static readonly string[] _legacyPrefixes =
-        ["System.", "Microsoft.", "netstandard", "WindowsBase", "PresentationCore", "PresentationFramework"];
+        ["System.", "Microsoft.", "netstandard", "WindowsBase", "PresentationCore", "PresentationFramework", "Xpandables"];
 
     /// <summary>
     /// Registers the specified assemblies for type resolution. If no assemblies are provided, registers all assemblies
@@ -49,6 +46,7 @@ public sealed class EventCacheTypeResolver(IMemoryCache memoryCache) : IEventCac
     /// with legacy prefixes are excluded when registering all assemblies from the application domain.</remarks>
     /// <param name="assemblies">An array of assemblies to register for type resolution. If the array is empty or not specified, all non-legacy
     /// assemblies in the current application domain are registered.</param>
+    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     public void RegisterAssemblies(params Assembly[] assemblies)
     {
         _assemblies = assemblies is { Length: > 0 }
@@ -58,10 +56,14 @@ public sealed class EventCacheTypeResolver(IMemoryCache memoryCache) : IEventCac
                 .Where(a => !_legacyPrefixes
                     .Any(prefix => a.GetName().Name!
                         .StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase) == true))];
+
+        _assemblies.SelectMany(a => a.ExportedTypes)
+            .Where(t => typeof(IEvent).IsAssignableFrom(t))
+            .ToList()
+            .ForEach(t => _typeCache.TryAdd(t.Name, t));
     }
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     public Type Resolve(string typeName)
     {
         return TryResolve(typeName)
@@ -69,25 +71,11 @@ public sealed class EventCacheTypeResolver(IMemoryCache memoryCache) : IEventCac
     }
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     public Type? TryResolve(string typeName)
     {
         ArgumentNullException.ThrowIfNull(typeName);
-
-        return _memoryCache.GetOrCreate(
-            $"CacheTypeResolver_TryResolve_{typeName}",
-            entry =>
-            {
-                entry.SetSlidingExpiration(TimeSpan.FromMinutes(30));
-                return ResolveType(typeName);
-            });
-    }
-
-    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
-    private Type? ResolveType(string typeName)
-    {
-        return _assemblies
-            .SelectMany(a => a.ExportedTypes)
-            .FirstOrDefault(t => t.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase));
+        return _typeCache.TryGetValue(typeName, out Type? cachedType)
+            ? cachedType
+            : null;
     }
 }

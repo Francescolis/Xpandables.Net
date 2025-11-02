@@ -112,11 +112,12 @@ public static class ExecutionResultExtensions
         /// <summary>
         /// Converts the current execution result's errors to a new ModelStateDictionary instance.
         /// </summary>
+        /// <param name="isDevelopment">Indicates whether the application is running in a development environment.</param>
         /// <remarks>Use this method to integrate execution result errors with ASP.NET Core model
         /// validation workflows, such as displaying validation messages in views or APIs.</remarks>
         /// <returns>A ModelStateDictionary containing all errors from the execution result. Each error is added under its
         /// associated key. The dictionary will be empty if there are no errors.</returns>
-        public ModelStateDictionary ToModelStateDictionary()
+        public ModelStateDictionary ToModelStateDictionary(bool isDevelopment = false)
         {
             ArgumentNullException.ThrowIfNull(executionResult);
             ModelStateDictionary modelStateDictionary = new();
@@ -128,6 +129,11 @@ public static class ExecutionResultExtensions
                     if (string.IsNullOrWhiteSpace(value)) continue;
                     modelStateDictionary.AddModelError(entry.Key, value);
                 }
+            }
+
+            if (isDevelopment && executionResult.Exception is not null)
+            {
+                modelStateDictionary.AddModelError("exception", executionResult.Exception.ToString());
             }
 
             return modelStateDictionary;
@@ -186,7 +192,7 @@ public static class ExecutionResultExtensions
             var extensions = executionResult.Extensions.ToDictionaryObject();
 
             ProblemDetails problemDetails = executionResult.StatusCode.IsValidationProblem
-                    ? new ValidationProblemDetails(executionResult.ToModelStateDictionary())
+                    ? new ValidationProblemDetails(executionResult.ToModelStateDictionary(isDevelopment))
                     {
                         Title = title,
                         Detail = detail,

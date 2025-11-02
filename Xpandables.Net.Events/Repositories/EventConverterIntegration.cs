@@ -14,15 +14,16 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+
+using Xpandables.Net.Events.Internals;
 
 namespace Xpandables.Net.Events.Repositories;
 
 /// <summary>
 /// Converts event entities to and from <see cref="IIntegrationEvent" />.
 /// </summary>
-public sealed class EventConverterIntegration : EventConverter
+public sealed class EventConverterIntegration(IEventCacheTypeResolver cacheTypeResolver) : EventConverter(cacheTypeResolver)
 {
     /// <inheritdoc />
     public override Type EventType => typeof(IIntegrationEvent);
@@ -40,19 +41,13 @@ public sealed class EventConverterIntegration : EventConverter
     /// <param name="entityInstance">The entity event instance to convert. Cannot be null.</param>
     /// <param name="serializerOptions">The serializer options to use when converting the entity.</param>
     /// <returns>An event representation of the specified entity event instance.</returns>
-    [RequiresUnreferencedCode("May use unreferenced code to convert IEntityEvent to IEvent.")]
-    [RequiresDynamicCode("May use dynamic code to convert IEntityEvent to IEvent.")]
-    public sealed override IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions serializerOptions)
+    public sealed override IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default)
     {
         ArgumentNullException.ThrowIfNull(entityInstance);
 
         try
         {
-            Type eventType = Type.GetType(entityInstance.EventFullName, true)
-                ?? throw new InvalidOperationException(
-                    $"The event type '{entityInstance.EventFullName}' could not be found.");
-
-            IEvent @event = DeserializeJsonDocumentToEvent(entityInstance.EventData, eventType, serializerOptions);
+            IEvent @event = DeserializeEntityToEvent(entityInstance, serializerOptions);
 
             return (IIntegrationEvent)@event;
         }
@@ -71,9 +66,7 @@ public sealed class EventConverterIntegration : EventConverter
     /// <param name="eventInstance">The event instance to convert. Cannot be null.</param>
     /// <param name="serializerOptions">Optional JSON serializer options to use during conversion.</param>
     /// <returns>An <see cref="IEntityEvent"/> that represents the converted event.</returns>
-    [RequiresUnreferencedCode("May use unreferenced code to convert IEntityEvent to IEvent.")]
-    [RequiresDynamicCode("May use dynamic code to convert IEntityEvent to IEvent.")]
-    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions serializerOptions)
+    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default)
     {
         ArgumentNullException.ThrowIfNull(eventInstance);
 
@@ -84,8 +77,7 @@ public sealed class EventConverterIntegration : EventConverter
             return new EntityIntegrationEvent
             {
                 KeyId = integrationEvent.EventId,
-                EventType = integrationEvent.GetType().Name,
-                EventFullName = integrationEvent.GetType().AssemblyQualifiedName!,
+                EventName = integrationEvent.GetEventName(),
                 EventData = SerializeEventToJsonDocument(integrationEvent, serializerOptions)
             };
         }

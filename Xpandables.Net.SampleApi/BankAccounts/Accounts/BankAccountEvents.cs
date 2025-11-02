@@ -19,7 +19,7 @@ public sealed record MoneyDepositEvent : DomainEvent
     public required string Description { get; init; }
 }
 
-public sealed record MoneyWithdrawnEvent : DomainEvent
+public sealed record MoneyWithdrawEvent : DomainEvent
 {
     public required decimal Amount { get; init; }
     public required string Currency { get; init; }

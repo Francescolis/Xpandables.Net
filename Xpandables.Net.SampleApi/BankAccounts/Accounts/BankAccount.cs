@@ -47,6 +47,12 @@ public sealed class BankAccount : AggregateStateContext<BankAccountState>, IAggr
             CurrentState.Balance += @event.Amount;
             CurrentState.AccountNumber = CurrentState.AccountNumber;
         });
+
+        On<MoneyWithdrawEvent>(@event =>
+        {
+            CurrentState.Balance -= @event.Amount;
+            CurrentState.AccountNumber = CurrentState.AccountNumber;
+        });
     }
 
     protected override void OnStateTransitioning(BankAccountState? currentState, BankAccountState newState)

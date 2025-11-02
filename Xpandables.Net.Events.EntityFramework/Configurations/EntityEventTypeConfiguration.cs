@@ -40,8 +40,7 @@ public abstract class EntityEventTypeConfiguration<[DynamicallyAccessedMembers(D
         _ = builder.HasKey(e => e.KeyId);
         _ = builder.Property(e => e.KeyId).IsRequired();
         _ = builder.Property(e => e.Sequence).ValueGeneratedOnAdd();
-        _ = builder.Property(e => e.EventType).IsRequired().HasMaxLength(byte.MaxValue);
-        _ = builder.Property(e => e.EventFullName).IsRequired();
+        _ = builder.Property(e => e.EventName).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.EventData).IsRequired();
         _ = builder.Property(e => e.Status).IsRequired().HasMaxLength(byte.MaxValue);
         _ = builder.Property(e => e.CreatedOn).IsRequired();

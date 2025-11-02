@@ -64,10 +64,7 @@ public abstract class EntityEvent : IEntityEvent
             : null;
     }
     /// <inheritdoc />
-    public required string EventType { get; init; }
-
-    /// <inheritdoc />
-    public required string EventFullName { get; init; }
+    public required string EventName { get; init; }
 
     /// <inheritdoc />
     public required JsonDocument EventData { get; init; }

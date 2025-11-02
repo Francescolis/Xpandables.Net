@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 namespace Xpandables.Net.Events.Internals;
 
 /// <summary>
@@ -32,10 +30,9 @@ public interface IEventCacheTypeResolver
     /// Resolves a type by its name and returns the corresponding <see cref="Type"/> object.
     /// </summary>
     /// <param name="typeName">The name of the type to resolve. Cannot be null or empty.</param>
-    /// <returns>A <see cref="Type"/> object representing the resolved type, or <see langword="null"/> if the type cannot be
+    /// <returns>A <see cref="Type"/> object representing the resolved type, or throws <see cref="InvalidOperationException"/> if the type cannot be
     /// found.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the type cannot be resolved.</exception>
-    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     Type Resolve(string typeName);
 
     /// <summary>
@@ -45,6 +42,5 @@ public interface IEventCacheTypeResolver
     /// to determine whether the resolution was successful.</remarks>
     /// <param name="typeName">The name of the type to resolve. Cannot be null or empty.</param>
     /// <returns>A <see cref="Type"/> object representing the resolved type if found; otherwise, <see langword="null"/>.</returns>
-    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     Type? TryResolve(string typeName);
 }

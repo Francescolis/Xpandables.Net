@@ -31,11 +31,8 @@ public readonly record struct EnvelopeResult
     /// <summary>
     /// Gets the type of the event as a string.
     /// </summary>
-    public readonly required string EventType { get; init; }
-    /// <summary>
-    /// Gets the full name of the event, including any relevant qualifiers or details.
-    /// </summary>
-    public readonly required string EventFullName { get; init; }
+    public readonly required string EventName { get; init; }
+
     /// <summary>
     /// Gets the date and time when the event occurred.
     /// </summary>

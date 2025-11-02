@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -33,14 +31,13 @@ namespace Xpandables.Net.Events;
 /// consistent and fault-tolerant manner. This class supports operations such as enqueuing events, claiming pending
 /// events for processing, marking events as completed, and handling event failures.</remarks>
 /// <param name="context">The data context used for accessing the outbox store.</param>
-public sealed class OutboxStore(OutboxStoreDataContext context) : IOutboxStore
+/// <param name="converterFactory">The factory used to obtain event converters.</param>
+public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterFactory converterFactory) : IOutboxStore
 {
     private readonly OutboxStoreDataContext _db = context
         ?? throw new ArgumentNullException(nameof(context));
 
     /// <inheritdoc />
-    [RequiresDynamicCode("The implementation may use reflection or dynamic code generation.")]
-    [RequiresUnreferencedCode("The implementation may access members that are not statically referenced.")]
     public async Task EnqueueAsync(
         CancellationToken cancellationToken,
         params IIntegrationEvent[] events)
@@ -48,7 +45,7 @@ public sealed class OutboxStore(OutboxStoreDataContext context) : IOutboxStore
         ArgumentNullException.ThrowIfNull(events);
         ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
 
-        var converter = EventConverter.GetConverterFor<IIntegrationEvent>();
+        var converter = converterFactory.GetEventConverter<IIntegrationEvent>();
         var list = new List<IEntityEventIntegration>(events.Length);
 
         foreach (var @event in events)
@@ -63,8 +60,6 @@ public sealed class OutboxStore(OutboxStoreDataContext context) : IOutboxStore
     }
 
     /// <inheritdoc />
-    [RequiresDynamicCode("The implementation may use reflection or dynamic code generation.")]
-    [RequiresUnreferencedCode("The implementation may access members that are not statically referenced.")]
     public async Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
         CancellationToken cancellationToken,
         int maxEvents = 10,
@@ -109,7 +104,7 @@ public sealed class OutboxStore(OutboxStoreDataContext context) : IOutboxStore
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var converter = EventConverter.GetConverterFor<IIntegrationEvent>();
+        var converter = converterFactory.GetEventConverter<IIntegrationEvent>();
         var list = new List<IIntegrationEvent>(claimed.Count);
         foreach (var entity in claimed)
         {

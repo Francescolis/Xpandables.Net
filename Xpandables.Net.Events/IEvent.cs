@@ -30,6 +30,15 @@ public interface IEvent
     /// Gets the unique identifier of the event.
     /// </summary>
     Guid EventId { get; init; }
+
+    /// <summary>
+    /// Gets the name of the event type represented by this instance.
+    /// </summary>
+    /// <remarks>This method returns the name of the class as the event name. Override this method in derived
+    /// classes if a custom event name is required.</remarks>
+    /// <returns>A string containing the name of the event type. The value corresponds to the runtime type name of the current
+    /// object.</returns>
+    public string GetEventName() => GetType().Name;
 }
 
 /// <summary>
