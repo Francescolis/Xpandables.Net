@@ -70,7 +70,10 @@ public static class IEventExtensions
         /// data.</remarks>
         /// <returns>The updated service collection with the XEvent converter factory registered.</returns>
         public IServiceCollection AddXEventConverterFactory() =>
-            services.AddXEventConverterFactory<EventConverterFactory>();
+            services.AddXEventConverterFactory<EventConverterFactory>()
+                .AddSingleton<IEventConverter, EventConverterDomain>()
+                .AddSingleton<IEventConverter, EventConverterIntegration>()
+                .AddSingleton<IEventConverter, EventConverterSnapshot>();
 
         /// <summary>
         /// Registers a singleton implementation of the specified event cache type resolver in the service collection.
@@ -102,13 +105,10 @@ public static class IEventExtensions
         public IServiceCollection AddXEventCacheTypeResolver(params Assembly[] assemblies)
         {
             ArgumentNullException.ThrowIfNull(services);
-            services.TryAddSingleton<IEventCacheTypeResolver>(_ =>
-            {
-                var resolver = new EventCacheTypeResolver();
-                resolver.RegisterAssemblies(assemblies);
-                return resolver;
-            });
+            var resolver = new EventCacheTypeResolver();
+            resolver.RegisterAssemblies(assemblies);
 
+            services.TryAddSingleton<IEventCacheTypeResolver>(resolver);
             return services;
         }
 

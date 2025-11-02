@@ -19,8 +19,10 @@ using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.DependencyInjection.Exports;
@@ -39,6 +41,26 @@ public static class IServiceExportExtensions
 {
     extension(IServiceCollection services)
     {
+        /// <summary>
+        /// Adds the configured <see cref="System.Text.Json.JsonSerializerOptions"/> to the service collection as a
+        /// singleton service.
+        /// </summary>
+        /// <remarks>This method retrieves the <see cref="System.Text.Json.JsonSerializerOptions"/> from
+        /// the application's <see cref="Microsoft.Extensions.Options.IOptions{JsonOptions}"/> and makes it available
+        /// for dependency injection. Use this method to ensure consistent JSON serialization settings throughout the
+        /// application.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> with the <see cref="System.Text.Json.JsonSerializerOptions"/>
+        /// registered as a singleton.</returns>
+        public IServiceCollection AddXJsonSerializerOptions()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddSingleton(provider =>
+            {
+                var options = provider.GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions;
+                return options;
+            });
+        }
+
         /// <summary>
         /// Registers support for resolving <see cref="Lazy{T}"/> dependencies using the <see cref="LazyResolved{T}"/> implementation in the service
         /// collection.

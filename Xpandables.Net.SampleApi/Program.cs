@@ -8,6 +8,7 @@ using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Events;
 using Xpandables.Net.Events.DependencyInjection;
 using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 using Xpandables.Net.SampleApi.EventStorage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,6 +54,7 @@ builder.Services.AddXOutboxStoreDataContext(options =>
 // Register Xpandables.Net services
 builder.Services
     .AddXEndpointRoutes()
+    .AddXJsonSerializerOptions()
     .AddXMinimalApi()
     .AddXMediator()
     .AddXPipelineDomainEventsDecorator()
@@ -71,7 +73,8 @@ builder.Services
     .AddXEventStore()
     .AddXOutboxStore()
     .AddMemoryCache()
-    .AddXEventCacheTypeResolver();
+    .AddXEventConverterFactory()
+    .AddXEventCacheTypeResolver([typeof(BankAccount).Assembly]);
 
 builder.Services.AddSwaggerGen(options =>
 {
