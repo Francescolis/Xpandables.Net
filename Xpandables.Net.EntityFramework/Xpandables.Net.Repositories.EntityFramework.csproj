@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>preview</LangVersion>
 
-		<Title>Xpandables.Net.EntityFramework</Title>
-		<Description>Provide EntityFramework implementation for Xpandables.</Description>
+		<Title>Xpandables.Net.Repositories.EntityFramework</Title>
+		<Description>Provide Repository EntityFramework implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net.EntityFramework</AssemblyName>
-		<RootNamespace>Xpandables.Net</RootNamespace>
-		<PackageId>Xpandables.Net.EntityFramework</PackageId>
+		<AssemblyName>Xpandables.Net.Repositories.EntityFramework</AssemblyName>
+		<RootNamespace>Xpandables.Net.Repositories</RootNamespace>
+		<PackageId>Xpandables.Net.Repositories.EntityFramework</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -21,7 +21,7 @@
 
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IEventStore, IOutboxStore</PackageTags>
+		<PackageTags>IRepository, IUnitOfWork</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -91,10 +91,6 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0-rc.2.25502.107" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0-rc.2.25502.107" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
 	</ItemGroup>
 
 </Project>

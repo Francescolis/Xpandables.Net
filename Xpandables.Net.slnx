@@ -24,7 +24,7 @@
   <Project Path="Xpandables.Net.Benchmarking/Xpandables.Net.Benchmarking.csproj">
     <Platform Project="x64" />
   </Project>
-  <Project Path="Xpandables.Net.EntityFramework/Xpandables.Net.EntityFramework.csproj" Id="026ee8a6-7cae-49c5-af37-082a8313d285">
+  <Project Path="Xpandables.Net.EntityFramework/Xpandables.Net.Repositories.EntityFramework.csproj" Id="026ee8a6-7cae-49c5-af37-082a8313d285">
     <Platform Project="x64" />
   </Project>
   <Project Path="Xpandables.Net.Events.EntityFramework/Xpandables.Net.Events.EntityFramework.csproj" Id="b3ea1318-2447-44df-aac0-d249f4e08b4e">

@@ -30,7 +30,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj" />
-	  <ProjectReference Include="..\Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj" />
+	  <ProjectReference Include="..\Xpandables.Net.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
