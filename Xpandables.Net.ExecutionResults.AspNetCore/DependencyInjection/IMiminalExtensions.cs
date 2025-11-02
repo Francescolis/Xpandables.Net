@@ -17,6 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -39,7 +40,6 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>These extension methods simplify the setup of ExecutionResult support in ASP.NET Core applications,
 /// including registration of response writers, controller MVC options, and minimal JSON serialization options. Call
 /// these methods during application startup to enable XExecutionResult features as needed.</remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IMiminalExtensions
 {
     /// <summary>
@@ -169,6 +169,59 @@ public static class IMiminalExtensions
         {
             ArgumentNullException.ThrowIfNull(services);
             return services.AddXExecutionResultEndpointValidator<ExecutionResultEndpointValidator>();
+        }
+    }
+
+    extension<TBuilder>(TBuilder builder)
+         where TBuilder : IEndpointConventionBuilder
+    {
+        /// <summary>
+        /// Configures the builder with the minimal API setup, including default filtering and execution result
+        /// validation.
+        /// </summary>
+        /// <returns>The builder instance configured for minimal API usage.</returns>
+        public TBuilder WithXMinimalApi() =>
+            builder
+                .WithXMinimalFilter()
+                .WithXExecutionResultValidation();
+
+        /// <summary>
+        /// Adds a minimal execution result filter to the endpoint pipeline.
+        /// </summary>
+        /// <remarks>Use this method to ensure that only essential execution result data is included in
+        /// endpoint responses. This can help reduce payload size and improve performance for scenarios where detailed
+        /// result information is not required.</remarks>
+        /// <returns>The current builder instance with the minimal filter applied.</returns>
+        public TBuilder WithXMinimalFilter() =>
+            builder.AddEndpointFilter<TBuilder, ExecutionResultMinimalFilter>();
+
+        /// <summary>
+        /// Adds an endpoint filter factory that enables execution result validation for endpoints built by this
+        /// builder.
+        /// </summary>
+        /// <remarks>Use this method to ensure that endpoints created with this builder will have
+        /// execution result validation applied. This can help enforce consistent validation logic across multiple
+        /// endpoints.</remarks>
+        /// <returns>The current builder instance with execution result validation enabled.</returns>
+        public TBuilder WithXExecutionResultValidationFactory()
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            builder.AddEndpointFilterFactory(ExecutionResultEndpointValidationFilterFactory.FilterFactory);
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds execution result validation to the endpoint builder pipeline.
+        /// </summary>
+        /// <remarks>This method configures the builder to validate the results of endpoint executions
+        /// using a predefined validation filter. Use this method to ensure that endpoint responses meet expected
+        /// validation criteria before being returned to the client.</remarks>
+        /// <returns>The current builder instance with execution result validation enabled.</returns>
+        public TBuilder WithXExecutionResultValidation()
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            builder.AddEndpointFilter(new ExecutionResultEndpointValidationFilter().InvokeAsync);
+            return builder;
         }
     }
 }

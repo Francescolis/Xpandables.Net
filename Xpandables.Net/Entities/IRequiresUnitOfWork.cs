@@ -14,17 +14,16 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
-/// Represents an annotation with metadata about its usage.
+/// Marker interface to indicate that a request requires automatic 
+/// unit of work management, ensuring database changes are persisted
+/// regardless of the request outcome.
 /// </summary>
-/// <remarks>This interface provides a mechanism to associate metadata, such as the usage timestamp, with an
-/// annotation.</remarks>
-public interface IAnnotation
-{
-    /// <summary>
-    /// The date and time when the annotation was used.
-    /// </summary>
-    public DateTime UsedOn => DateTime.UtcNow;
-}
+/// <remarks>Implement this interface to signal that the implementing class should be used within a unit of work
+/// pattern. This interface does not define any members and serves as a semantic indicator for dependency injection or
+/// other framework-specific behaviors.</remarks>
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequiresUnitOfWork;
+#pragma warning restore CA1040 // Avoid empty interfaces

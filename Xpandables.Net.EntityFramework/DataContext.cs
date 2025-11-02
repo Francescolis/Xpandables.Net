@@ -32,8 +32,6 @@ namespace Xpandables.Net;
 /// default or specified options. It includes event handling for entity tracking and state changes, ensuring that
 /// entities are correctly managed when added or modified. This class is suitable for scenarios where custom behavior is
 /// needed during entity lifecycle events.</remarks>
-[RequiresUnreferencedCode("This context may be used with unreferenced code.")]
-[RequiresDynamicCode("This context may be used with dynamic code.")]
 public class DataContext : DbContext
 {
     /// <summary>

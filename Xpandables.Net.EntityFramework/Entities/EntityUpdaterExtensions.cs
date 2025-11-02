@@ -19,16 +19,13 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.EntityFrameworkCore.Query;
 
-using Xpandables.Net.Entities;
-
-namespace Xpandables.Net;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
 /// Provides extension methods for the EntityUpdater type to facilitate dynamic property update operations.
 /// </summary>
 /// <remarks>Updated for EF Core 10 : returns an <see cref="Action{T}"/> over <see cref="UpdateSettersBuilder{TSource}"/>,
 /// which is what ExecuteUpdate/ExecuteUpdateAsync expects now.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class EntityUpdaterExtensions
 {
     /// <summary>

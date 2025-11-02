@@ -20,9 +20,7 @@ using System.Reflection;
 
 using Microsoft.EntityFrameworkCore.Query;
 
-using Xpandables.Net.Entities;
-
-namespace Xpandables.Net;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
 /// Provides extension methods for converting collections of entity property update expressions to the format required
@@ -30,7 +28,6 @@ namespace Xpandables.Net;
 /// </summary>
 /// <remarks>Updated for EF Core 10 : uses <see cref="UpdateSettersBuilder{TSource}"/> and returns
 /// <see cref="Action{T}"/> delegates compatible with ExecuteUpdate/ExecuteUpdateAsync.</remarks>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IEntityPropertyUpdateExtensions
 {
     private static class MethodCache<TSource>

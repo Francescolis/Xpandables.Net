@@ -19,7 +19,6 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>These extension methods enable modular service registration by discovering and adding services that
 /// implement specific export interfaces. Some methods perform assembly scanning and may be affected by trimming when
 /// publishing applications; ensure that all required types are preserved if trimming is enabled.</remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class IAspNetCoreExtensions
 {
     extension(IServiceCollection services)

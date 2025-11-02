@@ -22,10 +22,9 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net;
 using Xpandables.Net.Entities;
 
-namespace Xpandables.Net;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
 /// Entity Framework Core implementation of the Unit of Work pattern.
@@ -46,7 +45,7 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     private readonly ConcurrentDictionary<Type, IRepository> _repositories = [];
 
     /// <inheritdoc />
-    [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [RequiresUnreferencedCode("Requires unreferenced code.")]
     public virtual TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
         where TRepository : class, IRepository
     {
@@ -274,6 +273,7 @@ public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider ser
     where TDataContext : DataContext
 {
     /// <inheritdoc />
+    [RequiresUnreferencedCode("Requires unreferenced code.")]
     public override TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>() =>
         base.GetRepository<TRepository>();
 }

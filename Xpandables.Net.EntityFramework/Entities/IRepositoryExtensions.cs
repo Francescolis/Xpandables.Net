@@ -17,10 +17,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-using Xpandables.Net;
 using Xpandables.Net.Entities;
 
-namespace Xpandables.Net;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
 /// Provides extension methods for repository types to enable advanced behaviors such as ambient context injection.

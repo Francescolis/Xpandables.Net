@@ -61,8 +61,22 @@
 		<RootNamespace>Xpandables.Net</RootNamespace>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>1701;1702;CA1034;</NoWarn>
+		<IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>1701;1702;CA1034;</NoWarn>
+		<IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
+
 	<ItemGroup>
-	  <Content Include="Xpandables.Net.ico" />
+		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -81,15 +95,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="System.ComponentModel.Composition" Version="10.0.0-rc.2.25502.107" />
+		<PackageReference Include="System.ComponentModel.Composition" Version="10.0.0-rc.2.25502.107" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
+		<ProjectReference Include="..\Xpandables.Net\Xpandables.Net.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Collections\" />
-	</ItemGroup>
-	
 </Project>

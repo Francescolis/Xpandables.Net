@@ -21,9 +21,8 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net;
-using Xpandables.Net.Entities;
 
-namespace Xpandables.Net;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
 /// Entity Framework Core implementation of the IRepository interface.

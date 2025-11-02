@@ -47,14 +47,13 @@ public static class ITaskExtensions
         /// <summary>
         /// Adds Mediator and related pipeline request handler services to the current service collection.
         /// </summary>
-        /// <remarks>it also registers the pipeline request handler services.
-        /// <para>The registration of default pipeline decorators is not included in this method.
-        /// You should add them in this order : </para>
+        /// <remarks>it also registers the pipeline request handler services in this order :
         /// <list type="bullet">
-        /// <item>ExceptionDecorator</item>
-        /// <item>ValidationDecorator</item>
-        /// <item>PreDecorator</item>
-        /// <item>PostDecorator</item>
+        /// <item>PipelinePreDecorator</item>
+        /// <item>PipelinePostDecorator</item>
+        /// <item>PipelineValidationDecorator</item>
+        /// <item>PipelineExceptionDecorator</item>
+        /// <item>PipelineRequestHandler</item>
         /// </list>
         /// In order to register custom pipeline decorators, use the <see langword="AddXPipelineDecorator(IServiceCollection, Type)"/> method.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with Mediator services registered. This enables further
@@ -112,7 +111,19 @@ public static class ITaskExtensions
         /// </summary>
         /// <remarks>Use this method to configure a custom mediator implementation for use within the
         /// application's dependency injection container. The mediator will be resolved as a scoped service, meaning a
-        /// new instance is created per request or scope.</remarks>
+        /// new instance is created per request or scope.
+        /// <para>In order to register the mediator to be used with Event sourcing, add registrations as follow:</para>
+        /// <list type="bullet">
+        /// <item>PipelineDomainEventsDecorator</item>
+        /// <item>PipelineIntegrationOutboxDecorator</item>
+        /// <item>PipelinePreDecorator</item>
+        /// <item>PipelinePostDecorator</item>
+        /// <item>PipelineEventStoreEventDecorator</item>
+        /// <item>PipelineValidationDecorator</item>
+        /// <item>PipelineExceptionDecorator</item>
+        /// <item>PipelineRequestHandler</item>
+        /// </list>
+        /// </remarks>
         /// <typeparam name="TMediator">The type of the mediator to register. Must be a class that implements <see cref="IMediator"/> and have a
         /// public constructor.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> instance with the mediator service registration added.</returns>

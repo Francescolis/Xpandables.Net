@@ -19,10 +19,9 @@ using System.Data.Common;
 
 using Microsoft.EntityFrameworkCore.Storage;
 
-using Xpandables.Net;
 using Xpandables.Net.Entities;
 
-namespace Xpandables.Net;
+namespace Xpandables.Net.Entities;
 
 /// <summary>
 /// Provides an implementation of the unit of work transaction pattern using an Entity Framework database transaction.

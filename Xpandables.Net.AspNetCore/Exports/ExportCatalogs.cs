@@ -20,6 +20,8 @@ using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
+using Xpandables.Net.Collections;
+
 namespace Xpandables.Net.Exports;
 
 /// <summary>
@@ -28,10 +30,8 @@ namespace Xpandables.Net.Exports;
 public sealed class EmptyCatalog : ComposablePartCatalog
 {
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public override IQueryable<ComposablePartDefinition> Parts =>
-       Enumerable.Empty<ComposablePartDefinition>().AsQueryable();
+       new QueryableEmpty<ComposablePartDefinition>();
 }
 
 /// <summary>
