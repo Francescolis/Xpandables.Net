@@ -205,7 +205,7 @@ public sealed class AggregateStore<TAggregate>(
         if (aggregate.IsEmpty)
         {
             throw new ValidationException(new ValidationResult(
-                "The aggregate was not found.",
+                $"The {typeof(TAggregate).Name.SplitTypeName()} was not found.",
                 [nameof(streamId)]), null, streamId);
         }
 
