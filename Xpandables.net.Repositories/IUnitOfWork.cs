@@ -18,7 +18,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents a unit of work that encapsulates a set of operations to 

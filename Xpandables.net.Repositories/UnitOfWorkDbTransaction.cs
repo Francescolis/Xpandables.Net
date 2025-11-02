@@ -17,7 +17,7 @@
 using System.Data;
 using System.Data.Common;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents a unit of work transaction that encapsulates a database transaction.
@@ -26,7 +26,7 @@ namespace Xpandables.Net.Entities;
 /// proper transactional behavior. It also implements asynchronous disposal to  ensure that resources are released
 /// properly in both synchronous and asynchronous contexts.</remarks>
 /// <param name="dbTransaction"></param>
-public sealed class UnitOfWorkDbTransaction(DbTransaction dbTransaction) : DisposableAsync, IUnitOfWorkTransaction
+public sealed class UnitOfWorkDbTransaction(DbTransaction dbTransaction) : IUnitOfWorkTransaction
 {
     private readonly DbTransaction _dbTransaction = dbTransaction;
     private bool _committed;
@@ -151,7 +151,14 @@ public sealed class UnitOfWorkDbTransaction(DbTransaction dbTransaction) : Dispo
     }
 
     /// <inheritdoc/>
-    protected override async ValueTask DisposeAsync(bool disposing)
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true).ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <inheritdoc/>
+    internal async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing && !_isDisposed)
         {
@@ -181,8 +188,6 @@ public sealed class UnitOfWorkDbTransaction(DbTransaction dbTransaction) : Dispo
 
             _isDisposed = true;
         }
-
-        await base.DisposeAsync(disposing).ConfigureAwait(false);
     }
 
     private void ValidateCanRollback()

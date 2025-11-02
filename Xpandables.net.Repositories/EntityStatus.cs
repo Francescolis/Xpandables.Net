@@ -18,10 +18,10 @@ using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
-namespace Xpandables.Net.Events.Repositories;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
-/// Represents an immutable, high-performance event status primitive.
+/// Represents an immutable, high-performance entity status primitive.
 /// Provides predefined status values and efficient validation for .NET 10 applications.
 /// </summary>
 /// <remarks>
@@ -29,7 +29,7 @@ namespace Xpandables.Net.Events.Repositories;
 /// automatic JSON serialization through primitive converters, and comprehensive validation support.
 /// Status values are cached for efficient reuse and comparison operations.
 /// </remarks>
-public static class EventStatus
+public static class EntityStatus
 {
     private static readonly FrozenSet<string> _validStatusNames = CreateValidStatusNames();
     private static FrozenSet<string> CreateValidStatusNames()
@@ -131,20 +131,20 @@ public static class EventStatus
 }
 
 /// <summary>
-/// High-performance validation attribute for EventStatus values with optimized lookup and caching.
+/// High-performance validation attribute for EntityStatus values with optimized lookup and caching.
 /// </summary>
 /// <remarks>
-/// This attribute provides efficient validation of EventStatus values using frozen collections
+/// This attribute provides efficient validation of EntityStatus values using frozen collections
 /// for optimal performance in .NET 10 applications. Supports both predefined and custom status values.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
-public sealed class EventStatusValidationAttribute : ValidationAttribute
+public sealed class EntityStatusValidationAttribute : ValidationAttribute
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventStatusValidationAttribute"/> class.
+    /// Initializes a new instance of the <see cref="EntityStatusValidationAttribute"/> class.
     /// </summary>
     /// <param name="allowCustomStatuses">Whether to allow custom status values beyond predefined ones.</param>
-    public EventStatusValidationAttribute(bool allowCustomStatuses = false)
+    public EntityStatusValidationAttribute(bool allowCustomStatuses = false)
     {
         AllowCustomStatuses = allowCustomStatuses;
         ErrorMessage = allowCustomStatuses
@@ -172,7 +172,7 @@ public sealed class EventStatusValidationAttribute : ValidationAttribute
         null => AllowNull,
         string { Length: 0 } => false,
         string status when AllowCustomStatuses => !string.IsNullOrWhiteSpace(status),
-        string status => EventStatus.IsValidStatus(status),
+        string status => EntityStatus.IsValidStatus(status),
         _ => false
     };
 
@@ -185,7 +185,7 @@ public sealed class EventStatusValidationAttribute : ValidationAttribute
                 ErrorMessageString, name);
         }
 
-        var validStatuses = string.Join(", ", EventStatus.AllStatuses);
+        var validStatuses = string.Join(", ", EntityStatus.AllStatuses);
         return string.Format(System.Globalization.CultureInfo.CurrentCulture,
             ErrorMessageString, validStatuses);
     }

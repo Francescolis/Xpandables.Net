@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Marker interface to indicate that a request requires automatic 

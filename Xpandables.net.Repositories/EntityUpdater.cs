@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Provides static methods for creating entity updaters that specify property updates using either computed or constant

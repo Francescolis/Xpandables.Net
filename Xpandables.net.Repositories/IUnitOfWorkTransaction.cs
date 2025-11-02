@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Data.Common;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents a unit of work transaction that encapsulates a database transaction,  providing methods to commit or roll

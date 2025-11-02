@@ -17,7 +17,7 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents an entity with a unique identifier and lifecycle metadata.

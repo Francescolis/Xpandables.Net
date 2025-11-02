@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-namespace Xpandables.Net.Entities;
+namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Represents a property update expression for entity update operations.
