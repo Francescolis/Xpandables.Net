@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Optionals;
+namespace Xpandables.Net.Primtives.Optionals;
 
 public readonly partial record struct Optional<T>
 {

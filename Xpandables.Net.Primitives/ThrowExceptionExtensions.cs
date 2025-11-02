@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net;
+namespace Xpandables.Net.Primtives;
 
 /// <summary>
 /// Provides extension methods for common abstraction, conversion, formatting, and serialization operations, including
@@ -31,7 +31,7 @@ namespace Xpandables.Net;
 /// asynchronous code, and working with JSON serialization and deserialization. The methods are intended to improve code
 /// readability and reduce boilerplate in application and library development. All methods are implemented as extension
 /// methods for ease of use with existing .NET types.</remarks>
-public static class HelperExtensions
+public static class ThrowExceptionExtensions
 {
     /// <summary>
     /// Throws an InvalidOperationException if the provided function throws an 

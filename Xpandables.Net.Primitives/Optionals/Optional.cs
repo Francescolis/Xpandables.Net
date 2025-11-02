@@ -19,7 +19,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Optionals;
+namespace Xpandables.Net.Primtives.Optionals;
 
 /// <summary>
 /// Represents an optional value that may or may not be present.

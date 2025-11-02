@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net;
+namespace Xpandables.Net.Primtives;
 
 /// <summary>
-/// The default implementation for <see cref="IAsyncDisposable"/> interface.
-/// Every derived class should override the <see cref="DisposeAsync(bool)"/> 
+/// The default implementation for <see cref="IDisposable"/> interface.
+/// Every derived class should override the <see cref="Dispose(bool)"/>
 /// to match its requirement.
 /// This is an <see langword="abstract"/> and serializable class.
 /// </summary>
 [Serializable]
-public abstract class DisposableAsync : IAsyncDisposable
+public abstract class Disposable : IDisposable
 {
     /// <summary>
     /// Gets or sets a value indicating whether this instance is disposed.
@@ -36,8 +36,8 @@ public abstract class DisposableAsync : IAsyncDisposable
     protected bool IsDisposed { get; set; }
 
     /// <summary>
-    /// Public Implementation of DisposeAsync according to .NET 
-    /// Framework Design Guidelines
+    /// Public Implementation of Dispose according to .NET Framework 
+    /// Design Guidelines
     /// callable by consumers.
     /// Do not make this method virtual.
     /// A derived class should not be able to override this method.
@@ -45,43 +45,43 @@ public abstract class DisposableAsync : IAsyncDisposable
     /// <remarks>
     /// <para>
     /// This object will be cleaned up by the Dispose method.
-    /// Therefore, you should call GC.SuppressFinalize to take this 
-    /// object off the finalization queue
-    /// and prevent finalization code for this object from executing 
-    /// a second time only if the finalizer is overridden.
+    /// Therefore, you should call GC.SuppressFinalize to take 
+    /// this object off the finalization queue
+    /// and prevent finalization code for this object 
+    /// from executing a second time.
     /// </para>
-    /// <para>Always use SuppressFinalize() in case a subclass 
-    /// of this type implements a finalizer.</para>
+    /// <para>Always use SuppressFinalize() in case 
+    /// a subclass of this type implements a finalizer.</para>
     /// </remarks>
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await DisposeAsync(true).ConfigureAwait(false);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     /// <summary>
     /// Protected implementation of Dispose pattern.
-    /// When overridden in derived classes, this method 
-    /// get called when the instance will be disposed.
+    /// When overridden in derived classes, this method get 
+    /// called when the instance will be disposed.
     /// </summary>
-    /// <param name="disposing"><see langword="true"/> 
-    /// to release both managed and unmanaged resources;
+    /// <param name="disposing"><see langword="true"/> to 
+    /// release both managed and unmanaged resources;
     /// <see langword="false"/> to release only unmanaged resources.
     /// </param>
     /// <remarks>
     /// <list type="bulleted">
-    /// <see cref="DisposeAsync(bool)"/> executes in two distinct scenarios.
+    /// <see cref="Dispose(bool)"/> executes in two distinct scenarios.
     /// <item>If <paramref name="disposing"/> equals <c>true</c>, 
     /// the method has been called directly
-    /// or indirectly by a user's code. Managed and unmanaged resources 
-    /// can be disposed.</item>
+    /// or indirectly by a user's code. Managed and unmanaged 
+    /// resources can be disposed.</item>
     /// <item>If <paramref name="disposing"/> equals <c>false</c>, 
     /// the method has been called
     /// by the runtime from inside the finalizer and you should 
     /// not reference other objects.
     /// Only unmanaged resources can be disposed.</item></list>
     /// </remarks>
-    protected virtual async ValueTask DisposeAsync(bool disposing)
+    protected virtual void Dispose(bool disposing)
     {
         if (IsDisposed)
         {
@@ -104,8 +104,6 @@ public abstract class DisposableAsync : IAsyncDisposable
         IsDisposed = true;
 
         // If it is available, make the call to the
-        // base class's DisposeAsync(boolean) method
-
-        await Task.CompletedTask.ConfigureAwait(false);
+        // base class's Dispose(boolean) method
     }
 }

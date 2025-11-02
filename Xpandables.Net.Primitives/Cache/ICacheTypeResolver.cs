@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/using System.Diagnostics.CodeAnalysis;
+********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Cache;
+namespace Xpandables.Net.Primtives.Cache;
 
 /// <summary>
 /// Defines a mechanism for resolving .NET types from their string representations, typically for use in caching

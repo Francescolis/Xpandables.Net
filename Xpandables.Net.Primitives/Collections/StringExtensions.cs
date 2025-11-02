@@ -18,7 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 
-namespace Xpandables.Net.Collections;
+namespace Xpandables.Net.Primtives.Collections;
 
 /// <summary>
 /// Provides extension methods for working with string values.

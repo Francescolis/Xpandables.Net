@@ -36,6 +36,9 @@
   <Project Path="Xpandables.Net.ExecutionResults/Xpandables.Net.ExecutionResults.csproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="Xpandables.Net.Primitives/Xpandables.Net.Primitives.csproj" Id="92ba9092-c0fe-424a-8106-ac78aac59f02">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="Xpandables.Net.Repositories.EntityFramework/Xpandables.Net.Repositories.EntityFramework.csproj" Id="026ee8a6-7cae-49c5-af37-082a8313d285">
     <Platform Project="x64" />
   </Project>

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Cache;
+namespace Xpandables.Net.Primtives.Cache;
 
 /// <summary>
 /// Represents a cache entry that holds a weak reference to a target object of type <typeparamref name="T"/>.

@@ -18,7 +18,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Optionals;
+using Xpandables.Net.Primtives.Optionals;
+
+namespace Xpandables.Net.Primtives.Optionals;
 
 /// <summary>
 /// JSON converter factory for Optional&lt;T&gt; types, providing AOT-compatible serialization for .NET 10.

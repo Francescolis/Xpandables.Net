@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Optionals;
+namespace Xpandables.Net.Primtives.Optionals;
 
 [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates")]
 public readonly partial record struct Optional<T>

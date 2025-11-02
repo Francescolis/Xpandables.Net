@@ -19,7 +19,7 @@ using System.Reflection;
 
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Xpandables.Net.Cache;
+namespace Xpandables.Net.Primtives.Cache;
 
 /// <summary>
 /// Provides functionality to resolve .NET types by name, using a memory cache to optimize repeated lookups across
