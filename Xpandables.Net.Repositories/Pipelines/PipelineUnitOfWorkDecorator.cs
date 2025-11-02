@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Entities;
 using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Repositories;
 using Xpandables.Net.Requests;
 using Xpandables.Net.Requests.Pipelines;
 

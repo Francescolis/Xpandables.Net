@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Primtives.Optionals;
+namespace Xpandables.Net.Primitives.Optionals;
 
 /// <summary>
 /// Provides static methods for creating optional values without specifying a type parameter explicitly.

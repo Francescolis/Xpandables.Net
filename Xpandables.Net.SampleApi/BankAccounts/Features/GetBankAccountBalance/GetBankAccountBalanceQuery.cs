@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Cqrs;
+using Xpandables.Net.Requests;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 

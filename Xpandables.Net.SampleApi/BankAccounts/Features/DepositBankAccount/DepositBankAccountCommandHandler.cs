@@ -1,19 +1,19 @@
-﻿
-using Xpandables.Net.Cqrs;
-using Xpandables.Net.Events;
+﻿using Xpandables.Net.Events;
+using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Requests;
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 
-public sealed class DepositBankAccountCommandHandler(IAggregateStore aggregateStore) :
+public sealed class DepositBankAccountCommandHandler(IAggregateStore<BankAccount> aggregateStore) :
     IRequestHandler<DepositBankAccountCommand, DepositBankAccountResult>
 {
     public async Task<ExecutionResult<DepositBankAccountResult>> HandleAsync(
         DepositBankAccountCommand request,
         CancellationToken cancellationToken = default)
     {
-        BankAccount account = (BankAccount)await aggregateStore.LoadAsync(request.AccountId, cancellationToken);
+        BankAccount account = await aggregateStore.LoadAsync(request.AccountId, cancellationToken);
 
         account.CurrentState.Deposit(request.Amount, request.Currency, request.Description);
 

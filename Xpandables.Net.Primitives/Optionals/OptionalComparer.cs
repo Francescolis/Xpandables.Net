@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Collections;
 
-namespace Xpandables.Net.Primtives.Optionals;
+namespace Xpandables.Net.Primitives.Optionals;
 
 public readonly partial record struct Optional<T> :
     IEquatable<Optional<T>>, IEquatable<T>,

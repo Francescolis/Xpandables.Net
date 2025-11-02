@@ -19,6 +19,8 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.Primitives.Cache;
+
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
@@ -38,6 +40,50 @@ public static class IServiceDecoratorExtensions
 {
     extension(IServiceCollection services)
     {
+        /// <summary>
+        /// Registers a singleton implementation of the ICacheTypeResolver interface in the dependency injection
+        /// container.
+        /// </summary>
+        /// <typeparam name="TImplementation">The type that implements ICacheTypeResolver and provides public constructors. This type will be registered
+        /// as a singleton service.</typeparam>
+        /// <returns>The IServiceCollection instance with the ICacheTypeResolver service registered.</returns>
+        public IServiceCollection AddXCacheTypeResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>()
+            where TImplementation : class, ICacheTypeResolver
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddSingleton<ICacheTypeResolver, TImplementation>();
+        }
+
+        /// <summary>
+        /// Registers the specified implementation type as a singleton service for the ICacheTypeResolver interface.
+        /// </summary>
+        /// <param name="implementationType">The type that implements ICacheTypeResolver to be registered. Must have a public constructor and cannot be
+        /// null.</param>
+        /// <returns>The IServiceCollection instance with the ICacheTypeResolver service registration added.</returns>
+        public IServiceCollection AddXCacheTypeResolver(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(implementationType);
+            return services.AddSingleton(
+                typeof(ICacheTypeResolver),
+                implementationType);
+        }
+
+        /// <summary>
+        /// Registers the default implementation of <see cref="ICacheTypeResolver"/> as a singleton service in the
+        /// dependency injection container.
+        /// </summary>
+        /// <remarks>Call this method during application startup to enable type resolution for cache
+        /// operations. The registered <see cref="ICacheTypeResolver"/> will be available for dependency injection
+        /// throughout the application's lifetime.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the <see cref="ICacheTypeResolver"/> service registered.</returns>
+        public IServiceCollection AddXCacheTypeResolver()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddSingleton<ICacheTypeResolver, CacheTypeResolver>();
+        }
+
         /// <summary>
         /// Ensures that the supplied (generic) <typeparamref name="TDecorator"/> 
         /// decorator is returned, wrapping the original registered 

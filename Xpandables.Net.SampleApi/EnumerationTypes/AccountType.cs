@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 using Xpandables.Net.Primitives;
-using Xpandables.Net.Text;
 
 namespace Xpandables.Net.SampleApi.EnumerationTypes;
 

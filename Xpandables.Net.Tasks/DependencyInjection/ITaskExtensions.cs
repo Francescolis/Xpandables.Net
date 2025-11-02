@@ -47,7 +47,7 @@ public static class ITaskExtensions
         /// <summary>
         /// Adds Mediator and related pipeline request handler services to the current service collection.
         /// </summary>
-        /// <remarks>it also registers the pipeline request handler services in this order :
+        /// <remarks>if you want to add pipeline decorators, register handler services in this order :
         /// <list type="bullet">
         /// <item>PipelinePreDecorator</item>
         /// <item>PipelinePostDecorator</item>
@@ -55,17 +55,21 @@ public static class ITaskExtensions
         /// <item>PipelineExceptionDecorator</item>
         /// <item>PipelineRequestHandler</item>
         /// </list>
+        /// <para>In order to register the mediator to be used with Event sourcing, add registrations as follow:</para>
+        /// <list type="bullet">
+        /// <item>PipelineDomainEventsDecorator</item>
+        /// <item>PipelineIntegrationOutboxDecorator</item>
+        /// <item>PipelinePreDecorator</item>
+        /// <item>PipelinePostDecorator</item>
+        /// <item>PipelineEventStoreEventDecorator</item>
+        /// <item>PipelineValidationDecorator</item>
+        /// <item>PipelineExceptionDecorator</item>
+        /// <item>PipelineRequestHandler</item>
+        /// </list>
         /// In order to register custom pipeline decorators, use the <see langword="AddXPipelineDecorator(IServiceCollection, Type)"/> method.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with Mediator services registered. This enables further
         /// configuration of dependency injection.</returns>
-        public IServiceCollection AddXMediator() =>
-            services
-                .AddXMediator<Mediator>()
-                .AddXPipelinePreDecorator()
-                .AddXPipelinePostDecorator()
-                .AddXPipelineValidationDecorator()
-                .AddXPipelineExceptionDecorator()
-                .AddXPipelineRequestHandler();
+        public IServiceCollection AddXMediator() => services.AddXMediator<Mediator>();
 
         /// <summary>
         /// Adds the default post-processing decorator to the pipeline configuration for all registered pipeline

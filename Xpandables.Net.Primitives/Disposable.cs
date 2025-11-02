@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Primtives;
+namespace Xpandables.Net.Primitives;
 
 /// <summary>
 /// The default implementation for <see cref="IDisposable"/> interface.

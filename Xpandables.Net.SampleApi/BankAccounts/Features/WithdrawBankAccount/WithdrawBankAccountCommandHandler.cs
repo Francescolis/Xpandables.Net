@@ -1,12 +1,12 @@
-﻿
-using Xpandables.Net.Cqrs;
-using Xpandables.Net.Events;
+﻿using Xpandables.Net.Events;
+using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Requests;
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.WithdrawBankAccount;
 
-public sealed class WithdrawBankAccountCommandHandler(IAggregateStore aggregateStore) :
+public sealed class WithdrawBankAccountCommandHandler(IAggregateStore<BankAccount> aggregateStore) :
     IRequestHandler<WithdrawBankAccountCommand, WithdrawBankAccountResult>
 {
     public async Task<ExecutionResult<WithdrawBankAccountResult>> HandleAsync(
@@ -14,7 +14,7 @@ public sealed class WithdrawBankAccountCommandHandler(IAggregateStore aggregateS
         CancellationToken cancellationToken = default)
     {
         var bankAccount = await aggregateStore
-            .LoadAsync<BankAccount>(request.AccountId, cancellationToken)
+            .LoadAsync(request.AccountId, cancellationToken)
             .ConfigureAwait(false);
 
         bankAccount.CurrentState.Withdraw(request.Amount, request.Currency, request.Description);

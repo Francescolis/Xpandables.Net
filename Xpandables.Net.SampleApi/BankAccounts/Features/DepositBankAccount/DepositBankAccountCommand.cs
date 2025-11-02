@@ -2,9 +2,9 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Cqrs;
-using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.Events;
+using Xpandables.Net.ExecutionResults.DataAnnotations;
+using Xpandables.Net.Requests;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 

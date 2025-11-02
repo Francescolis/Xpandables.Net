@@ -5,8 +5,8 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 using Xpandables.Net.DependencyInjection;
-
 using Xpandables.Net.Events;
+using Xpandables.Net.Events.DependencyInjection;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.SampleApi.EventStorage;
 
@@ -54,7 +54,15 @@ builder.Services.AddXOutboxStoreDataContext(options =>
 builder.Services
     .AddXEndpointRoutes()
     .AddXMinimalApi()
-    .AddXMediatorWithEventSourcing()
+    .AddXMediator()
+    .AddXPipelineDomainEventsDecorator()
+    .AddXPipelineIntegrationOutboxDecorator()
+    .AddXPipelineRequestHandler()
+    .AddXPipelinePostDecorator()
+    .AddXPipelineEventStoreEventDecorator()
+    .AddXPipelineValidationDecorator()
+    .AddXPipelineExceptionDecorator()
+    .AddXPipelineRequestHandler()
     .AddXRequestHandlers()
     .AddXEventUnitOfWork()
     .AddXPublisher()
@@ -63,7 +71,7 @@ builder.Services
     .AddXEventStore()
     .AddXOutboxStore()
     .AddMemoryCache()
-    .AddXCacheTypeResolver();
+    .AddXEventCacheTypeResolver();
 
 builder.Services.AddSwaggerGen(options =>
 {

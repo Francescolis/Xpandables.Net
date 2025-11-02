@@ -1,6 +1,5 @@
 ﻿
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Routing;
 using Xpandables.Net.Tasks;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;

@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Primtives.Optionals;
+using Xpandables.Net.Primitives.Optionals;
 
-namespace Xpandables.Net.Primtives.Optionals;
+namespace Xpandables.Net.Primitives.Optionals;
 
 /// <summary>
 /// Provides extension methods for working with synchronous and asynchronous enumerable sequences, enabling additional

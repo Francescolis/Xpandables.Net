@@ -21,9 +21,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.Primtives;
-
-namespace Xpandables.Net.Text;
+namespace Xpandables.Net.Primitives;
 
 /// <summary>
 /// Attribute to specify a custom JSON converter for a primitive type, optimized for .NET 10 AOT scenarios.

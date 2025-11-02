@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Primtives.Collections;
+namespace Xpandables.Net.Primitives.Collections;
 
 /// <summary>
 /// Provides extension methods for working with <see cref="IEnumerable{T}"/> sequences.

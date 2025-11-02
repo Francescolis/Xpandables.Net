@@ -17,7 +17,7 @@
 ********************************************************************************/
 using System.Collections.Concurrent;
 
-namespace Xpandables.Net.Primtives.Cache;
+namespace Xpandables.Net.Primitives.Cache;
 
 /// <summary>
 /// Represents a thread-safe cache that stores values using weak references and automatically removes expired or

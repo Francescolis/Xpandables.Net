@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
-namespace Xpandables.Net.Primtives;
+namespace Xpandables.Net.Primitives;
 
 /// <summary>
 /// Provides access to the default JSON serialization options used for web-based scenarios.

@@ -1,4 +1,4 @@
-﻿using Xpandables.Net.Events;
+﻿using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.SampleApi.EnumerationTypes;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Accounts;

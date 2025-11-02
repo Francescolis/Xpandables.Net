@@ -20,7 +20,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Primtives;
+namespace Xpandables.Net.Primitives;
 
 /// <summary>
 /// Provides extension methods for common abstraction, conversion, formatting, and serialization operations, including

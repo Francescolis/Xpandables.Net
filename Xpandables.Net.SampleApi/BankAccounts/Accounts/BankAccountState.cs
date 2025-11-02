@@ -1,4 +1,4 @@
-﻿using Xpandables.Net.States;
+﻿using Xpandables.Net.Events.States;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Accounts;
 

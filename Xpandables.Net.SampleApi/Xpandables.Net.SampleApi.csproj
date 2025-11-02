@@ -22,5 +22,13 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Xpandables.Net.DependencyIjnection\Xpandables.Net.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.Events.EntityFramework\Xpandables.Net.Events.EntityFramework.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.ExecutionResults.AspNetCore\Xpandables.Net.ExecutionResults.AspNetCore.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj" />
+  </ItemGroup>
+
 
 </Project>
