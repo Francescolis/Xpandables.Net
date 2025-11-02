@@ -14,7 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Exports;
+
+namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>
 /// Interface for adding service exports to the service collection.

@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.Exports;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Xpandables.Net.DependencyInjection;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Interface for adding services to the service collection.
@@ -35,7 +37,6 @@ public interface IAddService
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="configuration">The configuration to use for adding services.</param>
-    public void AddServices(
-        IServiceCollection services,
-        IConfiguration configuration) => AddServices(services);
+    public void AddServices(IServiceCollection services, IConfiguration configuration) =>
+        AddServices(services);
 }

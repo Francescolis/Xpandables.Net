@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.Exports;
+using Xpandables.Net.DependencyInjection.Exports;
 
 
 namespace Xpandables.Net.DependencyInjection;
@@ -32,7 +32,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>These extension methods enable modular service registration by discovering and adding services that
 /// implement specific export interfaces. Some methods perform assembly scanning and may be affected by trimming when
 /// publishing applications; ensure that all required types are preserved if trimming is enabled.</remarks>
-public static class IServiceExportExtensions
+public static class IServiceExportWebExtensions
 {
     extension(WebApplication application)
     {
@@ -62,7 +62,7 @@ public static class IServiceExportExtensions
             ExportOptions options = new();
             configureOptions(options);
 
-            IAspNetCoreExtensions.ApplyServiceExports<IUseServiceExport>(
+            IServiceExportExtensions.ApplyServiceExports<IUseServiceExport>(
                 options, exports =>
                 {
                     foreach (IUseServiceExport export in exports)

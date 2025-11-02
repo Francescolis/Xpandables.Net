@@ -17,7 +17,7 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Builder;
 
-namespace Xpandables.Net.Exports;
+namespace Xpandables.Net.DependencyInjection;
 
 /// <summary>  
 /// Defines a contract for a service that configures middleware for a 
