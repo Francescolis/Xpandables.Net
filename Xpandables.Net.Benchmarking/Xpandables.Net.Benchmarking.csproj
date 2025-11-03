@@ -13,7 +13,7 @@
     <RootNamespace>Xpandables.Net.Benchmarking</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.4" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xpandables.Net.AsyncPaged\Xpandables.Net.AsyncPaged.csproj" />
