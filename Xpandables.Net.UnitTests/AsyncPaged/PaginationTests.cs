@@ -37,7 +37,7 @@ public sealed class PaginationTests
         // Act
         Pagination pagination = Pagination.Create(pageSize, currentPage, continuationToken, totalCount);
 
-     // Assert
+        // Assert
         pagination.PageSize.Should().Be(pageSize);
         pagination.CurrentPage.Should().Be(currentPage);
         pagination.ContinuationToken.Should().Be(continuationToken);
@@ -49,7 +49,7 @@ public sealed class PaginationTests
     [InlineData(1, -1)]
     public void Create_WithNegativeValues_ShouldThrowArgumentOutOfRangeException(int pageSize, int currentPage)
     {
-      // Act
+        // Act
         Action act = () => Pagination.Create(pageSize, currentPage);
 
         // Assert
@@ -59,8 +59,8 @@ public sealed class PaginationTests
     [Fact]
     public void Create_WithNegativeTotalCount_ShouldThrowArgumentOutOfRangeException()
     {
-     // Act
-     Action act = () => Pagination.Create(10, 1, null, -1);
+        // Act
+        Action act = () => Pagination.Create(10, 1, null, -1);
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -69,7 +69,7 @@ public sealed class PaginationTests
     [Fact]
     public void FromTotalCount_WithValidTotalCount_ShouldReturnPaginationWithTotalCount()
     {
-  // Arrange
+        // Arrange
         const int totalCount = 50;
 
         // Act
@@ -78,14 +78,14 @@ public sealed class PaginationTests
         // Assert
         pagination.TotalCount.Should().Be(totalCount);
         pagination.PageSize.Should().Be(0);
-     pagination.CurrentPage.Should().Be(0);
+        pagination.CurrentPage.Should().Be(0);
         pagination.ContinuationToken.Should().BeNull();
     }
 
     [Fact]
     public void FromTotalCount_WithNegativeTotalCount_ShouldThrowArgumentOutOfRangeException()
     {
-    // Act
+        // Act
         Action act = () => Pagination.FromTotalCount(-1);
 
         // Assert
@@ -99,20 +99,20 @@ public sealed class PaginationTests
         Pagination pagination = Pagination.Empty;
 
         // Assert
-     pagination.PageSize.Should().Be(0);
+        pagination.PageSize.Should().Be(0);
         pagination.CurrentPage.Should().Be(0);
         pagination.ContinuationToken.Should().BeNull();
-      pagination.TotalCount.Should().BeNull();
+        pagination.TotalCount.Should().BeNull();
     }
 
     [Fact]
     public void NextPage_ShouldIncrementCurrentPageAndUpdateToken()
     {
         // Arrange
-  Pagination pagination = Pagination.Create(10, 1, null, 100);
+        Pagination pagination = Pagination.Create(10, 1, null, 100);
         const string newToken = "nextToken";
 
-    // Act
+        // Act
         Pagination nextPage = pagination.NextPage(newToken);
 
         // Assert
@@ -125,15 +125,15 @@ public sealed class PaginationTests
     [Fact]
     public void PreviousPage_WhenHasPreviousPage_ShouldDecrementCurrentPage()
     {
-   // Arrange
+        // Arrange
         Pagination pagination = Pagination.Create(10, 3, "token", 100);
 
         // Act
         Pagination previousPage = pagination.PreviousPage();
 
         // Assert
-      previousPage.CurrentPage.Should().Be(2);
-    previousPage.ContinuationToken.Should().BeNull();
+        previousPage.CurrentPage.Should().Be(2);
+        previousPage.ContinuationToken.Should().BeNull();
     }
 
     [Fact]
@@ -142,26 +142,26 @@ public sealed class PaginationTests
         // Arrange
         Pagination pagination = Pagination.Create(10, 1, "token", 100);
 
-      // Act
-  Pagination previousPage = pagination.PreviousPage();
+        // Act
+        Pagination previousPage = pagination.PreviousPage();
 
         // Assert
-     previousPage.Should().Be(pagination);
+        previousPage.Should().Be(pagination);
     }
 
     [Fact]
- public void WithTotalCount_ShouldUpdateTotalCount()
+    public void WithTotalCount_ShouldUpdateTotalCount()
     {
-   // Arrange
-      Pagination pagination = Pagination.Create(10, 1);
+        // Arrange
+        Pagination pagination = Pagination.Create(10, 1);
         const int newTotalCount = 200;
 
-      // Act
+        // Act
         Pagination updated = pagination.WithTotalCount(newTotalCount);
 
         // Assert
         updated.TotalCount.Should().Be(newTotalCount);
-  updated.PageSize.Should().Be(pagination.PageSize);
+        updated.PageSize.Should().Be(pagination.PageSize);
         updated.CurrentPage.Should().Be(pagination.CurrentPage);
     }
 
@@ -172,7 +172,7 @@ public sealed class PaginationTests
         Pagination pagination = Pagination.Create(10, 1);
 
         // Act
- Action act = () => pagination.WithTotalCount(-1);
+        Action act = () => pagination.WithTotalCount(-1);
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -184,7 +184,7 @@ public sealed class PaginationTests
     [InlineData(100, false)]
     public void IsUnknown_ShouldReturnCorrectValue(int? totalCount, bool expectedIsUnknown)
     {
-// Arrange
+        // Arrange
         Pagination pagination = Pagination.Create(10, 1, null, totalCount);
 
         // Act & Assert
@@ -198,17 +198,17 @@ public sealed class PaginationTests
     [InlineData(0, 5, 0)]
     public void Skip_ShouldCalculateCorrectSkipValue(int pageSize, int currentPage, int expectedSkip)
     {
-     // Arrange
+        // Arrange
         Pagination pagination = Pagination.Create(pageSize, currentPage);
 
         // Act & Assert
         pagination.Skip.Should().Be(expectedSkip);
     }
 
-  [Fact]
+    [Fact]
     public void Take_ShouldReturnPageSize()
     {
-   // Arrange
+        // Arrange
         const int pageSize = 25;
         Pagination pagination = Pagination.Create(pageSize, 1);
 
@@ -223,7 +223,7 @@ public sealed class PaginationTests
     public void HasContinuation_ShouldReturnCorrectValue(string? token, bool expectedHasContinuation)
     {
         // Arrange
-     Pagination pagination = Pagination.Create(10, 1, token, 100);
+        Pagination pagination = Pagination.Create(10, 1, token, 100);
 
         // Act & Assert
         pagination.HasContinuation.Should().Be(expectedHasContinuation);
@@ -235,15 +235,15 @@ public sealed class PaginationTests
     [InlineData(2, false)]
     public void IsFirstPage_ShouldReturnCorrectValue(int currentPage, bool expectedIsFirstPage)
     {
- // Arrange
+        // Arrange
         Pagination pagination = Pagination.Create(10, currentPage);
 
-     // Act & Assert
+        // Act & Assert
         pagination.IsFirstPage.Should().Be(expectedIsFirstPage);
     }
 
     [Theory]
- [InlineData(10, 10, 100, true)]  // Last page
+    [InlineData(10, 10, 100, true)]  // Last page
     [InlineData(10, 9, 100, false)]  // Not last page
     [InlineData(10, 1, null, false)] // Unknown total
     [InlineData(0, 1, 100, false)]   // Zero page size
@@ -252,7 +252,7 @@ public sealed class PaginationTests
         // Arrange
         Pagination pagination = Pagination.Create(pageSize, currentPage, null, totalCount);
 
-  // Act & Assert
+        // Act & Assert
         pagination.IsLastPage.Should().Be(expectedIsLastPage);
     }
 
@@ -265,19 +265,19 @@ public sealed class PaginationTests
         // Arrange
         Pagination pagination = Pagination.Create(10, currentPage);
 
-  // Act & Assert
+        // Act & Assert
         pagination.HasPreviousPage.Should().Be(expectedHasPreviousPage);
     }
 
-  [Theory]
+    [Theory]
     [InlineData(10, 5, 100, true)] // Has next page
     [InlineData(10, 10, 100, false)] // Last page
     [InlineData(10, 1, null, false)] // Unknown total
-  [InlineData(0, 1, 100, false)]   // Zero page size
+    [InlineData(0, 1, 100, false)]   // Zero page size
     public void HasNextPage_ShouldReturnCorrectValue(int pageSize, int currentPage, int? totalCount, bool expectedHasNextPage)
     {
         // Arrange
-   Pagination pagination = Pagination.Create(pageSize, currentPage, null, totalCount);
+        Pagination pagination = Pagination.Create(pageSize, currentPage, null, totalCount);
 
         // Act & Assert
         pagination.HasNextPage.Should().Be(expectedHasNextPage);
@@ -288,14 +288,14 @@ public sealed class PaginationTests
     [InlineData(10, 0, false)] // PageSize > 0 but currentPage 0
     [InlineData(0, 5, false)] // CurrentPage > 0 but pageSize 0
     [InlineData(10, 5, true)]
-  public void IsPaginated_ShouldReturnCorrectValue(int skip, int take, bool expectedIsPaginated)
+    public void IsPaginated_ShouldReturnCorrectValue(int skip, int take, bool expectedIsPaginated)
     {
         // Arrange
- int pageSize = take;
+        int pageSize = take;
         int currentPage = skip > 0 && take > 0 ? (skip / take) + 1 : 0;
-      Pagination pagination = Pagination.Create(pageSize, currentPage);
+        Pagination pagination = Pagination.Create(pageSize, currentPage);
 
-     // Act & Assert
+        // Act & Assert
         pagination.IsPaginated.Should().Be(expectedIsPaginated);
     }
 
@@ -308,24 +308,24 @@ public sealed class PaginationTests
     public void TotalPages_ShouldCalculateCorrectly(int pageSize, int? totalCount, int? expectedTotalPages)
     {
         // Arrange
-      Pagination pagination = Pagination.Create(pageSize, 1, null, totalCount);
+        Pagination pagination = Pagination.Create(pageSize, 1, null, totalCount);
 
         // Act & Assert
         pagination.TotalPages.Should().Be(expectedTotalPages);
-  }
+    }
 
     [Fact]
     public void Pagination_ShouldBeRecordStruct_WithValueSemantics()
     {
-      // Arrange
-    Pagination pagination1 = Pagination.Create(10, 1, "token", 100);
-     Pagination pagination2 = Pagination.Create(10, 1, "token", 100);
+        // Arrange
+        Pagination pagination1 = Pagination.Create(10, 1, "token", 100);
+        Pagination pagination2 = Pagination.Create(10, 1, "token", 100);
         Pagination pagination3 = Pagination.Create(10, 2, "token", 100);
 
         // Act & Assert
-    (pagination1 == pagination2).Should().BeTrue();
-(pagination1 != pagination3).Should().BeTrue();
-    pagination1.GetHashCode().Should().Be(pagination2.GetHashCode());
+        (pagination1 == pagination2).Should().BeTrue();
+        (pagination1 != pagination3).Should().BeTrue();
+        pagination1.GetHashCode().Should().Be(pagination2.GetHashCode());
     }
 
     [Fact]
@@ -338,7 +338,7 @@ public sealed class PaginationTests
         string result = pagination.ToString();
 
         // Assert
- result.Should().NotBeNullOrEmpty();
+        result.Should().NotBeNullOrEmpty();
         result.Should().Contain("10"); // PageSize
         result.Should().Contain("2");  // CurrentPage
     }

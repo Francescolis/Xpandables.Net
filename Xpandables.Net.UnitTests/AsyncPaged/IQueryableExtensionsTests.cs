@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using FluentAssertions;
 using Xpandables.Net.AsyncPaged;
 
@@ -26,16 +27,16 @@ public sealed class IQueryableExtensionsTests
 {
     [Fact]
     public void ToAsyncPagedEnumerable_WithValidQueryable_ShouldReturnPagedEnumerable()
-{
+    {
         // Arrange
-     IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable();
+        IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable();
 
-      // Act
-      IAsyncPagedEnumerable<int> result = queryable.ToAsyncPagedEnumerable();
+        // Act
+        IAsyncPagedEnumerable<int> result = queryable.ToAsyncPagedEnumerable();
 
         // Assert
         result.Should().NotBeNull();
-      result.Type.Should().Be(typeof(int));
+        result.Type.Should().Be(typeof(int));
     }
 
     [Fact]
@@ -44,7 +45,7 @@ public sealed class IQueryableExtensionsTests
         // Arrange
         IQueryable<int> nullQueryable = null!;
 
-// Act
+        // Act
         Action act = () => nullQueryable.ToAsyncPagedEnumerable();
 
         // Assert
@@ -54,35 +55,35 @@ public sealed class IQueryableExtensionsTests
     [Fact]
     public async Task ToAsyncPagedEnumerable_WithSkipAndTake_ShouldExtractPaginationCorrectly()
     {
-   // Arrange
+        // Arrange
         IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable()
- .Skip(20)
+            .Skip(20)
             .Take(10);
 
         // Act
-   IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
-   Pagination pagination = await pagedEnumerable.GetPaginationAsync();
+        IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
+        Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
-  // Assert
-   pagination.PageSize.Should().Be(10);
-   pagination.CurrentPage.Should().Be(3); // (20 / 10) + 1
- pagination.TotalCount.Should().Be(100);
-  }
+        // Assert
+        pagination.PageSize.Should().Be(10);
+        pagination.CurrentPage.Should().Be(3); // (20 / 10) + 1
+        pagination.TotalCount.Should().Be(100);
+    }
 
     [Fact]
     public async Task ToAsyncPagedEnumerable_WithOnlySkip_ShouldHandleCorrectly()
     {
         // Arrange
-    IQueryable<int> queryable = Enumerable.Range(1, 50).AsQueryable()
+        IQueryable<int> queryable = Enumerable.Range(1, 50).AsQueryable()
             .Skip(10);
 
         // Act
         IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
-    Pagination pagination = await pagedEnumerable.GetPaginationAsync();
+        Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
         // Assert
         pagination.PageSize.Should().Be(0);
-     pagination.CurrentPage.Should().Be(0);
+        pagination.CurrentPage.Should().Be(0);
         pagination.TotalCount.Should().Be(50);
     }
 
@@ -93,7 +94,7 @@ public sealed class IQueryableExtensionsTests
         IQueryable<int> queryable = Enumerable.Range(1, 50).AsQueryable()
             .Take(15);
 
-  // Act
+        // Act
         IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
         Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
@@ -107,35 +108,35 @@ public sealed class IQueryableExtensionsTests
     public async Task ToAsyncPagedEnumerable_WithoutPaginationOperators_ShouldReturnDefaultPagination()
     {
         // Arrange
-     IQueryable<int> queryable = Enumerable.Range(1, 25).AsQueryable();
+        IQueryable<int> queryable = Enumerable.Range(1, 25).AsQueryable();
 
         // Act
-  IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
+        IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
         Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
         // Assert
-  pagination.PageSize.Should().Be(0);
-      pagination.CurrentPage.Should().Be(0);
+        pagination.PageSize.Should().Be(0);
+        pagination.CurrentPage.Should().Be(0);
         pagination.TotalCount.Should().Be(25);
     }
 
     [Fact]
     public async Task ToAsyncPagedEnumerable_ShouldEnumerateAllItems()
     {
- // Arrange
+        // Arrange
         IQueryable<int> queryable = Enumerable.Range(1, 10).AsQueryable()
-   .Skip(3)
+            .Skip(3)
             .Take(4);
 
-    // Act
-IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
+        // Act
+        IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
         var items = new List<int>();
         await foreach (var item in pagedEnumerable)
-  {
-      items.Add(item);
+        {
+            items.Add(item);
         }
 
-    // Assert
+        // Assert
         items.Should().Equal(4, 5, 6, 7);
     }
 
@@ -147,7 +148,7 @@ IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
         Func<CancellationToken, ValueTask<long>> nullFactory = null!;
 
         // Act
-Action act = () => queryable.ToAsyncPagedEnumerable(nullFactory);
+        Action act = () => queryable.ToAsyncPagedEnumerable(nullFactory);
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -157,19 +158,19 @@ Action act = () => queryable.ToAsyncPagedEnumerable(nullFactory);
     public async Task ToAsyncPagedEnumerable_WithCustomTotalFactory_ShouldUseCustomTotal()
     {
         // Arrange
-  IQueryable<int> queryable = Enumerable.Range(1, 50).AsQueryable()
-  .Skip(10)
-  .Take(5);
+        IQueryable<int> queryable = Enumerable.Range(1, 50).AsQueryable()
+            .Skip(10)
+            .Take(5);
         Func<CancellationToken, ValueTask<long>> customTotalFactory = _ =>
             new ValueTask<long>(500); // Custom total count
 
         // Act
         IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable(customTotalFactory);
-Pagination pagination = await pagedEnumerable.GetPaginationAsync();
+        Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
         // Assert
         pagination.TotalCount.Should().Be(500);
-   pagination.PageSize.Should().Be(5);
+        pagination.PageSize.Should().Be(5);
         pagination.CurrentPage.Should().Be(3); // (10 / 5) + 1
     }
 
@@ -180,28 +181,28 @@ Pagination pagination = await pagedEnumerable.GetPaginationAsync();
         IQueryable<Person> queryable = new[]
         {
             new Person("Alice", 30),
-       new Person("Bob", 25),
+            new Person("Bob", 25),
             new Person("Charlie", 35),
-          new Person("David", 40),
-         new Person("Eve", 28)
+            new Person("David", 40),
+            new Person("Eve", 28)
         }.AsQueryable()
-        .Where(p => p.Age > 25)
-        .OrderBy(p => p.Name)
-        .Skip(1)
-        .Take(2);
+            .Where(p => p.Age > 25)
+            .OrderBy(p => p.Name)
+            .Skip(1)
+            .Take(2);
 
-   // Act
-  IAsyncPagedEnumerable<Person> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
+        // Act
+        IAsyncPagedEnumerable<Person> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
         Pagination pagination = await pagedEnumerable.GetPaginationAsync();
         var items = new List<Person>();
- await foreach (var item in pagedEnumerable)
+        await foreach (var item in pagedEnumerable)
         {
-   items.Add(item);
+            items.Add(item);
         }
 
-  // Assert
+        // Assert
         pagination.PageSize.Should().Be(2);
-    // Skip 1 with page size 2 means (1 / 2) + 1 = 1 (integer division)
+        // Skip 1 with page size 2 means (1 / 2) + 1 = 1 (integer division)
         pagination.CurrentPage.Should().Be(1);
         items.Should().HaveCount(2);
     }
@@ -209,16 +210,16 @@ Pagination pagination = await pagedEnumerable.GetPaginationAsync();
     [Fact]
     public async Task ToAsyncPagedEnumerable_WithEmptyQueryable_ShouldHandleCorrectly()
     {
-      // Arrange
+        // Arrange
         IQueryable<int> queryable = Enumerable.Empty<int>().AsQueryable();
 
         // Act
         IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
         Pagination pagination = await pagedEnumerable.GetPaginationAsync();
         var items = new List<int>();
-     await foreach (var item in pagedEnumerable)
+        await foreach (var item in pagedEnumerable)
         {
-      items.Add(item);
+            items.Add(item);
         }
 
         // Assert
@@ -229,43 +230,43 @@ Pagination pagination = await pagedEnumerable.GetPaginationAsync();
     [Fact]
     public async Task ToAsyncPagedEnumerable_WithMultipleSkipTakeCalls_ShouldUseLatestValues()
     {
-      // Arrange
-     IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable()
- .Skip(10)
-        .Take(20)
-         .Skip(5)
-     .Take(10);
+        // Arrange
+        IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable()
+            .Skip(10)
+            .Take(20)
+            .Skip(5)
+            .Take(10);
 
         // Act
         IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
         Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
         // Assert
-  // The query analyzer should handle multiple Skip/Take operations
+        // The query analyzer should handle multiple Skip/Take operations
         pagination.PageSize.Should().BeGreaterThan(0);
         pagination.TotalCount.Should().Be(100);
     }
 
-[Fact]
+    [Fact]
     public async Task ToAsyncPagedEnumerable_WithCancellation_ShouldRespectCancellationToken()
     {
- // Arrange
-  using var cts = new CancellationTokenSource();
+        // Arrange
+        using var cts = new CancellationTokenSource();
         IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable()
             .Skip(10)
-    .Take(20);
+            .Take(20);
 
-     // Act
+        // Act
         IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable(async ct =>
         {
-     await Task.Delay(200, ct);
-return 100;
+            await Task.Delay(200, ct);
+            return 100;
         });
 
         cts.CancelAfter(50);
-    Func<Task> act = async () => await pagedEnumerable.GetPaginationAsync(cts.Token);
+        Func<Task> act = async () => await pagedEnumerable.GetPaginationAsync(cts.Token);
 
-    // Assert
+        // Assert
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
@@ -275,19 +276,19 @@ return 100;
         // Arrange - Simulating first page request
         const int pageSize = 10;
         const int pageNumber = 1;
-    IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable()
-       .Skip((pageNumber - 1) * pageSize)
-  .Take(pageSize);
+        IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable()
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
 
         // Act
-   IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
-  Pagination pagination = await pagedEnumerable.GetPaginationAsync();
+        IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
+        Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
         // Assert
         pagination.PageSize.Should().Be(10);
         pagination.CurrentPage.Should().Be(1);
         pagination.TotalCount.Should().Be(100);
-      pagination.TotalPages.Should().Be(10);
+        pagination.TotalPages.Should().Be(10);
         pagination.HasPreviousPage.Should().BeFalse();
         pagination.HasNextPage.Should().BeTrue();
     }
@@ -296,11 +297,11 @@ return 100;
     public async Task ToAsyncPagedEnumerable_WithLastPageRequest_ShouldCalculateCorrectly()
     {
         // Arrange - Simulating last page request
-   const int pageSize = 10;
+        const int pageSize = 10;
         const int pageNumber = 10;
         IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable()
- .Skip((pageNumber - 1) * pageSize)
-      .Take(pageSize);
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
 
         // Act
         IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
@@ -311,7 +312,7 @@ return 100;
         pagination.CurrentPage.Should().Be(10);
         pagination.TotalCount.Should().Be(100);
         pagination.IsLastPage.Should().BeTrue();
-    pagination.HasNextPage.Should().BeFalse();
+        pagination.HasNextPage.Should().BeFalse();
         pagination.HasPreviousPage.Should().BeTrue();
     }
 
@@ -319,23 +320,23 @@ return 100;
     public async Task ToAsyncPagedEnumerable_WithMiddlePageRequest_ShouldCalculateCorrectly()
     {
         // Arrange - Simulating middle page request
-  const int pageSize = 15;
+        const int pageSize = 15;
         const int pageNumber = 4;
         IQueryable<int> queryable = Enumerable.Range(1, 100).AsQueryable()
-      .Skip((pageNumber - 1) * pageSize)
-       .Take(pageSize);
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
 
         // Act
         IAsyncPagedEnumerable<int> pagedEnumerable = queryable.ToAsyncPagedEnumerable();
-      Pagination pagination = await pagedEnumerable.GetPaginationAsync();
+        Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
         // Assert
         pagination.PageSize.Should().Be(15);
-      pagination.CurrentPage.Should().Be(4);
+        pagination.CurrentPage.Should().Be(4);
         pagination.TotalCount.Should().Be(100);
         pagination.HasPreviousPage.Should().BeTrue();
-      pagination.HasNextPage.Should().BeTrue();
-      pagination.IsFirstPage.Should().BeFalse();
+        pagination.HasNextPage.Should().BeTrue();
+        pagination.IsFirstPage.Should().BeFalse();
         pagination.IsLastPage.Should().BeFalse();
     }
 

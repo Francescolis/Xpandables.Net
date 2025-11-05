@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using FluentAssertions;
 using Xpandables.Net.AsyncPaged;
 
@@ -28,11 +29,11 @@ public sealed class AsyncPagedEnumerableTests
     public async Task Constructor_WithAsyncEnumerableAndFactory_ShouldCreateInstance()
     {
         // Arrange
-  var source = CreateAsyncEnumerable(1, 2, 3);
-    Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-   new ValueTask<Pagination>(Pagination.Create(10, 1, null, 100));
+        var source = CreateAsyncEnumerable(1, 2, 3);
+        Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
+            new ValueTask<Pagination>(Pagination.Create(10, 1, null, 100));
 
-// Act
+        // Act
         var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
         // Assert
@@ -42,18 +43,18 @@ public sealed class AsyncPagedEnumerableTests
 
     [Fact]
     public void Constructor_WithNullSource_ShouldThrowArgumentNullException()
-  {
-    // Arrange
+    {
+        // Arrange
         IAsyncEnumerable<int> nullSource = null!;
-    Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-  new ValueTask<Pagination>(Pagination.Create(10, 1));
+        Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
+            new ValueTask<Pagination>(Pagination.Create(10, 1));
 
         // Act
         Action act = () => new AsyncPagedEnumerable<int>(nullSource, factory);
 
-     // Assert
-      act.Should().Throw<ArgumentNullException>()
-        .WithParameterName("source");
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("source");
     }
 
     [Fact]
@@ -63,25 +64,25 @@ public sealed class AsyncPagedEnumerableTests
         var source = CreateAsyncEnumerable(1, 2, 3);
 
         // Act
-      Action act = () => new AsyncPagedEnumerable<int>(source, null!);
+        Action act = () => new AsyncPagedEnumerable<int>(source, null!);
 
         // Assert
-   act.Should().Throw<ArgumentNullException>()
-   .WithParameterName("paginationFactory");
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("paginationFactory");
     }
 
     [Fact]
     public void Constructor_WithQueryable_ShouldCreateInstance()
     {
         // Arrange
-      var queryable = new[] { 1, 2, 3, 4, 5 }.AsQueryable();
+        var queryable = new[] { 1, 2, 3, 4, 5 }.AsQueryable();
 
         // Act
         var pagedEnumerable = new AsyncPagedEnumerable<int>(queryable);
 
         // Assert
         pagedEnumerable.Should().NotBeNull();
-  ((IAsyncPagedEnumerable<int>)pagedEnumerable).Type.Should().Be(typeof(int));
+        ((IAsyncPagedEnumerable<int>)pagedEnumerable).Type.Should().Be(typeof(int));
     }
 
     [Fact]
@@ -90,7 +91,7 @@ public sealed class AsyncPagedEnumerableTests
         // Arrange
         IQueryable<int> nullQueryable = null!;
 
-      // Act
+        // Act
         Action act = () => new AsyncPagedEnumerable<int>(nullQueryable);
 
         // Assert
@@ -98,23 +99,23 @@ public sealed class AsyncPagedEnumerableTests
             .WithParameterName("query");
     }
 
- [Fact]
-  public async Task GetAsyncEnumerator_ShouldEnumerateAllItems()
+    [Fact]
+    public async Task GetAsyncEnumerator_ShouldEnumerateAllItems()
     {
-   // Arrange
-   var source = CreateAsyncEnumerable(1, 2, 3, 4, 5);
+        // Arrange
+        var source = CreateAsyncEnumerable(1, 2, 3, 4, 5);
         Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-          new ValueTask<Pagination>(Pagination.Create(10, 1, null, 5));
+            new ValueTask<Pagination>(Pagination.Create(10, 1, null, 5));
         var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
-      var results = new List<int>();
+        var results = new List<int>();
 
         // Act
         await foreach (var item in pagedEnumerable)
         {
-     results.Add(item);
+            results.Add(item);
         }
 
-  // Assert
+        // Assert
         results.Should().Equal(1, 2, 3, 4, 5);
     }
 
@@ -123,28 +124,28 @@ public sealed class AsyncPagedEnumerableTests
     {
         // Arrange
         var source = CreateAsyncEnumerable(1, 2, 3);
-    Func<CancellationToken, ValueTask<Pagination>> factory = async _ =>
+        Func<CancellationToken, ValueTask<Pagination>> factory = async _ =>
         {
             await Task.Delay(50); // Simulate async work
             return Pagination.Create(10, 1, null, 3);
-   };
-    var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
+        };
+        var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
         // Act
         Pagination pagination = pagedEnumerable.Pagination;
 
         // Assert
-  pagination.Should().Be(Pagination.Empty);
+        pagination.Should().Be(Pagination.Empty);
     }
 
     [Fact]
     public async Task GetPaginationAsync_ShouldComputeAndReturnPagination()
     {
-     // Arrange
-    var source = CreateAsyncEnumerable(1, 2, 3);
+        // Arrange
+        var source = CreateAsyncEnumerable(1, 2, 3);
         Pagination expectedPagination = Pagination.Create(10, 1, "token", 100);
         Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-    new ValueTask<Pagination>(expectedPagination);
+            new ValueTask<Pagination>(expectedPagination);
         var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
         // Act
@@ -157,53 +158,53 @@ public sealed class AsyncPagedEnumerableTests
     [Fact]
     public async Task GetPaginationAsync_CalledMultipleTimes_ShouldReturnSamePagination()
     {
-      // Arrange
+        // Arrange
         int factoryCallCount = 0;
         var source = CreateAsyncEnumerable(1, 2, 3);
         Pagination expectedPagination = Pagination.Create(10, 1, "token", 100);
         Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
         {
-        factoryCallCount++;
+            factoryCallCount++;
             return new ValueTask<Pagination>(expectedPagination);
-  };
-   var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
+        };
+        var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
         // Act
         Pagination pagination1 = await pagedEnumerable.GetPaginationAsync();
         Pagination pagination2 = await pagedEnumerable.GetPaginationAsync();
-  Pagination pagination3 = await pagedEnumerable.GetPaginationAsync();
+        Pagination pagination3 = await pagedEnumerable.GetPaginationAsync();
 
-      // Assert
+        // Assert
         pagination1.Should().Be(expectedPagination);
         pagination2.Should().Be(expectedPagination);
         pagination3.Should().Be(expectedPagination);
-      factoryCallCount.Should().Be(1); // Factory should be called only once
+        factoryCallCount.Should().Be(1); // Factory should be called only once
     }
 
     [Fact]
     public async Task GetPaginationAsync_WithConcurrentCalls_ShouldComputeOnlyOnce()
- {
+    {
         // Arrange
         int factoryCallCount = 0;
-var source = CreateAsyncEnumerable(1, 2, 3);
+        var source = CreateAsyncEnumerable(1, 2, 3);
         Pagination expectedPagination = Pagination.Create(10, 1, "token", 100);
-     Func<CancellationToken, ValueTask<Pagination>> factory = async _ =>
-   {
-    Interlocked.Increment(ref factoryCallCount);
-  await Task.Delay(50); // Simulate async work
-     return expectedPagination;
+        Func<CancellationToken, ValueTask<Pagination>> factory = async _ =>
+        {
+            Interlocked.Increment(ref factoryCallCount);
+            await Task.Delay(50); // Simulate async work
+            return expectedPagination;
         };
-   var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
+        var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
         // Act
         var tasks = Enumerable.Range(0, 10)
-         .Select(_ => pagedEnumerable.GetPaginationAsync())
-   .ToArray();
-  Pagination[] results = await Task.WhenAll(tasks);
+            .Select(_ => pagedEnumerable.GetPaginationAsync())
+            .ToArray();
+        Pagination[] results = await Task.WhenAll(tasks);
 
         // Assert
- results.Should().AllSatisfy(p => p.Should().Be(expectedPagination));
-  factoryCallCount.Should().Be(1); // Factory should be called only once despite concurrent access
+        results.Should().AllSatisfy(p => p.Should().Be(expectedPagination));
+        factoryCallCount.Should().Be(1); // Factory should be called only once despite concurrent access
     }
 
     [Fact]
@@ -213,10 +214,10 @@ var source = CreateAsyncEnumerable(1, 2, 3);
         var source = CreateAsyncEnumerable(1, 2, 3);
         var expectedException = new InvalidOperationException("Test exception");
         Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-    throw expectedException;
+            throw expectedException;
         var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
- // Act
+        // Act
         Func<Task> act = async () => await pagedEnumerable.GetPaginationAsync();
 
         // Assert
@@ -228,10 +229,10 @@ var source = CreateAsyncEnumerable(1, 2, 3);
     public async Task GetPaginationAsync_AfterFactoryThrows_ShouldRethrowSameException()
     {
         // Arrange
-      var source = CreateAsyncEnumerable(1, 2, 3);
+        var source = CreateAsyncEnumerable(1, 2, 3);
         var expectedException = new InvalidOperationException("Test exception");
-   Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-     throw expectedException;
+        Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
+            throw expectedException;
         var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
         // Act & Assert
@@ -249,14 +250,14 @@ var source = CreateAsyncEnumerable(1, 2, 3);
         var source = CreateAsyncEnumerable(1, 2, 3);
         Pagination expectedPagination = Pagination.Create(10, 1, "token", 100);
         Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-          new ValueTask<Pagination>(expectedPagination);
+            new ValueTask<Pagination>(expectedPagination);
         var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
         // Act
         await pagedEnumerable.GetPaginationAsync(); // Trigger computation
-   Pagination pagination = pagedEnumerable.Pagination;
+        Pagination pagination = pagedEnumerable.Pagination;
 
-    // Assert
+        // Assert
         pagination.Should().Be(expectedPagination);
     }
 
@@ -264,7 +265,7 @@ var source = CreateAsyncEnumerable(1, 2, 3);
     public async Task GetPaginationAsync_WithQueryable_ShouldExtractPaginationFromQuery()
     {
         // Arrange
-    var queryable = Enumerable.Range(1, 100).AsQueryable()
+        var queryable = Enumerable.Range(1, 100).AsQueryable()
             .Skip(20)
             .Take(10);
         var pagedEnumerable = new AsyncPagedEnumerable<int>(queryable);
@@ -274,8 +275,8 @@ var source = CreateAsyncEnumerable(1, 2, 3);
 
         // Assert
         pagination.PageSize.Should().Be(10);
-      pagination.CurrentPage.Should().Be(3); // (20 / 10) + 1
-     pagination.TotalCount.Should().Be(100);
+        pagination.CurrentPage.Should().Be(3); // (20 / 10) + 1
+        pagination.TotalCount.Should().Be(100);
     }
 
     [Fact]
@@ -283,17 +284,17 @@ var source = CreateAsyncEnumerable(1, 2, 3);
     {
         // Arrange
         var queryable = Enumerable.Range(1, 50).AsQueryable()
-  .Skip(10)
-     .Take(5);
+            .Skip(10)
+            .Take(5);
         Func<CancellationToken, ValueTask<long>> totalFactory = _ =>
             new ValueTask<long>(200); // Custom total
         var pagedEnumerable = new AsyncPagedEnumerable<int>(queryable, totalFactory);
 
         // Act
-   Pagination pagination = await pagedEnumerable.GetPaginationAsync();
+        Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
         // Assert
-   pagination.PageSize.Should().Be(5);
+        pagination.PageSize.Should().Be(5);
         pagination.CurrentPage.Should().Be(3); // (10 / 5) + 1
         pagination.TotalCount.Should().Be(200); // Custom total
     }
@@ -316,13 +317,13 @@ var source = CreateAsyncEnumerable(1, 2, 3);
 
     [Fact]
     public async Task GetPaginationAsync_WithCancellation_ShouldRespectCancellationToken()
- {
+    {
         // Arrange
-  using var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         var source = CreateAsyncEnumerable(1, 2, 3);
-   Func<CancellationToken, ValueTask<Pagination>> factory = async ct =>
+        Func<CancellationToken, ValueTask<Pagination>> factory = async ct =>
         {
-  await Task.Delay(200, ct);
+            await Task.Delay(200, ct);
             return Pagination.Create(10, 1);
         };
         var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
@@ -336,74 +337,74 @@ var source = CreateAsyncEnumerable(1, 2, 3);
     }
 
     [Fact]
- public async Task GetAsyncEnumerator_WithCancellation_ShouldPassCancellationToSource()
+    public async Task GetAsyncEnumerator_WithCancellation_ShouldPassCancellationToSource()
     {
         // Arrange
-     using var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         var source = CreateCancellableAsyncEnumerable(10, cts.Token);
         Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-   new ValueTask<Pagination>(Pagination.Create(10, 1));
-     var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
+            new ValueTask<Pagination>(Pagination.Create(10, 1));
+        var pagedEnumerable = new AsyncPagedEnumerable<int>(source, factory);
 
-   // Act
-     var enumerator = pagedEnumerable.GetAsyncEnumerator(cts.Token);
-    await enumerator.MoveNextAsync(); // First item
- cts.Cancel();
+        // Act
+        var enumerator = pagedEnumerable.GetAsyncEnumerator(cts.Token);
+        await enumerator.MoveNextAsync(); // First item
+        cts.Cancel();
 
         Func<Task> act = async () => await enumerator.MoveNextAsync();
 
-    // Assert
-   await act.Should().ThrowAsync<OperationCanceledException>();
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
-  [Fact]
+    [Fact]
     public async Task Type_ShouldReturnCorrectElementType()
     {
         // Arrange
-     var source = CreateAsyncEnumerable("a", "b", "c");
+        var source = CreateAsyncEnumerable("a", "b", "c");
         Func<CancellationToken, ValueTask<Pagination>> factory = _ =>
-     new ValueTask<Pagination>(Pagination.Create(10, 1));
-  var pagedEnumerable = new AsyncPagedEnumerable<string>(source, factory);
+            new ValueTask<Pagination>(Pagination.Create(10, 1));
+        var pagedEnumerable = new AsyncPagedEnumerable<string>(source, factory);
 
         // Act & Assert
-      ((IAsyncPagedEnumerable<string>)pagedEnumerable).Type.Should().Be(typeof(string));
+        ((IAsyncPagedEnumerable<string>)pagedEnumerable).Type.Should().Be(typeof(string));
     }
 
     [Fact]
     public async Task GetPaginationAsync_WithQueryableAndTotalCountExceedingIntMax_ShouldClampToIntMax()
     {
         // Arrange
-var queryable = Enumerable.Range(1, 10).AsQueryable().Skip(5).Take(5);
+        var queryable = Enumerable.Range(1, 10).AsQueryable().Skip(5).Take(5);
         Func<CancellationToken, ValueTask<long>> totalFactory = _ =>
             new ValueTask<long>((long)int.MaxValue + 100); // Exceeds int.MaxValue
-  var pagedEnumerable = new AsyncPagedEnumerable<int>(queryable, totalFactory);
+        var pagedEnumerable = new AsyncPagedEnumerable<int>(queryable, totalFactory);
 
-    // Act
+        // Act
         Pagination pagination = await pagedEnumerable.GetPaginationAsync();
 
-   // Assert
-   pagination.TotalCount.Should().Be(int.MaxValue);
+        // Assert
+        pagination.TotalCount.Should().Be(int.MaxValue);
     }
 
     // Helper methods
     private static async IAsyncEnumerable<T> CreateAsyncEnumerable<T>(params T[] items)
- {
-        foreach (var item in items)
     {
-         await Task.Yield();
-  yield return item;
+        foreach (var item in items)
+        {
+            await Task.Yield();
+            yield return item;
         }
     }
 
     private static async IAsyncEnumerable<int> CreateCancellableAsyncEnumerable(
-    int count,
+        int count,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         for (int i = 0; i < count; i++)
-     {
-     cancellationToken.ThrowIfCancellationRequested();
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             await Task.Delay(50, cancellationToken);
             yield return i;
-  }
+        }
     }
 }

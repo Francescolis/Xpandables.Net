@@ -30,15 +30,15 @@ public sealed class PaginationExtensionsTests
 
     [Fact]
     public async Task TakePaged_WithValidCount_ShouldReturnSpecifiedNumberOfElements()
-  {
+    {
         // Arrange
         var source = CreatePagedEnumerable(1, 2, 3, 4, 5);
 
         // Act
-  var result = source.TakePaged(3);
+        var result = source.TakePaged(3);
         var items = await result.ToListAsync();
 
- // Assert
+        // Assert
         items.Should().Equal(1, 2, 3);
     }
 
@@ -46,9 +46,9 @@ public sealed class PaginationExtensionsTests
     public async Task TakePaged_WithZeroCount_ShouldReturnEmpty()
     {
         // Arrange
-      var source = CreatePagedEnumerable(1, 2, 3);
+        var source = CreatePagedEnumerable(1, 2, 3);
 
-      // Act
+        // Act
         var result = source.TakePaged(0);
         var items = await result.ToListAsync();
 
@@ -60,12 +60,12 @@ public sealed class PaginationExtensionsTests
     public void TakePaged_WithNegativeCount_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
-  var source = CreatePagedEnumerable(1, 2, 3);
+        var source = CreatePagedEnumerable(1, 2, 3);
 
-     // Act
-   Action act = () => source.TakePaged(-1);
+        // Act
+        Action act = () => source.TakePaged(-1);
 
-   // Assert
+        // Assert
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
@@ -81,7 +81,7 @@ public sealed class PaginationExtensionsTests
 
         // Assert
         items.Should().Equal(3, 4, 5);
-}
+    }
 
     [Fact]
     public async Task SkipPaged_WithZeroCount_ShouldReturnAllElements()
@@ -94,7 +94,7 @@ public sealed class PaginationExtensionsTests
         var items = await result.ToListAsync();
 
         // Assert
-  items.Should().Equal(1, 2, 3);
+        items.Should().Equal(1, 2, 3);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class PaginationExtensionsTests
         // Arrange
         var source = CreatePagedEnumerable(1, 2, 3);
 
-     // Act
+        // Act
         Action act = () => source.SkipPaged(-1);
 
         // Assert
@@ -121,39 +121,39 @@ public sealed class PaginationExtensionsTests
         var source = CreatePagedEnumerable(1, 2, 3, 4, 5);
 
         // Act
-     var result = source.TakeWhilePaged(x => x < 4);
-     var items = await result.ToListAsync();
+        var result = source.TakeWhilePaged(x => x < 4);
+        var items = await result.ToListAsync();
 
-      // Assert
+        // Assert
         items.Should().Equal(1, 2, 3);
     }
 
     [Fact]
     public async Task TakeWhilePaged_WithIndexedPredicate_ShouldUseIndex()
- {
+    {
         // Arrange
         var source = CreatePagedEnumerable(10, 20, 30, 40, 50);
 
-   // Act
+        // Act
         var result = source.TakeWhilePaged((value, index) => index < 3);
-      var items = await result.ToListAsync();
+        var items = await result.ToListAsync();
 
         // Assert
-    items.Should().Equal(10, 20, 30);
+        items.Should().Equal(10, 20, 30);
     }
 
     [Fact]
     public async Task SkipWhilePaged_WithPredicate_ShouldSkipWhileConditionIsTrue()
     {
         // Arrange
-      var source = CreatePagedEnumerable(1, 2, 3, 4, 5);
+        var source = CreatePagedEnumerable(1, 2, 3, 4, 5);
 
-      // Act
-   var result = source.SkipWhilePaged(x => x < 3);
+        // Act
+        var result = source.SkipWhilePaged(x => x < 3);
         var items = await result.ToListAsync();
 
         // Assert
-      items.Should().Equal(3, 4, 5);
+        items.Should().Equal(3, 4, 5);
     }
 
     [Fact]
@@ -163,11 +163,11 @@ public sealed class PaginationExtensionsTests
         var source = CreatePagedEnumerable(10, 20, 30, 40, 50);
 
         // Act
-  var result = source.SkipWhilePaged((value, index) => index < 2);
+        var result = source.SkipWhilePaged((value, index) => index < 2);
         var items = await result.ToListAsync();
 
         // Assert
-  items.Should().Equal(30, 40, 50);
+        items.Should().Equal(30, 40, 50);
     }
 
     #endregion
@@ -177,15 +177,15 @@ public sealed class PaginationExtensionsTests
     [Fact]
     public async Task TakeLastPaged_ShouldReturnLastNElements()
     {
-      // Arrange
+        // Arrange
         var source = CreatePagedEnumerable(1, 2, 3, 4, 5);
 
-    // Act
+        // Act
         var result = source.TakeLastPaged(3);
-      var items = await result.ToListAsync();
+        var items = await result.ToListAsync();
 
         // Assert
-  items.Should().Equal(3, 4, 5);
+        items.Should().Equal(3, 4, 5);
     }
 
     [Fact]
@@ -196,7 +196,7 @@ public sealed class PaginationExtensionsTests
 
         // Act
         var result = source.TakeLastPaged(0);
-      var items = await result.ToListAsync();
+        var items = await result.ToListAsync();
 
         // Assert
         items.Should().BeEmpty();
@@ -208,37 +208,37 @@ public sealed class PaginationExtensionsTests
         // Arrange
         var source = CreatePagedEnumerable(1, 2, 3, 4, 5);
 
-  // Act
-    var result = source.SkipLastPaged(2);
-     var items = await result.ToListAsync();
+        // Act
+        var result = source.SkipLastPaged(2);
+        var items = await result.ToListAsync();
 
-      // Assert
+        // Assert
         items.Should().Equal(1, 2, 3);
     }
 
-  [Fact]
+    [Fact]
     public async Task SkipLastPaged_WithZeroCount_ShouldReturnAllElements()
     {
         // Arrange
-    var source = CreatePagedEnumerable(1, 2, 3);
+        var source = CreatePagedEnumerable(1, 2, 3);
 
-      // Act
+        // Act
         var result = source.SkipLastPaged(0);
         var items = await result.ToListAsync();
 
-   // Assert
-      items.Should().Equal(1, 2, 3);
+        // Assert
+        items.Should().Equal(1, 2, 3);
     }
 
- #endregion
+    #endregion
 
     #region ChunkPaged
 
- [Fact]
+    [Fact]
     public async Task ChunkPaged_ShouldSplitIntoChunksOfSpecifiedSize()
     {
         // Arrange
-   var source = CreatePagedEnumerable(1, 2, 3, 4, 5, 6, 7);
+        var source = CreatePagedEnumerable(1, 2, 3, 4, 5, 6, 7);
 
         // Act
         var result = source.ChunkPaged(3);
@@ -246,9 +246,9 @@ public sealed class PaginationExtensionsTests
 
         // Assert
         chunks.Should().HaveCount(3);
-   chunks[0].Should().Equal(1, 2, 3);
-  chunks[1].Should().Equal(4, 5, 6);
-     chunks[2].Should().Equal(7);
+        chunks[0].Should().Equal(1, 2, 3);
+        chunks[1].Should().Equal(4, 5, 6);
+        chunks[2].Should().Equal(7);
     }
 
     [Fact]
@@ -257,8 +257,8 @@ public sealed class PaginationExtensionsTests
         // Arrange
         var source = CreatePagedEnumerable(1, 2, 3);
 
- // Act
-    Action act = () => source.ChunkPaged(0);
+        // Act
+        Action act = () => source.ChunkPaged(0);
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -274,23 +274,23 @@ public sealed class PaginationExtensionsTests
         // Arrange
         var source = CreatePagedEnumerable(1, 2, 2, 3, 3, 3, 4);
 
-  // Act
+        // Act
         var result = source.DistinctPaged();
         var items = await result.ToListAsync();
 
-   // Assert
+        // Assert
         items.Should().Equal(1, 2, 3, 4);
     }
 
     [Fact]
     public async Task DistinctPaged_WithComparer_ShouldUseCustomComparer()
-  {
-      // Arrange
-     var source = CreatePagedEnumerable("apple", "APPLE", "banana", "BANANA");
+    {
+        // Arrange
+        var source = CreatePagedEnumerable("apple", "APPLE", "banana", "BANANA");
 
         // Act
-var result = source.DistinctPaged(StringComparer.OrdinalIgnoreCase);
- var items = await result.ToListAsync();
+        var result = source.DistinctPaged(StringComparer.OrdinalIgnoreCase);
+        var items = await result.ToListAsync();
 
         // Assert
         items.Should().HaveCount(2);
@@ -302,10 +302,10 @@ var result = source.DistinctPaged(StringComparer.OrdinalIgnoreCase);
     public async Task DistinctByPaged_WithKeySelector_ShouldReturnDistinctByKey()
     {
         // Arrange
-      var source = CreatePagedEnumerable(
-      new Person("Alice", 30),
+        var source = CreatePagedEnumerable(
+            new Person("Alice", 30),
             new Person("Bob", 25),
- new Person("Alice", 35));
+            new Person("Alice", 35));
 
         // Act
         var result = source.DistinctByPaged(p => p.Name);
@@ -325,13 +325,13 @@ var result = source.DistinctPaged(StringComparer.OrdinalIgnoreCase);
     public async Task WherePaged_WithPredicate_ShouldFilterElements()
     {
         // Arrange
-     var source = CreatePagedEnumerable(1, 2, 3, 4, 5);
+        var source = CreatePagedEnumerable(1, 2, 3, 4, 5);
 
         // Act
         var result = source.WherePaged(x => x % 2 == 0);
         var items = await result.ToListAsync();
 
-      // Assert
+        // Assert
         items.Should().Equal(2, 4);
     }
 
@@ -343,7 +343,7 @@ var result = source.DistinctPaged(StringComparer.OrdinalIgnoreCase);
 
         // Act
         var result = source.WherePaged((value, index) => index % 2 == 0);
-    var items = await result.ToListAsync();
+        var items = await result.ToListAsync();
 
         // Assert
         items.Should().Equal(10, 30, 50);
@@ -353,13 +353,13 @@ var result = source.DistinctPaged(StringComparer.OrdinalIgnoreCase);
     public void WherePaged_WithNullPredicate_ShouldThrowArgumentNullException()
     {
         // Arrange
-    var source = CreatePagedEnumerable(1, 2, 3);
+        var source = CreatePagedEnumerable(1, 2, 3);
 
         // Act
-    Action act = () => source.WherePaged((Func<int, bool>)null!);
+        Action act = () => source.WherePaged((Func<int, bool>)null!);
 
-     // Assert
-     act.Should().Throw<ArgumentNullException>();
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
     }
 
     #endregion
@@ -367,13 +367,13 @@ var result = source.DistinctPaged(StringComparer.OrdinalIgnoreCase);
     #region Pagination Preservation
 
     [Fact]
-public async Task PaginationExtensions_ShouldPreservePaginationMetadata()
+    public async Task PaginationExtensions_ShouldPreservePaginationMetadata()
     {
-  // Arrange
+        // Arrange
         var expectedPagination = Pagination.Create(10, 2, "token123", 100);
         var source = CreatePagedEnumerableWithPagination(
-          new[] { 1, 2, 3, 4, 5 },
-          expectedPagination);
+            new[] { 1, 2, 3, 4, 5 },
+            expectedPagination);
 
         // Act
         var result = source.TakePaged(3);
@@ -386,14 +386,14 @@ public async Task PaginationExtensions_ShouldPreservePaginationMetadata()
     [Fact]
     public async Task CombinedOperations_ShouldWorkCorrectly()
     {
-      // Arrange
+        // Arrange
         var source = CreatePagedEnumerable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
         // Act
-      var result = source
-     .WherePaged(x => x > 2)
-     .SkipPaged(2)
- .TakePaged(3);
+        var result = source
+            .WherePaged(x => x > 2)
+            .SkipPaged(2)
+            .TakePaged(3);
         var items = await result.ToListAsync();
 
         // Assert
@@ -410,10 +410,10 @@ public async Task PaginationExtensions_ShouldPreservePaginationMetadata()
         // Arrange
         IAsyncPagedEnumerable<int> nullSource = null!;
 
-     // Act
+        // Act
         Action act = () => nullSource.TakePaged(5);
 
-    // Assert
+        // Assert
         act.Should().Throw<ArgumentNullException>();
     }
 
@@ -421,24 +421,24 @@ public async Task PaginationExtensions_ShouldPreservePaginationMetadata()
     public void SkipPaged_WithNullSource_ShouldThrowArgumentNullException()
     {
         // Arrange
-     IAsyncPagedEnumerable<int> nullSource = null!;
+        IAsyncPagedEnumerable<int> nullSource = null!;
 
         // Act
         Action act = () => nullSource.SkipPaged(5);
 
         // Assert
-     act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentNullException>();
     }
 
- [Fact]
+    [Fact]
     public async Task TakePaged_WithCountGreaterThanSourceLength_ShouldReturnAllElements()
     {
-     // Arrange
- var source = CreatePagedEnumerable(1, 2, 3);
+        // Arrange
+        var source = CreatePagedEnumerable(1, 2, 3);
 
         // Act
         var result = source.TakePaged(10);
-   var items = await result.ToListAsync();
+        var items = await result.ToListAsync();
 
         // Assert
         items.Should().Equal(1, 2, 3);
@@ -448,7 +448,7 @@ public async Task PaginationExtensions_ShouldPreservePaginationMetadata()
     public async Task SkipPaged_WithCountGreaterThanSourceLength_ShouldReturnEmpty()
     {
         // Arrange
-    var source = CreatePagedEnumerable(1, 2, 3);
+        var source = CreatePagedEnumerable(1, 2, 3);
 
         // Act
         var result = source.SkipPaged(10);
@@ -467,32 +467,32 @@ public async Task PaginationExtensions_ShouldPreservePaginationMetadata()
         {
             foreach (var item in items)
             {
-  await Task.Yield();
-    yield return item;
-          }
-   }
+                await Task.Yield();
+                yield return item;
+            }
+        }
 
-    return new AsyncPagedEnumerable<T>(
-      AsyncSource(),
-    _ => new ValueTask<Pagination>(Pagination.Create(items.Length, 1, null, items.Length)));
+        return new AsyncPagedEnumerable<T>(
+            AsyncSource(),
+            _ => new ValueTask<Pagination>(Pagination.Create(items.Length, 1, null, items.Length)));
     }
 
     private static IAsyncPagedEnumerable<T> CreatePagedEnumerableWithPagination<T>(
         T[] items,
         Pagination pagination)
     {
-    async IAsyncEnumerable<T> AsyncSource()
+        async IAsyncEnumerable<T> AsyncSource()
         {
-      foreach (var item in items)
+            foreach (var item in items)
             {
-       await Task.Yield();
-       yield return item;
+                await Task.Yield();
+                yield return item;
             }
-  }
+        }
 
         return new AsyncPagedEnumerable<T>(
             AsyncSource(),
-          _ => new ValueTask<Pagination>(pagination));
+            _ => new ValueTask<Pagination>(pagination));
     }
 
     private record Person(string Name, int Age);
@@ -505,10 +505,10 @@ internal static class AsyncPagedEnumerableTestExtensions
 {
     public static async Task<List<T>> ToListAsync<T>(this IAsyncPagedEnumerable<T> source)
     {
-  var list = new List<T>();
+        var list = new List<T>();
         await foreach (var item in source)
         {
-      list.Add(item);
+            list.Add(item);
         }
         return list;
     }

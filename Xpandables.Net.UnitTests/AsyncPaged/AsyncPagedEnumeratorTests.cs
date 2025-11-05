@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using FluentAssertions;
 using Xpandables.Net.AsyncPaged;
 
@@ -27,11 +28,11 @@ public sealed class AsyncPagedEnumeratorTests
     [Fact]
     public async Task MoveNextAsync_WithEmptyEnumerator_ShouldReturnFalse()
     {
-    // Arrange
+        // Arrange
         AsyncPagedEnumerator<int> enumerator = AsyncPagedEnumerator.Empty<int>();
 
-     // Act
-  bool result = await enumerator.MoveNextAsync();
+        // Act
+        bool result = await enumerator.MoveNextAsync();
 
         // Assert
         result.Should().BeFalse();
@@ -48,15 +49,15 @@ public sealed class AsyncPagedEnumeratorTests
 
         // Act
         while (await enumerator.MoveNextAsync())
- {
-         results.Add(enumerator.Current);
+        {
+            results.Add(enumerator.Current);
         }
 
-     // Assert
-results.Should().Equal(1, 2, 3, 4, 5);
+        // Assert
+        results.Should().Equal(1, 2, 3, 4, 5);
     }
 
-  [Fact]
+    [Fact]
     public async Task Pagination_WithNoneStrategy_ShouldNotUpdatePagination()
     {
         // Arrange
@@ -64,15 +65,15 @@ results.Should().Equal(1, 2, 3, 4, 5);
         Pagination initialPagination = Pagination.Create(10, 1, null, 100);
         var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator(), initialPagination);
 
-  // Act
+        // Act
         enumerator.WithStrategy(PaginationStrategy.None);
         while (await enumerator.MoveNextAsync())
         {
-         // Enumerate through all items
+            // Enumerate through all items
         }
 
         // Assert
-      enumerator.Pagination.Should().Be(initialPagination);
+        enumerator.Pagination.Should().Be(initialPagination);
     }
 
     [Fact]
@@ -82,38 +83,38 @@ results.Should().Equal(1, 2, 3, 4, 5);
         var source = CreateAsyncEnumerable(1, 2, 3, 4);
         Pagination initialPagination = Pagination.Create(10, 0, null, 100);
         var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator(), initialPagination)
-       .WithPerItemStrategy();
+            .WithPerItemStrategy();
 
         // Act & Assert
         await enumerator.MoveNextAsync();
         enumerator.Pagination.CurrentPage.Should().Be(1);
 
         await enumerator.MoveNextAsync();
-    enumerator.Pagination.CurrentPage.Should().Be(2);
+        enumerator.Pagination.CurrentPage.Should().Be(2);
 
-  await enumerator.MoveNextAsync();
-   enumerator.Pagination.CurrentPage.Should().Be(3);
+        await enumerator.MoveNextAsync();
+        enumerator.Pagination.CurrentPage.Should().Be(3);
 
         await enumerator.MoveNextAsync();
         enumerator.Pagination.CurrentPage.Should().Be(4);
-  }
+    }
 
     [Fact]
     public async Task Pagination_WithPerItemStrategy_ShouldFinalizeTotalCountAtEnd()
     {
         // Arrange
-    var source = CreateAsyncEnumerable(1, 2, 3);
- Pagination initialPagination = Pagination.Create(10, 0); // No total count
-   var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator(), initialPagination)
-  .WithPerItemStrategy();
+        var source = CreateAsyncEnumerable(1, 2, 3);
+        Pagination initialPagination = Pagination.Create(10, 0); // No total count
+        var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator(), initialPagination)
+            .WithPerItemStrategy();
 
-     // Act
-      while (await enumerator.MoveNextAsync())
+        // Act
+        while (await enumerator.MoveNextAsync())
         {
-     // Enumerate through all items
+            // Enumerate through all items
         }
 
-   // Assert
+        // Assert
         enumerator.Pagination.TotalCount.Should().Be(3);
     }
 
@@ -121,10 +122,10 @@ results.Should().Equal(1, 2, 3, 4, 5);
     public async Task Pagination_WithPerPageStrategy_ShouldUpdateCurrentPageBasedOnPageSize()
     {
         // Arrange
-     var source = CreateAsyncEnumerable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+        var source = CreateAsyncEnumerable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
         Pagination initialPagination = Pagination.Create(3, 0, null, 100); // Page size 3
         var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator(), initialPagination)
-   .WithPerPageStrategy();
+            .WithPerPageStrategy();
 
         // Act & Assert
         await enumerator.MoveNextAsync(); // Item 1
@@ -137,39 +138,39 @@ results.Should().Equal(1, 2, 3, 4, 5);
         enumerator.Pagination.CurrentPage.Should().Be(1);
 
         await enumerator.MoveNextAsync(); // Item 4
- enumerator.Pagination.CurrentPage.Should().Be(2);
+        enumerator.Pagination.CurrentPage.Should().Be(2);
 
         await enumerator.MoveNextAsync(); // Item 5
         enumerator.Pagination.CurrentPage.Should().Be(2);
 
-     await enumerator.MoveNextAsync(); // Item 6
+        await enumerator.MoveNextAsync(); // Item 6
         enumerator.Pagination.CurrentPage.Should().Be(2);
 
         await enumerator.MoveNextAsync(); // Item 7
-      enumerator.Pagination.CurrentPage.Should().Be(3);
+        enumerator.Pagination.CurrentPage.Should().Be(3);
     }
 
     [Fact]
     public async Task WithStrategy_ShouldAllowFluentConfiguration()
- {
-      // Arrange
-   var source = CreateAsyncEnumerable(1, 2, 3);
+    {
+        // Arrange
+        var source = CreateAsyncEnumerable(1, 2, 3);
         var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator());
 
-      // Act
- var result = enumerator.WithStrategy(PaginationStrategy.PerPage);
+        // Act
+        var result = enumerator.WithStrategy(PaginationStrategy.PerPage);
 
         // Assert
- result.Should().BeSameAs(enumerator);
-    enumerator.Strategy.Should().Be(PaginationStrategy.PerPage);
+        result.Should().BeSameAs(enumerator);
+        enumerator.Strategy.Should().Be(PaginationStrategy.PerPage);
     }
 
     [Fact]
     public void WithPerPageStrategy_ShouldSetPerPageStrategy()
     {
         // Arrange
-  var source = CreateAsyncEnumerable(1, 2, 3);
-      var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator());
+        var source = CreateAsyncEnumerable(1, 2, 3);
+        var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator());
 
         // Act
         enumerator.WithPerPageStrategy();
@@ -189,33 +190,33 @@ results.Should().Equal(1, 2, 3, 4, 5);
         enumerator.WithPerItemStrategy();
 
         // Assert
-    enumerator.Strategy.Should().Be(PaginationStrategy.PerItem);
+        enumerator.Strategy.Should().Be(PaginationStrategy.PerItem);
     }
 
     [Fact]
     public void WithNoStrategy_ShouldSetNoneStrategy()
     {
         // Arrange
-      var source = CreateAsyncEnumerable(1, 2, 3);
+        var source = CreateAsyncEnumerable(1, 2, 3);
         var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator())
-       .WithPerPageStrategy(); // Set to non-None first
+            .WithPerPageStrategy(); // Set to non-None first
 
         // Act
         enumerator.WithNoStrategy();
 
-// Assert
-     enumerator.Strategy.Should().Be(PaginationStrategy.None);
+        // Assert
+        enumerator.Strategy.Should().Be(PaginationStrategy.None);
     }
 
     [Fact]
     public async Task DisposeAsync_ShouldDisposeSourceEnumerator()
     {
         // Arrange
-    var disposable = new DisposableAsyncEnumerator<int>(new[] { 1, 2, 3 });
-  var enumerator = AsyncPagedEnumerator.Create(disposable);
+        var disposable = new DisposableAsyncEnumerator<int>(new[] { 1, 2, 3 });
+        var enumerator = AsyncPagedEnumerator.Create(disposable);
 
-  // Act
-  await enumerator.DisposeAsync();
+        // Act
+        await enumerator.DisposeAsync();
 
         // Assert
         disposable.IsDisposed.Should().BeTrue();
@@ -226,27 +227,27 @@ results.Should().Equal(1, 2, 3, 4, 5);
     {
         // Arrange
         var disposable = new DisposableAsyncEnumerator<int>(new[] { 1, 2, 3 });
-    var enumerator = AsyncPagedEnumerator.Create(disposable);
+        var enumerator = AsyncPagedEnumerator.Create(disposable);
 
         // Act
-     await enumerator.DisposeAsync();
+        await enumerator.DisposeAsync();
         await enumerator.DisposeAsync();
         await enumerator.DisposeAsync();
 
-      // Assert
+        // Assert
         disposable.DisposeCount.Should().Be(1);
     }
 
     [Fact]
     public async Task MoveNextAsync_AfterDispose_ShouldThrowObjectDisposedException()
     {
-     // Arrange
+        // Arrange
         var source = CreateAsyncEnumerable(1, 2, 3);
         var enumerator = AsyncPagedEnumerator.Create(source.GetAsyncEnumerator());
         await enumerator.DisposeAsync();
 
         // Act
-     Func<Task> act = async () => await enumerator.MoveNextAsync();
+        Func<Task> act = async () => await enumerator.MoveNextAsync();
 
         // Assert
         await act.Should().ThrowAsync<ObjectDisposedException>();
@@ -256,10 +257,10 @@ results.Should().Equal(1, 2, 3, 4, 5);
     public async Task MoveNextAsync_WithCancellationToken_ShouldStopEnumerating()
     {
         // Arrange
-     using var cts = new CancellationTokenSource();
-var source = CreateCancellableAsyncEnumerable(10, cts.Token);
-     var enumerator = AsyncPagedEnumerator.Create(
-      source.GetAsyncEnumerator(cts.Token),
+        using var cts = new CancellationTokenSource();
+        var source = CreateCancellableAsyncEnumerable(10, cts.Token);
+        var enumerator = AsyncPagedEnumerator.Create(
+            source.GetAsyncEnumerator(cts.Token),
             Pagination.Empty,
             cts.Token);
 
@@ -272,47 +273,47 @@ var source = CreateCancellableAsyncEnumerable(10, cts.Token);
         try
         {
             result = await enumerator.MoveNextAsync();
-     }
-      catch (OperationCanceledException)
+        }
+        catch (OperationCanceledException)
         {
-    // Expected if source throws on cancellation
+            // Expected if source throws on cancellation
         }
 
         // Assert - Either returns false or throws OperationCanceledException
-     result.Should().BeFalse();
+        result.Should().BeFalse();
     }
 
     [Fact]
     public void Create_WithNullEnumerator_ShouldNotThrow()
     {
-     // Arrange & Act
+        // Arrange & Act
         // Note: AsyncPagedEnumerator.Create accepts null and wraps it
         var enumerator = AsyncPagedEnumerator.Create<int>(null!);
 
         // Assert
-   enumerator.Should().NotBeNull();
+        enumerator.Should().NotBeNull();
     }
 
     [Fact]
     public void Empty_ShouldCreateEnumeratorWithEmptyPagination()
     {
-    // Act
+        // Act
         var enumerator = AsyncPagedEnumerator.Empty<string>();
 
         // Assert
-     enumerator.Pagination.Should().Be(Pagination.Empty);
+        enumerator.Pagination.Should().Be(Pagination.Empty);
     }
 
     [Fact]
     public void Empty_WithCustomPagination_ShouldUseProvidedPagination()
     {
-      // Arrange
+        // Arrange
         Pagination customPagination = Pagination.Create(25, 3, "token", 200);
 
-   // Act
+        // Act
         var enumerator = AsyncPagedEnumerator.Empty<int>(customPagination);
 
-    // Assert
+        // Assert
         enumerator.Pagination.Should().Be(customPagination);
     }
 
@@ -326,16 +327,16 @@ var source = CreateCancellableAsyncEnumerable(10, cts.Token);
             .WithPerPageStrategy();
 
         // Act
-      while (await enumerator.MoveNextAsync())
+        while (await enumerator.MoveNextAsync())
         {
             // Enumerate
         }
 
- // Assert
+        // Assert
         enumerator.Pagination.CurrentPage.Should().Be(1); // Should remain unchanged
     }
 
-[Fact]
+    [Fact]
     public void ExtensionMethods_WithNullEnumerator_ShouldThrowArgumentNullException()
     {
         // Arrange
@@ -356,19 +357,19 @@ var source = CreateCancellableAsyncEnumerable(10, cts.Token);
     {
         foreach (var item in items)
         {
-      await Task.Yield();
+            await Task.Yield();
             yield return item;
         }
     }
 
     private static async IAsyncEnumerable<int> CreateCancellableAsyncEnumerable(
-   int count,
-  [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
- for (int i = 0; i < count; i++)
+        int count,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        for (int i = 0; i < count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-   await Task.Delay(10, cancellationToken);
+            await Task.Delay(10, cancellationToken);
             yield return i;
         }
     }
@@ -379,12 +380,12 @@ var source = CreateCancellableAsyncEnumerable(10, cts.Token);
         private readonly T[] _items;
         private int _index = -1;
 
-   public DisposableAsyncEnumerator(T[] items)
-   {
-   _items = items;
+        public DisposableAsyncEnumerator(T[] items)
+        {
+            _items = items;
         }
 
-public T Current => _index >= 0 && _index < _items.Length ? _items[_index] : default!;
+        public T Current => _index >= 0 && _index < _items.Length ? _items[_index] : default!;
 
         public bool IsDisposed { get; private set; }
         public int DisposeCount { get; private set; }
@@ -392,16 +393,16 @@ public T Current => _index >= 0 && _index < _items.Length ? _items[_index] : def
         public ValueTask<bool> MoveNextAsync()
         {
             _index++;
-       return new ValueTask<bool>(_index < _items.Length);
+            return new ValueTask<bool>(_index < _items.Length);
         }
 
- public ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
-     if (!IsDisposed)
-   {
-        IsDisposed = true;
-  DisposeCount++;
-}
+            if (!IsDisposed)
+            {
+                IsDisposed = true;
+                DisposeCount++;
+            }
             return ValueTask.CompletedTask;
         }
     }
