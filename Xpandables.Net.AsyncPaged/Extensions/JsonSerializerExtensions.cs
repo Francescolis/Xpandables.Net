@@ -422,10 +422,18 @@ public static class JsonSerializerExtensions
             writer.WritePropertyName("items"u8);
             writer.WriteStartArray();
 
-            // PERFORMANCE: Batch flushing - reduce I/O operations
-            // Flush every N items instead of every item for better throughput
+            // PERFORMANCE: Adaptive batch flushing based on known pagination
+            // For small datasets, flush less frequently to reduce overhead
+            // For large datasets, flush more frequently to prevent buffer bloat
             int itemCount = 0;
-            const int FlushBatchSize = 100; // Tune based on item size and network latency
+            int flushBatchSize = pagination.TotalCount switch
+            {
+                null => 100,                    // Unknown size: use default
+                < 1_000 => 200,                 // Small: flush less often
+                < 10_000 => 100,                // Medium: default
+                < 100_000 => 50,                // Large: flush more often
+                _ => 25                         // Very large: flush frequently
+            };
 
             await foreach (TValue item in pagedEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
@@ -433,7 +441,7 @@ public static class JsonSerializerExtensions
                 serializeItem(writer, item, options);
                 
                 // PERFORMANCE: Flush in batches to reduce system calls
-                if (++itemCount % FlushBatchSize == 0)
+                if (++itemCount % flushBatchSize == 0)
                 {
                     await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -566,9 +574,17 @@ public static class JsonSerializerExtensions
                 return;
             }
 
-            // PERFORMANCE: Batch flushing in reflection-based enumeration
+            // PERFORMANCE: Adaptive batch flushing for non-generic path
+            Pagination pagination = pagedEnumerable.Pagination;
             int itemCount = 0;
-            const int FlushBatchSize = 100;
+            int flushBatchSize = pagination.TotalCount switch
+            {
+                null => 100,
+                < 1_000 => 200,
+                < 10_000 => 100,
+                < 100_000 => 50,
+                _ => 25
+            };
 
             while (true)
             {
@@ -589,8 +605,8 @@ public static class JsonSerializerExtensions
                 object? current = currentProperty.GetValue(enumerator);
                 serializeItem(writer, current, options);
                 
-                // PERFORMANCE: Flush in batches to reduce I/O overhead
-                if (++itemCount % FlushBatchSize == 0)
+                // PERFORMANCE: Flush in adaptive batches
+                if (++itemCount % flushBatchSize == 0)
                 {
                     await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }

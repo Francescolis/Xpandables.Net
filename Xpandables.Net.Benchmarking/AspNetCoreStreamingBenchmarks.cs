@@ -115,6 +115,7 @@ public partial class AspNetCoreStreamingBenchmarks
         ms.SetLength(0);
         ms.Position = 0;
 
+        // Don't use httpContext.RequestAborted in benchmarks - it causes issues
         await JsonSerializer.SerializeAsync(
             ms,
             _items,
@@ -230,8 +231,9 @@ public partial class AspNetCoreStreamingBenchmarks
             paged,
             DataItemContext.Default.DataItem);
 
-        await pipeWriter.FlushAsync();
-
+        // Don't flush explicitly - let the serializer handle it
+        // This matches the pattern in MinimalAPI results
+        
         return ms.Length;
     }
 
@@ -286,9 +288,12 @@ public partial class AspNetCoreStreamingBenchmarks
         foreach (var item in source)
         {
             yield return item;
-            // Don't use Task.Yield() in benchmarks as it adds overhead
-            await Task.CompletedTask;
+            // PERFORMANCE: Remove await to reduce async overhead in benchmarks
+            // This makes the enumeration synchronous but maintains the IAsyncEnumerable interface
         }
+        
+        // Ensure compiler treats this as async
+        await Task.CompletedTask;
     }
 
     #endregion

@@ -122,7 +122,7 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
         // PERFORMANCE: Use pattern matching to avoid multiple null checks
         Task task = (_jsonTypeInfo, _jsonSerializerOptions) switch
         {
-            // PERFORMANCE: FastestSerializeAsyncPagedJsonTypeInfoDirect path - AOT-friendly, no reflection
+            // PERFORMANCE: Fastest path - AOT-friendly, no reflection
             (not null, _) => SerializeAsyncPagedJsonTypeInfoDirect(
                 pipeWriter,
                 _results,
@@ -146,8 +146,9 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
 
         await task.ConfigureAwait(false);
         
-        // PERFORMANCE: Explicit flush to ensure all buffered data is sent
-        await pipeWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+        // PERFORMANCE: Don't flush here - let ASP.NET Core framework handle it
+        // The framework will flush automatically when IResult completes
+        // Explicit flushing adds overhead without benefit in normal scenarios
     }
 
     // PERFORMANCE: Direct PipeWriter serialization - fastest path (AOT-compatible)

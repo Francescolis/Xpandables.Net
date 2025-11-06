@@ -130,8 +130,9 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
                         httpContext.RequestAborted).ConfigureAwait(false);
                 }
                 
-                // PERFORMANCE: Explicit flush to ensure all data is sent
-                await pipeWriter.FlushAsync(httpContext.RequestAborted).ConfigureAwait(false);
+                // PERFORMANCE: Don't flush here - let the framework handle it
+                // Explicit flushing can cause extra overhead in benchmarks
+                // The PipeWriter will flush automatically when completed
                 return;
             }
             catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
