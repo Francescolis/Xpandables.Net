@@ -14,7 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Pipelines;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
@@ -48,9 +50,17 @@ namespace Xpandables.Net.AsyncPaged.Controllers;
 /// </code>
 /// The "pagination" property contains metadata about the paginated data, while the "items" property
 /// contains the serialized items in the paginated collection.
+/// <para>
+/// PERFORMANCE: This formatter caches JsonTypeInfo resolution results to avoid repeated reflection
+/// on every request. For best performance, use source-generated JsonSerializerContext.
+/// </para>
 /// </remarks>
 public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatter
 {
+    // PERFORMANCE: Cache JsonTypeInfo resolution to avoid repeated reflection
+    // Thread-safe dictionary for caching type info per item type
+    private readonly ConcurrentDictionary<Type, JsonTypeInfo?> _typeInfoCache = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AsyncPagedEnumerableJsonOutputFormatter"/> class.
     /// </summary>
@@ -89,41 +99,49 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
 
         Type itemType = pagedEnumerable.Type;
         var options = GetJsonSerializerOptions(httpContext);
-        JsonTypeInfo? jsonTypeInfo = options.TypeInfoResolver?.GetTypeInfo(itemType, options);
+        
+        // PERFORMANCE: Use cached JsonTypeInfo to avoid repeated reflection
+        JsonTypeInfo? jsonTypeInfo = _typeInfoCache.GetOrAdd(itemType, type =>
+            options.TypeInfoResolver?.GetTypeInfo(type, options));
 
+        // PERFORMANCE: Fast path for UTF-8 (most common case) - use PipeWriter directly
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
             {
-                // Use Stream with leaveOpen to avoid disposal issues
-                Stream responseStream = httpContext.Response.BodyWriter.AsStream(leaveOpen: true);
+                // PERFORMANCE: Use PipeWriter directly instead of Stream wrapper
+                // This avoids an additional allocation and indirection layer
+                PipeWriter pipeWriter = httpContext.Response.BodyWriter;
 
                 if (jsonTypeInfo is not null)
                 {
-                    await WriteAsJsonTypeInfoAsync(
-                        responseStream,
+                    await WriteAsJsonTypeInfoDirectAsync(
+                        pipeWriter,
                         jsonTypeInfo,
                         pagedEnumerable,
                         httpContext.RequestAborted).ConfigureAwait(false);
-                    return;
                 }
                 else
                 {
-                    await WriteAsJsonOptionsAsync(
-                        responseStream,
+                    await WriteAsJsonOptionsDirectAsync(
+                        pipeWriter,
                         pagedEnumerable,
                         options,
                         httpContext.RequestAborted).ConfigureAwait(false);
-                    return;
                 }
+                
+                // PERFORMANCE: Explicit flush to ensure all data is sent
+                await pipeWriter.FlushAsync(httpContext.RequestAborted).ConfigureAwait(false);
+                return;
             }
             catch (OperationCanceledException) when (httpContext.RequestAborted.IsCancellationRequested)
             {
-                // Client disconnected
+                // Client disconnected - this is expected behavior
             }
         }
         else
         {
+            // PERFORMANCE: Slower path for non-UTF8 encodings (rare case)
             // JsonSerializer only emits UTF8 encoded output, but we need to write the response in the encoding specified by selectedEncoding
             Stream? transcodingStream = null;
             ExceptionDispatchInfo? exceptionDispatchInfo = null;
@@ -186,7 +204,37 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
         }
     }
 
-    static Task WriteAsJsonTypeInfoAsync(
+    // PERFORMANCE: Direct PipeWriter methods to avoid Stream allocation overhead
+    private static Task WriteAsJsonTypeInfoDirectAsync(
+        PipeWriter pipeWriter,
+        JsonTypeInfo jsonTypeInfo,
+        IAsyncPagedEnumerable pagedEnumerable,
+        CancellationToken cancellationToken)
+    {
+        return JsonSerializer.SerializeAsyncPaged(
+                pipeWriter,
+                pagedEnumerable,
+                jsonTypeInfo,
+                cancellationToken);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    private static Task WriteAsJsonOptionsDirectAsync(
+        PipeWriter pipeWriter,
+        IAsyncPagedEnumerable pagedEnumerable,
+        JsonSerializerOptions options,
+        CancellationToken cancellationToken)
+    {
+        return JsonSerializer.SerializeAsyncPaged(
+            pipeWriter,
+            pagedEnumerable,
+            options,
+            cancellationToken);
+    }
+
+    // Stream-based methods for transcoding path (non-UTF8 encodings)
+    private static Task WriteAsJsonTypeInfoAsync(
         Stream stream,
         JsonTypeInfo jsonTypeInfo,
         IAsyncPagedEnumerable pagedEnumerable,
@@ -201,7 +249,7 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    static Task WriteAsJsonOptionsAsync(
+    private static Task WriteAsJsonOptionsAsync(
         Stream stream,
         IAsyncPagedEnumerable pagedEnumerable,
         JsonSerializerOptions options,
@@ -216,7 +264,7 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
+    private static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
     {
         var options = httpContext.RequestServices
             .GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions

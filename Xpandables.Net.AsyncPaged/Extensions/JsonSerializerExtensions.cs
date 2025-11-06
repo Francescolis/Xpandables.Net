@@ -388,23 +388,26 @@ public static class JsonSerializerExtensions
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        // PERFORMANCE: Create JsonWriterOptions once, reuse Encoder from JsonSerializerOptions
+        var writerOptions = new JsonWriterOptions
+        {
+            Indented = options.WriteIndented,
+            Encoder = options.Encoder,
+            // PERFORMANCE: Skip validation in production for better performance
+            // Validation already happens during JsonSerializer.Serialize calls
+            SkipValidation = !options.WriteIndented // Skip for production (non-indented)
+        };
+
         Utf8JsonWriter writer = output switch
         {
-            PipeWriter pipeWriter => new Utf8JsonWriter(pipeWriter, new JsonWriterOptions
-            {
-                Indented = options.WriteIndented,
-                Encoder = options.Encoder
-            }),
-            Stream stream => new Utf8JsonWriter(stream, new JsonWriterOptions
-            {
-                Indented = options.WriteIndented,
-                Encoder = options.Encoder
-            }),
+            PipeWriter pipeWriter => new Utf8JsonWriter(pipeWriter, writerOptions),
+            Stream stream => new Utf8JsonWriter(stream, writerOptions),
             _ => throw new ArgumentException("Output must be either PipeWriter or Stream", nameof(output))
         };
 
         await using (writer.ConfigureAwait(false))
         {
+            // PERFORMANCE: Compute pagination once upfront
             Pagination pagination = await pagedEnumerable
                 .GetPaginationAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -413,22 +416,35 @@ public static class JsonSerializerExtensions
             cancellationToken.ThrowIfCancellationRequested();
 
             writer.WritePropertyName("pagination"u8);
+            // PERFORMANCE: Use source-generated serialization for Pagination
             JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
 
             writer.WritePropertyName("items"u8);
             writer.WriteStartArray();
 
+            // PERFORMANCE: Batch flushing - reduce I/O operations
+            // Flush every N items instead of every item for better throughput
+            int itemCount = 0;
+            const int FlushBatchSize = 100; // Tune based on item size and network latency
+
             await foreach (TValue item in pagedEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 serializeItem(writer, item, options);
-                await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                
+                // PERFORMANCE: Flush in batches to reduce system calls
+                if (++itemCount % FlushBatchSize == 0)
+                {
+                    await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             writer.WriteEndArray();
             writer.WriteEndObject();
+            
+            // PERFORMANCE: Final flush to ensure all data is written
             await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
     }
@@ -446,23 +462,25 @@ public static class JsonSerializerExtensions
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        // PERFORMANCE: Create JsonWriterOptions once with optimized settings
+        var writerOptions = new JsonWriterOptions
+        {
+            Indented = options.WriteIndented,
+            Encoder = options.Encoder,
+            // PERFORMANCE: Skip validation for better performance in production
+            SkipValidation = !options.WriteIndented
+        };
+
         Utf8JsonWriter writer = output switch
         {
-            PipeWriter pipeWriter => new Utf8JsonWriter(pipeWriter, new JsonWriterOptions
-            {
-                Indented = options.WriteIndented,
-                Encoder = options.Encoder
-            }),
-            Stream stream => new Utf8JsonWriter(stream, new JsonWriterOptions
-            {
-                Indented = options.WriteIndented,
-                Encoder = options.Encoder
-            }),
+            PipeWriter pipeWriter => new Utf8JsonWriter(pipeWriter, writerOptions),
+            Stream stream => new Utf8JsonWriter(stream, writerOptions),
             _ => throw new ArgumentException("Output must be either PipeWriter or Stream", nameof(output))
         };
 
         await using (writer.ConfigureAwait(false))
         {
+            // PERFORMANCE: Compute pagination once upfront to avoid repeated calls
             Pagination pagination = await pagedEnumerable
                 .GetPaginationAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -471,17 +489,21 @@ public static class JsonSerializerExtensions
             cancellationToken.ThrowIfCancellationRequested();
 
             writer.WritePropertyName("pagination"u8);
+            // PERFORMANCE: Use source-generated serialization
             JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
 
             writer.WritePropertyName("items"u8);
             writer.WriteStartArray();
 
+            // PERFORMANCE: Batch flushing for non-generic path as well
             await SerializeAsyncEnumerableItemsAsync(writer, pagedEnumerable, serializeItem, options, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             writer.WriteEndArray();
             writer.WriteEndObject();
+            
+            // PERFORMANCE: Final flush
             await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
     }
@@ -544,6 +566,10 @@ public static class JsonSerializerExtensions
                 return;
             }
 
+            // PERFORMANCE: Batch flushing in reflection-based enumeration
+            int itemCount = 0;
+            const int FlushBatchSize = 100;
+
             while (true)
             {
                 object? moveNextResult = moveNextMethod.Invoke(enumerator, null);
@@ -562,7 +588,12 @@ public static class JsonSerializerExtensions
 
                 object? current = currentProperty.GetValue(enumerator);
                 serializeItem(writer, current, options);
-                await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                
+                // PERFORMANCE: Flush in batches to reduce I/O overhead
+                if (++itemCount % FlushBatchSize == 0)
+                {
+                    await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
         }
         finally
