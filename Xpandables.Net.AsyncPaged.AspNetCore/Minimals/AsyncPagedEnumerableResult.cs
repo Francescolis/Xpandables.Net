@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json;
@@ -45,6 +46,9 @@ namespace Xpandables.Net.AsyncPaged.Minimals;
 /// <typeparam name="TResult">The type of the data items included in the paged response.</typeparam>
 public sealed class AsyncPagedEnumerableResult<TResult> : IResult
 {
+    // PERFORMANCE: Cache JsonSerializerOptions per service provider to avoid repeated DI lookups
+    private static readonly ConcurrentDictionary<IServiceProvider, JsonSerializerOptions> _optionsCache = new();
+    
     private readonly IAsyncPagedEnumerable<TResult> _results;
     private readonly JsonTypeInfo<TResult>? _jsonTypeInfo;
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
@@ -102,7 +106,8 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
     /// request's cancellation token and may be canceled if the client disconnects.
     /// <para>
     /// PERFORMANCE: Uses PipeWriter directly for optimal throughput and minimal allocations. This avoids the
-    /// overhead of Stream wrapper and provides better buffering control.
+    /// overhead of Stream wrapper and provides better buffering control. Caches JsonSerializerOptions per service
+    /// provider to avoid repeated DI resolution overhead.
     /// </para>
     /// </remarks>
     /// <param name="httpContext">The HTTP context for the current request. Cannot be null.</param>
@@ -136,11 +141,11 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
                 _jsonSerializerOptions,
                 cancellationToken),
             
-            // PERFORMANCE: Slowest path - requires DI resolution
+            // PERFORMANCE: Slowest path - requires DI resolution (now with caching)
             _ => SerializeAsyncPagedJsonSerializerOptionsDirect(
                 pipeWriter,
                 _results,
-                GetJsonOptions(httpContext),
+                GetOrCacheJsonOptions(httpContext),
                 cancellationToken)
         };
 
@@ -188,14 +193,17 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    private static JsonSerializerOptions GetJsonOptions(HttpContext context)
+    private static JsonSerializerOptions GetOrCacheJsonOptions(HttpContext context)
     {
-        JsonSerializerOptions options = context.RequestServices
-            .GetService<IOptions<JsonOptions>>()
-            ?.Value?.SerializerOptions ?? JsonSerializerOptions.Default;
-
-        options.MakeReadOnly(true);
-
-        return options;
+        // PERFORMANCE: Cache JsonSerializerOptions per service provider to avoid repeated DI resolution
+        return _optionsCache.GetOrAdd(
+            context.RequestServices,
+            static sp =>
+            {
+                var options = sp.GetService<IOptions<JsonOptions>>()
+                    ?.Value?.SerializerOptions ?? JsonSerializerOptions.Default;
+                options.MakeReadOnly(true);
+                return options;
+            });
     }
 }

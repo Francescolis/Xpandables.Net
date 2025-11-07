@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.IO.Pipelines;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -23,16 +22,13 @@ using System.Text.Json.Serialization.Metadata;
 using BenchmarkDotNet.Attributes;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.AsyncPaged.Controllers;
-using Xpandables.Net.AsyncPaged.Minimals;
 using Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.AsyncPaged.Minimals;
 
 namespace Xpandables.Net.Benchmarking;
 
@@ -54,6 +50,7 @@ public partial class AspNetCoreStreamingBenchmarks
     private DefaultHttpContext _httpContext = default!;
     private JsonSerializerOptions _options = default!;
     private AsyncPagedEnumerableJsonOutputFormatter _formatter = default!;
+    private IServiceProvider _serviceProvider = default!;
 
     [JsonSerializable(typeof(DataItem[]))]
     [JsonSerializable(typeof(DataItem))]
@@ -65,13 +62,12 @@ public partial class AspNetCoreStreamingBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        _items = Enumerable.Range(1, Count)
+        _items = [.. Enumerable.Range(1, Count)
             .Select(i => new DataItem(
                 i,
                 $"Item_{i}",
                 DateTime.UtcNow.AddSeconds(i),
-                i * 1.5m))
-            .ToList();
+                i * 1.5m))];
 
         _options = new JsonSerializerOptions
         {
@@ -81,7 +77,18 @@ public partial class AspNetCoreStreamingBenchmarks
                 PaginationSourceGenerationContext.Default)
         };
 
-        _formatter = new AsyncPagedEnumerableJsonOutputFormatter();
+        _options.MakeReadOnly(true);
+
+        _formatter = new AsyncPagedEnumerableJsonOutputFormatter(_options);
+
+        var services = new ServiceCollection();
+        services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(opts =>
+        {
+            opts.SerializerOptions.PropertyNameCaseInsensitive = _options.PropertyNameCaseInsensitive;
+            opts.SerializerOptions.TypeInfoResolver = _options.TypeInfoResolver;
+            opts.SerializerOptions.MakeReadOnly(true);
+        });
+        _serviceProvider = services.BuildServiceProvider();
 
         SetupHttpContext();
     }
@@ -96,14 +103,7 @@ public partial class AspNetCoreStreamingBenchmarks
     {
         _httpContext = new DefaultHttpContext();
         _httpContext.Response.Body = new MemoryStream();
-
-        var services = new ServiceCollection();
-        services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(opts =>
-        {
-            opts.SerializerOptions.PropertyNameCaseInsensitive = _options.PropertyNameCaseInsensitive;
-            opts.SerializerOptions.TypeInfoResolver = _options.TypeInfoResolver;
-        });
-        _httpContext.RequestServices = services.BuildServiceProvider();
+        _httpContext.RequestServices = _serviceProvider;
     }
 
     #region Controller-based Benchmarks
@@ -118,7 +118,7 @@ public partial class AspNetCoreStreamingBenchmarks
         // Don't use httpContext.RequestAborted in benchmarks - it causes issues
         await JsonSerializer.SerializeAsync(
             ms,
-            _items,
+            [.. _items],
             DataItemContext.Default.DataItemArray);
 
         return ms.Length;
@@ -233,7 +233,7 @@ public partial class AspNetCoreStreamingBenchmarks
 
         // Don't flush explicitly - let the serializer handle it
         // This matches the pattern in MinimalAPI results
-        
+
         return ms.Length;
     }
 
@@ -291,7 +291,7 @@ public partial class AspNetCoreStreamingBenchmarks
             // PERFORMANCE: Remove await to reduce async overhead in benchmarks
             // This makes the enumeration synchronous but maintains the IAsyncEnumerable interface
         }
-        
+
         // Ensure compiler treats this as async
         await Task.CompletedTask;
     }

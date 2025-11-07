@@ -16,6 +16,7 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 using Xpandables.Net.AsyncPaged;
@@ -51,7 +52,9 @@ public static class IAsyncPagedAspNetCoreExtensions
         {
             ArgumentNullException.ThrowIfNull(services);
 
-            services.AddSingleton<IConfigureOptions<MvcOptions>>(new AsyncPagedEnumerableMvcOptions());
+            services.TryAddEnumerable(
+                ServiceDescriptor
+                .Transient<IConfigureOptions<MvcOptions>, AsyncPagedEnumerableMvcOptions>());
 
             return services;
         }

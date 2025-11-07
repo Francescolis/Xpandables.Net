@@ -25,16 +25,19 @@ namespace Xpandables.Net.AsyncPaged;
 /// Provides configuration options to enable JSON output formatting for asynchronous paged enumerables in ASP.NET Core
 /// MVC.
 /// </summary>
+/// <param name="jsonOptions">The JSON options used to configure the JSON serializer.</param>
 /// <remarks>This options class is typically registered to configure MVC so that actions returning asynchronous
 /// paged enumerables are correctly formatted as JSON responses. The specified serializer options control how the paged
 /// data is serialized.</remarks>
-public sealed class AsyncPagedEnumerableMvcOptions() : IConfigureOptions<MvcOptions>
+public sealed class AsyncPagedEnumerableMvcOptions(IOptions<JsonOptions> jsonOptions) : IConfigureOptions<MvcOptions>
 {
+    private readonly JsonOptions _jsonOptions = jsonOptions.Value;
+
     /// <inheritdoc/>
     public void Configure(MvcOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        options.OutputFormatters.Insert(0, new AsyncPagedEnumerableJsonOutputFormatter());
+        options.OutputFormatters.Insert(0, new AsyncPagedEnumerableJsonOutputFormatter(_jsonOptions.JsonSerializerOptions));
     }
 }
