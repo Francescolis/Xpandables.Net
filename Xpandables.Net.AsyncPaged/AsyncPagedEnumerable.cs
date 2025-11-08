@@ -86,15 +86,16 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
     /// <inheritdoc/>
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        // Always pass current (possibly empty) page context as initial snapshot.
         Pagination initial = Pagination;
 
-        return (_source, _queryable) switch
+        var enumerator = (_source, _queryable) switch
         {
-            (not null, _) => AsyncPagedEnumerator.Create(_source.GetAsyncEnumerator(cancellationToken), initial, cancellationToken),
-            (null, not null) => AsyncPagedEnumerator.Create(_queryable.ToAsyncEnumerable().GetAsyncEnumerator(cancellationToken), initial, cancellationToken),
+            (not null, _) => _source.GetAsyncEnumerator(cancellationToken),
+            (null, not null) => _queryable.ToAsyncEnumerable().GetAsyncEnumerator(cancellationToken),
             _ => AsyncPagedEnumerator.Empty<T>(initial)
         };
+
+        return AsyncPagedEnumerator.Create(enumerator, initial, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -159,7 +160,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         {
             (not null, _) => await _paginationFactory(cancellationToken).ConfigureAwait(false),
             (null, not null) => await ComputeQueryablePaginationAsync(_queryable, cancellationToken).ConfigureAwait(false),
-            _ => Pagination.Empty // Fallback empty context if no metadata strategy available.
+            _ => Pagination.Empty
         };
     }
 
@@ -167,7 +168,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         IQueryable<T> query,
         CancellationToken cancellationToken)
     {
-        (int? skip, int? take) = QueryAnalyzer.ExtractSkipTake(query.Expression);
+        var (normalizedQuery, skip, take) = QueryPaginationNormalizer.Normalize(query);
 
         long totalCountLong;
         if (_totalFactory is not null)
@@ -178,8 +179,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         {
             try
             {
-                IQueryable<T> baseQuery = QueryAnalyzer.RemoveSkipTake(query);
-                totalCountLong = baseQuery.LongCount();
+                totalCountLong = normalizedQuery.LongCount();
             }
             catch (Exception ex)
             {
@@ -191,7 +191,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         int? totalCount = totalCountLong switch
         {
             < 0 => null,
-            > int.MaxValue => int.MaxValue, // clamp (or choose to set null)
+            > int.MaxValue => int.MaxValue,
             _ => (int)totalCountLong
         };
 

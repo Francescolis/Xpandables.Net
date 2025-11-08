@@ -27,9 +27,10 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     private readonly IAsyncEnumerator<T>? _sourceEnumerator;
     private readonly CancellationToken _cancellationToken;
     private PaginationStrategy _strategy;
+    private Func<int, Pagination, Pagination>? _strategyUpdater;
     private Pagination _pagination;
     private bool _disposed;
-    private int _itemIndex; // 1-based logical item counter
+    private int _itemIndex;
 
     /// <inheritdoc/>
     public PaginationStrategy Strategy => _strategy;
@@ -38,6 +39,21 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     public IAsyncPagedEnumerator<T> WithStrategy(PaginationStrategy strategy)
     {
         _strategy = strategy;
+        _strategyUpdater = strategy switch
+        {
+            PaginationStrategy.None => static (_, p) => p,
+            PaginationStrategy.PerItem => static (i, p) =>
+                p with { PageSize = p.PageSize == 0 ? 1 : p.PageSize, CurrentPage = i },
+            PaginationStrategy.PerPage => static (i, p) =>
+            {
+                int pageSize = p.PageSize;
+                int currentPage = pageSize > 0 ? ((i - 1) / pageSize) + 1 : 1;
+                return p with { PageSize = pageSize, CurrentPage = currentPage };
+            }
+            ,
+            _ => static (_, p) => p
+        };
+
         return this;
     }
 
@@ -85,6 +101,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     public async ValueTask<bool> MoveNextAsync()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        _cancellationToken.ThrowIfCancellationRequested();
 
         if (_sourceEnumerator is null)
         {
@@ -94,8 +111,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
 
         if (!await _sourceEnumerator.MoveNextAsync().ConfigureAwait(false))
         {
-            // End of sequence: if PerItem strategy and no total count, finalize total
-            if (_strategy == PaginationStrategy.PerItem && _pagination.TotalCount is null)
+            if (Strategy == PaginationStrategy.PerItem && _pagination.TotalCount is null)
             {
                 _pagination = _pagination.WithTotalCount(_itemIndex);
             }
@@ -107,47 +123,9 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
         Current = _sourceEnumerator.Current;
         _itemIndex++;
 
-        // Update page context based on strategy
-        switch (_strategy)
+        if (_strategyUpdater is not null)
         {
-            case PaginationStrategy.None:
-                // No changes to page context
-                break;
-
-            case PaginationStrategy.PerItem:
-                {
-                    int pageSize = _pagination.PageSize == 0 ? 1 : _pagination.PageSize;
-                    _pagination = new Pagination
-                    {
-                        PageSize = pageSize,
-                        CurrentPage = _itemIndex,
-                        ContinuationToken = null,
-                        // Preserve pre-existing total if already known; keep null otherwise until end
-                        TotalCount = _pagination.TotalCount
-                    };
-                    break;
-                }
-
-            case PaginationStrategy.PerPage:
-                {
-                    int pageSize = _pagination.PageSize;
-                    if (pageSize > 0)
-                    {
-                        int zeroBased = _itemIndex - 1;
-                        int currentPage = (zeroBased / pageSize) + 1;
-                        _pagination = new Pagination
-                        {
-                            PageSize = pageSize,
-                            CurrentPage = currentPage,
-                            ContinuationToken = null,
-                            TotalCount = _pagination.TotalCount
-                        };
-                    }
-                    break;
-                }
-
-            default:
-                break;
+            _pagination = _strategyUpdater.Invoke(_itemIndex, _pagination);
         }
 
         return true;
@@ -184,23 +162,23 @@ public static class AsyncPagedEnumerator
     /// </summary>
     /// <typeparam name="T">The type of elements being enumerated.</typeparam>
     /// <param name="sourceEnumerator">The source enumerator to wrap.</param>
-    /// <param name="initialContext">The initial pagination context. If null, <see cref="Pagination.Empty"/> is used.</param>
+    /// <param name="pagination">The initial pagination context. If null, <see cref="Pagination.Empty"/> is used.</param>
     /// <param name="cancellationToken">The cancellation token to observe.</param>
     /// <returns>A new <see cref="AsyncPagedEnumerator{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static AsyncPagedEnumerator<T> Create<T>(
         IAsyncEnumerator<T> sourceEnumerator,
-        Pagination? initialContext = null,
+        Pagination? pagination = null,
         CancellationToken cancellationToken = default) =>
-        new(sourceEnumerator, initialContext ?? Pagination.Empty, cancellationToken);
+        new(sourceEnumerator, pagination ?? Pagination.Empty, cancellationToken);
 
     /// <summary>
     /// Creates an empty paged enumerator with no data.
     /// </summary>
     /// <typeparam name="T">The type of elements.</typeparam>
-    /// <param name="initialContext">The initial pagination context. If null, <see cref="Pagination.Empty"/> is used.</param>
+    /// <param name="pagination">The initial pagination context. If null, <see cref="Pagination.Empty"/> is used.</param>
     /// <returns>An empty <see cref="AsyncPagedEnumerator{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static AsyncPagedEnumerator<T> Empty<T>(Pagination? initialContext = null) =>
-        new(initialContext ?? Pagination.Empty);
+    public static AsyncPagedEnumerator<T> Empty<T>(Pagination? pagination = null) =>
+        new(pagination ?? Pagination.Empty);
 }

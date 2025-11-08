@@ -8,7 +8,6 @@ public static class Program
     {
         BenchmarkRunner.Run(
         [
-            //typeof(AspNetCoreStreamingBenchmarks)
         ]);
     }
 }
