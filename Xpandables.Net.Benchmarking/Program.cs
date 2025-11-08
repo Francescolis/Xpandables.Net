@@ -8,6 +8,9 @@ public static class Program
     {
         BenchmarkRunner.Run(
         [
+            typeof(AsyncPagedSerializationBenchmarks),
+            typeof(AsyncPagedDeserializationBenchmarks),
+            typeof(AsyncPagedPipeWriterBenchmarks)
         ]);
     }
 }
