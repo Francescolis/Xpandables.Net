@@ -14,9 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -55,11 +57,12 @@ public static class JsonSerializerExtensions
             ArgumentNullException.ThrowIfNull(pagedEnumerable);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
+            // Note: MakeReadOnly on JsonTypeInfo.Options is safe because JsonTypeInfo is already immutable
             return CoreSerializeAsyncPagedAsync(
                 utf8Json,
                 pagedEnumerable,
                 jsonTypeInfo.Options,
-                (writer, item, _) => JsonSerializer.Serialize(writer, item, jsonTypeInfo),
+                new TypeInfoSerializer<TValue>(jsonTypeInfo),
                 cancellationToken);
         }
 
@@ -95,7 +98,7 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 options,
-                (writer, item, opts) => JsonSerializer.Serialize(writer, item, opts),
+                new OptionsSerializer<TValue>(options),
                 cancellationToken);
         }
 
@@ -126,7 +129,7 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 jsonTypeInfo.Options,
-                (writer, item, _) => JsonSerializer.Serialize(writer, item, jsonTypeInfo),
+                new NonGenericTypeInfoSerializer(jsonTypeInfo),
                 cancellationToken);
         }
 
@@ -161,7 +164,7 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 jsonTypeInfo.Options,
-                (writer, item, _) => JsonSerializer.Serialize(writer, item, jsonTypeInfo),
+                new NonGenericTypeInfoSerializer(jsonTypeInfo),
                 cancellationToken);
         }
 
@@ -196,7 +199,7 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 options,
-                (writer, item, opts) => JsonSerializer.Serialize(writer, item, opts),
+                new NonGenericOptionsSerializer(options),
                 cancellationToken);
         }
 
@@ -228,7 +231,7 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 jsonTypeInfo.Options,
-                (writer, item, _) => JsonSerializer.Serialize(writer, item, jsonTypeInfo),
+                new TypeInfoSerializer<TValue>(jsonTypeInfo),
                 cancellationToken);
         }
 
@@ -267,7 +270,7 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 options,
-                (writer, item, opts) => JsonSerializer.Serialize(writer, item, opts),
+                new OptionsSerializer<TValue>(options),
                 cancellationToken);
         }
 
@@ -299,7 +302,7 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 jsonTypeInfo.Options,
-                (writer, item, _) => JsonSerializer.Serialize(writer, item, jsonTypeInfo),
+                new NonGenericTypeInfoSerializer(jsonTypeInfo),
                 cancellationToken);
         }
 
@@ -336,7 +339,7 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 jsonTypeInfo.Options,
-                (writer, item, _) => JsonSerializer.Serialize(writer, item, jsonTypeInfo),
+                new NonGenericTypeInfoSerializer(jsonTypeInfo),
                 cancellationToken);
         }
 
@@ -370,90 +373,126 @@ public static class JsonSerializerExtensions
                 utf8Json,
                 pagedEnumerable,
                 options,
-                (writer, item, opts) => JsonSerializer.Serialize(writer, item, opts),
+                new NonGenericOptionsSerializer(options),
                 cancellationToken);
         }
 
         #endregion
     }
 
+    #region Private - Serializer Structs (Avoid Lambda Allocations)
+
+    private readonly struct TypeInfoSerializer<T>(JsonTypeInfo<T> typeInfo) : IItemSerializer<T>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Serialize(Utf8JsonWriter writer, T item)
+        {
+            JsonSerializer.Serialize(writer, item, typeInfo);
+        }
+    }
+
+    private readonly struct OptionsSerializer<T>(JsonSerializerOptions options) : IItemSerializer<T>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Caller is already annotated with RequiresUnreferencedCode")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Caller is already annotated with RequiresDynamicCode")]
+        public void Serialize(Utf8JsonWriter writer, T item)
+        {
+            JsonSerializer.Serialize(writer, item, options);
+        }
+    }
+
+    private readonly struct NonGenericTypeInfoSerializer(JsonTypeInfo typeInfo) : IItemSerializer<object?>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Serialize(Utf8JsonWriter writer, object? item)
+        {
+            JsonSerializer.Serialize(writer, item, typeInfo);
+        }
+    }
+
+    private readonly struct NonGenericOptionsSerializer(JsonSerializerOptions options) : IItemSerializer<object?>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Caller is already annotated with RequiresUnreferencedCode")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Caller is already annotated with RequiresDynamicCode")]
+        public void Serialize(Utf8JsonWriter writer, object? item)
+        {
+            JsonSerializer.Serialize(writer, item, options);
+        }
+    }
+
+    private interface IItemSerializer<in T>
+    {
+        void Serialize(Utf8JsonWriter writer, T item);
+    }
+
+    #endregion
+
     #region Private - Core Implementation for Generic
 
-    private static async Task CoreSerializeAsyncPagedAsync<TValue>(
+    private static async Task CoreSerializeAsyncPagedAsync<T, TSerializer>(
         object output,
-        IAsyncPagedEnumerable<TValue> pagedEnumerable,
+        IAsyncPagedEnumerable<T> pagedEnumerable,
         JsonSerializerOptions options,
-        Action<Utf8JsonWriter, TValue, JsonSerializerOptions> serializeItem,
+        TSerializer serializer,
         CancellationToken cancellationToken)
+        where TSerializer : struct, IItemSerializer<T>
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        // PERFORMANCE: Create JsonWriterOptions once, reuse Encoder from JsonSerializerOptions
-        var writerOptions = new JsonWriterOptions
+        JsonWriterOptions writerOptions = new()
         {
             Indented = options.WriteIndented,
             Encoder = options.Encoder,
-            // PERFORMANCE: Skip validation in production for better performance
-            // Validation already happens during JsonSerializer.Serialize calls
-            SkipValidation = !options.WriteIndented // Skip for production (non-indented)
+            SkipValidation = !options.WriteIndented
         };
 
         Utf8JsonWriter writer = output switch
         {
-            PipeWriter pipeWriter => new Utf8JsonWriter(pipeWriter, writerOptions),
+            PipeWriter pipe => new Utf8JsonWriter(pipe, writerOptions),
             Stream stream => new Utf8JsonWriter(stream, writerOptions),
-            _ => throw new ArgumentException("Output must be either PipeWriter or Stream", nameof(output))
+            _ => throw new ArgumentException("Output must be PipeWriter or Stream", nameof(output))
         };
 
-        await using (writer.ConfigureAwait(false))
+        try
         {
-            // PERFORMANCE: Compute pagination once upfront
             Pagination pagination = await pagedEnumerable
                 .GetPaginationAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             writer.WriteStartObject();
-            cancellationToken.ThrowIfCancellationRequested();
-
             writer.WritePropertyName("pagination"u8);
-            // PERFORMANCE: Use source-generated serialization for Pagination
             JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
 
             writer.WritePropertyName("items"u8);
             writer.WriteStartArray();
 
-            // PERFORMANCE: Adaptive batch flushing based on known pagination
-            // For small datasets, flush less frequently to reduce overhead
-            // For large datasets, flush more frequently to prevent buffer bloat
+            // PERFORMANCE: Adaptive flushing based on dataset size and memory pressure
+            FlushStrategy flushStrategy = FlushStrategy.Create(pagination.TotalCount);
             int itemCount = 0;
-            int flushBatchSize = pagination.TotalCount switch
-            {
-                null => 100,                    // Unknown size: use default
-                < 1_000 => 200,                 // Small: flush less often
-                < 10_000 => 100,                // Medium: default
-                < 100_000 => 50,                // Large: flush more often
-                _ => 25                         // Very large: flush frequently
-            };
 
-            await foreach (TValue item in pagedEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
+            await foreach (T item in pagedEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                serializeItem(writer, item, options);
                 
-                // PERFORMANCE: Flush in batches to reduce system calls
-                if (++itemCount % flushBatchSize == 0)
+                serializer.Serialize(writer, item);
+                itemCount++;
+
+                // PERFORMANCE: Adaptive memory-aware flushing
+                if (flushStrategy.ShouldFlush(itemCount, writer.BytesPending))
                 {
                     await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             writer.WriteEndArray();
             writer.WriteEndObject();
-            
-            // PERFORMANCE: Final flush to ensure all data is written
             await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            await writer.DisposeAsync().ConfigureAwait(false);
         }
     }
 
@@ -461,21 +500,20 @@ public static class JsonSerializerExtensions
 
     #region Private - Core Implementation for Non-Generic
 
-    private static async Task CoreSerializeAsyncPagedNonGenericAsync(
+    private static async Task CoreSerializeAsyncPagedNonGenericAsync<TSerializer>(
         object output,
         IAsyncPagedEnumerable pagedEnumerable,
         JsonSerializerOptions options,
-        Action<Utf8JsonWriter, object?, JsonSerializerOptions> serializeItem,
+        TSerializer serializer,
         CancellationToken cancellationToken)
+        where TSerializer : struct, IItemSerializer<object?>
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        // PERFORMANCE: Create JsonWriterOptions once with optimized settings
-        var writerOptions = new JsonWriterOptions
+        JsonWriterOptions writerOptions = new()
         {
             Indented = options.WriteIndented,
             Encoder = options.Encoder,
-            // PERFORMANCE: Skip validation for better performance in production
             SkipValidation = !options.WriteIndented
         };
 
@@ -486,9 +524,8 @@ public static class JsonSerializerExtensions
             _ => throw new ArgumentException("Output must be either PipeWriter or Stream", nameof(output))
         };
 
-        await using (writer.ConfigureAwait(false))
+        try
         {
-            // PERFORMANCE: Compute pagination once upfront to avoid repeated calls
             Pagination pagination = await pagedEnumerable
                 .GetPaginationAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -497,22 +534,29 @@ public static class JsonSerializerExtensions
             cancellationToken.ThrowIfCancellationRequested();
 
             writer.WritePropertyName("pagination"u8);
-            // PERFORMANCE: Use source-generated serialization
             JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
 
             writer.WritePropertyName("items"u8);
             writer.WriteStartArray();
 
-            // PERFORMANCE: Batch flushing for non-generic path as well
-            await SerializeAsyncEnumerableItemsAsync(writer, pagedEnumerable, serializeItem, options, cancellationToken).ConfigureAwait(false);
+            await SerializeAsyncEnumerableItemsAsync(
+                writer, 
+                pagedEnumerable, 
+                serializer, 
+                pagination,
+                cancellationToken)
+                .ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             writer.WriteEndArray();
             writer.WriteEndObject();
-            
-            // PERFORMANCE: Final flush
+
             await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            await writer.DisposeAsync().ConfigureAwait(false);
         }
     }
 
@@ -523,24 +567,28 @@ public static class JsonSerializerExtensions
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Non-generic serialization requires runtime type information")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Non-generic serialization requires runtime type information")]
     [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Reflection is required for non-generic async enumerable serialization")]
-    private static async Task SerializeAsyncEnumerableItemsAsync(
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "GetType() is required for non-generic async enumerable serialization")]
+    private static async Task SerializeAsyncEnumerableItemsAsync<TSerializer>(
         Utf8JsonWriter writer,
         IAsyncPagedEnumerable pagedEnumerable,
-        Action<Utf8JsonWriter, object?, JsonSerializerOptions> serializeItem,
-        JsonSerializerOptions options,
+        TSerializer serializer,
+        Pagination pagination,
         CancellationToken cancellationToken)
+        where TSerializer : struct, IItemSerializer<object?>
     {
         Type enumerableType = pagedEnumerable.GetType();
-        Type? asyncEnumerableInterface = Array.Find(
-            enumerableType.GetInterfaces(),
-            static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>));
-
+        
+        // PERFORMANCE: Cache interface lookup to avoid repeated searches
+        Type? asyncEnumerableInterface = FindAsyncEnumerableInterface(enumerableType);
         if (asyncEnumerableInterface is null)
         {
             return;
         }
 
-        MethodInfo? getEnumeratorMethod = asyncEnumerableInterface.GetMethod("GetAsyncEnumerator", [typeof(CancellationToken)]);
+        MethodInfo? getEnumeratorMethod = asyncEnumerableInterface.GetMethod(
+            "GetAsyncEnumerator", 
+            [typeof(CancellationToken)]);
+        
         if (getEnumeratorMethod is null)
         {
             return;
@@ -557,9 +605,7 @@ public static class JsonSerializerExtensions
         try
         {
             Type enumeratorType = enumerator.GetType();
-            Type? asyncEnumeratorInterface = Array.Find(
-                enumeratorType.GetInterfaces(),
-                static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>));
+            Type? asyncEnumeratorInterface = FindAsyncEnumeratorInterface(enumeratorType);
 
             if (asyncEnumeratorInterface is null)
             {
@@ -574,17 +620,9 @@ public static class JsonSerializerExtensions
                 return;
             }
 
-            // PERFORMANCE: Adaptive batch flushing for non-generic path
-            Pagination pagination = pagedEnumerable.Pagination;
+            // PERFORMANCE: Adaptive batch flushing
+            FlushStrategy flushStrategy = FlushStrategy.Create(pagination.TotalCount);
             int itemCount = 0;
-            int flushBatchSize = pagination.TotalCount switch
-            {
-                null => 100,
-                < 1_000 => 200,
-                < 10_000 => 100,
-                < 100_000 => 50,
-                _ => 25
-            };
 
             while (true)
             {
@@ -603,10 +641,11 @@ public static class JsonSerializerExtensions
                 }
 
                 object? current = currentProperty.GetValue(enumerator);
-                serializeItem(writer, current, options);
-                
-                // PERFORMANCE: Flush in adaptive batches
-                if (++itemCount % flushBatchSize == 0)
+                serializer.Serialize(writer, current);
+                itemCount++;
+
+                // PERFORMANCE: Adaptive memory-aware flushing
+                if (flushStrategy.ShouldFlush(itemCount, writer.BytesPending))
                 {
                     await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -618,6 +657,70 @@ public static class JsonSerializerExtensions
             {
                 await asyncDisposable.DisposeAsync().ConfigureAwait(false);
             }
+        }
+    }
+
+    // PERFORMANCE: Cache interface lookups to reduce repeated reflection
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Type.GetInterfaces is required for non-generic async enumerable serialization")]
+    private static Type? FindAsyncEnumerableInterface([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
+    {
+        return Array.Find(
+            type.GetInterfaces(),
+            static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Type.GetInterfaces is required for non-generic async enumerable serialization")]
+    private static Type? FindAsyncEnumeratorInterface([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
+    {
+        return Array.Find(
+            type.GetInterfaces(),
+            static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>));
+    }
+
+    #endregion
+
+    #region Private - Flush Strategy (Memory-Aware Adaptive Flushing)
+
+    /// <summary>
+    /// Provides adaptive flushing strategy based on dataset size and memory pressure.
+    /// </summary>
+    private readonly struct FlushStrategy
+    {
+        private const int DefaultBatchSize = 100;
+        private const int SmallDatasetBatchSize = 200;
+        private const int MediumDatasetBatchSize = 100;
+        private const int LargeDatasetBatchSize = 50;
+        private const int VeryLargeDatasetBatchSize = 25;
+        private const int BytesPendingThreshold = 32_768; // 32KB
+
+        private readonly int _batchSize;
+
+        private FlushStrategy(int batchSize)
+        {
+            _batchSize = batchSize;
+        }
+
+        public static FlushStrategy Create(int? totalCount)
+        {
+            int batchSize = totalCount switch
+            {
+                null => DefaultBatchSize,
+                < 1_000 => SmallDatasetBatchSize,
+                < 10_000 => MediumDatasetBatchSize,
+                < 100_000 => LargeDatasetBatchSize,
+                _ => VeryLargeDatasetBatchSize
+            };
+
+            return new FlushStrategy(batchSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool ShouldFlush(int itemCount, long bytesPending)
+        {
+            // Flush based on item count OR bytes pending (memory-aware)
+            return itemCount % _batchSize == 0 || bytesPending > BytesPendingThreshold;
         }
     }
 

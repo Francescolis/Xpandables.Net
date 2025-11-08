@@ -11,8 +11,9 @@ public static class Program
             //typeof(PaginationBenchmarks),
             //typeof(MapperBenchmarks),
             //typeof(StrategyOverheadBenchmarks),
-            typeof(JsonStreamingBenchmarks),
-            //typeof(AspNetCoreStreamingBenchmarks)
+            //typeof(JsonStreamingBenchmarks),
+            typeof(AspNetCoreStreamingBenchmarks),
+            //typeof(AsyncPagedSerializationBenchmarks)
         ]);
     }
 }

@@ -79,8 +79,11 @@ public static class QueryAnalyzer
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        Expression newExpression = RemoveSkipTakeFromExpression(query.Expression);
-        return newExpression == query.Expression ? query : query.Provider.CreateQuery<T>(newExpression);
+        //Expression newExpression = RemoveSkipTakeFromExpression(query.Expression);
+        return SkipTakeRemover.RemoveSkipTake(query);
+
+
+        //return newExpression == query.Expression ? query : query.Provider.CreateQuery<T>(newExpression);
     }
 
     /// <summary>
@@ -157,5 +160,52 @@ public static class QueryAnalyzer
             UnaryExpression { NodeType: ExpressionType.Convert, Operand: ConstantExpression { Value: int convertValue } } => convertValue,
             _ => null
         };
+    }
+}
+
+
+/// <summary>
+/// 
+/// </summary>
+public sealed class SkipTakeRemover : ExpressionVisitor
+{
+    private static readonly MethodInfo SkipMethod = ((MethodCallExpression)
+        ((Expression<Func<IQueryable<int>, IQueryable<int>>>)(q => q.Skip(0))).Body)
+        .Method.GetGenericMethodDefinition();
+
+    private static readonly MethodInfo TakeMethod = ((MethodCallExpression)
+        ((Expression<Func<IQueryable<int>, IQueryable<int>>>)(q => q.Take(0))).Body)
+        .Method.GetGenericMethodDefinition();
+
+    ///
+    protected override Expression VisitMethodCall(MethodCallExpression node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+
+        if (node.Method.IsGenericMethod)
+        {
+            var genericDef = node.Method.GetGenericMethodDefinition();
+
+            if (genericDef == SkipMethod || genericDef == TakeMethod)
+            {
+                // Strip the Skip/Take by visiting the source argument
+                return Visit(node.Arguments[0]);
+            }
+        }
+
+        return base.VisitMethodCall(node);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="query"></param>
+    /// <returns></returns>
+    public static IQueryable<T> RemoveSkipTake<T>(IQueryable<T> query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        var newExpression = new SkipTakeRemover().Visit(query.Expression);
+        return query.Provider.CreateQuery<T>(newExpression);
     }
 }
