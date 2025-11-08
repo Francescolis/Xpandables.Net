@@ -8,12 +8,7 @@ public static class Program
     {
         BenchmarkRunner.Run(
         [
-            //typeof(PaginationBenchmarks),
-            //typeof(MapperBenchmarks),
-            //typeof(StrategyOverheadBenchmarks),
-            //typeof(JsonStreamingBenchmarks),
-            typeof(AspNetCoreStreamingBenchmarks),
-            //typeof(AsyncPagedSerializationBenchmarks)
+            //typeof(AspNetCoreStreamingBenchmarks)
         ]);
     }
 }

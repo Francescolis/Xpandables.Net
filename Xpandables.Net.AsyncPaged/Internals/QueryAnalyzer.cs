@@ -209,3 +209,64 @@ public sealed class SkipTakeRemover : ExpressionVisitor
         return query.Provider.CreateQuery<T>(newExpression);
     }
 }
+
+/// <summary>
+/// 
+/// </summary>
+public static class QueryPaginationNormalizer
+{
+    private static readonly MethodInfo SkipMethod = ((MethodCallExpression)
+        ((Expression<Func<IQueryable<int>, IQueryable<int>>>)(q => q.Skip(0))).Body)
+        .Method.GetGenericMethodDefinition();
+
+    private static readonly MethodInfo TakeMethod = ((MethodCallExpression)
+        ((Expression<Func<IQueryable<int>, IQueryable<int>>>)(q => q.Take(0))).Body)
+        .Method.GetGenericMethodDefinition();
+
+    /// <summary>
+    /// Extracts and removes Skip/Take from the query expression.
+    /// </summary>
+    public static (IQueryable<T> Query, int? Skip, int? Take) Normalize<T>(IQueryable<T> query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        var visitor = new SkipTakeVisitor();
+        var newExpression = visitor.Visit(query.Expression);
+        var normalizedQuery = query.Provider.CreateQuery<T>(newExpression);
+        return (normalizedQuery, visitor.Skip, visitor.Take);
+    }
+
+    private sealed class SkipTakeVisitor : ExpressionVisitor
+    {
+        public int? Skip { get; private set; }
+        public int? Take { get; private set; }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            if (node.Method.IsGenericMethod)
+            {
+                var genericDef = node.Method.GetGenericMethodDefinition();
+
+                if (genericDef == SkipMethod)
+                {
+                    Skip = ExtractConstantInt(node.Arguments[1]) ?? Skip;
+                    return Visit(node.Arguments[0]);
+                }
+
+                if (genericDef == TakeMethod)
+                {
+                    Take = ExtractConstantInt(node.Arguments[1]) ?? Take;
+                    return Visit(node.Arguments[0]);
+                }
+            }
+
+            return base.VisitMethodCall(node);
+        }
+
+        private static int? ExtractConstantInt(Expression expression)
+        {
+            return expression is ConstantExpression constExpr && constExpr.Value is int value
+                ? value
+                : null;
+        }
+    }
+}

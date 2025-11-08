@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Reflection;
@@ -475,7 +474,7 @@ public static class JsonSerializerExtensions
             await foreach (T item in pagedEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 serializer.Serialize(writer, item);
                 itemCount++;
 
@@ -540,9 +539,9 @@ public static class JsonSerializerExtensions
             writer.WriteStartArray();
 
             await SerializeAsyncEnumerableItemsAsync(
-                writer, 
-                pagedEnumerable, 
-                serializer, 
+                writer,
+                pagedEnumerable,
+                serializer,
                 pagination,
                 cancellationToken)
                 .ConfigureAwait(false);
@@ -577,7 +576,7 @@ public static class JsonSerializerExtensions
         where TSerializer : struct, IItemSerializer<object?>
     {
         Type enumerableType = pagedEnumerable.GetType();
-        
+
         // PERFORMANCE: Cache interface lookup to avoid repeated searches
         Type? asyncEnumerableInterface = FindAsyncEnumerableInterface(enumerableType);
         if (asyncEnumerableInterface is null)
@@ -586,9 +585,9 @@ public static class JsonSerializerExtensions
         }
 
         MethodInfo? getEnumeratorMethod = asyncEnumerableInterface.GetMethod(
-            "GetAsyncEnumerator", 
+            "GetAsyncEnumerator",
             [typeof(CancellationToken)]);
-        
+
         if (getEnumeratorMethod is null)
         {
             return;
@@ -695,16 +694,16 @@ public static class JsonSerializerExtensions
         private const int VeryLargeDatasetBatchSize = 25;
         private const int BytesPendingThreshold = 32_768; // 32KB
 
-        private readonly int _batchSize;
+        private readonly long _batchSize;
 
-        private FlushStrategy(int batchSize)
+        private FlushStrategy(long batchSize)
         {
             _batchSize = batchSize;
         }
 
-        public static FlushStrategy Create(int? totalCount)
+        public static FlushStrategy Create(long? totalCount)
         {
-            int batchSize = totalCount switch
+            long batchSize = totalCount switch
             {
                 null => DefaultBatchSize,
                 < 1_000 => SmallDatasetBatchSize,
@@ -717,7 +716,7 @@ public static class JsonSerializerExtensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool ShouldFlush(int itemCount, long bytesPending)
+        public readonly bool ShouldFlush(long itemCount, long bytesPending)
         {
             // Flush based on item count OR bytes pending (memory-aware)
             return itemCount % _batchSize == 0 || bytesPending > BytesPendingThreshold;

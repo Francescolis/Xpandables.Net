@@ -55,7 +55,7 @@ public readonly record struct Pagination
     /// Gets the total number of items across all pages. 
     /// A null value indicates the total count is unknown.
     /// </summary>
-    public required int? TotalCount { get; init; }
+    public required long? TotalCount { get; init; }
 
     /// <summary>
     /// Gets the number of items to include on each page of results.
@@ -101,7 +101,7 @@ public readonly record struct Pagination
         int pageSize,
         int currentPage,
         string? continuationToken = null,
-        int? totalCount = null)
+        long? totalCount = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(pageSize);
         ArgumentOutOfRangeException.ThrowIfNegative(currentPage);
@@ -126,7 +126,7 @@ public readonly record struct Pagination
     /// <returns>A new <see cref="Pagination"/> instance with the specified total count and default values for other
     /// properties.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="totalCount"/> is negative.</exception>
-    public static Pagination FromTotalCount(int totalCount)
+    public static Pagination FromTotalCount(long totalCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(totalCount);
 
@@ -166,7 +166,7 @@ public readonly record struct Pagination
     /// <param name="totalCount">The new total count value.</param>
     /// <returns>A new <see cref="Pagination"/> instance with the updated total count.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="totalCount"/> is negative.</exception>
-    public Pagination WithTotalCount(int totalCount)
+    public Pagination WithTotalCount(long totalCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(totalCount);
         return this with { TotalCount = totalCount };
