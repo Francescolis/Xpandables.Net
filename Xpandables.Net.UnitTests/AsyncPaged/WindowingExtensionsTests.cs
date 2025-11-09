@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using FluentAssertions;
+
 using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.AsyncPaged.Extensions;
 
@@ -31,8 +32,8 @@ public class WindowingExtensionsTests
         var windows = await P(1, 2, 3, 4).WindowPaged(3).ToListAsync();
         // Compare element by element since collection equality of arrays may fail due to reference equality
         windows.Count.Should().Be(2);
-        windows[0].Should().Equal(1,2,3);
-        windows[1].Should().Equal(2,3,4);
+        windows[0].Should().Equal(1, 2, 3);
+        windows[1].Should().Equal(2, 3, 4);
     }
 
     [Fact]
@@ -62,7 +63,7 @@ public class WindowingExtensionsTests
     public async Task PairwisePaged_YieldsConsecutivePairs()
     {
         var pairs = await P(1, 2, 3).PairwisePaged().ToListAsync();
-        pairs.Should().Equal(new (int,int)[]{ (1, 2), (2, 3) });
+        pairs.Should().Equal([(1, 2), (2, 3)]);
     }
 
     [Fact]

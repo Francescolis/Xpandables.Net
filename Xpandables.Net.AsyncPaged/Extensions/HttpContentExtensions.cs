@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Pipelines;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -90,8 +91,6 @@ public static class HttpContentExtensions
         /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation is canceled if the token is triggered.</param>
         /// <returns>A task that represents the asynchronous operation. The result contains an asynchronous paged enumerable of
         /// deserialized objects of type TValue. The enumerable may be empty if no items are found.</returns>
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "JsonTypeInfo ensures type metadata is preserved")]
-        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JsonTypeInfo provides AOT-compatible serialization")]
         public Task<IAsyncPagedEnumerable<TValue?>> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
             JsonTypeInfo<TValue> jsonTypeInfo,
             CancellationToken cancellationToken = default)
@@ -113,10 +112,10 @@ public static class HttpContentExtensions
         JsonSerializerOptions? options,
         CancellationToken cancellationToken)
     {
-        Stream contentStream = await GetContentStreamAsync(content, cancellationToken).ConfigureAwait(false);
+        PipeReader pipeReader = await GetContentStreamAsPipeReaderAsync(content, cancellationToken).ConfigureAwait(false);
 
         return JsonSerializer.DeserializeAsyncPagedEnumerable<TValue>(
-            contentStream,
+            pipeReader,
             options,
             cancellationToken);
     }
@@ -124,17 +123,15 @@ public static class HttpContentExtensions
     /// <summary>
     /// Core implementation for reading HTTP content as async paged enumerable with JsonTypeInfo.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "JsonTypeInfo ensures type metadata is preserved")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JsonTypeInfo provides AOT-compatible serialization")]
     private static async Task<IAsyncPagedEnumerable<TValue?>> ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(
         HttpContent content,
         JsonTypeInfo<TValue> jsonTypeInfo,
         CancellationToken cancellationToken)
     {
-        Stream contentStream = await GetContentStreamAsync(content, cancellationToken).ConfigureAwait(false);
+        PipeReader pipeReader = await GetContentStreamAsPipeReaderAsync(content, cancellationToken).ConfigureAwait(false);
 
         return JsonSerializer.DeserializeAsyncPagedEnumerable(
-            contentStream,
+            pipeReader,
             jsonTypeInfo,
             cancellationToken);
     }
@@ -142,13 +139,15 @@ public static class HttpContentExtensions
     /// <summary>
     /// Gets the content stream with proper encoding handling.
     /// </summary>
-    internal static ValueTask<Stream> GetContentStreamAsync(HttpContent content, CancellationToken cancellationToken)
+    internal static async ValueTask<PipeReader> GetContentStreamAsPipeReaderAsync(HttpContent content, CancellationToken cancellationToken)
     {
         Task<Stream> task = ReadHttpContentStreamAsync(content, cancellationToken);
 
-        return GetEncoding(content) is Encoding sourceEncoding && sourceEncoding != Encoding.UTF8
-            ? GetTranscodingStreamAsync(task, sourceEncoding)
-            : new(task);
+        var stream = GetEncoding(content) is Encoding sourceEncoding && sourceEncoding != Encoding.UTF8
+            ? await GetTranscodingStreamAsync(task, sourceEncoding).ConfigureAwait(false)
+            : await task.ConfigureAwait(false);
+
+        return PipeReader.Create(stream);
     }
 
     private static Task<Stream> ReadHttpContentStreamAsync(HttpContent content, CancellationToken cancellationToken)

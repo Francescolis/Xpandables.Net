@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.OpenApi.Models;
@@ -74,7 +75,15 @@ builder.Services
     .AddXOutboxStore()
     .AddMemoryCache()
     .AddXEventConverterFactory()
+    .AddXExecutionResultResponseWriters()
     .AddXEventCacheTypeResolver([typeof(BankAccount).Assembly]);
+
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    options.SerializerOptions.WriteIndented = true;
+});
 
 builder.Services.AddSwaggerGen(options =>
 {

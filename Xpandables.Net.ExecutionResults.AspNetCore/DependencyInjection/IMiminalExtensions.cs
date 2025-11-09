@@ -101,6 +101,7 @@ public static class IMiminalExtensions
             services.AddScoped<IExecutionResultResponseWriter, FileExecutionResultResponseWriter>();
             services.AddScoped<IExecutionResultResponseWriter, SuccessExecutionResultResponseWriter>();
             services.AddScoped<IExecutionResultResponseWriter, FailureExecutionResultResponseWriter>();
+            services.AddScoped<IExecutionResultResponseWriter, StreamExecutionResultResponseWriter>();
             return services;
         }
 

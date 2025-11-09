@@ -15,15 +15,14 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
+using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.ExecutionResults.Controllers;
@@ -68,7 +67,7 @@ public sealed class ExecutionResultControllerResultFilter : IAsyncAlwaysRunResul
 
                 if (executionResult.Value is not null)
                 {
-                    var options = GetJsonSerializerOptions(context.HttpContext);
+                    var options = context.HttpContext.GetMvcJsonSerializerOptions();
                     Type type = executionResult.Value.GetType();
                     JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(type);
 
@@ -108,17 +107,5 @@ public sealed class ExecutionResultControllerResultFilter : IAsyncAlwaysRunResul
             executionResult.Value,
             type,
             httpContext.RequestAborted).ConfigureAwait(false);
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
-    {
-        var options = httpContext.RequestServices
-            .GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions
-            ?? JsonSerializerOptions.Default;
-
-        options.MakeReadOnly(true);
-        return options;
     }
 }

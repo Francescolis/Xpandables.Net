@@ -103,8 +103,8 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
     {
         if (type is null) return false;
 
-        return (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>)
-            || typeof(IAsyncPagedEnumerable).IsAssignableFrom(type));
+        return type.IsGenericType
+            && type.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>);
     }
 
     /// <inheritdoc/>

@@ -16,9 +16,12 @@
 ********************************************************************************/
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+
 using FluentAssertions;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+
 using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.AsyncPaged.Controllers;
 
@@ -47,7 +50,7 @@ public class AsyncPagedEnumerableJsonOutputFormatterTests
     {
         var formatter = new AsyncPagedEnumerableJsonOutputFormatter(CreateOptions());
         var http = new DefaultHttpContext();
-        var paged = CreatePaged(Array.Empty<Item>());
+        var paged = CreatePaged([]);
         var context = new OutputFormatterWriteContext(
             http,
             (s, e) => new StreamWriter(s, e),
@@ -64,7 +67,7 @@ public class AsyncPagedEnumerableJsonOutputFormatterTests
     public async Task WriteResponseBodyAsync_WritesJson()
     {
         var formatter = new AsyncPagedEnumerableJsonOutputFormatter(CreateOptions(camelCase: true));
-        var items = Enumerable.Range(1,3).Select(i => new Item { Id = i, Name = $"N{i}" }).ToArray();
+        var items = Enumerable.Range(1, 3).Select(i => new Item { Id = i, Name = $"N{i}" }).ToArray();
         var paged = CreatePaged(items);
 
         var httpContext = new DefaultHttpContext();

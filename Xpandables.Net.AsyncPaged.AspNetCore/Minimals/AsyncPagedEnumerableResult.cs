@@ -14,22 +14,18 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
-
 using Xpandables.Net.AsyncPaged.Extensions;
 
 namespace Xpandables.Net.AsyncPaged.Minimals;
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.Extensions.Options;
+
+using Xpandables.Net.AsyncPaged.Internals;
 
 /// <summary>
 /// Represents an HTTP result that asynchronously serializes and streams a paged enumerable of results as JSON in
@@ -55,8 +51,6 @@ public sealed class AsyncPagedEnumerableResult<TResult>(
     JsonSerializerOptions? serializerOptions = null,
     JsonTypeInfo<TResult>? jsonTypeInfo = null) : IResult
 {
-    private static readonly ConcurrentDictionary<IServiceProvider, JsonSerializerOptions> _optionsCache = new();
-
     private readonly IAsyncPagedEnumerable<TResult> _results = results ?? throw new ArgumentNullException(nameof(results));
     private readonly JsonTypeInfo<TResult>? _jsonTypeInfo = jsonTypeInfo;
     private readonly JsonSerializerOptions? _serializerOptions = serializerOptions;
@@ -66,11 +60,11 @@ public sealed class AsyncPagedEnumerableResult<TResult>(
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
-        httpContext.Response.ContentType ??= GetContentType(httpContext) ?? "application/json; charset=utf-8";
+        httpContext.Response.ContentType ??= httpContext.GetContentType("application/json; charset=utf-8");
         var cancellationToken = httpContext.RequestAborted;
         var pipeWriter = httpContext.Response.BodyWriter;
 
-        var options = _serializerOptions ?? GetOrCacheJsonOptions(httpContext);
+        var options = _serializerOptions ?? httpContext.GetJsonSerializerOptions();
 
         if (_jsonTypeInfo is not null)
         {
@@ -95,24 +89,5 @@ public sealed class AsyncPagedEnumerableResult<TResult>(
         CancellationToken cancellationToken)
     {
         return JsonSerializer.SerializeAsyncPaged(writer, results, options, cancellationToken);
-    }
-
-    private static string? GetContentType(HttpContext context)
-    {
-        if (context.GetEndpoint() is not Endpoint endpoint)
-            return context.Response.GetTypedHeaders().ContentType?.ToString();
-
-        return endpoint.Metadata
-            .GetMetadata<IProducesResponseTypeMetadata>()?.ContentTypes
-            .FirstOrDefault();
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "JsonOptions may require dynamic access.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JsonOptions may require dynamic access.")]
-    private static JsonSerializerOptions GetOrCacheJsonOptions(HttpContext context)
-    {
-        return _optionsCache.GetOrAdd(
-            context.RequestServices,
-            static sp => sp.GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions);
     }
 }

@@ -36,6 +36,16 @@ public static class AsyncEnumerableExtensions
     extension<T>(IAsyncEnumerable<T> source)
     {
         /// <summary>
+        /// Creates an asynchronous paged enumerable that enables iteration over the source collection in pages.
+        /// </summary>
+        /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> that provides asynchronous, paged access to the source collection.</returns>
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable()
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            return new AsyncPagedEnumerable<T>(source);
+        }
+
+        /// <summary>
         /// Converts an <see cref="IAsyncEnumerable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with pagination metadata.
         /// </summary>
         /// <param name="paginationFactory">Factory to create pagination metadata.</param>

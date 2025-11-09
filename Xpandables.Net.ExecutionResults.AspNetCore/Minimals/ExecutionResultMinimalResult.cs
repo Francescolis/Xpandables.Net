@@ -15,14 +15,12 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
+using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.ExecutionResults.Minimals;
@@ -57,7 +55,8 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
-        IExecutionResultResponseWriter? responseWriter = httpContext.RequestServices
+        IExecutionResultResponseWriter? responseWriter = httpContext
+            .RequestServices
             .GetServices<IExecutionResultResponseWriter>()
             .FirstOrDefault(writer => writer.CanWrite(executionResult));
 
@@ -65,7 +64,7 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
         {
             if (executionResult.Value is not null)
             {
-                var options = GetJsonSerializerOptions(httpContext);
+                var options = httpContext.GetJsonSerializerOptions();
 
                 Type type = executionResult.Value.GetType();
                 JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(type);
@@ -79,10 +78,11 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
                         executionResult)
                         .ConfigureAwait(false);
                 else
-                    await WriteAsJsonAsync(
-                        httpContext,
-                        jsonTypeInfo,
-                        executionResult)
+                    await httpContext.Response
+                        .WriteAsJsonAsync(
+                             executionResult.Value,
+                            jsonTypeInfo,
+                            cancellationToken: httpContext.RequestAborted)
                         .ConfigureAwait(false);
             }
             else
@@ -98,14 +98,6 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
         await responseWriter.WriteAsync(httpContext, executionResult).ConfigureAwait(false);
     }
 
-    static async Task WriteAsJsonAsync(HttpContext httpContext, JsonTypeInfo jsonTypeInfo, ExecutionResult executionResult)
-    {
-        await httpContext.Response.WriteAsJsonAsync(
-            executionResult.Value,
-            jsonTypeInfo,
-            cancellationToken: httpContext.RequestAborted).ConfigureAwait(false);
-    }
-
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     static async Task WriteAsJsonAsync(HttpContext httpContext, Type type, ExecutionResult executionResult)
@@ -114,17 +106,5 @@ public sealed class ExecutionResultMinimalResult(ExecutionResult executionResult
             executionResult.Value,
             type,
             httpContext.RequestAborted).ConfigureAwait(false);
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
-    {
-        var options = httpContext.RequestServices
-            .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions
-            ?? JsonSerializerOptions.Default;
-
-        options.MakeReadOnly(true);
-        return options;
     }
 }

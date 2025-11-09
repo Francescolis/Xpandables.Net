@@ -10,10 +10,10 @@ public static class Program
     {
         //BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 
-        BenchmarkRunner.Run(new[]
-        {
-            //BenchmarkConverter.TypeToBenchmarks(typeof(SerializationBenchmarks)),
+        BenchmarkRunner.Run(
+        [
+            BenchmarkConverter.TypeToBenchmarks(typeof(SerializationBenchmarks)),
             BenchmarkConverter.TypeToBenchmarks(typeof(DeserializationBenchmarks))
-        });
+        ]);
     }
 }

@@ -58,7 +58,7 @@ public class JsonDeserializerExtensionsTests
         // Assert
         list.Should().HaveCount(5);
         list[0]!.Id.Should().Be(1);
-        list[list.Count - 1]!.Name.Should().Be("N5");
+        list[^1]!.Name.Should().Be("N5");
 
         var pagination = await paged.GetPaginationAsync();
         pagination.TotalCount.Should().Be(5);

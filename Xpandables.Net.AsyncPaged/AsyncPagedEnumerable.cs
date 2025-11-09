@@ -83,6 +83,21 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         _pageContext = Pagination.Empty;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with an async enumerable source
+    /// and no pagination metadata. Pagination will be inferred from item count at runtime.
+    /// </summary>
+    /// <param name="source">The asynchronous enumerable representing the data source. Cannot be <see langword="null"/>.</param>
+    public AsyncPagedEnumerable(IAsyncEnumerable<T> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        _source = source;
+        _paginationFactory = InferPaginationFromCountAsync;
+        _pageContext = Pagination.Empty;
+    }
+
+
     /// <inheritdoc/>
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
@@ -151,6 +166,17 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
                 throw;
             }
         }
+    }
+
+    private async ValueTask<Pagination> InferPaginationFromCountAsync(CancellationToken cancellationToken)
+    {
+        int count = 0;
+        await foreach (var _ in _source!.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            count++;
+        }
+
+        return Pagination.Create(pageSize: count, currentPage: count > 0 ? 1 : 0, totalCount: count);
     }
 
     private async ValueTask<Pagination> ComputePaginationAsync(CancellationToken cancellationToken)

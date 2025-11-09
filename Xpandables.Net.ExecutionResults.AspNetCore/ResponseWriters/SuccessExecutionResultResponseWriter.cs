@@ -15,14 +15,11 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
+using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.ExecutionResults.ResponseWriters;
@@ -41,7 +38,8 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
     {
         ArgumentNullException.ThrowIfNull(executionResult);
 
-        return executionResult.StatusCode.IsSuccess;
+        return executionResult.StatusCode.IsSuccess
+            && executionResult.Value is not IAsyncPagedEnumerable;
     }
 
     /// <summary>
@@ -76,7 +74,7 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
         }
 
         Type type = executionResult.Value.GetType();
-        var options = GetJsonSerializerOptions(context);
+        var options = context.GetJsonSerializerOptions();
         JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(type);
 
         if (jsonTypeInfo is not null)
@@ -102,17 +100,5 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
             executionResult.Value,
             type,
             httpContext.RequestAborted).ConfigureAwait(false);
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    static JsonSerializerOptions GetJsonSerializerOptions(HttpContext httpContext)
-    {
-        var options = httpContext.RequestServices
-            .GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions
-            ?? JsonSerializerOptions.Default;
-
-        options.MakeReadOnly(true);
-        return options;
     }
 }
