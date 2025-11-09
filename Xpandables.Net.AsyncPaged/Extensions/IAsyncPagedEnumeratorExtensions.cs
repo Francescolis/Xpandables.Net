@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.AsyncPaged;
+namespace Xpandables.Net.AsyncPaged.Extensions;
 
 /// <summary>
 /// Provides extension methods for configuring and managing pagination strategies in asynchronous paged enumerators.

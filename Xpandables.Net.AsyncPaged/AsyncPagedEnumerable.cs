@@ -116,7 +116,6 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         // Try to start computation atomically.
         if (Interlocked.CompareExchange(ref _paginationState, 1, 0) == 0)
         {
-            // We won the race: create the computation task and publish it with release semantics.
             var task = ComputeAndStoreAsync(cancellationToken);
             Volatile.Write(ref _paginationTask, task);
             return task;
