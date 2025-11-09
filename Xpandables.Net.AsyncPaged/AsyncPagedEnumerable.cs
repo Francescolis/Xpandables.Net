@@ -220,12 +220,20 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
             _ => (int)totalCountLong
         };
 
-        int pageSize = take ?? 0;
-        int currentPage =
-            (take is not null && take.Value > 0 && skip is not null && skip.Value >= 0)
-                ? (skip.Value / take.Value) + 1
-                : (pageSize > 0 ? 1 : 0);
+        string? continuationToken = (skip, take) switch
+        {
+            (not null and > 0, not null and > 0) => Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes($"{skip.Value + take.Value}:{take.Value}")),
+            _ => null
+        };
 
-        return Pagination.Create(pageSize, currentPage, continuationToken: null, totalCount);
+        int pageSize = take ?? 0;
+        int currentPage = (take, skip) switch
+        {
+            (not null and > 0, not null and >= 0) => (skip.Value / take.Value) + 1,
+            _ => pageSize > 0 ? 1 : 0
+        };
+
+        return Pagination.Create(pageSize, currentPage, continuationToken: continuationToken, totalCount);
     }
 }

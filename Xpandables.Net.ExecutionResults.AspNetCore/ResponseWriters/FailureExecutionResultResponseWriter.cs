@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.ExecutionResults.ResponseWriters;
@@ -56,6 +57,7 @@ public sealed class FailureExecutionResultResponseWriter : ExecutionResultRespon
         await base.WriteAsync(context, executionResult).ConfigureAwait(false);
 
         ProblemDetails problem = executionResult.ToProblemDetails(context);
+        context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
 
         if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
         {

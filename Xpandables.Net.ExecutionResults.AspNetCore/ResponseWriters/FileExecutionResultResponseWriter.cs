@@ -16,6 +16,7 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
+using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.ExecutionResults.ResponseWriters;
@@ -43,6 +44,8 @@ public sealed class FileExecutionResultResponseWriter : ExecutionResultResponseW
         ArgumentNullException.ThrowIfNull(context);
 
         await base.WriteAsync(context, executionResult).ConfigureAwait(false);
+
+        context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
 
         Stream stream = executionResult.Value as Stream
             ?? throw new InvalidOperationException("Execution result value must be a Stream.");

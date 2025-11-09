@@ -53,6 +53,8 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
     {
         await base.WriteAsync(context, executionResult).ConfigureAwait(false);
 
+        context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
+
         if (executionResult.Value is null)
         {
             await context.Response.CompleteAsync().ConfigureAwait(false);
