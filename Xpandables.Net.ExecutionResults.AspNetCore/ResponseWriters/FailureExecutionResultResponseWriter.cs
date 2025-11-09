@@ -57,7 +57,6 @@ public sealed class FailureExecutionResultResponseWriter : ExecutionResultRespon
         await base.WriteAsync(context, executionResult).ConfigureAwait(false);
 
         ProblemDetails problem = executionResult.ToProblemDetails(context);
-        context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
 
         if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
         {

@@ -45,8 +45,6 @@ public sealed class FileExecutionResultResponseWriter : ExecutionResultResponseW
 
         await base.WriteAsync(context, executionResult).ConfigureAwait(false);
 
-        context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
-
         Stream stream = executionResult.Value as Stream
             ?? throw new InvalidOperationException("Execution result value must be a Stream.");
 

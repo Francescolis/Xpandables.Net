@@ -52,7 +52,6 @@ public sealed class StreamExecutionResultResponseWriter : ExecutionResultRespons
 
         Debug.Assert(executionResult.Value is not null, "Value cannot be null here.");
 
-        context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
         var asyncPaged = (IAsyncPagedEnumerable)executionResult.Value;
         Type type = asyncPaged.Type;
         var options = context.GetJsonSerializerOptions();

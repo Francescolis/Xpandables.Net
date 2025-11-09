@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
+using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults.Collections;
 
 namespace Xpandables.Net.ExecutionResults;
@@ -56,6 +57,8 @@ public abstract class ExecutionResultResponseWriter : IExecutionResultResponseWr
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(executionResult);
+
+        context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
 
         if (executionResult.Location is not null)
         {

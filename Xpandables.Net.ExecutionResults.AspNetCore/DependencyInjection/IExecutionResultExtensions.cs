@@ -40,7 +40,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>These extension methods simplify the setup of ExecutionResult support in ASP.NET Core applications,
 /// including registration of response writers, controller MVC options, and minimal JSON serialization options. Call
 /// these methods during application startup to enable XExecutionResult features as needed.</remarks>
-public static class IMiminalExtensions
+public static class IExecutionResultExtensions
 {
     /// <summary>
     /// Adds the ExecutionResultMinimalMiddleware to the application's request pipeline.
