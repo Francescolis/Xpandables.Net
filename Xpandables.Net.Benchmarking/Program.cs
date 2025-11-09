@@ -10,7 +10,7 @@ public static class Program
     {
         BenchmarkRunner.Run(new[]
         {
-            //BenchmarkConverter.TypeToBenchmarks(typeof(SerializationBenchmarks)),
+            BenchmarkConverter.TypeToBenchmarks(typeof(SerializationBenchmarks)),
             BenchmarkConverter.TypeToBenchmarks(typeof(DeserializationBenchmarks))
         });
     }
