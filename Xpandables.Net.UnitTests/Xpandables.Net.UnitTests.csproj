@@ -35,6 +35,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Xpandables.Net.AsyncPaged.AspNetCore\Xpandables.Net.AsyncPaged.AspNetCore.csproj" />
+        <ProjectReference Include="..\Xpandables.Net.AsyncPaged\Xpandables.Net.AsyncPaged.csproj" />
 	</ItemGroup>
 
 </Project>
