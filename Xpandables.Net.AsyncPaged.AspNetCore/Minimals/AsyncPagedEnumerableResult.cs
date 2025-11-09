@@ -14,6 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
+
+using Xpandables.Net.AsyncPaged.Extensions;
+
+namespace Xpandables.Net.AsyncPaged.Minimals;
+
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
@@ -21,165 +28,74 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.AsyncPaged.Extensions;
-
-namespace Xpandables.Net.AsyncPaged.Minimals;
-
 /// <summary>
-/// Represents an HTTP result that asynchronously writes a paged JSON response containing both page context metadata and
-/// a sequence of data items to the response stream.
+/// Represents an HTTP result that asynchronously serializes and streams a paged enumerable of results as JSON in
+/// response to a request.
 /// </summary>
-/// <remarks>The response is formatted as a JSON object with a 'pagination' property describing pagination
-/// metadata and an 'items' array containing the serialized items. The response content type defaults to
-/// 'application/json; charset=utf-8' unless overridden by endpoint metadata. The operation observes the request's
-/// cancellation token and may be canceled if the client disconnects.
-/// <para>
-/// PERFORMANCE: For best performance, use the constructor overload with JsonTypeInfo{TResult} which is AOT-friendly
-/// and avoids runtime reflection. Using PipeWriter directly provides ~15-25% better throughput than Stream-based serialization.
-/// </para>
+/// <remarks>This result is intended for use in ASP.NET Core endpoints that return large or paged datasets,
+/// enabling efficient streaming of JSON data to the client. The serialization can be customized using optional JSON
+/// serializer options or type information. The response content type is set to "application/json; charset=utf-8" unless
+/// otherwise specified by endpoint metadata. Thread safety is ensured for serializer options caching.</remarks>
+/// <typeparam name="TResult">The type of elements contained in the paged enumerable to be serialized and streamed.</typeparam>
+/// <remarks>
+/// Initializes a new instance of the AsyncPagedEnumerableResult class to provide asynchronous, paged access to a
+/// sequence of results with optional JSON serialization settings.
 /// </remarks>
-/// <typeparam name="TResult">The type of the data items included in the paged response.</typeparam>
-public sealed class AsyncPagedEnumerableResult<TResult> : IResult
+/// <param name="results">An asynchronous paged enumerable that supplies the sequence of result items. Cannot be null.</param>
+/// <param name="serializerOptions">Optional JSON serialization options to customize how result items are serialized or deserialized. If null,
+/// default serialization settings are used.</param>
+/// <param name="jsonTypeInfo">Optional type metadata for JSON serialization of result items. If specified, this overrides type information
+/// inferred from the result type.</param>
+/// <exception cref="ArgumentNullException">Thrown if the results parameter is null.</exception>
+public sealed class AsyncPagedEnumerableResult<TResult>(
+    IAsyncPagedEnumerable<TResult> results,
+    JsonSerializerOptions? serializerOptions = null,
+    JsonTypeInfo<TResult>? jsonTypeInfo = null) : IResult
 {
-    // PERFORMANCE: Cache JsonSerializerOptions per service provider to avoid repeated DI lookups
     private static readonly ConcurrentDictionary<IServiceProvider, JsonSerializerOptions> _optionsCache = new();
-    
-    private readonly IAsyncPagedEnumerable<TResult> _results;
-    private readonly JsonTypeInfo<TResult>? _jsonTypeInfo;
-    private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
-    /// <summary>
-    /// Initializes a new instance of the AsyncPagedEnumerableResult class with the specified asynchronous paged
-    /// enumerable results.
-    /// </summary>
-    /// <param name="results">The asynchronous paged enumerable that provides the result items to be wrapped by this instance. Cannot be null.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="results"/> is null.</exception>
-    /// <remarks>The <see cref="JsonSerializerOptions"/> or <see cref="JsonTypeInfo{T}"/> will be required from the context.</remarks>
-    public AsyncPagedEnumerableResult(IAsyncPagedEnumerable<TResult> results)
-    {
-        _results = results ?? throw new ArgumentNullException(nameof(results));
-        _jsonTypeInfo = null;
-        _jsonSerializerOptions = null;
-    }
+    private readonly IAsyncPagedEnumerable<TResult> _results = results ?? throw new ArgumentNullException(nameof(results));
+    private readonly JsonTypeInfo<TResult>? _jsonTypeInfo = jsonTypeInfo;
+    private readonly JsonSerializerOptions? _serializerOptions = serializerOptions;
 
-    /// <summary>
-    /// Initializes a new instance of the AsyncPagedEnumerableResult class with the specified asynchronous paged
-    /// enumerable and JSON type information.
-    /// </summary>
-    /// <param name="results">The asynchronous paged enumerable that provides the sequence of results to be processed.</param>
-    /// <param name="jsonTypeInfo">The JSON type information used to serialize and deserialize instances of TResult.</param>
-    /// <exception cref="ArgumentNullException">Thrown if either results or jsonTypeInfo is null.</exception>
-    /// <remarks>
-    /// PERFORMANCE: This is the fastest overload - use source-generated JsonTypeInfo for best performance and AOT compatibility.
-    /// </remarks>
-    public AsyncPagedEnumerableResult(IAsyncPagedEnumerable<TResult> results, JsonTypeInfo<TResult> jsonTypeInfo)
-    {
-        _results = results ?? throw new ArgumentNullException(nameof(results));
-        _jsonTypeInfo = jsonTypeInfo ?? throw new ArgumentNullException(nameof(jsonTypeInfo));
-        _jsonSerializerOptions = null;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the AsyncPagedEnumerableResult class with the specified asynchronous paged results
-    /// and JSON serializer options.
-    /// </summary>
-    /// <param name="results">An asynchronous paged enumerable that provides the result items to be processed.</param>
-    /// <param name="serializerOptions">The options to use for JSON serialization and deserialization of result items.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="results"/> or <paramref name="serializerOptions"/> is <see langword="null"/>.</exception>
-    public AsyncPagedEnumerableResult(IAsyncPagedEnumerable<TResult> results, JsonSerializerOptions serializerOptions)
-    {
-        _results = results ?? throw new ArgumentNullException(nameof(results));
-        _jsonTypeInfo = null;
-        _jsonSerializerOptions = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
-    }
-
-    /// <summary>
-    /// Asynchronously writes a JSON response containing the page context and data to the HTTP response stream.
-    /// </summary>
-    /// <remarks>The response is written in JSON format with a 'pagination' property and an 'items' array. The
-    /// response content type is set to 'application/json; charset=utf-8' unless overridden. The operation observes the
-    /// request's cancellation token and may be canceled if the client disconnects.
-    /// <para>
-    /// PERFORMANCE: Uses PipeWriter directly for optimal throughput and minimal allocations. This avoids the
-    /// overhead of Stream wrapper and provides better buffering control. Caches JsonSerializerOptions per service
-    /// provider to avoid repeated DI resolution overhead.
-    /// </para>
-    /// </remarks>
-    /// <param name="httpContext">The HTTP context for the current request. Cannot be null.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
         httpContext.Response.ContentType ??= GetContentType(httpContext) ?? "application/json; charset=utf-8";
+        var cancellationToken = httpContext.RequestAborted;
+        var pipeWriter = httpContext.Response.BodyWriter;
 
-        CancellationToken cancellationToken = httpContext.RequestAborted;
+        var options = _serializerOptions ?? GetOrCacheJsonOptions(httpContext);
 
-        // PERFORMANCE: Use PipeWriter directly instead of Stream wrapper
-        // This provides ~15-25% better throughput and reduces allocations
-        PipeWriter pipeWriter = httpContext.Response.BodyWriter;
-
-        // PERFORMANCE: Use pattern matching to avoid multiple null checks
-        Task task = (_jsonTypeInfo, _jsonSerializerOptions) switch
+        if (_jsonTypeInfo is not null)
         {
-            // PERFORMANCE: Fastest path - AOT-friendly, no reflection
-            (not null, _) => SerializeAsyncPagedJsonTypeInfoDirect(
-                pipeWriter,
-                _results,
-                _jsonTypeInfo,
-                cancellationToken),
-            
-            // PERFORMANCE: Fast path with runtime options
-            (_, not null) => SerializeAsyncPagedJsonSerializerOptionsDirect(
-                pipeWriter,
-                _results,
-                _jsonSerializerOptions,
-                cancellationToken),
-            
-            // PERFORMANCE: Slowest path - requires DI resolution (now with caching)
-            _ => SerializeAsyncPagedJsonSerializerOptionsDirect(
-                pipeWriter,
-                _results,
-                GetOrCacheJsonOptions(httpContext),
-                cancellationToken)
-        };
+            await JsonSerializer
+                .SerializeAsyncPaged(pipeWriter, _results, _jsonTypeInfo, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await SerializeAsyncPagedSafe(pipeWriter, _results, options, cancellationToken)
+                .ConfigureAwait(false);
 
-        await task.ConfigureAwait(false);
-        
-        // PERFORMANCE: Don't flush here - let ASP.NET Core framework handle it
-        // The framework will flush automatically when IResult completes
-        // Explicit flushing adds overhead without benefit in normal scenarios
+        }
     }
 
-    // PERFORMANCE: Direct PipeWriter serialization - fastest path (AOT-compatible)
-    private static Task SerializeAsyncPagedJsonTypeInfoDirect(
-        PipeWriter pipeWriter,
-        IAsyncPagedEnumerable<TResult> results,
-        JsonTypeInfo<TResult> jsonTypeInfo,
-        CancellationToken cancellationToken) =>
-        JsonSerializer.SerializeAsyncPaged(
-            pipeWriter,
-            results,
-            jsonTypeInfo,
-            cancellationToken);
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    private static Task SerializeAsyncPagedJsonSerializerOptionsDirect(
-        PipeWriter pipeWriter,
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Safe usage of JsonSerializer with DI-resolved options.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Safe usage of JsonSerializer with DI-resolved options.")]
+    private static Task SerializeAsyncPagedSafe(
+        PipeWriter writer,
         IAsyncPagedEnumerable<TResult> results,
         JsonSerializerOptions options,
-        CancellationToken cancellationToken) =>
-        JsonSerializer.SerializeAsyncPaged(
-            pipeWriter,
-            results,
-            options,
-            cancellationToken);
+        CancellationToken cancellationToken)
+    {
+        return JsonSerializer.SerializeAsyncPaged(writer, results, options, cancellationToken);
+    }
 
     private static string? GetContentType(HttpContext context)
     {
@@ -191,19 +107,12 @@ public sealed class AsyncPagedEnumerableResult<TResult> : IResult
             .FirstOrDefault();
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "JsonOptions may require dynamic access.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JsonOptions may require dynamic access.")]
     private static JsonSerializerOptions GetOrCacheJsonOptions(HttpContext context)
     {
-        // PERFORMANCE: Cache JsonSerializerOptions per service provider to avoid repeated DI resolution
         return _optionsCache.GetOrAdd(
             context.RequestServices,
-            static sp =>
-            {
-                var options = sp.GetService<IOptions<JsonOptions>>()
-                    ?.Value?.SerializerOptions ?? JsonSerializerOptions.Default;
-                options.MakeReadOnly(true);
-                return options;
-            });
+            static sp => sp.GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions);
     }
 }

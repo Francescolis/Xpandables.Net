@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -27,7 +26,6 @@ namespace Xpandables.Net.AsyncPaged;
 /// <summary>
 /// Provides extension methods for converting asynchronous paged enumerables to result objects.
 /// </summary>
-[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 public static class AsyncPagedEnumerableResultExtensions
 {
     /// <summary>
@@ -42,7 +40,7 @@ public static class AsyncPagedEnumerableResultExtensions
         /// </summary>
         /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo{TResult}"/> used for serializing the result items. Cannot be null.</param>
         /// <returns>An <see cref="IResult"/> that represents the asynchronous paged enumerable.</returns>
-        public IResult ToResult(JsonTypeInfo<TResult> jsonTypeInfo) => new AsyncPagedEnumerableResult<TResult>(source, jsonTypeInfo);
+        public IResult ToResult(JsonTypeInfo<TResult> jsonTypeInfo) => new AsyncPagedEnumerableResult<TResult>(source, default, jsonTypeInfo);
 
         /// <summary>
         /// Converts the current asynchronous paged enumerable to an <see cref="IResult"/> instance.
