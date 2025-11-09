@@ -257,31 +257,19 @@ public static class JsonDeserializerExtensions
         bool topLevelValues,
         CancellationToken cancellationToken)
     {
-        // Wrap the Stream-based IAsyncEnumerable in an AsyncPagedEnumerable
-        IAsyncEnumerable<T?> source = JsonSerializer.DeserializeAsyncEnumerable(
+        ArgumentNullException.ThrowIfNull(utf8Json);
+        var items = new List<T?>();
+
+        // Single pass enumeration from stream
+        IAsyncEnumerable<T?> raw = JsonSerializer.DeserializeAsyncEnumerable(
             utf8Json,
             jsonTypeInfo,
             topLevelValues,
             cancellationToken);
 
         return new AsyncPagedEnumerable<T?>(
-            source,
-            async ct =>
-            {
-                // Compute pagination metadata by counting items
-                // Note: This requires enumerating the entire source
-                long count = 0;
-                await foreach (var _ in source.WithCancellation(ct))
-                {
-                    count++;
-                }
-
-                return Pagination.Create(
-                    pageSize: 0,
-                    currentPage: 0,
-                    continuationToken: null,
-                    totalCount: count > int.MaxValue ? int.MaxValue : (int)count);
-            });
+            EnumerateOnce(raw, items, cancellationToken),
+            _ => new ValueTask<Pagination>(CreatePagination(items.Count)));
     }
 
     /// <summary>
@@ -294,51 +282,56 @@ public static class JsonDeserializerExtensions
         bool topLevelValues,
         CancellationToken cancellationToken)
     {
-        // Wrap the PipeReader-based IAsyncEnumerable in an AsyncPagedEnumerable
-        IAsyncEnumerable<T?> source = JsonSerializer.DeserializeAsyncEnumerable(
+        ArgumentNullException.ThrowIfNull(utf8Json);
+        var items = new List<T?>();
+
+        IAsyncEnumerable<T?> raw = JsonSerializer.DeserializeAsyncEnumerable(
             utf8Json,
             jsonTypeInfo,
             topLevelValues,
             cancellationToken);
 
         return new AsyncPagedEnumerable<T?>(
-            source,
-            async ct =>
-                {
-                    // Compute pagination metadata by counting items
-                    // Note: This requires enumerating the entire source
-                    long count = 0;
-                    await foreach (var _ in source.WithCancellation(ct))
-                    {
-                        count++;
-                    }
-
-                    return Pagination.Create(
-                        pageSize: 0,
-                        currentPage: 0,
-                        continuationToken: null,
-                        totalCount: count > int.MaxValue ? int.MaxValue : (int)count);
-                });
+            EnumerateOnce(raw, items, cancellationToken),
+            _ => new ValueTask<Pagination>(CreatePagination(items.Count)));
     }
+
+    private static async IAsyncEnumerable<T?> EnumerateOnce<T>(
+        IAsyncEnumerable<T?> source,
+        List<T?> buffer,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            buffer.Add(item);
+            yield return item;
+        }
+    }
+
+    private static Pagination CreatePagination(int total)
+        => Pagination.Create(pageSize: total, currentPage: total > 0 ? 1 : 0, totalCount: total);
 
     /// <summary>
     /// Gets JSON type information for the specified type from the provided options.
+    /// Ensures a usable, non read-only options instance with a resolver.
     /// </summary>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static JsonTypeInfo<T> GetTypeInfo<T>(JsonSerializerOptions? options)
     {
-        options ??= JsonSerializerOptions.Default;
+        // Avoid JsonSerializerOptions.Default (read-only, no resolver). Clone and ensure resolver.
+        JsonSerializerOptions working = options is null
+            ? new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            : (options.IsReadOnly ? new JsonSerializerOptions(options) : options);
 
-        JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(typeof(T), options);
+        working.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
 
-        if (typeInfo is JsonTypeInfo<T> genericTypeInfo)
+        JsonTypeInfo? typeInfo = working.TypeInfoResolver.GetTypeInfo(typeof(T), working);
+        if (typeInfo is JsonTypeInfo<T> typed)
         {
-            return genericTypeInfo;
+            return typed;
         }
-
-        // Fallback: create type info dynamically (not AOT-safe, but required for non-source-generated scenarios)
-        return JsonTypeInfo.CreateJsonTypeInfo<T>(options);
+        return JsonTypeInfo.CreateJsonTypeInfo<T>(working);
     }
 }

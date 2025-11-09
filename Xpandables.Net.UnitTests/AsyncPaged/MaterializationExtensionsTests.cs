@@ -41,7 +41,7 @@ public class MaterializationExtensionsTests
         var materialized = await paged.MaterializeAsync();
         var list = await materialized.ToListAsync();
         list.Should().Equal(5,6,7);
-        materialized.Pagination.TotalCount.Should().Be(3);
+        (await materialized.GetPaginationAsync()).TotalCount.Should().Be(3);
     }
 
     [Fact]

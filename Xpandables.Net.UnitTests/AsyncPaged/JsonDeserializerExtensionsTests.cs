@@ -32,12 +32,18 @@ public class JsonDeserializerExtensionsTests
         WriteIndented = false
     };
 
+    private static readonly JsonSerializerOptions _arrayOptions = new(JsonSerializerDefaults.Web)
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
+
     [Fact]
     public async Task DeserializeAsyncPagedEnumerable_Stream_RootArray_Works()
     {
         // Arrange
         var items = Enumerable.Range(1, 5).Select(i => new Item { Id = i, Name = $"N{i}" }).ToList();
-        var json = JsonSerializer.SerializeToUtf8Bytes(items, _options);
+        var json = JsonSerializer.SerializeToUtf8Bytes(items, _arrayOptions);
 
         using var ms = new MemoryStream(json, writable: false);
 
@@ -52,7 +58,7 @@ public class JsonDeserializerExtensionsTests
         // Assert
         list.Should().HaveCount(5);
         list[0]!.Id.Should().Be(1);
-        list[^1]!.Name.Should().Be("N5");
+        list[list.Count - 1]!.Name.Should().Be("N5");
 
         var pagination = await paged.GetPaginationAsync();
         pagination.TotalCount.Should().Be(5);
@@ -63,7 +69,7 @@ public class JsonDeserializerExtensionsTests
     {
         // Arrange
         var items = Enumerable.Range(1, 3).Select(i => new Item { Id = i }).ToList();
-        var json = JsonSerializer.SerializeToUtf8Bytes(items, _options);
+        var json = JsonSerializer.SerializeToUtf8Bytes(items, _arrayOptions);
 
         var pipe = new Pipe();
         await pipe.Writer.WriteAsync(json);

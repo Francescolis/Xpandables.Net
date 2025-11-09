@@ -33,12 +33,14 @@ public class JsonSerializerExtensionsTests
         // Assert
         var root = doc.RootElement;
         root.TryGetProperty("pagination", out var p).Should().BeTrue();
-        p.GetProperty("pageSize").GetInt32().Should().Be(5);
-        p.GetProperty("currentPage").GetInt32().Should().Be(2);
-        p.GetProperty("totalCount").GetInt32().Should().Be(items.Count);
+        // Pagination is serialized via source-generated context (PascalCase)
+        p.GetProperty("PageSize").GetInt32().Should().Be(5);
+        p.GetProperty("CurrentPage").GetInt32().Should().Be(2);
+        p.GetProperty("TotalCount").GetInt32().Should().Be(items.Count);
 
         var itemsEl = root.GetProperty("items");
         itemsEl.GetArrayLength().Should().Be(items.Count);
+        // Items are serialized with the provided options (camelCase)
         itemsEl[0].GetProperty("id").GetInt32().Should().Be(1);
         itemsEl[itemsEl.GetArrayLength() - 1].GetProperty("name").GetString().Should().Be("N10");
     }
