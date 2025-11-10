@@ -51,14 +51,13 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     /// </remarks>
     /// <param name="source">The asynchronous enumerable representing the data source. Cannot be <see langword="null"/>.</param>
     /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata.
-    /// If null, pagination will be inferred from the source.</param>
+    /// If null, pagination will be inferred from the source that gets materialized.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> or <paramref name="paginationFactory"/> is null.</exception>
     public AsyncPagedEnumerable(
         IAsyncEnumerable<T> source,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default)
     {
         ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(paginationFactory);
 
         _source = source;
         _paginationFactory = paginationFactory ?? AsyncEnumerablePaginationFactory(source);
