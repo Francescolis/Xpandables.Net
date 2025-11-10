@@ -24,11 +24,15 @@ namespace Xpandables.Net.AsyncPaged;
 /// Represents an asynchronous, paged enumerable over a sequence with lazy pagination metadata computation.
 /// </summary>
 /// <typeparam name="T">The type of elements in the sequence.</typeparam>
-public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
+public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposable
 {
     private readonly IAsyncEnumerable<T>? _source;
     private readonly IQueryable<T>? _queryable;
     private readonly Func<CancellationToken, ValueTask<Pagination>> _paginationFactory;
+
+    // Lazy materialization
+    private List<T>? _materializedItems;
+    private readonly SemaphoreSlim _materializationLock = new(1, 1);
 
     private volatile int _paginationState; // 0 = not started, 1 = computing, 2 = computed, 3 = faulted
     private Task<Pagination>? _paginationTask;
@@ -90,6 +94,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
 
         var enumerator = (_source, _queryable) switch
         {
+            (not null, _) when (_materializedItems is not null) => _materializedItems.ToAsyncEnumerable().GetAsyncEnumerator(cancellationToken),
             (not null, _) => _source.GetAsyncEnumerator(cancellationToken),
             (null, not null) => _queryable.ToAsyncEnumerable().GetAsyncEnumerator(cancellationToken),
             _ => AsyncPagedEnumerator.Empty<T>(initial)
@@ -147,6 +152,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
                     ContinuationToken = ctx.ContinuationToken,
                     TotalCount = ctx.TotalCount
                 };
+
                 _ = Interlocked.Exchange(ref _paginationState, 2);
                 return ctx;
             }
@@ -158,6 +164,9 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
             }
         }
     }
+
+    /// <inheritdoc/>
+    public void Dispose() => _materializationLock.Dispose();
 
     private static Func<CancellationToken, ValueTask<Pagination>> QueryablePaginationFactory(IQueryable<T> queryable)
     {
@@ -189,17 +198,29 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         };
     }
 
-    private static Func<CancellationToken, ValueTask<Pagination>> AsyncEnumerablePaginationFactory(IAsyncEnumerable<T> source)
+    private Func<CancellationToken, ValueTask<Pagination>> AsyncEnumerablePaginationFactory(IAsyncEnumerable<T> source)
     {
         return async cancellationToken =>
         {
-            int count = 0;
-            await foreach (var _ in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+            await _materializationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
             {
-                count++;
-            }
+                if (_materializedItems is not null)
+                {
+                    int count = _materializedItems.Count;
+                    return Pagination.Create(pageSize: count, currentPage: count > 0 ? 1 : 0, totalCount: count);
+                }
 
-            return Pagination.Create(pageSize: count, currentPage: count > 0 ? 1 : 0, totalCount: count);
+                _materializedItems = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+                int totalCount = _materializedItems.Count;
+
+                return Pagination.Create(pageSize: totalCount, currentPage: totalCount > 0 ? 1 : 0, totalCount: totalCount);
+            }
+            finally
+            {
+                _materializationLock.Release();
+            }
         };
     }
+
 }
