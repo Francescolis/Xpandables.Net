@@ -72,28 +72,28 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     /// <summary>
     /// Initializes a new instance for an empty enumerator.
     /// </summary>
-    /// <param name="initialContext">The initial pagination context.</param>
-    internal AsyncPagedEnumerator(Pagination initialContext)
+    /// <param name="pagination">The initial pagination context.</param>
+    internal AsyncPagedEnumerator(Pagination pagination)
     {
         _sourceEnumerator = null;
         _cancellationToken = default;
-        _pagination = initialContext;
+        _pagination = pagination;
     }
 
     /// <summary>
     /// Initializes a new instance with a source enumerator.
     /// </summary>
     /// <param name="sourceEnumerator">The source enumerator to wrap.</param>
-    /// <param name="initialContext">The initial pagination context.</param>
+    /// <param name="pagination">The initial pagination context.</param>
     /// <param name="cancellationToken">The cancellation token to observe.</param>
     internal AsyncPagedEnumerator(
         IAsyncEnumerator<T> sourceEnumerator,
-        Pagination initialContext,
+        Pagination pagination,
         CancellationToken cancellationToken)
     {
         _sourceEnumerator = sourceEnumerator;
         _cancellationToken = cancellationToken;
-        _pagination = initialContext;
+        _pagination = pagination;
     }
 
     /// <inheritdoc/>
@@ -113,7 +113,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
         {
             if (Strategy == PaginationStrategy.PerItem && _pagination.TotalCount is null)
             {
-                _pagination = _pagination.WithTotalCount(_itemIndex);
+                _pagination = _pagination with { TotalCount = _itemIndex };
             }
 
             Current = default!;

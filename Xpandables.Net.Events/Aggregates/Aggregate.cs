@@ -132,7 +132,7 @@ public abstract class Aggregate : IAggregate
                 "Aggregate is not initialized. The first event must carry a non-empty StreamId.");
         }
 
-        // Propagate existing KeyId when event didn't carry one.
+        // Propagate existing StreamId when event didn't carry one.
         if (domainEvent.StreamId == Guid.Empty && StreamId != Guid.Empty)
         {
             domainEvent = domainEvent.WithStreamId(StreamId);

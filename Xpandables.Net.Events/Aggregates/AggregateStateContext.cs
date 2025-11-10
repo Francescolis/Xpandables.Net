@@ -39,8 +39,7 @@ public abstract class AggregateStateContext<TState> : Aggregate, IStateContext<T
     /// <see cref="AggregateStateContext{TState}"/> class.
     /// </summary>
     /// <param name="initialState">The initial state of the aggregate.</param>
-    protected AggregateStateContext(TState initialState) =>
-        TransitionToState(initialState);
+    protected AggregateStateContext(TState initialState) => TransitionToState(initialState);
 
     /// <inheritdoc/>
     public TState CurrentState

@@ -28,75 +28,60 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
 {
     private readonly IAsyncEnumerable<T>? _source;
     private readonly IQueryable<T>? _queryable;
-    private readonly Func<CancellationToken, ValueTask<Pagination>>? _paginationFactory;
-    private readonly Func<CancellationToken, ValueTask<long>>? _totalFactory;
+    private readonly Func<CancellationToken, ValueTask<Pagination>> _paginationFactory;
 
     private volatile int _paginationState; // 0 = not started, 1 = computing, 2 = computed, 3 = faulted
     private Task<Pagination>? _paginationTask;
     private Exception? _paginationError;
-    private Pagination _pageContext; // backing store
+    private Pagination _pagination; // backing store
 
     /// <inheritdoc/>
-    public Pagination Pagination => _paginationState == 2 ? _pageContext : Pagination.Empty;
+    public Pagination Pagination => _paginationState == 2 ? _pagination : Pagination.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with an async enumerable source.
     /// </summary>
     /// <remarks>
-    /// This constructor is designed for scenarios where pagination metadata is provided via a factory function.
+    /// This constructor is designed for scenarios where pagination metadata can be provided via a factory function.
     /// The pagination state is computed lazily when <see cref="GetPaginationAsync"/> is called.
     /// </remarks>
     /// <param name="source">The asynchronous enumerable representing the data source. Cannot be <see langword="null"/>.</param>
-    /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata. Cannot be <see langword="null"/>.</param>
+    /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata.
+    /// If null, pagination will be inferred from the source.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> or <paramref name="paginationFactory"/> is null.</exception>
     public AsyncPagedEnumerable(
         IAsyncEnumerable<T> source,
-        Func<CancellationToken, ValueTask<Pagination>> paginationFactory)
+        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(paginationFactory);
 
         _source = source;
-        _paginationFactory = paginationFactory;
-        _pageContext = Pagination.Empty;
+        _paginationFactory = paginationFactory ?? AsyncEnumerablePaginationFactory(source);
+        _pagination = Pagination.Empty;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with a queryable source.
     /// </summary>
     /// <remarks>
-    /// This constructor is designed for IQueryable sources where pagination metadata is extracted from 
-    /// the query expression (Skip/Take) and total count is computed automatically or via a custom factory.
+    /// This constructor is designed for IQueryable sources where pagination metadata can be extracted from
+    /// the query expression or via a custom factory.
     /// </remarks>
     /// <param name="query">The queryable data source. Cannot be <see langword="null"/>.</param>
-    /// <param name="totalFactory">An optional delegate to compute the total count. If <see langword="null"/>, 
-    /// the count is computed automatically from the query.</param>
+    /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata. 
+    /// If null, pagination will be inferred from the query.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
     public AsyncPagedEnumerable(
         IQueryable<T> query,
-        Func<CancellationToken, ValueTask<long>>? totalFactory = null)
+        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default)
     {
         ArgumentNullException.ThrowIfNull(query);
 
         _queryable = query;
-        _totalFactory = totalFactory;
-        _pageContext = Pagination.Empty;
+        _paginationFactory = paginationFactory ?? QueryablePaginationFactory(query);
+        _pagination = Pagination.Empty;
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with an async enumerable source
-    /// and no pagination metadata. Pagination will be inferred from item count at runtime.
-    /// </summary>
-    /// <param name="source">The asynchronous enumerable representing the data source. Cannot be <see langword="null"/>.</param>
-    public AsyncPagedEnumerable(IAsyncEnumerable<T> source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        _source = source;
-        _paginationFactory = InferPaginationFromCountAsync;
-        _pageContext = Pagination.Empty;
-    }
-
 
     /// <inheritdoc/>
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
@@ -119,7 +104,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         // Fast path if already computed.
         if (_paginationState == 2)
         {
-            return Task.FromResult(_pageContext);
+            return Task.FromResult(_pagination);
         }
 
         // If a previous attempt faulted, propagate.
@@ -154,8 +139,14 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         {
             try
             {
-                Pagination ctx = await ComputePaginationAsync(ct).ConfigureAwait(false);
-                _pageContext = ctx;
+                Pagination ctx = await _paginationFactory(ct).ConfigureAwait(false);
+                _pagination = _pagination with
+                {
+                    PageSize = ctx.PageSize,
+                    CurrentPage = ctx.CurrentPage,
+                    ContinuationToken = ctx.ContinuationToken,
+                    TotalCount = ctx.TotalCount
+                };
                 _ = Interlocked.Exchange(ref _paginationState, 2);
                 return ctx;
             }
@@ -168,72 +159,47 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>
         }
     }
 
-    private async ValueTask<Pagination> InferPaginationFromCountAsync(CancellationToken cancellationToken)
+    private static Func<CancellationToken, ValueTask<Pagination>> QueryablePaginationFactory(IQueryable<T> queryable)
     {
-        int count = 0;
-        await foreach (var _ in _source!.WithCancellation(cancellationToken).ConfigureAwait(false))
+        var (normalizedQuery, skip, take) = QueryPaginationNormalizer.Normalize(queryable);
+        return async cancellationToken =>
         {
-            count++;
-        }
+            cancellationToken.ThrowIfCancellationRequested();
+            long totalCountLong = normalizedQuery.LongCount();
+            int? totalCount = totalCountLong switch
+            {
+                < 0 => null,
+                > int.MaxValue => int.MaxValue,
+                _ => (int)totalCountLong
+            };
+            int pageSize = take ?? 0;
+            string? continuationToken = (skip, take) switch
+            {
+                (not null and > 0, not null and > 0) => Convert.ToBase64String(
+                    System.Text.Encoding.UTF8.GetBytes($"{skip.Value + take.Value}:{take.Value}")),
+                _ => null
+            };
+            int currentPage = (take, skip) switch
+            {
+                (not null and > 0, not null and >= 0) => (skip.Value / take.Value) + 1,
+                _ => pageSize > 0 ? 1 : 0
+            };
 
-        return Pagination.Create(pageSize: count, currentPage: count > 0 ? 1 : 0, totalCount: count);
+            return Pagination.Create(pageSize, currentPage, continuationToken: continuationToken, totalCount);
+        };
     }
 
-    private async ValueTask<Pagination> ComputePaginationAsync(CancellationToken cancellationToken)
+    private static Func<CancellationToken, ValueTask<Pagination>> AsyncEnumerablePaginationFactory(IAsyncEnumerable<T> source)
     {
-        return (_paginationFactory, _queryable) switch
+        return async cancellationToken =>
         {
-            (not null, _) => await _paginationFactory(cancellationToken).ConfigureAwait(false),
-            (null, not null) => await ComputeQueryablePaginationAsync(_queryable, cancellationToken).ConfigureAwait(false),
-            _ => Pagination.Empty
-        };
-    }
-
-    private async ValueTask<Pagination> ComputeQueryablePaginationAsync(
-        IQueryable<T> query,
-        CancellationToken cancellationToken)
-    {
-        var (normalizedQuery, skip, take) = QueryPaginationNormalizer.Normalize(query);
-
-        long totalCountLong;
-        if (_totalFactory is not null)
-        {
-            totalCountLong = await _totalFactory(cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            try
+            int count = 0;
+            await foreach (var _ in source.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                totalCountLong = normalizedQuery.LongCount();
+                count++;
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    "Cannot compute total count from query. Provide a totalFactory for complex queries or non-database sources.", ex);
-            }
-        }
 
-        int? totalCount = totalCountLong switch
-        {
-            < 0 => null,
-            > int.MaxValue => int.MaxValue,
-            _ => (int)totalCountLong
+            return Pagination.Create(pageSize: count, currentPage: count > 0 ? 1 : 0, totalCount: count);
         };
-
-        string? continuationToken = (skip, take) switch
-        {
-            (not null and > 0, not null and > 0) => Convert.ToBase64String(
-                System.Text.Encoding.UTF8.GetBytes($"{skip.Value + take.Value}:{take.Value}")),
-            _ => null
-        };
-
-        int pageSize = take ?? 0;
-        int currentPage = (take, skip) switch
-        {
-            (not null and > 0, not null and >= 0) => (skip.Value / take.Value) + 1,
-            _ => pageSize > 0 ? 1 : 0
-        };
-
-        return Pagination.Create(pageSize, currentPage, continuationToken: continuationToken, totalCount);
     }
 }

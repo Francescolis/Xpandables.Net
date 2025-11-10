@@ -54,22 +54,22 @@ public static class IQueryableExtensions
         }
 
         /// <summary>
-        /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with a custom total count factory.
+        /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/> with a custom pagination factory.
         /// </summary>
-        /// <param name="totalFactory">Factory to compute the total count asynchronously.</param>
+        /// <param name="paginationFactory">Factory to compute the pagination metadata asynchronously.</param>
         /// <returns>An async paged enumerable.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="totalFactory"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginationFactory"/> is null.</exception>
         /// <remarks>
         /// Use this overload when the automatic count computation might fail 
         /// (e.g., for complex queries or non-database sources).
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(Func<CancellationToken, ValueTask<long>> totalFactory)
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(Func<CancellationToken, ValueTask<Pagination>> paginationFactory)
         {
             ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(totalFactory);
+            ArgumentNullException.ThrowIfNull(paginationFactory);
 
-            return new AsyncPagedEnumerable<T>(source, totalFactory);
+            return new AsyncPagedEnumerable<T>(source, paginationFactory);
         }
     }
 }
