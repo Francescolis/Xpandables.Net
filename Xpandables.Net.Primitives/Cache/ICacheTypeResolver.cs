@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Primitives.Cache;
+namespace Xpandables.Net.Cache;
 
 /// <summary>
 /// Defines a mechanism for resolving .NET types from their string representations, typically for use in caching

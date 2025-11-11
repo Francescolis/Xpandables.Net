@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Primitives.Optionals;
+namespace Xpandables.Net.Optionals;
 
 /// <summary>
 /// Provides extension methods for optional types.

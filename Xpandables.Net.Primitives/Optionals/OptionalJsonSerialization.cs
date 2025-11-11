@@ -14,48 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
-using Xpandables.Net.Primitives.Optionals;
-
-namespace Xpandables.Net.Primitives.Optionals;
-
-/// <summary>
-/// JSON converter factory for Optional&lt;T&gt; types, providing AOT-compatible serialization for .NET 10.
-/// </summary>
-public sealed class OptionalJsonConverterFactory : JsonConverterFactory
-{
-    /// <inheritdoc/>
-    public override bool CanConvert(Type typeToConvert)
-    {
-        ArgumentNullException.ThrowIfNull(typeToConvert);
-
-        if (!typeToConvert.IsGenericType)
-            return false;
-
-        var genericTypeDef = typeToConvert.GetGenericTypeDefinition();
-        return genericTypeDef == typeof(Optional<>);
-    }
-
-    /// <inheritdoc/>
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050", Justification = "The converter factory is designed for known Optional<T> types only")]
-    public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(typeToConvert);
-        ArgumentNullException.ThrowIfNull(options);
-
-        if (options.TypeInfoResolverChain.FirstOrDefault(resolver => resolver is OptionalJsonContext) is null)
-        {
-            options.TypeInfoResolverChain.Add(OptionalJsonContext.Default);
-        }
-
-        var valueType = typeToConvert.GetGenericArguments()[0];
-        var converterType = typeof(OptionalJsonConverter<>).MakeGenericType(valueType);
-        return (JsonConverter)Activator.CreateInstance(converterType)!;
-    }
-}
+namespace Xpandables.Net.Optionals;
 
 /// <summary>
 /// JSON converter for Optional&lt;T&gt; that provides clean serialization - empty optionals become null, 
@@ -65,8 +28,6 @@ public sealed class OptionalJsonConverterFactory : JsonConverterFactory
 public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
 {
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "Optional JSON converter is used with source-generated contexts")]
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050", Justification = "Optional JSON converter is used with source-generated contexts")]
     public override Optional<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
@@ -77,14 +38,13 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
             return Optional.Empty<T>();
         }
 
-        // Deserialize the value directly - suppress warnings as this is used with source generation
-        var deserializedValue = JsonSerializer.Deserialize<T>(ref reader, options);
+        JsonTypeInfo<T> typeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T))
+            ?? throw new JsonException($"No type info found for type {typeof(T)}.");
+        var deserializedValue = JsonSerializer.Deserialize(ref reader, typeInfo);
         return deserializedValue is not null ? Optional.Some(deserializedValue) : Optional.Empty<T>();
     }
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "Optional JSON converter is used with source-generated contexts")]
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050", Justification = "Optional JSON converter is used with source-generated contexts")]
     public override void Write(Utf8JsonWriter writer, Optional<T> value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(writer);
@@ -96,8 +56,9 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
             return;
         }
 
-        // Serialize the value directly for clean JSON - suppress warnings as this is used with source generation
-        JsonSerializer.Serialize(writer, value.Value, options);
+        JsonTypeInfo<T> typeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T))
+            ?? throw new JsonException($"No type info found for type {typeof(T)}.");
+        JsonSerializer.Serialize(writer, value.Value, typeInfo);
     }
 }
 
@@ -105,6 +66,10 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
 /// Source generation context for Optional types, optimized for .NET 10 AOT scenarios.
 /// Use this with JsonSerializerOptions.TypeInfoResolver for optimal performance.
 /// </summary>
+/// <remarks>
+/// The OptionalJsonConverterFactory will automatically discover all Optional&lt;T&gt; types
+/// declared here as well as those used throughout your codebase.
+/// </remarks>
 [JsonSourceGenerationOptions(
     WriteIndented = true,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
@@ -114,15 +79,14 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
 [JsonSerializable(typeof(Optional<string>))]
 [JsonSerializable(typeof(Optional<int>))]
 [JsonSerializable(typeof(Optional<long>))]
+[JsonSerializable(typeof(Optional<float>))]
+[JsonSerializable(typeof(Optional<short>))]
 [JsonSerializable(typeof(Optional<double>))]
 [JsonSerializable(typeof(Optional<decimal>))]
+[JsonSerializable(typeof(Optional<ushort>))]
+[JsonSerializable(typeof(Optional<byte>))]
 [JsonSerializable(typeof(Optional<bool>))]
 [JsonSerializable(typeof(Optional<DateTime>))]
 [JsonSerializable(typeof(Optional<DateTimeOffset>))]
 [JsonSerializable(typeof(Optional<Guid>))]
-[JsonSerializable(typeof(Optional<object>))]
-[JsonSerializable(typeof(Optional<string>[]))]
-[JsonSerializable(typeof(List<Optional<string>>))]
-[JsonSerializable(typeof(Dictionary<string, Optional<string>>))]
-[JsonSerializable(typeof(Dictionary<string, Optional<int>>))]
 public partial class OptionalJsonContext : JsonSerializerContext { }

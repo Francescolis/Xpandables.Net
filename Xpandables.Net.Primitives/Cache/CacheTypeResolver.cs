@@ -17,9 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-using Microsoft.Extensions.Caching.Memory;
-
-namespace Xpandables.Net.Primitives.Cache;
+namespace Xpandables.Net.Cache;
 
 /// <summary>
 /// Provides functionality to resolve .NET types by name, using a memory cache to optimize repeated lookups across
@@ -30,13 +28,13 @@ namespace Xpandables.Net.Primitives.Cache;
 /// class is thread-safe and intended for use in scenarios where type resolution by name is required, such as
 /// deserialization or dynamic type loading.</remarks>
 /// <remarks>
-/// Initializes a new instance of the CacheTypeResolver class using the specified memory cache.
+/// Initializes a new instance of the CacheTypeResolver class.
 /// </remarks>
-/// <param name="memoryCache">The memory cache instance used to store and retrieve type resolution data. Cannot be null.</param>
-/// <exception cref="ArgumentNullException">Thrown if <paramref name="memoryCache"/> is null.</exception>
-public sealed class CacheTypeResolver(IMemoryCache memoryCache) : ICacheTypeResolver
+/// <param name="memoryCache">An optional memory cache instance to use for caching type lookups. If not provided, a new
+/// instance with default settings will be created.</param>
+public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCache = default) : Disposable, ICacheTypeResolver
 {
-    private readonly IMemoryCache _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+    private readonly MemoryAwareCache<string, Type> _memoryCache = memoryCache ?? new(TimeSpan.FromMinutes(30), TimeSpan.FromHours(2));
     private Assembly[] _assemblies = [];
     private static readonly string[] _legacyPrefixes =
         ["System.", "Microsoft.", "netstandard", "WindowsBase", "PresentationCore", "PresentationFramework"];
@@ -73,14 +71,26 @@ public sealed class CacheTypeResolver(IMemoryCache memoryCache) : ICacheTypeReso
     public Type? TryResolve(string typeName)
     {
         ArgumentNullException.ThrowIfNull(typeName);
+        string key = $"CacheTypeResolver_TryResolve_{typeName}";
 
-        return _memoryCache.GetOrCreate(
-            $"CacheTypeResolver_TryResolve_{typeName}",
-            entry =>
-            {
-                entry.SetSlidingExpiration(TimeSpan.FromMinutes(30));
-                return ResolveType(typeName);
-            });
+        return (_memoryCache.TryGetValue(key, out var value), ResolveType(typeName)) switch
+        {
+            (true, _) => value,
+            (false, { } type) => _memoryCache.AddOrUpdate(key, type),
+            _ => null
+        };
+    }
+
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _memoryCache.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]

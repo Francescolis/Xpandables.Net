@@ -17,6 +17,7 @@
 
 using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
 using Xpandables.Net.Events.Aggregates;
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Requests;

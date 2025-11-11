@@ -18,7 +18,7 @@ using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-namespace Xpandables.Net.Primitives.Collections;
+namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// Represents an empty, read-only implementation of the <see cref="IQueryable{T}"/> interface.

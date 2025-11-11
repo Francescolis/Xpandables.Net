@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Primitives;
+namespace Xpandables.Net;
 
 /// <summary>
 /// The default implementation for <see cref="IAsyncDisposable"/> interface.

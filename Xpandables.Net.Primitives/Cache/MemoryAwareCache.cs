@@ -17,7 +17,7 @@
 ********************************************************************************/
 using System.Collections.Concurrent;
 
-namespace Xpandables.Net.Primitives.Cache;
+namespace Xpandables.Net.Cache;
 
 /// <summary>
 /// Represents a thread-safe cache that stores values using weak references and automatically removes expired or
@@ -84,6 +84,26 @@ public sealed class MemoryAwareCache<TKey, TValue> : IDisposable
         _cache.TryAdd(key, new WeakCacheEntry<TValue>(newValue));
 
         return newValue;
+    }
+
+    /// <summary>
+    /// Adds a value to the cache if the specified key does not exist, or updates the value associated with the key if
+    /// it already exists.
+    /// </summary>
+    /// <remarks>If the key already exists in the cache, its value is replaced with the specified value. The
+    /// cache stores values using weak references, which may allow them to be collected if no strong references exist
+    /// elsewhere.</remarks>
+    /// <param name="key">The key with which the specified value will be associated. Cannot be null.</param>
+    /// <param name="value">The value to add or update in the cache. Cannot be null.</param>
+    /// <returns>The value that was added or updated in the cache.</returns>
+    public TValue AddOrUpdate(TKey key, TValue value)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(key);
+
+        _ = _cache.AddOrUpdate(key, new WeakCacheEntry<TValue>(value), (_, __) => new WeakCacheEntry<TValue>(value));
+        return value;
     }
 
     /// <summary>

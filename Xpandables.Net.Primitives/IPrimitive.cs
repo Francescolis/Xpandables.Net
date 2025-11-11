@@ -18,7 +18,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Xpandables.Net.Primitives;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Represents a primitive data type with a value.
