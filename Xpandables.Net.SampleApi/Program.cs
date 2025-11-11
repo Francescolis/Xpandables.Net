@@ -92,10 +92,8 @@ builder.Services.AddSwaggerGen(options =>
         Title = builder.Configuration["SwaggerOptions:Name"],
         Version = builder.Configuration["SwaggerOptions:Version"],
         Description = builder.Configuration["SwaggerOptions:Description"],
-        Contact = builder.Configuration.GetSection("SwaggerOptions:Contact")
-            .Get<OpenApiContact>(),
-        License = builder.Configuration.GetSection("SwaggerOptions:License")
-            .Get<OpenApiLicense>(),
+        Contact = builder.Configuration.GetSection("SwaggerOptions:Contact").Get<OpenApiContact>(),
+        License = builder.Configuration.GetSection("SwaggerOptions:License").Get<OpenApiLicense>(),
         TermsOfService = new(builder.Configuration["SwaggerOptions:TermsOfService"]!)
     });
 
