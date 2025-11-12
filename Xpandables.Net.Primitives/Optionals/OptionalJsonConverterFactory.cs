@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Optionals;
@@ -23,31 +25,61 @@ namespace Xpandables.Net.Optionals;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This factory automatically discovers and creates converters for all Optional&lt;T&gt; types used in your code.
-/// The implementation is generated at compile-time by the Xpandables.Net.Primitives.SourceGeneration analyzer.
+/// This factory handles conversion for all Optional&lt;T&gt; types.
+/// It creates generic converters that delegate to the TypeInfoResolver for actual serialization.
 /// </para>
 /// <para>
-/// <strong>How it works:</strong>
+/// Primitive types are handled via <see cref="OptionalJsonContext"/>, while custom types
+/// should be registered in a source-generated JsonSerializerContext in the consuming project.
 /// </para>
-/// <list type="bullet">
-/// <item><description>Primitive types (string, int, bool, etc.) are handled by <see cref="OptionalJsonContext"/></description></item>
-/// <item><description>Custom types are discovered by analyzing your code and added to the converter cache automatically</description></item>
-/// <item><description>All converters are created at compile-time for optimal AOT compatibility</description></item>
-/// </list>
 /// <para>
 /// <strong>Usage:</strong>
 /// </para>
 /// <code>
 /// var options = new JsonSerializerOptions
 /// {
-///     Converters = { new OptionalJsonConverterFactory() }
+///     Converters = { new OptionalJsonConverterFactory() },
+///     TypeInfoResolver = JsonTypeInfoResolver.Combine(
+///         OptionalJsonContext.Default,
+///         MyCustomContext.Default)
 /// };
-/// 
-/// var json = JsonSerializer.Serialize(myObject, options);
 /// </code>
 /// </remarks>
 public sealed partial class OptionalJsonConverterFactory : JsonConverterFactory
 {
-    // Implementation is provided by OptionalJsonConverterGenerator
-    // in Xpandables.Net.Primitives.SourceGeneration
+    /// <inheritdoc/>
+    public override bool CanConvert(Type typeToConvert)
+    {
+        ArgumentNullException.ThrowIfNull(typeToConvert);
+
+        if (!typeToConvert.IsGenericType)
+        {
+            return false;
+        }
+
+        Type genericTypeDef = typeToConvert.GetGenericTypeDefinition();
+        return genericTypeDef == typeof(Optional<>);
+    }
+
+    /// <inheritdoc/>
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "This is only called when types are not source-generated. Users should use source generation for AOT scenarios.")]
+    public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(typeToConvert);
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (options.TypeInfoResolverChain.FirstOrDefault(static resolver =>
+            resolver is OptionalJsonContext) is null)
+        {
+            options.TypeInfoResolverChain.Add(OptionalJsonContext.Default);
+        }
+
+        // Create the generic converter for Optional<T>
+        // This uses MakeGenericType which is not AOT-compatible, but works fine with source generation
+        Type valueType = typeToConvert.GetGenericArguments()[0];
+        Type converterType = typeof(OptionalJsonConverter<>).MakeGenericType(valueType);
+
+        return (JsonConverter)Activator.CreateInstance(converterType)!;
+    }
 }

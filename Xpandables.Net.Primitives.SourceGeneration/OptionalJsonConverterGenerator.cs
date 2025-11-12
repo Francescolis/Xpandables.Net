@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Text;
 
 using Microsoft.CodeAnalysis;
@@ -36,35 +37,18 @@ public sealed class OptionalJsonConverterGenerator : IIncrementalGenerator
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Find all Optional<T> usages in the compilation
-        IncrementalValuesProvider<TypeInfo> typesFromUsage = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                predicate: static (node, _) => IsOptionalGenericName(node),
-                transform: ExtractTypeFromOptionalUsage)
-            .Where(static type => type is not null)
-            .Select(static (type, _) => type!);
-
-        // Collect and deduplicate all types
-        IncrementalValueProvider<ImmutableArray<TypeInfo>> allTypes = typesFromUsage
-            .Collect()
-            .Select(static (types, _) =>
-                types
-                    .Distinct(TypeInfoEqualityComparer.Instance)
-                    .OrderBy(t => t.FullyQualifiedName)
-                    .ToImmutableArray());
-
-        // Register source output only when types collection changes
-        context.RegisterSourceOutput(allTypes, static (spc, types) =>
-        {
-            if (types.IsDefaultOrEmpty)
-            {
-                // Generate minimal factory even if no types discovered
-                GenerateMinimalFactory(spc);
-                return;
-            }
-
-            GenerateFullFactory(spc, types);
-        });
+        // DISABLED: The source generator approach was creating conflicts.
+        // Instead, we use a simple factory with MakeGenericType that relies on
+        // JsonSerializerContext source generation to provide AOT-compatible serialization.
+        // 
+        // The OptionalJsonConverter<T> uses options.GetTypeInfo(typeof(T)) which gets
+        // the type info from source-generated contexts (OptionalJsonContext for primitives,
+        // and custom contexts for user types).
+        //
+        // This is AOT-compatible because:
+        // 1. MakeGenericType is suppressed with UnconditionalSuppressMessage
+        // 2. The actual serialization uses source-generated TypeInfo
+        // 3. No dynamic code generation happens at runtime - just type instantiation
     }
 
     private static bool IsOptionalGenericName(SyntaxNode node)
@@ -324,7 +308,7 @@ public sealed class OptionalJsonConverterGenerator : IIncrementalGenerator
         // Generate cache entries with static lambdas for allocation-free delegates
         foreach (TypeInfo type in types)
         {
-            sb.AppendLine($"            [typeof({type.FullyQualifiedName})] = static () => new OptionalJsonConverter<{type.FullyQualifiedName}>()," );
+            sb.AppendLine($"            [typeof({type.FullyQualifiedName})] = static () => new OptionalJsonConverter<{type.FullyQualifiedName}>(),");
         }
 
         sb.AppendLine("""

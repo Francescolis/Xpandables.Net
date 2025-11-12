@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -28,6 +29,7 @@ namespace Xpandables.Net.Optionals;
 public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
 {
     /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override Optional<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(typeToConvert);
@@ -38,13 +40,16 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
             return Optional.Empty<T>();
         }
 
-        JsonTypeInfo<T> typeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T))
+        JsonTypeInfo<T>? typeInfo = (JsonTypeInfo<T>?)options.GetTypeInfo(typeof(T))
             ?? throw new JsonException($"No type info found for type {typeof(T)}.");
-        var deserializedValue = JsonSerializer.Deserialize(ref reader, typeInfo);
-        return deserializedValue is not null ? Optional.Some(deserializedValue) : Optional.Empty<T>();
+
+        var valueT = JsonSerializer.Deserialize(ref reader, typeInfo);
+
+        return valueT is not null ? Optional.Some(valueT) : Optional.Empty<T>();
     }
 
     /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override void Write(Utf8JsonWriter writer, Optional<T> value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(writer);
@@ -56,8 +61,9 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
             return;
         }
 
-        JsonTypeInfo<T> typeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T))
+        JsonTypeInfo<T>? typeInfo = (JsonTypeInfo<T>?)options.GetTypeInfo(typeof(T))
             ?? throw new JsonException($"No type info found for type {typeof(T)}.");
+
         JsonSerializer.Serialize(writer, value.Value, typeInfo);
     }
 }
@@ -76,6 +82,7 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNameCaseInsensitive = true,
     UseStringEnumConverter = true)]
+// Optional types
 [JsonSerializable(typeof(Optional<string>))]
 [JsonSerializable(typeof(Optional<int>))]
 [JsonSerializable(typeof(Optional<long>))]
@@ -89,4 +96,17 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
 [JsonSerializable(typeof(Optional<DateTime>))]
 [JsonSerializable(typeof(Optional<DateTimeOffset>))]
 [JsonSerializable(typeof(Optional<Guid>))]
+[JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(long))]
+[JsonSerializable(typeof(float))]
+[JsonSerializable(typeof(short))]
+[JsonSerializable(typeof(double))]
+[JsonSerializable(typeof(decimal))]
+[JsonSerializable(typeof(ushort))]
+[JsonSerializable(typeof(byte))]
+[JsonSerializable(typeof(bool))]
+[JsonSerializable(typeof(DateTime))]
+[JsonSerializable(typeof(DateTimeOffset))]
+[JsonSerializable(typeof(Guid))]
 public partial class OptionalJsonContext : JsonSerializerContext { }

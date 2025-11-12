@@ -95,13 +95,6 @@
 		<PackageReference Include="Microsoft.Extensions.Primitives" Version="10.0.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<!-- Reference the source generator project -->
-		<ProjectReference Include="..\Xpandables.Net.Primitives.SourceGeneration\Xpandables.Net.Primitives.SourceGeneration.csproj" 
-		                  OutputItemType="Analyzer" 
-		                  ReferenceOutputAssembly="false" />
-	</ItemGroup>
-
 	<!-- Exclude generated files from source control -->
 	<ItemGroup>
 		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />

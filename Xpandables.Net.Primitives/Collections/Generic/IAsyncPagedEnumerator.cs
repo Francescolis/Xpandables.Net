@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 namespace Xpandables.Net.Collections.Generic;
 
 /// <summary>
