@@ -30,7 +30,7 @@
 	  <PackageIcon>Xpandables.Net.png</PackageIcon>
 	  <ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
-	  <PackageTags>IPrimitive, Disposable, DisposableAsync</PackageTags>
+	  <PackageTags>IPrimitive, Disposable, DisposableAsync, Optional</PackageTags>
 	  <NeutralLanguage>en-US</NeutralLanguage>
 	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -53,6 +53,10 @@
 	  <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
 	  <WarningLevel>9999</WarningLevel>
 	  <Copyright>Copyright © Kamersoft 2025</Copyright>
+	  
+	  <!-- Enable emission of generated files for debugging -->
+	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	  <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -89,6 +93,18 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Primitives" Version="10.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Reference the source generator project -->
+		<ProjectReference Include="..\Xpandables.Net.Primitives.SourceGeneration\Xpandables.Net.Primitives.SourceGeneration.csproj" 
+		                  OutputItemType="Analyzer" 
+		                  ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<!-- Exclude generated files from source control -->
+	<ItemGroup>
+		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
 	</ItemGroup>
 
 </Project>

@@ -1,0 +1,28 @@
+# EditorConfig for Xpandables.Net.Primitives.SourceGeneration
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+
+# Naming conventions for generators
+dotnet_naming_rule.generator_classes_must_end_with_generator.severity = warning
+dotnet_naming_rule.generator_classes_must_end_with_generator.symbols = generator_classes
+dotnet_naming_rule.generator_classes_must_end_with_generator.style = generator_suffix
+
+dotnet_naming_symbols.generator_classes.applicable_kinds = class
+dotnet_naming_symbols.generator_classes.applicable_accessibilities = public
+
+dotnet_naming_style.generator_suffix.required_suffix = Generator
+dotnet_naming_style.generator_suffix.capitalization = pascal_case
+
+# Code quality rules
+dotnet_diagnostic.CA1031.severity = warning
+dotnet_diagnostic.CA1062.severity = none # Null check - ArgumentNullException.ThrowIfNull handles this
+dotnet_diagnostic.RS1035.severity = error # Analyzer should not use banned APIs
+dotnet_diagnostic.RS1036.severity = error # Specify explicit analyzer version
