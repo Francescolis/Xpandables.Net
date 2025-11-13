@@ -247,6 +247,6 @@ public readonly record struct Pagination
 /// reduce runtime reflection overhead.</remarks>
 [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(Pagination))]
-public partial class PaginationSourceGenerationContext : JsonSerializerContext
+public partial class PaginationJsonContext : JsonSerializerContext
 {
 }
