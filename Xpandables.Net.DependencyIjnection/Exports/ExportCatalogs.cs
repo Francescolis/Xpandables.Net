@@ -20,7 +20,7 @@ using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-using Xpandables.Net.Primitives.Collections;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.DependencyInjection.Exports;
 
