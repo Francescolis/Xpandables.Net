@@ -20,10 +20,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.Collections;
 
-namespace Xpandables.Net.Tasks.ExecutionResults;
+namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>
 /// A factory for creating JSON converters for <see cref="ExecutionResult{TResult}"/>.

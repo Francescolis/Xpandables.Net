@@ -22,8 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Http;
 
 namespace Xpandables.Net.ExecutionResults.Controllers;
 

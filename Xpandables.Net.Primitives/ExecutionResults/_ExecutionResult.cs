@@ -21,7 +21,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.ExecutionResults;
 

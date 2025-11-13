@@ -20,8 +20,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Http;
 
 namespace Xpandables.Net.ExecutionResults.Minimals;
 

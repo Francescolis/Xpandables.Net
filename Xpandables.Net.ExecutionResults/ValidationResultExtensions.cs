@@ -17,8 +17,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
-using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.Collections;
 namespace Xpandables.Net.ExecutionResults;
 
 /// <summary>

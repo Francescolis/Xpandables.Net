@@ -22,8 +22,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.Collections;
+using Xpandables.Net.Http;
 
 namespace Xpandables.Net.ExecutionResults;
 

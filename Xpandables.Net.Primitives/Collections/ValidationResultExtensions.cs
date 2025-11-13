@@ -16,9 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
-using Xpandables.Net.ExecutionResults.Collections;
-
-namespace Xpandables.Net.ExecutionResults.Collections;
+namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// Provides extension methods for converting <see cref="ValidationResult"/> instances to <see

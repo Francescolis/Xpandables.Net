@@ -22,8 +22,9 @@ using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Extensions;
+using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.Http;
 
 namespace Xpandables.Net.ExecutionResults.ResponseWriters;
 
@@ -53,7 +54,7 @@ public sealed class StreamExecutionResultResponseWriter : ExecutionResultRespons
         Debug.Assert(executionResult.Value is not null, "Value cannot be null here.");
 
         var asyncPaged = (IAsyncPagedEnumerable)executionResult.Value;
-        Type type = asyncPaged.Type;
+        Type type = asyncPaged.GetArgumentType();
         var options = context.GetJsonSerializerOptions();
         JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(type);
         PipeWriter pipeWriter = context.Response.BodyWriter;

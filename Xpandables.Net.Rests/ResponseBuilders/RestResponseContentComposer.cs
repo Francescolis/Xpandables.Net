@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests.ResponseBuilders;
 

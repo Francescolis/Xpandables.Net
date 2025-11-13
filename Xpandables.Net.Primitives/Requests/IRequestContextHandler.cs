@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-using Xpandables.Net.AsyncPaged;
+using Xpandables.Net.Collections.Generic;
 using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.Requests;

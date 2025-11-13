@@ -34,11 +34,6 @@ public static class ExecutionResultExtensions
     extension(ExecutionResult execution)
     {
         /// <summary>
-        /// Gets a value indicating whether the execution resulted in a failure.
-        /// </summary>
-        public bool IsFailure => execution.StatusCode.IsFailure;
-
-        /// <summary>
         /// Creates a new ExecutionResultException that represents the current execution result.
         /// </summary>
         /// <returns>An ExecutionResultException initialized with the current execution result.</returns>

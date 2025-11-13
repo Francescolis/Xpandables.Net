@@ -17,7 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
-using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.Rests;
 

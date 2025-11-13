@@ -23,9 +23,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
-using Xpandables.Net.ExecutionResults.Collections;
-
-namespace Xpandables.Net.ExecutionResults.Collections;
+namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// Represents a collection of ElementEntry objects, allowing for addition, removal, and merging of entries. 

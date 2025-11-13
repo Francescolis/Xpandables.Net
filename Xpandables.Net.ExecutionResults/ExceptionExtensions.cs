@@ -21,8 +21,7 @@ using System.Security;
 using System.Security.Authentication;
 using System.Text.Json;
 
-using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.ExecutionResults;
 

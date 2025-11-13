@@ -20,9 +20,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
-using Xpandables.Net.ExecutionResults.Collections;
-
-namespace Xpandables.Net.ExecutionResults.Collections;
+namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// Represents an entry consisting of a key and associated values.

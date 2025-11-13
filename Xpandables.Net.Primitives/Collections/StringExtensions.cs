@@ -54,6 +54,16 @@ public static class StringExtensions
             JsonSerializer.Deserialize<T>(value, options);
 
         /// <summary>
+        /// Deserializes the current JSON string value to an instance of the ElementCollection class.
+        /// </summary>
+        /// <returns>An ElementCollection object representing the deserialized JSON value, or null if the value cannot be
+        /// deserialized.</returns>
+        /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized to an ElementCollection.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the type is not supported for deserialization.</exception>
+        public ElementCollection ToElementCollection() =>
+            JsonSerializer.Deserialize(value, ElementCollectionContext.Default.ElementCollection);
+
+        /// <summary>
         /// Formats the current string using the specified culture and the provided arguments.
         /// </summary>
         /// <remarks>This method uses the current string instance as the format string. The number and

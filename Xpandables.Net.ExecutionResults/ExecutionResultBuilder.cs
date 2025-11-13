@@ -18,8 +18,7 @@ using System.Net;
 
 using Microsoft.Extensions.Primitives;
 
-using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.ExecutionResults.Collections;
+using Xpandables.Net.Collections;
 
 namespace Xpandables.Net.ExecutionResults;
 

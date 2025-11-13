@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Net.Http.Headers;
 
-namespace Xpandables.Net.ExecutionResults.Collections;
+namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// Provides extension methods for working with HTTP headers collections.

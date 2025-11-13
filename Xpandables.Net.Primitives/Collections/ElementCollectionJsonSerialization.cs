@@ -17,9 +17,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Xpandables.Net.ExecutionResults.Collections;
-
-namespace Xpandables.Net.ExecutionResults.Collections;
+namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// JSON converter factory for ElementCollection types, providing AOT-compatible serialization for .NET 10.

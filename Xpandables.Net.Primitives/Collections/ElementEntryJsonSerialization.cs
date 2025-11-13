@@ -19,9 +19,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.Extensions.Primitives;
 
-using Xpandables.Net.ExecutionResults.Collections;
-
-namespace Xpandables.Net.ExecutionResults.Collections;
+namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// JSON converter factory for ElementEntry types, providing AOT-compatible serialization for .NET 10.

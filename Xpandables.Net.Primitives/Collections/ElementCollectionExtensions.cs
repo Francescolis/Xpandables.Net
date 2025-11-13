@@ -16,9 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
-using Xpandables.Net.ExecutionResults.Collections;
-
-namespace Xpandables.Net.ExecutionResults.Collections;
+namespace Xpandables.Net.Collections;
 
 /// <summary>
 /// Provides extension methods for ElementCollection objects.
