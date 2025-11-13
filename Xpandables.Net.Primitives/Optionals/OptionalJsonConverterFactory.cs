@@ -75,8 +75,6 @@ public sealed partial class OptionalJsonConverterFactory : JsonConverterFactory
             options.TypeInfoResolverChain.Add(OptionalJsonContext.Default);
         }
 
-        // Create the generic converter for Optional<T>
-        // This uses MakeGenericType which is not AOT-compatible, but works fine with source generation
         Type valueType = typeToConvert.GetGenericArguments()[0];
         Type converterType = typeof(OptionalJsonConverter<>).MakeGenericType(valueType);
 

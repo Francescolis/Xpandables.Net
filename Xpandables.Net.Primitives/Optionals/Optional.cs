@@ -17,7 +17,6 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.Optionals;
 
@@ -31,7 +30,6 @@ namespace Xpandables.Net.Optionals;
 /// <typeparam name="T">The type of the value that may be contained by the optional.</typeparam>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
-[JsonConverter(typeof(OptionalJsonConverterFactory))]
 public readonly partial record struct Optional<T> : IEnumerable<T>
 {
     private readonly object? _value = null;
