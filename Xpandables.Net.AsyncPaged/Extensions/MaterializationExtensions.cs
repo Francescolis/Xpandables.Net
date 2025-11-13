@@ -16,7 +16,9 @@
 ********************************************************************************/
 using System.Runtime.CompilerServices;
 
-namespace Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
+
+namespace Xpandables.Net.Collections.Extensions;
 
 /// <summary>
 /// Provides performance-optimized extension methods for materializing and precomputing pagination metadata
@@ -50,11 +52,11 @@ public static class MaterializationExtensions
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(source);
-            
+
             // Force pagination computation by calling GetPaginationAsync
             // This will trigger the lazy computation and cache the result
             _ = await source.GetPaginationAsync(cancellationToken).ConfigureAwait(false);
-            
+
             return source;
         }
     }
@@ -82,16 +84,16 @@ public static class MaterializationExtensions
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
-        
+
         // Enumerate and collect all items
         var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
-        
+
         // Create pagination with accurate count
         var pagination = Pagination.Create(
             pageSize: items.Count,
             currentPage: 1,
             totalCount: items.Count);
-        
+
         // Return new paged enumerable with materialized items
         return new AsyncPagedEnumerable<T>(
             items.ToAsyncEnumerable(),
@@ -122,16 +124,16 @@ public static class MaterializationExtensions
         ArgumentNullException.ThrowIfNull(source);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentPage);
-        
+
         // Enumerate and collect all items
         var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
-        
+
         // Create pagination with accurate count and specified page size
         var pagination = Pagination.Create(
             pageSize: pageSize,
             currentPage: currentPage,
             totalCount: items.Count);
-        
+
         // Return new paged enumerable with materialized items
         return new AsyncPagedEnumerable<T>(
             items.ToAsyncEnumerable(),
@@ -157,13 +159,13 @@ public static class MaterializationExtensions
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);
-        
+
         // Enumerate and collect all items in one pass
         var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
-        
+
         // Create pagination with accurate count
         var pagination = Pagination.FromTotalCount(items.Count);
-        
+
         // Return paged enumerable with pre-materialized items
         return new AsyncPagedEnumerable<T>(
             items.ToAsyncEnumerable(),
@@ -191,16 +193,16 @@ public static class MaterializationExtensions
         ArgumentNullException.ThrowIfNull(source);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentPage);
-        
+
         // Enumerate and collect all items
         var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
-        
+
         // Create pagination with specified parameters
         var pagination = Pagination.Create(
             pageSize: pageSize,
             currentPage: currentPage,
             totalCount: items.Count);
-        
+
         return new AsyncPagedEnumerable<T>(
             items.ToAsyncEnumerable(),
             _ => ValueTask.FromResult(pagination));

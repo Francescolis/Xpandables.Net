@@ -15,8 +15,9 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.AsyncPaged.Extensions;
-namespace Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
+
+namespace Xpandables.Net.Collections.Extensions;
 
 /// <summary>
 /// Provides numerical and statistical extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.

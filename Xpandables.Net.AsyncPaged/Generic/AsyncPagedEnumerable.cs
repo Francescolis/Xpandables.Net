@@ -16,9 +16,7 @@
 ********************************************************************************/
 using System.Runtime.ExceptionServices;
 
-using Xpandables.Net.AsyncPaged.Internals;
-
-namespace Xpandables.Net.AsyncPaged;
+namespace Xpandables.Net.Collections.Generic;
 
 /// <summary>
 /// Represents an asynchronous, paged enumerable over a sequence with lazy pagination metadata computation.
@@ -53,7 +51,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata.
     /// If null, pagination will be inferred from the source that gets materialized.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> or <paramref name="paginationFactory"/> is null.</exception>
-    public AsyncPagedEnumerable(
+    internal AsyncPagedEnumerable(
         IAsyncEnumerable<T> source,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default)
     {
@@ -75,7 +73,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata. 
     /// If null, pagination will be inferred from the query.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
-    public AsyncPagedEnumerable(
+    internal AsyncPagedEnumerable(
         IQueryable<T> query,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default)
     {
@@ -180,13 +178,16 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
                 > int.MaxValue => int.MaxValue,
                 _ => (int)totalCountLong
             };
+
             int pageSize = take ?? 0;
-            string? continuationToken = (skip, take) switch
-            {
-                (not null and > 0, not null and > 0) => Convert.ToBase64String(
-                    System.Text.Encoding.UTF8.GetBytes($"{skip.Value + take.Value}:{take.Value}")),
-                _ => null
-            };
+            string? continuationToken = QueryPaginationNormalizer.ExtractWhereToken(normalizedQuery) is { } value
+                ? $"cursor:{value}"
+                : (skip, take) switch
+                {
+                    (not null and > 0, not null and > 0) => $"offset:{skip.Value + take.Value}",
+                    _ => null
+                };
+
             int currentPage = (take, skip) switch
             {
                 (not null and > 0, not null and >= 0) => (skip.Value / take.Value) + 1,

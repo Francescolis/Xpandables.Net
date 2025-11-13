@@ -16,7 +16,9 @@
 ********************************************************************************/
 using System.Runtime.CompilerServices;
 
-namespace Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
+
+namespace Xpandables.Net.Collections.Extensions;
 
 /// <summary>
 /// Provides extension methods for working with <see cref="IQueryable{T}"/> sequences, enabling advanced asynchronous

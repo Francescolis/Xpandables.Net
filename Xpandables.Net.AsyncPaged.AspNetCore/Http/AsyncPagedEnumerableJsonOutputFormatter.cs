@@ -26,10 +26,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
-using Xpandables.Net.AsyncPaged.Extensions;
-using Xpandables.Net.AsyncPaged.Internals;
+using Xpandables.Net.Collections.Extensions;
+using Xpandables.Net.Collections.Generic;
 
-namespace Xpandables.Net.AsyncPaged.Controllers;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Provides functionality to format and serialize objects implementing <see cref="IAsyncPagedEnumerable{T}"/> to JSON
@@ -118,11 +118,11 @@ public sealed class AsyncPagedEnumerableJsonOutputFormatter : TextOutputFormatte
 
         var httpContext = context.HttpContext;
         var pagedEnumerable = (IAsyncPagedEnumerable)context.Object;
-        Type itemType = pagedEnumerable.Type;
+        Type itemType = pagedEnumerable.GetArgumentType();
 
         JsonTypeInfo? jsonTypeInfo = null;
         var declaredTypeInfo = SerializerOptions.GetTypeInfo(itemType);
-        var runtimeType = context.Object?.GetType().GetGenericArguments()[0];
+        var runtimeType = context.ObjectType?.GetGenericArguments()[0];
         if (declaredTypeInfo.ShouldUseWith(runtimeType))
         {
             jsonTypeInfo = declaredTypeInfo;

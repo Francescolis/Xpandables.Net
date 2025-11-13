@@ -22,7 +22,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
+
+namespace Xpandables.Net.Collections.Extensions;
 
 /// <summary>
 /// Provides extension methods for the JsonSerializer class to simplify JSON <see cref="IAsyncPagedEnumerable{T}"/> serialization tasks.
@@ -155,9 +157,10 @@ public static class JsonSerializerExtensions
             ArgumentNullException.ThrowIfNull(pagedEnumerable);
             ArgumentNullException.ThrowIfNull(context);
 
-            JsonTypeInfo? jsonTypeInfo = context.GetTypeInfo(pagedEnumerable.Type)
+            Type type = pagedEnumerable.GetArgumentType();
+            JsonTypeInfo? jsonTypeInfo = context.GetTypeInfo(type)
                 ?? throw new InvalidOperationException(
-                    $"The JsonSerializerContext does not contain metadata for type '{pagedEnumerable.Type.FullName}'.");
+                    $"The JsonSerializerContext does not contain metadata for type '{type.FullName}'.");
 
             return CoreSerializeAsyncPagedNonGenericAsync(
                 utf8Json,
@@ -330,9 +333,10 @@ public static class JsonSerializerExtensions
             ArgumentNullException.ThrowIfNull(pagedEnumerable);
             ArgumentNullException.ThrowIfNull(context);
 
-            JsonTypeInfo? jsonTypeInfo = context.GetTypeInfo(pagedEnumerable.Type)
+            Type type = pagedEnumerable.GetArgumentType();
+            JsonTypeInfo? jsonTypeInfo = context.GetTypeInfo(type)
               ?? throw new InvalidOperationException(
-                    $"The JsonSerializerContext does not contain metadata for type '{pagedEnumerable.Type.FullName}'.");
+                    $"The JsonSerializerContext does not contain metadata for type '{type.FullName}'.");
 
             return CoreSerializeAsyncPagedNonGenericAsync(
                 utf8Json,
@@ -462,7 +466,7 @@ public static class JsonSerializerExtensions
 
             writer.WriteStartObject();
             writer.WritePropertyName("pagination"u8);
-            JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
+            JsonSerializer.Serialize(writer, pagination, PaginationJsonContext.Default.Pagination);
 
             writer.WritePropertyName("items"u8);
             writer.WriteStartArray();
@@ -533,7 +537,7 @@ public static class JsonSerializerExtensions
             cancellationToken.ThrowIfCancellationRequested();
 
             writer.WritePropertyName("pagination"u8);
-            JsonSerializer.Serialize(writer, pagination, PaginationSourceGenerationContext.Default.Pagination);
+            JsonSerializer.Serialize(writer, pagination, PaginationJsonContext.Default.Pagination);
 
             writer.WritePropertyName("items"u8);
             writer.WriteStartArray();

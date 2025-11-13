@@ -19,8 +19,7 @@ using System.Text.Json;
 
 using FluentAssertions;
 
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Extensions;
 
 namespace Xpandables.Net.UnitTests.AsyncPaged;
 

@@ -20,7 +20,9 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
+
+namespace Xpandables.Net.Collections.Extensions;
 
 /// <summary>
 /// Provides extension methods for deserializing UTF-8 encoded JSON data into asynchronous paged enumerables using

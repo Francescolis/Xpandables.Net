@@ -12,7 +12,7 @@
 		<Authors>Francescolis</Authors>
 
 		<AssemblyName>Xpandables.Net.AsyncPaged</AssemblyName>
-		<RootNamespace>Xpandables.Net.AsyncPaged</RootNamespace>
+		<RootNamespace>Xpandables.Net.Collections</RootNamespace>
 		<PackageId>Xpandables.Net.AsyncPaged</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
@@ -82,6 +82,10 @@
 			<PackagePath>\</PackagePath>
 			<Pack>True</Pack>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net.Primitives\Xpandables.Net.Primitives.csproj" />
 	</ItemGroup>
 
 </Project>

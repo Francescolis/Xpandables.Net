@@ -18,9 +18,9 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
 
-using Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
 
-namespace Xpandables.Net.AsyncPaged.Extensions;
+namespace Xpandables.Net.Collections.Extensions;
 
 /// <summary>
 /// Provides grouping extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.

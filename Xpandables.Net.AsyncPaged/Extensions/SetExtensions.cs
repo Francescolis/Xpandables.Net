@@ -18,8 +18,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-using Xpandables.Net.AsyncPaged.Extensions;
-namespace Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
+namespace Xpandables.Net.Collections.Extensions;
 
 /// <summary>
 /// Provides set operation and joining extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.

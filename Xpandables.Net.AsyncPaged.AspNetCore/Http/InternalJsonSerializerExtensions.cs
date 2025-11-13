@@ -19,9 +19,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Xpandables.Net.AsyncPaged.Internals;
+namespace Xpandables.Net.Http;
 
-internal static class JsonSerializerExtensions
+internal static class InternalJsonSerializerExtensions
 {
     extension(JsonTypeInfo jsonTypeInfo)
     {

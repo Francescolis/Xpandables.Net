@@ -1,9 +1,9 @@
 using System.Buffers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+
 using FluentAssertions;
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.AsyncPaged.Extensions;
+
+using Xpandables.Net.Collections.Extensions;
 
 namespace Xpandables.Net.UnitTests.AsyncPaged;
 

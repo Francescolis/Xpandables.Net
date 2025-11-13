@@ -19,14 +19,14 @@ using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.AsyncPaged.Minimals;
+using Xpandables.Net.Collections.Generic;
 
-namespace Xpandables.Net.AsyncPaged;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Provides extension methods for converting asynchronous paged enumerables to result objects.
 /// </summary>
-public static class AsyncPagedEnumerableResultExtensions
+public static class IResultExtensions
 {
     /// <summary>
     /// 

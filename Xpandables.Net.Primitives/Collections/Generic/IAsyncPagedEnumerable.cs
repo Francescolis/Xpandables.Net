@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel;
+
 namespace Xpandables.Net.Collections.Generic;
 
 /// <summary>
@@ -28,8 +30,8 @@ namespace Xpandables.Net.Collections.Generic;
 /// Use <see cref="GetPaginationAsync"/> to ensure the pagination metadata is fully computed and available.
 /// </para>
 /// </remarks>
-public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
-    where T : allows ref struct
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface IAsyncPagedEnumerable
 {
     /// <summary>
     /// Gets the current pagination metadata for this enumerable.
@@ -37,8 +39,8 @@ public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
     /// <remarks>
     /// This property provides immediate access to the pagination state. However, some implementations
     /// may compute this value lazily. If the pagination metadata is not yet available, this property
-    /// may return <see cref="Pagination.Empty"/>. Use <see cref="GetPaginationAsync"/> 
-    /// to ensure the pagination metadata is fully computed.
+    /// may return <see cref="Pagination.Empty"/>. Use <see cref="GetPaginationAsync"/> to ensure
+    /// the pagination metadata is fully computed.
     /// </remarks>
     Pagination Pagination { get; }
 
@@ -53,4 +55,21 @@ public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
     /// For immediate access to potentially incomplete pagination data, use the <see cref="Pagination"/> property instead.
     /// </remarks>
     Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Represents a sequence of elements that can be asynchronously enumerated in discrete pages.
+/// </summary>
+/// <remarks>
+/// Use this interface to retrieve large result sets in manageable chunks, reducing memory usage and
+/// improving performance for asynchronous operations. Each page is typically fetched on demand as the sequence is
+/// iterated. This interface is commonly used for APIs that support server-side paging.
+/// <para>
+/// The <see cref="Pagination"/> property may be computed lazily by some implementations. 
+/// Use <see cref="IAsyncPagedEnumerable.GetPaginationAsync"/> to ensure the pagination metadata is fully computed and available.
+/// </para>
+/// </remarks>
+public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPagedEnumerable
+    where T : allows ref struct
+{
 }

@@ -15,9 +15,9 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.AsyncPaged.Extensions;
+using Xpandables.Net.Collections.Generic;
 
-namespace Xpandables.Net.AsyncPaged.Extensions;
+namespace Xpandables.Net.Collections.Extensions;
 
 /// <summary>
 /// Provides aggregation and ordering extension methods for <see cref="IAsyncPagedEnumerable{TSource}"/>.

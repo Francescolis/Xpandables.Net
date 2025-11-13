@@ -23,9 +23,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.AsyncPaged;
-
-namespace Xpandables.Net.AsyncPaged;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Provides extension methods for accessing JSON serialization options and content type information from an <see

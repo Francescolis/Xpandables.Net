@@ -19,12 +19,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.DependencyInjection;
+using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.Http;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Provides extension methods for configuring and managing services within an <see cref="IServiceCollection"/>
@@ -33,7 +31,7 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>This class contains static methods that extend the functionality of <see cref="IServiceCollection"/>,
 /// enabling additional service registration patterns and convenience features commonly used in dependency injection
 /// scenarios.</remarks>
-public static class IAsyncPagedAspNetCoreExtensions
+public static class IAsyncPagedEnumerableExtensions
 {
     /// <summary>
     /// Provides extensions methds for <see cref="IServiceCollection"/>.
