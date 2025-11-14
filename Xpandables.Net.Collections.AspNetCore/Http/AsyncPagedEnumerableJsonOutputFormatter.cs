@@ -28,8 +28,9 @@ using Microsoft.Net.Http.Headers;
 
 using Xpandables.Net.Collections.Extensions;
 using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.Http;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Collections.Http;
 
 /// <summary>
 /// Provides functionality to format and serialize objects implementing <see cref="IAsyncPagedEnumerable{T}"/> to JSON

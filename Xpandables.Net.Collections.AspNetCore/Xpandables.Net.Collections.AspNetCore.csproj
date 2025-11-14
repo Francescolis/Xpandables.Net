@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>Xpandables.Net.AsyncPaged.AspNetCore</Title>
+		<Title>Xpandables.Net.Collections.AspNetCore</Title>
 		<Description>IAsyncPagedEnumerable implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net.AsyncPaged.AspNetCore</AssemblyName>
-		<RootNamespace>Xpandables.Net</RootNamespace>
-		<PackageId>Xpandables.Net.AsyncPaged.AspNetCore</PackageId>
+		<AssemblyName>Xpandables.Net.Collections.AspNetCore</AssemblyName>
+		<RootNamespace>Xpandables.Net.Collections</RootNamespace>
+		<PackageId>Xpandables.Net.Collections.AspNetCore</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -85,11 +85,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Xpandables.Net.AsyncPaged\Xpandables.Net.AsyncPaged.csproj" />
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	  <ProjectReference Include="..\Xpandables.Net.Collections\Xpandables.Net.Collections.csproj" />
 	</ItemGroup>
 
 </Project>

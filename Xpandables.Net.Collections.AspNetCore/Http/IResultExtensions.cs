@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Http;
 
 using Xpandables.Net.Collections.Generic;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Collections.Http;
 
 /// <summary>
 /// Provides extension methods for converting asynchronous paged enumerables to result objects.

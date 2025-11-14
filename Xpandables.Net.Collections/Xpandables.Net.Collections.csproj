@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>Xpandables.Net.AsyncPaged</Title>
+		<Title>Xpandables.Net.Collections</Title>
 		<Description>IAsyncPagedEnumerable implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net.AsyncPaged</AssemblyName>
+		<AssemblyName>Xpandables.Net.Collections</AssemblyName>
 		<RootNamespace>Xpandables.Net.Collections</RootNamespace>
-		<PackageId>Xpandables.Net.AsyncPaged</PackageId>
+		<PackageId>Xpandables.Net.Collections</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

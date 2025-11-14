@@ -19,7 +19,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Xpandables.Net.Http;
+namespace Xpandables.Net.Collections.Http;
 
 internal static class InternalJsonSerializerExtensions
 {
