@@ -20,7 +20,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Requests.Pipelines;
 
 namespace Xpandables.Net.DependencyInjection;
 
@@ -34,18 +33,6 @@ public static class IRepositoryExtensions
     /// <param name="services">The service collection to add the services to.</param>
     extension(IServiceCollection services)
     {
-        /// <summary>
-        /// Registers the PipelineUnitOfWorkDecorator for all pipeline handlers in the service collection, enabling
-        /// unit-of-work behavior within the pipeline execution.
-        /// </summary>
-        /// <remarks>Use this method to ensure that each pipeline handler is executed within a
-        /// unit-of-work scope, which can help manage transactional consistency and resource cleanup. This method should
-        /// be called during application startup as part of dependency injection configuration.</remarks>
-        /// <returns>The IServiceCollection instance with the PipelineUnitOfWorkDecorator registered. This enables further
-        /// chaining of service registrations.</returns>
-        public IServiceCollection AddXPipelineUnitOfWorkDecorator() =>
-            services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<>));
-
         /// <summary>
         /// Adds the specified implementation of the unit of work pattern to the service collection with a scoped
         /// lifetime.

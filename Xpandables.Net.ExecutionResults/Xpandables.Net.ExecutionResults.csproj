@@ -93,4 +93,8 @@
 	  <ProjectReference Include="..\Xpandables.Net.Primitives\Xpandables.Net.Primitives.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="DependencyInjection\" />
+	</ItemGroup>
+
 </Project>

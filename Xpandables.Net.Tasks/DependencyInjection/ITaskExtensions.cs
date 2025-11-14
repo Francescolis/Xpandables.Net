@@ -18,6 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.EventSourcing;
 using Xpandables.Net.Requests.Pipelines;
 using Xpandables.Net.Tasks;
 using Xpandables.Net.Tasks.Pipelines;
@@ -72,6 +73,18 @@ public static class ITaskExtensions
         public IServiceCollection AddXMediator() => services.AddXMediator<Mediator>();
 
         /// <summary>
+        /// Registers the PipelineUnitOfWorkDecorator for all pipeline handlers in the service collection, enabling
+        /// unit-of-work behavior within the pipeline execution.
+        /// </summary>
+        /// <remarks>Use this method to ensure that each pipeline handler is executed within a
+        /// unit-of-work scope, which can help manage transactional consistency and resource cleanup. This method should
+        /// be called during application startup as part of dependency injection configuration.</remarks>
+        /// <returns>The IServiceCollection instance with the PipelineUnitOfWorkDecorator registered. This enables further
+        /// chaining of service registrations.</returns>
+        public IServiceCollection AddXPipelineUnitOfWorkDecorator() =>
+            services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<>));
+
+        /// <summary>
         /// Adds the default post-processing decorator to the pipeline configuration for all registered pipeline
         /// handlers.
         /// </summary>
@@ -109,6 +122,50 @@ public static class ITaskExtensions
         /// <returns>The same IServiceCollection instance, allowing for method chaining.</returns>
         public IServiceCollection AddXPipelineExceptionDecorator() =>
             services.AddXPipelineDecorator(typeof(PipelineExceptionDecorator<>));
+
+        /// <summary>
+        /// Registers the XPipeline event store event decorator in the dependency injection container.
+        /// </summary>
+        /// <remarks>This method adds the PipelineEventStoreEventDecorator to the service collection, allowing
+        /// event store events to be processed through the XPipeline decorator mechanism. Use this method to enable event
+        /// decoration in XPipeline-based event store scenarios.</remarks>
+        /// <returns>The same IServiceCollection instance, enabling method chaining.</returns>
+        public IServiceCollection AddXPipelineEventStoreEventDecorator()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXPipelineDecorator(typeof(PipelineEventStoreEventDecorator<>));
+        }
+
+        /// <summary>
+        /// Registers the domain events pipeline decorator and its dependencies with the specified service collection.
+        /// </summary>
+        /// <remarks>This method adds the generic PipelineDomainEventsDecorator to the pipeline and registers the
+        /// PendingDomainEventsBuffer for managing pending domain events. Call this method during application startup to
+        /// enable domain event handling in the pipeline.</remarks>
+        /// <returns>The same service collection instance, with the domain events pipeline decorator and its dependencies registered.</returns>
+        public IServiceCollection AddXPipelineDomainEventsDecorator()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services
+                .AddXPipelineDecorator(typeof(PipelineDomainEventsDecorator<>))
+                .AddScoped<IPendingDomainEventsBuffer, PendingDomainEventsBuffer>();
+        }
+
+        /// <summary>
+        /// Adds the outbox decorator for pipeline integration to the service collection, enabling buffering and reliable
+        /// dispatch of integration events within the pipeline.
+        /// </summary>
+        /// <remarks>This method registers the outbox decorator and a scoped buffer for pending integration
+        /// events, supporting reliable event handling in distributed systems. Call this method during application startup
+        /// to ensure integration events are buffered and dispatched as part of the pipeline execution.</remarks>
+        /// <returns>The same service collection instance, configured with the outbox decorator and event buffering services.</returns>
+        public IServiceCollection AddXPipelineIntegrationOutboxDecorator()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services
+                .AddXPipelineDecorator(typeof(PipelineIntegrationOutboxDecorator<>))
+                .AddScoped<IPendingIntegrationEventsBuffer, PendingIntegrationEventsBuffer>();
+        }
 
         /// <summary>
         /// Registers the specified mediator implementation as a scoped service for dependency injection.

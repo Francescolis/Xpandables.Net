@@ -41,13 +41,21 @@ public readonly struct WeakCacheEntry<T>(T value) : IEquatable<T>, IEquatable<We
 
     /// <summary>
     /// Determines whether the current instance is considered expired based on the specified maximum age.
+    /// If <paramref name="maxAge"/> is less than or equal to <see cref="TimeSpan.Zero"/>, the instance is never
+    /// expired.
     /// </summary>
     /// <param name="maxAge">The maximum allowable age as a <see cref="TimeSpan"/>. 
     /// This value represents the duration after which the
     /// instance is considered expired.</param>
     /// <returns><see langword="true"/> if the instance is expired (i.e., the time since the last access exceeds <paramref
     /// name="maxAge"/>); otherwise, <see langword="false"/>.</returns>
-    public readonly bool IsExpired(TimeSpan maxAge) => DateTime.UtcNow - _lastAccessTime > maxAge;
+    public readonly bool IsExpired(TimeSpan maxAge)
+    {
+        if (maxAge <= TimeSpan.Zero)
+            return false;
+
+        return DateTime.UtcNow - _lastAccessTime > maxAge;
+    }
 
     /// <summary>
     /// Gets the date and time when the resource was last accessed.

@@ -91,6 +91,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="DependencyInjection\" />
 		<Folder Include="Tasks\Pipelines\" />
 	</ItemGroup>
 

@@ -213,17 +213,3 @@ public sealed record ExecutionResult<TResult> : _ExecutionResult
     private string GetDebuggerDisplay()
         => $"{(int)StatusCode} {StatusCode} - {(IsSuccess ? "Success" : "Failure")}{(Title is not null ? $": {Title}" : string.Empty)}";
 }
-
-/// <summary>
-/// Provides extension methods for evaluating the outcome of an execution result.
-/// </summary>
-public static class ExecutionResultExtensions
-{
-    extension(ExecutionResult execution)
-    {
-        /// <summary>
-        /// Gets a value indicating whether the execution resulted in a failure.
-        /// </summary>
-        public bool IsFailure => execution.StatusCode.IsFailure;
-    }
-}

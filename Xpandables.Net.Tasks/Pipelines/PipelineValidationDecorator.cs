@@ -15,10 +15,9 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
+using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.ExecutionResults.DataAnnotations;
 using Xpandables.Net.Requests;
 using Xpandables.Net.Requests.Pipelines;
 
@@ -39,7 +38,6 @@ public sealed class PipelineValidationDecorator<TRequest>(ICompositeValidator<TR
     where TRequest : class, IRequest, IRequiresValidation
 {
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public async Task<ExecutionResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,

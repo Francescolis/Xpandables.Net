@@ -17,6 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Xpandables.Net.Collections;
 
@@ -26,7 +27,7 @@ namespace Xpandables.Net.Collections;
 /// <remarks>This class contains methods that extend the functionality of the string type, enabling additional
 /// operations such as deserialization or conversion. All methods are static and are intended to be used as extension
 /// methods on string instances.</remarks>
-public static class StringExtensions
+public static partial class StringExtensions
 {
     /// <summary>
     /// </summary>
@@ -99,5 +100,28 @@ public static class StringExtensions
             ArgumentNullException.ThrowIfNull(value);
             return value.StringFormat(CultureInfo.InvariantCulture, args);
         }
+
+        /// <summary>
+        /// Splits the type name stored in the current instance into its constituent parts based on common naming
+        /// conventions, such as transitions between lowercase and uppercase letters, acronyms, and digits.
+        /// </summary>
+        /// <remarks>This method is useful for formatting type names for display or analysis, especially
+        /// when working with names that use PascalCase, camelCase, or include acronyms and digits.</remarks>
+        /// <returns>A string containing the separated parts of the type name, joined by spaces.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the regular expression used to split the type name fails to produce matches.</exception>
+        public string SplitTypeName()
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            // Regex to split on transitions: lowercase→uppercase, acronym→normal, letter→digit, digit→letter
+            var parts = TypeNameFormaterRegex().Matches(value)
+                             ?? throw new InvalidOperationException("Regex failed");
+
+            return string.Join(" ", parts);
+        }
     }
+
+    [GeneratedRegex(@"([A-Z]+(?=$|[A-Z][a-z0-9])|[A-Z]?[a-z0-9]+)")]
+    private static partial Regex TypeNameFormaterRegex();
+
 }

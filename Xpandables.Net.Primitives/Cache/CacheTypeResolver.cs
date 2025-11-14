@@ -34,10 +34,10 @@ namespace Xpandables.Net.Cache;
 /// instance with default settings will be created.</param>
 public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCache = default) : Disposable, ICacheTypeResolver
 {
-    private readonly MemoryAwareCache<string, Type> _memoryCache = memoryCache ?? new(TimeSpan.FromMinutes(30), TimeSpan.FromHours(2));
+    private readonly MemoryAwareCache<string, Type> _memoryCache = memoryCache ?? new(TimeSpan.Zero, TimeSpan.Zero);
     private Assembly[] _assemblies = [];
     private static readonly string[] _legacyPrefixes =
-        ["System.", "Microsoft.", "netstandard", "WindowsBase", "PresentationCore", "PresentationFramework"];
+        ["System.", "Microsoft.", "netstandard", "WindowsBase", "PresentationCore", "PresentationFramework", "Xpandables"];
 
     /// <summary>
     /// Registers the specified assemblies for type resolution. If no assemblies are provided, registers all assemblies
@@ -47,8 +47,29 @@ public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCach
     /// with legacy prefixes are excluded when registering all assemblies from the application domain.</remarks>
     /// <param name="assemblies">An array of assemblies to register for type resolution. If the array is empty or not specified, all non-legacy
     /// assemblies in the current application domain are registered.</param>
+    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     public void RegisterAssemblies(params Assembly[] assemblies)
     {
+        RegisterAssemblies(_ => true, assemblies);
+    }
+
+    /// <summary>
+    /// Registers types from the specified assemblies that match the given predicate. If no assemblies are provided, registers all assemblies
+    /// in the current application domain except those with legacy prefixes.
+    /// </summary>
+    /// <remarks>This method uses reflection to enumerate exported types from the specified assemblies. Types
+    /// that satisfy the predicate are registered in the internal cache. Avoid passing assemblies that may contain types
+    /// with sensitive or unwanted side effects, as all matching types will be registered. This method requires
+    /// unreferenced code and may not be compatible with trimming scenarios.</remarks>
+    /// <param name="predicate">A delegate that defines the conditions each type must satisfy to be registered. The predicate is applied to each
+    /// exported type in the provided assemblies.</param>
+    /// <param name="assemblies">An array of assemblies from which types will be considered for registration. If no assemblies are specified, all
+    /// currently loaded assemblies in the application domain are used.</param>
+    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
+    public void RegisterAssemblies(Predicate<Type> predicate, params Assembly[] assemblies)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
         _assemblies = assemblies is { Length: > 0 }
             ? assemblies
             : [.. AppDomain.CurrentDomain
@@ -56,10 +77,20 @@ public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCach
                 .Where(a => !_legacyPrefixes
                     .Any(prefix => a.GetName().Name!
                         .StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase) == true))];
+
+        foreach (var assembly in _assemblies)
+        {
+            foreach (var type in assembly.ExportedTypes)
+            {
+                if (predicate(type))
+                {
+                    _memoryCache.AddOrUpdate(type.Name, type);
+                }
+            }
+        }
     }
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     public Type Resolve(string typeName)
     {
         return TryResolve(typeName)
@@ -67,18 +98,12 @@ public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCach
     }
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
     public Type? TryResolve(string typeName)
     {
         ArgumentNullException.ThrowIfNull(typeName);
-        string key = $"CacheTypeResolver_TryResolve_{typeName}";
 
-        return (_memoryCache.TryGetValue(key, out var value), ResolveType(typeName)) switch
-        {
-            (true, _) => value,
-            (false, { } type) => _memoryCache.AddOrUpdate(key, type),
-            _ => null
-        };
+        string key = typeName;
+        return _memoryCache.TryGetValue(key, out Type? cachedType) ? cachedType : null;
     }
 
 
@@ -91,13 +116,5 @@ public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCach
         }
 
         base.Dispose(disposing);
-    }
-
-    [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
-    private Type? ResolveType(string typeName)
-    {
-        return _assemblies
-            .SelectMany(a => a.ExportedTypes)
-            .FirstOrDefault(t => t.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase));
     }
 }
