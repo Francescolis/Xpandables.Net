@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines a contract for RESTful client operations. It serves as a blueprint for implementing REST client

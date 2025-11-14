@@ -14,7 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Xpandables.Net.Rests;
+
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines a contract for building REST request contexts from request objects in an asynchronous manner.

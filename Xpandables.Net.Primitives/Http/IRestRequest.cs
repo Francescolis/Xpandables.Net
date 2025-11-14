@@ -17,7 +17,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines a contract for RESTful requests. 

@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines the contract for a composer responsible for creating REST responses.
@@ -64,7 +64,7 @@ public interface IRestResponseResultComposer<TResult> : IRestResponseComposer
     async ValueTask<RestResponse> IRestResponseComposer.ComposeAsync(
         RestResponseContext context,
         CancellationToken cancellationToken) =>
-        await ComposeAsync(RestResponseContext<TResult>.Create(context), cancellationToken).ConfigureAwait(false);
+        await ComposeAsync(RestResponseContext.Create<TResult>(context), cancellationToken).ConfigureAwait(false);
 }
 
 /// <summary>
@@ -89,5 +89,5 @@ public interface IRestResponseStreamComposer<TResult> : IRestResponseComposer
     async ValueTask<RestResponse> IRestResponseComposer.ComposeAsync(
         RestResponseContext context,
         CancellationToken cancellationToken) =>
-        await ComposeAsync(RestResponseStreamContext<TResult>.Create(context), cancellationToken).ConfigureAwait(false);
+        await ComposeAsync(RestResponseContext.CreateStream<TResult>(context), cancellationToken).ConfigureAwait(false);
 }

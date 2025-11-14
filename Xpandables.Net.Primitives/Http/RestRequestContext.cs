@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Encapsulates the context for a REST request, including attributes, request details, response message, and

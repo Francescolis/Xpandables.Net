@@ -88,8 +88,4 @@
 	  <PackageReference Include="Microsoft.Extensions.Primitives" Version="10.0.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Requests\Xpandables.Net.Requests.csproj" />
-	</ItemGroup>
-
 </Project>

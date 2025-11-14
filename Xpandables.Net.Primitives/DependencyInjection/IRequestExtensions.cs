@@ -22,9 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xpandables.Net.Requests;
 using Xpandables.Net.Requests.Pipelines;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Provides extension methods for configuring and managing services within an <see cref="IServiceCollection"/>

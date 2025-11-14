@@ -14,9 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines a contract for building REST response objects from HTTP response messages and REST request data.
@@ -30,8 +28,6 @@ public interface IRestResponseBuilder
     /// <param name="cancellationToken">Used to signal the cancellation of the asynchronous operation.</param>
     /// <returns>Returns a task that represents the asynchronous operation, containing the constructed response.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the operation fails.</exception>
-    [RequiresUnreferencedCode("May use unreferenced code to build RestResponse.")]
-    [RequiresDynamicCode("May use dynamic code to convert build RestResponse.")]
     ValueTask<RestResponse> BuildResponseAsync(
         RestResponseContext context,
         CancellationToken cancellationToken = default);

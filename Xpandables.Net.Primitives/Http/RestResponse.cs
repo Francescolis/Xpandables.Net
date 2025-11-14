@@ -18,10 +18,10 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
+using Xpandables.Net.Collections;
 using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.ExecutionResults.Collections;
 
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Provides an abstract base class for HTTP response representations, encapsulating status code, headers, result data,

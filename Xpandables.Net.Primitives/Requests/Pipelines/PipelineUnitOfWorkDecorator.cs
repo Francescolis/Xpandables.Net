@@ -16,12 +16,8 @@
 ********************************************************************************/
 using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Requests;
-using Xpandables.Net.Requests.Pipelines;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Xpandables.Net.Tasks.Pipelines;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
+namespace Xpandables.Net.Requests.Pipelines;
 
 /// <summary>
 /// The PipelineUnitOfWorkDecorator class is a pipeline decorator that ensures

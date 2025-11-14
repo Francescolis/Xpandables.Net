@@ -17,7 +17,7 @@
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 
-namespace Xpandables.Net.Rests.Abstractions;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Defines an operation for the PATCH method.

@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Collections.Frozen;
 
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Provides with a method to retrieve the MIME type of a file path.

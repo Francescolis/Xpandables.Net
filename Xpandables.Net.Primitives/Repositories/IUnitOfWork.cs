@@ -23,6 +23,8 @@ namespace Xpandables.Net.Repositories;
 /// <summary>
 /// Represents a unit of work that encapsulates a set of operations to 
 /// be performed as a single transaction.
+/// /// <para> For best practices, consider using directly the target data access technology (e.g., Entity Framework Core,
+/// Hibernate, Dapper) to leverage its full capabilities and optimizations).</para>
 /// </summary>
 public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {

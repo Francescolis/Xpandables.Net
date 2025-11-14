@@ -93,8 +93,4 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.net.Repositories\Xpandables.Net.Repositories.csproj" />
-	</ItemGroup>
-
 </Project>

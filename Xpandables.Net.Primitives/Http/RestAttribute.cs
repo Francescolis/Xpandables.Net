@@ -17,9 +17,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 
-using static Xpandables.Net.Rests.RestSettings;
+using static Xpandables.Net.Http.RestSettings;
 
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Specifies REST API metadata for a class or struct, including endpoint path, HTTP method, data format, and

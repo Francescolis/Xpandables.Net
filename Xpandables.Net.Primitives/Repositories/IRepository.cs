@@ -21,6 +21,8 @@ namespace Xpandables.Net.Repositories;
 
 /// <summary>
 /// Defines a generic repository interface for performing asynchronous CRUD operations on entities.
+/// <para> For best practices, consider using directly the target data access technology (e.g., Entity Framework Core,
+/// Hibernate, Dapper) to leverage its full capabilities and optimizations).</para>
 /// </summary>
 /// <remarks>This interface provides methods for fetching, inserting, updating, and deleting entities in a data
 /// store. It supports asynchronous operations and allows for query customization through the use of LINQ expressions.

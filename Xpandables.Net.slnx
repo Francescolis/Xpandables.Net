@@ -42,15 +42,6 @@
   <Project Path="Xpandables.Net.Repositories.EntityFramework/Xpandables.Net.Repositories.EntityFramework.csproj" Id="026ee8a6-7cae-49c5-af37-082a8313d285">
     <Platform Project="x64" />
   </Project>
-  <Project Path="Xpandables.net.Repositories/Xpandables.net.Repositories.csproj" Id="fb9e6cfb-2ba1-4667-b881-5f33f254cff1">
-    <Platform Project="x64" />
-  </Project>
-  <Project Path="Xpandables.Net.Requests/Xpandables.Net.Requests.csproj">
-    <Platform Project="x64" />
-  </Project>
-  <Project Path="Xpandables.Net.Rests.Abstractions/Xpandables.Net.Rests.Abstractions.csproj" Id="0338f5dd-cc6f-4880-9916-0b3ca1e1117a">
-    <Platform Project="x64" />
-  </Project>
   <Project Path="Xpandables.Net.Rests/Xpandables.Net.Rests.csproj" Id="299a2663-2767-4c6e-ba66-91659e2ce7b1">
     <Platform Project="x64" />
   </Project>

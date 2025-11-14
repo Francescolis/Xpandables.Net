@@ -89,4 +89,8 @@
 	  <ProjectReference Include="..\Xpandables.Net.ExecutionResults\Xpandables.Net.ExecutionResults.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="DependencyInjection\" />
+	</ItemGroup>
+
 </Project>

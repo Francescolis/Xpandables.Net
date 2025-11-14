@@ -20,11 +20,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xpandables.Net.Repositories;
-using Xpandables.Net.Tasks.Pipelines;
+using Xpandables.Net.Requests.Pipelines;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Extension methods for registering Entity repository services.

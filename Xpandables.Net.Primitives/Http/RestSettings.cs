@@ -18,9 +18,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-using Xpandables.Net.Rests.Abstractions;
-
-namespace Xpandables.Net.Rests;
+namespace Xpandables.Net.Http;
 
 /// <summary>
 /// Provides with <see cref="RestAttribute"/> behaviors.
