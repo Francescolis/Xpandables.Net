@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 namespace Xpandables.Net.Http;
 
 /// <summary>
@@ -47,8 +45,6 @@ public interface IRestClient : IDisposable
     /// The request must be decorated with one of the <see cref="RestAttribute" /> derived classes or implement the
     /// <see cref="IRestAttributeBuilder" /> interface.
     /// </remarks>
-    [RequiresDynamicCode("Dynamic code is required to build the request.")]
-    [RequiresUnreferencedCode("Unreferenced code may be removed by the linker.")]
     Task<RestResponse> SendAsync<TRestRequest>(TRestRequest request, CancellationToken cancellationToken = default)
         where TRestRequest : class, IRestRequest;
 }
