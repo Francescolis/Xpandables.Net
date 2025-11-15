@@ -18,16 +18,13 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.ExecutionResults.Controllers;
-using Xpandables.Net.ExecutionResults.DataAnnotations;
-using Xpandables.Net.ExecutionResults.Minimals;
-using Xpandables.Net.ExecutionResults.ResponseWriters;
+using Xpandables.Net.Controllers;
+using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.Minimals;
+using Xpandables.Net.ResponseWriters;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Xpandables.Net.DependencyInjection;
@@ -67,7 +64,6 @@ public static class IExecutionResultExtensions
         /// configuration via method chaining.</returns>
         public IServiceCollection AddXMinimalApi() =>
             services
-                .AddXExecutionResultMinimalJsonOptions()
                 .AddXValidatorProvider()
                 .AddXExecutionResultEndpointValidator()
                 .AddXExecutionResultMinimalMiddleware()
@@ -116,19 +112,6 @@ public static class IExecutionResultExtensions
         {
             ArgumentNullException.ThrowIfNull(services);
             services.AddSingleton<IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>, ExecutionResultControllerMvcOptions>();
-            return services;
-        }
-
-        /// <summary>
-        /// Adds configuration for minimal JSON serialization of XExecutionResult to the service collection.
-        /// </summary>
-        /// <remarks>Call this method to register JSON serialization options for XExecutionResult when
-        /// using minimal APIs. This enables consistent formatting of execution results in JSON responses.</remarks>
-        /// <returns>The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.</returns>
-        public IServiceCollection AddXExecutionResultMinimalJsonOptions()
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            services.AddSingleton<IConfigureOptions<JsonOptions>, ExecutionResultMinimalJsonOptions>();
             return services;
         }
 

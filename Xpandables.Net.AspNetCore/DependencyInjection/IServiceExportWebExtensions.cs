@@ -20,7 +20,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.DependencyInjection.Exports;
+using Xpandables.Net.Exports;
 
 
 namespace Xpandables.Net.DependencyInjection;

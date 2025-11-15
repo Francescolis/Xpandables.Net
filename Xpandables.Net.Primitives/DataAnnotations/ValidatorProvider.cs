@@ -14,10 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
@@ -27,57 +23,27 @@ namespace Xpandables.Net.DataAnnotations;
 /// IRequiresValidation interface. If a service provider is supplied, it is used to resolve validators from the
 /// dependency injection container; otherwise, default validator instances are created at runtime. This class is sealed
 /// and cannot be inherited.</remarks>
-/// <param name="serviceProvider">An optional service provider used to resolve validator instances. If null, default validators are created using
-/// reflection.</param>
-public sealed class ValidatorProvider(IServiceProvider? serviceProvider = null) : IValidatorProvider
+public sealed class ValidatorProvider(IValidatorFactory validatorFactory) : IValidatorProvider
 {
-    private readonly IServiceProvider? _serviceProvider = serviceProvider;
+    private readonly IValidatorFactory _validatorFactory = validatorFactory;
 
     /// <inheritdoc/>
-    [RequiresDynamicCode("The native code for Activator.CreateInstance might not be available at runtime.")]
-    [RequiresUnreferencedCode("The native code for Activator.CreateInstance might not be available at runtime.")]
     public IValidator? TryGetValidator(Type type)
     {
         ArgumentNullException.ThrowIfNull(type, nameof(type));
+
         if (!typeof(IRequiresValidation).IsAssignableFrom(type))
         {
-            throw new ArgumentException($"The type '{type.FullName}' must implement '{typeof(IRequiresValidation).FullName}'.", nameof(type));
+            throw new ArgumentException($"The type '{type.FullName}' must implement '{nameof(IRequiresValidation)}'.", nameof(type));
         }
 
-        if (_serviceProvider is null)
-        {
-            Type defaultType = typeof(Validator<>).MakeGenericType(type);
-            return Activator.CreateInstance(defaultType) as IValidator;
-        }
-
-        Type validatorType = typeof(IValidator<>).MakeGenericType(type);
-        var validators = _serviceProvider.GetServices(validatorType).OfType<IValidator>().ToList();
-        Type builtInValidatorType = typeof(Validator<>).MakeGenericType(type);
-        return RemoveBuiltInValidatorIfExists(validators, builtInValidatorType);
+        return _validatorFactory.CreateValidator(type);
     }
 
     /// <inheritdoc/>
     public IValidator? TryGetValidator<TArgument>()
         where TArgument : class, IRequiresValidation
     {
-        if (_serviceProvider is null)
-        {
-            return new Validator<TArgument>();
-        }
-
-        var validators = _serviceProvider.GetServices<IValidator<TArgument>>().OfType<IValidator>().ToList();
-        Type builtInValidatorType = typeof(Validator<TArgument>);
-        return RemoveBuiltInValidatorIfExists(validators, builtInValidatorType);
-    }
-
-    private static IValidator? RemoveBuiltInValidatorIfExists(List<IValidator> validators, Type builtInValidatorType)
-    {
-        if (validators.Count > 1)
-        {
-            // Remove the built-in validator if a specific validator is registered.
-            validators = [.. validators.Where(validator => validator.GetType() != builtInValidatorType)];
-        }
-
-        return validators.FirstOrDefault();
+        return _validatorFactory.CreateValidator<TArgument>();
     }
 }

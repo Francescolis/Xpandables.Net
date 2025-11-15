@@ -28,7 +28,6 @@ using Microsoft.Net.Http.Headers;
 
 using Xpandables.Net.Collections.Extensions;
 using Xpandables.Net.Collections.Generic;
-using Xpandables.Net.Http;
 
 namespace Xpandables.Net.Collections.Http;
 

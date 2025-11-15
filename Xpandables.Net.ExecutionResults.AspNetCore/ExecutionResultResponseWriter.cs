@@ -23,9 +23,10 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 using Xpandables.Net.Collections;
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Http;
 
-namespace Xpandables.Net.ExecutionResults;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Provides an abstract base for writing execution results to an HTTP response.

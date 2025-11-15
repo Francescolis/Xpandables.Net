@@ -20,9 +20,10 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Http;
 
-namespace Xpandables.Net.ExecutionResults.Minimals;
+namespace Xpandables.Net.Minimals;
 
 /// <summary>
 /// Represents an ASP.NET Core result that writes an execution result to the HTTP response using a registered response

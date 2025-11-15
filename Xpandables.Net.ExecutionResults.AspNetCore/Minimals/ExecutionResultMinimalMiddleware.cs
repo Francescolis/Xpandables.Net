@@ -18,7 +18,10 @@ using System.Reflection;
 
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.ExecutionResults.Minimals;
+using Xpandables.Net;
+using Xpandables.Net.ExecutionResults;
+
+namespace Xpandables.Net.Minimals;
 
 /// <summary>
 /// Middleware that processes HTTP requests by invoking the next component in the pipeline and handles exceptions by

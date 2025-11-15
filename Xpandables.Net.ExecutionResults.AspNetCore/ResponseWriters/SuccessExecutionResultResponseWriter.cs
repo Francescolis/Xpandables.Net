@@ -19,9 +19,11 @@ using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
 
+using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Http;
 
-namespace Xpandables.Net.ExecutionResults.ResponseWriters;
+namespace Xpandables.Net.ResponseWriters;
 
 /// <summary>
 /// Provides an HTTP response writer that serializes successful GraphQL execution results to JSON and writes them to the

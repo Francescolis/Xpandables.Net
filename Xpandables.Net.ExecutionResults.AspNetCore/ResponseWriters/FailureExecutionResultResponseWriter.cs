@@ -18,10 +18,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.ExecutionResults.ResponseWriters;
+namespace Xpandables.Net.ResponseWriters;
 
 /// <summary>
 /// Provides an implementation of an execution result response writer that formats failure results using the Problem

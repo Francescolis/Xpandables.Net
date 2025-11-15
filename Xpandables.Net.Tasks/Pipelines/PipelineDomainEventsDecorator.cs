@@ -27,7 +27,7 @@ namespace Xpandables.Net.Tasks.Pipelines;
 /// <remarks>This decorator ensures that any domain events generated during the execution of a request handler are
 /// published in batches. It processes up to 16 passes of event batches, draining and publishing events in each pass. 
 /// The decorator relies on the <see cref="IPendingDomainEventsBuffer"/> service to retrieve pending events and the  <see
-/// cref="IPublisher"/> service to publish them.  Domain event batches are temporarily stored in a thread-local buffer
+/// cref="IEventPublisher"/> service to publish them.  Domain event batches are temporarily stored in a thread-local buffer
 /// and are committed after the unit of work  completes. This ensures that domain events are only published if the
 /// associated transaction is successfully committed.</remarks>
 /// <typeparam name="TRequest">The type of the request being handled. Must implement <see cref="IRequest"/> and <see
@@ -36,7 +36,7 @@ namespace Xpandables.Net.Tasks.Pipelines;
 /// <param name="publisher"></param>
 public sealed class PipelineDomainEventsDecorator<TRequest>(
     IPendingDomainEventsBuffer pendingDomainEvents,
-    IPublisher publisher) : IPipelineDecorator<TRequest>
+    IEventPublisher publisher) : IPipelineDecorator<TRequest>
     where TRequest : class, IRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>

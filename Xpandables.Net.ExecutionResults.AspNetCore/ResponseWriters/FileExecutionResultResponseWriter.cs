@@ -16,10 +16,9 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.ExecutionResults.ResponseWriters;
+namespace Xpandables.Net.ResponseWriters;
 
 /// <summary>
 /// Provides an execution result response writer that streams file content to the HTTP response when the execution

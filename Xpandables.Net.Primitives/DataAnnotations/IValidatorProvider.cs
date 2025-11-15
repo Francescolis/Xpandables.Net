@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
@@ -32,8 +30,6 @@ public interface IValidatorProvider
     /// <param name="type">The type for which to retrieve a validator. Cannot be null.</param>
     /// <returns>An instance of <see cref="IValidator"/> for the specified type if one is available; otherwise, <see
     /// langword="null"/>.</returns>
-    [RequiresDynamicCode("The native code for Activator.CreateInstance might not be available at runtime.")]
-    [RequiresUnreferencedCode("The validator type might be removed by the linker.")]
     IValidator? TryGetValidator(Type type);
 
     /// <summary>

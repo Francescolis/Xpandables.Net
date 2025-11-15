@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>Xpandables.Net.DependencyInjection</Title>
-		<Description>Dependency injection registers.</Description>
+		<Title>Xpandables.Net.AspNetCore</Title>
+		<Description>AspNetCore implementations.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net.DependencyInjection</AssemblyName>
-		<RootNamespace>Xpandables.Net.DependencyInjection</RootNamespace>
-		<PackageId>Xpandables.Net.DependencyInjection</PackageId>
+		<AssemblyName>Xpandables.Net.AspNetCore</AssemblyName>
+		<RootNamespace>Xpandables.Net</RootNamespace>
+		<PackageId>Xpandables.Net.AspNetCore</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -90,10 +90,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="System.ComponentModel.Composition" Version="10.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\Xpandables.Net.Primitives\Xpandables.Net.Primitives.csproj" />
 	</ItemGroup>
 
 </Project>

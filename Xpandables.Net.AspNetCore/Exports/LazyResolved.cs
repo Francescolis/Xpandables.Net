@@ -19,7 +19,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.DependencyInjection.Exports;
+namespace Xpandables.Net.Exports;
 
 /// <summary>
 /// Provides a lazy initialization of a service resolved 

@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Http;
-
 namespace Xpandables.Net.Collections.Http;
 
 using System.Diagnostics.CodeAnalysis;
@@ -28,6 +26,7 @@ using Microsoft.AspNetCore.Http;
 
 using Xpandables.Net.Collections.Extensions;
 using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.Http;
 
 /// <summary>
 /// Represents an HTTP result that asynchronously serializes and streams a paged enumerable of results as JSON in
@@ -54,7 +53,7 @@ public sealed class AsyncPagedEnumerableResult<TResult>(
     JsonTypeInfo<TResult>? jsonTypeInfo = null) : IResult
 {
     private readonly IAsyncPagedEnumerable<TResult> _results = results ?? throw new ArgumentNullException(nameof(results));
-    private readonly JsonTypeInfo<TResult>? _jsonTypeInfo = jsonTypeInfo;
+    private JsonTypeInfo<TResult>? _jsonTypeInfo = jsonTypeInfo;
     private readonly JsonSerializerOptions? _serializerOptions = serializerOptions;
 
     /// <inheritdoc/>
@@ -67,7 +66,7 @@ public sealed class AsyncPagedEnumerableResult<TResult>(
         var pipeWriter = httpContext.Response.BodyWriter;
 
         var options = _serializerOptions ?? httpContext.GetJsonSerializerOptions();
-        var typeInfo = _jsonTypeInfo ?? options.GetTypeInfo(typeof(TResult));
+        _jsonTypeInfo ??= (JsonTypeInfo<TResult>?)options.GetTypeInfo(typeof(TResult));
 
         if (_jsonTypeInfo is not null)
         {

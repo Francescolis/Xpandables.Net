@@ -17,7 +17,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.DependencyInjection;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Interface for adding services to the service collection.

@@ -1,0 +1,44 @@
+﻿/*******************************************************************************
+ * Copyright (C) 2025 Kamersoft
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+********************************************************************************/
+namespace Xpandables.Net.DataAnnotations;
+
+/// <summary>
+/// Defines a factory for creating validator instances for specific types or arguments.
+/// </summary>
+/// <remarks>Implementations of this interface provide mechanisms to obtain type-specific validators, enabling
+/// validation logic to be decoupled from object creation. This is commonly used in scenarios where validation rules are
+/// registered or discovered at runtime. Thread safety and lifetime management of returned validators depend on the
+/// concrete implementation.</remarks>
+public interface IValidatorFactory
+{
+    /// <summary>
+    /// Creates a validator instance for the specified type, if one is available.
+    /// </summary>
+    /// <param name="type">The type for which to create a validator. Cannot be null.</param>
+    /// <returns>An <see cref="IValidator"/> instance for the specified type, or <see langword="null"/> if no validator is
+    /// available.</returns>
+    IValidator? CreateValidator(Type type);
+
+    /// <summary>
+    /// Creates a validator instance for the specified argument type, if one is available.
+    /// </summary>
+    /// <typeparam name="TArgument">The type of argument that requires validation. Must implement <see cref="IRequiresValidation"/>.</typeparam>
+    /// <returns>An <see cref="IValidator{TArgument}"/> instance for the specified type, or <see langword="null"/> if no
+    /// validator is available.</returns>
+    IValidator<TArgument>? CreateValidator<TArgument>()
+        where TArgument : class, IRequiresValidation;
+}

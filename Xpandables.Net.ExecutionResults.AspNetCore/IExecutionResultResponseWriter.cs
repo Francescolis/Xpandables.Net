@@ -16,7 +16,9 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.ExecutionResults;
+using Xpandables.Net.ExecutionResults;
+
+namespace Xpandables.Net;
 
 /// <summary>
 /// Defines a contract for writing an HTTP response based on an execution result.

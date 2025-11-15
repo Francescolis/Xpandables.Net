@@ -272,7 +272,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
         try
         {
             await using var serviceScope = _serviceScopeFactory.CreateAsyncScope();
-            var eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IPublisher>();
+            var eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IEventPublisher>();
             var outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
             // Claim a batch directly from the outbox (multi-instance safe)
@@ -397,7 +397,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     private async Task<BatchProcessingResult> ProcessEventBatchAsync(
         List<IIntegrationEvent> events,
-        IPublisher eventPublisher,
+        IEventPublisher eventPublisher,
         IOutboxStore outbox,
         CancellationToken cancellationToken)
     {

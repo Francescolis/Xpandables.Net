@@ -17,7 +17,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.ExecutionResults.DataAnnotations;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Provides a factory for creating endpoint filter delegates that perform execution result validation on incoming

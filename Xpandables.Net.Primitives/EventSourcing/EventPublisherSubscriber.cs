@@ -28,30 +28,10 @@ namespace Xpandables.Net.EventSourcing;
 /// Manages subscriptions for various event types and facilitates publishing events
 /// to the subscribed handlers.
 /// </summary>
-public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : IPublisher, ISubscriber
+public sealed class EventPublisherSubscriber(IServiceProvider serviceProvider) : IEventPublisher, IEventSubscriber
 {
     private readonly ConcurrentDictionary<Type, EventHandlerCollection> _subscribers = new();
     private readonly ConcurrentDictionary<Type, object[]> _serviceHandlerCache = new();
-
-    /// <inheritdoc />
-    public async Task PublishAsync(IEnumerable<IEvent> events, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(events);
-
-        var tasks = events.Select(@event => PublishAsync(@event, cancellationToken));
-
-        try
-        {
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-        catch (Exception exception)
-            when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "Unable to publish the events. See inner exception for details.",
-                exception);
-        }
-    }
 
     /// <inheritdoc />
     public async Task PublishAsync<TEvent>(
@@ -277,13 +257,13 @@ public sealed class PublisherSubscriber(IServiceProvider serviceProvider) : IPub
     /// <param name="handler">The event handler to unsubscribe.</param>
     /// <param name="handlerType">The type of handler being tracked.</param>
     private sealed class SubscriptionToken<TEvent>(
-        PublisherSubscriber subscriber,
+        EventPublisherSubscriber subscriber,
         object handler,
         HandlerType handlerType) : IDisposable
         where TEvent : class, IEvent
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>")]
-        private readonly PublisherSubscriber _subscriber = subscriber;
+        private readonly EventPublisherSubscriber _subscriber = subscriber;
         private readonly object _handler = handler;
         private readonly HandlerType _handlerType = handlerType;
         private volatile bool _disposed;

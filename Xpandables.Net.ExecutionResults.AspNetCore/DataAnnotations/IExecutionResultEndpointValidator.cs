@@ -16,7 +16,7 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.ExecutionResults.DataAnnotations;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Defines a contract for validating the result of an endpoint execution within an endpoint filter pipeline.

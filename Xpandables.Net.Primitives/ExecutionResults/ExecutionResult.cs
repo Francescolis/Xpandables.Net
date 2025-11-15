@@ -28,7 +28,6 @@ namespace Xpandables.Net.ExecutionResults;
 /// behaviors for success and error handling. The class is designed to facilitate consistent handling of execution
 /// outcomes, including error reporting and extension data. Thread safety and mutability depend on the usage of the
 /// derived types and the contained collections.</remarks>
-[JsonConverter(typeof(ExecutionResultJsonConverterFactory))]
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed partial record ExecutionResult : _ExecutionResult
 {
@@ -115,7 +114,6 @@ public sealed partial record ExecutionResult : _ExecutionResult
 /// information, errors, and additional metadata. The generic parameter allows callers to access the result value in a
 /// type-safe manner. Inherits all metadata and status properties from the base ExecutionResult type.</remarks>
 /// <typeparam name="TResult">The type of the value returned by the execution operation.</typeparam>
-[JsonConverter(typeof(ExecutionResultJsonConverterFactory))]
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed record ExecutionResult<TResult> : _ExecutionResult
 {

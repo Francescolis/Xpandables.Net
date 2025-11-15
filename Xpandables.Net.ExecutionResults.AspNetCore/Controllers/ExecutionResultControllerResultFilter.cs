@@ -22,9 +22,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Http;
 
-namespace Xpandables.Net.ExecutionResults.Controllers;
+namespace Xpandables.Net.Controllers;
 
 /// <summary>
 /// Implements an ASP.NET Core result filter that processes controller results containing an ExecutionResult, formatting

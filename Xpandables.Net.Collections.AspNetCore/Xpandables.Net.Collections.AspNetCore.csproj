@@ -85,10 +85,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<ItemGroup>
+	  <ProjectReference Include="..\Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj" />
 	  <ProjectReference Include="..\Xpandables.Net.Collections\Xpandables.Net.Collections.csproj" />
 	</ItemGroup>
 

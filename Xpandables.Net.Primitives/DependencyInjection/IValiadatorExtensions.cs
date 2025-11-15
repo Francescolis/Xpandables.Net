@@ -54,6 +54,48 @@ public static class IValiadatorExtensions
         }
 
         /// <summary>
+        /// Registers the specified validator factory type as a scoped service in the dependency injection container.
+        /// </summary>
+        /// <remarks>If a service of type IValidatorFactor has already been registered, this method does
+        /// not overwrite the existing registration.</remarks>
+        /// <typeparam name="TValidatorFactory">The type of the validator factory to register. Must implement the IValidatorFactory interface and have a
+        /// public constructor.</typeparam>
+        /// <returns>The IServiceCollection instance for chaining additional service registrations.</returns>
+        public IServiceCollection AddXValidatorFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValidatorFactory>()
+            where TValidatorFactory : class, IValidatorFactory
+        {
+            services.Replace(new ServiceDescriptor(typeof(IValidatorFactory), typeof(TValidatorFactory), ServiceLifetime.Singleton));
+            return services;
+        }
+
+        /// <summary>
+        /// Replaces the current <see cref="IValidatorFactory"/> registration in the service collection with the
+        /// specified factory.
+        /// </summary>
+        /// <remarks>This method removes any existing <see cref="IValidatorFactory"/> registration and
+        /// adds the specified factory as a singleton. Use this method to customize validation behavior by supplying a
+        /// custom factory.</remarks>
+        /// <param name="factory">The <see cref="IValidatorFactory"/> instance to register. Cannot be null.</param>
+        /// <returns>The <see cref="IServiceCollection"/> instance, to allow for method chaining.</returns>
+        public IServiceCollection AddXValidatorFactory(IValidatorFactory factory)
+        {
+            ArgumentNullException.ThrowIfNull(factory);
+            services.Replace(new ServiceDescriptor(typeof(IValidatorFactory), factory));
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the default Validator factory to the service collection.
+        /// </summary>
+        /// <remarks>Call this method during application startup to configure Validator support. This
+        /// method registers the default implementation of the validator factory; to use a custom factory, use the
+        /// generic overload.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the XValidator factory registered. This enables
+        /// Validator-based validation in the application's dependency injection container.</returns>
+        public IServiceCollection AddXValidatorFactory() =>
+            services.AddXValidatorFactory<ValidatorFactory>();
+
+        /// <summary>
         /// Registers the specified validator provider type as a scoped service in the dependency injection container.
         /// </summary>
         /// <remarks>If a service of type IValidatorProvider has already been registered, this method does
@@ -144,6 +186,10 @@ public static class IValiadatorExtensions
                 _ = services.AddTransient(
                     typeof(IValidator<>).MakeGenericType(validatorType.ArgumentType),
                     validatorType.ValidatorType);
+
+                _ = services.AddSingleton(
+                    typeof(IValidatorResolver),
+                    typeof(ValidatorResolver<>).MakeGenericType(validatorType.ArgumentType));
 
                 _ = services.AddTransient(
                     typeof(ICompositeValidator<>).MakeGenericType(validatorType.ArgumentType),

@@ -24,7 +24,7 @@ namespace Xpandables.Net.EventSourcing;
 /// handler objects, and may be disposed of via IDisposable for scoped subscriptions. This interface is typically used
 /// to decouple event publishers from subscribers, enabling flexible and testable event handling
 /// architectures.</remarks>
-public interface ISubscriber
+public interface IEventSubscriber
 {
     /// <summary>
     /// Registers a handler to be invoked when an event of type <typeparamref name="TEvent"/> is published.

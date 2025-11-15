@@ -16,13 +16,13 @@
 ********************************************************************************/
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Http;
 
+using Xpandables.Net;
 using Xpandables.Net.ExecutionResults;
 
-namespace Xpandables.Net.ExecutionResults.DataAnnotations;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Provides validation for endpoint execution results by applying registered validators to endpoint arguments that
@@ -118,8 +118,6 @@ public sealed class ExecutionResultEndpointValidator(IValidatorProvider validato
         return [.. arguments];
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     static ImmutableHashSet<ValidatorDescriptor> GetAppropriateValidators(
         ImmutableHashSet<ArgumentDescriptor> arguments, IValidatorProvider provider)
     {

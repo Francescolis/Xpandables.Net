@@ -21,7 +21,7 @@
   <Project Path="Xpandables.Net.Collections/Xpandables.Net.Collections.csproj" Id="3237d074-8229-48dd-95a1-134e61676939">
     <Platform Project="x64" />
   </Project>
-  <Project Path="Xpandables.Net.DependencyIjnection/Xpandables.Net.DependencyInjection.csproj" Id="62bad4fd-9119-4163-bf6b-114086f5136b">
+  <Project Path="Xpandables.Net.AspNetCore/Xpandables.Net.AspNetCore.csproj" Id="62bad4fd-9119-4163-bf6b-114086f5136b">
     <Platform Project="x64" />
   </Project>
   <Project Path="Xpandables.Net.EventSourcing.EntityFramework/Xpandables.Net.EventSourcing.EntityFramework.csproj" Id="b3ea1318-2447-44df-aac0-d249f4e08b4e">

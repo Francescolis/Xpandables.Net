@@ -34,6 +34,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+        <ProjectReference Include="..\Xpandables.Net.Collections\Xpandables.Net.Collections.csproj" />
         <ProjectReference Include="..\Xpandables.Net.Primitives\Xpandables.Net.Primitives.csproj" />
 	</ItemGroup>
 

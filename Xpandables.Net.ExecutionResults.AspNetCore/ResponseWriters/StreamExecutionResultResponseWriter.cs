@@ -24,9 +24,10 @@ using Microsoft.AspNetCore.Http;
 
 using Xpandables.Net.Collections.Extensions;
 using Xpandables.Net.Collections.Generic;
+using Xpandables.Net.ExecutionResults;
 using Xpandables.Net.Http;
 
-namespace Xpandables.Net.ExecutionResults.ResponseWriters;
+namespace Xpandables.Net.ResponseWriters;
 
 /// <summary>
 /// Provides an HTTP response writer for streaming execution results using asynchronous paging. This class enables

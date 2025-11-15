@@ -20,9 +20,7 @@ using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-using Xpandables.Net.Collections;
-
-namespace Xpandables.Net.DependencyInjection.Exports;
+namespace Xpandables.Net.Exports;
 
 /// <summary>
 /// Represents an empty catalog of composable parts.

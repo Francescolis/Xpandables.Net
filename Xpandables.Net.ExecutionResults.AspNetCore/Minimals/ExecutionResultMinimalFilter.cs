@@ -16,7 +16,9 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Http;
 
-namespace Xpandables.Net.ExecutionResults.Minimals;
+using Xpandables.Net.ExecutionResults;
+
+namespace Xpandables.Net.Minimals;
 
 /// <summary>
 /// An endpoint filter that transforms <see cref="ExecutionResult"/> instances into their minimal representation.

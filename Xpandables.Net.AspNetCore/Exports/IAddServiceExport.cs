@@ -15,7 +15,9 @@
  *
 ********************************************************************************/
 
-namespace Xpandables.Net.DependencyInjection;
+using Xpandables.Net.DependencyInjection;
+
+namespace Xpandables.Net.Exports;
 
 /// <summary>
 /// Interface for adding service exports to the service collection.

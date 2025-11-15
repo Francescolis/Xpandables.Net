@@ -24,8 +24,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.DependencyInjection.Exports;
+using Xpandables.Net.Exports;
 
 
 namespace Xpandables.Net.DependencyInjection;

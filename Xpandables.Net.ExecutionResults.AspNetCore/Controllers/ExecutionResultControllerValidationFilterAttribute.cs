@@ -17,7 +17,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Xpandables.Net.ExecutionResults.Controllers;
+using Xpandables.Net.ExecutionResults;
+
+namespace Xpandables.Net.Controllers;
 
 /// <summary>
 /// An action filter attribute that validates the model state before executing a controller action and returns a

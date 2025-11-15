@@ -122,21 +122,21 @@ public static class IEventExtensions
             services.AddXAggregateStore(typeof(AggregateStore<>));
 
         /// <summary>
-        /// Registers the specified subscriber type as an implementation of <see cref="ISubscriber"/> with scoped
+        /// Registers the specified subscriber type as an implementation of <see cref="IEventSubscriber"/> with scoped
         /// lifetime in the service collection.
         /// </summary>
-        /// <remarks>If an <see cref="ISubscriber"/> service is already registered, this method does not
+        /// <remarks>If an <see cref="IEventSubscriber"/> service is already registered, this method does not
         /// overwrite the existing registration. Use this method to enable dependency injection of custom subscriber
         /// implementations.</remarks>
-        /// <typeparam name="TSubscriber">The subscriber type to register. Must be a non-abstract class that implements <see cref="ISubscriber"/> and
+        /// <typeparam name="TSubscriber">The subscriber type to register. Must be a non-abstract class that implements <see cref="IEventSubscriber"/> and
         /// has a public constructor.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> instance with the subscriber registration added.</returns>
         public IServiceCollection AddXSubscriber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSubscriber>()
-            where TSubscriber : class, ISubscriber
+            where TSubscriber : class, IEventSubscriber
         {
             services.TryAdd(
                 new ServiceDescriptor(
-                    typeof(ISubscriber),
+                    typeof(IEventSubscriber),
                     typeof(TSubscriber),
                     ServiceLifetime.Scoped));
 
@@ -148,7 +148,7 @@ public static class IEventExtensions
         /// </summary>
         /// <returns>The updated <see cref="IServiceCollection"/> instance with the XSubscriber service registered.</returns>
         public IServiceCollection AddXSubscriber() =>
-            services.AddXSubscriber<PublisherSubscriber>();
+            services.AddXSubscriber<EventPublisherSubscriber>();
 
         /// <summary>
         /// Registers the specified scheduler implementation as a singleton service for dependency injection.
@@ -203,21 +203,21 @@ public static class IEventExtensions
             services.AddXSchedulerHosted<Scheduler>();
 
         /// <summary>
-        /// Registers the specified publisher type as the scoped implementation of <see cref="IPublisher"/> in the
+        /// Registers the specified publisher type as the scoped implementation of <see cref="IEventPublisher"/> in the
         /// dependency injection container.
         /// </summary>
-        /// <remarks>If an <see cref="IPublisher"/> service is already registered, this method does not
+        /// <remarks>If an <see cref="IEventPublisher"/> service is already registered, this method does not
         /// overwrite the existing registration. Use this method to enable dependency injection of a custom publisher
         /// implementation within the application's scope.</remarks>
-        /// <typeparam name="TPublisher">The publisher type to register. Must be a class that implements <see cref="IPublisher"/> and have a public
+        /// <typeparam name="TPublisher">The publisher type to register. Must be a class that implements <see cref="IEventPublisher"/> and have a public
         /// constructor.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> instance with the publisher registration added.</returns>
         public IServiceCollection AddXPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPublisher>()
-            where TPublisher : class, IPublisher
+            where TPublisher : class, IEventPublisher
         {
             services.TryAdd(
                 new ServiceDescriptor(
-                    typeof(IPublisher),
+                    typeof(IEventPublisher),
                     typeof(TPublisher),
                     ServiceLifetime.Scoped));
 
@@ -232,7 +232,7 @@ public static class IEventExtensions
         /// application.</remarks>
         /// <returns>The updated IServiceCollection instance with the Publisher services registered.</returns>
         public IServiceCollection AddXPublisher() =>
-            services.AddXPublisher<PublisherSubscriber>();
+            services.AddXPublisher<EventPublisherSubscriber>();
 
         /// <summary>
         /// Registers a specific event handler for the specified event type.

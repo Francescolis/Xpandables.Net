@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-namespace Xpandables.Net.DependencyInjection;
+namespace Xpandables.Net.Exports;
 
 /// <summary>
 /// Interface for exporting services to be used in a web application.

@@ -17,7 +17,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace Xpandables.Net.ExecutionResults.Controllers;
+namespace Xpandables.Net.Controllers;
 
 /// <summary>
 /// Provides configuration options for MVC controllers that return execution results, customizing MVC behavior to

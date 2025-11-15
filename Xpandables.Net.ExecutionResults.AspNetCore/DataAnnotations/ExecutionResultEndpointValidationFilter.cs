@@ -17,7 +17,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Xpandables.Net.ExecutionResults.DataAnnotations;
+namespace Xpandables.Net.DataAnnotations;
 
 /// <summary>
 /// Provides an endpoint filter that validates the execution result using a registered

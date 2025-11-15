@@ -24,9 +24,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Xpandables.Net.Collections;
-using Xpandables.Net.ExecutionResults.Minimals;
+using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.Minimals;
 
-namespace Xpandables.Net.ExecutionResults;
+namespace Xpandables.Net;
 
 /// <summary>
 /// Provides extension methods for the ExecutionResult type to facilitate integration with ASP.NET Core model validation
