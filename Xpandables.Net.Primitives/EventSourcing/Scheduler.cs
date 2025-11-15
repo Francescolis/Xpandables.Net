@@ -1,4 +1,5 @@
 ﻿/*******************************************************************************
+
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +16,17 @@
  *
 ********************************************************************************/
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Xpandables.Net.EventSourcing;
 
 /// <summary>
-/// High-performance scheduled background service that implements the <see cref="IScheduler"/> interface.
+/// High-performance scheduled service that implements the <see cref="IScheduler"/> interface.
 /// Provides optimized event processing with parallel execution, circuit breaker pattern, 
 /// and comprehensive error handling for production environments.
 /// </summary>
@@ -40,7 +39,7 @@ namespace Xpandables.Net.EventSourcing;
 /// - High-performance logging with LoggerMessage delegates
 /// - Memory-efficient processing with proper resource management
 /// </remarks>
-public sealed class Scheduler : BackgroundService, IScheduler
+public sealed class Scheduler : Disposable, IScheduler
 {
     #region Private Fields
 
@@ -56,7 +55,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
     private volatile int _consecutiveFailures;
 
     private volatile Func<DateTime> _circuitBreakerLastFailureTimeProvider = static () => DateTime.MinValue;
-    private volatile Func<TimeSpan> _currentBackoffDelayProvider = static () => TimeSpan.Zero;
 
     #endregion
 
@@ -98,12 +96,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
             new EventId(1006, nameof(LogNoEventsToSchedule)),
             "No events to schedule");
 
-    private static readonly Action<ILogger, Exception?> LogNoValidEventsCollected =
-        LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(1007, nameof(LogNoValidEventsCollected)),
-            "No valid events collected for processing");
-
     private static readonly Action<ILogger, int, int, Exception?> LogProcessingBatches =
         LoggerMessage.Define<int, int>(
             LogLevel.Debug,
@@ -127,12 +119,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
             LogLevel.Error,
             new EventId(1011, nameof(LogSchedulerExecutionFailed)),
             "Scheduler execution failed. Consecutive failures: {ConsecutiveFailures}");
-
-    private static readonly Action<ILogger, Exception> LogBackgroundServiceError =
-        LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(1012, nameof(LogBackgroundServiceError)),
-            "Background service execution error. Will retry with backoff");
 
     private static readonly Action<ILogger, int, Exception?> LogCircuitBreakerOpened =
         LoggerMessage.Define<int>(
@@ -158,12 +144,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
             new EventId(1016, nameof(LogBackoffApplied)),
             "Applied exponential backoff: {BackoffDelay}ms for {ConsecutiveFailures} consecutive failures");
 
-    private static readonly Action<ILogger, double, Exception?> LogApplyingBackoff =
-        LoggerMessage.Define<double>(
-            LogLevel.Debug,
-            new EventId(1017, nameof(LogApplyingBackoff)),
-            "Applying backoff delay: {DelayMs}ms");
-
     private static readonly Action<ILogger, Guid, string, Exception> LogEventProcessingFailed =
         LoggerMessage.Define<Guid, string>(
             LogLevel.Error,
@@ -175,18 +155,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
             LogLevel.Error,
             new EventId(1019, nameof(LogOutboxBatchUpdateFailed)),
             "Failed to update outbox for batch of {Count} events");
-
-    private static readonly Action<ILogger, Exception?> LogBackgroundServiceStarting =
-        LoggerMessage.Define(
-            LogLevel.Information,
-            new EventId(1020, nameof(LogBackgroundServiceStarting)),
-            "Scheduler background service starting");
-
-    private static readonly Action<ILogger, long, long, double, Exception?> LogBackgroundServiceStopping =
-        LoggerMessage.Define<long, long, double>(
-            LogLevel.Information,
-            new EventId(1021, nameof(LogBackgroundServiceStopping)),
-            "Scheduler background service stopping. Total processed: {TotalProcessed}, Total errors: {TotalErrors}, Average processing time: {AvgProcessingTime}ms");
 
     private static readonly Action<ILogger, long, long, double, Exception?> LogSchedulerDisposed =
         LoggerMessage.Define<long, long, double>(
@@ -242,7 +210,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
     #region Public Interface Implementation
 
     /// <inheritdoc />
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task ScheduleAsync(CancellationToken cancellationToken = default)
     {
         if (!_options.IsEventSchedulerEnabled)
@@ -271,7 +238,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
 
         try
         {
-            await using var serviceScope = _serviceScopeFactory.CreateAsyncScope();
+            using var serviceScope = _serviceScopeFactory.CreateAsyncScope();
             var eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IEventPublisher>();
             var outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
@@ -320,63 +287,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
 
     #endregion
 
-    #region Background Service Implementation
-
-    /// <inheritdoc />
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        LogBackgroundServiceStarting(_logger, null);
-
-        var period = TimeSpan.FromMilliseconds(_options.SchedulerFrequency);
-        using var timer = new PeriodicTimer(period);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                var currentBackoffDelay = _currentBackoffDelayProvider();
-
-                var delayTask = currentBackoffDelay > TimeSpan.Zero
-                    ? Task.Delay(currentBackoffDelay, stoppingToken)
-                    : Task.CompletedTask;
-
-                var timerResult = await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false);
-
-                await delayTask.ConfigureAwait(false);
-
-                if (!timerResult) break; // Timer was cancelled
-
-                await _concurrencyLimiter.WaitAsync(stoppingToken).ConfigureAwait(false);
-
-                try
-                {
-                    await ScheduleAsync(stoppingToken).ConfigureAwait(false);
-                }
-                finally
-                {
-                    _concurrencyLimiter.Release();
-                }
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception exception)
-            {
-                HandleBackgroundException(exception);
-                await ApplyExponentialBackoffAsync(stoppingToken).ConfigureAwait(false);
-            }
-        }
-
-        LogBackgroundServiceStopping(_logger, _metrics.TotalProcessedEvents, _metrics.TotalErrors,
-            _metrics.AverageProcessingTime.TotalMilliseconds, null);
-    }
-
-    #endregion
-
     #region Private Implementation Methods
 
     private static List<List<IIntegrationEvent>> CreateBatches(IReadOnlyList<IIntegrationEvent> events)
@@ -392,9 +302,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
         return batches;
     }
 
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     private async Task<BatchProcessingResult> ProcessEventBatchAsync(
         List<IIntegrationEvent> events,
         IEventPublisher eventPublisher,
@@ -433,6 +340,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
         }
 
         // Update outbox for the batch
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             if (successIds.Count > 0)
@@ -451,6 +359,7 @@ public sealed class Scheduler : BackgroundService, IScheduler
             // All would be retried later when lease expires; count successful publishes as errors
             errorCount += successIds.Count;
         }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         return new BatchProcessingResult(processedCount, errorCount);
     }
@@ -478,12 +387,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
         }
 
         CalculateBackoffDelay();
-    }
-
-    private void HandleBackgroundException(Exception exception)
-    {
-        LogBackgroundServiceError(_logger, exception);
-        HandleSchedulerException(exception);
     }
 
     private void HandlePartialFailure(int errorCount)
@@ -521,7 +424,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
     {
         if (_consecutiveFailures == 0)
         {
-            _currentBackoffDelayProvider = static () => TimeSpan.Zero;
             return;
         }
 
@@ -533,7 +435,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
         var jitter = TimeSpan.FromMilliseconds(jitterMs);
         var calculatedDelay = TimeSpan.FromTicks(Math.Min(exponentialDelay.Ticks + jitter.Ticks, maxDelay.Ticks));
 
-        _currentBackoffDelayProvider = () => calculatedDelay;
         LogBackoffApplied(_logger, calculatedDelay.TotalMilliseconds, _consecutiveFailures, null);
     }
 
@@ -554,17 +455,6 @@ public sealed class Scheduler : BackgroundService, IScheduler
         if (_consecutiveFailures > 0)
         {
             _consecutiveFailures = 0;
-            _currentBackoffDelayProvider = static () => TimeSpan.Zero;
-        }
-    }
-
-    private async Task ApplyExponentialBackoffAsync(CancellationToken cancellationToken)
-    {
-        var currentBackoffDelay = _currentBackoffDelayProvider();
-        if (currentBackoffDelay > TimeSpan.Zero)
-        {
-            LogApplyingBackoff(_logger, currentBackoffDelay.TotalMilliseconds, null);
-            await Task.Delay(currentBackoffDelay, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -598,19 +488,19 @@ public sealed class Scheduler : BackgroundService, IScheduler
 
     #region Disposal
 
-    /// <summary>
-    /// Releases all resources used by the scheduler, including associated monitors and limiters.
-    /// </summary>
-    /// <remarks>Call this method when the scheduler is no longer needed to free unmanaged and managed
-    /// resources. After calling <see cref="Dispose"/>, the scheduler instance should not be used.</remarks>
-    public sealed override void Dispose()
+    /// <inheritdoc/>
+    protected sealed override void Dispose(bool disposing)
     {
-        _optionsMonitor?.Dispose();
-        _concurrencyLimiter?.Dispose();
-        base.Dispose();
+        if (disposing)
+        {
+            _optionsMonitor?.Dispose();
+            _concurrencyLimiter?.Dispose();
 
-        LogSchedulerDisposed(_logger, _metrics.TotalProcessedEvents, _metrics.TotalErrors,
-            _metrics.AverageProcessingTime.TotalMilliseconds, null);
+            LogSchedulerDisposed(_logger, _metrics.TotalProcessedEvents, _metrics.TotalErrors,
+                _metrics.AverageProcessingTime.TotalMilliseconds, null);
+        }
+
+        base.Dispose(disposing);
     }
 
     #endregion

@@ -181,19 +181,19 @@ public static class IEventExtensions
             services.AddXScheduler<Scheduler>();
 
         /// <summary>
-        /// Adds an implementation of IScheduler as a hosted service to the dependency injection container.
+        /// Adds an implementation of IHostedScheduler as a hosted service to the dependency injection container.
         /// </summary>
         /// <remarks>This method registers the specified scheduler type and ensures it is started as a
         /// hosted background service. Use this method to enable automatic lifecycle management of the scheduler within
         /// ASP.NET Core applications.</remarks>
-        /// <typeparam name="TScheduler">The type of scheduler to register. Must be a class that implements IScheduler and has a public constructor.</typeparam>
+        /// <typeparam name="THostedScheduler">The type of scheduler to register. Must be a class that implements IHostedScheduler and has a public constructor.</typeparam>
         /// <returns>The IServiceCollection instance with the scheduler and hosted service registered.</returns>
-        public IServiceCollection AddXSchedulerHosted<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TScheduler>()
-            where TScheduler : class, IScheduler =>
+        public IServiceCollection AddXHostedScheduler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THostedScheduler>()
+            where THostedScheduler : class, IHostedScheduler =>
             services
-                .AddXScheduler<TScheduler>()
+                .AddSingleton<IHostedScheduler, THostedScheduler>()
                 .AddHostedService(provider =>
-                    provider.GetRequiredService<IScheduler>());
+                    provider.GetRequiredService<IHostedScheduler>());
 
         /// <summary>
         /// Adds the default hosted Scheduler service to the dependency injection container.
@@ -202,8 +202,8 @@ public static class IEventExtensions
         /// service. Call this method during application startup to enable background scheduling
         /// functionality.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with the Scheduler hosted service registered.</returns>
-        public IServiceCollection AddXSchedulerHosted() =>
-            services.AddXSchedulerHosted<Scheduler>();
+        public IServiceCollection AddXHostedScheduler() =>
+            services.AddXHostedScheduler<HostedScheduler>();
 
         /// <summary>
         /// Registers the specified publisher type as the scoped implementation of <see cref="IEventPublisher"/> in the

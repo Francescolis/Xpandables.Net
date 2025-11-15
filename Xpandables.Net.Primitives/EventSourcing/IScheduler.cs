@@ -19,13 +19,12 @@ using Microsoft.Extensions.Hosting;
 namespace Xpandables.Net.EventSourcing;
 
 /// <summary>
-/// Defines a contract for scheduling operations that can be started, stopped, and disposed, typically as part of a
-/// hosted service lifecycle.
+/// Defines a scheduler capable of performing scheduling operations asynchronously.
 /// </summary>
-/// <remarks>Implementations of this interface are intended to be managed by the host and may perform background
-/// scheduling tasks. The interface combines hosted service management with resource cleanup via IDisposable. Thread
-/// safety and scheduling guarantees depend on the specific implementation.</remarks>
-public interface IScheduler : IHostedService, IDisposable
+/// <remarks>Implementations of this interface are responsible for scheduling tasks or operations
+/// during their lifecycle. The scheduling operation is performed asynchronously to allow for
+/// non-blocking execution and improved responsiveness in applications.</remarks>
+public interface IScheduler : IDisposable
 {
     /// <summary>
     /// Schedules the operation asynchronously.
@@ -33,4 +32,14 @@ public interface IScheduler : IHostedService, IDisposable
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the scheduling operation.</param>
     /// <returns>A task that represents the asynchronous scheduling operation.</returns>
     Task ScheduleAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Defines a scheduler service that can be hosted within an application and managed by the application's lifetime.
+/// </summary>
+/// <remarks>Implementations of this interface combine scheduling capabilities with hosted service lifecycle
+/// management, allowing scheduled tasks to be started and stopped in coordination with the application's host. This is
+/// typically used in environments such as ASP.NET Core, where background services are managed by the host.</remarks>
+public interface IHostedScheduler : IScheduler, IHostedService
+{
 }
