@@ -246,7 +246,13 @@ public static class JsonDeserializerExtensions
 
     /// <summary>
     /// Core implementation for deserializing from a Stream into an IAsyncPagedEnumerable.
+    /// Properly extracts pagination metadata from JSON envelope structure.
     /// </summary>
+    /// <remarks>
+    /// This method handles JSON in two formats:
+    /// 1. Envelope format: { "pagination": {...}, "items": [...] } - Pagination metadata is extracted
+    /// 2. Array format: [...] - Pagination is inferred from item count
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static AsyncPagedEnumerable<T?> DeserializeAsyncPagedEnumerableCore<T>(
         Stream utf8Json,
@@ -255,23 +261,23 @@ public static class JsonDeserializerExtensions
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(utf8Json);
-        var items = new List<T?>();
 
-        // Single pass enumeration from stream
-        IAsyncEnumerable<T?> raw = JsonSerializer.DeserializeAsyncEnumerable(
-            utf8Json,
-            jsonTypeInfo,
-            topLevelValues,
-            cancellationToken);
+        var state = new DeserializationState<T>();
 
         return new AsyncPagedEnumerable<T?>(
-            EnumerateOnce(raw, items, cancellationToken),
-            _ => new ValueTask<Pagination>(CreatePagination(items.Count)));
+            DeserializeAndExtractPagination(utf8Json, jsonTypeInfo, topLevelValues, state, cancellationToken),
+            async ct => await state.GetPaginationAsync(ct).ConfigureAwait(false));
     }
 
     /// <summary>
     /// Core implementation for deserializing from a PipeReader into an IAsyncPagedEnumerable.
+    /// Properly extracts pagination metadata from JSON envelope structure.
     /// </summary>
+    /// <remarks>
+    /// This method handles JSON in two formats:
+    /// 1. Envelope format: { "pagination": {...}, "items": [...] } - Pagination metadata is extracted
+    /// 2. Array format: [...] - Pagination is inferred from item count
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static AsyncPagedEnumerable<T?> DeserializeAsyncPagedEnumerableCore<T>(
         PipeReader utf8Json,
@@ -280,33 +286,119 @@ public static class JsonDeserializerExtensions
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(utf8Json);
-        var items = new List<T?>();
 
-        IAsyncEnumerable<T?> raw = JsonSerializer.DeserializeAsyncEnumerable(
-            utf8Json,
-            jsonTypeInfo,
-            topLevelValues,
-            cancellationToken);
+        var state = new DeserializationState<T>();
 
         return new AsyncPagedEnumerable<T?>(
-            EnumerateOnce(raw, items, cancellationToken),
-            _ => new ValueTask<Pagination>(CreatePagination(items.Count)));
+            DeserializeAndExtractPagination(utf8Json, jsonTypeInfo, topLevelValues, state, cancellationToken),
+            async ct => await state.GetPaginationAsync(ct).ConfigureAwait(false));
     }
 
-    private static async IAsyncEnumerable<T?> EnumerateOnce<T>(
-        IAsyncEnumerable<T?> source,
-        List<T?> buffer,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+    /// <summary>
+    /// Holds the state for deserialization including extracted pagination.
+    /// </summary>
+    private sealed class DeserializationState<T>
     {
-        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        private readonly TaskCompletionSource<Pagination> _paginationSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly List<T?> _items = [];
+
+        public List<T?> Items => _items;
+
+        public void SetPagination(Pagination pagination) => _paginationSource.TrySetResult(pagination);
+
+        public void SetException(Exception exception) => _paginationSource.TrySetException(exception);
+
+        public Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken)
         {
-            buffer.Add(item);
-            yield return item;
+            if (cancellationToken.CanBeCanceled)
+            {
+                return _paginationSource.Task.WaitAsync(cancellationToken);
+            }
+            return _paginationSource.Task;
         }
     }
 
-    private static Pagination CreatePagination(int total)
-        => Pagination.Create(pageSize: total, currentPage: total > 0 ? 1 : 0, totalCount: total);
+    /// <summary>
+    /// Asynchronously deserializes JSON from a Stream or PipeReader and extracts pagination metadata.
+    /// </summary>
+    /// <remarks>
+    /// This unified method handles both Stream and PipeReader sources by converting them to Stream when needed.
+    /// It parses the JSON document to determine structure and extracts pagination metadata when available.
+    /// </remarks>
+    private static async IAsyncEnumerable<T?> DeserializeAndExtractPagination<T>(
+        object utf8Json,
+        JsonTypeInfo<T> jsonTypeInfo,
+        bool topLevelValues,
+        DeserializationState<T> state,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        // Convert input to Stream for unified processing
+        Stream stream = utf8Json switch
+        {
+            Stream s => s,
+            PipeReader pr => pr.AsStream(),
+            _ => throw new ArgumentException($"Unsupported type: {utf8Json.GetType().Name}. Expected Stream or PipeReader.", nameof(utf8Json))
+        };
+
+        using var document = await JsonDocument
+            .ParseAsync(stream, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var root = document.RootElement;
+
+        // Check if this is an envelope format with pagination metadata
+        if (root.ValueKind == JsonValueKind.Object &&
+            root.TryGetProperty("pagination"u8, out var paginationElement) &&
+            root.TryGetProperty("items"u8, out var itemsElement))
+        {
+            // Extract pagination metadata
+            var extractedPagination = JsonSerializer.Deserialize(paginationElement, PaginationJsonContext.Default.Pagination);
+            state.SetPagination(extractedPagination);
+
+            // Deserialize items array
+            if (itemsElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var element in itemsElement.EnumerateArray())
+                {
+                    var item = JsonSerializer.Deserialize(element, jsonTypeInfo);
+                    state.Items.Add(item);
+                    yield return item;
+                }
+            }
+        }
+        else if (root.ValueKind == JsonValueKind.Array)
+        {
+            // Standard array format - infer pagination from count
+            foreach (var element in root.EnumerateArray())
+            {
+                var item = JsonSerializer.Deserialize(element, jsonTypeInfo);
+                state.Items.Add(item);
+                yield return item;
+            }
+
+            state.SetPagination(CreateInferredPagination(state.Items.Count));
+        }
+        else if (topLevelValues)
+        {
+            // Single top-level value
+            var item = JsonSerializer.Deserialize(root, jsonTypeInfo);
+            state.Items.Add(item);
+            yield return item;
+
+            state.SetPagination(CreateInferredPagination(1));
+        }
+        else
+        {
+            // Empty or unexpected format
+            state.SetPagination(Pagination.Empty);
+        }
+    }
+
+    /// <summary>
+    /// Creates pagination metadata inferred from the item count when no explicit pagination is available.
+    /// </summary>
+    private static Pagination CreateInferredPagination(int itemCount)
+        => Pagination.Create(pageSize: itemCount, currentPage: itemCount > 0 ? 1 : 0, totalCount: itemCount);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static JsonTypeInfo<T> GetTypeInfo<T>(JsonSerializerOptions options)
