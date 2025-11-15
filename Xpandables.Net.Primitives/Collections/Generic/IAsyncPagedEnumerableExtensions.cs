@@ -42,5 +42,19 @@ public static class IAsyncPagedEnumerableExtensions
 
             return sourceType.GetGenericArguments()[0];
         }
+
+        /// <summary>
+        /// Ensures that the source object implements the <see cref="IAsyncPagedEnumerable{T}"/> interface.
+        /// Throws an exception if the source does not meet this requirement.
+        /// </summary>
+        /// <remarks>Use this method to validate that the source is compatible with asynchronous paged
+        /// enumeration before performing operations that require <see cref="IAsyncPagedEnumerable{T}"/> support.</remarks>
+        /// <exception cref="InvalidOperationException">Thrown if the source object does not implement <see cref="IAsyncPagedEnumerable{T}"/>.</exception>
+        public void EnsureIsAsyncPagedEnumerableOfT()
+        {
+            var sourceType = source.GetType();
+            if (!sourceType.IsGenericType || sourceType.GetGenericTypeDefinition() != typeof(IAsyncPagedEnumerable<>))
+                throw new InvalidOperationException("The source does not implement IAsyncPagedEnumerable<T>.");
+        }
     }
 }

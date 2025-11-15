@@ -39,28 +39,6 @@ public static class HttpContentExtensions
     extension(HttpContent content)
     {
         /// <summary>
-        /// Deserializes the HTTP content as a paged asynchronous enumerable of JSON objects of type <typeparamref
-        /// name="TValue"/>.
-        /// </summary>
-        /// <remarks>This method requires the HTTP content to be in a paged JSON format compatible with
-        /// the deserialization process. The operation may require dynamic code generation and types that are not
-        /// statically referenced, which can affect trimming and AOT scenarios.</remarks>
-        /// <typeparam name="TValue">The type of objects to deserialize from the JSON content.</typeparam>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains an <see
-        /// cref="IAsyncPagedEnumerable{TValue}"/> that yields deserialized objects from the JSON content, one page at a
-        /// time.</returns>
-        [RequiresDynamicCode("The type to deserialize may require dynamic code generation.")]
-        [RequiresUnreferencedCode("The type to deserialize may require types that are not statically referenced.")]
-        public Task<IAsyncPagedEnumerable<TValue?>> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
-            CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(content);
-
-            return ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(content, options: null, cancellationToken);
-        }
-
-        /// <summary>
         /// Deserializes the HTTP content as an asynchronous paged enumerable of JSON objects of type TValue.
         /// </summary>
         /// <remarks>This method throws an ArgumentNullException if the HTTP content is null. The returned
@@ -71,13 +49,12 @@ public static class HttpContentExtensions
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>A task that represents the asynchronous operation. The result contains an IAsyncPagedEnumerable of TValue
         /// objects, which can be enumerated asynchronously in pages.</returns>
-        [RequiresDynamicCode("The type to deserialize may require dynamic code generation.")]
-        [RequiresUnreferencedCode("The type to deserialize may require types that are not statically referenced.")]
         public Task<IAsyncPagedEnumerable<TValue?>> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
-            JsonSerializerOptions? options,
+            JsonSerializerOptions options,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(content);
+            ArgumentNullException.ThrowIfNull(options);
 
             return ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(content, options, cancellationToken);
         }
@@ -107,11 +84,9 @@ public static class HttpContentExtensions
     /// <summary>
     /// Core implementation for reading HTTP content as async paged enumerable with JsonSerializerOptions.
     /// </summary>
-    [RequiresDynamicCode("The type to deserialize may require dynamic code generation.")]
-    [RequiresUnreferencedCode("The type to deserialize may require types that are not statically referenced.")]
     private static async Task<IAsyncPagedEnumerable<TValue?>> ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(
         HttpContent content,
-        JsonSerializerOptions? options,
+        JsonSerializerOptions options,
         CancellationToken cancellationToken)
     {
         PipeReader pipeReader = await GetContentStreamAsPipeReaderAsync(content, cancellationToken).ConfigureAwait(false);

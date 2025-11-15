@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -50,14 +49,13 @@ public static class JsonDeserializerExtensions
         /// <param name="cancellationToken">The cancellation token that can be used to cancel the read operation.</param>
         /// <returns>An <see cref="IAsyncPagedEnumerable{TValue}"/> representation of the provided JSON array with pagination metadata.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="utf8Json"/> is <see langword="null"/>.</exception>
-        [RequiresDynamicCode("The type to deserialize may require dynamic code generation.")]
-        [RequiresUnreferencedCode("The type to deserialize may require types that are not statically referenced.")]
         public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
             PipeReader utf8Json,
-            JsonSerializerOptions? options = default,
+            JsonSerializerOptions options,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(options);
 
             JsonTypeInfo<TValue> jsonTypeInfo = GetTypeInfo<TValue>(options);
             return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues: false, cancellationToken);
@@ -130,15 +128,14 @@ public static class JsonDeserializerExtensions
         /// When <paramref name="topLevelValues"/> is set to <see langword="false"/>, treats the PipeReader as a JSON array and
         /// attempts to serialize each element into <typeparamref name="TValue"/>.
         /// </remarks>
-        [RequiresDynamicCode("The type to deserialize may require dynamic code generation.")]
-        [RequiresUnreferencedCode("The type to deserialize may require types that are not statically referenced.")]
         public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
             PipeReader utf8Json,
             bool topLevelValues,
-            JsonSerializerOptions? options = default,
+            JsonSerializerOptions options,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(options);
 
             JsonTypeInfo<TValue> jsonTypeInfo = GetTypeInfo<TValue>(options);
             return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, cancellationToken);
@@ -154,14 +151,13 @@ public static class JsonDeserializerExtensions
         /// <param name="cancellationToken">The cancellation token that can be used to cancel the read operation.</param>
         /// <returns>An <see cref="IAsyncPagedEnumerable{TValue}"/> representation of the provided JSON array with pagination metadata.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="utf8Json"/> is <see langword="null"/>.</exception>
-        [RequiresDynamicCode("The type to deserialize may require dynamic code generation.")]
-        [RequiresUnreferencedCode("The type to deserialize may require types that are not statically referenced.")]
         public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
             Stream utf8Json,
-            JsonSerializerOptions? options = default,
+            JsonSerializerOptions options,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(options);
 
             JsonTypeInfo<TValue> jsonTypeInfo = GetTypeInfo<TValue>(options);
             return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues: false, cancellationToken);
@@ -184,15 +180,14 @@ public static class JsonDeserializerExtensions
         /// When <paramref name="topLevelValues"/> is set to <see langword="false"/>, treats the stream as a JSON array and
         /// attempts to serialize each element into <typeparamref name="TValue"/>.
         /// </remarks>
-        [RequiresDynamicCode("The type to deserialize may require dynamic code generation.")]
-        [RequiresUnreferencedCode("The type to deserialize may require types that are not statically referenced.")]
         public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
             Stream utf8Json,
             bool topLevelValues,
-            JsonSerializerOptions? options = default,
+            JsonSerializerOptions options,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
+            ArgumentNullException.ThrowIfNull(options);
 
             JsonTypeInfo<TValue> jsonTypeInfo = GetTypeInfo<TValue>(options);
             return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, cancellationToken);
@@ -313,27 +308,13 @@ public static class JsonDeserializerExtensions
     private static Pagination CreatePagination(int total)
         => Pagination.Create(pageSize: total, currentPage: total > 0 ? 1 : 0, totalCount: total);
 
-    /// <summary>
-    /// Gets JSON type information for the specified type from the provided options.
-    /// Ensures a usable, non read-only options instance with a resolver.
-    /// </summary>
-    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static JsonTypeInfo<T> GetTypeInfo<T>(JsonSerializerOptions? options)
+    private static JsonTypeInfo<T> GetTypeInfo<T>(JsonSerializerOptions options)
     {
-        // Avoid JsonSerializerOptions.Default (read-only, no resolver). Clone and ensure resolver.
-        JsonSerializerOptions working = options is null
-            ? new JsonSerializerOptions(JsonSerializerDefaults.Web)
-            : (options.IsReadOnly ? new JsonSerializerOptions(options) : options);
-
-        working.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
-
-        JsonTypeInfo? typeInfo = working.TypeInfoResolver.GetTypeInfo(typeof(T), working);
-        if (typeInfo is JsonTypeInfo<T> typed)
-        {
-            return typed;
-        }
-        return JsonTypeInfo.CreateJsonTypeInfo<T>(working);
+        return options.TryGetTypeInfo(typeof(T), out var typeInfo)
+            ? (JsonTypeInfo<T>)typeInfo
+            : throw new InvalidOperationException(
+                $"The JsonSerializerOptions does not contain metadata for type {typeof(T)}. " +
+                "Ensure that the options include a JsonTypeInfoResolver that can provide metadata for this type.");
     }
 }
