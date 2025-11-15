@@ -125,20 +125,22 @@ public static class IEventExtensions
         /// Registers the specified subscriber type as an implementation of <see cref="IEventSubscriber"/> with scoped
         /// lifetime in the service collection.
         /// </summary>
+        /// <param name="lifetime">The service lifetime for the publisher registration. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
         /// <remarks>If an <see cref="IEventSubscriber"/> service is already registered, this method does not
         /// overwrite the existing registration. Use this method to enable dependency injection of custom subscriber
         /// implementations.</remarks>
-        /// <typeparam name="TSubscriber">The subscriber type to register. Must be a non-abstract class that implements <see cref="IEventSubscriber"/> and
+        /// <typeparam name="TEventSubscriber">The subscriber type to register. Must be a non-abstract class that implements <see cref="IEventSubscriber"/> and
         /// has a public constructor.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> instance with the subscriber registration added.</returns>
-        public IServiceCollection AddXSubscriber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSubscriber>()
-            where TSubscriber : class, IEventSubscriber
+        public IServiceCollection AddXEventSubscriber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventSubscriber>(
+            ServiceLifetime lifetime = ServiceLifetime.Singleton)
+            where TEventSubscriber : class, IEventSubscriber
         {
             services.TryAdd(
                 new ServiceDescriptor(
                     typeof(IEventSubscriber),
-                    typeof(TSubscriber),
-                    ServiceLifetime.Scoped));
+                    typeof(TEventSubscriber),
+                    lifetime));
 
             return services;
         }
@@ -146,9 +148,10 @@ public static class IEventExtensions
         /// <summary>
         /// Adds the default XSubscriber implementation to the service collection for dependency injection.
         /// </summary>
+        /// <param name="lifetime">The service lifetime for the publisher registration. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
         /// <returns>The updated <see cref="IServiceCollection"/> instance with the XSubscriber service registered.</returns>
-        public IServiceCollection AddXSubscriber() =>
-            services.AddXSubscriber<EventPublisherSubscriber>();
+        public IServiceCollection AddXEventSubscriber(ServiceLifetime lifetime = ServiceLifetime.Singleton) =>
+            services.AddXEventSubscriber<EventPublisherSubscriber>(lifetime);
 
         /// <summary>
         /// Registers the specified scheduler implementation as a singleton service for dependency injection.
@@ -209,30 +212,48 @@ public static class IEventExtensions
         /// <remarks>If an <see cref="IEventPublisher"/> service is already registered, this method does not
         /// overwrite the existing registration. Use this method to enable dependency injection of a custom publisher
         /// implementation within the application's scope.</remarks>
-        /// <typeparam name="TPublisher">The publisher type to register. Must be a class that implements <see cref="IEventPublisher"/> and have a public
+        /// <typeparam name="TEventPublisher">The publisher type to register. Must be a class that implements <see cref="IEventPublisher"/> and have a public
         /// constructor.</typeparam>
+        /// <param name="lifetime">The service lifetime for the publisher registration. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/> instance with the publisher registration added.</returns>
-        public IServiceCollection AddXPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPublisher>()
-            where TPublisher : class, IEventPublisher
+        public IServiceCollection AddXEventPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventPublisher>(
+            ServiceLifetime lifetime = ServiceLifetime.Singleton)
+            where TEventPublisher : class, IEventPublisher
         {
             services.TryAdd(
                 new ServiceDescriptor(
                     typeof(IEventPublisher),
-                    typeof(TPublisher),
-                    ServiceLifetime.Scoped));
+                    typeof(TEventPublisher),
+                    lifetime));
 
             return services;
         }
 
         /// <summary>
         /// Adds the default Publisher implementation to the service collection for dependency injection.
+        /// It also registers the same instance as an IEventSubscriber, along with the necessary event handler registries.
+        /// <code language="csharp"> Sample usage:
+        /// 
+        ///     var dynamicRegistry = app.Services.GetRequiredService&lt;DynamicEventHandlerRegistry&gt;();
+        ///     dynamicRegistry.Register(new[] { new PluginEventHandler() }); // runtime registration
+        ///     
+        ///     // Later:
+        ///     dynamicRegistry.Unregister&lt;PluginEvent&gt;();
+        /// </code>
         /// </summary>
+        /// <param name="lifetime">The service lifetime for the publisher registration. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
         /// <remarks>This method registers the PublisherSubscriber type as the implementation for
-        /// XPublisher. Call this method during application startup to enable XPublisher features in your
+        /// XPublisher. Call this method during application startup to enable Publisher features in your
         /// application.</remarks>
         /// <returns>The updated IServiceCollection instance with the Publisher services registered.</returns>
-        public IServiceCollection AddXPublisher() =>
-            services.AddXPublisher<EventPublisherSubscriber>();
+        public IServiceCollection AddXEventPublisher(ServiceLifetime lifetime = ServiceLifetime.Singleton) =>
+            services
+                .AddXEventPublisher<EventPublisherSubscriber>(lifetime)
+                .AddSingleton<IEventSubscriber>(sp => (EventPublisherSubscriber)sp.GetRequiredService<IEventPublisher>())
+                .AddSingleton<StaticEventHandlerRegistry>()
+                .AddSingleton<DynamycEventHandlerRegistry>()
+                .AddSingleton<IEventHandlerRegistry, CompositeEventHandlerRegistry>();
+
 
         /// <summary>
         /// Registers a specific event handler for the specified event type.
@@ -267,8 +288,22 @@ public static class IEventExtensions
                         ServiceLifetime.Scoped));
             }
 
-            return services;
+            return services.AddXEventHandlerWrapper<TEvent>();
         }
+
+        /// <summary>
+        /// Registers an event handler wrapper for the specified event type in the dependency injection container.
+        /// </summary>
+        /// <remarks>This method adds a singleton registration for <see cref="IEventHandlerWrapper"/>
+        /// using <see cref="EventHandlerWrapper{TEvent}"/>. Call this method to enable handling of events of type
+        /// <typeparamref name="TEvent"/> via the wrapper mechanism. This method is automatically called when registering event handlers
+        /// using <see cref="AddXEventHandler{TEvent,TEventHandler}"/>.</remarks>
+        /// <typeparam name="TEvent">The event type for which the handler wrapper is registered. Must implement <see cref="IEvent"/> and be a
+        /// reference type.</typeparam>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the event handler wrapper registration added.</returns>
+        public IServiceCollection AddXEventHandlerWrapper<TEvent>()
+            where TEvent : class, IEvent =>
+            services.AddSingleton<IEventHandlerWrapper, EventHandlerWrapper<TEvent>>();
 
         /// <summary>
         /// Registers all sealed event handler classes implementing the <see cref="IEventHandler{TEvent}"/> interface from the
