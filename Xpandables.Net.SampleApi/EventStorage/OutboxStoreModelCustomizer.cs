@@ -3,7 +3,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-using Xpandables.Net.Events.Repositories;
+using Xpandables.Net.EventSourcing.Repositories;
 using Xpandables.Net.Repositories.Converters;
 
 public class OutboxStoreModelCustomizer(ModelCustomizerDependencies dependencies) : ModelCustomizer(dependencies)

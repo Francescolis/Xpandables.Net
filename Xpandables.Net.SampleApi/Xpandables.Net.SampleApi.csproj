@@ -23,11 +23,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xpandables.Net.DependencyIjnection\Xpandables.Net.DependencyInjection.csproj" />
-    <ProjectReference Include="..\Xpandables.Net.Events.EntityFramework\Xpandables.Net.Events.EntityFramework.csproj" />
-    <ProjectReference Include="..\Xpandables.Net.ExecutionResults.AspNetCore\Xpandables.Net.ExecutionResults.AspNetCore.csproj" />
-    <ProjectReference Include="..\Xpandables.Net.Repositories.EntityFramework\Xpandables.Net.Repositories.EntityFramework.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.AspNetCore\Xpandables.Net.AspNetCore.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.Collections\Xpandables.Net.Collections.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.EntityFramework\Xpandables.Net.EntityFramework.csproj" />
+    <ProjectReference Include="..\Xpandables.Net.EventSourcing\Xpandables.Net.EventSourcing.csproj" />
     <ProjectReference Include="..\Xpandables.Net.Tasks\Xpandables.Net.Tasks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 

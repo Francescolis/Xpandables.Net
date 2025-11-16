@@ -1,16 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
-using Xpandables.Net.Primitives;
+using System.Text.Json.Serialization;
 
 namespace Xpandables.Net.SampleApi.EnumerationTypes;
 
-[PrimitiveJsonConverter]
-public readonly record struct AccountType : IPrimitive<AccountType, string>
+public readonly record struct AccountType
 {
     public static readonly AccountType Savings = new("Savings");
     public static readonly AccountType Checking = new("Checking");
     public static readonly AccountType Business = new("Business");
     public string Value { get; }
+    [JsonConstructor]
     private AccountType(string value) => Value = value;
     public override string ToString() => Value;
     public static implicit operator string(AccountType self) => self.Value;

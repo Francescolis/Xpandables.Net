@@ -6,9 +6,7 @@ using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Events;
-using Xpandables.Net.Events.DependencyInjection;
-using Xpandables.Net.ExecutionResults;
+using Xpandables.Net.EventSourcing;
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 using Xpandables.Net.SampleApi.EventStorage;
 
@@ -56,27 +54,15 @@ builder.Services.AddXOutboxStoreDataContext(options =>
 builder.Services
     .AddXEndpointRoutes()
     .AddXJsonSerializerOptions()
-    .AddXMinimalApi()
-    .AddXMediator()
-    .AddXPipelineDomainEventsDecorator()
-    .AddXPipelineIntegrationOutboxDecorator()
-    .AddXPipelineRequestHandler()
-    .AddXPipelinePostDecorator()
-    .AddXPipelineEventStoreEventDecorator()
-    .AddXPipelineValidationDecorator()
-    .AddXPipelineExceptionDecorator()
-    .AddXPipelineRequestHandler()
+    .AddXMediatorWithEventSourcingPipelines()
     .AddXRequestHandlers()
-    .AddXEventUnitOfWork()
-    .AddXPublisher()
+    .AddXEventPublisher()
     .AddXAggregateStore()
-    .AddXAggregateStoreFor()
     .AddXEventStore()
     .AddXOutboxStore()
     .AddMemoryCache()
     .AddXEventConverterFactory()
-    .AddXExecutionResultResponseWriters()
-    .AddXEventCacheTypeResolver([typeof(BankAccount).Assembly]);
+    .AddXCacheTypeResolver([typeof(BankAccount).Assembly]);
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -108,7 +94,7 @@ var app = builder.Build();
 //}
 
 app.UseHttpsRedirection();
-app.UseXExecutionResultMinimalMiddleware();
+app.UseXMinimalSupport();
 app.UseSwagger()
     .UseSwaggerUI(options =>
     {

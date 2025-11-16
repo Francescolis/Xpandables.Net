@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.AsyncPaged;
 using Xpandables.Net.Collections.Generic;
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Tasks;

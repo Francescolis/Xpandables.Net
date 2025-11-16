@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-using Xpandables.Net.Events;
-using Xpandables.Net.ExecutionResults.DataAnnotations;
+using Xpandables.Net.DataAnnotations;
+using Xpandables.Net.EventSourcing;
 using Xpandables.Net.Requests;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.WithdrawBankAccount;
