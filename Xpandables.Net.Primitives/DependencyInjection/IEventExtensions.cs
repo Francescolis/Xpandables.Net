@@ -62,7 +62,7 @@ public static class IEventExtensions
         /// </summary>
         /// <param name="assemblies">An optional array of assemblies to register for type resolution. If no assemblies are provided, all non-legacy
         /// assemblies will be registered.</param>
-        /// <remarks>This method registers the CacheTypeResolver as the implementation for Event
+        /// <remarks>This method registers the CacheTypeResolver as the implementation for
         /// cache type resolution. Call this method during application startup to enable cache type resolution
         /// services.</remarks>
         /// <returns>The same IServiceCollection instance, allowing for method chaining.</returns>
