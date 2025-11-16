@@ -42,7 +42,6 @@ public sealed class StreamExecutionResultResponseWriter : ExecutionResultRespons
     /// <inheritdoc/>
     public override bool CanWrite(ExecutionResult executionResult)
     {
-        ArgumentNullException.ThrowIfNull(executionResult);
         return executionResult.IsSuccess
             && executionResult.Value is IAsyncPagedEnumerable;
     }

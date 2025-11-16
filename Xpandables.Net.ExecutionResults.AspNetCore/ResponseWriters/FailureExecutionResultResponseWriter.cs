@@ -35,7 +35,6 @@ public sealed class FailureExecutionResultResponseWriter : ExecutionResultRespon
     /// <inheritdoc/>
     public override bool CanWrite(ExecutionResult executionResult)
     {
-        ArgumentNullException.ThrowIfNull(executionResult);
         return executionResult.IsFailure;
     }
 
@@ -51,7 +50,6 @@ public sealed class FailureExecutionResultResponseWriter : ExecutionResultRespon
     public override async Task WriteAsync(HttpContext context, ExecutionResult executionResult)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(executionResult);
 
         await base.WriteAsync(context, executionResult).ConfigureAwait(false);
 

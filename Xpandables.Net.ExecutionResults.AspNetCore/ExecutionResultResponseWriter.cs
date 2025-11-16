@@ -57,7 +57,6 @@ public abstract class ExecutionResultResponseWriter : IExecutionResultResponseWr
     public virtual async Task WriteAsync(HttpContext context, ExecutionResult executionResult)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(executionResult);
 
         context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
 

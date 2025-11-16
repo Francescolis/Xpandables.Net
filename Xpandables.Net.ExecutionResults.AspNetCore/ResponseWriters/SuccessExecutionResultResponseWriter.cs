@@ -37,8 +37,6 @@ public sealed class SuccessExecutionResultResponseWriter : ExecutionResultRespon
     /// <inheritdoc/>
     public override bool CanWrite(ExecutionResult executionResult)
     {
-        ArgumentNullException.ThrowIfNull(executionResult);
-
         return executionResult.StatusCode.IsSuccess
             && executionResult.Value is not IAsyncPagedEnumerable;
     }

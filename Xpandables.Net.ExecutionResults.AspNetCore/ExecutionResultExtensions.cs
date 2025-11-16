@@ -108,7 +108,7 @@ public static class ExecutionResultExtensions
     /// <summary>
     /// Extensions for <see cref="ExecutionResult"/>.
     /// </summary>   
-    extension(ExecutionResult executionResult)
+    extension(ExecutionResult execution)
     {
         /// <summary>
         /// Converts the current execution result's errors to a new ModelStateDictionary instance.
@@ -120,10 +120,9 @@ public static class ExecutionResultExtensions
         /// associated key. The dictionary will be empty if there are no errors.</returns>
         public ModelStateDictionary ToModelStateDictionary(bool isDevelopment = false)
         {
-            ArgumentNullException.ThrowIfNull(executionResult);
             ModelStateDictionary modelStateDictionary = new();
 
-            foreach (ElementEntry entry in executionResult.Errors)
+            foreach (ElementEntry entry in execution.Errors)
             {
                 foreach (string? value in entry.Values)
                 {
@@ -132,9 +131,9 @@ public static class ExecutionResultExtensions
                 }
             }
 
-            if (isDevelopment && executionResult.Exception is not null)
+            if (isDevelopment && execution.Exception is not null)
             {
-                modelStateDictionary.AddModelError("exception", executionResult.Exception.ToString());
+                modelStateDictionary.AddModelError("exception", execution.Exception.ToString());
             }
 
             return modelStateDictionary;
@@ -147,10 +146,9 @@ public static class ExecutionResultExtensions
         /// <returns>An <see cref="ObjectResult"/> containing the execution result and its associated status code.</returns>
         public IActionResult ToActionResult()
         {
-            ArgumentNullException.ThrowIfNull(executionResult);
-            return new ObjectResult(executionResult)
+            return new ObjectResult(execution)
             {
-                StatusCode = (int)executionResult.StatusCode,
+                StatusCode = (int)execution.StatusCode,
             };
         }
 
@@ -161,8 +159,7 @@ public static class ExecutionResultExtensions
         /// APIs.</returns>
         public IResult ToMinimalResult()
         {
-            ArgumentNullException.ThrowIfNull(executionResult);
-            return new ExecutionResultMinimalResult(executionResult);
+            return new ExecutionResultMinimalResult(execution);
         }
 
         /// <summary>
@@ -178,22 +175,21 @@ public static class ExecutionResultExtensions
         /// validation problem.</returns>
         public ProblemDetails ToProblemDetails(HttpContext context)
         {
-            ArgumentNullException.ThrowIfNull(executionResult);
             ArgumentNullException.ThrowIfNull(context);
 
             bool isDevelopment = context.RequestServices
                 .GetRequiredService<IWebHostEnvironment>()
                 .IsDevelopment();
 
-            var title = executionResult.Title ?? executionResult.StatusCode.Title;
-            var detail = executionResult.Detail ?? executionResult.StatusCode.Detail;
-            var status = (int)executionResult.StatusCode;
+            var title = execution.Title ?? execution.StatusCode.Title;
+            var detail = execution.Detail ?? execution.StatusCode.Detail;
+            var status = (int)execution.StatusCode;
             var instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}";
-            var type = isDevelopment ? executionResult.GetType().Name : null;
-            var extensions = executionResult.Extensions.ToDictionaryObject();
+            var type = isDevelopment ? execution.GetType().Name : null;
+            var extensions = execution.Extensions.ToDictionaryObject();
 
-            ProblemDetails problemDetails = executionResult.StatusCode.IsValidationProblem
-                    ? new ValidationProblemDetails(executionResult.ToModelStateDictionary(isDevelopment))
+            ProblemDetails problemDetails = execution.StatusCode.IsValidationProblem
+                    ? new ValidationProblemDetails(execution.ToModelStateDictionary(isDevelopment))
                     {
                         Title = title,
                         Detail = detail,

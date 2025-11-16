@@ -32,7 +32,6 @@ public sealed class FileExecutionResultResponseWriter : ExecutionResultResponseW
     /// <inheritdoc/>
     public override bool CanWrite(ExecutionResult executionResult)
     {
-        ArgumentNullException.ThrowIfNull(executionResult);
         return executionResult.StatusCode.IsOk
             && executionResult.Value is Stream;
     }

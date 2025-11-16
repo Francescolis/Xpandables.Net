@@ -42,11 +42,7 @@ public static class ExecutionResultExtensions
         /// Creates a new ExecutionResultException that represents the current execution result.
         /// </summary>
         /// <returns>An ExecutionResultException initialized with the current execution result.</returns>
-        public ExecutionResultException ToExecutionResultException()
-        {
-            ArgumentNullException.ThrowIfNull(execution);
-            return new ExecutionResultException(execution);
-        }
+        public ExecutionResultException ToExecutionResultException() => new(execution);
 
         /// <summary>
         /// Creates a successful <see cref="ExecutionResult"/> instance representing an operation that completed without
@@ -523,10 +519,6 @@ public static class ExecutionResultExtensions
         /// Creates a new ExecutionResultException that represents the current execution result.
         /// </summary>
         /// <returns>An ExecutionResultException initialized with the current execution result.</returns>
-        public ExecutionResultException ToExecutionResultException()
-        {
-            ArgumentNullException.ThrowIfNull(execution);
-            return new ExecutionResultException(execution);
-        }
+        public ExecutionResultException ToExecutionResultException() => new(execution);
     }
 }

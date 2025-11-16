@@ -222,8 +222,6 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <inheritdoc/>
     public TBuilder Merge(ExecutionResult execution)
     {
-        ArgumentNullException.ThrowIfNull(execution);
-
         if (execution.IsSuccess || StatusCode.IsSuccess)
         {
             throw new InvalidOperationException(

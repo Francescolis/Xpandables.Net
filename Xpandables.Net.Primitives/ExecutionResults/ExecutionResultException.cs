@@ -34,19 +34,16 @@ public sealed class ExecutionResultException : Exception
     /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
     /// class with the specified executionResult result.
     /// </summary>
-    /// <param name="executionResult">The executionResult result that caused the exception.</param>
+    /// <param name="execution">The executionResult result that caused the exception.</param>
     /// <exception cref="ArgumentNullException">Thrown when the 
-    /// <paramref name="executionResult"/> is null.</exception>
+    /// <paramref name="execution"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
-    /// code of the <paramref name="executionResult"/> is between 200 and 299.</exception>
-    public ExecutionResultException(ExecutionResult executionResult)
-        : base($"Execution failed with status code: {executionResult?.StatusCode}")
+    /// code of the <paramref name="execution"/> is between 200 and 299.</exception>
+    public ExecutionResultException(ExecutionResult execution)
+        : base($"Execution failed with status code: {execution.StatusCode}")
     {
-        ArgumentNullException.ThrowIfNull(executionResult);
-
-        executionResult.StatusCode.EnsureFailure();
-
-        ExecutionResult = executionResult;
+        execution.StatusCode.EnsureFailure();
+        ExecutionResult = execution;
     }
 
     /// <summary>
@@ -54,15 +51,12 @@ public sealed class ExecutionResultException : Exception
     /// class with a specified error message and execution result.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
-    /// <param name="executionResult">The execution result that caused the exception.</param>
-    public ExecutionResultException(string message, ExecutionResult executionResult)
+    /// <param name="execution">The execution result that caused the exception.</param>
+    public ExecutionResultException(string message, ExecutionResult execution)
         : base(message)
     {
-        ArgumentNullException.ThrowIfNull(executionResult);
-
-        executionResult.StatusCode.EnsureFailure();
-
-        ExecutionResult = executionResult;
+        execution.StatusCode.EnsureFailure();
+        ExecutionResult = execution;
     }
 
     /// <summary>
@@ -71,17 +65,14 @@ public sealed class ExecutionResultException : Exception
     /// to the inner exception that is the cause of this exception.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
-    /// <param name="executionResult">The execution result that caused the exception.</param>
+    /// <param name="execution">The execution result that caused the exception.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
     public ExecutionResultException(
-        string message, ExecutionResult executionResult, Exception innerException)
+        string message, ExecutionResult execution, Exception innerException)
         : base(message, innerException)
     {
-        ArgumentNullException.ThrowIfNull(executionResult);
-
-        executionResult.StatusCode.EnsureFailure();
-
-        ExecutionResult = executionResult;
+        execution.StatusCode.EnsureFailure();
+        ExecutionResult = execution;
     }
 
     [Obsolete("Use constructor with ExecutionResult")]
