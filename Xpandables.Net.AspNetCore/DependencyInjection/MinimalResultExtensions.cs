@@ -16,6 +16,7 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 using Xpandables.Net.Http.Minimals;
 
@@ -44,41 +45,28 @@ public static class MinimalResultExtensions
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            var validationFilter = new MinimalResultEndpointValidationFilter();
-            var resultFilter = new MinimalResultEndpointFilter();
-
-            return builder.Use(async (context, next) =>
+            builder.UseRouting();
+            return builder.UseEndpoints(endpointRouteBuilder =>
             {
-                Endpoint? endpoint = context.GetEndpoint();
-
-                // Only apply filters to route endpoints (minimal APIs)
-                if (endpoint is null)
+                foreach (var dataSource in endpointRouteBuilder.DataSources)
                 {
-                    await next().ConfigureAwait(false);
-                    return;
+                    foreach (var endpoint in dataSource.Endpoints)
+                    {
+                        if (endpoint is RouteEndpoint routeEndpoint &&
+                            routeEndpoint.RequestDelegate is not null)
+                        {
+                            if (routeEndpoint.RoutePattern.RawText is not null)
+                            {
+                                var conventionBuilder = endpointRouteBuilder
+                                .MapMethods(routeEndpoint.RoutePattern.RawText, routeEndpoint.Metadata
+                                    .OfType<HttpMethodMetadata>()
+                                    .FirstOrDefault()?.HttpMethods ?? ["GET"], routeEndpoint.RequestDelegate);
+
+                                conventionBuilder.WithXMinimalApi();
+                            }
+                        }
+                    }
                 }
-
-                // Build the filter pipeline
-                // The pipeline order is: validation -> result -> actual endpoint
-                EndpointFilterDelegate pipeline = async (filterContext) =>
-                {
-                    await next().ConfigureAwait(false);
-                    return null;
-                };
-
-                // Wrap with result filter
-                EndpointFilterDelegate resultPipeline = pipeline;
-                pipeline = (filterContext) => resultFilter.InvokeAsync(filterContext, resultPipeline);
-
-                // Wrap with validation filter  
-                EndpointFilterDelegate validationPipeline = pipeline;
-                pipeline = (filterContext) => validationFilter.InvokeAsync(filterContext, validationPipeline);
-
-                // Create filter invocation context
-                var filterInvocationContext = new MinimalEndpointFilterInvocationContext(context);
-
-                // Execute the filter pipeline
-                await pipeline(filterInvocationContext).ConfigureAwait(false);
             });
         }
     }
@@ -121,21 +109,5 @@ public static class MinimalResultExtensions
         /// <returns>The builder instance with the minimal result endpoint filter applied.</returns>
         public TBuilder WithXMinimalFilter() =>
             builder.AddEndpointFilter<TBuilder, MinimalResultEndpointFilter>();
-    }
-
-    /// <summary>
-    /// Provides a minimal implementation of <see cref="EndpointFilterInvocationContext"/> for global filter execution.
-    /// </summary>
-    private sealed class MinimalEndpointFilterInvocationContext(HttpContext httpContext) : EndpointFilterInvocationContext
-    {
-        /// <inheritdoc/>
-        public override HttpContext HttpContext { get; } = httpContext;
-
-        /// <inheritdoc/>
-        public override IList<object?> Arguments { get; } = [];
-
-        /// <inheritdoc/>
-        public override T GetArgument<T>(int index) =>
-            Arguments.Count > index ? (T)Arguments[index]! : default!;
     }
 }

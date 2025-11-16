@@ -37,7 +37,7 @@ public static class IAsyncPagedEnumerableExtensions
         public Type GetArgumentType()
         {
             var sourceType = source.GetType();
-            if (!sourceType.IsGenericType || sourceType.GetGenericTypeDefinition() != typeof(IAsyncPagedEnumerable<>))
+            if (!sourceType.IsGenericType)
                 throw new InvalidOperationException("The source does not implement IAsyncPagedEnumerable<T>.");
 
             return sourceType.GetGenericArguments()[0];
@@ -53,7 +53,8 @@ public static class IAsyncPagedEnumerableExtensions
         public void EnsureIsAsyncPagedEnumerableOfT()
         {
             var sourceType = source.GetType();
-            if (!sourceType.IsGenericType || sourceType.GetGenericTypeDefinition() != typeof(IAsyncPagedEnumerable<>))
+            if (!sourceType.IsGenericType || (sourceType.GetGenericTypeDefinition() != typeof(IAsyncPagedEnumerable<>)
+                 || sourceType.GetGenericTypeDefinition() != typeof(AsyncPagedEnumerable<>)))
                 throw new InvalidOperationException("The source does not implement IAsyncPagedEnumerable<T>.");
         }
     }

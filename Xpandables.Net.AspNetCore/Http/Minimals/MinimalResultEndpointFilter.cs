@@ -69,13 +69,13 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
 
             if (result is IAsyncPagedEnumerable paged)
             {
-                PipeWriter pipeWriter = context.HttpContext.Response.BodyWriter;
                 context.HttpContext.Response.ContentType ??= context.HttpContext.GetContentType("application/json; charset=utf-8");
                 var cancellationToken = context.HttpContext.RequestAborted;
                 Type itemType = paged.GetArgumentType();
 
                 var options = context.HttpContext.GetJsonSerializerOptions();
                 JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(itemType);
+                PipeWriter pipeWriter = context.HttpContext.Response.BodyWriter;
 
                 if (jsonTypeInfo is not null)
                 {
@@ -90,7 +90,7 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                         .ConfigureAwait(false);
                 }
 
-                return null;
+                return Results.Empty;
             }
 
             return result;
@@ -125,7 +125,7 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                 await result.ExecuteAsync(context.HttpContext).ConfigureAwait(false);
             }
 
-            return null;
+            return Results.Empty;
         }
     }
 }

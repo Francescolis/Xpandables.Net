@@ -53,6 +53,7 @@ builder.Services.AddXOutboxStoreDataContext(options =>
 // Register Xpandables.Net services
 builder.Services
     .AddXEndpointRoutes()
+    .AddXMinialResultEndpointValidator()
     .AddXJsonSerializerOptions()
     .AddXMediatorWithEventSourcingPipelines()
     .AddXRequestHandlers()

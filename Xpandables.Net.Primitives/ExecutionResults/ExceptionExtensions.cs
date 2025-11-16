@@ -77,7 +77,7 @@ public static class ExceptionExtensions
             var builder = ExecutionResult
                 .Failure(statusCode.Value)
                 .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
-                .WithDetail(isDevelopment ? $"{exception.Message}" : statusCode.Value.Detail)
+                .WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.Detail)
                 .WithErrors(GetElementEntries(exception));
 
             return exception is ValidationException

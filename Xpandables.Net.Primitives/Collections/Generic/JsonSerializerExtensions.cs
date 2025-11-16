@@ -375,8 +375,6 @@ public static class JsonSerializerExtensions
         JsonSerializerOptions options,
         CancellationToken cancellationToken)
     {
-        paged.EnsureIsAsyncPagedEnumerableOfT();
-
         var method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
         var task = (Task)method.Invoke(null, [output, paged, options, cancellationToken])!;
         await task.ConfigureAwait(false);
