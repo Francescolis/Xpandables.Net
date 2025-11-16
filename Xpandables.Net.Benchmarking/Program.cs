@@ -8,7 +8,7 @@ public static class Program
     {
         BenchmarkRunner.Run(
         [
-
+            typeof(AsyncPagedEnumerableBenchmark)
         ]);
     }
 }
