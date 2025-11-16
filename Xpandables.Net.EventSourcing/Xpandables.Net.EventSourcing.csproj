@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>Xpandables.Net.AspNetCore</Title>
-		<Description>AspNetCore implementations.</Description>
+		<Title>Xpandables.Net.EventSourcing</Title>
+		<Description>Event sourcing EFcore pattern implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net.AspNetCore</AssemblyName>
-		<RootNamespace>Xpandables.Net</RootNamespace>
-		<PackageId>Xpandables.Net.AspNetCore</PackageId>
+		<AssemblyName>Xpandables.Net.EventSourcing</AssemblyName>
+		<RootNamespace>Xpandables.Net.EventSourcing</RootNamespace>
+		<PackageId>Xpandables.Net.EventSourcing</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -30,7 +30,7 @@
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IEndpointRoute, IServiceExport</PackageTags>
+		<PackageTags>IDomainEvent, IIntegrationEvent, IAggregate, IAggregateStore, IEventStore</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -70,17 +70,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md" Link="README.md">
-			<PackagePath>\</PackagePath>
+		<None Include="..\README.md">
 			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
 		</None>
 		<None Include="..\Xpandables.Net.png" Link="Xpandables.Net.png">
 			<PackagePath>\</PackagePath>
@@ -89,7 +85,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.ComponentModel.Composition" Version="10.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

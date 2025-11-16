@@ -48,10 +48,12 @@ public static class ITaskExtensions
         /// <summary>
         /// Adds Mediator and related pipeline request handler services to the current service collection.
         /// </summary>
-        /// <remarks>if you want to add pipeline decorators, register handler services in this order :
+        /// <remarks>
+        /// if you want to add pipeline decorators, register handler services in this order :
         /// <list type="bullet">
         /// <item>PipelinePreDecorator</item>
         /// <item>PipelinePostDecorator</item>
+        /// <item>PipelineUnitOfWorkDecorator</item>
         /// <item>PipelineValidationDecorator</item>
         /// <item>PipelineExceptionDecorator</item>
         /// <item>PipelineRequestHandler</item>
@@ -62,6 +64,7 @@ public static class ITaskExtensions
         /// <item>PipelineIntegrationOutboxDecorator</item>
         /// <item>PipelinePreDecorator</item>
         /// <item>PipelinePostDecorator</item>
+        /// <item>PipelineUnitOfWorkDecorator</item>
         /// <item>PipelineEventStoreEventDecorator</item>
         /// <item>PipelineValidationDecorator</item>
         /// <item>PipelineExceptionDecorator</item>
@@ -71,6 +74,48 @@ public static class ITaskExtensions
         /// <returns>The <see cref="IServiceCollection"/> instance with Mediator services registered. This enables further
         /// configuration of dependency injection.</returns>
         public IServiceCollection AddXMediator() => services.AddXMediator<Mediator>();
+
+        /// <summary>
+        /// Adds Mediator and configures the request pipeline with pre-processing, post-processing, validation, and
+        /// exception handling decorators.
+        /// </summary>
+        /// <remarks>Call this method during application startup to register Mediator and its pipeline
+        /// decorators in the dependency injection container. The decorators provide extensibility points for request
+        /// validation, exception handling, and additional pre- and post-processing logic. This method is intended to be
+        /// used as part of the service configuration in ASP.NET Core or similar applications.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with Mediator and pipeline decorators registered. This
+        /// enables mediator-based request handling with extensible pipeline behaviors.</returns>
+        public IServiceCollection AddXMediatorWithPipelines()
+            => services
+                .AddXMediator()
+                .AddXPipelinePreDecorator()
+                .AddXPipelinePostDecorator()
+                .AddXPipelineUnitOfWorkDecorator()
+                .AddXPipelineValidationDecorator()
+                .AddXPipelineExceptionDecorator();
+
+        /// <summary>
+        /// Configures Mediator with event sourcing pipelines and related decorators for domain events, integration
+        /// outbox, validation, exception handling, and event store integration.
+        /// </summary>
+        /// <remarks>Call this method during application startup to ensure that Mediator and all required
+        /// event sourcing pipeline decorators are registered. The returned IServiceCollection can be used for further
+        /// service registrations. This method is intended to be used in applications that require event sourcing,
+        /// domain event handling, and integration outbox patterns.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with Mediator and event sourcing pipeline decorators
+        /// registered. This enables event-driven processing and enhanced pipeline behaviors within the application's
+        /// dependency injection container.</returns>
+        public IServiceCollection AddXMediatorWithEventSourcingPipelines()
+            => services
+                .AddXMediator()
+                .AddXPipelineDomainEventsDecorator()
+                .AddXPipelineIntegrationOutboxDecorator()
+                .AddXPipelinePreDecorator()
+                .AddXPipelinePostDecorator()
+                .AddXPipelineUnitOfWorkDecorator()
+                .AddXPipelineEventStoreEventDecorator()
+                .AddXPipelineValidationDecorator()
+                .AddXPipelineExceptionDecorator();
 
         /// <summary>
         /// Registers the PipelineUnitOfWorkDecorator for all pipeline handlers in the service collection, enabling
@@ -173,12 +218,22 @@ public static class ITaskExtensions
         /// <remarks>Use this method to configure a custom mediator implementation for use within the
         /// application's dependency injection container. The mediator will be resolved as a scoped service, meaning a
         /// new instance is created per request or scope.
+        /// <para></para>if you want to add pipeline decorators, register handler services in this order :
+        /// <list type="bullet">
+        /// <item>PipelinePreDecorator</item>
+        /// <item>PipelinePostDecorator</item>
+        /// <item>PipelineUnitOfWorkDecorator</item>
+        /// <item>PipelineValidationDecorator</item>
+        /// <item>PipelineExceptionDecorator</item>
+        /// <item>PipelineRequestHandler</item>
+        /// </list>
         /// <para>In order to register the mediator to be used with Event sourcing, add registrations as follow:</para>
         /// <list type="bullet">
         /// <item>PipelineDomainEventsDecorator</item>
         /// <item>PipelineIntegrationOutboxDecorator</item>
         /// <item>PipelinePreDecorator</item>
         /// <item>PipelinePostDecorator</item>
+        /// <item>PipelineUnitOfWorkDecorator</item>
         /// <item>PipelineEventStoreEventDecorator</item>
         /// <item>PipelineValidationDecorator</item>
         /// <item>PipelineExceptionDecorator</item>
@@ -190,7 +245,8 @@ public static class ITaskExtensions
         /// <returns>The <see cref="IServiceCollection"/> instance with the mediator service registration added.</returns>
         public IServiceCollection AddXMediator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TMediator>()
             where TMediator : class, IMediator =>
-            services.AddScoped<IMediator, TMediator>();
+            services.AddScoped<IMediator, TMediator>()
+            .AddXPipelineRequestHandler();
 
         /// <summary>
         /// Adds a pipeline validation decorator to the service collection for use with Pipeline requests.

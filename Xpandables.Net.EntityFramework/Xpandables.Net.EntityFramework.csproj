@@ -4,47 +4,52 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>Xpandables.Net.AspNetCore</Title>
-		<Description>AspNetCore implementations.</Description>
+
+		<Title>Xpandables.Net.EntityFramework</Title>
+		<Description>Provide Repository EntityFramework implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Net.AspNetCore</AssemblyName>
+		<AssemblyName>Xpandables.Net.EntityFramework</AssemblyName>
 		<RootNamespace>Xpandables.Net</RootNamespace>
-		<PackageId>Xpandables.Net.AspNetCore</PackageId>
+		<PackageId>Xpandables.Net.EntityFramework</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<IncludeSource>true</IncludeSource>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
-		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IEndpointRoute, IServiceExport</PackageTags>
+		<PackageTags>IRepository, IUnitOfWork</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-
-		<Deterministic>true</Deterministic>
-		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-		<DebugType>portable</DebugType>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 
 		<Version>10.0.0</Version>
 		<AssemblyVersion>10.0.0.0</AssemblyVersion>
 		<FileVersion>10.0.0.0</FileVersion>
 		<PackageVersion>10.0.0</PackageVersion>
 
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<IncludeSource>true</IncludeSource>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
+		<Platforms>x64</Platforms>
+
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<DebugType>portable</DebugType>
+
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
@@ -52,7 +57,6 @@
 		<EnablePackageValidation>false</EnablePackageValidation>
 		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
 		<WarningLevel>9999</WarningLevel>
-		<Copyright>Copyright © Kamersoft 2025</Copyright>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -70,10 +74,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
@@ -89,7 +89,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.ComponentModel.Composition" Version="10.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

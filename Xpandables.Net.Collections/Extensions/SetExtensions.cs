@@ -77,7 +77,7 @@ public static class SetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -123,7 +123,7 @@ public static class SetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -169,7 +169,7 @@ public static class SetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -202,7 +202,7 @@ public static class SetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -227,7 +227,7 @@ public static class SetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -252,7 +252,7 @@ public static class SetExtensions
                 yield return element;
             }
 
-            return new AsyncPagedEnumerable<TSource>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -291,7 +291,7 @@ public static class SetExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -345,7 +345,7 @@ public static class SetExtensions
                     yield return defaultValue;
             }
 
-            return new AsyncPagedEnumerable<TSource?>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

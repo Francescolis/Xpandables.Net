@@ -44,7 +44,7 @@ public static class ProjectionExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(selector);
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 source.Select(selector),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -67,7 +67,7 @@ public static class ProjectionExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 ProjectAsync(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -90,7 +90,7 @@ public static class ProjectionExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 ProjectAsync(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

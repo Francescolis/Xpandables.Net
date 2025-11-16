@@ -89,7 +89,7 @@ public static class GroupingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<IGrouping<TKey, TSource>>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -158,7 +158,7 @@ public static class GroupingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<IGrouping<TKey, TElement>>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -226,7 +226,7 @@ public static class GroupingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

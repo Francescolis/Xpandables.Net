@@ -28,7 +28,7 @@ namespace Xpandables.Net.Tasks.Pipelines;
 /// after processing the request and response in a pipeline execution.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresUnitOfWork"/>.</typeparam>
-public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork unitOfWork) :
+public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork? unitOfWork = default) :
     IPipelineDecorator<TRequest>
     where TRequest : class, IRequest, IRequiresUnitOfWork
 {
@@ -49,9 +49,12 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork unitOfWork
         }
         finally
         {
-            await unitOfWork
-                .SaveChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            if (unitOfWork is not null)
+            {
+                await unitOfWork
+                    .SaveChangesAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

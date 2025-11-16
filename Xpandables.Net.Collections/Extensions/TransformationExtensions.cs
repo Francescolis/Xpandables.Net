@@ -59,7 +59,7 @@ public static class TransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TCollection>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -93,7 +93,7 @@ public static class TransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -120,7 +120,7 @@ public static class TransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TCollection>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -150,7 +150,7 @@ public static class TransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -176,7 +176,7 @@ public static class TransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TCollection>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -206,7 +206,7 @@ public static class TransformationExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

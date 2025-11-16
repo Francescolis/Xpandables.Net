@@ -66,7 +66,7 @@ public static class WindowingExtensions
                     yield return [.. window];
             }
 
-            return new AsyncPagedEnumerable<TSource[]>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -107,7 +107,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<int>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -148,7 +148,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<long>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -189,7 +189,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<double>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -230,7 +230,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<double>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -276,7 +276,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TValue>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -322,7 +322,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TValue>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -355,7 +355,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<(TSource Previous, TSource Current)>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -387,7 +387,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TResult>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -421,7 +421,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TAccumulate>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
@@ -458,7 +458,7 @@ public static class WindowingExtensions
                 }
             }
 
-            return new AsyncPagedEnumerable<TSource>(
+            return AsyncPagedEnumerable.Create(
                 Iterator(),
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }

@@ -52,7 +52,7 @@ public static class IQueryableExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            return new AsyncPagedEnumerable<T>(source);
+            return AsyncPagedEnumerable.Create(source);
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ public static class IQueryableExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(paginationFactory);
 
-            return new AsyncPagedEnumerable<T>(source, paginationFactory);
+            return AsyncPagedEnumerable.Create(source, paginationFactory);
         }
     }
 }

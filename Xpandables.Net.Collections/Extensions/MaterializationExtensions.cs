@@ -95,7 +95,7 @@ public static class MaterializationExtensions
             totalCount: items.Count);
 
         // Return new paged enumerable with materialized items
-        return new AsyncPagedEnumerable<T>(
+        return AsyncPagedEnumerable.Create(
             items.ToAsyncEnumerable(),
             _ => ValueTask.FromResult(pagination));
     }
@@ -135,7 +135,7 @@ public static class MaterializationExtensions
             totalCount: items.Count);
 
         // Return new paged enumerable with materialized items
-        return new AsyncPagedEnumerable<T>(
+        return AsyncPagedEnumerable.Create(
             items.ToAsyncEnumerable(),
             _ => ValueTask.FromResult(pagination));
     }
@@ -167,7 +167,7 @@ public static class MaterializationExtensions
         var pagination = Pagination.FromTotalCount(items.Count);
 
         // Return paged enumerable with pre-materialized items
-        return new AsyncPagedEnumerable<T>(
+        return AsyncPagedEnumerable.Create(
             items.ToAsyncEnumerable(),
             _ => ValueTask.FromResult(pagination));
     }
@@ -203,7 +203,7 @@ public static class MaterializationExtensions
             currentPage: currentPage,
             totalCount: items.Count);
 
-        return new AsyncPagedEnumerable<T>(
+        return AsyncPagedEnumerable.Create(
             items.ToAsyncEnumerable(),
             _ => ValueTask.FromResult(pagination));
     }

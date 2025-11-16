@@ -44,7 +44,7 @@ public static class AsyncEnumerableExtensions
         public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable()
         {
             ArgumentNullException.ThrowIfNull(source);
-            return new AsyncPagedEnumerable<T>(source);
+            return AsyncPagedEnumerable.Create(source);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ public static class AsyncEnumerableExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(paginationFactory);
 
-            return new AsyncPagedEnumerable<T>(source, paginationFactory);
+            return AsyncPagedEnumerable.Create(source, paginationFactory);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ public static class AsyncEnumerableExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            return new AsyncPagedEnumerable<T>(source, _ => ValueTask.FromResult(pagination));
+            return AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ public static class AsyncEnumerableExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentOutOfRangeException.ThrowIfNegative(totalCount);
 
-            return new AsyncPagedEnumerable<T>(
+            return AsyncPagedEnumerable.Create(
                 source,
                 _ => ValueTask.FromResult(Pagination.FromTotalCount(totalCount)));
         }
