@@ -63,4 +63,26 @@ public static class AsyncPagedEnumerable
          IQueryable<T> query,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default) =>
         new AsyncPagedEnumerable<T>(query, paginationFactory);
+
+    /// <summary>
+    /// Creates an empty asynchronous paged enumerable of the specified type.
+    /// </summary>
+    /// <remarks>Use this method to obtain an empty paged enumerable when no items are available or as a
+    /// default value. The returned enumerable yields no elements and supports pagination according to the provided or
+    /// default settings.</remarks>
+    /// <typeparam name="T">The type of elements in the paged enumerable.</typeparam>
+    /// <param name="pagination">The pagination settings to use for the enumerable. If null, default pagination is applied.</param>
+    /// <returns>An empty <see cref="IAsyncPagedEnumerable{T}"/> instance with the specified pagination settings.</returns>
+    public static IAsyncPagedEnumerable<T> Empty<T>(Pagination? pagination = null)
+    {
+        static async IAsyncEnumerable<T> EmptyIterator([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            yield break;
+        }
+
+        Pagination p = pagination ?? Pagination.Empty;
+        return new AsyncPagedEnumerable<T>(
+            EmptyIterator(),
+            _ => ValueTask.FromResult(p));
+    }
 }
