@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net;
-
 using Xpandables.Net.Collections;
+using Xpandables.Net.ExecutionResults;
 
 namespace Xpandables.Net.Http;
 
@@ -74,7 +73,7 @@ public sealed class RestClient(
         {
             return new RestResponse
             {
-                StatusCode = HttpStatusCode.BadRequest,
+                StatusCode = exception.GetHttpStatusCode(),
                 Version = httpClient.DefaultRequestVersion,
                 Headers = HttpClient.DefaultRequestHeaders.ToElementCollection(),
                 Exception = exception
