@@ -23,6 +23,6 @@ public sealed class GetBankAccountBalanceHandler(IAggregateStore<BankAccount> ag
             Balance = account.CurrentState.Balance
         };
 
-        return ExecutionResult.Success(result);
+        return ExecutionResult.SuccessResult(result);
     }
 }

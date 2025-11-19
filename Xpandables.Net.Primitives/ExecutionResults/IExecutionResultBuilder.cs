@@ -146,6 +146,7 @@ public interface IExecutionResultTitleBuilder<out TBuilder>
     /// </summary>
     /// <param name="title">The title of the execution.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided title is null.</exception>
     TBuilder WithTitle(string title);
 }
 
@@ -161,6 +162,7 @@ public interface IExecutionResultDetailBuilder<out TBuilder>
     /// </summary>
     /// <param name="detail">The detail of the execution.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided detail is null.</exception>
     TBuilder WithDetail(string detail);
 }
 
@@ -176,6 +178,7 @@ public interface IExecutionResultLocationBuilder<out TBuilder>
     /// </summary>
     /// <param name="location">The URI location of the execution.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided location is null.</exception>
     TBuilder WithLocation(Uri location);
 
     /// <summary>
@@ -183,6 +186,7 @@ public interface IExecutionResultLocationBuilder<out TBuilder>
     /// </summary>
     /// <param name="location">The string location of the execution.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided location is null.</exception>
     TBuilder WithLocation(string location);
 }
 
@@ -198,7 +202,8 @@ public interface IExecutionResultObjectBuilder<out TBuilder>
     /// </summary>
     /// <param name="result">The result of the execution.</param>
     /// <returns>The current builder instance.</returns>
-    TBuilder WithResult(object? result);
+    /// <exception cref="ArgumentNullException">Thrown when the provided result is null.</exception>
+    TBuilder WithResult(object result);
 }
 
 /// <summary>
@@ -214,6 +219,7 @@ public interface IExecutionResultResultBuilder<out TBuilder, in TResult> : IExec
     /// </summary>
     /// <param name="result">The result of the execution.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided result is null.</exception>
     TBuilder WithResult(TResult result);
 
     /// <summary>
@@ -223,9 +229,8 @@ public interface IExecutionResultResultBuilder<out TBuilder, in TResult> : IExec
     /// <returns>Returns an instance of the builder with the updated result.</returns>
     /// <exception cref="ArgumentException">Thrown when the provided value does not match the expected type.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    new TBuilder WithResult(object? result) => result switch
+    new TBuilder WithResult(object result) => result switch
     {
-        null => WithResult(default!),
         TResult typedResult => WithResult(typedResult),
         _ => throw new ArgumentException($"The result must be of type {typeof(TResult)}.", nameof(result))
     };
@@ -244,6 +249,7 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
     /// <param name="key">The header key.</param>
     /// <param name="value">The header value.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided key or value is null.</exception>
     TBuilder WithHeader(string key, string value);
 
     /// <summary>
@@ -252,6 +258,7 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
     /// <param name="key">The header key.</param>
     /// <param name="values">The header values.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided key or values are null.</exception>
     TBuilder WithHeader(string key, params string[] values);
 
     /// <summary>
@@ -259,6 +266,7 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
     /// </summary>
     /// <param name="headers">The headers dictionary.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided headers are null.</exception>
     TBuilder WithHeaders(IDictionary<string, string> headers);
 
     /// <summary>
@@ -274,6 +282,7 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
     /// <param name="headers">A read-only dictionary containing the HTTP headers to add. Each key represents a header name, and each value
     /// contains one or more header values. Cannot be null.</param>
     /// <returns>A new builder instance that includes the specified headers.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided headers are null.</exception>
     TBuilder WithHeaders(IReadOnlyDictionary<string, StringValues> headers);
 }
 
@@ -290,6 +299,7 @@ public interface IExecutionResultErrorBuilder<out TBuilder>
     /// <param name="key">The key of the error.</param>
     /// <param name="errorMessage">The error message.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided key or error message is null.</exception>
     TBuilder WithError(string key, string errorMessage);
 
     /// <summary>
@@ -298,6 +308,7 @@ public interface IExecutionResultErrorBuilder<out TBuilder>
     /// <param name="key">The key of the error.</param>
     /// <param name="errorMessages">The error messages.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided key or error messages are null.</exception>
     TBuilder WithError(string key, params string[] errorMessages);
 
     /// <summary>
@@ -312,6 +323,7 @@ public interface IExecutionResultErrorBuilder<out TBuilder>
     /// </summary>
     /// <param name="errors">The errors dictionary.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided errors are null.</exception>
     TBuilder WithErrors(IDictionary<string, string> errors);
 
     /// <summary>
@@ -337,6 +349,7 @@ public interface IExecutionResultErrorBuilder<out TBuilder>
     /// <param name="key">The key that identifies the field or property to associate with the error messages. Cannot be null or empty.</param>
     /// <param name="errorMessages">A collection of error messages to add for the specified key. Must not be empty.</param>
     /// <returns>The builder instance with the specified error messages added for the given key.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided key or error messages are null.</exception>
     TBuilder WithError(string key, in StringValues errorMessages);
 
     /// <summary>
@@ -344,6 +357,7 @@ public interface IExecutionResultErrorBuilder<out TBuilder>
     /// </summary>
     /// <param name="exception">The exception.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided exception is null.</exception>
     TBuilder WithException(Exception exception);
 }
 
@@ -360,6 +374,7 @@ public interface IExecutionResultExtensionBuilder<out TBuilder>
     /// <param name="key">The key of the extension.</param>
     /// <param name="value">The value of the extension.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided key or value is null.</exception>
     TBuilder WithExtension(string key, string value);
 
     /// <summary>
@@ -368,6 +383,7 @@ public interface IExecutionResultExtensionBuilder<out TBuilder>
     /// <param name="key">The key of the extension.</param>
     /// <param name="values">The values of the extension.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided key or values are null.</exception>
     TBuilder WithExtension(string key, params string[] values);
 
     /// <summary>
@@ -382,6 +398,7 @@ public interface IExecutionResultExtensionBuilder<out TBuilder>
     /// </summary>
     /// <param name="extensions">The extensions dictionary.</param>
     /// <returns>The current builder instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided extensions are null.</exception>
     TBuilder WithExtensions(IDictionary<string, string> extensions);
 
     /// <summary>
@@ -399,6 +416,7 @@ public interface IExecutionResultExtensionBuilder<out TBuilder>
     /// <param name="extensions">A read-only dictionary containing extension key-value pairs to associate with the builder. Keys must be non-null
     /// and unique within the dictionary.</param>
     /// <returns>The builder instance with the provided extensions applied.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided extensions are null.</exception>
     TBuilder WithExtensions(IReadOnlyDictionary<string, StringValues> extensions);
 }
 

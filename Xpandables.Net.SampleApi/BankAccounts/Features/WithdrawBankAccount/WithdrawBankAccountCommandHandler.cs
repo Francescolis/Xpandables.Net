@@ -31,6 +31,6 @@ public sealed class WithdrawBankAccountCommandHandler(IAggregateStore<BankAccoun
             Description = request.Description
         };
 
-        return ExecutionResult.Success(result);
+        return ExecutionResult.SuccessResult(result);
     }
 }

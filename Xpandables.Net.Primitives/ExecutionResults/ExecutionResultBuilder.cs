@@ -116,6 +116,8 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     IExecutionResultBuilder
     where TBuilder : class, IExecutionResultBuilder
 {
+    private readonly bool _isSuccess = statusCode.IsSuccess;
+
     /// <summary>
     /// Gets the collection of headers.
     /// </summary>
@@ -134,22 +136,22 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <summary>
     /// Gets the exception associated with the execution result.
     /// </summary>
-    protected Exception? Exception { get; private set; }
+    protected Exception? Exception { get; set; }
 
     /// <summary>
     /// Gets or sets the HTTP status code for the execution result.
     /// </summary>
-    protected HttpStatusCode StatusCode { get; private set; } = statusCode;
+    protected HttpStatusCode StatusCode { get; set; } = statusCode;
 
     /// <summary>
     /// Gets or sets the title for the execution result.
     /// </summary>
-    protected string? Title { get; private set; }
+    protected string? Title { get; set; }
 
     /// <summary>  
     /// Gets or sets the detail for the execution result.  
     /// </summary>  
-    protected string? Detail { get; private set; }
+    protected string? Detail { get; set; }
 
     /// <summary>
     /// Gets or sets the result object of the execution.
@@ -159,7 +161,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <summary>
     /// Gets or sets the location URI for the execution result.
     /// </summary>
-    protected Uri? Location { get; private set; }
+    protected Uri? Location { get; set; }
 
     /// <summary>
     /// Returns the current builder instance cast to TBuilder.
@@ -188,7 +190,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
         ClearExtensions();
         ClearHeaders();
 
-        StatusCode = HttpStatusCode.Continue;
+        StatusCode = _isSuccess ? HttpStatusCode.OK : HttpStatusCode.BadRequest;
         Title = null;
         Detail = null;
         Location = null;
@@ -222,10 +224,10 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <inheritdoc/>
     public TBuilder Merge(ExecutionResult execution)
     {
-        if (execution.IsSuccess || StatusCode.IsSuccess)
+        if (execution.StatusCode != StatusCode)
         {
             throw new InvalidOperationException(
-                "Both execution results must be failure to merge them.");
+                "Both execution results must have the same status code to merge them.");
         }
 
         StatusCode = execution.StatusCode;
@@ -247,8 +249,10 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     }
 
     /// <inheritdoc/>
-    public TBuilder WithResult(object? result)
+    public TBuilder WithResult(object result)
     {
+        ArgumentNullException.ThrowIfNull(result);
+
         Result = result;
         return AsBuilder;
     }
@@ -257,6 +261,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithDetail(string detail)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
         Detail = detail.Trim();
         return AsBuilder;
     }
@@ -266,6 +271,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
+
         Errors.Add(key, errorMessage);
         return AsBuilder;
     }
@@ -275,8 +281,6 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(errorMessages);
-        if (errorMessages.Length == 0)
-            throw new ArgumentException("At least one error message is required.", nameof(errorMessages));
 
         Errors.Add(key, errorMessages);
         return AsBuilder;
@@ -293,6 +297,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithErrors(IDictionary<string, string> errors)
     {
         ArgumentNullException.ThrowIfNull(errors);
+
         Errors.AddRange(errors.AsReadOnly());
         return AsBuilder;
     }
@@ -318,7 +323,6 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithError(string key, in StringValues errorMessages)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        ArgumentOutOfRangeException.ThrowIfZero(errorMessages.Count);
 
         Errors.Add(new ElementEntry(key, errorMessages));
         return AsBuilder;
@@ -328,6 +332,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithException(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
+
         Exception = exception;
         return AsBuilder;
     }
@@ -337,6 +342,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
         Extensions.Add(key, value);
         return AsBuilder;
     }
@@ -346,8 +352,6 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(values);
-        if (values.Length == 0)
-            throw new ArgumentException("At least one extension value is required.", nameof(values));
 
         Extensions.Add(key, values);
         return AsBuilder;
@@ -364,6 +368,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithExtensions(IDictionary<string, string> extensions)
     {
         ArgumentNullException.ThrowIfNull(extensions);
+
         Extensions.AddRange(extensions.AsReadOnly());
         return AsBuilder;
     }
@@ -372,6 +377,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithExtensions(ElementCollection extensions)
     {
         Extensions.Merge(extensions);
+
         return AsBuilder;
     }
 
@@ -379,6 +385,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithExtensions(IReadOnlyDictionary<string, StringValues> extensions)
     {
         ArgumentNullException.ThrowIfNull(extensions);
+
         Extensions.AddRange(extensions);
         return AsBuilder;
     }
@@ -388,6 +395,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
         Headers.Add(key, value);
         return AsBuilder;
     }
@@ -397,8 +405,6 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(values);
-        if (values.Length == 0)
-            throw new ArgumentException("At least one header value is required.", nameof(values));
 
         Headers.Add(key, values);
         return AsBuilder;
@@ -408,6 +414,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithHeaders(IDictionary<string, string> headers)
     {
         ArgumentNullException.ThrowIfNull(headers);
+
         Headers.AddRange(headers.AsReadOnly());
         return AsBuilder;
     }
@@ -433,6 +440,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithHeaders(IReadOnlyDictionary<string, StringValues> headers)
     {
         ArgumentNullException.ThrowIfNull(headers);
+
         Headers.AddRange(headers);
         return AsBuilder;
     }
@@ -441,6 +449,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     public TBuilder WithLocation(Uri location)
     {
         ArgumentNullException.ThrowIfNull(location);
+
         Location = location;
         return AsBuilder;
     }
@@ -463,6 +472,15 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     /// <inheritdoc/>
     public TBuilder WithStatusCode(HttpStatusCode statusCode)
     {
+        if (_isSuccess)
+        {
+            statusCode.EnsureSuccess();
+        }
+        else
+        {
+            statusCode.EnsureFailure();
+        }
+
         StatusCode = statusCode;
         return AsBuilder;
     }
@@ -500,6 +518,8 @@ public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode s
     /// <inheritdoc/>
     public TBuilder WithResult(TResult result)
     {
+        ArgumentNullException.ThrowIfNull(result);
+
         Result = result;
         return (this as TBuilder)!;
     }

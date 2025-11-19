@@ -51,7 +51,7 @@ public static class ExecutionResultExtensions
         /// <remarks>Use this method to indicate that an operation has succeeded. The returned result will
         /// have a status code of <see cref="HttpStatusCode.OK"/> and no error information.</remarks>
         /// <returns>An <see cref="ExecutionResult"/> indicating a successful outcome with an HTTP status code of 200 (OK).</returns>
-        public static ExecutionResult Success() => Success(HttpStatusCode.OK).Build();
+        public static ExecutionResult SuccessResult() => Success(HttpStatusCode.OK).Build();
 
         /// <summary>
         /// Creates a successful <see cref="ExecutionResult{TResult}"/> with the specified value and an HTTP status code of OK (200).
@@ -60,8 +60,14 @@ public static class ExecutionResultExtensions
         /// <param name="value">The value to include in the successful execution result.</param>
         /// <returns>An <see cref="ExecutionResult{TResult}"/> representing a successful operation containing the specified
         /// value.</returns>
-        public static ExecutionResult<TResult> Success<TResult>(TResult value) =>
+        public static ExecutionResult<TResult> SuccessResult<TResult>(TResult value) =>
             Success(HttpStatusCode.OK, value).Build();
+
+        /// <summary>
+        /// Creates a builder for a successful execution result with the OK HTTP status code.
+        /// </summary>
+        /// <returns>An <see cref="IExecutionResultSuccessBuilder"/> instance configured with the provided status code.</returns>
+        public static IExecutionResultSuccessBuilder Success() => new ExecutionResultSuccessBuilder(HttpStatusCode.OK);
 
         /// <summary>
         /// Creates a builder for a successful execution result with the specified HTTP status code.
@@ -71,6 +77,16 @@ public static class ExecutionResultExtensions
         /// <returns>An <see cref="IExecutionResultSuccessBuilder"/> instance configured with the provided status code.</returns>
         public static IExecutionResultSuccessBuilder Success(HttpStatusCode statusCode) =>
             new ExecutionResultSuccessBuilder(statusCode);
+
+        /// <summary>
+        /// Creates a builder for an execution result that represents a successful operation with the OK HTTP
+        /// status code.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result value to be included in the execution result.</typeparam>
+        /// <returns>An <see cref="IExecutionResultBuilder{TResult}"/> instance configured to represent a successful result with
+        /// the specified status code.</returns>
+        public static IExecutionResultSuccessBuilder<TResult> Success<TResult>() =>
+            new ExecutionResultSuccessBuilder<TResult>(HttpStatusCode.OK);
 
         /// <summary>
         /// Creates a builder for an execution result that represents a successful operation with the specified HTTP
@@ -172,7 +188,7 @@ public static class ExecutionResultExtensions
         /// <param name="key">The key that identifies the type or category of the error. Cannot be null.</param>
         /// <param name="message">The error message describing the reason for the failure. Cannot be null.</param>
         /// <returns>An <see cref="ExecutionResult"/> instance indicating failure, containing the provided error key and message.</returns>
-        public static ExecutionResult Failure(string key, string message) =>
+        public static ExecutionResult FailureResult(string key, string message) =>
             Failure(HttpStatusCode.BadRequest)
             .WithError(key, message)
             .Build();
@@ -183,7 +199,7 @@ public static class ExecutionResultExtensions
         /// </summary>
         /// <param name="exception">The exception that describes the reason for the failure. Cannot be <see langword="null"/>.</param>
         /// <returns>An <see cref="ExecutionResult"/> instance that encapsulates the failure information and exception details.</returns>
-        public static ExecutionResult Failure(Exception exception)
+        public static ExecutionResult FailureResult(Exception exception)
         {
             ArgumentNullException.ThrowIfNull(exception);
 
@@ -200,7 +216,7 @@ public static class ExecutionResultExtensions
         /// <typeparam name="TResult">The type of the result value associated with the execution result.</typeparam>
         /// <param name="exception">The exception that describes the failure. Cannot be null.</param>
         /// <returns>An ExecutionResult representing a failed operation containing the provided exception.</returns>
-        public static ExecutionResult<TResult> Failure<TResult>(Exception exception)
+        public static ExecutionResult<TResult> FailureResult<TResult>(Exception exception)
         {
             ArgumentNullException.ThrowIfNull(exception);
 
@@ -337,6 +353,13 @@ public static class ExecutionResultExtensions
         public static ExecutionResult<TResult> Accepted<TResult>() => Success<TResult>(HttpStatusCode.Accepted).Build();
 
         /// <summary>
+        /// Creates a builder for an execution result that represents a failure with the BadRequest HTTP status code.
+        /// </summary>       
+        /// <returns>An <see cref="IExecutionResultFailureBuilder"/> instance configured with the specified HTTP status code.</returns>
+        public static IExecutionResultFailureBuilder Failure() =>
+            new ExecutionResultFailureBuilder(HttpStatusCode.BadRequest);
+
+        /// <summary>
         /// Creates a builder for an execution result that represents a failure with the specified HTTP status code.
         /// </summary>
         /// <param name="statusCode">The HTTP status code to associate with the failure result. This value determines the type of failure
@@ -344,6 +367,16 @@ public static class ExecutionResultExtensions
         /// <returns>An <see cref="IExecutionResultFailureBuilder"/> instance configured with the specified HTTP status code.</returns>
         public static IExecutionResultFailureBuilder Failure(HttpStatusCode statusCode) =>
             new ExecutionResultFailureBuilder(statusCode);
+
+        /// <summary>
+        /// Creates a builder for an execution result that represents a failure with the BadRequest HTTP status code.
+        /// </summary>
+        /// <remarks>Use this method to construct a failure result in scenarios where an operation does
+        /// not succeed and an HTTP status code should be returned to indicate the nature of the failure.</remarks>
+        /// <typeparam name="TResult">The type of the result value associated with the execution result.</typeparam>
+        /// <returns>An <see cref="IExecutionResultFailureBuilder{TResult}"/> instance configured with the specified status code.</returns>
+        public static IExecutionResultFailureBuilder<TResult> Failure<TResult>() =>
+            new ExecutionResultFailureBuilder<TResult>(HttpStatusCode.BadRequest);
 
         /// <summary>
         /// Creates a builder for an execution result that represents a failure with the specified HTTP status code.

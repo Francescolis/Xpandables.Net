@@ -180,7 +180,7 @@ public class AsyncPagedEnumerableBenchmark
         return data;
     }
 
-    private IAsyncPagedEnumerable<SampleData> CreatePagedEnumerable(List<SampleData> data)
+    private static IAsyncPagedEnumerable<SampleData> CreatePagedEnumerable(List<SampleData> data)
     {
         int pageSize = Math.Min(100, data.Count);
         int currentPage = 1;

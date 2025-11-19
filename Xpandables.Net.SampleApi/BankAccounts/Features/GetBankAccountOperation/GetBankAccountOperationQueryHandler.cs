@@ -62,6 +62,6 @@ public sealed class GetBankAccountOperationQueryHandler(IEventStore eventStore) 
                     _ => throw new InvalidOperationException("Unexpected event type.")
                 }).ToAsyncPagedEnumerable();
 
-        return Task.FromResult(ExecutionResult.Success(operations));
+        return Task.FromResult(ExecutionResult.SuccessResult(operations));
     }
 }

@@ -27,6 +27,6 @@ public sealed class DepositBankAccountCommandHandler(IAggregateStore<BankAccount
             Description = request.Description
         };
 
-        return ExecutionResult.Success(result);
+        return ExecutionResult.SuccessResult(result);
     }
 }
