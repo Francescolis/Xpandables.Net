@@ -161,4 +161,5 @@ public sealed record PatchOperation : IPatchOperation
 /// Collection{PatchOperation} type. Use this context with System.Text.Json serialization APIs to improve performance
 /// and reduce runtime reflection overhead when working with PatchOperation collections.</remarks>
 [JsonSerializable(typeof(Collection<PatchOperation>))]
+[JsonSerializable(typeof(PatchOperation))]
 public sealed partial class PatchOperationJsonContext : JsonSerializerContext { }

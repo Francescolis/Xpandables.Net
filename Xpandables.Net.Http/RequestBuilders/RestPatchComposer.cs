@@ -43,7 +43,13 @@ public sealed class RestPatchComposer<TRestRequest> : IRestRequestComposer<TRest
         }
 
         JsonSerializerOptions options = context.SerializerOptions;
-        options.TypeInfoResolverChain.Add(PatchOperationJsonContext.Default);
+
+        if (options.TypeInfoResolverChain.FirstOrDefault(
+            resolver => resolver == PatchOperationJsonContext.Default) is null)
+        {
+            options.TypeInfoResolverChain.Add(PatchOperationJsonContext.Default);
+        }
+
         JsonTypeInfo jsonTypeInfo = options.GetTypeInfo(typeof(PatchOperation));
 
         StringContent content = new(
