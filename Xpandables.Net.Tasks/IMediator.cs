@@ -37,6 +37,7 @@ public interface IMediator
     /// <returns>A task that represents the asynchronous send operation. The task result contains the execution outcome of the
     /// request.</returns>
     /// <exception cref="ExecutionResultException">Thrown when the execution result indicates a failure.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is null.</exception>
     Task<ExecutionResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest;
 }

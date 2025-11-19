@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Runtime.CompilerServices;
-
 using Microsoft.Extensions.DependencyInjection;
 
 using Xpandables.Net.ExecutionResults;
@@ -32,7 +30,6 @@ namespace Xpandables.Net.Tasks;
 public sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
     public async Task<ExecutionResult> SendAsync<TRequest>(
         TRequest request, CancellationToken cancellationToken = default)
