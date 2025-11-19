@@ -242,10 +242,37 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
             (null, null) => null,
             (not null, null) => execution.Exception,
             (null, not null) => Exception,
-            (not null, not null) => new AggregateException(execution.Exception, Exception)
+            (not null, not null) => CombineExceptions(execution.Exception, Exception)
         };
 
         return AsBuilder;
+
+        static Exception CombineExceptions(Exception executionException, Exception currentException)
+        {
+            var exceptions = new List<Exception>();
+
+            // Flatten the first exception
+            if (executionException is AggregateException aggEx1)
+            {
+                exceptions.AddRange(aggEx1.InnerExceptions);
+            }
+            else
+            {
+                exceptions.Add(executionException);
+            }
+
+            // Flatten the second exception
+            if (currentException is AggregateException aggEx2)
+            {
+                exceptions.AddRange(aggEx2.InnerExceptions);
+            }
+            else
+            {
+                exceptions.Add(currentException);
+            }
+
+            return new AggregateException(exceptions);
+        }
     }
 
     /// <inheritdoc/>
