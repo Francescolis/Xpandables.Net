@@ -100,7 +100,6 @@ public static class JsonDeserializerExtensions
         private readonly PipeReader _pipeReader;
         private readonly JsonTypeInfo<TValue> _itemTypeInfo;
         private readonly CancellationToken _cancellationToken;
-        private readonly JsonSerializerOptions _options;
 
         private Pagination? _cachedPagination;
         private IAsyncEnumerable<TValue>? _cachedItems;
@@ -115,34 +114,36 @@ public static class JsonDeserializerExtensions
             _pipeReader = pipeReader;
             _itemTypeInfo = itemTypeInfo;
             _cancellationToken = cancellationToken;
-            _options = itemTypeInfo.Options;
         }
 
         public IAsyncEnumerator<TValue> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken).Token;
-#pragma warning restore CA2000 // Dispose objects before losing scope
+            using var linkedTokenSource = CancellationTokenSource
+                .CreateLinkedTokenSource(cancellationToken, _cancellationToken);
+
+            var linkedToken = linkedTokenSource.Token;
+
             return DeserializeItemsAsync(linkedToken).GetAsyncEnumerator(linkedToken);
         }
 
         public async Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken).Token;
-#pragma warning restore CA2000 // Dispose objects before losing scope
             if (_cachedPagination is not null)
             {
-                return _cachedPagination.HasValue ? _cachedPagination.Value : Pagination.Empty;
+                return _cachedPagination.Value;
             }
 
-            _cachedPagination = await ExtractPaginationAsync(linkedToken).ConfigureAwait(false);
-            return _cachedPagination.HasValue ? _cachedPagination.Value : Pagination.Empty;
+            using var linkedTokenSource = CancellationTokenSource
+                .CreateLinkedTokenSource(cancellationToken, _cancellationToken);
+
+            _cachedPagination = await ExtractPaginationAsync(linkedTokenSource.Token).ConfigureAwait(false);
+
+            return _cachedPagination.Value;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         private async ValueTask<Pagination> ExtractPaginationAsync(CancellationToken cancellationToken)
         {
-#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
                 using var jsonDocument = await ReadJsonDocumentAsync(cancellationToken).ConfigureAwait(false);
@@ -162,11 +163,9 @@ public static class JsonDeserializerExtensions
             {
                 return Pagination.Empty;
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
 
-        private async IAsyncEnumerable<TValue> DeserializeItemsAsync(
-           [EnumeratorCancellation] CancellationToken cancellationToken)
+        private async IAsyncEnumerable<TValue> DeserializeItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (_cachedItems is not null)
             {
@@ -174,28 +173,25 @@ public static class JsonDeserializerExtensions
                 {
                     yield return item;
                 }
+
                 yield break;
             }
 
-            JsonDocument? jsonDocument = null;
             try
             {
-                jsonDocument = await ReadJsonDocumentAsync(cancellationToken).ConfigureAwait(false);
+                using var jsonDocument = await ReadJsonDocumentAsync(cancellationToken).ConfigureAwait(false);
 
                 if (jsonDocument is null || !jsonDocument.RootElement.TryGetProperty("items", out var itemsElement))
                 {
-                    // Cache empty enumerable
                     _cachedItems = AsyncEnumerable.Empty<TValue>();
+
                     yield break;
                 }
 
-                // Deserialize items as async enumerable directly from the JsonElement
                 if (itemsElement.ValueKind == JsonValueKind.Array)
                 {
-                    // Store raw JSON for caching
                     string itemsJson = itemsElement.GetRawText();
 
-                    // Create async enumerable that deserializes from the cached JSON
                     _cachedItems = DeserializeFromJsonAsync(itemsJson, cancellationToken);
 
                     await foreach (var item in _cachedItems.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -210,7 +206,6 @@ public static class JsonDeserializerExtensions
             }
             finally
             {
-                jsonDocument?.Dispose();
                 await _pipeReader.CompleteAsync().ConfigureAwait(false);
             }
         }
@@ -220,6 +215,7 @@ public static class JsonDeserializerExtensions
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             using var itemsStream = new MemoryStream(Encoding.UTF8.GetBytes(itemsJson));
+
             await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable(
                 itemsStream,
                 _itemTypeInfo,
@@ -229,13 +225,12 @@ public static class JsonDeserializerExtensions
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         private async ValueTask<JsonDocument?> ReadJsonDocumentAsync(CancellationToken cancellationToken)
         {
-#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                // Read all available bytes from PipeReader efficiently
-                var result = await _pipeReader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                ReadResult result = await _pipeReader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
                 if (result.Buffer.Length == 0)
                 {
@@ -243,7 +238,6 @@ public static class JsonDeserializerExtensions
                     return null;
                 }
 
-                // Allocate buffer and copy sequence data
                 byte[] bytes = new byte[result.Buffer.Length];
                 result.Buffer.CopyTo(bytes);
                 _pipeReader.AdvanceTo(result.Buffer.End);
@@ -259,7 +253,6 @@ public static class JsonDeserializerExtensions
             {
                 return null;
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
     }
 }

@@ -135,8 +135,7 @@ public class AsyncPagedEnumerableBenchmark
         HttpContent content = await CreateJsonHttpContent_IAsyncPagedEnumerable();
 
         IAsyncPagedEnumerable<SampleData?> pagedEnumerable = content
-            .ReadFromJsonAsAsyncPagedEnumerable(
-                SampleDataJsonContext.Default.SampleData);
+            .ReadFromJsonAsAsyncPagedEnumerable(SampleDataJsonContext.Default.SampleData);
 
         int count = 0;
         await foreach (SampleData? item in pagedEnumerable)
