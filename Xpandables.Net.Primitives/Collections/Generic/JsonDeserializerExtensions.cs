@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -168,6 +169,7 @@ public static class JsonDeserializerExtensions
 
         private Pagination? _cachedPagination;
         private IAsyncEnumerable<TValue>? _cachedItems;
+        private bool _isDeserialized;
 
         public Pagination Pagination => _cachedPagination ?? Pagination.Empty;
 
@@ -186,92 +188,75 @@ public static class JsonDeserializerExtensions
             using var linkedTokenSource = CancellationTokenSource
                 .CreateLinkedTokenSource(cancellationToken, _cancellationToken);
 
-            var linkedToken = linkedTokenSource.Token;
-
-            return DeserializeItemsAsync(linkedToken).GetAsyncEnumerator(linkedToken);
+            return DeserializeItemsAsync(linkedTokenSource.Token).GetAsyncEnumerator(linkedTokenSource.Token);
         }
 
         public async Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
         {
-            if (_cachedPagination is not null)
-            {
-                return _cachedPagination.Value;
-            }
-
             using var linkedTokenSource = CancellationTokenSource
                 .CreateLinkedTokenSource(cancellationToken, _cancellationToken);
 
-            _cachedPagination = await ExtractPaginationAsync(linkedTokenSource.Token).ConfigureAwait(false);
+            await DeserializeCoreAsync(linkedTokenSource.Token).ConfigureAwait(false);
 
             return _cachedPagination.Value;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-        private async ValueTask<Pagination> ExtractPaginationAsync(CancellationToken cancellationToken)
+        [MemberNotNull(nameof(_cachedItems), nameof(_cachedPagination))]
+        private async ValueTask DeserializeCoreAsync(CancellationToken cancellationToken)
         {
+#pragma warning disable CS8774 // Member must have a non-null value when exiting.
+            if (_isDeserialized)
+            {
+                return;
+            }
+
+            _isDeserialized = true;
+
             try
             {
-                using var jsonDocument = await ReadJsonDocumentAsync(cancellationToken).ConfigureAwait(false);
+                using var _cachedDocument = await ReadJsonDocumentAsync(cancellationToken).ConfigureAwait(false);
+#pragma warning restore CS8774 // Member must have a non-null value when exiting.
 
-                if (jsonDocument is null || !jsonDocument.RootElement.TryGetProperty("pagination", out var paginationElement))
+                if (_cachedDocument is null)
                 {
-                    return Pagination.Empty;
+                    _cachedItems = AsyncEnumerable.Empty<TValue>();
+                    _cachedPagination = Pagination.Empty;
+                    return;
                 }
 
-                var pagination = JsonSerializer.Deserialize(
-                    paginationElement.GetRawText(),
-                    PaginationJsonContext.Default.Pagination);
+                if (_cachedPagination is null
+                    && _cachedDocument.RootElement.TryGetProperty("pagination", out var paginationElement))
+                {
+                    _cachedPagination = JsonSerializer.Deserialize(
+                        paginationElement.GetRawText(),
+                        PaginationJsonContext.Default.Pagination);
+                }
 
-                return pagination;
+                if (_cachedItems is null
+                    && _cachedDocument.RootElement.TryGetProperty("items", out var itemsElement))
+                {
+                    if (itemsElement.ValueKind == JsonValueKind.Array)
+                    {
+                        string itemsJson = itemsElement.GetRawText();
+                        _cachedItems = DeserializeFromJsonAsync(itemsJson, cancellationToken);
+                    }
+                }
             }
-            catch
+            finally
             {
-                return Pagination.Empty;
+                _cachedItems ??= AsyncEnumerable.Empty<TValue>();
+                _cachedPagination ??= Pagination.Empty;
+                await _pipeReader.CompleteAsync().ConfigureAwait(false);
             }
         }
 
         private async IAsyncEnumerable<TValue> DeserializeItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (_cachedItems is not null)
+            await DeserializeCoreAsync(cancellationToken).ConfigureAwait(false);
+
+            await foreach (var item in _cachedItems.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                await foreach (var item in _cachedItems.WithCancellation(cancellationToken).ConfigureAwait(false))
-                {
-                    yield return item;
-                }
-
-                yield break;
-            }
-
-            try
-            {
-                using var jsonDocument = await ReadJsonDocumentAsync(cancellationToken).ConfigureAwait(false);
-
-                if (jsonDocument is null || !jsonDocument.RootElement.TryGetProperty("items", out var itemsElement))
-                {
-                    _cachedItems = AsyncEnumerable.Empty<TValue>();
-
-                    yield break;
-                }
-
-                if (itemsElement.ValueKind == JsonValueKind.Array)
-                {
-                    string itemsJson = itemsElement.GetRawText();
-
-                    _cachedItems = DeserializeFromJsonAsync(itemsJson, cancellationToken);
-
-                    await foreach (var item in _cachedItems.WithCancellation(cancellationToken).ConfigureAwait(false))
-                    {
-                        yield return item;
-                    }
-                }
-                else
-                {
-                    _cachedItems = AsyncEnumerable.Empty<TValue>();
-                }
-            }
-            finally
-            {
-                await _pipeReader.CompleteAsync().ConfigureAwait(false);
+                yield return item;
             }
         }
 
