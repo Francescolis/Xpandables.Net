@@ -40,25 +40,17 @@ public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfigur
         builder.Property(e => e.StreamVersion).IsRequired();
         builder.Property(e => e.StreamName).IsRequired();
 
-        // PRIMARY KEY is already configured in base class as KeyId
-        // Create unique constraint for event sourcing optimistic concurrency
-        // This database-level constraint prevents duplicate events in the same stream
         builder.HasIndex(e => new { e.StreamId, e.StreamVersion })
                .IsUnique()
                .HasDatabaseName("IX_DomainEvent_StreamId_StreamVersion_Unique");
 
-        // Additional index for stream-based queries (reading all events for a stream)
         builder.HasIndex(e => e.StreamId)
                .HasDatabaseName("IX_DomainEvent_StreamId");
 
-        // Index for stream name queries (useful for querying by aggregate type)
         builder.HasIndex(e => e.StreamName)
                .HasDatabaseName("IX_DomainEvent_StreamName");
 
-        // Cross-database concurrency control using UpdatedOn
-        // Prevents lost updates when events are modified (rare in event sourcing, but useful)
         builder.Property(e => e.UpdatedOn)
                .IsConcurrencyToken();
     }
-
 }

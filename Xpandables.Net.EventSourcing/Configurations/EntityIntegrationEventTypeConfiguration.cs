@@ -40,34 +40,19 @@ public sealed class EntityIntegrationEventTypeConfiguration : EntityEventTypeCon
         builder.Property(e => e.NextAttemptOn).IsRequired(false);
         builder.Property(e => e.ErrorMessage).IsRequired(false);
 
-        // Cross-database concurrency control using UpdatedOn timestamp
-        // Critical for outbox pattern to prevent double-processing
         builder.Property(e => e.UpdatedOn)
                .IsConcurrencyToken();
 
-        // Index for processing pending events (most common query)
-        // Query pattern: WHERE Status = 'PENDING' AND (NextAttemptOn IS NULL OR NextAttemptOn <= NOW)
-        // Note: Filtered indexes syntax varies by database
-        // PostgreSQL: Use quoted identifiers
-        // SQL Server: Use unquoted identifiers
-        // For maximum compatibility, use partial index only if needed
         builder.HasIndex(e => new { e.Status, e.NextAttemptOn })
                .HasDatabaseName("IX_IntegrationEvent_Status_NextAttemptOn");
 
-        // Index for claimed events lookup
-        // Query pattern: WHERE ClaimId = @claimId
         builder.HasIndex(e => e.ClaimId)
                .HasDatabaseName("IX_IntegrationEvent_ClaimId");
 
-        // Composite index for outbox polling pattern with ordering
-        // Query pattern: WHERE Status IN ('PENDING', 'ONERROR') ORDER BY Sequence
         builder.HasIndex(e => new { e.Status, e.NextAttemptOn, e.Sequence })
                .HasDatabaseName("IX_IntegrationEvent_Processing");
 
-        // Index for retry mechanism (find failed events to retry)
-        // Query pattern: WHERE Status = 'ONERROR' AND NextAttemptOn <= NOW
         builder.HasIndex(e => new { e.Status, e.AttemptCount, e.NextAttemptOn })
                .HasDatabaseName("IX_IntegrationEvent_Retry");
     }
-
 }

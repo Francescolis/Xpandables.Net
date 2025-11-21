@@ -37,20 +37,14 @@ public sealed class EntitySnapShotEventTypeConfiguration : EntityEventTypeConfig
 
         builder.Property(e => e.OwnerId).IsRequired();
 
-        // Single index for OwnerId lookups (find all snapshots for an aggregate)
         builder.HasIndex(e => e.OwnerId)
                .HasDatabaseName("IX_SnapshotEvent_OwnerId");
 
-        // Unique constraint: only one snapshot per owner at a specific sequence
-        // This prevents duplicate snapshots and ensures data integrity
-        // Sequence represents the aggregate version at which the snapshot was taken
         builder.HasIndex(e => new { e.OwnerId, e.Sequence })
                .IsUnique()
                .HasDatabaseName("IX_SnapshotEvent_OwnerId_Sequence_Unique");
 
-        // Cross-database concurrency control
         builder.Property(e => e.UpdatedOn)
                .IsConcurrencyToken();
     }
-
 }
