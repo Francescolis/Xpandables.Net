@@ -31,17 +31,35 @@ namespace Xpandables.Net.EventSourcing;
 /// system. It is designed to work with a specific data context, allowing integration with various storage backends that
 /// support the DataContext abstraction. All operations are asynchronous and support cancellation via CancellationToken.
 /// This class is not thread-safe; concurrent usage should be managed externally if required.</remarks>
-/// <param name="context">The data context instance used to access the underlying event storage. Cannot be null.</param>
-/// <param name="outbox">The outbox store data context used to manage and persist outbox messages for reliable event delivery. Cannot be null.</param>
-/// <param name="converterFactory">The event converter factory used to convert between domain events and entity events. Cannot be null.</param>
-public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataContext outbox, IEventConverterFactory converterFactory) : IEventStore
+public sealed class EventStore : IEventStore
 {
-    private readonly EventStoreDataContext _db = context
-        ?? throw new ArgumentNullException(nameof(context));
-    private readonly OutboxStoreDataContext _outbox = outbox
-        ?? throw new ArgumentNullException(nameof(outbox));
-    private readonly IEventConverterFactory _converterFactory = converterFactory
-        ?? throw new ArgumentNullException(nameof(converterFactory));
+    private readonly EventStoreDataContext _db;
+    private readonly OutboxStoreDataContext _outbox;
+    private readonly IEventConverter _domainConveter;
+    private readonly IEventConverter _snapshotConverter;
+
+    /// <summary>
+    /// Initializes a new instance of the EventStore class using the specified data contexts and event converter
+    /// factory.
+    /// </summary>
+    /// <param name="context">The data context used for storing and retrieving domain events.</param>
+    /// <param name="outbox">The data context used for managing outbox events for integration purposes.</param>
+    /// <param name="converterFactory">The factory used to obtain event converters for domain, integration, and snapshot events. Cannot be null.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="context"/>, <paramref name="outbox"/>, or <paramref name="converterFactory"/> is null.</exception>
+    public EventStore(
+        EventStoreDataContext context,
+        OutboxStoreDataContext outbox,
+        IEventConverterFactory converterFactory)
+    {
+        _db = context ?? throw new ArgumentNullException(nameof(context));
+        _outbox = outbox ?? throw new ArgumentNullException(nameof(outbox));
+        _ = converterFactory ?? throw new ArgumentNullException(nameof(converterFactory));
+
+        _domainConveter = converterFactory.GetEventConverter<IDomainEvent>();
+        _snapshotConverter = converterFactory.GetEventConverter<ISnapshotEvent>();
+    }
+
+
 
     ///<inheritdoc/>
     public async Task<AppendResult> AppendToStreamAsync(
@@ -63,7 +81,6 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
                 $"Expected version {request.ExpectedVersion} but found {current}.");
         }
 
-        var converter = _converterFactory.GetEventConverter<IDomainEvent>();
         var entities = new List<EntityDomainEvent>(capacity: batch.Length);
         long next = request.ExpectedVersion.GetValueOrDefault();
 
@@ -76,7 +93,7 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
                 .WithStreamVersion(next)
                 .WithStreamName(@event.StreamName);
 
-            var entity = (EntityDomainEvent)converter.ConvertEventToEntity(nextEvent, EventConverter.SerializerOptions);
+            var entity = (EntityDomainEvent)_domainConveter.ConvertEventToEntity(nextEvent, EventConverter.SerializerOptions);
             entities.Add(entity);
         }
 
@@ -93,7 +110,7 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
     {
         ArgumentNullException.ThrowIfNull(snapshotEvent);
 
-        var entity = (EntitySnapshotEvent)converterFactory.ConvertEventToEntity(snapshotEvent, EventConverter.SerializerOptions);
+        var entity = (EntitySnapshotEvent)_snapshotConverter.ConvertEventToEntity(snapshotEvent, EventConverter.SerializerOptions);
 
         await _db.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         // defer SaveChanges to FlushEventsAsync
@@ -147,10 +164,9 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
         if (last == null)
             return null;
 
-        var converter = _converterFactory.GetEventConverter<ISnapshotEvent>();
         return new EnvelopeResult
         {
-            Event = converter.ConvertEntityToEvent(last),
+            Event = _snapshotConverter.ConvertEntityToEvent(last),
             EventId = last.KeyId,
             EventName = last.EventName,
             GlobalPosition = last.Sequence,
@@ -176,13 +192,11 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
             .OrderBy(e => e.Sequence)
             .Take(request.MaxCount);
 
-        var converter = _converterFactory.GetEventConverter<IDomainEvent>();
-
         await foreach (var entity in query.AsAsyncEnumerable().ConfigureAwait(false))
         {
             yield return new EnvelopeResult
             {
-                Event = converter.ConvertEntityToEvent(entity),
+                Event = _domainConveter.ConvertEntityToEvent(entity),
                 EventId = entity.KeyId,
                 EventName = entity.EventName,
                 GlobalPosition = entity.Sequence,
@@ -205,13 +219,11 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
             .OrderBy(e => e.StreamVersion)
             .Take(request.MaxCount);
 
-        var converter = _converterFactory.GetEventConverter<IDomainEvent>();
-
         await foreach (var entity in query.AsAsyncEnumerable().ConfigureAwait(false))
         {
             yield return new EnvelopeResult
             {
-                Event = converter.ConvertEntityToEvent(entity),
+                Event = _domainConveter.ConvertEntityToEvent(entity),
                 EventId = entity.KeyId,
                 EventName = entity.EventName,
                 GlobalPosition = entity.Sequence,
@@ -267,7 +279,7 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
         SubscribeToStreamRequest request,
         CancellationToken cancellationToken = default)
     {
-        return new StreamSubscription(_db, request, converterFactory, cancellationToken);
+        return new StreamSubscription(_db, request, _domainConveter, cancellationToken);
     }
 
     ///<inheritdoc/>
@@ -275,7 +287,7 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
         SubscribeToAllStreamsRequest request,
         CancellationToken cancellationToken = default)
     {
-        return new AllStreamsSubscription(_db, request, converterFactory, cancellationToken);
+        return new AllStreamsSubscription(_db, request, _domainConveter, cancellationToken);
     }
 
     ///<inheritdoc/>
@@ -336,19 +348,19 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
     {
         private readonly EventStoreDataContext _context;
         private readonly SubscribeToStreamRequest _request;
-        private readonly IEventConverterFactory _converterFactory;
+        private readonly IEventConverter _domainConverter;
         private readonly CancellationTokenSource _cts;
         private readonly Task _subscriptionTask;
 
         public StreamSubscription(
             EventStoreDataContext context,
             SubscribeToStreamRequest request,
-            IEventConverterFactory converterFactory,
+            IEventConverter domainConverter,
             CancellationToken cancellationToken)
         {
             _context = context;
             _request = request;
-            _converterFactory = converterFactory;
+            _domainConverter = domainConverter;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _subscriptionTask = RunSubscriptionAsync();
         }
@@ -359,8 +371,6 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
 
             try
             {
-                var converter = _converterFactory.GetEventConverter<IDomainEvent>();
-
                 while (!_cts.Token.IsCancellationRequested)
                 {
                     var events = await _context.Set<EntityDomainEvent>()
@@ -373,7 +383,7 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
 
                     foreach (var entity in events)
                     {
-                        var domainEvent = (IDomainEvent)converter.ConvertEntityToEvent(entity);
+                        var domainEvent = (IDomainEvent)_domainConverter.ConvertEntityToEvent(entity);
                         await _request.OnEvent(domainEvent).ConfigureAwait(false);
                         lastProcessedVersion = entity.StreamVersion;
                     }
@@ -411,19 +421,19 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
     {
         private readonly EventStoreDataContext _context;
         private readonly SubscribeToAllStreamsRequest _request;
-        private readonly IEventConverterFactory _converterFactory;
+        private readonly IEventConverter _domainConverter;
         private readonly CancellationTokenSource _cts;
         private readonly Task _subscriptionTask;
 
         public AllStreamsSubscription(
             EventStoreDataContext context,
             SubscribeToAllStreamsRequest request,
-            IEventConverterFactory converterFactory,
+            IEventConverter domainConverter,
             CancellationToken cancellationToken)
         {
             _context = context;
             _request = request;
-            _converterFactory = converterFactory;
+            _domainConverter = domainConverter;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _subscriptionTask = RunSubscriptionAsync();
         }
@@ -434,7 +444,6 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
 
             try
             {
-                var converter = _converterFactory.GetEventConverter<IDomainEvent>();
                 while (!_cts.Token.IsCancellationRequested)
                 {
                     var events = await _context.Set<EntityDomainEvent>()
@@ -447,7 +456,7 @@ public sealed class EventStore(EventStoreDataContext context, OutboxStoreDataCon
 
                     foreach (var entity in events)
                     {
-                        var domainEvent = (IDomainEvent)converter.ConvertEntityToEvent(entity);
+                        var domainEvent = (IDomainEvent)_domainConverter.ConvertEntityToEvent(entity);
                         await _request.OnEvent(domainEvent).ConfigureAwait(false);
                         lastProcessedSequence = entity.Sequence;
                     }

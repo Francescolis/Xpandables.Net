@@ -61,6 +61,12 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                     .WriteAsync(context.HttpContext, execution)
                     .ConfigureAwait(false);
 
+                if (execution.IsFailure)
+                {
+                    await WriteProblemDetailsAsync(context.HttpContext, execution).ConfigureAwait(false);
+                    return Results.Empty;
+                }
+
                 if (execution.Value is not null)
                 {
                     result = execution.Value;
@@ -110,22 +116,27 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                 _ => exception.ToExecutionResult()
             };
 
-            ProblemDetails problem = execution.ToProblemDetails(context.HttpContext);
-            if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
-            {
-                await problemDetailsService.WriteAsync(new ProblemDetailsContext
-                {
-                    HttpContext = context.HttpContext,
-                    ProblemDetails = problem
-                }).ConfigureAwait(false);
-            }
-            else
-            {
-                IResult result = Results.Problem(problem);
-                await result.ExecuteAsync(context.HttpContext).ConfigureAwait(false);
-            }
+            await WriteProblemDetailsAsync(context.HttpContext, execution).ConfigureAwait(false);
 
             return Results.Empty;
+        }
+    }
+
+    private static async ValueTask WriteProblemDetailsAsync(HttpContext context, ExecutionResult execution)
+    {
+        ProblemDetails problem = execution.ToProblemDetails(context);
+        if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+        {
+            await problemDetailsService.WriteAsync(new ProblemDetailsContext
+            {
+                HttpContext = context,
+                ProblemDetails = problem
+            }).ConfigureAwait(false);
+        }
+        else
+        {
+            IResult result = Results.Problem(problem);
+            await result.ExecuteAsync(context).ConfigureAwait(false);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.AspNetCore.Mvc;
+
 using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Tasks;
 
@@ -8,8 +10,12 @@ public sealed class DepositBankAccountEndpoint : IEndpointRoute
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/bank-accounts/{accountId}/deposit", async (DepositBankAccountCommand command, IMediator mediator) =>
-        await mediator.SendAsync(command).ConfigureAwait(false))
+        app.MapPost("/bank-accounts/{accountId}/deposit",
+            async (
+                [FromRoute] Guid accountId,
+                DepositBankAccountCommand command,
+                IMediator mediator) =>
+        await mediator.SendAsync(command with { AccountId = accountId }).ConfigureAwait(false))
             .WithXMinimalApi()
             .AllowAnonymous()
             .WithTags("BankAccounts")

@@ -1,18 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-using Microsoft.AspNetCore.Mvc;
-
 using Xpandables.Net.DataAnnotations;
 using Xpandables.Net.EventSourcing;
 using Xpandables.Net.Requests;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 
-public sealed class DepositBankAccountCommand :
+public sealed record DepositBankAccountCommand :
     IRequest<DepositBankAccountResult>, IRequiresValidation, IRequiresEventStorage
 {
-    [Required, FromRoute]
-    public required Guid AccountId { get; init; }
+    internal Guid AccountId { get; init; }
 
     [Range(0.01, double.MaxValue)]
     public required decimal Amount { get; init; }

@@ -6,11 +6,10 @@ using Xpandables.Net.Requests;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.WithdrawBankAccount;
 
-public sealed class WithdrawBankAccountCommand :
+public sealed record WithdrawBankAccountCommand :
     IRequest<WithdrawBankAccountResult>, IRequiresValidation, IRequiresEventStorage
 {
-    [Required]
-    public required Guid AccountId { get; init; }
+    internal Guid AccountId { get; init; }
     [Required]
     [Range(0.01, double.MaxValue)]
     public required decimal Amount { get; init; }

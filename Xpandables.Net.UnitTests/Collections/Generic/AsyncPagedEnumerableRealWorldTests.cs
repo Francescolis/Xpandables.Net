@@ -247,7 +247,7 @@ public sealed class AsyncPagedEnumerableRealWorldTests
         Assert.NotEmpty(items);
         Assert.All(items, item =>
         {
-            Assert.True(item.Original % 4 == 0);
+            Assert.Equal(0, item.Original % 4);
             Assert.Equal(item.Original * item.Original, item.Squared);
         });
     }
