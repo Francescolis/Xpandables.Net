@@ -15,6 +15,9 @@
   <Project Path="System.Collections.AsyncPaged/System.Collections.AsyncPaged.csproj" Id="73a0cebd-fdb7-4fea-8320-65193fec2f12">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Data.EntityFramework/System.Data.EntityFramework.csproj" Id="d3e941fc-222a-4861-bd00-c142052b9d06">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.Data.Repositories/System.Data.Repositories.csproj" Id="e79fd29a-860d-4b3a-b28a-659af2291f5d">
     <Platform Project="x64" />
   </Project>
