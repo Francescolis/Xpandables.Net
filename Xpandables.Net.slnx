@@ -27,6 +27,9 @@
   <Project Path="System.ExecutionResults.Requests/System.ExecutionResults.Requests.csproj" Id="8e15e4a8-c6fc-4df0-a8a0-cd82123b8a79">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.ExecutionResults.Tasks/System.ExecutionResults.Tasks.csproj" Id="7eda7d61-68f9-42d6-8707-3ff45fcb20d5">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.ExecutionResults/System.ExecutionResults.csproj" Id="db1f440a-d9ed-426c-abf5-2065e67af7b4">
     <Platform Project="x64" />
   </Project>
