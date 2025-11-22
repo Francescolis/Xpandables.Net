@@ -21,6 +21,12 @@
   <Project Path="System.Linq.AsyncPaged/System.Linq.AsyncPaged.csproj" Id="e895107b-ff7a-4abf-93f1-a57390e38b26">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Optionals/System.Optionals.csproj" Id="8bff6792-1c31-40ab-8ef0-f2e2a74347c2">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.Primitives.Validation/System.Primitives.Validation.csproj" Id="d2b45f03-a0ae-4c5e-8f35-c0c879a6a9e0">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.Primitives/System.Primitives.csproj" Id="cb6a404f-1663-43ab-82ed-88d3647797ef">
     <Platform Project="x64" />
   </Project>
