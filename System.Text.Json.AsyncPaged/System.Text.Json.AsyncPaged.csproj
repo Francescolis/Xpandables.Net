@@ -85,7 +85,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.Collections.Generic.AsyncPaged\System.Collections.Generic.AsyncPaged.csproj" />
+	  <ProjectReference Include="..\System.Collections.AsyncPaged\System.Collections.AsyncPaged.csproj" />
 	</ItemGroup>
 
 </Project>

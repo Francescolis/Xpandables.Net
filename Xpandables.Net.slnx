@@ -12,7 +12,10 @@
     <File Path="README.md" />
     <File Path="Resources.Designer.t4" />
   </Folder>
-  <Project Path="System.Collections.Generic.AsyncPaged/System.Collections.Generic.AsyncPaged.csproj" Id="73a0cebd-fdb7-4fea-8320-65193fec2f12">
+  <Project Path="System.Collections.AsyncPaged/System.Collections.AsyncPaged.csproj" Id="73a0cebd-fdb7-4fea-8320-65193fec2f12">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.ExecutionResults.Requests/System.ExecutionResults.Requests.csproj" Id="8e15e4a8-c6fc-4df0-a8a0-cd82123b8a79">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.ExecutionResults/System.ExecutionResults.csproj" Id="db1f440a-d9ed-426c-abf5-2065e67af7b4">
