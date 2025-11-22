@@ -18,6 +18,9 @@
   <Project Path="System.Data.Repositories/System.Data.Repositories.csproj" Id="e79fd29a-860d-4b3a-b28a-659af2291f5d">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Events.EntityFramework/System.Events.EntityFramework.csproj" Id="d5b52978-5f0f-4789-a2d5-0e3819e69975">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.ExecutionResults.Events/System.Events.csproj" Id="2ba7d386-a42a-467c-bf64-bb53e3d6dd0c">
     <Platform Project="x64" />
   </Project>
