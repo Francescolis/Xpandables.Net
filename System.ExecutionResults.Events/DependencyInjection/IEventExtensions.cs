@@ -15,16 +15,17 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Events;
+using System.Events.Aggregates;
+using System.Events.Domain;
+using System.Events.Integration;
 using System.Reflection;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-using Xpandables.Net.Cache;
-using Xpandables.Net.EventSourcing;
-using Xpandables.Net.EventSourcing.Aggregates;
-
-namespace Xpandables.Net.DependencyInjection;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.Extensions.DependencyInjection;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Provides extension methods for registering event store and outbox store services with an <see
@@ -33,52 +34,13 @@ namespace Xpandables.Net.DependencyInjection;
 /// <remarks>These extension methods simplify the configuration of event sourcing and outbox services by
 /// registering default or custom implementations with the dependency injection container. Use these methods to add
 /// support for event storage and outbox processing in your application's service pipeline.</remarks>
-public static class IPrimitivesExtensions
+public static class IEventExtensions
 {
     internal static readonly MethodInfo AddEventHandlerMethod =
         typeof(IEventExtensions).GetMethod(nameof(AddXEventHandler))!;
 
     extension(IServiceCollection services)
     {
-        /// <summary>
-        /// Registers a singleton implementation of the specified cache type resolver in the service collection.
-        /// </summary>
-        /// <remarks>Use this method to configure dependency injection for event cache type resolution. If
-        /// an IEventCacheTypeResolver is already registered, this method will not overwrite the existing
-        /// registration.</remarks>
-        /// <typeparam name="TCacheTypeResolver">The type of cache type resolver to register. Must implement the ICacheTypeResolver interface
-        /// and have a public constructor.</typeparam>
-        /// <returns>The IServiceCollection instance with the cache type resolver registered.</returns>
-        public IServiceCollection AddXCacheTypeResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TCacheTypeResolver>()
-            where TCacheTypeResolver : class, ICacheTypeResolver
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            services.TryAddSingleton<ICacheTypeResolver, TCacheTypeResolver>();
-            return services;
-        }
-
-        /// <summary>
-        /// Adds the default cache type resolver to the service collection.
-        /// </summary>
-        /// <param name="assemblies">An optional array of assemblies to register for type resolution. If no assemblies are provided, all non-legacy
-        /// assemblies will be registered.</param>
-        /// <remarks>This method registers the CacheTypeResolver as the implementation for
-        /// cache type resolution. Call this method during application startup to enable cache type resolution
-        /// services.</remarks>
-        /// <returns>The same IServiceCollection instance, allowing for method chaining.</returns>
-        [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
-        public IServiceCollection AddXCacheTypeResolver(params Assembly[] assemblies)
-        {
-            ArgumentNullException.ThrowIfNull(services);
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            var resolver = new CacheTypeResolver();
-#pragma warning restore CA2000 // Dispose objects before losing scope
-            resolver.RegisterAssemblies(assemblies);
-
-            services.TryAddSingleton<ICacheTypeResolver>(resolver);
-            return services;
-        }
-
         /// <summary>
         /// Registers an <see cref="AggregateStore{TAggregate}"/> for the specified aggregate type in the dependency injection container.
         /// </summary>

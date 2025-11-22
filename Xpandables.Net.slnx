@@ -15,6 +15,9 @@
   <Project Path="System.Collections.AsyncPaged/System.Collections.AsyncPaged.csproj" Id="73a0cebd-fdb7-4fea-8320-65193fec2f12">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.ExecutionResults.Events/System.Events.csproj" Id="2ba7d386-a42a-467c-bf64-bb53e3d6dd0c">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.ExecutionResults.Requests/System.ExecutionResults.Requests.csproj" Id="8e15e4a8-c6fc-4df0-a8a0-cd82123b8a79">
     <Platform Project="x64" />
   </Project>

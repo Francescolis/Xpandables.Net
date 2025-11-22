@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.ExecutionResults.Requests</Title>
-		<Description>Request implementation.</Description>
+		<Title>System.Events</Title>
+		<Description>Events implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.ExecutionResults.Requests</AssemblyName>
-		<RootNamespace>System.ExecutionResults</RootNamespace>
-		<PackageId>System.ExecutionResults.Requests</PackageId>
+		<AssemblyName>System.Events</AssemblyName>
+		<RootNamespace>System.Events</RootNamespace>
+		<PackageId>System.Events</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -30,7 +30,7 @@
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IRequest, IRequestHandler</PackageTags>
+		<PackageTags>IDomainEvent, IIntegrationEvent, IEventHandler</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -85,8 +85,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.Collections.AsyncPaged\System.Collections.AsyncPaged.csproj" />
-	  <ProjectReference Include="..\System.ExecutionResults\System.ExecutionResults.csproj" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
+	</ItemGroup>
+
 
 </Project>
