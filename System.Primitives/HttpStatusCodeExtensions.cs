@@ -19,7 +19,7 @@ using System.Net;
 using System.Security;
 using System.Security.Authentication;
 
-namespace System.ExecutionResults;
+namespace System;
 
 /// <summary>
 /// Provides extension methods for working with HTTP status codes.
