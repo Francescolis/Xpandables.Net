@@ -12,6 +12,9 @@
     <File Path="README.md" />
     <File Path="Resources.Designer.t4" />
   </Folder>
+  <Project Path="AspNetCore.Net.Controllers/AspNetCore.Net.Controllers.csproj" Id="40e4edbb-8c88-4bcc-8b0b-6a808188ae9a">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="AspNetCore.Net.Minimals/AspNetCore.Net.Minimals.csproj" Id="12a862bc-b963-4880-a22e-6f9c27aac128">
     <Platform Project="x64" />
   </Project>
@@ -54,6 +57,7 @@
   <Project Path="System.Optionals/System.Optionals.csproj" Id="8bff6792-1c31-40ab-8ef0-f2e2a74347c2">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Primitives.Composition/System.Primitives.Composition.csproj" Id="6c66642b-ffdb-4002-8e91-fe35aa18dd38" />
   <Project Path="System.Primitives.Validation/System.Primitives.Validation.csproj" Id="d2b45f03-a0ae-4c5e-8f35-c0c879a6a9e0">
     <Platform Project="x64" />
   </Project>
