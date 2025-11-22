@@ -12,6 +12,9 @@
     <File Path="README.md" />
     <File Path="Resources.Designer.t4" />
   </Folder>
+  <Project Path="AspNetCore.Net/AspNetCore.Net.csproj" Id="a820677a-3901-4f62-a6a0-decd0a485702">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.Collections.AsyncPaged/System.Collections.AsyncPaged.csproj" Id="73a0cebd-fdb7-4fea-8320-65193fec2f12">
     <Platform Project="x64" />
   </Project>
