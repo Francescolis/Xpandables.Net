@@ -18,9 +18,6 @@ using FluentAssertions;
 
 using Microsoft.EntityFrameworkCore;
 
-using Xpandables.Net.Collections.Extensions;
-using Xpandables.Net.Collections.Generic;
-
 namespace Xpandables.Net.UnitTests.Collections.Extensions;
 
 /// <summary>

@@ -18,8 +18,6 @@ using System.ComponentModel.DataAnnotations;
 
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Requests;
-
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;
 
 public sealed record GetBankAccountOperationQuery : IStreamRequest<GetBankAccountOperationResult>

@@ -1,8 +1,4 @@
-﻿
-using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Tasks;
-
-namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
+﻿namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 
 public sealed class GetBankAccountBalanceEndpoint : IEndpointRoute
 {

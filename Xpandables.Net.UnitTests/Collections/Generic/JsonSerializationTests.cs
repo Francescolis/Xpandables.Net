@@ -21,8 +21,6 @@ using System.Text.Json.Serialization;
 
 using FluentAssertions;
 
-using Xpandables.Net.Collections.Generic;
-
 namespace Xpandables.Net.UnitTests.Collections.Generic;
 
 /// <summary>

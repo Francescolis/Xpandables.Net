@@ -14,9 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Collections.Generic;
 using FluentAssertions;
-using Xunit;
 
 namespace Xpandables.Net.UnitTests.Collections.Generic;
 

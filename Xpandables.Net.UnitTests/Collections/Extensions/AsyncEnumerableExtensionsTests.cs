@@ -14,9 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Xpandables.Net.Collections.Extensions;
-using Xpandables.Net.Collections.Generic;
-
 namespace Xpandables.Net.UnitTests.Collections.Extensions;
 
 /// <summary>

@@ -15,11 +15,6 @@
  *
 ********************************************************************************/
 
-using Xpandables.Net.Collections.Extensions;
-using Xpandables.Net.Collections.Generic;
-using Xpandables.Net.EventSourcing;
-using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.Requests;
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;

@@ -17,7 +17,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Primitives.Composition;
+namespace System.Composition;
 
 /// <summary>
 /// Interface for adding services to the service collection.

@@ -1,7 +1,4 @@
-﻿using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Tasks;
-
-namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
+﻿namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
 
 public sealed class CreateBankAccountEndpoint : IEndpointRoute
 {

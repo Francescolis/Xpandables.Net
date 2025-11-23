@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel.Composition;
+using System.Composition;
 
 namespace System.Primitives.Composition;
 

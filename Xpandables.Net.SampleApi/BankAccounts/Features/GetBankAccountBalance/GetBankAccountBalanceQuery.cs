@@ -2,8 +2,6 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.Requests;
-
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 
 public sealed class GetBankAccountBalanceQuery : IRequest<GetBankAccountBalanceResult>

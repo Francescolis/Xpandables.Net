@@ -1,9 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 
-using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Tasks;
-
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 
 public sealed class DepositBankAccountEndpoint : IEndpointRoute

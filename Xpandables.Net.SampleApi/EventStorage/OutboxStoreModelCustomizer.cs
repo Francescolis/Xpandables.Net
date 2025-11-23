@@ -1,10 +1,10 @@
 ﻿namespace Xpandables.Net.SampleApi.EventStorage;
 
+using System.Data.Repositories.Converters;
+using System.Events.Repositories;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-
-using Xpandables.Net.EventSourcing.Repositories;
-using Xpandables.Net.Repositories.Converters;
 
 public class OutboxStoreModelCustomizer(ModelCustomizerDependencies dependencies) : ModelCustomizer(dependencies)
 {

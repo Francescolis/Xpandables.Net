@@ -30,12 +30,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Using Include="Xunit" />
+	  <ProjectReference Include="..\System.Linq.AsyncPaged\System.Linq.AsyncPaged.csproj" />
+	  <ProjectReference Include="..\System.Text.Json.AsyncPaged\System.Text.Json.AsyncPaged.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-        <ProjectReference Include="..\Xpandables.Net.Collections\Xpandables.Net.Collections.csproj" />
-        <ProjectReference Include="..\Xpandables.Net.Primitives\Xpandables.Net.Primitives.csproj" />
+		<Using Include="Xunit" />
 	</ItemGroup>
 
 </Project>

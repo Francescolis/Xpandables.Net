@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-using System.Primitives.Composition;
+using System.Composition;
 
 using Microsoft.AspNetCore.Routing;
 

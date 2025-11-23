@@ -1,4 +1,5 @@
-﻿using Xpandables.Net.EventSourcing;
+﻿using System.Events.Domain;
+
 using Xpandables.Net.SampleApi.EnumerationTypes;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Accounts;

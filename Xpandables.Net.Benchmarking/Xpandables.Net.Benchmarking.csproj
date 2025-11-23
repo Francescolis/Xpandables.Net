@@ -16,7 +16,7 @@
     <PackageReference Include="BenchmarkDotNet" Version="0.15.6" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Xpandables.Net.Primitives\Xpandables.Net.Primitives.csproj" />
-    <ProjectReference Include="..\Xpandables.Net.Collections\Xpandables.Net.Collections.csproj" />
+    <ProjectReference Include="..\System.Net.Http.AsyncPaged\System.Net.Http.AsyncPaged.csproj" />
+    <ProjectReference Include="..\System.Text.Json.AsyncPaged\System.Text.Json.AsyncPaged.csproj" />
   </ItemGroup>
 </Project>

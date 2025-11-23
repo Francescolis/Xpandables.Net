@@ -1,6 +1,4 @@
-﻿using Xpandables.Net.EventSourcing.States;
-
-namespace Xpandables.Net.SampleApi.BankAccounts.Accounts;
+﻿namespace Xpandables.Net.SampleApi.BankAccounts.Accounts;
 
 public abstract class BankAccountState : State<BankAccount>
 {

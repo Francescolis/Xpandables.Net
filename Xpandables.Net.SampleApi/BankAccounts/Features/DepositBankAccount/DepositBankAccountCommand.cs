@@ -1,9 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-using Xpandables.Net.DataAnnotations;
-using Xpandables.Net.EventSourcing;
-using Xpandables.Net.Requests;
-
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 
 public sealed record DepositBankAccountCommand :

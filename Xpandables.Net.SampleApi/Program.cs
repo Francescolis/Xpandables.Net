@@ -1,3 +1,5 @@
+using System.Events;
+
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -5,8 +7,6 @@ using Microsoft.OpenApi;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.EventSourcing;
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 using Xpandables.Net.SampleApi.EventStorage;
 

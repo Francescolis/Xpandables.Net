@@ -13,7 +13,7 @@
 
 		<AssemblyName>System.Net.Http.Rests</AssemblyName>
 		<RootNamespace>System.Net.Http.Rests</RootNamespace>
-		<PackageId>System.Text.Net.Http.Rests</PackageId>
+		<PackageId>System.Net.Http.Rests</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
