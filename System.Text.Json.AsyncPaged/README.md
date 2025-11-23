@@ -134,7 +134,7 @@ When serialized, `IAsyncPagedEnumerable<T>` produces the following JSON structur
   "items": [
     { "id": 1, "name": "Product A" },
     { "id": 2, "name": "Product B" },
-    ...
+    ....
   ]
 }
 ```

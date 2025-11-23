@@ -1,38 +1,38 @@
-# ?? System.Linq.AsyncPaged
+﻿# 📊 System.Linq.AsyncPaged
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Linq.AsyncPaged)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Comprehensive LINQ Operators for Async Pagination** � Full-featured, composable LINQ extensions for `IAsyncPagedEnumerable<T>` with projection, filtering, aggregation, and materialization support.
+> **Comprehensive LINQ Operators for Async Pagination** — Full-featured, composable LINQ extensions for `IAsyncPagedEnumerable<T>` with projection, filtering, aggregation, and materialization support.
 
 ---
 
-## ?? Overview
+## 🎯 Overview
 
 `System.Linq.AsyncPaged` extends `IAsyncPagedEnumerable<T>` with a complete suite of LINQ operators specifically designed for async pagination scenarios. It provides projection, filtering, aggregation, ordering, grouping, and materialization methods that preserve pagination metadata throughout the query chain.
 
 Built for .NET 10 with AOT compatibility, this library seamlessly integrates with LINQ queries while maintaining the performance and memory efficiency benefits of async enumeration.
 
-### ? Key Features
+### ✨ Key Features
 
-- **?? Projection Operators** � `SelectPaged`, `SelectPagedAsync` with sync and async selectors
-- **?? Filtering Operations** � `WherePaged` with predicate-based filtering  
-- **?? Aggregation Methods** � `CountPaged`, `SumPaged`, `MinPaged`, `MaxPaged`, `AggregatePagedAsync`, and more
-- **??? Element Access** � `FirstPaged`, `LastPaged`, `SinglePaged`, `ElementAtPaged`
-- **?? Ordering** � `OrderByPaged`, `ThenByPaged`, `ReversePaged` with ascending/descending support
-- **?? Set Operations** � `DistinctPaged`, `UnionPaged`, `IntersectPaged`, `ExceptPaged`
-- **?? Joining** � `JoinPaged`, `GroupJoinPaged` for cross-sequence operations
-- **?? Grouping** � `GroupByPaged` for partitioning sequences while preserving pagination
-- **?? Numerical** � `SumPaged`, `AveragePaged`, `MinPaged`, `MaxPaged` with custom projections
-- **?? Materialization** � `ToListPagedAsync`, `ToArrayPagedAsync`, `MaterializeAsync` with memory efficiency
-- **?? Windowing** � `TakePaged`, `SkipPaged`, `TakeWhilePaged`, `SkipWhilePaged` for partial enumeration
-- **?? Flattening** � `SelectManyPaged`, `SelectManyPagedAsync` for nested enumerable composition
-- **Pagination Preservation** � All operators preserve pagination metadata for accurate page tracking
+- **🔄 Projection Operators** — `SelectPaged`, `SelectPagedAsync` with sync and async selectors
+- **🔍 Filtering Operations** — `WherePaged` with predicate-based filtering  
+- **📈 Aggregation Methods** — `CountPaged`, `SumPaged`, `MinPaged`, `MaxPaged`, `AggregatePagedAsync`, and more
+- **🏷️ Element Access** — `FirstPaged`, `LastPaged`, `SinglePaged`, `ElementAtPaged`
+- **📋 Ordering** — `OrderByPaged`, `ThenByPaged`, `ReversePaged` with ascending/descending support
+- **⚙️ Set Operations** — `DistinctPaged`, `UnionPaged`, `IntersectPaged`, `ExceptPaged`
+- **🔗 Joining** — `JoinPaged`, `GroupJoinPaged` for cross-sequence operations
+- **📑 Grouping** — `GroupByPaged` for partitioning sequences while preserving pagination
+- **⚙️ Numerical** — `SumPaged`, `AveragePaged`, `MinPaged`, `MaxPaged` with custom projections
+- **💾 Materialization** — `ToListPagedAsync`, `ToArrayPagedAsync`, `MaterializeAsync` with memory efficiency
+- **🪟 Windowing** — `TakePaged`, `SkipPaged`, `TakeWhilePaged`, `SkipWhilePaged` for partial enumeration
+- **📦 Flattening** — `SelectManyPaged`, `SelectManyPagedAsync` for nested enumerable composition
+- **Pagination Preservation** — All operators preserve pagination metadata for accurate page tracking
 
 ---
 
-## ?? Installation
+## 📦 Installation
 
 ```bash
 dotnet add package System.Linq.AsyncPaged
@@ -50,9 +50,9 @@ Install-Package System.Linq.AsyncPaged
 
 ---
 
-## ?? Quick Start
+## 🚀 Quick Start
 
-### ?? Basic LINQ Operations
+### 📋 Basic LINQ Operations
 
 ```csharp
 using System.Linq;
@@ -81,7 +81,7 @@ var pagination = await products.GetPaginationAsync();
 Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages}");
 ```
 
-### ?? Async Projection
+### 🔄 Async Projection
 
 ```csharp
 // Project with async operations (e.g., fetching related data)
@@ -102,7 +102,7 @@ await foreach (var item in enrichedProducts)
 }
 ```
 
-### ?? Composition Chain
+### 📊 Composition Chain
 
 ```csharp
 // Build complex queries while preserving pagination
@@ -126,20 +126,19 @@ await foreach (var order in results)
 var pagination = await results.GetPaginationAsync();
 Console.WriteLine($"Total orders: {pagination.TotalCount}");
 ```
-
 ---
 
-## ?? Core Concepts
+## 📚 Core Concepts
 
-### ?? Extension Method Naming Convention
+### 🧩 Extension Method Naming Convention
 
 All LINQ extensions for `IAsyncPagedEnumerable<T>` follow a consistent naming pattern:
-- **`XxxPaged`** � Async methods returning `IAsyncPagedEnumerable<T>` (e.g., `SelectPaged`, `WherePaged`)
-- **`XxxPagedAsync`** � Async methods returning `ValueTask<T>` or `Task<T>` (e.g., `CountPagedAsync`, `FirstPagedAsync`)
+- **`XxxPaged`** — Async methods returning `IAsyncPagedEnumerable<T>` (e.g., `SelectPaged`, `WherePaged`)
+- **`XxxPagedAsync`** — Async methods returning `ValueTask<T>` or `Task<T>` (e.g., `CountPagedAsync`, `FirstPagedAsync`)
 
 This naming distinguishes paged operations from standard LINQ and makes intent clear.
 
-### ?? Pagination Preservation
+### 🔄 Pagination Preservation
 
 All operator implementations preserve the source's pagination metadata:
 
@@ -158,7 +157,7 @@ var filteredPagination = await filtered.GetPaginationAsync();
 // filteredPagination == pagination (same metadata, but note: item count may differ)
 ```
 
-### ?? Aggregation Without Enumeration
+### 📈 Aggregation Without Enumeration
 
 Aggregation operations count or compute without loading all items:
 
@@ -175,9 +174,9 @@ var max = await paged.MaxPagedAsync();                  // Maximum value
 
 ---
 
-## ?? Common Patterns
+## 💡 Common Patterns
 
-### ??? Product Search with Pagination
+### 🛍️ Product Search with Pagination
 
 ```csharp
 public async Task<IAsyncPagedEnumerable<ProductDto>> SearchAsync(
@@ -224,7 +223,7 @@ await foreach (var product in results)
 var pagination = await results.GetPaginationAsync();
 ```
 
-### ?? Data Enrichment
+### 🎯 Data Enrichment
 
 ```csharp
 // Enrich items from paged source with additional async data
@@ -257,7 +256,7 @@ await foreach (var summary in enrichedUsers)
 }
 ```
 
-### ?? Materialization for Multiple Enumerations
+### 💾 Materialization for Multiple Enumerations
 
 ```csharp
 // When you need to enumerate multiple times, materialize to avoid re-querying
@@ -278,7 +277,7 @@ await foreach (var product in materialized)
 }
 ```
 
-### ?? Flattening Nested Collections
+### 📦 Flattening Nested Collections
 
 ```csharp
 // Flatten orders and their items while preserving pagination
@@ -304,9 +303,9 @@ await foreach (var item in orderItems)
 
 ---
 
-## ?? Advanced Examples
+## 🎯 Advanced Examples
 
-### ?? Aggregation Pipeline
+### 📈 Aggregation Pipeline
 
 ```csharp
 // Complex aggregation with grouping
@@ -336,7 +335,7 @@ foreach (var category in report)
 }
 ```
 
-### ?? Async Transformation with Cancellation
+### 🔄 Async Transformation with Cancellation
 
 ```csharp
 // Support cancellation in async projections
@@ -356,7 +355,7 @@ await foreach (var item in processed.WithCancellation(cts.Token))
 }
 ```
 
-### ?? Windowing Operations
+### 🪟 Windowing Operations
 
 ```csharp
 // Skip first page, take next 20 items
@@ -369,7 +368,7 @@ await foreach (var product in paged)
 }
 ```
 
-### ?? Finding Specific Elements
+### 🎯 Finding Specific Elements
 
 ```csharp
 // Get first item matching criteria
@@ -388,30 +387,30 @@ var fifthProduct = await products.ElementAtPagedAsync(4);
 
 ---
 
-## ? Best Practices
+## ✅ Best Practices
 
-### ? Do
+### ✅ Do
 
-- **Chain operators fluently** � Take advantage of method chaining for readable queries
-- **Use `*PagedAsync` methods for terminal operations** � They provide proper async/await semantics
-- **Apply filtering early** � Filter before projection to reduce data processed
-- **Materialize when needed** � Use `MaterializeAsync` for small datasets requiring multiple enumerations
-- **Support cancellation** � Pass `CancellationToken` through async operations
-- **Preserve pagination context** � Let operators maintain pagination metadata automatically
+- **Chain operators fluently** — Take advantage of method chaining for readable queries
+- **Use `*PagedAsync` methods for terminal operations** — They provide proper async/await semantics
+- **Apply filtering early** — Filter before projection to reduce data processed
+- **Materialize when needed** — Use `MaterializeAsync` for small datasets requiring multiple enumerations
+- **Support cancellation** — Pass `CancellationToken` through async operations
+- **Preserve pagination context** — Let operators maintain pagination metadata automatically
 
-### ? Don't
+### ❌ Don't
 
-- **Materialize large datasets unnecessarily** � Avoid loading entire result sets into memory
-- **Combine filtering and projection inconsistently** � Use `WherePaged` + `SelectPaged` together
-- **Forget pagination metadata** � Always call `GetPaginationAsync()` when displaying page info
-- **Block on async operations** � Never use `.Result` or `.Wait()` on paged operations
-- **Ignore cancellation tokens** � Support graceful cancellation in long-running queries
+- **Materialize large datasets unnecessarily** — Avoid loading entire result sets into memory
+- **Combine filtering and projection inconsistently** — Use `WherePaged` + `SelectPaged` together
+- **Forget pagination metadata** — Always call `GetPaginationAsync()` when displaying page info
+- **Block on async operations** — Never use `.Result` or `.Wait()` on paged operations
+- **Ignore cancellation tokens** — Support graceful cancellation in long-running queries
 
 ---
 
-## ?? API Reference
+## 📖 API Reference
 
-### ?? Projection Extensions
+### 🔄 Projection Extensions
 
 ```csharp
 // Synchronous projection
@@ -427,7 +426,7 @@ IAsyncPagedEnumerable<TResult> SelectPagedAsync<TResult>(
     Func<TSource, CancellationToken, ValueTask<TResult>> selectorAsync);
 ```
 
-### ?? Filtering Extensions
+### 🔍 Filtering Extensions
 
 ```csharp
 // Synchronous predicate filtering
@@ -442,7 +441,7 @@ IAsyncPagedEnumerable<TSource> SkipWhilePaged(
     Func<TSource, bool> predicate);
 ```
 
-### ?? Aggregation Extensions
+### 📈 Aggregation Extensions
 
 ```csharp
 // Counting
@@ -467,7 +466,7 @@ ValueTask<TSource> AggregatePagedAsync(Func<TSource, TSource, TSource> func, Can
 ValueTask<TAccumulate> AggregatePagedAsync<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, CancellationToken cancellationToken = default);
 ```
 
-### ?? Materialization Extensions
+### 💾 Materialization Extensions
 
 ```csharp
 // Fully materialize paged enumerable
@@ -491,34 +490,34 @@ ValueTask<IAsyncPagedEnumerable<T>> PrecomputePaginationAsync(
 
 ---
 
-## ?? Performance Considerations
+## ⚙️ Performance Considerations
 
-- **Lazy Evaluation** � Operators are lazily evaluated; items are only processed when enumerated
-- **Pagination Preservation** � Pagination metadata flows through the operator chain without recomputation
-- **Memory Efficiency** � Stream data without materializing entire collections unless needed
-- **Cancellation Support** � All async operations support cancellation tokens for resource cleanup
-- **ValueTask Usage** � Terminal async operations use `ValueTask<T>` for allocation efficiency
-- **Materialization Trade-off** � Use `MaterializeAsync()` only for small datasets requiring multiple passes
+- **Lazy Evaluation** — Operators are lazily evaluated; items are only processed when enumerated
+- **Pagination Preservation** — Pagination metadata flows through the operator chain without recomputation
+- **Memory Efficiency** — Stream data without materializing entire collections unless needed
+- **Cancellation Support** — All async operations support cancellation tokens for resource cleanup
+- **ValueTask Usage** — Terminal async operations use `ValueTask<T>` for allocation efficiency
+- **Materialization Trade-off** — Use `MaterializeAsync()` only for small datasets requiring multiple passes
 
 ---
 
-## ?? Dependency
+## 🔗 Dependency
 
 This library depends on:
-- **System.Collections.AsyncPaged** � Core pagination types and interfaces
+- **System.Collections.AsyncPaged** — Core pagination types and interfaces
 
 ---
 
-## ?? Related Packages
+## 📚 Related Packages
 
-- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** � Core async pagination library
-- **[System.Text.Json.AsyncPaged](https://www.nuget.org/packages/System.Text.Json.AsyncPaged)** � JSON serialization support
-- **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** � REST API pagination
+- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** — Core async pagination library
+- **[System.Text.Json.AsyncPaged](https://www.nuget.org/packages/System.Text.Json.AsyncPaged)** — JSON serialization support
+- **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** — REST API pagination
 
 ---
 
-## ?? License & Contributing
+## 📄 License & Contributing
 
-Licensed under the **Apache License 2.0**. Copyright � Kamersoft 2025.
+Licensed under the **Apache License 2.0**. Copyright © Kamersoft 2025.
 
 Contributions are welcome! Please visit [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net) to contribute, report issues, or request features.

@@ -1,33 +1,33 @@
-# ?? System.Collections.AsyncPaged
+﻿# 📖 System.Collections.AsyncPaged
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Collections.AsyncPaged)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Efficient Async Pagination for Modern .NET** � Stream large datasets with pagination metadata, minimal allocations, and AOT-friendly design.
+> **Efficient Async Pagination for Modern .NET** — Stream large datasets with pagination metadata, minimal allocations, and AOT-friendly design.
 
 ---
 
-## ?? Overview
+## 🎯 Overview
 
 `System.Collections.AsyncPaged` provides a production-ready solution for implementing pagination in asynchronous scenarios. It extends `IAsyncEnumerable<T>` with a lightweight `IAsyncPagedEnumerable<T>` interface that carries pagination metadata, enabling efficient data streaming from databases, APIs, and cloud services without reinventing the wheel.
 
 Built for .NET 10 with AOT (Ahead-of-Time) compatibility and full support for modern async patterns, this library eliminates boilerplate while maintaining ergonomic, allocation-conscious APIs.
 
-### ? Key Features
+### ✨ Key Features
 
-- **`IAsyncPagedEnumerable<T>` Interface** � Composable async enumerable with built-in pagination metadata (page size, current page, total count, continuation token)
-- **Lazy Pagination Computation** � Pagination metadata is computed on-demand, avoiding unnecessary overhead for simple scenarios
-- **Automatic Pagination Extraction** � Intelligently infers pagination details from `IQueryable<T>` Skip/Take patterns or materializes from `IAsyncEnumerable<T>`
-- **Cursor-Based & Offset Pagination** � Support for both offset-based and continuation token�based pagination strategies
-- **Immutable `Pagination` Struct** � Efficient, thread-safe pagination state with helper methods (NextPage, PreviousPage, TotalPages, etc.)
-- **AOT Compatible** � Full native AOT support with JSON source generation for serialization
-- **System.Text.Json Integration** � Built-in `PaginationJsonContext` for high-performance JSON serialization
-- **Zero Framework Baggage** � No Entity Framework, ASP.NET, or other dependencies; works with any async source
+- **`IAsyncPagedEnumerable<T>` Interface** — Composable async enumerable with built-in pagination metadata (page size, current page, total count, continuation token)
+- **Lazy Pagination Computation** — Pagination metadata is computed on-demand, avoiding unnecessary overhead for simple scenarios
+- **Automatic Pagination Extraction** — Intelligently infers pagination details from `IQueryable<T>` Skip/Take patterns or materializes from `IAsyncEnumerable<T>`
+- **Cursor-Based & Offset Pagination** — Support for both offset-based and continuation token–based pagination strategies
+- **Immutable `Pagination` Struct** — Efficient, thread-safe pagination state with helper methods (NextPage, PreviousPage, TotalPages, etc.)
+- **AOT Compatible** — Full native AOT support with JSON source generation for serialization
+- **System.Text.Json Integration** — Built-in `PaginationJsonContext` for high-performance JSON serialization
+- **Zero Framework Baggage** — No Entity Framework, ASP.NET, or other dependencies; works with any async source
 
 ---
 
-## ?? Installation
+## 📦 Installation
 
 ```bash
 dotnet add package System.Collections.AsyncPaged
@@ -41,9 +41,9 @@ Install-Package System.Collections.AsyncPaged
 
 ---
 
-## ?? Quick Start
+## 🚀 Quick Start
 
-### ?? Basic Enumeration with Pagination
+### 📋 Basic Enumeration with Pagination
 
 ```csharp
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages} pag
 Console.WriteLine($"Total items: {pagination.TotalCount}");
 ```
 
-### ??? With Entity Framework Core
+### 🗄️ With Entity Framework Core
 
 ```csharp
 public IAsyncPagedEnumerable<Product> GetProductsAsync(int pageNumber = 1, int pageSize = 20)
@@ -87,7 +87,7 @@ var pagination = await products.GetPaginationAsync();
 Console.WriteLine($"Showing {pagination.PageSize} items, page {pagination.CurrentPage} of {pagination.TotalPages}");
 ```
 
-### ?? Manual Pagination Control
+### 🎮 Manual Pagination Control
 
 ```csharp
 var pagination = Pagination.Create(pageSize: 25, currentPage: 1, totalCount: 500);
@@ -105,9 +105,9 @@ Console.WriteLine($"Skip {pagination.Skip}, Take {pagination.Take}");
 
 ---
 
-## ?? Core Concepts
+## 📚 Core Concepts
 
-### ?? The `Pagination` Struct
+### 🧩 The `Pagination` Struct
 
 The `Pagination` struct is an immutable value type that encapsulates all pagination state:
 
@@ -131,18 +131,19 @@ Console.WriteLine(pagination.HasPreviousPage); // true
 // Navigation
 var next = pagination.NextPage("continuation_token_xyz");
 var prev = pagination.PreviousPage();
+
 ```
 
 Key properties:
-- **`PageSize`** � Items per page
-- **`CurrentPage`** � Current page number (1-based)
-- **`TotalCount`** � Total items across all pages (nullable if unknown)
-- **`ContinuationToken`** � Token for cursor-based pagination (nullable)
-- **`Skip`** � Calculated skip offset for database queries
-- **`Take`** � Calculated take count (same as PageSize)
-- **`TotalPages`** � Computed total number of pages (null if TotalCount is unknown)
+- **`PageSize`** — Items per page
+- **`CurrentPage`** — Current page number (1-based)
+- **`TotalCount`** — Total items across all pages (nullable if unknown)
+- **`ContinuationToken`** — Token for cursor-based pagination (nullable)
+- **`Skip`** — Calculated skip offset for database queries
+- **`Take`** — Calculated take count (same as PageSize)
+- **`TotalPages`** — Computed total number of pages (null if TotalCount is unknown)
 
-### ??? Creating `IAsyncPagedEnumerable<T>`
+### 🏗️ Creating `IAsyncPagedEnumerable<T>`
 
 **From `IAsyncEnumerable<T>` with known count:**
 ```csharp
@@ -178,38 +179,38 @@ var paged = _context.Products
 
 ---
 
-## ?? Design Philosophy
+## 💡 Design Philosophy
 
-### ?? **Async-First, Streaming-Focused**
+### ⚡️ **Async-First, Streaming-Focused**
 - Designed for `await foreach` consumption without blocking threads
 - Pagination metadata computation is lazy; only fetched when explicitly requested via `GetPaginationAsync()`
 - Optimal for database cursors, API pagination, and cloud storage enumeration
 
-### ?? **Minimal Allocations**
+### 💨 **Minimal Allocations**
 - `Pagination` is a readonly struct; zero heap allocations for pagination state
 - `AsyncPagedEnumerable<T>` is sealed to enable better JIT optimizations
 - Lazy materialization; data is not loaded until enumerated
 
-### ?? **AOT Compatible**
+### 🚀 **AOT Compatible**
 - No reflection; source-generated JSON serialization via `PaginationJsonContext`
 - Safe for native AOT deployment and trimming
 - Thread-safe lazy initialization of pagination state using atomic operations
 
-### ?? **Zero Dependencies**
+### 📦 **Zero Dependencies**
 - No Entity Framework, ASP.NET, or external package dependencies
 - Pure `System.Collections.Generic` and `System.Text.Json` integration
 - Works with any async enumerable source: EF Core, Dapper, custom queries, REST APIs, etc.
 
-### ?? **Immutable & Thread-Safe**
+### 🔐 **Immutable & Thread-Safe**
 - `Pagination` is a `readonly record struct`; safe to share across threads
 - `AsyncPagedEnumerable<T>` uses thread-safe lazy initialization for pagination computation
 - All navigation methods (`NextPage()`, `PreviousPage()`, `WithTotalCount()`) return new instances
 
 ---
 
-## ?? Advanced Examples
+## 🎯 Advanced Examples
 
-### ?? Cursor-Based Pagination
+### 🔄 Cursor-Based Pagination
 
 For efficient pagination over time-series or large datasets without expensive total count queries:
 
@@ -264,7 +265,7 @@ if (meta.HasContinuation)
 }
 ```
 
-### ?? Streaming with Aggregation
+### 📊 Streaming with Aggregation
 
 ```csharp
 public async Task<PagedAggregation> GetOrderStatsAsync(
@@ -296,7 +297,7 @@ public async Task<PagedAggregation> GetOrderStatsAsync(
 }
 ```
 
-### ?? JSON Serialization
+### 📝 JSON Serialization
 
 ```csharp
 using System.Text.Json;
@@ -315,31 +316,31 @@ var deserialized = JsonSerializer.Deserialize<Pagination>(json, options);
 
 ---
 
-## ? Best Practices
+## ✅ Best Practices
 
-### ? Do
+### ✅ Do
 
-- **Use `await foreach`** for consumption � leverage `IAsyncEnumerable<T>` semantics naturally
-- **Call `GetPaginationAsync()` explicitly** � ensures pagination metadata is fully computed before responding
-- **Apply filters before pagination** � better query performance and smaller result sets
-- **Stream large datasets** � avoid materializing entire collections; process items as they arrive
-- **Use `CancellationToken` throughout** � especially with `GetPaginationAsync()` and enumeration
-- **Cache total counts** � for expensive operations; avoid re-querying on every page request
-- **Use continuation tokens** � for time-series or large ordered datasets to avoid expensive total count queries
+- **Use `await foreach`** for consumption — leverage `IAsyncEnumerable<T>` semantics naturally
+- **Call `GetPaginationAsync()` explicitly** — ensures pagination metadata is fully computed before responding
+- **Apply filters before pagination** — better query performance and smaller result sets
+- **Stream large datasets** — avoid materializing entire collections; process items as they arrive
+- **Use `CancellationToken` throughout** — especially with `GetPaginationAsync()` and enumeration
+- **Cache total counts** — for expensive operations; avoid re-querying on every page request
+- **Use continuation tokens** — for time-series or large ordered datasets to avoid expensive total count queries
 
-### ? Don't
+### ❌ Don't
 
-- **Block on async operations** � avoid `.Result` or `.Wait()`; use `await` or async all the way
-- **Materialize unnecessarily** � don't call `ToList()` unless required
-- **Ignore `CancellationToken`** � support graceful cancellation for long-running operations
-- **Assume pagination is computed** � always call `GetPaginationAsync()` if you need up-to-date metadata
-- **Share mutable state across multiple enumerations** � create new enumerables per usage
+- **Block on async operations** — avoid `.Result` or `.Wait()`; use `await` or async all the way
+- **Materialize unnecessarily** — don't call `ToList()` unless required
+- **Ignore `CancellationToken`** — support graceful cancellation for long-running operations
+- **Assume pagination is computed** — always call `GetPaginationAsync()` if you need up-to-date metadata
+- **Share mutable state across multiple enumerations** — create new enumerables per usage
 
 ---
 
-## ?? API Reference
+## 📖 API Reference
 
-### ?? `IAsyncPagedEnumerable<T>` Interface
+### 🔗 `IAsyncPagedEnumerable<T>` Interface
 
 ```csharp
 public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPagedEnumerable
@@ -353,7 +354,7 @@ public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPaged
 }
 ```
 
-### ?? `Pagination` Struct
+### 🧩 `Pagination` Struct
 
 ```csharp
 public readonly record struct Pagination
@@ -389,7 +390,7 @@ public readonly record struct Pagination
 }
 ```
 
-### ?? Extension Methods
+### 🔧 Extension Methods
 
 ```csharp
 // From IAsyncEnumerable<T>
@@ -416,9 +417,9 @@ public static IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable<T>(
 
 ---
 
-## ??? Extensibility
+## 🔧️ Extensibility
 
-### ??? Implementing a Custom Pagination Source
+### 🏗️ Implementing a Custom Pagination Source
 
 You can create custom pagination sources by implementing `IAsyncPagedEnumerable<T>`:
 
@@ -464,25 +465,25 @@ await foreach (var user in source)
 
 ---
 
-## ?? Performance Considerations
+## ⚙️ Performance Considerations
 
-- **Lazy Pagination Computation** � Pagination metadata is only computed when `GetPaginationAsync()` is called; no overhead if not needed
-- **Thread-Safe Initialization** � Uses lock-free atomic operations for lazy pagination computation
-- **Struct Allocations** � `Pagination` is a readonly struct; all copies are stack-allocated
-- **IQueryable Optimization** � Automatically extracts Skip/Take patterns without materializing data
-- **Memory Streaming** � Process large datasets without holding entire collections in memory
-
----
-
-## ?? Related Packages
-
-- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** � LINQ operators for async paged enumerables
-- **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** � REST API pagination support
+- **Lazy Pagination Computation** — Pagination metadata is only computed when `GetPaginationAsync()` is called; no overhead if not needed
+- **Thread-Safe Initialization** — Uses lock-free atomic operations for lazy pagination computation
+- **Struct Allocations** — `Pagination` is a readonly struct; all copies are stack-allocated
+- **IQueryable Optimization** — Automatically extracts Skip/Take patterns without materializing data
+- **Memory Streaming** — Process large datasets without holding entire collections in memory
 
 ---
 
-## ?? License & Contributing
+## 📚 Related Packages
 
-Licensed under the **Apache License 2.0**. Copyright � Kamersoft 2025.
+- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** — LINQ operators for async paged enumerables
+- **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** — REST API pagination support
+
+---
+
+## 📄 License & Contributing
+
+Licensed under the **Apache License 2.0**. Copyright © Kamersoft 2025.
 
 Contributions are welcome! Please visit [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net) to contribute, report issues, or request features.
