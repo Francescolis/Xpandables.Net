@@ -12,6 +12,9 @@
     <File Path="README.md" />
     <File Path="Resources.Designer.t4" />
   </Folder>
+  <Project Path="AspNetCore.Net.Composition/AspNetCore.Net.Composition.csproj" Id="9c6a3470-892b-4719-9461-59bdf2857f02">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="AspNetCore.Net.Controllers/AspNetCore.Net.Controllers.csproj" Id="40e4edbb-8c88-4bcc-8b0b-6a808188ae9a">
     <Platform Project="x64" />
   </Project>
