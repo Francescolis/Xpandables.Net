@@ -1,35 +1,76 @@
-﻿# 📦 Xpandables.Net
+﻿# 🔗 Xpandables.Net.ExecutionResults.Pipelines
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Core Library** - Comprehensive toolkit for building modern .NET applications with ExecutionResult, Optional, CQRS, Event Sourcing, Specifications, and more.
+> **Pipeline Decorators** - Pre-built pipeline decorators for validation, transactions, logging, event handling, and other cross-cutting concerns in CQRS request pipelines.
 
 ---
 
-## 📋 Overview
+## 🎯 Overview
 
-`Xpandables.Net` is the core library providing fundamental building blocks for enterprise .NET applications. It includes implementations of the Result pattern, Optional monad, Mediator pattern (CQRS), Event Sourcing, Repository pattern, REST client, and Specification pattern.
+`Xpandables.Net.ExecutionResults.Pipelines` provides production-ready pipeline decorators that wrap request handlers with cross-cutting concerns. These decorators execute before and after your main handler logic, enabling clean separation of business logic from infrastructure concerns like validation, transactions, event publishing, and more.
 
-### 🎯 Key Features
+Built on top of System.ExecutionResults.Requests, this library offers reusable decorators that you can chain together to create sophisticated request processing pipelines.
 
-- ✅ **ExecutionResult** - Railway-oriented programming with HTTP-aware result types
-- 🎁 **Optional** - Null-safe value handling (like Rust's Option type)
-- 📡 **Mediator/CQRS** - Request/response pipeline with pre/post handlers
-- 📝 **Event Sourcing** - Complete event sourcing implementation with aggregates
-- 💾 **Repository** - Generic repository pattern with unit of work
-- 🌐 **REST Client** - Type-safe, attribute-based HTTP client
-- ✔️ **Specifications** - Business rules encapsulation with LINQ support
-- 🔄 **Async Paging** - Asynchronous enumerable with pagination
+### ✨ Key Features
+
+- ✅ **Validation Decorator** - Automatic request validation using FluentValidation
+- 🔄 **Transaction Decorator** - Unit of Work pattern with automatic commit/rollback
+- 📡 **Event Publishing** - Domain event and integration event decorators
+- 📝 **Pre/Post Processing** - Execute logic before and after handlers
+- ⚠️ **Exception Handling** - Centralized exception handling with logging
+- 📊 **Event Store Integration** - Automatic event persistence
+- 📮 **Outbox Pattern** - Reliable event publishing with transactional outbox
+- 🧩 **Composable** - Chain multiple decorators together
+
+---
+
+## 📥 Installation
+
+```bash
+dotnet add package Xpandables.Net.ExecutionResults.Pipelines
+dotnet add package Xpandables.Net.ExecutionResults.Requests
+```
 
 ---
 
 ## 🚀 Quick Start
 
-### Installation
+### Enable Pipeline Decorators
 
-```bash
-dotnet add package Xpandables.Net
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+
+// Register pipeline with decorators
+builder.Services.AddMediator(typeof(Program).Assembly);
+
+// Add decorators (order matters!)
+builder.Services.AddPipelineValidation();      // 1. Validate first
+builder.Services.AddPipelinePreDecorator();    // 2. Pre-processing
+builder.Services.AddPipelineUnitOfWork();      // 3. Transaction management
+builder.Services.AddPipelineDomainEvents();    // 4. Publish domain events
+builder.Services.AddPipelinePostDecorator();   // 5. Post-processing
+builder.Services.AddPipelineException();       // 6. Exception handling
+```
+
+### Mark Requests for Pipeline Features
+
+```csharp
+// Request requires validation
+public record CreateUserRequest(
+    string Name,
+    string Email) : IRequest, IRequiresValidation;
+
+// Request requires transaction
+public record UpdateOrderRequest(
+    Guid OrderId,
+    OrderStatus Status) : IRequest, IRequiresUnitOfWork;
+
+// Request publishes domain events
+public record ProcessPaymentRequest(
+    Guid OrderId,
+    decimal Amount) : IRequest, IRequiresDomainEvents;
 ```
 
 ### Basic Examples

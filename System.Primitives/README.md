@@ -1,499 +1,480 @@
-# ??? Xpandables.Net.EntityFramework
+﻿# 🔧 System.Primitives
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Entity Framework Core Repository** - Production-ready implementation of the repository pattern using EF Core with support for Unit of Work, transactions, and advanced querying.
+> **Core Primitives & Utilities** - Strongly-typed primitive wrappers (Value Objects), extension methods, state patterns, caching, and foundational utilities.
 
 ---
 
-## ?? Overview
+## 🎯 Overview
 
-Provides a complete Entity Framework Core implementation of `IRepository` with support for CRUD operations, bulk updates, transactions, and the Unit of Work pattern. Seamlessly integrates with Xpandables.Net.Events for event sourcing.
+`System.Primitives` provides the foundational abstractions and utilities used throughout the Xpandables.Net ecosystem. It includes the Value Object pattern via `IPrimitive<T>`, state management patterns, memory-aware caching, element collections, and essential extension methods.
 
-### ?? Key Features
+This library has **zero dependencies** and serves as the base for all other Xpandables.Net packages.
 
-- ??? **EF Core Integration** - Full DbContext support
-- ?? **Unit of Work** - Transaction management across operations
-- ? **Bulk Operations** - Efficient batch insert/update/delete
-- ?? **LINQ Support** - Full queryable support with async enumeration
-- ?? **Event Store** - Built-in event sourcing with EventStoreDataContext
-- ?? **Outbox Pattern** - Reliable event publishing with OutboxStoreDataContext
-- ? **Testable** - Easy to mock and test
+### ✨ Key Features
+
+- 🎯 **Strongly-Typed Primitives** - Value Object pattern with `IPrimitive<TPrimitive, TValue>`
+- 🔄 **State Pattern** - `IState`, `IStateContext`, `IMemento` implementations
+- 💾 **Memory-Aware Cache** - Intelligent caching with GC pressure monitoring
+- 📦 **Element Collections** - Flexible key-value collections with JSON support
+- 🧩 **Extension Methods** - String, Object, HttpStatusCode, Exception utilities
+- 🔧 **Disposable Helpers** - Base classes for IDisposable/IAsyncDisposable
+- 🌐 **HTTP Utilities** - Status code helpers and extensions
+- ⚙️ **Service Decorators** - DI composition and decorator patterns
 
 ---
 
-## ?? Quick Start
-
-### Installation
+## 📥 Installation
 
 ```bash
-dotnet add package Xpandables.Net.EntityFramework
-dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+dotnet add package System.Primitives
 ```
 
-### Basic Setup
+---
+
+## 🚀 Quick Start
+
+### Strongly-Typed Primitives (Value Objects)
+
+Define domain primitives with built-in validation and type safety:
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Repositories;
+using System;
 
-// Define your DbContext
-public class AppDbContext : DbContext
+// Email primitive with validation
+[PrimitiveJsonConverter<Email, string>]
+public readonly record struct Email : IPrimitive<Email, string>
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) 
-        : base(options) { }
+    public required string Value { get; init; }
 
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Order> Orders => Set<Order>();
-    public DbSet<Product> Products => Set<Product>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public static Email Create(string value)
     {
-        // Configure entities
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.HasIndex(e => e.Email).IsUnique();
-        });
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        
+        if (!value.Contains('@'))
+            throw new ArgumentException("Invalid email format");
+
+        return new Email { Value = value.ToLower() };
     }
+
+    public static string DefaultValue => string.Empty;
+
+    public static implicit operator string(Email email) => email.Value;
+    public static implicit operator Email(string value) => Create(value);
+    
+    public static bool operator ==(Email left, Email right) => 
+        left.Value == right.Value;
+    public static bool operator !=(Email left, Email right) => 
+        !(left == right);
 }
-
-// Register services
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Register repository
-builder.Services.AddXRepository<AppDbContext>();
 
 // Usage
-public class UserService
-{
-    private readonly IRepository<AppDbContext> _repository;
+Email email = "john@example.com";  // Implicit conversion + validation
+string emailStr = email;            // Implicit back to string
+Console.WriteLine($"Email: {email}");  // john@example.com
 
-    public UserService(IRepository<AppDbContext> repository) 
-        => _repository = repository;
-
-    public async Task<List<User>> GetActiveUsersAsync(
-        CancellationToken cancellationToken)
-    {
-        return await _repository
-            .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
-            .ToListAsync(cancellationToken);
-    }
-}
-```
-
----
-
-## ?? Core Operations
-
-### Query Operations
-
-```csharp
-// Simple query
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
-    .ToListAsync();
-
-// Projection
-var userDtos = await _repository
-    .FetchAsync<User, UserDto>(q => q
-        .Where(u => u.IsActive)
-        .Select(u => new UserDto { Id = u.Id, Name = u.Name }))
-    .ToListAsync();
-
-// With ordering and pagination
-var pagedUsers = await _repository
-    .FetchAsync<User, User>(q => q
-        .Where(u => u.Age >= 18)
-        .OrderBy(u => u.Name)
-        .Skip(page * pageSize)
-        .Take(pageSize))
-    .ToListAsync();
-
-// Join queries
-var ordersWithUsers = await _repository
-    .FetchAsync<Order, OrderDto>(q => q
-        .Include(o => o.User)
-        .Include(o => o.Items)
-        .Where(o => o.Status == OrderStatus.Pending)
-        .Select(o => new OrderDto
-        {
-            OrderId = o.Id,
-            UserName = o.User.Name,
-            TotalItems = o.Items.Count
-        }))
-    .ToListAsync();
-
-// Async enumeration
-await foreach (var user in _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.IsActive)))
-{
-    await ProcessUserAsync(user);
-}
-```
-
-### Insert Operations
-
-```csharp
-// Single insert
-var user = new User 
-{ 
-    Name = "John Doe", 
-    Email = "john@example.com" 
-};
-await _repository.AddAsync(cancellationToken, user);
-
-// Bulk insert
-var users = new []
-{
-    new User { Name = "Alice", Email = "alice@example.com" },
-    new User { Name = "Bob", Email = "bob@example.com" },
-    new User { Name = "Charlie", Email = "charlie@example.com" }
-};
-await _repository.AddAsync(cancellationToken, users);
-```
-
-### Update Operations
-
-#### Update by Entity
-
-```csharp
-// Load and update
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.Id == userId))
-    .FirstOrDefaultAsync();
-
-if (user != null)
-{
-    user.Name = "Updated Name";
-    user.LastModifiedDate = DateTime.UtcNow;
-    await _repository.UpdateAsync(cancellationToken, user);
-}
-```
-
-#### Bulk Update with Expression
-
-```csharp
-// Update all matching records
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.Age < 18),
-    u => new User 
-    { 
-        Status = "Minor",
-        LastModifiedDate = DateTime.UtcNow
-    });
-```
-
-#### Bulk Update with Action
-
-```csharp
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.IsActive),
-    user =>
-    {
-        user.LastLoginDate = DateTime.UtcNow;
-        user.LoginCount++;
-    });
-```
-
-#### Bulk Update with Fluent API
-
-```csharp
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.Status, "Active")
-    .SetProperty(u => u.LastModifiedDate, DateTime.UtcNow)
-    .SetProperty(u => u.LoginCount, u => u.LoginCount + 1);
-
-await _repository.UpdateAsync(
-    q => q.Where(u => u.Email.Contains("@example.com")),
-    updater);
-```
-
-### Delete Operations
-
-```csharp
-// Delete by filter
-await _repository.DeleteAsync<User>(
-    q => q.Where(u => !u.IsActive && u.CreatedDate < oldDate));
-
-// Delete with complex conditions
-await _repository.DeleteAsync<Order>(
-    q => q
-        .Where(o => o.Status == OrderStatus.Cancelled)
-        .Where(o => o.CreatedDate < DateTime.UtcNow.AddMonths(-6)));
-```
-
----
-
-## ?? Transactions & Unit of Work
-
-### Basic Transactions
-
-```csharp
-public async Task TransferFundsAsync(
-    Guid fromAccountId, 
-    Guid toAccountId, 
-    decimal amount)
-{
-    using var transaction = await _repository.BeginTransactionAsync();
-
-    try
-    {
-        // Debit from account
-        await _repository.UpdateAsync<Account>(
-            q => q.Where(a => a.Id == fromAccountId),
-            a => new Account { Balance = a.Balance - amount });
-
-        // Credit to account
-        await _repository.UpdateAsync<Account>(
-            q => q.Where(a => a.Id == toAccountId),
-            a => new Account { Balance = a.Balance + amount });
-
-        // Create transaction record
-        await _repository.AddAsync(default, new Transaction
-        {
-            FromAccountId = fromAccountId,
-            ToAccountId = toAccountId,
-            Amount = amount,
-            Date = DateTime.UtcNow
-        });
-
-        await transaction.CommitAsync();
-    }
-    catch
-    {
-        await transaction.RollbackAsync();
-        throw;
-    }
-}
-```
-
-### Unit of Work Pattern
-
-```csharp
-// Enable unit of work mode
-_repository.IsUnitOfWorkEnabled = true;
-
+// Validation happens at construction
 try
 {
-    // All operations are batched
-    await _repository.AddAsync(cancellationToken, user);
-    
-    await _repository.UpdateAsync<Order>(
-        q => q.Where(o => o.UserId == user.Id),
-        o => new Order { Status = OrderStatus.Active });
-
-    await _repository.DeleteAsync<TempData>(
-        q => q.Where(t => t.IsExpired));
-
-    // Commit all changes at once
-    await _repository.PersistAsync(cancellationToken);
+    Email invalid = "notanemail";  // Throws ArgumentException
 }
-catch
+catch (ArgumentException ex)
 {
-    // Changes are rolled back automatically
-    throw;
+    Console.WriteLine($"Error: {ex.Message}");
 }
-finally
+
+// JSON serialization automatically works
+var json = JsonSerializer.Serialize(email);  // "john@example.com"
+var deserialized = JsonSerializer.Deserialize<Email>(json);
+```
+
+### Money Primitive
+
+```csharp
+[PrimitiveJsonConverter<Money, decimal>]
+public readonly record struct Money : IPrimitive<Money, decimal>
 {
-    _repository.IsUnitOfWorkEnabled = false;
+    public required decimal Value { get; init; }
+
+    public static Money Create(decimal value)
+    {
+        if (value < 0)
+            throw new ArgumentException("Money cannot be negative");
+
+        return new Money { Value = Math.Round(value, 2) };
+    }
+
+    public static decimal DefaultValue => 0m;
+
+    public static implicit operator decimal(Money money) => money.Value;
+    public static implicit operator Money(decimal value) => Create(value);
+
+    public static bool operator ==(Money left, Money right) => 
+        left.Value == right.Value;
+    public static bool operator !=(Money left, Money right) => 
+        !(left == right);
+
+    // Domain operations
+    public Money Add(Money other) => Value + other.Value;
+    public Money Subtract(Money other) => Value - other.Value;
+    public Money Multiply(decimal factor) => Value * factor;
 }
+
+// Usage
+Money price = 19.99m;
+Money tax = 2.00m;
+Money total = price.Add(tax);  // 21.99
+
+Console.WriteLine($"Total: ${total}");  // Total: $21.99
 ```
 
 ---
 
-## ?? Event Sourcing Integration
+## 💡 Why Use Primitives?
 
-### Event Store Setup
-
+### Before (Raw Types)
 ```csharp
-using Xpandables.Net.Events;
-using Microsoft.EntityFrameworkCore;
-
-// Configure Event Store
-builder.Services.AddXEventStoreDataContext(options =>
-    options
-        .UseSqlServer(
-            builder.Configuration.GetConnectionString("EventStoreDb"),
-            sqlOptions => sqlOptions
-                .EnableRetryOnFailure()
-                .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-                .MigrationsHistoryTable("__EventStoreMigrations")
-                .MigrationsAssembly("MyApp"))
-        .EnableDetailedErrors()
-        .EnableSensitiveDataLogging());
-
-// Register event sourcing services
-builder.Services
-    .AddXAggregateStore()
-    .AddXEventStore()
-    .AddXPublisher();
-```
-
-### Using Event Store
-
-```csharp
-public sealed class OrderService
+public class User
 {
-    private readonly IAggregateStore _aggregateStore;
-
-    public OrderService(IAggregateStore aggregateStore) 
-        => _aggregateStore = aggregateStore;
-
-    public async Task<ExecutionResult<OrderAggregate>> CreateOrderAsync(
-        CreateOrderCommand command)
-    {
-        // Create aggregate (generates events)
-        var order = OrderAggregate.Create(
-            command.CustomerId,
-            command.Items);
-
-        // Persist events
-        await _aggregateStore.AppendAsync(order);
-
-        return ExecutionResult.Created(order);
-    }
-
-    public async Task<OrderAggregate> GetOrderAsync(Guid orderId)
-    {
-        // Rebuild from events
-        return await _aggregateStore
-            .ReadAsync<OrderAggregate>(orderId);
-    }
+    public string Email { get; set; }  // ❌ No validation
+    public string PhoneNumber { get; set; }  // ❌ Can mix up with email
+    public decimal Balance { get; set; }  // ❌ Can be negative
 }
+
+// Easy to make mistakes
+user.Email = user.PhoneNumber;  // ❌ Compiles but wrong!
+user.Balance = -100m;  // ❌ Invalid but allowed
 ```
 
-### Outbox Pattern
-
+### After (Strongly-Typed Primitives)
 ```csharp
-// Configure Outbox Store
-builder.Services.AddXOutboxStoreDataContext(options =>
-    options
-        .UseSqlServer(
-            builder.Configuration.GetConnectionString("EventStoreDb"),
-            sqlOptions => sqlOptions
-                .EnableRetryOnFailure()
-                .MigrationsHistoryTable("__OutboxStoreMigrations")
-                .MigrationsAssembly("MyApp")));
+public class User
+{
+    public Email Email { get; init; }  // ✅ Type-safe
+    public PhoneNumber PhoneNumber { get; init; }  // ✅ Cannot mix up
+    public Money Balance { get; init; }  // ✅ Validated at construction
+}
 
-// Register outbox services
-builder.Services.AddXOutboxStore();
-
-// Events are automatically stored in outbox
-// and published reliably by background service
+// Type safety prevents errors
+user.Email = user.PhoneNumber;  // ✅ Compile error!
+user.Balance = Money.Create(-100);  // ✅ Throws at runtime
 ```
 
 ---
 
-## ?? Advanced Configuration
+## 📦 Element Collections
 
-### Custom Model Configuration
+Flexible key-value collections for errors, headers, metadata:
 
 ```csharp
-public class EventStoreModelCustomizer : IModelCustomizer
+// Create element collection
+var errors = ElementCollection.With([
+    new ElementEntry("Email", "Email is required"),
+    new ElementEntry("Password", ["Password too short", "Password needs uppercase"])
+]);
+
+// Iterate
+foreach (var entry in errors)
 {
-    public void Customize(ModelBuilder modelBuilder, DbContext context)
+    Console.WriteLine($"{entry.Key}:");
+    foreach (var value in entry.Values)
     {
-        // Configure event entity
-        modelBuilder.Entity<EntityDomainEvent>(entity =>
+        Console.WriteLine($"  - {value}");
+    }
+}
+
+// Convert to dictionary
+Dictionary<string, object> dict = errors.ToDictionaryObject();
+
+// JSON serialization
+string json = JsonSerializer.Serialize(errors);
+// Output: [{"key":"Email","values":["Email is required"]},...]
+```
+
+---
+
+## 🔄 State Pattern
+
+Implement state machines with the State pattern:
+
+```csharp
+// Define states
+public abstract class OrderState : State<Order>
+{
+    protected OrderState(string name) : base(name) { }
+
+    public static OrderState Pending => new PendingState();
+    public static OrderState Confirmed => new ConfirmedState();
+    public static OrderState Shipped => new ShippedState();
+    public static OrderState Delivered => new DeliveredState();
+}
+
+public class PendingState : OrderState
+{
+    public PendingState() : base("Pending") { }
+
+    public override void Handle(IStateContext<Order> context)
+    {
+        // Business logic here
+        context.Order.ConfirmOrder();
+        context.SetState(OrderState.Confirmed);
+    }
+}
+
+// Use state context
+var order = new Order();
+var context = new StateContext<Order>(order, OrderState.Pending);
+
+context.Request();  // Transitions to Confirmed
+Console.WriteLine($"State: {context.State.Name}");  // "Confirmed"
+```
+
+---
+
+## 💾 Memory-Aware Cache
+
+Cache with automatic eviction under memory pressure:
+
+```csharp
+var cache = new MemoryAwareCache<string, User>(maxItems: 1000);
+
+// Add items
+cache.Add("user:123", new User { Id = 123, Name = "John" });
+cache.Add("user:456", new User { Id = 456, Name = "Jane" });
+
+// Retrieve
+if (cache.TryGet("user:123", out var user))
+{
+    Console.WriteLine($"Found: {user.Name}");
+}
+
+// Cache uses weak references
+// Items automatically evicted when GC needs memory
+```
+
+---
+
+## 🧩 Extension Methods
+
+### String Extensions
+```csharp
+string text = "  hello  ";
+bool isEmpty = text.IsNullOrWhiteSpace();  // false
+string trimmed = text.Trim();  // "hello"
+```
+
+### Object Extensions
+```csharp
+var obj = new { Name = "John", Age = 30 };
+var dict = obj.ToDictionary();  // Convert to Dictionary<string, object>
+```
+
+### Exception Extensions
+```csharp
+try
+{
+    // Some operation
+}
+catch (Exception ex)
+{
+    var executionResult = ex.ToExecutionResult();
+    // Converts exception to ExecutionResult
+}
+```
+
+### HttpStatusCode Extensions
+```csharp
+var status = HttpStatusCode.BadRequest;
+
+string title = status.Title;  // "Bad Request"
+string detail = status.Detail;  // Description
+bool isSuccess = status.IsSuccess();  // false
+bool isFailure = status.IsFailure();  // true
+bool isValidation = status.IsValidationProblem();  // true
+```
+
+---
+
+## 🎯 Real-World Examples
+
+### UserId Primitive
+
+```csharp
+[PrimitiveJsonConverter<UserId, Guid>]
+public readonly record struct UserId : IPrimitive<UserId, Guid>
+{
+    public required Guid Value { get; init; }
+
+    public static UserId Create(Guid value)
+    {
+        if (value == Guid.Empty)
+            throw new ArgumentException("UserId cannot be empty");
+        return new UserId { Value = value };
+    }
+
+    public static Guid DefaultValue => Guid.Empty;
+    public static UserId NewId() => Create(Guid.NewGuid());
+
+    public static implicit operator Guid(UserId id) => id.Value;
+    public static implicit operator UserId(Guid value) => Create(value);
+
+    public static bool operator ==(UserId left, UserId right) => 
+        left.Value == right.Value;
+    public static bool operator !=(UserId left, UserId right) => 
+        !(left == right);
+}
+
+// Usage in domain model
+public class User
+{
+    public UserId Id { get; init; } = UserId.NewId();
+    public Email Email { get; init; }
+    public string Name { get; init; } = default!;
+}
+```
+
+### Domain Model with Primitives
+
+```csharp
+public class Order
+{
+    public OrderId Id { get; init; } = OrderId.NewId();
+    public UserId CustomerId { get; init; }
+    public Money TotalAmount { get; private set; }
+    public List<OrderLine> Lines { get; init; } = [];
+
+    public void AddLine(ProductId productId, Quantity quantity, Money unitPrice)
+    {
+        var line = new OrderLine
         {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.AggregateId);
-            entity.HasIndex(e => e.AggregateName);
-            entity.Property(e => e.EventData).HasColumnType("nvarchar(max)");
-        });
+            ProductId = productId,
+            Quantity = quantity,
+            UnitPrice = unitPrice,
+            Total = unitPrice.Multiply(quantity.Value)
+        };
 
-        // Configure snapshot entity
-        modelBuilder.Entity<EntitySnapshotEvent>(entity =>
+        Lines.Add(line);
+        RecalculateTotal();
+    }
+
+    private void RecalculateTotal()
+    {
+        decimal sum = Lines.Sum(l => l.Total.Value);
+        TotalAmount = Money.Create(sum);
+    }
+}
+
+// Usage
+var order = new Order { CustomerId = currentUserId };
+order.AddLine(
+    productId: ProductId.From("PROD-001"),
+    quantity: Quantity.Create(2),
+    unitPrice: Money.Create(49.99m)
+);
+
+Console.WriteLine($"Order total: {order.TotalAmount}");  // $99.98
+```
+
+---
+
+## 🔧 Disposable Helpers
+
+### Synchronous Disposable
+
+```csharp
+public class MyResource : Disposable
+{
+    private readonly Stream _stream;
+
+    public MyResource(Stream stream)
+    {
+        _stream = stream;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
         {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.AggregateId).IsUnique();
-            entity.Property(e => e.SnapshotData).HasColumnType("nvarchar(max)");
-        });
+            _stream?.Dispose();
+        }
+        base.Dispose(disposing);
     }
 }
 ```
 
-### Repository with Specifications
+### Async Disposable
 
 ```csharp
-using Xpandables.Net.Validators;
+public class MyAsyncResource : DisposableAsync
+{
+    private readonly DbConnection _connection;
 
-// Define specifications
-var activeUsersSpec = Specification
-    .Equal<User, bool>(u => u.IsActive, true);
-
-var adultsSpec = Specification
-    .GreaterThan<User, int>(u => u.Age, 18);
-
-var combinedSpec = activeUsersSpec.And(adultsSpec);
-
-// Use in repository
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(combinedSpec))
-    .ToListAsync();
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing && _connection != null)
+        {
+            await _connection.CloseAsync();
+            await _connection.DisposeAsync();
+        }
+        await base.DisposeAsync(disposing);
+    }
+}
 ```
 
 ---
 
-## ?? Best Practices
+## ✅ Best Practices
 
-1. **Use projections** for read operations to reduce data transfer
-2. **Enable Unit of Work** when performing multiple related operations
-3. **Use transactions** for operations that must succeed or fail together
-4. **Leverage bulk operations** for better performance
-5. **Apply specifications** to encapsulate business rules
-6. **Use async enumeration** for large result sets
-7. **Configure indexes** properly for frequently queried fields
+### ✅ Do
 
----
+- **Use primitives for domain concepts** - Email, Money, ProductId, etc.
+- **Validate in Create() method** - Fail fast with clear exceptions
+- **Make primitives immutable** - Use `readonly record struct`
+- **Add domain operations** - Methods like Add(), Subtract() for Money
+- **Use implicit conversions** - Seamless usage with underlying types
+- **Decorate with JsonConverter** - Automatic JSON serialization
+- **Keep primitives simple** - Single responsibility
 
-## ?? Performance Tips
+### ❌ Don't
 
-```csharp
-// Use AsNoTracking for read-only queries
-var users = await _repository
-    .FetchAsync<User, User>(q => q
-        .AsNoTracking()
-        .Where(u => u.IsActive))
-    .ToListAsync();
-
-// Use projections instead of loading full entities
-var userNames = await _repository
-    .FetchAsync<User, string>(q => q
-        .Where(u => u.IsActive)
-        .Select(u => u.Name))
-    .ToListAsync();
-
-// Batch operations
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.LastUpdated, DateTime.UtcNow);
-
-await _repository.UpdateAsync(
-    q => q.Where(u => u.IsActive),
-    updater);  // Single SQL UPDATE statement
-```
+- **Create primitives for everything** - Only for important domain concepts
+- **Put complex business logic in primitives** - Keep them lightweight
+- **Make primitives classes** - Use structs for better performance
+- **Skip validation** - Always validate in Create() method
+- **Expose public setters** - Primitives should be immutable
+- **Throw generic exceptions** - Use specific ArgumentException messages
 
 ---
 
-## ?? Related Packages
+## 📊 Performance Benefits
 
-- **Xpandables.Net** - Core library with abstractions
-- **Xpandables.Net.AspNetCore** - ASP.NET Core integrations
-- **Xpandables.Net.SampleApi** - Complete working example
+| Aspect | Classes | Structs (Primitives) |
+|--------|---------|----------------------|
+| Allocation | Heap | Stack (most cases) |
+| GC Pressure | Higher | Lower |
+| Copy Cost | Reference | Value copy |
+| Memory | Pointer overhead | Direct value |
+| Best For | Large objects | Small values |
+
+Primitives use `readonly record struct` for:
+- ✅ Stack allocation in most cases
+- ✅ Reduced GC pressure
+- ✅ Value semantics
+- ✅ Immutability guarantees
 
 ---
 
-## ?? License
+## 📚 Related Packages
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+- **[System.Primitives.Validation](../System.Primitives.Validation)** - FluentValidation integration
+- **[System.Primitives.Composition](../System.Primitives.Composition)** - DI composition utilities
+- **[System.ExecutionResults](../System.ExecutionResults)** - Result pattern types
+- **[System.Optionals](../System.Optionals)** - Optional value types
+
+---
+
+## 📄 License
+
+Apache License 2.0 - Copyright © Kamersoft 2025

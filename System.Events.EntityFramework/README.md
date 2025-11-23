@@ -1,15 +1,15 @@
-﻿# ??? Xpandables.Net.EntityFramework
+﻿# 📝 Xpandables.Net.Events.EntityFramework
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Entity Framework Core Repository** - Production-ready implementation of the repository pattern using EF Core with support for Unit of Work, transactions, and advanced querying.
+> **Event Store with EF Core** - Entity Framework Core implementation of event sourcing with event store, outbox pattern, and aggregate persistence.
 
 ---
 
-## ?? Overview
+## 🎯 Overview
 
-Provides a complete Entity Framework Core implementation of `IRepository` with support for CRUD operations, bulk updates, transactions, and the Unit of Work pattern. Seamlessly integrates with Xpandables.Net.Events for event sourcing.
+Provides Entity Framework Core implementation for event sourcing. Includes `EventStoreDataContext` for event persistence, `OutboxStoreDataContext` for reliable event publishing, and full aggregate reconstruction from events.
 
 ### ?? Key Features
 

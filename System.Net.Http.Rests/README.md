@@ -1,9 +1,9 @@
-﻿# 📦 Xpandables.Net
+﻿# 🌐 Xpandables.Net.Net.Http.Rests
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Core Library** - Comprehensive toolkit for building modern .NET applications with ExecutionResult, Optional, CQRS, Event Sourcing, Specifications, and more.
+> **REST Client** - Type-safe, attribute-based HTTP client with automatic serialization, retry policies, and ExecutionResult integration.
 
 ---
 

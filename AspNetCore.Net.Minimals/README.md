@@ -1,9 +1,9 @@
-# ?? Xpandables.Net.AsyncPaged
+# ? Xpandables.Net.AspNetCore.Minimals
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Async Pagination Library** - Efficient asynchronous enumerable pagination with metadata support for modern .NET applications.
+> **Minimal API Extensions** - Endpoint routing, parameter binding, ExecutionResult integration, and OpenAPI support for ASP.NET Core Minimal APIs.
 
 ---
 

@@ -1,15 +1,15 @@
-# ??? Xpandables.Net.EntityFramework
+# ?? Xpandables.Net.Data.Repositories
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Entity Framework Core Repository** - Production-ready implementation of the repository pattern using EF Core with support for Unit of Work, transactions, and advanced querying.
+> **Repository Pattern Abstractions** - Generic repository and Unit of Work interfaces for data access abstraction with support for LINQ, transactions, and bulk operations.
 
 ---
 
 ## ?? Overview
 
-Provides a complete Entity Framework Core implementation of `IRepository` with support for CRUD operations, bulk updates, transactions, and the Unit of Work pattern. Seamlessly integrates with Xpandables.Net.Events for event sourcing.
+`Xpandables.Net.Data.Repositories` provides the core abstractions for the Repository and Unit of Work patterns. It defines `IRepository`, `IUnitOfWork`, and related interfaces that can be implemented by any data access technology (Entity Framework Core, Dapper, etc.).
 
 ### ?? Key Features
 

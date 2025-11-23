@@ -1,15 +1,15 @@
-﻿# 📦 Xpandables.Net
+﻿# ✅ System.Primitives.Validation
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Core Library** - Comprehensive toolkit for building modern .NET applications with ExecutionResult, Optional, CQRS, Event Sourcing, Specifications, and more.
+> **Validation & Specifications** - Specification pattern for business rules, composite validators, and reusable validation logic with LINQ integration.
 
 ---
 
-## 📋 Overview
+## 🎯 Overview
 
-`Xpandables.Net` is the core library providing fundamental building blocks for enterprise .NET applications. It includes implementations of the Result pattern, Optional monad, Mediator pattern (CQRS), Event Sourcing, Repository pattern, REST client, and Specification pattern.
+`System.Primitives.Validation` provides the Specification pattern for encapsulating business rules and validation logic. It includes composable validators, rule specifications that work with LINQ, and integration with request pipelines for automatic validation.
 
 ### 🎯 Key Features
 
@@ -29,7 +29,7 @@
 ### Installation
 
 ```bash
-dotnet add package Xpandables.Net
+dotnet add package System.Primitives.Validation
 ```
 
 ### Basic Examples

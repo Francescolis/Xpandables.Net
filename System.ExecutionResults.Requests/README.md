@@ -1,26 +1,28 @@
-﻿# 📦 Xpandables.Net
+﻿# 📮 Xpandables.Net.ExecutionResults.Requests
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Core Library** - Comprehensive toolkit for building modern .NET applications with ExecutionResult, Optional, CQRS, Event Sourcing, Specifications, and more.
+> **Request/Response Pattern** - Core abstractions for CQRS-style request handling with context-aware handlers, pre/post processors, and pipeline decorators.
 
 ---
 
-## 📋 Overview
+## 🎯 Overview
 
-`Xpandables.Net` is the core library providing fundamental building blocks for enterprise .NET applications. It includes implementations of the Result pattern, Optional monad, Mediator pattern (CQRS), Event Sourcing, Repository pattern, REST client, and Specification pattern.
+`Xpandables.Net.ExecutionResults.Requests` provides the foundational interfaces and types for implementing the Request/Response pattern (also known as Command/Query pattern) in .NET applications. It defines contracts for requests, handlers, and pipeline decorators that work seamlessly with `ExecutionResult`.
 
-### 🎯 Key Features
+This library serves as the core abstraction layer for CQRS architectures, enabling clean separation between request definitions and their handlers while supporting rich pipeline behaviors.
 
-- ✅ **ExecutionResult** - Railway-oriented programming with HTTP-aware result types
-- 🎁 **Optional** - Null-safe value handling (like Rust's Option type)
-- 📡 **Mediator/CQRS** - Request/response pipeline with pre/post handlers
-- 📝 **Event Sourcing** - Complete event sourcing implementation with aggregates
-- 💾 **Repository** - Generic repository pattern with unit of work
-- 🌐 **REST Client** - Type-safe, attribute-based HTTP client
-- ✔️ **Specifications** - Business rules encapsulation with LINQ support
-- 🔄 **Async Paging** - Asynchronous enumerable with pagination
+### ✨ Key Features
+
+- 📨 **Request Interfaces** - `IRequest`, `IRequest<TResponse>`, `IStreamRequest<TResponse>`
+- 🎯 **Handler Contracts** - Type-safe request handlers returning ExecutionResult
+- 🔄 **Context-Aware Handlers** - Access to request context throughout pipeline
+- 🎬 **Pre/Post Handlers** - Execute logic before and after main handlers
+- ⚠️ **Exception Handlers** - Centralized exception handling per request type
+- 🔗 **Pipeline Decorators** - Chain cross-cutting concerns
+- 📊 **Streaming Support** - Handle requests that return IAsyncPagedEnumerable
+- 🧩 **Dependency Injection** - Full DI container integration
 
 ---
 

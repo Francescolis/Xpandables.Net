@@ -1,15 +1,15 @@
-# ??? Xpandables.Net.EntityFramework
+# ?? Xpandables.Net.AspNetCore.Composition
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Entity Framework Core Repository** - Production-ready implementation of the repository pattern using EF Core with support for Unit of Work, transactions, and advanced querying.
+> **ASP.NET Core DI Composition** - Automatic service discovery, registration extensions, and dependency injection utilities for ASP.NET Core applications.
 
 ---
 
 ## ?? Overview
 
-Provides a complete Entity Framework Core implementation of `IRepository` with support for CRUD operations, bulk updates, transactions, and the Unit of Work pattern. Seamlessly integrates with Xpandables.Net.Events for event sourcing.
+`Xpandables.Net.AspNetCore.Composition` provides powerful dependency injection utilities for ASP.NET Core. Includes automatic service discovery via `IAddServiceExport`, assembly scanning, and registration helpers for mediator, validators, and repositories.
 
 ### ?? Key Features
 

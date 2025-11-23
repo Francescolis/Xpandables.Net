@@ -1,9 +1,9 @@
-# ?? Xpandables.Net.AsyncPaged
+# ?? Xpandables.Net.AspNetCore
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Async Pagination Library** - Efficient asynchronous enumerable pagination with metadata support for modern .NET applications.
+> **ASP.NET Core Integration** - ExecutionResult to IResult mapping, middleware, exception handling, and utilities for ASP.NET Core applications.
 
 ---
 
