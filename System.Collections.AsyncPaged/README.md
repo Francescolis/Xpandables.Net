@@ -180,7 +180,7 @@ var paged = _context.Products
 
 ## ?? Design Philosophy
 
-### ? **Async-First, Streaming-Focused**
+### ?? **Async-First, Streaming-Focused**
 - Designed for `await foreach` consumption without blocking threads
 - Pagination metadata computation is lazy; only fetched when explicitly requested via `GetPaginationAsync()`
 - Optimal for database cursors, API pagination, and cloud storage enumeration

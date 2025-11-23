@@ -177,7 +177,7 @@ var max = await paged.MaxPagedAsync();                  // Maximum value
 
 ## ?? Common Patterns
 
-### ?? Product Search with Pagination
+### ??? Product Search with Pagination
 
 ```csharp
 public async Task<IAsyncPagedEnumerable<ProductDto>> SearchAsync(
