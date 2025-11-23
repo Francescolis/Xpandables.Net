@@ -121,7 +121,7 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
         }
     }
 
-    private static async ValueTask WriteProblemDetailsAsync(HttpContext context, ExecutionResult execution)
+    internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, ExecutionResult execution)
     {
         ProblemDetails problem = execution.ToProblemDetails(context);
         if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)

@@ -34,6 +34,18 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// application's request pipeline and dependency injection container.</remarks>
 public static class MinimalResultExtensions
 {
+    /// <summary>
+    /// Adds support for minimal result handling to the application's service collection.
+    /// </summary>
+    /// <param name="services">The service collection to act on. Cannot be null.</param>
+    /// <returns>The same <paramref name="services"/> instance, with minimal result support registered.</returns>
+    public static IServiceCollection AddXMinimalSupport(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.AddSingleton<MinimalResultMiddleware>();
+        return services;
+    }
+
     extension(IApplicationBuilder builder)
     {
         /// <summary>
@@ -66,6 +78,13 @@ public static class MinimalResultExtensions
         public IApplicationBuilder UseXMinimalSupport(Action<MinimalSupportOptions>? configure = default)
         {
             ArgumentNullException.ThrowIfNull(builder);
+
+            if (builder.ApplicationServices.GetService<MinimalResultMiddleware>() is null)
+                throw new InvalidOperationException(
+                    "MinimalResultMiddleware is not registered. " +
+                    "Please ensure AddXMinialSupport() is called during service registration.");
+
+            builder.UseMiddleware<MinimalResultMiddleware>();
 
             var options = new MinimalSupportOptions();
             configure?.Invoke(options);

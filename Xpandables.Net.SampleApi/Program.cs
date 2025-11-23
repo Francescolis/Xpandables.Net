@@ -57,13 +57,15 @@ builder.Services
     .AddXJsonSerializerOptions()
     .AddXMediatorWithEventSourcingPipelines()
     .AddXRequestHandlers()
+    .AddXValidator()
     .AddXEventPublisher()
     .AddXAggregateStore()
     .AddXEventStore()
     .AddXOutboxStore()
     .AddMemoryCache()
     .AddXEventConverterFactory()
-    .AddXCacheTypeResolver([typeof(BankAccount).Assembly]);
+    .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
+    .AddXMinimalSupport();
 
 builder.Services.Configure<JsonOptions>(options =>
 {

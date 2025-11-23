@@ -97,7 +97,7 @@ public static class ExecutionResultExtensions
         return ExecutionResult
             .BadRequest()
             .WithTitle(((HttpStatusCode)exception.StatusCode).Title)
-            .WithDetail(isDevelopment ? exception.Message : ((HttpStatusCode)exception.StatusCode).Detail)
+            .WithDetail(isDevelopment ? exception.ToString() : ((HttpStatusCode)exception.StatusCode).Detail)
             .WithStatusCode((HttpStatusCode)exception.StatusCode)
             .WithError(parameterName, errorMessage)
             .Build();
