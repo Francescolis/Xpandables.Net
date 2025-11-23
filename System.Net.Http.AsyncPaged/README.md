@@ -1,499 +1,585 @@
-# ??? Xpandables.Net.EntityFramework
+# ?? System.Net.Http.AsyncPaged
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)
+[![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Entity Framework Core Repository** - Production-ready implementation of the repository pattern using EF Core with support for Unit of Work, transactions, and advanced querying.
+> **REST API Pagination for HttpClient** — Seamless `IAsyncPagedEnumerable<T>` deserialization from HTTP responses with full pagination metadata support and zero memory buffering.
 
 ---
 
 ## ?? Overview
 
-Provides a complete Entity Framework Core implementation of `IRepository` with support for CRUD operations, bulk updates, transactions, and the Unit of Work pattern. Seamlessly integrates with Xpandables.Net.Events for event sourcing.
+`System.Net.Http.AsyncPaged` provides native integration between `HttpClient` and `IAsyncPagedEnumerable<T>` for consuming paginated REST APIs. It deserializes JSON HTTP responses directly into paged enumerables while preserving pagination metadata, enabling efficient streaming of large API responses without buffering entire payloads.
 
-### ?? Key Features
+Built for .NET 10 with full async support and character encoding handling, this library simplifies pagination consumption from modern REST APIs while maintaining memory efficiency and performance.
 
-- ??? **EF Core Integration** - Full DbContext support
-- ?? **Unit of Work** - Transaction management across operations
-- ? **Bulk Operations** - Efficient batch insert/update/delete
-- ?? **LINQ Support** - Full queryable support with async enumeration
-- ?? **Event Store** - Built-in event sourcing with EventStoreDataContext
-- ?? **Outbox Pattern** - Reliable event publishing with OutboxStoreDataContext
-- ? **Testable** - Easy to mock and test
+### ? Key Features
+
+- ?? **Direct HTTP Deserialization** — Deserialize `HttpContent` directly to `IAsyncPagedEnumerable<T>`
+- ?? **REST API Pagination** — Consume paginated API responses with automatic metadata extraction
+- ?? **Zero Buffering** — Stream large responses without loading entire payloads into memory
+- ?? **Full Pagination Metadata** — Automatic preservation of `Pagination` info from API responses
+- ?? **Character Encoding Support** — Automatic transcoding from any source encoding to UTF-8
+- ?? **Type-Safe** — Strongly-typed generic and non-generic deserialization
+- ?? **Full Cancellation Support** — Built-in `CancellationToken` support for all operations
+- ? **High Performance** — Stream-based processing with minimal allocations
+- ?? **PipeReader Integration** — Uses System.IO.Pipelines for efficient I/O
+- ?? **AOT Compatible** — Works with source-generated JSON serialization
+
+---
+
+## ?? Installation
+
+```bash
+dotnet add package System.Net.Http.AsyncPaged
+```
+
+Or via NuGet Package Manager:
+
+```powershell
+Install-Package System.Net.Http.AsyncPaged
+```
+
+### Prerequisites
+
+- `System.Text.Json.AsyncPaged` (automatically installed as a dependency)
+- `System.Collections.AsyncPaged` (transitive dependency)
+- .NET 10.0 or later
 
 ---
 
 ## ?? Quick Start
 
-### Installation
-
-```bash
-dotnet add package Xpandables.Net.EntityFramework
-dotnet add package Microsoft.EntityFrameworkCore.SqlServer
-```
-
-### Basic Setup
+### ?? Basic API Response Deserialization
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Repositories;
+using System.Net.Http;
+using System.Net.Http.Json;
 
-// Define your DbContext
-public class AppDbContext : DbContext
+// Create HTTP client
+using var client = new HttpClient { BaseAddress = new Uri("https://api.example.com") };
+
+// Fetch paginated endpoint
+using var response = await client.GetAsync("/api/products?page=1&size=50");
+response.EnsureSuccessStatusCode();
+
+// Deserialize directly to paged enumerable
+var options = new JsonSerializerOptions();
+IAsyncPagedEnumerable<Product> products = response.Content
+    .ReadFromJsonAsAsyncPagedEnumerable<Product>(options);
+
+// Enumerate items asynchronously
+await foreach (var product in products)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) 
-        : base(options) { }
-
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Order> Orders => Set<Order>();
-    public DbSet<Product> Products => Set<Product>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Configure entities
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.HasIndex(e => e.Email).IsUnique();
-        });
-    }
+    Console.WriteLine($"{product.Id}: {product.Name}");
 }
 
-// Register services
-var builder = WebApplication.CreateBuilder(args);
+// Access pagination metadata
+var pagination = await products.GetPaginationAsync();
+Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages}");
+Console.WriteLine($"Total products: {pagination.TotalCount}");
+```
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+### ?? Multi-Page API Pagination
 
-// Register repository
-builder.Services.AddXRepository<AppDbContext>();
+```csharp
+using var client = new HttpClient { BaseAddress = new Uri("https://api.example.com") };
+
+for (int page = 1; page <= totalPages; page++)
+{
+    // Fetch each page
+    using var response = await client.GetAsync($"/api/products?page={page}&size=100");
+    response.EnsureSuccessStatusCode();
+
+    // Deserialize with type metadata for AOT compatibility
+    var typeInfo = JsonSerializerContext.Default.GetTypeInfo(typeof(Product));
+    IAsyncPagedEnumerable<Product> pageData = response.Content
+        .ReadFromJsonAsAsyncPagedEnumerable<Product>(typeInfo);
+
+    // Process page items
+    await foreach (var product in pageData)
+    {
+        await ProcessProductAsync(product);
+    }
+
+    // Get pagination for next iteration
+    var pagination = await pageData.GetPaginationAsync();
+    totalPages = pagination.TotalPages ?? 1;
+}
+```
+
+### ?? Continuation Token Pagination
+
+```csharp
+using var client = new HttpClient { BaseAddress = new Uri("https://api.example.com") };
+
+string? continuationToken = null;
+
+while (true)
+{
+    // Build URL with continuation token
+    var url = continuationToken != null
+        ? $"/api/activities?token={Uri.EscapeDataString(continuationToken)}"
+        : "/api/activities";
+
+    using var response = await client.GetAsync(url);
+    response.EnsureSuccessStatusCode();
+
+    // Deserialize page
+    var options = new JsonSerializerOptions();
+    IAsyncPagedEnumerable<Activity> activities = response.Content
+        .ReadFromJsonAsAsyncPagedEnumerable<Activity>(options);
+
+    // Process activities
+    await foreach (var activity in activities)
+    {
+        await LogActivityAsync(activity);
+    }
+
+    // Check for next page
+    var pagination = await activities.GetPaginationAsync();
+    if (!pagination.HasContinuation)
+        break;
+
+    continuationToken = pagination.ContinuationToken;
+}
+```
+
+---
+
+## ?? Core Concepts
+
+### ??? Integration Points
+
+**HttpContent ? PipeReader ? IAsyncPagedEnumerable:**
+
+```
+HTTP Response
+     ?
+HttpContent.ReadFromJsonAsAsyncPagedEnumerable<T>()
+     ?
+System.IO.Pipelines.PipeReader
+     ?
+JsonDeserializer.DeserializeAsyncPagedEnumerable<T>()
+     ?
+IAsyncPagedEnumerable<T>
+     ?
+Pagination metadata preserved
+```
+
+### ?? Response Format
+
+The library expects JSON responses in the standard pagination format:
+
+```json
+{
+  "pagination": {
+    "totalCount": 1500,
+    "pageSize": 50,
+    "currentPage": 1,
+    "continuationToken": "eyJpZCI6IDUwfQ=="
+  },
+  "items": [
+    { "id": 1, "name": "Item 1" },
+    { "id": 2, "name": "Item 2" },
+    ...
+  ]
+}
+```
+
+### ?? Encoding Handling
+
+The extension automatically handles character encoding:
+
+```csharp
+// Response with ISO-8859-1 encoding
+// Content-Type: application/json; charset=iso-8859-1
+
+var response = await client.GetAsync("/api/data");
+
+// Automatically transcodes to UTF-8
+IAsyncPagedEnumerable<Data> data = response.Content
+    .ReadFromJsonAsAsyncPagedEnumerable<Data>(options);
+
+// Stream is seamlessly decoded and available
+```
+
+---
+
+## ?? Common Patterns
+
+### ?? Paginated API Client
+
+```csharp
+public class ProductApiClient
+{
+    private readonly HttpClient _client;
+    private readonly JsonSerializerOptions _jsonOptions;
+
+    public ProductApiClient(HttpClient client)
+    {
+        _client = client;
+        _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+    }
+
+    public async IAsyncEnumerable<Product> GetAllProductsAsync(
+        int pageSize = 50,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        int page = 1;
+
+        while (true)
+        {
+            // Fetch page
+            var url = $"/products?page={page}&pageSize={pageSize}";
+            using var response = await _client.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            // Deserialize
+            IAsyncPagedEnumerable<Product> pageData = response.Content
+                .ReadFromJsonAsAsyncPagedEnumerable<Product>(_jsonOptions, cancellationToken);
+
+            // Enumerate items
+            await foreach (var item in pageData.WithCancellation(cancellationToken))
+            {
+                yield return item;
+            }
+
+            // Check for next page
+            var pagination = await pageData.GetPaginationAsync(cancellationToken);
+            if (!pagination.HasNextPage)
+                break;
+
+            page++;
+        }
+    }
+}
 
 // Usage
-public class UserService
+var client = new HttpClient { BaseAddress = new Uri("https://api.example.com") };
+var apiClient = new ProductApiClient(client);
+
+await foreach (var product in apiClient.GetAllProductsAsync())
 {
-    private readonly IRepository<AppDbContext> _repository;
+    await ProcessProductAsync(product);
+}
+```
 
-    public UserService(IRepository<AppDbContext> repository) 
-        => _repository = repository;
+### ?? Search Results with Pagination
 
-    public async Task<List<User>> GetActiveUsersAsync(
-        CancellationToken cancellationToken)
+```csharp
+public class SearchService
+{
+    private readonly HttpClient _client;
+
+    public async IAsyncEnumerable<SearchResult> SearchAsync(
+        string query,
+        int pageSize = 20,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return await _repository
-            .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
-            .ToListAsync(cancellationToken);
+        var encodedQuery = Uri.EscapeDataString(query);
+        var url = $"/search?q={encodedQuery}&pageSize={pageSize}";
+
+        using var response = await _client.GetAsync(url, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        IAsyncPagedEnumerable<SearchResult> results = response.Content
+            .ReadFromJsonAsAsyncPagedEnumerable<SearchResult>(options, cancellationToken);
+
+        // Stream results as they're deserialized
+        await foreach (var result in results.WithCancellation(cancellationToken))
+        {
+            yield return result;
+        }
+
+        // Get pagination metadata
+        var pagination = await results.GetPaginationAsync(cancellationToken);
+        Console.WriteLine($"Found {pagination.TotalCount} results");
     }
 }
 ```
 
----
-
-## ?? Core Operations
-
-### Query Operations
+### ?? Aggregating Paginated Data
 
 ```csharp
-// Simple query
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
-    .ToListAsync();
-
-// Projection
-var userDtos = await _repository
-    .FetchAsync<User, UserDto>(q => q
-        .Where(u => u.IsActive)
-        .Select(u => new UserDto { Id = u.Id, Name = u.Name }))
-    .ToListAsync();
-
-// With ordering and pagination
-var pagedUsers = await _repository
-    .FetchAsync<User, User>(q => q
-        .Where(u => u.Age >= 18)
-        .OrderBy(u => u.Name)
-        .Skip(page * pageSize)
-        .Take(pageSize))
-    .ToListAsync();
-
-// Join queries
-var ordersWithUsers = await _repository
-    .FetchAsync<Order, OrderDto>(q => q
-        .Include(o => o.User)
-        .Include(o => o.Items)
-        .Where(o => o.Status == OrderStatus.Pending)
-        .Select(o => new OrderDto
-        {
-            OrderId = o.Id,
-            UserName = o.User.Name,
-            TotalItems = o.Items.Count
-        }))
-    .ToListAsync();
-
-// Async enumeration
-await foreach (var user in _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.IsActive)))
+public async Task<ApiStatistics> GetApiStatisticsAsync(CancellationToken cancellationToken)
 {
-    await ProcessUserAsync(user);
-}
-```
+    var stats = new ApiStatistics();
 
-### Insert Operations
+    using var response = await _httpClient.GetAsync("/api/events", cancellationToken);
+    response.EnsureSuccessStatusCode();
 
-```csharp
-// Single insert
-var user = new User 
-{ 
-    Name = "John Doe", 
-    Email = "john@example.com" 
-};
-await _repository.AddAsync(cancellationToken, user);
+    var options = new JsonSerializerOptions();
+    IAsyncPagedEnumerable<Event> events = response.Content
+        .ReadFromJsonAsAsyncPagedEnumerable<Event>(options, cancellationToken);
 
-// Bulk insert
-var users = new []
-{
-    new User { Name = "Alice", Email = "alice@example.com" },
-    new User { Name = "Bob", Email = "bob@example.com" },
-    new User { Name = "Charlie", Email = "charlie@example.com" }
-};
-await _repository.AddAsync(cancellationToken, users);
-```
+    // Process and aggregate
+    int count = 0;
+    DateTime latestTimestamp = DateTime.MinValue;
 
-### Update Operations
-
-#### Update by Entity
-
-```csharp
-// Load and update
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.Id == userId))
-    .FirstOrDefaultAsync();
-
-if (user != null)
-{
-    user.Name = "Updated Name";
-    user.LastModifiedDate = DateTime.UtcNow;
-    await _repository.UpdateAsync(cancellationToken, user);
-}
-```
-
-#### Bulk Update with Expression
-
-```csharp
-// Update all matching records
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.Age < 18),
-    u => new User 
-    { 
-        Status = "Minor",
-        LastModifiedDate = DateTime.UtcNow
-    });
-```
-
-#### Bulk Update with Action
-
-```csharp
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.IsActive),
-    user =>
+    await foreach (var evt in events.WithCancellation(cancellationToken))
     {
-        user.LastLoginDate = DateTime.UtcNow;
-        user.LoginCount++;
-    });
+        count++;
+        if (evt.Timestamp > latestTimestamp)
+            latestTimestamp = evt.Timestamp;
+    }
+
+    var pagination = await events.GetPaginationAsync(cancellationToken);
+
+    stats.TotalEventCount = pagination.TotalCount ?? count;
+    stats.LatestEventTime = latestTimestamp;
+    stats.ProcessedInPage = count;
+
+    return stats;
+}
 ```
 
-#### Bulk Update with Fluent API
+### ?? Source-Generated JSON (AOT Compatible)
 
 ```csharp
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.Status, "Active")
-    .SetProperty(u => u.LastModifiedDate, DateTime.UtcNow)
-    .SetProperty(u => u.LoginCount, u => u.LoginCount + 1);
+// Define source-generated JSON context
+[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
+[JsonSerializable(typeof(Product))]
+[JsonSerializable(typeof(Pagination))]
+public partial class ApiJsonContext : JsonSerializerContext { }
 
-await _repository.UpdateAsync(
-    q => q.Where(u => u.Email.Contains("@example.com")),
-    updater);
-```
+// Use with extension
+using var response = await client.GetAsync("/api/products");
+response.EnsureSuccessStatusCode();
 
-### Delete Operations
+var typeInfo = ApiJsonContext.Default.Product;
+IAsyncPagedEnumerable<Product> products = response.Content
+    .ReadFromJsonAsAsyncPagedEnumerable<Product>(typeInfo);
 
-```csharp
-// Delete by filter
-await _repository.DeleteAsync<User>(
-    q => q.Where(u => !u.IsActive && u.CreatedDate < oldDate));
-
-// Delete with complex conditions
-await _repository.DeleteAsync<Order>(
-    q => q
-        .Where(o => o.Status == OrderStatus.Cancelled)
-        .Where(o => o.CreatedDate < DateTime.UtcNow.AddMonths(-6)));
-```
-
----
-
-## ?? Transactions & Unit of Work
-
-### Basic Transactions
-
-```csharp
-public async Task TransferFundsAsync(
-    Guid fromAccountId, 
-    Guid toAccountId, 
-    decimal amount)
+// Works with native AOT
+await foreach (var product in products)
 {
-    using var transaction = await _repository.BeginTransactionAsync();
+    Console.WriteLine(product.Name);
+}
+```
 
+### ??? Error Handling & Resilience
+
+```csharp
+public async Task<IAsyncPagedEnumerable<Item>?> SafeGetItemsAsync(
+    string endpoint,
+    CancellationToken cancellationToken)
+{
     try
     {
-        // Debit from account
-        await _repository.UpdateAsync<Account>(
-            q => q.Where(a => a.Id == fromAccountId),
-            a => new Account { Balance = a.Balance - amount });
+        using var response = await _client.GetAsync(endpoint, cancellationToken);
 
-        // Credit to account
-        await _repository.UpdateAsync<Account>(
-            q => q.Where(a => a.Id == toAccountId),
-            a => new Account { Balance = a.Balance + amount });
-
-        // Create transaction record
-        await _repository.AddAsync(default, new Transaction
+        if (!response.IsSuccessStatusCode)
         {
-            FromAccountId = fromAccountId,
-            ToAccountId = toAccountId,
-            Amount = amount,
-            Date = DateTime.UtcNow
-        });
+            _logger.LogError($"API returned {response.StatusCode}: {response.ReasonPhrase}");
+            return null;
+        }
 
-        await transaction.CommitAsync();
+        // Check content type
+        if (response.Content.Headers.ContentType?.MediaType != "application/json")
+        {
+            _logger.LogError("Unexpected content type");
+            return null;
+        }
+
+        var options = new JsonSerializerOptions();
+        return response.Content
+            .ReadFromJsonAsAsyncPagedEnumerable<Item>(options, cancellationToken);
     }
-    catch
+    catch (HttpRequestException ex)
     {
-        await transaction.RollbackAsync();
+        _logger.LogError(ex, "HTTP request failed");
+        return null;
+    }
+    catch (JsonException ex)
+    {
+        _logger.LogError(ex, "JSON deserialization failed");
+        return null;
+    }
+    catch (OperationCanceledException)
+    {
+        _logger.LogInformation("Operation canceled");
         throw;
     }
 }
 ```
 
-### Unit of Work Pattern
-
-```csharp
-// Enable unit of work mode
-_repository.IsUnitOfWorkEnabled = true;
-
-try
-{
-    // All operations are batched
-    await _repository.AddAsync(cancellationToken, user);
-    
-    await _repository.UpdateAsync<Order>(
-        q => q.Where(o => o.UserId == user.Id),
-        o => new Order { Status = OrderStatus.Active });
-
-    await _repository.DeleteAsync<TempData>(
-        q => q.Where(t => t.IsExpired));
-
-    // Commit all changes at once
-    await _repository.PersistAsync(cancellationToken);
-}
-catch
-{
-    // Changes are rolled back automatically
-    throw;
-}
-finally
-{
-    _repository.IsUnitOfWorkEnabled = false;
-}
-```
-
 ---
 
-## ?? Event Sourcing Integration
+## ?? Advanced Examples
 
-### Event Store Setup
-
-```csharp
-using Xpandables.Net.Events;
-using Microsoft.EntityFrameworkCore;
-
-// Configure Event Store
-builder.Services.AddXEventStoreDataContext(options =>
-    options
-        .UseSqlServer(
-            builder.Configuration.GetConnectionString("EventStoreDb"),
-            sqlOptions => sqlOptions
-                .EnableRetryOnFailure()
-                .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-                .MigrationsHistoryTable("__EventStoreMigrations")
-                .MigrationsAssembly("MyApp"))
-        .EnableDetailedErrors()
-        .EnableSensitiveDataLogging());
-
-// Register event sourcing services
-builder.Services
-    .AddXAggregateStore()
-    .AddXEventStore()
-    .AddXPublisher();
-```
-
-### Using Event Store
+### ?? Streaming Large Exports
 
 ```csharp
-public sealed class OrderService
+public async Task ExportLargeDatasetAsync(string endpoint, string filePath)
 {
-    private readonly IAggregateStore _aggregateStore;
+    // Fetch large dataset from API
+    using var response = await _client.GetAsync(endpoint);
+    response.EnsureSuccessStatusCode();
 
-    public OrderService(IAggregateStore aggregateStore) 
-        => _aggregateStore = aggregateStore;
+    var options = new JsonSerializerOptions();
+    IAsyncPagedEnumerable<DataItem> data = response.Content
+        .ReadFromJsonAsAsyncPagedEnumerable<DataItem>(options);
 
-    public async Task<ExecutionResult<OrderAggregate>> CreateOrderAsync(
-        CreateOrderCommand command)
-    {
-        // Create aggregate (generates events)
-        var order = OrderAggregate.Create(
-            command.CustomerId,
-            command.Items);
-
-        // Persist events
-        await _aggregateStore.AppendAsync(order);
-
-        return ExecutionResult.Created(order);
-    }
-
-    public async Task<OrderAggregate> GetOrderAsync(Guid orderId)
-    {
-        // Rebuild from events
-        return await _aggregateStore
-            .ReadAsync<OrderAggregate>(orderId);
-    }
+    // Stream to file without buffering
+    using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+    await JsonSerializer.SerializeAsyncPaged(fileStream, data, options);
 }
 ```
 
-### Outbox Pattern
+### ?? Monitoring API Quotas
 
 ```csharp
-// Configure Outbox Store
-builder.Services.AddXOutboxStoreDataContext(options =>
-    options
-        .UseSqlServer(
-            builder.Configuration.GetConnectionString("EventStoreDb"),
-            sqlOptions => sqlOptions
-                .EnableRetryOnFailure()
-                .MigrationsHistoryTable("__OutboxStoreMigrations")
-                .MigrationsAssembly("MyApp")));
-
-// Register outbox services
-builder.Services.AddXOutboxStore();
-
-// Events are automatically stored in outbox
-// and published reliably by background service
-```
-
----
-
-## ?? Advanced Configuration
-
-### Custom Model Configuration
-
-```csharp
-public class EventStoreModelCustomizer : IModelCustomizer
+public class ApiQuotaMonitor
 {
-    public void Customize(ModelBuilder modelBuilder, DbContext context)
+    public async ValueTask<ApiQuota> CheckQuotaAsync(HttpResponseMessage response)
     {
-        // Configure event entity
-        modelBuilder.Entity<EntityDomainEvent>(entity =>
+        var quota = new ApiQuota();
+
+        // Extract quota from headers
+        if (response.Headers.TryGetValues("X-RateLimit-Limit", out var limit))
+            quota.Limit = int.Parse(limit.First());
+
+        if (response.Headers.TryGetValues("X-RateLimit-Remaining", out var remaining))
+            quota.Remaining = int.Parse(remaining.First());
+
+        // Get pagination for data size awareness
+        if (response.Content is not null)
         {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.AggregateId);
-            entity.HasIndex(e => e.AggregateName);
-            entity.Property(e => e.EventData).HasColumnType("nvarchar(max)");
-        });
+            try
+            {
+                var options = new JsonSerializerOptions();
+                var data = response.Content
+                    .ReadFromJsonAsAsyncPagedEnumerable<ApiData>(options);
 
-        // Configure snapshot entity
-        modelBuilder.Entity<EntitySnapshotEvent>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.AggregateId).IsUnique();
-            entity.Property(e => e.SnapshotData).HasColumnType("nvarchar(max)");
-        });
+                var pagination = await data.GetPaginationAsync();
+                quota.ResponseSize = pagination.TotalCount ?? 0;
+            }
+            catch
+            {
+                // Ignore pagination errors
+            }
+        }
+
+        return quota;
     }
 }
 ```
 
-### Repository with Specifications
+### ?? Chaining Multiple Endpoints
 
 ```csharp
-using Xpandables.Net.Validators;
+public async IAsyncEnumerable<CombinedData> FetchFromMultipleEndpointsAsync(
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+{
+    var endpoints = new[] { "/api/users", "/api/products", "/api/orders" };
+    var options = new JsonSerializerOptions();
 
-// Define specifications
-var activeUsersSpec = Specification
-    .Equal<User, bool>(u => u.IsActive, true);
+    foreach (var endpoint in endpoints)
+    {
+        using var response = await _client.GetAsync(endpoint, cancellationToken);
+        response.EnsureSuccessStatusCode();
 
-var adultsSpec = Specification
-    .GreaterThan<User, int>(u => u.Age, 18);
+        IAsyncPagedEnumerable<ApiItem> items = response.Content
+            .ReadFromJsonAsAsyncPagedEnumerable<ApiItem>(options, cancellationToken);
 
-var combinedSpec = activeUsersSpec.And(adultsSpec);
-
-// Use in repository
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(combinedSpec))
-    .ToListAsync();
+        await foreach (var item in items.WithCancellation(cancellationToken))
+        {
+            yield return new CombinedData { Source = endpoint, Item = item };
+        }
+    }
+}
 ```
 
 ---
 
-## ?? Best Practices
+## ? Best Practices
 
-1. **Use projections** for read operations to reduce data transfer
-2. **Enable Unit of Work** when performing multiple related operations
-3. **Use transactions** for operations that must succeed or fail together
-4. **Leverage bulk operations** for better performance
-5. **Apply specifications** to encapsulate business rules
-6. **Use async enumeration** for large result sets
-7. **Configure indexes** properly for frequently queried fields
+### ? Do
+
+- **Use typed extensions** — Leverage `JsonTypeInfo<T>` for AOT compatibility
+- **Handle encoding properly** — Let the library manage character transcoding
+- **Support cancellation throughout** — Pass `CancellationToken` in all calls
+- **Check pagination metadata** — Verify `HasNextPage` before making additional requests
+- **Use PipeReader** — The library uses `System.IO.Pipelines` for efficiency
+- **Stream responses** — Don't materialize entire API responses into memory
+- **Handle errors gracefully** — Implement proper HTTP and JSON error handling
+- **Validate response format** — Ensure API responses match expected JSON structure
+
+### ? Don't
+
+- **Buffer entire responses** — Avoid calling `ReadAsStringAsync()` before deserialization
+- **Block on async** — Never use `.Result` or `.Wait()` on HTTP operations
+- **Ignore cancellation** — Always pass `CancellationToken` through the chain
+- **Assume pagination exists** — Check response structure before assuming pagination metadata
+- **Mix encoding handling** — Let the extension handle character encoding transcoding
+- **Reuse disposed responses** — Always create new `HttpResponseMessage` for each request
+- **Ignore rate limits** — Monitor API quotas and respect rate-limit headers
+- **Deserialize without validation** — Validate deserialized objects before processing
 
 ---
 
-## ?? Performance Tips
+## ?? API Reference
+
+### ?? Extension Methods
 
 ```csharp
-// Use AsNoTracking for read-only queries
-var users = await _repository
-    .FetchAsync<User, User>(q => q
-        .AsNoTracking()
-        .Where(u => u.IsActive))
-    .ToListAsync();
+// Deserialize with JsonSerializerOptions
+public static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
+    this HttpContent content,
+    JsonSerializerOptions options,
+    CancellationToken cancellationToken = default);
 
-// Use projections instead of loading full entities
-var userNames = await _repository
-    .FetchAsync<User, string>(q => q
-        .Where(u => u.IsActive)
-        .Select(u => u.Name))
-    .ToListAsync();
-
-// Batch operations
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.LastUpdated, DateTime.UtcNow);
-
-await _repository.UpdateAsync(
-    q => q.Where(u => u.IsActive),
-    updater);  // Single SQL UPDATE statement
+// Deserialize with JsonTypeInfo (source-generated)
+public static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
+    this HttpContent content,
+    JsonTypeInfo<TValue> jsonTypeInfo,
+    CancellationToken cancellationToken = default);
 ```
+
+### ?? Overloads
+
+Both overloads are available as:
+- **Extension on `HttpContent`** — Use directly on response content
+- **Generic `<TValue>`** — Strongly-typed deserialization with automatic type casting
+- **Non-buffered** — Uses `PipeReader` for memory efficiency
+- **Encoding-aware** — Automatic transcoding from response charset to UTF-8
+
+---
+
+## ?? Performance Characteristics
+
+- **Memory Efficiency** — Uses `PipeReader` and streaming deserialization; no full response buffering
+- **Character Encoding** — Automatic transcoding with minimal overhead via `Encoding.CreateTranscodingStream`
+- **I/O Pattern** — Asynchronous, non-blocking with natural async/await semantics
+- **Cancellation** — Full end-to-end cancellation support for graceful shutdown
+- **Large Responses** — Optimized for multi-megabyte API responses
+- **Network Efficiency** — Single HTTP round-trip per call; pagination handled in-memory
+
+---
+
+## ?? Dependencies
+
+This library depends on:
+- **System.Text.Json.AsyncPaged** — JSON serialization with pagination support
+- **System.Collections.AsyncPaged** — Core pagination types
+- **System.Net.Http** — Standard HTTP client (built-in)
 
 ---
 
 ## ?? Related Packages
 
-- **Xpandables.Net** - Core library with abstractions
-- **Xpandables.Net.AspNetCore** - ASP.NET Core integrations
-- **Xpandables.Net.SampleApi** - Complete working example
+- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** — Core async pagination library
+- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** — LINQ operators for async paged enumerables
+- **[System.Text.Json.AsyncPaged](https://www.nuget.org/packages/System.Text.Json.AsyncPaged)** — JSON serialization support
+- **[System.Net.Http.Rests](https://www.nuget.org/packages/System.Net.Http.Rests)** — REST API client patterns
 
 ---
 
-## ?? License
+## ?? License & Contributing
 
-Apache License 2.0 - Copyright © Kamersoft 2025
+Licensed under the **Apache License 2.0**. Copyright © Kamersoft 2025.
+
+Contributions are welcome! Please visit [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net) to contribute, report issues, or request features.
