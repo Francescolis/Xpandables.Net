@@ -1,35 +1,35 @@
-# ?? System.Net.Http.AsyncPaged
+﻿# 🌐 System.Net.Http.AsyncPaged
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **REST API Pagination for HttpClient** � Seamless `IAsyncPagedEnumerable<T>` deserialization from HTTP responses with full pagination metadata support and zero memory buffering.
+> **REST API Pagination for HttpClient** — Seamless `IAsyncPagedEnumerable<T>` deserialization from HTTP responses with full pagination metadata support and zero memory buffering.
 
 ---
 
-## ?? Overview
+## 🎯 Overview
 
 `System.Net.Http.AsyncPaged` provides native integration between `HttpClient` and `IAsyncPagedEnumerable<T>` for consuming paginated REST APIs. It deserializes JSON HTTP responses directly into paged enumerables while preserving pagination metadata, enabling efficient streaming of large API responses without buffering entire payloads.
 
 Built for .NET 10 with full async support and character encoding handling, this library simplifies pagination consumption from modern REST APIs while maintaining memory efficiency and performance.
 
-### ? Key Features
+### ✨ Key Features
 
-- ?? **Direct HTTP Deserialization** � Deserialize `HttpContent` directly to `IAsyncPagedEnumerable<T>`
-- ?? **REST API Pagination** � Consume paginated API responses with automatic metadata extraction
-- ?? **Zero Buffering** � Stream large responses without loading entire payloads into memory
-- ?? **Full Pagination Metadata** � Automatic preservation of `Pagination` info from API responses
-- ?? **Character Encoding Support** � Automatic transcoding from any source encoding to UTF-8
-- ?? **Type-Safe** � Strongly-typed generic and non-generic deserialization
-- ?? **Full Cancellation Support** � Built-in `CancellationToken` support for all operations
-- ? **High Performance** � Stream-based processing with minimal allocations
-- ?? **PipeReader Integration** � Uses System.IO.Pipelines for efficient I/O
-- ?? **AOT Compatible** � Works with source-generated JSON serialization
+- 📥 **Direct HTTP Deserialization** — Deserialize `HttpContent` directly to `IAsyncPagedEnumerable<T>`
+- 🌍 **REST API Pagination** — Consume paginated API responses with automatic metadata extraction
+- 💾 **Zero Buffering** — Stream large responses without loading entire payloads into memory
+- 🔄 **Full Pagination Metadata** — Automatic preservation of `Pagination` info from API responses
+- 📝 **Character Encoding Support** — Automatic transcoding from any source encoding to UTF-8
+- 🔐 **Type-Safe** — Strongly-typed generic and non-generic deserialization
+- 🧵 **Full Cancellation Support** — Built-in `CancellationToken` support for all operations
+- ⚡ **High Performance** — Stream-based processing with minimal allocations
+- 🔗 **PipeReader Integration** — Uses System.IO.Pipelines for efficient I/O
+- 🎯 **AOT Compatible** — Works with source-generated JSON serialization
 
 ---
 
-## ?? Installation
+## 📦 Installation
 
 ```bash
 dotnet add package System.Net.Http.AsyncPaged
@@ -49,9 +49,9 @@ Install-Package System.Net.Http.AsyncPaged
 
 ---
 
-## ?? Quick Start
+## 🚀 Quick Start
 
-### ?? Basic API Response Deserialization
+### 📥 Basic API Response Deserialization
 
 ```csharp
 using System.Net.Http;
@@ -81,7 +81,7 @@ Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages}");
 Console.WriteLine($"Total products: {pagination.TotalCount}");
 ```
 
-### ?? Multi-Page API Pagination
+### 🔄 Multi-Page API Pagination
 
 ```csharp
 using var client = new HttpClient { BaseAddress = new Uri("https://api.example.com") };
@@ -107,9 +107,10 @@ for (int page = 1; page <= totalPages; page++)
     var pagination = await pageData.GetPaginationAsync();
     totalPages = pagination.TotalPages ?? 1;
 }
+
 ```
 
-### ?? Continuation Token Pagination
+### 🔗 Continuation Token Pagination
 
 ```csharp
 using var client = new HttpClient { BaseAddress = new Uri("https://api.example.com") };
@@ -148,27 +149,27 @@ while (true)
 
 ---
 
-## ?? Core Concepts
+## 📚 Core Concepts
 
-### ??? Integration Points
+### 🏗️ Integration Points
 
-**HttpContent ? PipeReader ? IAsyncPagedEnumerable:**
+**HttpContent → PipeReader → IAsyncPagedEnumerable:**
 
 ```
 HTTP Response
-     ?
+     ↓
 HttpContent.ReadFromJsonAsAsyncPagedEnumerable<T>()
-     ?
+     ↓
 System.IO.Pipelines.PipeReader
-     ?
+     ↓
 JsonDeserializer.DeserializeAsyncPagedEnumerable<T>()
-     ?
+     ↓
 IAsyncPagedEnumerable<T>
-     ?
+     ↓
 Pagination metadata preserved
 ```
 
-### ?? Response Format
+### 📋 Response Format
 
 The library expects JSON responses in the standard pagination format:
 
@@ -188,7 +189,7 @@ The library expects JSON responses in the standard pagination format:
 }
 ```
 
-### ?? Encoding Handling
+### 🔤 Encoding Handling
 
 The extension automatically handles character encoding:
 
@@ -207,9 +208,9 @@ IAsyncPagedEnumerable<Data> data = response.Content
 
 ---
 
-## ?? Common Patterns
+## 💡 Common Patterns
 
-### ?? Paginated API Client
+### 🌐 Paginated API Client
 
 ```csharp
 public class ProductApiClient
@@ -266,7 +267,7 @@ await foreach (var product in apiClient.GetAllProductsAsync())
 }
 ```
 
-### ?? Search Results with Pagination
+### 🔍 Search Results with Pagination
 
 ```csharp
 public class SearchService
@@ -301,7 +302,7 @@ public class SearchService
 }
 ```
 
-### ?? Aggregating Paginated Data
+### 📊 Aggregating Paginated Data
 
 ```csharp
 public async Task<ApiStatistics> GetApiStatisticsAsync(CancellationToken cancellationToken)
@@ -336,7 +337,7 @@ public async Task<ApiStatistics> GetApiStatisticsAsync(CancellationToken cancell
 }
 ```
 
-### ?? Source-Generated JSON (AOT Compatible)
+### 🔐 Source-Generated JSON (AOT Compatible)
 
 ```csharp
 // Define source-generated JSON context
@@ -360,7 +361,7 @@ await foreach (var product in products)
 }
 ```
 
-### ??? Error Handling & Resilience
+### 🛡️ Error Handling & Resilience
 
 ```csharp
 public async Task<IAsyncPagedEnumerable<Item>?> SafeGetItemsAsync(
@@ -408,9 +409,9 @@ public async Task<IAsyncPagedEnumerable<Item>?> SafeGetItemsAsync(
 
 ---
 
-## ?? Advanced Examples
+## 🎯 Advanced Examples
 
-### ?? Streaming Large Exports
+### 🔄 Streaming Large Exports
 
 ```csharp
 public async Task ExportLargeDatasetAsync(string endpoint, string filePath)
@@ -429,7 +430,7 @@ public async Task ExportLargeDatasetAsync(string endpoint, string filePath)
 }
 ```
 
-### ?? Monitoring API Quotas
+### 📈 Monitoring API Quotas
 
 ```csharp
 public class ApiQuotaMonitor
@@ -468,7 +469,7 @@ public class ApiQuotaMonitor
 }
 ```
 
-### ?? Chaining Multiple Endpoints
+### 🔗 Chaining Multiple Endpoints
 
 ```csharp
 public async IAsyncEnumerable<CombinedData> FetchFromMultipleEndpointsAsync(
@@ -495,35 +496,35 @@ public async IAsyncEnumerable<CombinedData> FetchFromMultipleEndpointsAsync(
 
 ---
 
-## ? Best Practices
+## ✅ Best Practices
 
-### ? Do
+### ✅ Do
 
-- **Use typed extensions** � Leverage `JsonTypeInfo<T>` for AOT compatibility
-- **Handle encoding properly** � Let the library manage character transcoding
-- **Support cancellation throughout** � Pass `CancellationToken` in all calls
-- **Check pagination metadata** � Verify `HasNextPage` before making additional requests
-- **Use PipeReader** � The library uses `System.IO.Pipelines` for efficiency
-- **Stream responses** � Don't materialize entire API responses into memory
-- **Handle errors gracefully** � Implement proper HTTP and JSON error handling
-- **Validate response format** � Ensure API responses match expected JSON structure
+- **Use typed extensions** — Leverage `JsonTypeInfo<T>` for AOT compatibility
+- **Handle encoding properly** — Let the library manage character transcoding
+- **Support cancellation throughout** — Pass `CancellationToken` in all calls
+- **Check pagination metadata** — Verify `HasNextPage` before making additional requests
+- **Use PipeReader** — The library uses `System.IO.Pipelines` for efficiency
+- **Stream responses** — Don't materialize entire API responses into memory
+- **Handle errors gracefully** — Implement proper HTTP and JSON error handling
+- **Validate response format** — Ensure API responses match expected JSON structure
 
-### ? Don't
+### ❌ Don't
 
-- **Buffer entire responses** � Avoid calling `ReadAsStringAsync()` before deserialization
-- **Block on async** � Never use `.Result` or `.Wait()` on HTTP operations
-- **Ignore cancellation** � Always pass `CancellationToken` through the chain
-- **Assume pagination exists** � Check response structure before assuming pagination metadata
-- **Mix encoding handling** � Let the extension handle character encoding transcoding
-- **Reuse disposed responses** � Always create new `HttpResponseMessage` for each request
-- **Ignore rate limits** � Monitor API quotas and respect rate-limit headers
-- **Deserialize without validation** � Validate deserialized objects before processing
+- **Buffer entire responses** — Avoid calling `ReadAsStringAsync()` before deserialization
+- **Block on async** — Never use `.Result` or `.Wait()` on HTTP operations
+- **Ignore cancellation** — Always pass `CancellationToken` through the chain
+- **Assume pagination exists** — Check response structure before assuming pagination metadata
+- **Mix encoding handling** — Let the extension handle character encoding transcoding
+- **Reuse disposed responses** — Always create new `HttpResponseMessage` for each request
+- **Ignore rate limits** — Monitor API quotas and respect rate-limit headers
+- **Deserialize without validation** — Validate deserialized objects before processing
 
 ---
 
-## ?? API Reference
+## 📖 API Reference
 
-### ?? Extension Methods
+### 🔤 Extension Methods
 
 ```csharp
 // Deserialize with JsonSerializerOptions
@@ -539,47 +540,47 @@ public static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<
     CancellationToken cancellationToken = default);
 ```
 
-### ?? Overloads
+### 🔤 Overloads
 
 Both overloads are available as:
-- **Extension on `HttpContent`** � Use directly on response content
-- **Generic `<TValue>`** � Strongly-typed deserialization with automatic type casting
-- **Non-buffered** � Uses `PipeReader` for memory efficiency
-- **Encoding-aware** � Automatic transcoding from response charset to UTF-8
+- **Extension on `HttpContent`** — Use directly on response content
+- **Generic `<TValue>`** — Strongly-typed deserialization with automatic type casting
+- **Non-buffered** — Uses `PipeReader` for memory efficiency
+- **Encoding-aware** — Automatic transcoding from response charset to UTF-8
 
 ---
 
-## ?? Performance Characteristics
+## ⚙️ Performance Characteristics
 
-- **Memory Efficiency** � Uses `PipeReader` and streaming deserialization; no full response buffering
-- **Character Encoding** � Automatic transcoding with minimal overhead via `Encoding.CreateTranscodingStream`
-- **I/O Pattern** � Asynchronous, non-blocking with natural async/await semantics
-- **Cancellation** � Full end-to-end cancellation support for graceful shutdown
-- **Large Responses** � Optimized for multi-megabyte API responses
-- **Network Efficiency** � Single HTTP round-trip per call; pagination handled in-memory
+- **Memory Efficiency** — Uses `PipeReader` and streaming deserialization; no full response buffering
+- **Character Encoding** — Automatic transcoding with minimal overhead via `Encoding.CreateTranscodingStream`
+- **I/O Pattern** — Asynchronous, non-blocking with natural async/await semantics
+- **Cancellation** — Full end-to-end cancellation support for graceful shutdown
+- **Large Responses** — Optimized for multi-megabyte API responses
+- **Network Efficiency** — Single HTTP round-trip per call; pagination handled in-memory
 
 ---
 
-## ?? Dependencies
+## 🔗 Dependencies
 
 This library depends on:
-- **System.Text.Json.AsyncPaged** � JSON serialization with pagination support
-- **System.Collections.AsyncPaged** � Core pagination types
-- **System.Net.Http** � Standard HTTP client (built-in)
+- **System.Text.Json.AsyncPaged** — JSON serialization with pagination support
+- **System.Collections.AsyncPaged** — Core pagination types
+- **System.Net.Http** — Standard HTTP client (built-in)
 
 ---
 
-## ?? Related Packages
+## 📚 Related Packages
 
-- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** � Core async pagination library
-- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** � LINQ operators for async paged enumerables
-- **[System.Text.Json.AsyncPaged](https://www.nuget.org/packages/System.Text.Json.AsyncPaged)** � JSON serialization support
-- **[System.Net.Http.Rests](https://www.nuget.org/packages/System.Net.Http.Rests)** � REST API client patterns
+- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** — Core async pagination library
+- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** — LINQ operators for async paged enumerables
+- **[System.Text.Json.AsyncPaged](https://www.nuget.org/packages/System.Text.Json.AsyncPaged)** — JSON serialization support
+- **[System.Net.Http.Rests](https://www.nuget.org/packages/System.Net.Http.Rests)** — REST API client patterns
 
 ---
 
-## ?? License & Contributing
+## 📄 License & Contributing
 
-Licensed under the **Apache License 2.0**. Copyright � Kamersoft 2025.
+Licensed under the **Apache License 2.0**. Copyright © Kamersoft 2025.
 
 Contributions are welcome! Please visit [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net) to contribute, report issues, or request features.
