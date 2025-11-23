@@ -1,4 +1,4 @@
-# ??? Xpandables.Net.EntityFramework
+﻿# ??? Xpandables.Net.EntityFramework
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -496,4 +496,4 @@ await _repository.UpdateAsync(
 
 ## ?? License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © Kamersoft 2025
