@@ -14,7 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace AspNetCore.Net;
+using System.ComponentModel.Composition;
+
+namespace System.Primitives.Composition;
 
 /// <summary>
 /// Interface for adding service exports to the service collection.
@@ -27,7 +29,7 @@ namespace AspNetCore.Net;
 /// types to the services collection.
 /// It's used with MEF : Managed Extensibility Framework.
 /// The implementation class must be decorated with the attribute 
-/// <see langword="ComponentModel.Composition.ExportAttribute"/> attribute,
+/// <see cref="ExportAttribute"/> attribute,
 /// with <see cref="IAddServiceExport"/> type as contract type.</remarks>
 public interface IAddServiceExport : IAddService
 {

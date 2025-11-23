@@ -17,7 +17,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AspNetCore.Net;
+namespace System.Primitives.Composition;
 
 /// <summary>
 /// Interface for adding services to the service collection.
