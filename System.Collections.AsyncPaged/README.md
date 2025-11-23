@@ -1,245 +1,488 @@
-# ?? Xpandables.Net.AsyncPaged
+# ?? System.Collections.AsyncPaged
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Collections.AsyncPaged)
+[![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Async Pagination Library** - Efficient asynchronous enumerable pagination with metadata support for modern .NET applications.
+> **Efficient Async Pagination for Modern .NET** — Stream large datasets with pagination metadata, minimal allocations, and AOT-friendly design.
 
 ---
 
 ## ?? Overview
 
-`Xpandables.Net.AsyncPaged` provides a comprehensive solution for implementing pagination in asynchronous scenarios. It extends `IAsyncEnumerable<T>` with pagination metadata, enabling efficient data streaming with full pagination support.
+`System.Collections.AsyncPaged` provides a production-ready solution for implementing pagination in asynchronous scenarios. It extends `IAsyncEnumerable<T>` with a lightweight `IAsyncPagedEnumerable<T>` interface that carries pagination metadata, enabling efficient data streaming from databases, APIs, and cloud services without reinventing the wheel.
 
-### ?? Key Features
+Built for .NET 10 with AOT (Ahead-of-Time) compatibility and full support for modern async patterns, this library eliminates boilerplate while maintaining ergonomic, allocation-conscious APIs.
 
-- ?? **IAsyncPagedEnumerable** - Async enumerable with built-in pagination metadata
-- ?? **Pagination Metadata** - Total count, page size, current page, and continuation tokens
-- ?? **LINQ Integration** - Seamless integration with IQueryable and IAsyncEnumerable
-- ?? **Memory Efficient** - Stream large datasets without loading all data into memory
-- ? **High Performance** - Optimized for minimal allocations and maximum throughput
+### ? Key Features
+
+- **`IAsyncPagedEnumerable<T>` Interface** — Composable async enumerable with built-in pagination metadata (page size, current page, total count, continuation token)
+- **Lazy Pagination Computation** — Pagination metadata is computed on-demand, avoiding unnecessary overhead for simple scenarios
+- **Automatic Pagination Extraction** — Intelligently infers pagination details from `IQueryable<T>` Skip/Take patterns or materializes from `IAsyncEnumerable<T>`
+- **Cursor-Based & Offset Pagination** — Support for both offset-based and continuation token–based pagination strategies
+- **Immutable `Pagination` Struct** — Efficient, thread-safe pagination state with helper methods (NextPage, PreviousPage, TotalPages, etc.)
+- **AOT Compatible** — Full native AOT support with JSON source generation for serialization
+- **System.Text.Json Integration** — Built-in `PaginationJsonContext` for high-performance JSON serialization
+- **Zero Framework Baggage** — No Entity Framework, ASP.NET, or other dependencies; works with any async source
+
+---
+
+## ?? Installation
+
+```bash
+dotnet add package System.Collections.AsyncPaged
+```
+
+Or via NuGet Package Manager:
+
+```powershell
+Install-Package System.Collections.AsyncPaged
+```
 
 ---
 
 ## ?? Quick Start
 
-### Installation
-
-```bash
-dotnet add package Xpandables.Net.AsyncPaged
-```
-
-### Basic Usage
+### ?? Basic Enumeration with Pagination
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.AsyncPaged.Extensions;
+using System.Collections.Generic;
 
-// Simple pagination
-IAsyncEnumerable<Product> products = GetProductsAsync();
-IAsyncPagedEnumerable<Product> pagedProducts = products
-    .ToAsyncPagedEnumerable(totalCount: 1000);
+// Get a paged enumerable from your async source
+IAsyncPagedEnumerable<User> users = GetUsersAsync();
 
-await foreach (var product in pagedProducts)
+// Enumerate items asynchronously
+await foreach (var user in users)
 {
-    Console.WriteLine($"{product.Name} - ${product.Price}");
+    Console.WriteLine($"{user.Name} ({user.Email})");
 }
 
 // Access pagination metadata
-var pagination = await pagedProducts.GetPaginationAsync();
+var pagination = await users.GetPaginationAsync();
+Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages} pages");
 Console.WriteLine($"Total items: {pagination.TotalCount}");
 ```
 
-### Database Pagination
+### ??? With Entity Framework Core
 
 ```csharp
-public IAsyncPagedEnumerable<Product> GetProductsAsync(
-    int pageSize = 20, 
-    int pageNumber = 1)
+public IAsyncPagedEnumerable<Product> GetProductsAsync(int pageNumber = 1, int pageSize = 20)
 {
     return _context.Products
         .Where(p => p.IsActive)
         .OrderBy(p => p.Name)
         .Skip((pageNumber - 1) * pageSize)
         .Take(pageSize)
-        .ToAsyncPagedEnumerable(); // Automatically calculates total count
+        .ToAsyncPagedEnumerable();  // Automatically extracts pagination from Skip/Take
 }
 
 // Usage
-var products = productService.GetProductsAsync(pageSize: 10, pageNumber: 1);
-
+var products = GetProductsAsync(pageNumber: 2, pageSize: 50);
 await foreach (var product in products)
 {
     Console.WriteLine(product.Name);
 }
 
 var pagination = await products.GetPaginationAsync();
-Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages}");
+Console.WriteLine($"Showing {pagination.PageSize} items, page {pagination.CurrentPage} of {pagination.TotalPages}");
 ```
 
----
-
-## ?? Real-World Examples
-
-### E-Commerce Product Search
+### ?? Manual Pagination Control
 
 ```csharp
-public async Task<IAsyncPagedEnumerable<ProductDto>> SearchProductsAsync(
-    string? searchTerm,
-    decimal? minPrice,
-    decimal? maxPrice,
-    int pageSize = 24,
-    int pageNumber = 1)
-{
-    var query = _context.Products.Where(p => p.IsActive);
-    
-    if (!string.IsNullOrWhiteSpace(searchTerm))
-        query = query.Where(p => p.Name.Contains(searchTerm));
-    
-    if (minPrice.HasValue)
-        query = query.Where(p => p.Price >= minPrice);
-    
-    if (maxPrice.HasValue)
-        query = query.Where(p => p.Price <= maxPrice);
-    
-    return query
-        .OrderBy(p => p.Name)
-        .Skip((pageNumber - 1) * pageSize)
-        .Take(pageSize)
-        .Select(p => new ProductDto
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Price = p.Price,
-            Category = p.Category.Name
-        })
-        .ToAsyncPagedEnumerable();
-}
-```
+var pagination = Pagination.Create(pageSize: 25, currentPage: 1, totalCount: 500);
+var items = GetItemsAsync();
+var paged = items.ToAsyncPagedEnumerable(pagination);
 
-### Cursor-Based Pagination
+// Navigate pages
+var nextPagePagination = pagination.NextPage();
+var prevPagePagination = pagination.PreviousPage();
 
-```csharp
-public async Task<IAsyncPagedEnumerable<Activity>> GetActivitiesAsync(
-    string? continuationToken,
-    int pageSize = 50)
-{
-    var query = _context.Activities.AsQueryable();
-    
-    if (!string.IsNullOrEmpty(continuationToken))
-    {
-        var cursor = DecodeCursor(continuationToken);
-        query = query.Where(a => a.Timestamp < cursor.Timestamp);
-    }
-    
-    var items = query
-        .OrderByDescending(a => a.Timestamp)
-        .Take(pageSize);
-    
-    int totalCount = await _context.Activities.CountAsync();
-    
-    return items.ToAsyncPagedEnumerable(
-        Pagination.Create(
-            pageSize: pageSize,
-            currentPage: 1,
-            continuationToken: GenerateNextToken(),
-            totalCount: totalCount));
-}
+Console.WriteLine($"Current: {pagination.CurrentPage}");
+Console.WriteLine($"Has next: {pagination.HasNextPage}");
+Console.WriteLine($"Skip {pagination.Skip}, Take {pagination.Take}");
 ```
 
 ---
 
 ## ?? Core Concepts
 
-### Pagination Metadata
+### ?? The `Pagination` Struct
+
+The `Pagination` struct is an immutable value type that encapsulates all pagination state:
 
 ```csharp
 var pagination = Pagination.Create(
     pageSize: 20,
     currentPage: 3,
-    totalCount: 250);
+    totalCount: 250,
+    continuationToken: null
+);
 
-Console.WriteLine($"Skip: {pagination.Skip}");           // 40
-Console.WriteLine($"Take: {pagination.Take}");           // 20
-Console.WriteLine($"Total Pages: {pagination.TotalPages}"); // 13
-Console.WriteLine($"Has Next: {pagination.HasNextPage}");   // true
+// Computed properties
+Console.WriteLine(pagination.TotalPages);      // 13 (computed)
+Console.WriteLine(pagination.Skip);            // 40 (for SQL: (page-1) * size)
+Console.WriteLine(pagination.Take);            // 20
+Console.WriteLine(pagination.IsFirstPage);     // false
+Console.WriteLine(pagination.IsLastPage);      // false
+Console.WriteLine(pagination.HasNextPage);     // true
+Console.WriteLine(pagination.HasPreviousPage); // true
 
-// Navigate
-var nextPage = pagination.NextPage();
-var previousPage = pagination.PreviousPage();
+// Navigation
+var next = pagination.NextPage("continuation_token_xyz");
+var prev = pagination.PreviousPage();
 ```
 
-### Creating Paged Enumerables
+Key properties:
+- **`PageSize`** — Items per page
+- **`CurrentPage`** — Current page number (1-based)
+- **`TotalCount`** — Total items across all pages (nullable if unknown)
+- **`ContinuationToken`** — Token for cursor-based pagination (nullable)
+- **`Skip`** — Calculated skip offset for database queries
+- **`Take`** — Calculated take count (same as PageSize)
+- **`TotalPages`** — Computed total number of pages (null if TotalCount is unknown)
 
+### ??? Creating `IAsyncPagedEnumerable<T>`
+
+**From `IAsyncEnumerable<T>` with known count:**
 ```csharp
-// From IAsyncEnumerable
-var paged1 = products.ToAsyncPagedEnumerable(totalCount: 100);
+IAsyncEnumerable<User> users = GetUsersAsync();
+var paged = users.ToAsyncPagedEnumerable(totalCount: 1000);
+```
 
-// With pagination object
-var pagination = Pagination.Create(pageSize: 20, currentPage: 1, totalCount: 100);
-var paged2 = products.ToAsyncPagedEnumerable(pagination);
-
-// With factory
-var paged3 = products.ToAsyncPagedEnumerable(async ct =>
+**From `IAsyncEnumerable<T>` with lazy total count:**
+```csharp
+var paged = users.ToAsyncPagedEnumerable(async cancellationToken =>
 {
-    int total = await GetTotalCountAsync(ct);
-    return Pagination.FromTotalCount(total);
+    int total = await _userRepository.CountAsync(cancellationToken);
+    return Pagination.Create(pageSize: 20, currentPage: 1, totalCount: total);
 });
+```
 
-// From IQueryable
-var paged4 = _context.Products.ToAsyncPagedEnumerable();
+**From `IQueryable<T>` (automatic pagination extraction):**
+```csharp
+var paged = _context.Products
+    .Where(p => p.IsActive)
+    .Skip(40)
+    .Take(20)
+    .ToAsyncPagedEnumerable();  // Automatically detects Skip/Take and total count
+```
+
+**From `IQueryable<T>` with explicit pagination:**
+```csharp
+var pagination = Pagination.Create(pageSize: 20, currentPage: 2, totalCount: 500);
+var paged = _context.Products
+    .OrderBy(p => p.Name)
+    .ToAsyncPagedEnumerable(pagination);
 ```
 
 ---
 
-## ?? Advanced Features
+## ?? Design Philosophy
 
-### LINQ Extensions
+### ? **Async-First, Streaming-Focused**
+- Designed for `await foreach` consumption without blocking threads
+- Pagination metadata computation is lazy; only fetched when explicitly requested via `GetPaginationAsync()`
+- Optimal for database cursors, API pagination, and cloud storage enumeration
+
+### ?? **Minimal Allocations**
+- `Pagination` is a readonly struct; zero heap allocations for pagination state
+- `AsyncPagedEnumerable<T>` is sealed to enable better JIT optimizations
+- Lazy materialization; data is not loaded until enumerated
+
+### ?? **AOT Compatible**
+- No reflection; source-generated JSON serialization via `PaginationJsonContext`
+- Safe for native AOT deployment and trimming
+- Thread-safe lazy initialization of pagination state using atomic operations
+
+### ?? **Zero Dependencies**
+- No Entity Framework, ASP.NET, or external package dependencies
+- Pure `System.Collections.Generic` and `System.Text.Json` integration
+- Works with any async enumerable source: EF Core, Dapper, custom queries, REST APIs, etc.
+
+### ?? **Immutable & Thread-Safe**
+- `Pagination` is a `readonly record struct`; safe to share across threads
+- `AsyncPagedEnumerable<T>` uses thread-safe lazy initialization for pagination computation
+- All navigation methods (`NextPage()`, `PreviousPage()`, `WithTotalCount()`) return new instances
+
+---
+
+## ?? Advanced Examples
+
+### ?? Cursor-Based Pagination
+
+For efficient pagination over time-series or large datasets without expensive total count queries:
 
 ```csharp
-using Xpandables.Net.AsyncPaged.Extensions;
+public async IAsyncEnumerable<Activity> GetActivitiesAsync(
+    string? continuationToken,
+    int pageSize = 50,
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+{
+    var query = _context.Activities.AsQueryable();
+    
+    if (!string.IsNullOrEmpty(continuationToken))
+    {
+        var timestamp = DecodeToken(continuationToken);
+        query = query.Where(a => a.Timestamp < timestamp);
+    }
+    
+    var items = query
+        .OrderByDescending(a => a.Timestamp)
+        .Take(pageSize + 1);  // +1 to detect if there's a next page
+    
+    var activities = await items.ToListAsync(cancellationToken);
+    
+    bool hasMore = activities.Count > pageSize;
+    if (hasMore) activities.RemoveAt(activities.Count - 1);
+    
+    string? nextToken = hasMore
+        ? EncodeToken(activities.Last().Timestamp)
+        : null;
+    
+    var pagination = Pagination.Create(
+        pageSize: pageSize,
+        currentPage: 1,
+        continuationToken: nextToken,
+        totalCount: null  // Unknown total count for cursor-based
+    );
+    
+    return items.ToAsyncPagedEnumerable(pagination);
+}
 
-IAsyncPagedEnumerable<Product> products = GetProductsAsync();
+// Usage
+var activities = GetActivitiesAsync(continuationToken: null);
+await foreach (var activity in activities)
+{
+    Console.WriteLine(activity.Description);
+}
 
-// Projection
-var names = products.Select(p => p.Name);
+var meta = await activities.GetPaginationAsync();
+if (meta.HasContinuation)
+{
+    var nextPage = GetActivitiesAsync(meta.ContinuationToken);
+}
+```
 
-// Filtering
-var expensive = products.Where(p => p.Price > 100);
+### ?? Streaming with Aggregation
 
-// Aggregation
-int count = await products.CountAsync();
-decimal total = await products.SumAsync(p => p.Price);
-var max = await products.MaxAsync(p => p.Price);
+```csharp
+public async Task<PagedAggregation> GetOrderStatsAsync(
+    int year,
+    CancellationToken cancellationToken = default)
+{
+    var orders = _context.Orders
+        .Where(o => o.CreatedAt.Year == year)
+        .OrderByDescending(o => o.CreatedAt)
+        .ToAsyncPagedEnumerable();
+    
+    decimal totalAmount = 0m;
+    int itemCount = 0;
+    
+    await foreach (var order in orders.WithCancellation(cancellationToken))
+    {
+        totalAmount += order.Amount;
+        itemCount++;
+    }
+    
+    var pagination = await orders.GetPaginationAsync(cancellationToken);
+    
+    return new PagedAggregation
+    {
+        TotalAmount = totalAmount,
+        ItemCount = itemCount,
+        Pagination = pagination
+    };
+}
+```
 
-// Materialization
-List<Product> list = await products.ToListAsync();
-Product[] array = await products.ToArrayAsync();
+### ?? JSON Serialization
 
-// Grouping
-var grouped = products.GroupBy(p => p.Category);
+```csharp
+using System.Text.Json;
+
+var pagination = Pagination.Create(pageSize: 20, currentPage: 2, totalCount: 500);
+
+// Serialize using the provided source-generated context
+var json = JsonSerializer.Serialize(pagination, PaginationJsonContext.Default.Pagination);
+Console.WriteLine(json);
+// Output: {"totalCount":500,"pageSize":20,"currentPage":2,"continuationToken":null}
+
+// Deserialize
+var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+var deserialized = JsonSerializer.Deserialize<Pagination>(json, options);
 ```
 
 ---
 
-## ?? Best Practices
+## ? Best Practices
 
-1. **Use async all the way** - Don't block on async operations
-2. **Stream large datasets** - Avoid materializing entire collections
-3. **Apply filters before pagination** - Better query performance
-4. **Consider caching total counts** - For expensive operations
-5. **Use continuation tokens** - For cursor-based pagination
+### ? Do
+
+- **Use `await foreach`** for consumption — leverage `IAsyncEnumerable<T>` semantics naturally
+- **Call `GetPaginationAsync()` explicitly** — ensures pagination metadata is fully computed before responding
+- **Apply filters before pagination** — better query performance and smaller result sets
+- **Stream large datasets** — avoid materializing entire collections; process items as they arrive
+- **Use `CancellationToken` throughout** — especially with `GetPaginationAsync()` and enumeration
+- **Cache total counts** — for expensive operations; avoid re-querying on every page request
+- **Use continuation tokens** — for time-series or large ordered datasets to avoid expensive total count queries
+
+### ? Don't
+
+- **Block on async operations** — avoid `.Result` or `.Wait()`; use `await` or async all the way
+- **Materialize unnecessarily** — don't call `ToList()` unless required
+- **Ignore `CancellationToken`** — support graceful cancellation for long-running operations
+- **Assume pagination is computed** — always call `GetPaginationAsync()` if you need up-to-date metadata
+- **Share mutable state across multiple enumerations** — create new enumerables per usage
+
+---
+
+## ?? API Reference
+
+### ?? `IAsyncPagedEnumerable<T>` Interface
+
+```csharp
+public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPagedEnumerable
+{
+    // Inherited from IAsyncPagedEnumerable:
+    Pagination Pagination { get; }
+    Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default);
+    
+    // Inherited from IAsyncEnumerable<T>:
+    IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default);
+}
+```
+
+### ?? `Pagination` Struct
+
+```csharp
+public readonly record struct Pagination
+{
+    // Properties
+    public required int? TotalCount { get; init; }
+    public required int PageSize { get; init; }
+    public required int CurrentPage { get; init; }
+    public required string? ContinuationToken { get; init; }
+    
+    // Computed Properties
+    public int Skip { get; }                    // (CurrentPage - 1) * PageSize
+    public int Take { get; }                    // PageSize
+    public int? TotalPages { get; }             // Ceiling(TotalCount / PageSize)
+    public bool IsFirstPage { get; }            // CurrentPage <= 1
+    public bool IsLastPage { get; }             // CurrentPage * PageSize >= TotalCount
+    public bool HasNextPage { get; }
+    public bool HasPreviousPage { get; }
+    public bool HasContinuation { get; }        // ContinuationToken is not null/empty
+    public bool IsUnknown { get; }              // TotalCount is null or < 0
+    public bool IsPaginated { get; }            // Skip > 0 || Take > 0
+    
+    // Factory Methods
+    public static Pagination Create(int pageSize, int currentPage, 
+        string? continuationToken = null, int? totalCount = null);
+    public static Pagination FromTotalCount(int totalCount);
+    public static Pagination Empty { get; }
+    
+    // Navigation Methods
+    public Pagination NextPage(string? continuationToken = null);
+    public Pagination PreviousPage();
+    public Pagination WithTotalCount(int totalCount);
+}
+```
+
+### ?? Extension Methods
+
+```csharp
+// From IAsyncEnumerable<T>
+public static IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable<T>(
+    this IAsyncEnumerable<T> source,
+    int? totalCount = null);
+
+public static IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable<T>(
+    this IAsyncEnumerable<T> source,
+    Pagination pagination);
+
+public static IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable<T>(
+    this IAsyncEnumerable<T> source,
+    Func<CancellationToken, ValueTask<Pagination>> paginationFactory);
+
+// From IQueryable<T>
+public static IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable<T>(
+    this IQueryable<T> source);
+
+public static IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable<T>(
+    this IQueryable<T> source,
+    Pagination pagination);
+```
+
+---
+
+## ??? Extensibility
+
+### ??? Implementing a Custom Pagination Source
+
+You can create custom pagination sources by implementing `IAsyncPagedEnumerable<T>`:
+
+```csharp
+public class CustomPaginatedSource<T> : IAsyncPagedEnumerable<T>
+{
+    private readonly Func<int, CancellationToken, IAsyncEnumerable<T>> _pageFetcher;
+    private int _currentPage = 1;
+    
+    public Pagination Pagination { get; private set; } = Pagination.Empty;
+    
+    public CustomPaginatedSource(
+        Func<int, CancellationToken, IAsyncEnumerable<T>> pageFetcher,
+        int pageSize,
+        int? totalCount = null)
+    {
+        _pageFetcher = pageFetcher;
+        Pagination = Pagination.Create(pageSize, _currentPage, totalCount: totalCount);
+    }
+    
+    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        => _pageFetcher(_currentPage, cancellationToken).GetAsyncEnumerator(cancellationToken);
+    
+    public async Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
+    {
+        // Compute metadata if needed
+        return await Task.FromResult(Pagination);
+    }
+}
+
+// Usage
+var source = new CustomPaginatedSource<User>(
+    async (pageNumber, ct) => await FetchPageAsync(pageNumber, ct),
+    pageSize: 25,
+    totalCount: 500
+);
+
+await foreach (var user in source)
+{
+    Console.WriteLine(user.Name);
+}
+```
+
+---
+
+## ?? Performance Considerations
+
+- **Lazy Pagination Computation** — Pagination metadata is only computed when `GetPaginationAsync()` is called; no overhead if not needed
+- **Thread-Safe Initialization** — Uses lock-free atomic operations for lazy pagination computation
+- **Struct Allocations** — `Pagination` is a readonly struct; all copies are stack-allocated
+- **IQueryable Optimization** — Automatically extracts Skip/Take patterns without materializing data
+- **Memory Streaming** — Process large datasets without holding entire collections in memory
 
 ---
 
 ## ?? Related Packages
 
-- **Xpandables.Net.AsyncPaged.AspNetCore** - ASP.NET Core integration
-- **Xpandables.Net.Repositories.EntityFramework** - Repository pattern support
+- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** — LINQ operators for async paged enumerables
+- **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** — REST API pagination support
 
 ---
 
-## ?? License
+## ?? License & Contributing
 
-Apache License 2.0 - Copyright © Kamersoft 2025
+Licensed under the **Apache License 2.0**. Copyright © Kamersoft 2025.
+
+Contributions are welcome! Please visit [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net) to contribute, report issues, or request features.
