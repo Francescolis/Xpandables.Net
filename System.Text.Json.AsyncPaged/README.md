@@ -1,34 +1,34 @@
-# ?? System.Text.Json.AsyncPaged
+﻿# 📡 System.Text.Json.AsyncPaged
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Text.Json.AsyncPaged)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **High-Performance JSON Serialization for Async Pagination** � Efficient, streaming JSON serialization and deserialization for `IAsyncPagedEnumerable<T>` with source generation, adaptive flushing, and minimal allocations.
+> **High-Performance JSON Serialization for Async Pagination** — Efficient, streaming JSON serialization and deserialization for `IAsyncPagedEnumerable<T>` with source generation, adaptive flushing, and minimal allocations.
 
 ---
 
-## ?? Overview
+## 🎯 Overview
 
 `System.Text.Json.AsyncPaged` provides native `System.Text.Json` integration for serializing and deserializing `IAsyncPagedEnumerable<T>` sequences with pagination metadata. It enables efficient handling of large JSON payloads through streaming serialization, memory-aware buffer management, and full cancellation support.
 
 Built for .NET 10 with AOT compatibility, this library seamlessly integrates pagination metadata into JSON output while maintaining high throughput and minimal memory overhead.
 
-### ? Key Features
+### ✨ Key Features
 
-- ?? **Streaming Serialization** � Asynchronously serialize large `IAsyncPagedEnumerable<T>` to JSON with adaptive flushing
-- ?? **Streaming Deserialization** � Efficiently deserialize JSON into `IAsyncPagedEnumerable<T>` with pagination metadata
-- ?? **Pagination Metadata Preservation** � Automatically includes pagination information in serialized output
-- ?? **Adaptive Buffer Management** � Memory-aware flushing strategy based on dataset size and buffer pressure
-- ?? **Source Generation Ready** � Compatible with source-generated JSON serialization for AOT
-- ?? **PipeWriter & Stream Support** � Works with both System.IO.Pipelines and Stream-based I/O
-- ?? **Full Cancellation Support** � All operations support `CancellationToken` for graceful shutdown
-- ? **High Performance** � Optimized for minimal allocations and maximum throughput
-- ?? **Type-Safe** � Generic and non-generic overloads for maximum flexibility
+-  **Streaming Serialization** — Asynchronously serialize large `IAsyncPagedEnumerable<T>` to JSON with adaptive flushing
+-  **Streaming Deserialization** — Efficiently deserialize JSON into `IAsyncPagedEnumerable<T>` with pagination metadata
+-  **Pagination Metadata Preservation** — Automatically includes pagination information in serialized output
+-  **Adaptive Buffer Management** — Memory-aware flushing strategy based on dataset size and buffer pressure
+-  **Source Generation Ready** — Compatible with source-generated JSON serialization for AOT
+-  **PipeWriter & Stream Support** — Works with both System.IO.Pipelines and Stream-based I/O
+-  **Full Cancellation Support** — All operations support `CancellationToken` for graceful shutdown
+-  **High Performance** — Optimized for minimal allocations and maximum throughput
+-  **Type-Safe** — Generic and non-generic overloads for maximum flexibility
 
 ---
 
-## ?? Installation
+## 📦 Installation
 
 ```bash
 dotnet add package System.Text.Json.AsyncPaged
@@ -47,9 +47,9 @@ Install-Package System.Text.Json.AsyncPaged
 
 ---
 
-## ?? Quick Start
+## 🚀 Quick Start
 
-### ?? Serializing Paged Data to JSON
+### 📤 Serializing Paged Data to JSON
 
 ```csharp
 using System.Text.Json;
@@ -69,7 +69,7 @@ await JsonSerializer.SerializeAsyncPaged(
     cancellationToken: CancellationToken.None);
 ```
 
-### ?? Deserializing JSON to Paged Enumerable
+### 📥 Deserializing JSON to Paged Enumerable
 
 ```csharp
 using System.Text.Json;
@@ -92,7 +92,7 @@ var pagination = await products.GetPaginationAsync();
 Console.WriteLine($"Total: {pagination.TotalCount}");
 ```
 
-### ?? Round-Trip Serialization
+### 🔄 Round-Trip Serialization
 
 ```csharp
 // Original paged enumerable
@@ -117,9 +117,9 @@ var restoredPagination = await restored.GetPaginationAsync();
 
 ---
 
-## ?? Core Concepts
+## 📚 Core Concepts
 
-### ?? JSON Structure
+### 📋 JSON Structure
 
 When serialized, `IAsyncPagedEnumerable<T>` produces the following JSON structure:
 
@@ -141,7 +141,7 @@ When serialized, `IAsyncPagedEnumerable<T>` produces the following JSON structur
 
 The `pagination` object contains all metadata needed to reconstruct page navigation, while `items` contains the serialized enumerable elements.
 
-### ?? Serialization Modes
+### 🔄 Serialization Modes
 
 **Stream-Based:**
 ```csharp
@@ -162,7 +162,7 @@ await JsonSerializer.SerializeAsyncPaged(
     options);
 ```
 
-### ?? Deserialization Modes
+### 📥 Deserialization Modes
 
 **From Stream:**
 ```csharp
@@ -179,7 +179,7 @@ IAsyncPagedEnumerable<T> result = JsonSerializer.DeserializeAsyncPagedEnumerable
     options);
 ```
 
-### ?? Adaptive Flushing Strategy
+### 🧠 Adaptive Flushing Strategy
 
 The serializer uses an intelligent flushing strategy that adapts based on dataset size:
 
@@ -195,9 +195,9 @@ Additionally, flushing occurs whenever the pending bytes exceed 32 KB, ensuring 
 
 ---
 
-## ?? Common Patterns
+## 💡 Common Patterns
 
-### ?? REST API Response with Pagination
+### 📊 REST API Response with Pagination
 
 ```csharp
 [ApiController]
@@ -222,7 +222,7 @@ public class ProductsController : ControllerBase
 }
 ```
 
-### ?? Large Dataset Export
+### 💾 Large Dataset Export
 
 ```csharp
 public async Task ExportProductsAsync(string filePath, CancellationToken cancellationToken)
@@ -249,7 +249,7 @@ public async Task ExportProductsAsync(string filePath, CancellationToken cancell
 }
 ```
 
-### ?? Import with Validation
+### 📦 Import with Validation
 
 ```csharp
 public async Task ImportProductsAsync(string filePath, CancellationToken cancellationToken)
@@ -273,7 +273,7 @@ public async Task ImportProductsAsync(string filePath, CancellationToken cancell
 }
 ```
 
-### ?? Data Transformation Pipeline
+### 🔄 Data Transformation Pipeline
 
 ```csharp
 public async Task TransformAndExportAsync(
@@ -306,7 +306,7 @@ public async Task TransformAndExportAsync(
 }
 ```
 
-### ?? HTTP Response Streaming
+### 🌐 HTTP Response Streaming
 
 ```csharp
 public async Task<IAsyncResult> GetProductsStreamAsync(int pageNumber = 1, int pageSize = 20)
@@ -330,7 +330,7 @@ public async Task<IAsyncResult> GetProductsStreamAsync(int pageNumber = 1, int p
 
 ---
 
-## ?? Performance Benchmarks
+## ⚙️ Performance Benchmarks
 
 The following benchmarks compare `System.Text.Json.AsyncPaged` serialization/deserialization with standard `IAsyncEnumerable<T>` approaches:
 
@@ -358,9 +358,9 @@ The following benchmarks compare `System.Text.Json.AsyncPaged` serialization/des
 
 ---
 
-## ?? API Reference
+## 📖 API Reference
 
-### ?? Generic Serialization Extensions
+### 🔤 Generic Serialization Extensions
 
 ```csharp
 // Serialize to Stream with JsonTypeInfo
@@ -385,7 +385,7 @@ Task SerializeAsyncPaged<TValue>(
     CancellationToken cancellationToken = default);
 ```
 
-### ?? Generic Deserialization Extensions
+### 🔤 Generic Deserialization Extensions
 
 ```csharp
 // Deserialize from Stream with JsonTypeInfo
@@ -407,7 +407,7 @@ IAsyncPagedEnumerable<TValue> DeserializeAsyncPagedEnumerable<TValue>(
     CancellationToken cancellationToken = default);
 ```
 
-### ?? Non-Generic Serialization Extensions
+### 📦 Non-Generic Serialization Extensions
 
 ```csharp
 // Serialize (non-generic) to Stream
@@ -427,29 +427,29 @@ Task SerializeAsyncPaged(
 
 ---
 
-## ? Best Practices
+## ✅ Best Practices
 
-### ? Do
+### ✅ Do
 
-- **Use source-generated JSON** � Leverage `JsonTypeInfo<T>` and `JsonSerializerContext` for AOT compatibility
-- **Apply streaming for large datasets** � Don't materialize when serializing/deserializing
-- **Handle cancellation** � Always pass `CancellationToken` through the pipeline
-- **Use PipeWriter for high-throughput scenarios** � Better for server-side streaming
-- **Monitor pagination metadata** � Use pagination info to handle multi-page results correctly
-- **Validate after deserialization** � Check items and pagination before processing
+- **Use source-generated JSON** — Leverage `JsonTypeInfo<T>` and `JsonSerializerContext` for AOT compatibility
+- **Apply streaming for large datasets** — Don't materialize when serializing/deserializing
+- **Handle cancellation** — Always pass `CancellationToken` through the pipeline
+- **Use PipeWriter for high-throughput scenarios** — Better for server-side streaming
+- **Monitor pagination metadata** — Use pagination info to handle multi-page results correctly
+- **Validate after deserialization** — Check items and pagination before processing
 
-### ? Don't
+### ❌ Don't
 
-- **Block on async operations** � Never use `.Result` or `.Wait()` on serialization tasks
-- **Ignore cancellation tokens** � Support graceful shutdown and timeouts
-- **Materialize entire streams into memory** � Process items as they're deserialized
-- **Use default JsonSerializerOptions** � Provide explicit options for consistent behavior
-- **Assume pagination is always present** � Handle cases where pagination metadata may be unknown
-- **Reuse streams without resetting** � Always reset position or create new streams for new operations
+- **Block on async operations** — Never use `.Result` or `.Wait()` on serialization tasks
+- **Ignore cancellation tokens** — Support graceful shutdown and timeouts
+- **Materialize entire streams into memory** — Process items as they're deserialized
+- **Use default JsonSerializerOptions** — Provide explicit options for consistent behavior
+- **Assume pagination is always present** — Handle cases where pagination metadata may be unknown
+- **Reuse streams without resetting** — Always reset position or create new streams for new operations
 
 ---
 
-## ?? Advanced Configuration
+## 🔧 Advanced Configuration
 
 ### Custom Serialization Options
 
@@ -498,23 +498,23 @@ await JsonSerializer.SerializeAsyncPaged(
 
 ---
 
-## ?? Dependency
+## 🔗 Dependency
 
 This library depends on:
-- **System.Collections.AsyncPaged** � Core pagination types and interfaces
+- **System.Collections.AsyncPaged** — Core pagination types and interfaces
 
 ---
 
-## ?? Related Packages
+## 📚 Related Packages
 
-- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** � Core async pagination library
-- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** � LINQ operators for async paged enumerables
-- **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** � REST API pagination support
+- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** — Core async pagination library
+- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** — LINQ operators for async paged enumerables
+- **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** — REST API pagination support
 
 ---
 
-## ?? License & Contributing
+## 📄 License & Contributing
 
-Licensed under the **Apache License 2.0**. Copyright � Kamersoft 2025.
+Licensed under the **Apache License 2.0**. Copyright © Kamersoft 2025.
 
 Contributions are welcome! Please visit [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net) to contribute, report issues, or request features.
