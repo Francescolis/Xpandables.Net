@@ -38,12 +38,14 @@ public static class AsyncPagedEnumerable
     /// <param name="source">The asynchronous sequence of items to be paged.</param>
     /// <param name="paginationFactory">An optional delegate that provides pagination information for each iteration. If not specified, default
     /// pagination behavior is used.</param>
+    /// <param name="strategy">The pagination strategy to apply.</param>
     /// <returns>An asynchronous paged enumerable that iterates over the items in the source sequence according to the specified
     /// pagination strategy.</returns>
     public static IAsyncPagedEnumerable<T> Create<T>(
          IAsyncEnumerable<T> source,
-        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default) =>
-        new AsyncPagedEnumerable<T>(source, paginationFactory);
+        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
+        PaginationStrategy strategy = PaginationStrategy.None) =>
+        new AsyncPagedEnumerable<T>(source, paginationFactory, strategy);
 
     /// <summary>
     /// Creates an asynchronous paged enumerable over the specified query, optionally using a custom pagination
@@ -57,12 +59,14 @@ public static class AsyncPagedEnumerable
     /// <param name="query">The source query to enumerate asynchronously in pages. Cannot be null.</param>
     /// <param name="paginationFactory">An optional factory function that provides pagination parameters for each enumeration. If null, default
     /// pagination is used.</param>
+    /// <param name="strategy">The pagination strategy to apply.</param>
     /// <returns>An asynchronous paged enumerable that yields elements of type T from the source query according to the specified
     /// or default pagination.</returns>
     public static IAsyncPagedEnumerable<T> Create<T>(
          IQueryable<T> query,
-        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default) =>
-        new AsyncPagedEnumerable<T>(query, paginationFactory);
+        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
+        PaginationStrategy strategy = PaginationStrategy.None) =>
+        new AsyncPagedEnumerable<T>(query, paginationFactory, strategy);
 
     /// <summary>
     /// Creates an empty asynchronous paged enumerable of the specified type.

@@ -28,7 +28,6 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     private readonly IAsyncEnumerator<T>? _sourceEnumerator;
     private readonly CancellationToken _cancellationToken;
     private PaginationStrategy _strategy;
-    private Func<int, Pagination, Pagination>? _strategyUpdater;
     private Pagination _pagination;
     private bool _disposed;
     private int _itemIndex;
@@ -37,34 +36,8 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     public PaginationStrategy Strategy => _strategy;
 
     /// <inheritdoc/>
-    public IAsyncPagedEnumerator<T> WithStrategy(PaginationStrategy strategy)
-    {
-        _strategy = strategy;
-        _strategyUpdater = strategy switch
-        {
-            PaginationStrategy.None => static (_, p) => p,
-            PaginationStrategy.PerItem => static (i, p) =>
-                p with { PageSize = p.PageSize == 0 ? 1 : p.PageSize, CurrentPage = i },
-            PaginationStrategy.PerPage => static (i, p) =>
-            {
-                int pageSize = p.PageSize;
-                int currentPage = pageSize > 0 ? ((i - 1) / pageSize) + 1 : 1;
-                return p with { PageSize = pageSize, CurrentPage = currentPage };
-            }
-            ,
-            _ => static (_, p) => p
-        };
-
-        return this;
-    }
-
-    /// <inheritdoc/>
-    /// <remarks>
-    /// The default value for <see cref="Strategy"/> is <see cref="PaginationStrategy.None"/>, 
-    /// meaning no pagination strategy is applied unless explicitly set.
-    /// </remarks>
     public ref readonly Pagination Pagination => ref _pagination;
-
+    
     /// <summary>
     /// Gets the current element.
     /// </summary>
@@ -79,6 +52,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
         _sourceEnumerator = null;
         _cancellationToken = default;
         _pagination = pagination;
+        _strategy = PaginationStrategy.None;
     }
 
     /// <summary>
@@ -86,15 +60,18 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     /// </summary>
     /// <param name="sourceEnumerator">The source enumerator to wrap.</param>
     /// <param name="pagination">The initial pagination context.</param>
+    /// <param name="strategy">The pagination strategy to apply.</param>
     /// <param name="cancellationToken">The cancellation token to observe.</param>
     internal AsyncPagedEnumerator(
         IAsyncEnumerator<T> sourceEnumerator,
         Pagination pagination,
+        PaginationStrategy strategy,
         CancellationToken cancellationToken)
     {
         _sourceEnumerator = sourceEnumerator;
         _cancellationToken = cancellationToken;
         _pagination = pagination;
+        _strategy = strategy;
     }
 
     /// <inheritdoc/>
@@ -124,13 +101,11 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
         Current = _sourceEnumerator.Current;
         _itemIndex++;
 
-        if (_strategyUpdater is not null)
-        {
-            _pagination = _strategyUpdater.Invoke(_itemIndex, _pagination);
-        }
+        UpdatePagination(_itemIndex);
 
         return true;
     }
+
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
@@ -146,5 +121,28 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
         }
 
         _disposed = true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void UpdatePagination(int index)
+    {
+        if (_strategy == PaginationStrategy.None) return;
+
+        if (_strategy == PaginationStrategy.PerItem)
+        {
+            _pagination = _pagination with
+            {
+                PageSize = _pagination.PageSize == 0 ? 1 : _pagination.PageSize,
+                CurrentPage = index
+            };
+            return;
+        }
+
+        if (_strategy == PaginationStrategy.PerPage)
+        {
+            int pageSize = _pagination.PageSize;
+            int currentPage = pageSize > 0 ? ((index - 1) / pageSize) + 1 : 1;
+            _pagination = _pagination with { PageSize = pageSize, CurrentPage = currentPage };
+        }
     }
 }

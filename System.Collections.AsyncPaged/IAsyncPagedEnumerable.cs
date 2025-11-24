@@ -73,4 +73,25 @@ public interface IAsyncPagedEnumerable
 public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPagedEnumerable
     where T : allows ref struct
 {
+        /// <summary>
+    /// Returns an enumerator that iterates asynchronously through the collection with pagination support.
+    /// </summary>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that may be used to cancel the asynchronous iteration.</param>
+    /// <returns>An enumerator that can be used to iterate asynchronously through the collection.</returns>
+    new IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    IAsyncEnumerator<T> IAsyncEnumerable<T>.GetAsyncEnumerator(CancellationToken cancellationToken) =>
+        GetAsyncEnumerator(cancellationToken);
+
+    /// <summary>
+    /// Configures the strategy to be used for managing pagination.
+    /// </summary>
+    /// <remarks>
+    /// This method is pure; it returns a new enumerable view or the same instance with the updated configuration,
+    /// ensuring thread safety and immutability of the definition.
+    /// </remarks>
+    /// <param name="strategy">The <see cref="PaginationStrategy"/> to apply.</param>
+    /// <returns>A configured enumerable instance.</returns>
+    IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy);    
 }

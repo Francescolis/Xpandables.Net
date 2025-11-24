@@ -24,26 +24,26 @@ namespace System.Collections.Generic;
 /// by providing fluent API methods for configuring pagination strategies. These methods simplify the process
 /// of customizing the behavior of asynchronous paged enumerators to suit specific use cases or performance requirements.
 /// </remarks>
-public static class IAsyncPagedEnumeratorExtensions
+public static class IAsyncPagedEnumerableStrategyStrategyExtensions
 {
     /// <summary>
     /// Extension methods for configuring pagination strategies.
     /// </summary>
     /// <typeparam name="T">The type of elements being enumerated.</typeparam>
-    extension<T>(IAsyncPagedEnumerator<T> enumerator) where T : allows ref struct
+    extension<T>(IAsyncPagedEnumerable<T> enumerable) where T : allows ref struct
     {
         /// <summary>
         /// Configures the enumerator to update pagination based on page boundaries.
         /// </summary>
-        /// <returns>The configured enumerator instance to support fluent chaining.</returns>
+        /// <returns>The configured enumerable instance to support fluent chaining.</returns>
         /// <remarks>
         /// This is a convenience method equivalent to calling <c>WithStrategy(PaginationStrategy.PerPage)</c>.
         /// The pagination metadata will be updated whenever a page boundary is crossed during enumeration.
         /// </remarks>
-        public IAsyncPagedEnumerator<T> WithPerPageStrategy()
+        public IAsyncPagedEnumerable<T> WithPerPageStrategy()
         {
-            ArgumentNullException.ThrowIfNull(enumerator);
-            return enumerator.WithStrategy(PaginationStrategy.PerPage);
+            ArgumentNullException.ThrowIfNull(enumerable);
+            return enumerable.WithStrategy(PaginationStrategy.PerPage);
         }
 
         /// <summary>
@@ -53,26 +53,26 @@ public static class IAsyncPagedEnumeratorExtensions
         /// <remarks>
         /// This is a convenience method equivalent to calling <c>WithStrategy(PaginationStrategy.PerItem)</c>.
         /// The pagination metadata will be updated after each item is enumerated, providing fine-grained
-        /// tracking of enumeration progress.
+        /// tracking of enumerable progress.
         /// </remarks>
-        public IAsyncPagedEnumerator<T> WithPerItemStrategy()
+        public IAsyncPagedEnumerable<T> WithPerItemStrategy()
         {
-            ArgumentNullException.ThrowIfNull(enumerator);
-            return enumerator.WithStrategy(PaginationStrategy.PerItem);
+            ArgumentNullException.ThrowIfNull(enumerable);
+            return enumerable.WithStrategy(PaginationStrategy.PerItem);
         }
 
         /// <summary>
         /// Configures the enumerator to not automatically update pagination metadata.
         /// </summary>
-        /// <returns>The configured enumerator instance to support fluent chaining.</returns>
+        /// <returns>The configured enumerable instance to support fluent chaining.</returns>
         /// <remarks>
         /// This is a convenience method equivalent to calling <c>WithStrategy(PaginationStrategy.None)</c>.
         /// The pagination metadata will remain unchanged during enumeration. This is the default behavior.
         /// </remarks>
-        public IAsyncPagedEnumerator<T> WithNoStrategy()
+        public IAsyncPagedEnumerable<T> WithNoStrategy()
         {
-            ArgumentNullException.ThrowIfNull(enumerator);
-            return enumerator.WithStrategy(PaginationStrategy.None);
+            ArgumentNullException.ThrowIfNull(enumerable);
+            return enumerable.WithStrategy(PaginationStrategy.None);
         }
     }
 }

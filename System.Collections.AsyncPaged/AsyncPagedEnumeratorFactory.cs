@@ -34,14 +34,16 @@ public static class AsyncPagedEnumerator
     /// <typeparam name="T">The type of elements being enumerated.</typeparam>
     /// <param name="sourceEnumerator">The source enumerator to wrap.</param>
     /// <param name="pagination">The initial pagination context. If null, <see cref="Pagination.Empty"/> is used.</param>
+    /// <param name="strategy">The pagination strategy to apply.</param>
     /// <param name="cancellationToken">The cancellation token to observe.</param>
     /// <returns>A new <see cref="AsyncPagedEnumerator{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static AsyncPagedEnumerator<T> Create<T>(
         IAsyncEnumerator<T> sourceEnumerator,
         Pagination? pagination = null,
+        PaginationStrategy strategy = PaginationStrategy.None,
         CancellationToken cancellationToken = default) =>
-        new(sourceEnumerator, pagination ?? Pagination.Empty, cancellationToken);
+        new(sourceEnumerator, pagination ?? Pagination.Empty,strategy, cancellationToken);
 
     /// <summary>
     /// Creates an empty paged enumerator with no data.

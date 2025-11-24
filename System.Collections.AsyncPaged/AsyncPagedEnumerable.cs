@@ -28,6 +28,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     private readonly IAsyncEnumerable<T>? _source;
     private readonly IQueryable<T>? _queryable;
     private readonly Func<CancellationToken, ValueTask<Pagination>> _paginationFactory;
+    private readonly PaginationStrategy _strategy;
 
     // Lazy materialization
     private List<T>? _materializedItems;
@@ -51,16 +52,19 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     /// <param name="source">The asynchronous enumerable representing the data source. Cannot be <see langword="null"/>.</param>
     /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata.
     /// If null, pagination will be inferred from the source that gets materialized.</param>
+    /// <param name="strategy">The pagination strategy to apply.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> or <paramref name="paginationFactory"/> is null.</exception>
     internal AsyncPagedEnumerable(
         IAsyncEnumerable<T> source,
-        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default)
+        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
+        PaginationStrategy strategy = PaginationStrategy.None)
     {
         ArgumentNullException.ThrowIfNull(source);
 
         _source = source;
         _paginationFactory = paginationFactory ?? AsyncEnumerablePaginationFactory(source);
         _pagination = Pagination.Empty;
+        _strategy = strategy;
     }
 
     /// <summary>
@@ -73,20 +77,42 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     /// <param name="query">The queryable data source. Cannot be <see langword="null"/>.</param>
     /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata. 
     /// If null, pagination will be inferred from the query.</param>
+    /// <param name="strategy">The pagination strategy to apply.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
     internal AsyncPagedEnumerable(
         IQueryable<T> query,
-        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default)
+        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
+        PaginationStrategy strategy = PaginationStrategy.None)
     {
         ArgumentNullException.ThrowIfNull(query);
 
         _queryable = query;
         _paginationFactory = paginationFactory ?? QueryablePaginationFactory(query);
         _pagination = Pagination.Empty;
+        _strategy = strategy;
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+    public IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy)
+    {
+        // Return a new instance with the updated strategy but sharing the same source definition.
+        // Note: This creates a new view. If the source is an IAsyncEnumerable that cannot be iterated twice,
+        // this should be used with caution. However, for IQueryable or List-based sources, it is safe.
+        if (_source is not null)
+        {
+            return new AsyncPagedEnumerable<T>(_source, _paginationFactory, strategy);
+        }
+        
+        if (_queryable is not null)
+        {
+            return new AsyncPagedEnumerable<T>(_queryable, _paginationFactory, strategy);
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         Pagination initial = Pagination;
 
@@ -98,7 +124,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
             _ => AsyncPagedEnumerator.Empty<T>(initial)
         };
 
-        return AsyncPagedEnumerator.Create(enumerator, initial, cancellationToken);
+        return AsyncPagedEnumerator.Create(enumerator, initial,_strategy, cancellationToken);
     }
 
     /// <inheritdoc/>

@@ -21,11 +21,10 @@ namespace System.Collections.Generic;
 /// providing access to pagination metadata that updates as enumeration progresses.
 /// </summary>
 /// <remarks>
-/// This interface extends <see cref="IAsyncEnumerator{T}"/> to include pagination support. It is
-/// designed for scenarios where data is retrieved in pages, such as querying paginated APIs or databases.
+/// This interface extends <see cref="IAsyncEnumerator{T}"/> to include pagination support.
 /// <para>
 /// The <see cref="Pagination"/> property provides real-time access to the current pagination state,
-/// which may be updated based on the configured <see cref="PaginationStrategy"/>.
+/// which is updated based on the strategy defined in the source <see cref="IAsyncPagedEnumerable{T}"/>.
 /// </para>
 /// <para>
 /// The generic type parameter supports ref struct types starting with .NET 10, enabling efficient enumeration
@@ -51,30 +50,11 @@ public interface IAsyncPagedEnumerator<out T> : IAsyncEnumerator<T>
     ref readonly Pagination Pagination { get; }
 
     /// <summary>
-    /// Gets the current pagination strategy being used by this enumerator.
+    /// Gets the pagination strategy currently active for this enumerator.
     /// </summary>
     /// <remarks>
     /// The strategy determines how pagination metadata is updated during enumeration.
-    /// The default value is <see cref="PaginationStrategy.None"/>, meaning pagination is not automatically updated.
+    /// This value is immutable for the lifetime of the enumerator.
     /// </remarks>
     PaginationStrategy Strategy { get; }
-
-    /// <summary>
-    /// Configures the strategy to be used for managing pagination during enumeration.
-    /// </summary>
-    /// <remarks>
-    /// The specified strategy influences how the <see cref="Pagination"/> property is updated
-    /// during enumeration. This method should typically be called before beginning enumeration.
-    /// <para>
-    /// Available strategies:
-    /// <list type="bullet">
-    /// <item><see cref="PaginationStrategy.None"/>: No automatic pagination updates (default)</item>
-    /// <item><see cref="PaginationStrategy.PerPage"/>: Updates pagination based on page boundaries</item>
-    /// <item><see cref="PaginationStrategy.PerItem"/>: Updates pagination for each item enumerated</item>
-    /// </list>
-    /// </para>
-    /// </remarks>
-    /// <param name="strategy">The <see cref="PaginationStrategy"/> to apply.</param>
-    /// <returns>The current enumerator instance to support fluent chaining.</returns>
-    IAsyncPagedEnumerator<T> WithStrategy(PaginationStrategy strategy);
 }
