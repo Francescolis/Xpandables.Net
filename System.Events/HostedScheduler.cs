@@ -43,6 +43,9 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
     private readonly ILogger<HostedScheduler> _logger;
     private readonly IDisposable? _optionsMonitor;
     private volatile SchedulerOptions _options;
+    
+    // Added for backoff calculation
+    private const int MaxBackoffSeconds = 60;
 
     #endregion
 
@@ -78,6 +81,11 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
             new EventId(1022, nameof(LogSchedulerDisposed)),
             "HostedScheduler disposed");
 
+    private static readonly Action<ILogger, int, Exception?> LogBackoffActive =
+        LoggerMessage.Define<int>(
+            LogLevel.Warning,
+            new EventId(1013, nameof(LogBackoffActive)),
+            "Error occurred. Backing off for {Delay}ms before next retry");
     #endregion
 
     #region Constructor and Initialization
@@ -108,7 +116,6 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
             LogOptionsUpdated(_logger, (int)newOptions.SchedulerFrequency, null);
         });
     }
-
     #endregion
 
     #region Public Interface Implementation
@@ -116,7 +123,6 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
     /// <inheritdoc />
     public Task ScheduleAsync(CancellationToken cancellationToken = default) =>
         _scheduler.ScheduleAsync(cancellationToken);
-
     #endregion
 
     #region Background Service Implementation
@@ -126,32 +132,78 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
     {
         LogBackgroundServiceStarting(_logger, null);
 
-        var period = TimeSpan.FromMilliseconds(_options.SchedulerFrequency);
-        using var timer = new PeriodicTimer(period);
+        int consecutiveErrors = 0;
 
+        // Outer loop handles Timer recreation when configuration changes
         while (!stoppingToken.IsCancellationRequested)
         {
-#pragma warning disable CA1031 // Do not catch general exception types
+            var currentFrequency = _options.SchedulerFrequency;
+            var period = TimeSpan.FromMilliseconds(currentFrequency);
+
+            // We wrap the timer in a scope. If frequency changes, we break the inner loop,
+            // dispose this timer, and create a new one in the next outer iteration.
             try
             {
-                var timerResult = await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false);
+                using var timer = new PeriodicTimer(period);
 
-                if (!timerResult) break; // Timer was cancelled
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    // 1. Check for configuration changes
+                    if (_options.SchedulerFrequency != currentFrequency)
+                    {
+                        // Break inner loop to recreate timer with new frequency
+                        break;
+                    }
 
-                await _scheduler.ScheduleAsync(stoppingToken).ConfigureAwait(false);
+                    try
+                    {
+                        // 2. Wait for next tick
+                        if (!await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false))
+                        {
+                            break;
+                        }
+
+                        // 3. Execute Task
+                        await _scheduler.ScheduleAsync(stoppingToken).ConfigureAwait(false);
+
+                        // 4. Reset backoff on success
+                        if (consecutiveErrors > 0) consecutiveErrors = 0;
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    catch (Exception exception)
+                    {
+                        LogBackgroundServiceError(_logger, exception);
+
+                        // 5. Exponential Backoff Implementation
+                        consecutiveErrors++;
+                        var backoffDelay = CalculateBackoff(consecutiveErrors);
+                        
+                        LogBackoffActive(_logger, (int)backoffDelay.TotalMilliseconds, null);
+                        
+                        // Wait out the backoff period before allowing the loop to continue to the next timer tick
+                        await Task.Delay(backoffDelay, stoppingToken).ConfigureAwait(false);
+                    }
+                }
             }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            catch (OperationCanceledException)
             {
+                // Graceful shutdown
                 break;
             }
-            catch (Exception exception)
-            {
-                LogBackgroundServiceError(_logger, exception);
-            }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         LogBackgroundServiceStopping(_logger, null);
+    }
+
+    private static TimeSpan CalculateBackoff(int errorCount)
+    {
+        // Cap at MaxBackoffSeconds (60s)
+        // Formula: 2^errorCount * 100ms (jitter could be added here if strictly necessary)
+        var delaySeconds = Math.Min(Math.Pow(2, errorCount) * 0.1, MaxBackoffSeconds);
+        return TimeSpan.FromSeconds(delaySeconds);
     }
 
     #endregion
@@ -170,6 +222,5 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
 
         LogSchedulerDisposed(_logger, null);
     }
-
     #endregion
 }
