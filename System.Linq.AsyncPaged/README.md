@@ -18,15 +18,16 @@ Built for .NET 10 with AOT compatibility, this library seamlessly integrates wit
 
 - **🔄 Projection Operators** — `SelectPaged`, `SelectPagedAsync` with sync and async selectors
 - **🔍 Filtering Operations** — `WherePaged` with predicate-based filtering  
-- **📈 Aggregation Methods** — `CountPaged`, `SumPaged`, `MinPaged`, `MaxPaged`, `AggregatePagedAsync`, and more
-- **🏷️ Element Access** — `FirstPaged`, `LastPaged`, `SinglePaged`, `ElementAtPaged`
+- **📈 Aggregation Methods** — `CountPagedAsync`, `SumPagedAsync`, `MinPagedAsync`, `MaxPagedAsync`, `MinByPagedAsync`, `MaxByPagedAsync`, `AggregatePagedAsync`
+- **🏷️ Element Access** — `FirstPagedAsync`, `LastPagedAsync`, `SinglePagedAsync`, `ElementAtPagedAsync`
 - **📋 Ordering** — `OrderByPaged`, `ThenByPaged`, `ReversePaged` with ascending/descending support
-- **⚙️ Set Operations** — `DistinctPaged`, `UnionPaged`, `IntersectPaged`, `ExceptPaged`
+- **⚙️ Set Operations** — `DistinctPaged`, `DistinctByPaged`, `UnionPaged`, `IntersectPaged`, `ExceptPaged`
 - **🔗 Joining** — `JoinPaged`, `GroupJoinPaged` for cross-sequence operations
 - **📑 Grouping** — `GroupByPaged` for partitioning sequences while preserving pagination
-- **⚙️ Numerical** — `SumPaged`, `AveragePaged`, `MinPaged`, `MaxPaged` with custom projections
-- **💾 Materialization** — `ToListPagedAsync`, `ToArrayPagedAsync`, `MaterializeAsync` with memory efficiency
-- **🪟 Windowing** — `TakePaged`, `SkipPaged`, `TakeWhilePaged`, `SkipWhilePaged` for partial enumeration
+- **⚙️ Numerical** — `SumPagedAsync`, `AveragePagedAsync`, `MinPagedAsync`, `MaxPagedAsync` with custom projections
+- **💾 Materialization** — `ToListPagedAsync`, `ToArrayPagedAsync`, `MaterializeAsync`, `PrecomputePaginationAsync`
+- **🪟 Windowing & Partitioning** — `TakePaged`, `SkipPaged`, `TakeLastPaged`, `SkipLastPaged`, `TakeWhilePaged`, `SkipWhilePaged`, `ChunkPaged`
+- **🔬 Analytical Operations** — `WindowPaged`, `WindowedSumPaged`, `WindowedAveragePaged`, `WindowedMinPaged`, `WindowedMaxPaged`, `PairwisePaged`, `ScanPaged`
 - **📦 Flattening** — `SelectManyPaged`, `SelectManyPagedAsync` for nested enumerable composition
 - **Pagination Preservation** — All operators preserve pagination metadata for accurate page tracking
 
@@ -68,7 +69,7 @@ var activeProducts = products.WherePaged(p => p.IsActive);
 
 // Aggregation
 int totalProducts = await products.CountPagedAsync();
-decimal avgPrice = await products.AveragePaged(p => p.Price);
+decimal avgPrice = await products.AveragePagedAsync(p => p.Price);
 
 // Enumeration
 await foreach (var product in products)
@@ -126,6 +127,47 @@ await foreach (var order in results)
 var pagination = await results.GetPaginationAsync();
 Console.WriteLine($"Total orders: {pagination.TotalCount}");
 ```
+
+### 🔬 Analytical Operations
+
+```csharp
+// Sliding window analysis
+var movingAverages = products
+    .OrderBy(p => p.CreatedAt)
+    .ToAsyncPagedEnumerable()
+    .WindowedAveragePaged(windowSize: 7, p => p.Price);
+
+await foreach (var avg in movingAverages)
+{
+    Console.WriteLine($"7-day moving average: ${avg:F2}");
+}
+
+// Pairwise comparison
+var priceChanges = products
+    .OrderBy(p => p.Date)
+    .ToAsyncPagedEnumerable()
+    .PairwisePaged((prev, curr) => new
+    {
+        Date = curr.Date,
+        Change = curr.Price - prev.Price,
+        PercentChange = ((curr.Price - prev.Price) / prev.Price) * 100
+    });
+
+await foreach (var change in priceChanges)
+{
+    Console.WriteLine($"{change.Date}: {change.PercentChange:F2}% change");
+}
+
+// Running totals with Scan
+var runningTotals = sales
+    .ToAsyncPagedEnumerable()
+    .ScanPaged(0m, (total, sale) => total + sale.Amount);
+
+await foreach (var total in runningTotals)
+{
+    Console.WriteLine($"Running total: ${total:N2}");
+}
+```
 ---
 
 ## 📚 Core Concepts
@@ -165,11 +207,13 @@ Aggregation operations count or compute without loading all items:
 var paged = GetProductsAsync();
 
 // These operations enumerate the sequence and compute the result
-int count = await paged.CountPagedAsync();              // Total items enumerated
-decimal sum = await paged.SumPagedAsync(p => p.Price); // Sum of prices
-decimal avg = await paged.AveragePaged(p => p.Price);  // Average price
-var min = await paged.MinPagedAsync();                  // Minimum value
-var max = await paged.MaxPagedAsync();                  // Maximum value
+int count = await paged.CountPagedAsync();                // Total items enumerated
+decimal sum = await paged.SumPagedAsync(p => p.Price);   // Sum of prices
+decimal avg = await paged.AveragePagedAsync(p => p.Price); // Average price
+var min = await paged.MinPagedAsync();                    // Minimum value
+var max = await paged.MaxPagedAsync();                    // Maximum value
+var cheapest = await paged.MinByPagedAsync(p => p.Price); // Item with min price
+var expensive = await paged.MaxByPagedAsync(p => p.Price);// Item with max price
 ```
 
 ---
@@ -309,25 +353,28 @@ await foreach (var item in orderItems)
 
 ```csharp
 // Complex aggregation with grouping
-var report = await _context.Sales
+var salesByCategory = _context.Sales
     .Where(s => s.Date.Year == 2024)
     .ToAsyncPagedEnumerable()
-    .GroupByPagedAsync(s => s.Category)
-    .SelectPagedAsync(async group =>
-    {
-        var total = await group.SumPagedAsync(s => s.Amount);
-        var count = await group.CountPagedAsync();
-        var avg = await group.AveragePagedAsync(s => s.Amount);
+    .GroupBy(s => s.Category);
 
-        return new CategoryReport
-        {
-            Category = group.Key,
-            TotalSales = total,
-            SalesCount = count,
-            AverageSale = avg
-        };
-    })
-    .ToListPagedAsync();
+var report = new List<CategoryReport>();
+
+foreach (var group in salesByCategory)
+{
+    var pagedGroup = group.ToAsyncPagedEnumerable();
+    var total = await pagedGroup.SumPagedAsync(s => s.Amount);
+    var count = await pagedGroup.CountPagedAsync();
+    var avg = await pagedGroup.AveragePagedAsync(s => s.Amount);
+
+    report.Add(new CategoryReport
+    {
+        Category = group.Key,
+        TotalSales = total,
+        SalesCount = count,
+        AverageSale = avg
+    });
+}
 
 foreach (var category in report)
 {
@@ -355,16 +402,35 @@ await foreach (var item in processed.WithCancellation(cts.Token))
 }
 ```
 
-### 🪟 Windowing Operations
+### 🪟 Windowing & Chunking Operations
 
 ```csharp
-// Skip first page, take next 20 items
-var paged = products.SkipPagedWhile((item, index) => index < 20)
-                    .TakePagedWhile((item, index) => index < 40);
+// Skip first 20, take next 20 items
+var paged = products
+    .SkipPaged(20)
+    .TakePaged(20);
 
 await foreach (var product in paged)
 {
     Console.WriteLine(product.Name);
+}
+
+// Chunk into batches
+var batches = products.ChunkPaged(size: 50);
+await foreach (var batch in batches)
+{
+    Console.WriteLine($"Processing batch of {batch.Length} items");
+    // Process batch
+}
+
+// Sliding window analysis
+var windows = timeSeries
+    .WindowPaged(windowSize: 7);
+
+await foreach (var window in windows)
+{
+    var avg = window.Average();
+    Console.WriteLine($"7-day window average: {avg}");
 }
 ```
 
@@ -393,18 +459,22 @@ var fifthProduct = await products.ElementAtPagedAsync(4);
 
 - **Chain operators fluently** — Take advantage of method chaining for readable queries
 - **Use `*PagedAsync` methods for terminal operations** — They provide proper async/await semantics
-- **Apply filtering early** — Filter before projection to reduce data processed
-- **Materialize when needed** — Use `MaterializeAsync` for small datasets requiring multiple enumerations
+- **Apply filtering early** — Filter with `WherePaged` before projection to reduce data processed
+- **Materialize when needed** — Use `MaterializeAsync()` for small datasets requiring multiple enumerations
+- **Precompute pagination when appropriate** — Use `PrecomputePaginationAsync()` to eagerly compute pagination metadata once
 - **Support cancellation** — Pass `CancellationToken` through async operations
 - **Preserve pagination context** — Let operators maintain pagination metadata automatically
+- **Use analytical operations efficiently** — Leverage `WindowPaged`, `PairwisePaged`, `ScanPaged` for time-series and trend analysis
+- **Use MinBy/MaxBy** — Find items with extreme key values without manual comparison
 
 ### ❌ Don't
 
-- **Materialize large datasets unnecessarily** — Avoid loading entire result sets into memory
-- **Combine filtering and projection inconsistently** — Use `WherePaged` + `SelectPaged` together
+- **Materialize large datasets unnecessarily** — Avoid loading entire result sets into memory with `MaterializeAsync()`
+- **Mix filtering patterns inconsistently** — Use `WherePaged` + `SelectPaged` for clear separation of concerns
 - **Forget pagination metadata** — Always call `GetPaginationAsync()` when displaying page info
 - **Block on async operations** — Never use `.Result` or `.Wait()` on paged operations
 - **Ignore cancellation tokens** — Support graceful cancellation in long-running queries
+- **Compute pagination multiple times** — If accessing pagination repeatedly, use `PrecomputePaginationAsync()` first
 
 ---
 
@@ -426,19 +496,31 @@ IAsyncPagedEnumerable<TResult> SelectPagedAsync<TResult>(
     Func<TSource, CancellationToken, ValueTask<TResult>> selectorAsync);
 ```
 
-### 🔍 Filtering Extensions
+### 🔍 Filtering & Partitioning Extensions
 
 ```csharp
 // Synchronous predicate filtering
-IAsyncPagedEnumerable<TSource> WherePaged(
-    Func<TSource, bool> predicate);
+IAsyncPagedEnumerable<TSource> WherePaged(Func<TSource, bool> predicate);
+IAsyncPagedEnumerable<TSource> WherePaged(Func<TSource, int, bool> predicate);
 
-// Conditional windowing
-IAsyncPagedEnumerable<TSource> TakeWhilePaged(
-    Func<TSource, bool> predicate);
+// Partitioning
+IAsyncPagedEnumerable<TSource> TakePaged(int count);
+IAsyncPagedEnumerable<TSource> SkipPaged(int count);
+IAsyncPagedEnumerable<TSource> TakeLastPaged(int count);
+IAsyncPagedEnumerable<TSource> SkipLastPaged(int count);
 
-IAsyncPagedEnumerable<TSource> SkipWhilePaged(
-    Func<TSource, bool> predicate);
+// Conditional partitioning
+IAsyncPagedEnumerable<TSource> TakeWhilePaged(Func<TSource, bool> predicate);
+IAsyncPagedEnumerable<TSource> TakeWhilePaged(Func<TSource, int, bool> predicate);
+IAsyncPagedEnumerable<TSource> SkipWhilePaged(Func<TSource, bool> predicate);
+IAsyncPagedEnumerable<TSource> SkipWhilePaged(Func<TSource, int, bool> predicate);
+
+// Chunking & Distinctness
+IAsyncPagedEnumerable<TSource[]> ChunkPaged(int size);
+IAsyncPagedEnumerable<TSource> DistinctPaged();
+IAsyncPagedEnumerable<TSource> DistinctPaged(IEqualityComparer<TSource>? comparer);
+IAsyncPagedEnumerable<TSource> DistinctByPaged<TKey>(Func<TSource, TKey> keySelector);
+IAsyncPagedEnumerable<TSource> DistinctByPaged<TKey>(Func<TSource, TKey> keySelector, IEqualityComparer<TKey>? comparer);
 ```
 
 ### 📈 Aggregation Extensions
@@ -448,12 +530,14 @@ IAsyncPagedEnumerable<TSource> SkipWhilePaged(
 ValueTask<int> CountPagedAsync(CancellationToken cancellationToken = default);
 ValueTask<int> CountPagedAsync(Func<TSource, bool> predicate, CancellationToken cancellationToken = default);
 ValueTask<long> LongCountPagedAsync(CancellationToken cancellationToken = default);
+ValueTask<long> LongCountPagedAsync(Func<TSource, bool> predicate, CancellationToken cancellationToken = default);
 
 // Existence checks
 ValueTask<bool> AnyPagedAsync(CancellationToken cancellationToken = default);
 ValueTask<bool> AnyPagedAsync(Func<TSource, bool> predicate, CancellationToken cancellationToken = default);
 ValueTask<bool> AllPagedAsync(Func<TSource, bool> predicate, CancellationToken cancellationToken = default);
 ValueTask<bool> ContainsPagedAsync(TSource value, CancellationToken cancellationToken = default);
+ValueTask<bool> ContainsPagedAsync(TSource value, IEqualityComparer<TSource>? comparer, CancellationToken cancellationToken = default);
 
 // Min/Max operations
 ValueTask<TSource> MinPagedAsync(CancellationToken cancellationToken = default);
@@ -461,9 +545,20 @@ ValueTask<TSource> MaxPagedAsync(CancellationToken cancellationToken = default);
 ValueTask<TResult> MinPagedAsync<TResult>(Func<TSource, TResult> selector, CancellationToken cancellationToken = default);
 ValueTask<TResult> MaxPagedAsync<TResult>(Func<TSource, TResult> selector, CancellationToken cancellationToken = default);
 
+// MinBy/MaxBy operations
+ValueTask<TSource> MinByPagedAsync<TKey>(Func<TSource, TKey> keySelector, CancellationToken cancellationToken = default);
+ValueTask<TSource> MinByPagedAsync<TKey>(Func<TSource, TKey> keySelector, IComparer<TKey>? comparer, CancellationToken cancellationToken = default);
+ValueTask<TSource> MaxByPagedAsync<TKey>(Func<TSource, TKey> keySelector, CancellationToken cancellationToken = default);
+ValueTask<TSource> MaxByPagedAsync<TKey>(Func<TSource, TKey> keySelector, IComparer<TKey>? comparer, CancellationToken cancellationToken = default);
+
 // Aggregation
 ValueTask<TSource> AggregatePagedAsync(Func<TSource, TSource, TSource> func, CancellationToken cancellationToken = default);
 ValueTask<TAccumulate> AggregatePagedAsync<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, CancellationToken cancellationToken = default);
+ValueTask<TResult> AggregatePagedAsync<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultSelector, CancellationToken cancellationToken = default);
+
+// Materialization
+ValueTask<List<TSource>> ToListPagedAsync(CancellationToken cancellationToken = default);
+ValueTask<TSource[]> ToArrayPagedAsync(CancellationToken cancellationToken = default);
 ```
 
 ### 💾 Materialization Extensions
@@ -471,9 +566,11 @@ ValueTask<TAccumulate> AggregatePagedAsync<TAccumulate>(TAccumulate seed, Func<T
 ```csharp
 // Fully materialize paged enumerable
 ValueTask<IAsyncPagedEnumerable<T>> MaterializeAsync(
+    this IAsyncPagedEnumerable<T> source,
     CancellationToken cancellationToken = default);
 
 ValueTask<IAsyncPagedEnumerable<T>> MaterializeAsync(
+    this IAsyncPagedEnumerable<T> source,
     int pageSize,
     int currentPage = 1,
     CancellationToken cancellationToken = default);
@@ -483,9 +580,38 @@ ValueTask<IAsyncPagedEnumerable<T>> ToMaterializedAsyncPagedEnumerable<T>(
     this IAsyncEnumerable<T> source,
     CancellationToken cancellationToken = default);
 
-// Precompute pagination metadata
+ValueTask<IAsyncPagedEnumerable<T>> ToMaterializedAsyncPagedEnumerable<T>(
+    this IAsyncEnumerable<T> source,
+    int pageSize,
+    int currentPage = 1,
+    CancellationToken cancellationToken = default);
+
+// Precompute pagination metadata (extension method on IAsyncPagedEnumerable<T>)
 ValueTask<IAsyncPagedEnumerable<T>> PrecomputePaginationAsync(
     CancellationToken cancellationToken = default);
+```
+
+### 🔬 Analytical & Windowing Extensions
+
+```csharp
+// Sliding windows
+IAsyncPagedEnumerable<TSource[]> WindowPaged(int windowSize);
+
+// Windowed aggregations
+IAsyncPagedEnumerable<int> WindowedSumPaged(int windowSize, Func<TSource, int> selector);
+IAsyncPagedEnumerable<long> WindowedSumPaged(int windowSize, Func<TSource, long> selector);
+IAsyncPagedEnumerable<double> WindowedSumPaged(int windowSize, Func<TSource, double> selector);
+IAsyncPagedEnumerable<double> WindowedAveragePaged(int windowSize, Func<TSource, double> selector);
+IAsyncPagedEnumerable<TValue> WindowedMinPaged<TValue>(int windowSize, Func<TSource, TValue> selector) where TValue : IComparable<TValue>;
+IAsyncPagedEnumerable<TValue> WindowedMaxPaged<TValue>(int windowSize, Func<TSource, TValue> selector) where TValue : IComparable<TValue>;
+
+// Pairwise operations
+IAsyncPagedEnumerable<(TSource Previous, TSource Current)> PairwisePaged();
+IAsyncPagedEnumerable<TResult> PairwisePaged<TResult>(Func<TSource, TSource, TResult> selector);
+
+// Scan (running aggregation)
+IAsyncPagedEnumerable<TAccumulate> ScanPaged<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func);
+IAsyncPagedEnumerable<TSource> ScanPaged(Func<TSource, TSource, TSource> func);
 ```
 
 ---
@@ -498,6 +624,10 @@ ValueTask<IAsyncPagedEnumerable<T>> PrecomputePaginationAsync(
 - **Cancellation Support** — All async operations support cancellation tokens for resource cleanup
 - **ValueTask Usage** — Terminal async operations use `ValueTask<T>` for allocation efficiency
 - **Materialization Trade-off** — Use `MaterializeAsync()` only for small datasets requiring multiple passes
+- **Precomputation Strategy** — Use `PrecomputePaginationAsync()` when pagination metadata is accessed frequently without enumeration
+- **Windowing Operations** — `WindowPaged` and related methods use `Queue<T>` for efficient sliding windows (O(1) enqueue/dequeue)
+- **Distinct Operations** — `DistinctPaged` and `DistinctByPaged` use `HashSet<T>` for O(1) lookups
+- **Analytical Operations** — `ScanPaged` produces running results without storing intermediate states; `PairwisePaged` has minimal memory footprint
 
 ---
 
