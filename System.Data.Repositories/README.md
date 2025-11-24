@@ -1,25 +1,25 @@
-# ?? Xpandables.Net.Data.Repositories
+# ?? System.Data.Repositories
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Repository Pattern Abstractions** - Generic repository and Unit of Work interfaces for data access abstraction with support for LINQ, transactions, and bulk operations.
+> **Repository Pattern Abstractions** - Core interfaces and abstractions for Repository and Unit of Work patterns with support for LINQ queries, bulk operations, and transactions.
 
 ---
 
 ## ?? Overview
 
-`Xpandables.Net.Data.Repositories` provides the core abstractions for the Repository and Unit of Work patterns. It defines `IRepository`, `IUnitOfWork`, and related interfaces that can be implemented by any data access technology (Entity Framework Core, Dapper, etc.).
+`System.Data.Repositories` provides the foundational abstractions for implementing the Repository and Unit of Work patterns. These interfaces are technology-agnostic and can be implemented by any data access framework (Entity Framework Core, Dapper, etc.).
 
-### ?? Key Features
+### ? Key Features
 
-- ??? **EF Core Integration** - Full DbContext support
-- ?? **Unit of Work** - Transaction management across operations
-- ? **Bulk Operations** - Efficient batch insert/update/delete
-- ?? **LINQ Support** - Full queryable support with async enumeration
-- ?? **Event Store** - Built-in event sourcing with EventStoreDataContext
-- ?? **Outbox Pattern** - Reliable event publishing with OutboxStoreDataContext
-- ? **Testable** - Easy to mock and test
+- ?? **IRepository** - Generic repository interface with LINQ support
+- ?? **IUnitOfWork** - Unit of Work abstraction for transaction management
+- ? **Bulk Operations** - Interfaces for efficient batch operations
+- ?? **EntityUpdater** - Fluent API for property updates
+- ?? **IEntity** - Base entity interface with lifecycle tracking
+- ?? **Async-First** - Full async/await support throughout
+- ? **Technology Agnostic** - No specific ORM dependency
 
 ---
 
@@ -28,469 +28,134 @@
 ### Installation
 
 ```bash
-dotnet add package Xpandables.Net.EntityFramework
-dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+dotnet add package System.Data.Repositories
 ```
 
-### Basic Setup
+### Core Interfaces
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Xpandables.Net.DependencyInjection;
-using Xpandables.Net.Repositories;
+using System.Data.Repositories;
 
-// Define your DbContext
-public class AppDbContext : DbContext
+// IRepository - Core repository interface
+public interface IRepository : IDisposable, IAsyncDisposable
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) 
-        : base(options) { }
-
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Order> Orders => Set<Order>();
-    public DbSet<Product> Products => Set<Product>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Configure entities
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.HasIndex(e => e.Email).IsUnique();
-        });
-    }
+    // Control unit of work behavior
+    bool IsUnitOfWorkEnabled { get; set; }
+    
+    // Query operations
+    IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        CancellationToken cancellationToken = default)
+        where TEntity : class;
+    
+    // Insert/Update/Delete operations
+    Task AddAsync<TEntity>(CancellationToken cancellationToken, params TEntity[] entities) where TEntity : class;
+    Task UpdateAsync<TEntity>(CancellationToken cancellationToken, params TEntity[] entities) where TEntity : class;
+    Task DeleteAsync<TEntity>(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter, CancellationToken cancellationToken = default) where TEntity : class;
 }
 
-// Register services
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Register repository
-builder.Services.AddXRepository<AppDbContext>();
-
-// Usage
-public class UserService
-{
-    private readonly IRepository<AppDbContext> _repository;
-
-    public UserService(IRepository<AppDbContext> repository) 
-        => _repository = repository;
-
-    public async Task<List<User>> GetActiveUsersAsync(
-        CancellationToken cancellationToken)
-    {
-        return await _repository
-            .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
-            .ToListAsync(cancellationToken);
-    }
-}
+// IRepository<TDataContext> - Context-specific repository
+public interface IRepository<TDataContext> : IRepository where TDataContext : class;
 ```
 
 ---
 
-## ?? Core Operations
+## ?? Interface Details
 
-### Query Operations
+### IRepository
+
+Full LINQ query support with async enumeration:
 
 ```csharp
-// Simple query
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
-    .ToListAsync();
+IAsyncEnumerable<TResult> FetchAsync<TEntity, TResult>(
+    Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+    CancellationToken cancellationToken = default)
+    where TEntity : class;
+```
 
-// Projection
-var userDtos = await _repository
-    .FetchAsync<User, UserDto>(q => q
-        .Where(u => u.IsActive)
-        .Select(u => new UserDto { Id = u.Id, Name = u.Name }))
-    .ToListAsync();
+Multiple update overloads for flexibility:
 
-// With ordering and pagination
-var pagedUsers = await _repository
-    .FetchAsync<User, User>(q => q
-        .Where(u => u.Age >= 18)
-        .OrderBy(u => u.Name)
-        .Skip(page * pageSize)
-        .Take(pageSize))
-    .ToListAsync();
+```csharp
+// Update tracked entities
+Task UpdateAsync<TEntity>(CancellationToken cancellationToken, params TEntity[] entities);
 
-// Join queries
-var ordersWithUsers = await _repository
-    .FetchAsync<Order, OrderDto>(q => q
-        .Include(o => o.User)
-        .Include(o => o.Items)
-        .Where(o => o.Status == OrderStatus.Pending)
-        .Select(o => new OrderDto
-        {
-            OrderId = o.Id,
-            UserName = o.User.Name,
-            TotalItems = o.Items.Count
-        }))
-    .ToListAsync();
+// Bulk update with expression
+Task UpdateAsync<TEntity>(
+    Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+    Expression<Func<TEntity, TEntity>> updateExpression,
+    CancellationToken cancellationToken = default);
 
-// Async enumeration
-await foreach (var user in _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.IsActive)))
+// Bulk update with action
+Task UpdateAsync<TEntity>(
+    Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+    Action<TEntity> updateAction,
+    CancellationToken cancellationToken = default);
+
+// Bulk update with EntityUpdater
+Task UpdateAsync<TEntity>(
+    Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+    EntityUpdater<TEntity> updater,
+    CancellationToken cancellationToken = default);
+```
+
+### IUnitOfWork
+
+Transaction and multi-repository management:
+
+```csharp
+public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
-    await ProcessUserAsync(user);
+    TRepository GetRepository<TRepository>() where TRepository : class, IRepository;
+    
+    Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 ```
 
-### Insert Operations
+### EntityUpdater
 
-```csharp
-// Single insert
-var user = new User 
-{ 
-    Name = "John Doe", 
-    Email = "john@example.com" 
-};
-await _repository.AddAsync(cancellationToken, user);
-
-// Bulk insert
-var users = new []
-{
-    new User { Name = "Alice", Email = "alice@example.com" },
-    new User { Name = "Bob", Email = "bob@example.com" },
-    new User { Name = "Charlie", Email = "charlie@example.com" }
-};
-await _repository.AddAsync(cancellationToken, users);
-```
-
-### Update Operations
-
-#### Update by Entity
-
-```csharp
-// Load and update
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.Id == userId))
-    .FirstOrDefaultAsync();
-
-if (user != null)
-{
-    user.Name = "Updated Name";
-    user.LastModifiedDate = DateTime.UtcNow;
-    await _repository.UpdateAsync(cancellationToken, user);
-}
-```
-
-#### Bulk Update with Expression
-
-```csharp
-// Update all matching records
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.Age < 18),
-    u => new User 
-    { 
-        Status = "Minor",
-        LastModifiedDate = DateTime.UtcNow
-    });
-```
-
-#### Bulk Update with Action
-
-```csharp
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.IsActive),
-    user =>
-    {
-        user.LastLoginDate = DateTime.UtcNow;
-        user.LoginCount++;
-    });
-```
-
-#### Bulk Update with Fluent API
+Fluent API for bulk property updates:
 
 ```csharp
 var updater = EntityUpdater<User>
     .Create()
-    .SetProperty(u => u.Status, "Active")
-    .SetProperty(u => u.LastModifiedDate, DateTime.UtcNow)
+    .SetProperty(u => u.IsActive, true)
+    .SetProperty(u => u.UpdatedDate, DateTime.UtcNow)
     .SetProperty(u => u.LoginCount, u => u.LoginCount + 1);
-
-await _repository.UpdateAsync(
-    q => q.Where(u => u.Email.Contains("@example.com")),
-    updater);
 ```
 
-### Delete Operations
+### IEntity
+
+Standard entity lifecycle interface:
 
 ```csharp
-// Delete by filter
-await _repository.DeleteAsync<User>(
-    q => q.Where(u => !u.IsActive && u.CreatedDate < oldDate));
-
-// Delete with complex conditions
-await _repository.DeleteAsync<Order>(
-    q => q
-        .Where(o => o.Status == OrderStatus.Cancelled)
-        .Where(o => o.CreatedDate < DateTime.UtcNow.AddMonths(-6)));
-```
-
----
-
-## ?? Transactions & Unit of Work
-
-### Basic Transactions
-
-```csharp
-public async Task TransferFundsAsync(
-    Guid fromAccountId, 
-    Guid toAccountId, 
-    decimal amount)
+public interface IEntity
 {
-    using var transaction = await _repository.BeginTransactionAsync();
-
-    try
-    {
-        // Debit from account
-        await _repository.UpdateAsync<Account>(
-            q => q.Where(a => a.Id == fromAccountId),
-            a => new Account { Balance = a.Balance - amount });
-
-        // Credit to account
-        await _repository.UpdateAsync<Account>(
-            q => q.Where(a => a.Id == toAccountId),
-            a => new Account { Balance = a.Balance + amount });
-
-        // Create transaction record
-        await _repository.AddAsync(default, new Transaction
-        {
-            FromAccountId = fromAccountId,
-            ToAccountId = toAccountId,
-            Amount = amount,
-            Date = DateTime.UtcNow
-        });
-
-        await transaction.CommitAsync();
-    }
-    catch
-    {
-        await transaction.RollbackAsync();
-        throw;
-    }
+    DateTime CreatedOn { get; set; }
+    DateTime? UpdatedOn { get; set; }
+    DateTime? DeletedOn { get; set; }
+    EntityStatus Status { get; set; }
 }
-```
-
-### Unit of Work Pattern
-
-```csharp
-// Enable unit of work mode
-_repository.IsUnitOfWorkEnabled = true;
-
-try
-{
-    // All operations are batched
-    await _repository.AddAsync(cancellationToken, user);
-    
-    await _repository.UpdateAsync<Order>(
-        q => q.Where(o => o.UserId == user.Id),
-        o => new Order { Status = OrderStatus.Active });
-
-    await _repository.DeleteAsync<TempData>(
-        q => q.Where(t => t.IsExpired));
-
-    // Commit all changes at once
-    await _repository.PersistAsync(cancellationToken);
-}
-catch
-{
-    // Changes are rolled back automatically
-    throw;
-}
-finally
-{
-    _repository.IsUnitOfWorkEnabled = false;
-}
-```
-
----
-
-## ?? Event Sourcing Integration
-
-### Event Store Setup
-
-```csharp
-using Xpandables.Net.Events;
-using Microsoft.EntityFrameworkCore;
-
-// Configure Event Store
-builder.Services.AddXEventStoreDataContext(options =>
-    options
-        .UseSqlServer(
-            builder.Configuration.GetConnectionString("EventStoreDb"),
-            sqlOptions => sqlOptions
-                .EnableRetryOnFailure()
-                .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-                .MigrationsHistoryTable("__EventStoreMigrations")
-                .MigrationsAssembly("MyApp"))
-        .EnableDetailedErrors()
-        .EnableSensitiveDataLogging());
-
-// Register event sourcing services
-builder.Services
-    .AddXAggregateStore()
-    .AddXEventStore()
-    .AddXPublisher();
-```
-
-### Using Event Store
-
-```csharp
-public sealed class OrderService
-{
-    private readonly IAggregateStore _aggregateStore;
-
-    public OrderService(IAggregateStore aggregateStore) 
-        => _aggregateStore = aggregateStore;
-
-    public async Task<ExecutionResult<OrderAggregate>> CreateOrderAsync(
-        CreateOrderCommand command)
-    {
-        // Create aggregate (generates events)
-        var order = OrderAggregate.Create(
-            command.CustomerId,
-            command.Items);
-
-        // Persist events
-        await _aggregateStore.AppendAsync(order);
-
-        return ExecutionResult.Created(order);
-    }
-
-    public async Task<OrderAggregate> GetOrderAsync(Guid orderId)
-    {
-        // Rebuild from events
-        return await _aggregateStore
-            .ReadAsync<OrderAggregate>(orderId);
-    }
-}
-```
-
-### Outbox Pattern
-
-```csharp
-// Configure Outbox Store
-builder.Services.AddXOutboxStoreDataContext(options =>
-    options
-        .UseSqlServer(
-            builder.Configuration.GetConnectionString("EventStoreDb"),
-            sqlOptions => sqlOptions
-                .EnableRetryOnFailure()
-                .MigrationsHistoryTable("__OutboxStoreMigrations")
-                .MigrationsAssembly("MyApp")));
-
-// Register outbox services
-builder.Services.AddXOutboxStore();
-
-// Events are automatically stored in outbox
-// and published reliably by background service
-```
-
----
-
-## ?? Advanced Configuration
-
-### Custom Model Configuration
-
-```csharp
-public class EventStoreModelCustomizer : IModelCustomizer
-{
-    public void Customize(ModelBuilder modelBuilder, DbContext context)
-    {
-        // Configure event entity
-        modelBuilder.Entity<EntityDomainEvent>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.AggregateId);
-            entity.HasIndex(e => e.AggregateName);
-            entity.Property(e => e.EventData).HasColumnType("nvarchar(max)");
-        });
-
-        // Configure snapshot entity
-        modelBuilder.Entity<EntitySnapshotEvent>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.AggregateId).IsUnique();
-            entity.Property(e => e.SnapshotData).HasColumnType("nvarchar(max)");
-        });
-    }
-}
-```
-
-### Repository with Specifications
-
-```csharp
-using Xpandables.Net.Validators;
-
-// Define specifications
-var activeUsersSpec = Specification
-    .Equal<User, bool>(u => u.IsActive, true);
-
-var adultsSpec = Specification
-    .GreaterThan<User, int>(u => u.Age, 18);
-
-var combinedSpec = activeUsersSpec.And(adultsSpec);
-
-// Use in repository
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(combinedSpec))
-    .ToListAsync();
 ```
 
 ---
 
 ## ?? Best Practices
 
-1. **Use projections** for read operations to reduce data transfer
-2. **Enable Unit of Work** when performing multiple related operations
-3. **Use transactions** for operations that must succeed or fail together
-4. **Leverage bulk operations** for better performance
-5. **Apply specifications** to encapsulate business rules
-6. **Use async enumeration** for large result sets
-7. **Configure indexes** properly for frequently queried fields
-
----
-
-## ?? Performance Tips
-
-```csharp
-// Use AsNoTracking for read-only queries
-var users = await _repository
-    .FetchAsync<User, User>(q => q
-        .AsNoTracking()
-        .Where(u => u.IsActive))
-    .ToListAsync();
-
-// Use projections instead of loading full entities
-var userNames = await _repository
-    .FetchAsync<User, string>(q => q
-        .Where(u => u.IsActive)
-        .Select(u => u.Name))
-    .ToListAsync();
-
-// Batch operations
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.LastUpdated, DateTime.UtcNow);
-
-await _repository.UpdateAsync(
-    q => q.Where(u => u.IsActive),
-    updater);  // Single SQL UPDATE statement
-```
+1. **Use IRepository abstractions** - Keep business logic independent of data access technology
+2. **Leverage async/await** - All operations support cancellation tokens
+3. **Unit of Work mode** - Enable for batch operations, disable for immediate execution
+4. **EntityUpdater for bulk updates** - More efficient than loading entities into memory
+5. **IEntity for tracking** - Standardize entity lifecycle management
+6. **Dispose properly** - Always dispose repositories and unit of work
 
 ---
 
 ## ?? Related Packages
 
-- **Xpandables.Net** - Core library with abstractions
-- **Xpandables.Net.AspNetCore** - ASP.NET Core integrations
-- **Xpandables.Net.SampleApi** - Complete working example
+- **System.Data.EntityFramework** - EF Core implementation
+- **System.Linq.AsyncPaged** - Async pagination support
+- **System.Collections.AsyncPaged** - Core async types
 
 ---
 

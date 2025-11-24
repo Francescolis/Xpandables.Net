@@ -1,23 +1,24 @@
-# ? Xpandables.Net.AspNetCore.Minimals
+# ? AspNetCore.Net.Minimals
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Minimal API Extensions** - Endpoint routing, parameter binding, ExecutionResult integration, and OpenAPI support for ASP.NET Core Minimal APIs.
+> **Minimal API Extensions** - ExecutionResult integration, automatic validation, endpoint filters, middleware, and async paged responses for ASP.NET Core Minimal APIs.
 
 ---
 
 ## ?? Overview
 
-`Xpandables.Net.AsyncPaged` provides a comprehensive solution for implementing pagination in asynchronous scenarios. It extends `IAsyncEnumerable<T>` with pagination metadata, enabling efficient data streaming with full pagination support.
+`AspNetCore.Net.Minimals` provides comprehensive support for Minimal APIs with ExecutionResult integration, automatic validation, endpoint filters, exception handling middleware, and async paged response formatting.
 
-### ?? Key Features
+### ? Key Features
 
-- ?? **IAsyncPagedEnumerable** - Async enumerable with built-in pagination metadata
-- ?? **Pagination Metadata** - Total count, page size, current page, and continuation tokens
-- ?? **LINQ Integration** - Seamless integration with IQueryable and IAsyncEnumerable
-- ?? **Memory Efficient** - Stream large datasets without loading all data into memory
-- ? **High Performance** - Optimized for minimal allocations and maximum throughput
+- ?? **ExecutionResult Integration** - Automatic conversion of ExecutionResult to HTTP responses
+- ? **Endpoint Validation Filter** - Automatic request validation for minimal API endpoints
+- ?? **Result Endpoint Filter** - Consistent result transformation for all endpoints
+- ?? **Exception Middleware** - Automatic exception to ProblemDetails conversion
+- ?? **Async Paged Support** - Automatic formatting of IAsyncPagedEnumerable responses
+- ?? **Custom Headers** - ExecutionResult metadata in HTTP response headers
 
 ---
 
@@ -26,217 +27,403 @@
 ### Installation
 
 ```bash
-dotnet add package Xpandables.Net.AsyncPaged
+dotnet add package AspNetCore.Net.Minimals
 ```
 
-### Basic Usage
+### Basic Setup
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.AsyncPaged.Extensions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-// Simple pagination
-IAsyncEnumerable<Product> products = GetProductsAsync();
-IAsyncPagedEnumerable<Product> pagedProducts = products
-    .ToAsyncPagedEnumerable(totalCount: 1000);
+var builder = WebApplication.CreateBuilder(args);
 
-await foreach (var product in pagedProducts)
+// Register minimal support services
+builder.Services.AddXMinimalSupport();
+
+var app = builder.Build();
+
+// Use minimal support middleware and filters
+app.UseXMinimalSupport(options =>
 {
-    Console.WriteLine($"{product.Name} - ${product.Price}");
-}
-
-// Access pagination metadata
-var pagination = await pagedProducts.GetPaginationAsync();
-Console.WriteLine($"Total items: {pagination.TotalCount}");
-```
-
-### Database Pagination
-
-```csharp
-public IAsyncPagedEnumerable<Product> GetProductsAsync(
-    int pageSize = 20, 
-    int pageNumber = 1)
-{
-    return _context.Products
-        .Where(p => p.IsActive)
-        .OrderBy(p => p.Name)
-        .Skip((pageNumber - 1) * pageSize)
-        .Take(pageSize)
-        .ToAsyncPagedEnumerable(); // Automatically calculates total count
-}
-
-// Usage
-var products = productService.GetProductsAsync(pageSize: 10, pageNumber: 1);
-
-await foreach (var product in products)
-{
-    Console.WriteLine(product.Name);
-}
-
-var pagination = await products.GetPaginationAsync();
-Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages}");
-```
-
----
-
-## ?? Real-World Examples
-
-### E-Commerce Product Search
-
-```csharp
-public async Task<IAsyncPagedEnumerable<ProductDto>> SearchProductsAsync(
-    string? searchTerm,
-    decimal? minPrice,
-    decimal? maxPrice,
-    int pageSize = 24,
-    int pageNumber = 1)
-{
-    var query = _context.Products.Where(p => p.IsActive);
-    
-    if (!string.IsNullOrWhiteSpace(searchTerm))
-        query = query.Where(p => p.Name.Contains(searchTerm));
-    
-    if (minPrice.HasValue)
-        query = query.Where(p => p.Price >= minPrice);
-    
-    if (maxPrice.HasValue)
-        query = query.Where(p => p.Price <= maxPrice);
-    
-    return query
-        .OrderBy(p => p.Name)
-        .Skip((pageNumber - 1) * pageSize)
-        .Take(pageSize)
-        .Select(p => new ProductDto
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Price = p.Price,
-            Category = p.Category.Name
-        })
-        .ToAsyncPagedEnumerable();
-}
-```
-
-### Cursor-Based Pagination
-
-```csharp
-public async Task<IAsyncPagedEnumerable<Activity>> GetActivitiesAsync(
-    string? continuationToken,
-    int pageSize = 50)
-{
-    var query = _context.Activities.AsQueryable();
-    
-    if (!string.IsNullOrEmpty(continuationToken))
-    {
-        var cursor = DecodeCursor(continuationToken);
-        query = query.Where(a => a.Timestamp < cursor.Timestamp);
-    }
-    
-    var items = query
-        .OrderByDescending(a => a.Timestamp)
-        .Take(pageSize);
-    
-    int totalCount = await _context.Activities.CountAsync();
-    
-    return items.ToAsyncPagedEnumerable(
-        Pagination.Create(
-            pageSize: pageSize,
-            currentPage: 1,
-            continuationToken: GenerateNextToken(),
-            totalCount: totalCount));
-}
-```
-
----
-
-## ?? Core Concepts
-
-### Pagination Metadata
-
-```csharp
-var pagination = Pagination.Create(
-    pageSize: 20,
-    currentPage: 3,
-    totalCount: 250);
-
-Console.WriteLine($"Skip: {pagination.Skip}");           // 40
-Console.WriteLine($"Take: {pagination.Take}");           // 20
-Console.WriteLine($"Total Pages: {pagination.TotalPages}"); // 13
-Console.WriteLine($"Has Next: {pagination.HasNextPage}");   // true
-
-// Navigate
-var nextPage = pagination.NextPage();
-var previousPage = pagination.PreviousPage();
-```
-
-### Creating Paged Enumerables
-
-```csharp
-// From IAsyncEnumerable
-var paged1 = products.ToAsyncPagedEnumerable(totalCount: 100);
-
-// With pagination object
-var pagination = Pagination.Create(pageSize: 20, currentPage: 1, totalCount: 100);
-var paged2 = products.ToAsyncPagedEnumerable(pagination);
-
-// With factory
-var paged3 = products.ToAsyncPagedEnumerable(async ct =>
-{
-    int total = await GetTotalCountAsync(ct);
-    return Pagination.FromTotalCount(total);
+    options.EnableValidationFilter = true;
+    options.EnableResultFilter = true;
 });
 
-// From IQueryable
-var paged4 = _context.Products.ToAsyncPagedEnumerable();
+app.MapGet("/api/users/{id}", GetUser)
+    .WithXMinimalApi();  // Applies validation and result filters
+
+app.Run();
+
+async Task<ExecutionResult<User>> GetUser(Guid id, IUserService service)
+{
+    return await service.GetUserAsync(id);
+}
 ```
 
 ---
 
-## ?? Advanced Features
+## ?? Core Features
 
-### LINQ Extensions
+### Automatic ExecutionResult Handling
 
 ```csharp
-using Xpandables.Net.AsyncPaged.Extensions;
+using System.ExecutionResults;
 
-IAsyncPagedEnumerable<Product> products = GetProductsAsync();
+// Endpoint returns ExecutionResult - automatically converted to HTTP response
+app.MapGet("/api/users/{id}", async (Guid id, IUserService service) =>
+{
+    ExecutionResult<User> result = await service.GetUserAsync(id);
+    // Automatically returns appropriate HTTP status with ProblemDetails if failed
+    return result;
+})
+.WithXMinimalFilter();
 
-// Projection
-var names = products.Select(p => p.Name);
+// Success responses
+app.MapPost("/api/users", async (CreateUserRequest request, IUserService service) =>
+{
+    ExecutionResult<User> result = await service.CreateUserAsync(request);
+    // Returns 201 Created with Location header if successful
+    return result;
+})
+.WithXMinimalFilter();
 
-// Filtering
-var expensive = products.Where(p => p.Price > 100);
+// Error responses automatically formatted as ProblemDetails
+app.MapPut("/api/users/{id}", async (Guid id, UpdateUserRequest request, IUserService service) =>
+{
+    ExecutionResult result = await service.UpdateUserAsync(id, request);
+    // Returns 400, 404, etc. with ProblemDetails based on ExecutionResult status
+    return result;
+})
+.WithXMinimalFilter();
+```
 
-// Aggregation
-int count = await products.CountAsync();
-decimal total = await products.SumAsync(p => p.Price);
-var max = await products.MaxAsync(p => p.Price);
+### Endpoint Validation
 
-// Materialization
-List<Product> list = await products.ToListAsync();
-Product[] array = await products.ToArrayAsync();
+```csharp
+// Automatic validation for requests
+app.MapPost("/api/products", async (CreateProductRequest request, IProductService service) =>
+{
+    // Validation happens automatically before this handler
+    var result = await service.CreateProductAsync(request);
+    return result;
+})
+.WithXMinimalValidation();  // Adds validation filter
 
-// Grouping
-var grouped = products.GroupBy(p => p.Category);
+// Request validation model
+public record CreateProductRequest
+{
+    [Required]
+    [StringLength(200)]
+    public string Name { get; init; } = string.Empty;
+    
+    [Range(0.01, double.MaxValue)]
+    public decimal Price { get; init; }
+    
+    [Required]
+    public string Category { get; init; } = string.Empty;
+}
+
+// Invalid requests automatically return 400 Bad Request with validation errors
+```
+
+### Combined Minimal API Support
+
+```csharp
+// Apply both validation and result filtering
+app.MapPost("/api/orders", async (CreateOrderRequest request, IOrderService service) =>
+{
+    var result = await service.CreateOrderAsync(request);
+    return result;
+})
+.WithXMinimalApi();  // Applies both WithXMinimalValidation() and WithXMinimalFilter()
+
+// Configure all endpoints
+app.UseXMinimalSupport(options =>
+{
+    options.EnableValidationFilter = true;
+    options.EnableResultFilter = true;
+    
+    // Optionally apply filters selectively
+    options.ConfigureEndpoint = (builder, endpoint) =>
+    {
+        var methods = endpoint.Metadata
+            .OfType<HttpMethodMetadata>()
+            .FirstOrDefault()?.HttpMethods ?? [];
+        
+        // Only apply to POST/PUT endpoints
+        if (methods.Contains("POST") || methods.Contains("PUT"))
+        {
+            builder.WithXMinimalApi();
+        }
+    };
+});
+```
+
+### Exception Handling Middleware
+
+```csharp
+using AspNetCore.Net;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddXMinimalSupport();
+
+var app = builder.Build();
+
+// Middleware catches unhandled exceptions and converts to ProblemDetails
+app.UseXMinimalSupport();
+
+app.MapGet("/api/data", () =>
+{
+    // Any exception is caught and converted to appropriate HTTP response
+    throw new InvalidOperationException("Something went wrong");
+    // Returns 500 Internal Server Error with ProblemDetails
+});
+
+app.MapGet("/api/bad-request", () =>
+{
+    throw new BadHttpRequestException("Invalid request parameter");
+    // Returns 400 Bad Request with detailed error information
+});
+
+app.Run();
+```
+
+### Async Paged Responses
+
+```csharp
+using System.Collections.AsyncPaged;
+
+// Return IAsyncPagedEnumerable - automatically formatted with pagination metadata
+app.MapGet("/api/products", async (
+    int pageSize,
+    int pageIndex,
+    IProductService service) =>
+{
+    IAsyncPagedEnumerable<Product> products = 
+        await service.GetProductsAsync(pageSize, pageIndex);
+    
+    // Automatically includes pagination headers and formatted response
+    return products;
+})
+.WithXMinimalFilter();
+
+// Response includes pagination information:
+// - X-Pagination-TotalCount
+// - X-Pagination-PageSize
+// - X-Pagination-CurrentPage
+// - X-Pagination-TotalPages
+```
+
+---
+
+## ?? Advanced Scenarios
+
+### Custom Endpoint Predicate
+
+```csharp
+app.UseXMinimalSupport(options =>
+{
+    // Only apply to specific routes
+    options.EndpointPredicate = endpoint =>
+    {
+        return endpoint.RoutePattern.RawText?.StartsWith("/api/") ?? false;
+    };
+    
+    options.EnableValidationFilter = true;
+    options.EnableResultFilter = true;
+});
+```
+
+### Selective Filter Application
+
+```csharp
+app.UseXMinimalSupport(options =>
+{
+    options.ConfigureEndpoint = (builder, endpoint) =>
+    {
+        var route = endpoint.RoutePattern.RawText;
+        var methods = endpoint.Metadata
+            .OfType<HttpMethodMetadata>()
+            .FirstOrDefault()?.HttpMethods ?? [];
+        
+        // Apply validation only to mutation endpoints
+        if (methods.Contains("POST") || 
+            methods.Contains("PUT") || 
+            methods.Contains("DELETE"))
+        {
+            builder.WithXMinimalValidation();
+        }
+        
+        // Apply result filter to all API endpoints
+        if (route?.StartsWith("/api/") ?? false)
+        {
+            builder.WithXMinimalFilter();
+        }
+        
+        // Apply both to specific routes
+        if (route?.Contains("/admin/") ?? false)
+        {
+            builder.WithXMinimalApi();
+        }
+    };
+});
+```
+
+### Custom Validation
+
+```csharp
+// Custom validation with IMinimalResultEndpointValidator
+public class CustomUserValidator : IMinimalResultEndpointValidator
+{
+    public Task<ExecutionResult> ValidateAsync(
+        EndpointFilterInvocationContext context,
+        CancellationToken cancellationToken)
+    {
+        var request = context.Arguments
+            .OfType<CreateUserRequest>()
+            .FirstOrDefault();
+        
+        if (request is null)
+            return Task.FromResult(ExecutionResult.Ok().Build());
+        
+        if (request.Email.EndsWith("@test.com"))
+        {
+            return Task.FromResult(
+                ExecutionResult
+                    .BadRequest()
+                    .WithError("Email", "Test emails not allowed")
+                    .Build());
+        }
+        
+        return Task.FromResult(ExecutionResult.Ok().Build());
+    }
+}
+
+// Register validator
+builder.Services.AddSingleton<IMinimalResultEndpointValidator, CustomUserValidator>();
+```
+
+### Custom Headers Configuration
+
+```csharp
+// Configure custom header writer
+builder.Services.AddSingleton<IExecutionResultHeaderWriter, CustomHeaderWriter>();
+
+public class CustomHeaderWriter : IExecutionResultHeaderWriter
+{
+    public void WriteHeaders(HttpContext context, ExecutionResult result)
+    {
+        context.Response.Headers["X-Request-Id"] = context.TraceIdentifier;
+        context.Response.Headers["X-Status-Code"] = ((int)result.StatusCode).ToString();
+        
+        if (result.Extensions.Count > 0)
+        {
+            context.Response.Headers["X-Extensions"] = 
+                JsonSerializer.Serialize(result.Extensions);
+        }
+    }
+}
+```
+
+---
+
+## ??? Complete Example
+
+```csharp
+using AspNetCore.Net;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using System.ExecutionResults;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Register services
+builder.Services.AddXMinimalSupport();
+builder.Services.AddScoped<IUserService, UserService>();
+
+var app = builder.Build();
+
+// Configure minimal support
+app.UseXMinimalSupport(options =>
+{
+    options.EnableValidationFilter = true;
+    options.EnableResultFilter = true;
+});
+
+// User endpoints
+var users = app.MapGroup("/api/users").WithTags("Users");
+
+users.MapGet("/", async (IUserService service) =>
+{
+    return await service.GetAllUsersAsync();
+})
+.WithXMinimalFilter();
+
+users.MapGet("/{id}", async (Guid id, IUserService service) =>
+{
+    return await service.GetUserAsync(id);
+})
+.WithXMinimalFilter();
+
+users.MapPost("/", async (CreateUserRequest request, IUserService service) =>
+{
+    return await service.CreateUserAsync(request);
+})
+.WithXMinimalApi();  // Validation + Result filter
+
+users.MapPut("/{id}", async (Guid id, UpdateUserRequest request, IUserService service) =>
+{
+    return await service.UpdateUserAsync(id, request);
+})
+.WithXMinimalApi();
+
+users.MapDelete("/{id}", async (Guid id, IUserService service) =>
+{
+    return await service.DeleteUserAsync(id);
+})
+.WithXMinimalFilter();
+
+app.Run();
+
+// Request models
+public record CreateUserRequest
+{
+    [Required, StringLength(100)]
+    public string Name { get; init; } = string.Empty;
+    
+    [Required, EmailAddress]
+    public string Email { get; init; } = string.Empty;
+}
+
+public record UpdateUserRequest
+{
+    [StringLength(100)]
+    public string? Name { get; init; }
+    
+    [EmailAddress]
+    public string? Email { get; init; }
+}
 ```
 
 ---
 
 ## ?? Best Practices
 
-1. **Use async all the way** - Don't block on async operations
-2. **Stream large datasets** - Avoid materializing entire collections
-3. **Apply filters before pagination** - Better query performance
-4. **Consider caching total counts** - For expensive operations
-5. **Use continuation tokens** - For cursor-based pagination
+1. **Use WithXMinimalApi()** - For mutation endpoints (POST/PUT/DELETE)
+2. **Use WithXMinimalFilter()** - For query endpoints (GET)
+3. **Register AddXMinimalSupport()** - Always register services before using middleware
+4. **Configure selectively** - Apply filters based on endpoint requirements
+5. **Return ExecutionResult** - Let filters handle HTTP response conversion
+6. **Use validation attributes** - Leverage built-in validation on request models
 
 ---
 
 ## ?? Related Packages
 
-- **Xpandables.Net.AsyncPaged.AspNetCore** - ASP.NET Core integration
-- **Xpandables.Net.Repositories.EntityFramework** - Repository pattern support
+- **AspNetCore.Net** - Core ASP.NET integration
+- **System.ExecutionResults** - ExecutionResult types
+- **System.Collections.AsyncPaged** - Async pagination support
 
 ---
 

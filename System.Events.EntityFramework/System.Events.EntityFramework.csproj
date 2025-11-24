@@ -90,7 +90,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\System.ExecutionResults.Events\System.Events.csproj" />
+	  <ProjectReference Include="..\System.Events\System.Events.csproj" />
 	</ItemGroup>
 
 </Project>

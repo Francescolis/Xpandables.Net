@@ -1,23 +1,23 @@
-# ?? Xpandables.Net.AspNetCore.Controllers
+# ?? AspNetCore.Net.Controllers
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **MVC Controller Features** - Base controllers, action filters, model binding, and ExecutionResult integration for ASP.NET Core MVC/API controllers.
+> **MVC Controller Extensions** - ExecutionResult integration, automatic validation, async paged output formatting, and action filters for ASP.NET Core MVC controllers.
 
 ---
 
 ## ?? Overview
 
-`Xpandables.Net.AsyncPaged` provides a comprehensive solution for implementing pagination in asynchronous scenarios. It extends `IAsyncEnumerable<T>` with pagination metadata, enabling efficient data streaming with full pagination support.
+`AspNetCore.Net.Controllers` provides comprehensive MVC controller support with ExecutionResult integration, automatic model validation, async paged response formatting, and result filters for consistent API responses.
 
-### ?? Key Features
+### ? Key Features
 
-- ?? **IAsyncPagedEnumerable** - Async enumerable with built-in pagination metadata
-- ?? **Pagination Metadata** - Total count, page size, current page, and continuation tokens
-- ?? **LINQ Integration** - Seamless integration with IQueryable and IAsyncEnumerable
-- ?? **Memory Efficient** - Stream large datasets without loading all data into memory
-- ? **High Performance** - Optimized for minimal allocations and maximum throughput
+- ?? **ControllerResultFilter** - Automatic ExecutionResult to HTTP response conversion
+- ? **Validation Filter** - Automatic ModelState validation before action execution
+- ?? **AsyncPaged Output Formatter** - JSON serialization for IAsyncPagedEnumerable responses
+- ?? **MVC Options Configuration** - Pre-configured MVC settings for ExecutionResult support
+- ?? **Header Writing** - ExecutionResult metadata in response headers
 
 ---
 
@@ -26,217 +26,219 @@
 ### Installation
 
 ```bash
-dotnet add package Xpandables.Net.AsyncPaged
+dotnet add package AspNetCore.Net.Controllers
 ```
 
-### Basic Usage
+### Service Registration
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-using Xpandables.Net.AsyncPaged;
-using Xpandables.Net.AsyncPaged.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
-// Simple pagination
-IAsyncEnumerable<Product> products = GetProductsAsync();
-IAsyncPagedEnumerable<Product> pagedProducts = products
-    .ToAsyncPagedEnumerable(totalCount: 1000);
+var builder = WebApplication.CreateBuilder(args);
 
-await foreach (var product in pagedProducts)
-{
-    Console.WriteLine($"{product.Name} - ${product.Price}");
-}
+// Add controllers with ExecutionResult support
+builder.Services
+    .AddControllers()
+    .AddXControllerMvcOptions();  // Adds validation, filters, and formatters
 
-// Access pagination metadata
-var pagination = await pagedProducts.GetPaginationAsync();
-Console.WriteLine($"Total items: {pagination.TotalCount}");
-```
-
-### Database Pagination
-
-```csharp
-public IAsyncPagedEnumerable<Product> GetProductsAsync(
-    int pageSize = 20, 
-    int pageNumber = 1)
-{
-    return _context.Products
-        .Where(p => p.IsActive)
-        .OrderBy(p => p.Name)
-        .Skip((pageNumber - 1) * pageSize)
-        .Take(pageSize)
-        .ToAsyncPagedEnumerable(); // Automatically calculates total count
-}
-
-// Usage
-var products = productService.GetProductsAsync(pageSize: 10, pageNumber: 1);
-
-await foreach (var product in products)
-{
-    Console.WriteLine(product.Name);
-}
-
-var pagination = await products.GetPaginationAsync();
-Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages}");
+var app = builder.Build();
+app.MapControllers();
+app.Run();
 ```
 
 ---
 
-## ?? Real-World Examples
+## ?? Core Features
 
-### E-Commerce Product Search
-
-```csharp
-public async Task<IAsyncPagedEnumerable<ProductDto>> SearchProductsAsync(
-    string? searchTerm,
-    decimal? minPrice,
-    decimal? maxPrice,
-    int pageSize = 24,
-    int pageNumber = 1)
-{
-    var query = _context.Products.Where(p => p.IsActive);
-    
-    if (!string.IsNullOrWhiteSpace(searchTerm))
-        query = query.Where(p => p.Name.Contains(searchTerm));
-    
-    if (minPrice.HasValue)
-        query = query.Where(p => p.Price >= minPrice);
-    
-    if (maxPrice.HasValue)
-        query = query.Where(p => p.Price <= maxPrice);
-    
-    return query
-        .OrderBy(p => p.Name)
-        .Skip((pageNumber - 1) * pageSize)
-        .Take(pageSize)
-        .Select(p => new ProductDto
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Price = p.Price,
-            Category = p.Category.Name
-        })
-        .ToAsyncPagedEnumerable();
-}
-```
-
-### Cursor-Based Pagination
+### ExecutionResult in Controllers
 
 ```csharp
-public async Task<IAsyncPagedEnumerable<Activity>> GetActivitiesAsync(
-    string? continuationToken,
-    int pageSize = 50)
+using System.ExecutionResults;
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController : ControllerBase
 {
-    var query = _context.Activities.AsQueryable();
+    private readonly IUserService _userService;
     
-    if (!string.IsNullOrEmpty(continuationToken))
+    public UsersController(IUserService userService) => 
+        _userService = userService;
+    
+    [HttpGet("{id}")]
+    public async Task<ExecutionResult<User>> GetUser(Guid id)
     {
-        var cursor = DecodeCursor(continuationToken);
-        query = query.Where(a => a.Timestamp < cursor.Timestamp);
+        // Return ExecutionResult - automatically converted to HTTP response
+        return await _userService.GetUserAsync(id);
     }
     
-    var items = query
-        .OrderByDescending(a => a.Timestamp)
-        .Take(pageSize);
+    [HttpPost]
+    public async Task<ExecutionResult<User>> CreateUser(CreateUserRequest request)
+    {
+        // Validation happens automatically
+        // ExecutionResult is converted to appropriate HTTP status
+        return await _userService.CreateUserAsync(request);
+    }
     
-    int totalCount = await _context.Activities.CountAsync();
+    [HttpPut("{id}")]
+    public async Task<ExecutionResult> UpdateUser(Guid id, UpdateUserRequest request)
+    {
+        return await _userService.UpdateUserAsync(id, request);
+    }
     
-    return items.ToAsyncPagedEnumerable(
-        Pagination.Create(
-            pageSize: pageSize,
-            currentPage: 1,
-            continuationToken: GenerateNextToken(),
-            totalCount: totalCount));
+    [HttpDelete("{id}")]
+    public async Task<ExecutionResult> DeleteUser(Guid id)
+    {
+        return await _userService.DeleteUserAsync(id);
+    }
+}
+```
+
+### Async Paged Responses
+
+```csharp
+using System.Collections.AsyncPaged;
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController : ControllerBase
+{
+    private readonly IProductService _productService;
+    
+    [HttpGet]
+    public IAsyncPagedEnumerable<Product> GetProducts(
+        [FromQuery] int pageSize = 20,
+        [FromQuery] int pageIndex = 1)
+    {
+        // Automatically formatted with pagination metadata in response
+        return _productService.GetProductsAsync(pageSize, pageIndex);
+    }
+}
+
+// Response format:
+// {
+//   "pagination": {
+//     "pageSize": 20,
+//     "currentPage": 1,
+//     "totalCount": 150,
+//     "totalPages": 8
+//   },
+//   "items": [ {...}, {...} ]
+// }
+```
+
+### Automatic Validation
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class OrdersController : ControllerBase
+{
+    [HttpPost]
+    public async Task<ExecutionResult<Order>> CreateOrder(
+        CreateOrderRequest request)
+    {
+        // ModelState is validated automatically
+        // Invalid requests return 400 with validation errors
+        return await _orderService.CreateOrderAsync(request);
+    }
+}
+
+public record CreateOrderRequest
+{
+    [Required]
+    public Guid CustomerId { get; init; }
+    
+    [Required]
+    [MinLength(1)]
+    public List<OrderItem> Items { get; init; } = [];
+    
+    [Range(0.01, double.MaxValue)]
+    public decimal TotalAmount { get; init; }
 }
 ```
 
 ---
 
-## ?? Core Concepts
+## ?? Advanced Scenarios
 
-### Pagination Metadata
-
-```csharp
-var pagination = Pagination.Create(
-    pageSize: 20,
-    currentPage: 3,
-    totalCount: 250);
-
-Console.WriteLine($"Skip: {pagination.Skip}");           // 40
-Console.WriteLine($"Take: {pagination.Take}");           // 20
-Console.WriteLine($"Total Pages: {pagination.TotalPages}"); // 13
-Console.WriteLine($"Has Next: {pagination.HasNextPage}");   // true
-
-// Navigate
-var nextPage = pagination.NextPage();
-var previousPage = pagination.PreviousPage();
-```
-
-### Creating Paged Enumerables
+### Custom Result Filters
 
 ```csharp
-// From IAsyncEnumerable
-var paged1 = products.ToAsyncPagedEnumerable(totalCount: 100);
+using AspNetCore.Net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-// With pagination object
-var pagination = Pagination.Create(pageSize: 20, currentPage: 1, totalCount: 100);
-var paged2 = products.ToAsyncPagedEnumerable(pagination);
-
-// With factory
-var paged3 = products.ToAsyncPagedEnumerable(async ct =>
+public class CustomResultFilter : IAsyncResultFilter
 {
-    int total = await GetTotalCountAsync(ct);
-    return Pagination.FromTotalCount(total);
-});
+    public async Task OnResultExecutionAsync(
+        ResultExecutingContext context,
+        ResultExecutionDelegate next)
+    {
+        if (context.Result is ObjectResult { Value: ExecutionResult execution })
+        {
+            // Custom processing
+            context.HttpContext.Response.Headers["X-Custom"] = "Value";
+        }
+        
+        await next();
+    }
+}
 
-// From IQueryable
-var paged4 = _context.Products.ToAsyncPagedEnumerable();
+// Register
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<CustomResultFilter>();
+});
 ```
 
----
-
-## ?? Advanced Features
-
-### LINQ Extensions
+### Selective Validation
 
 ```csharp
-using Xpandables.Net.AsyncPaged.Extensions;
+[ApiController]
+[Route("api/[controller]")]
+public class AdminController : ControllerBase
+{
+    // Skip automatic validation for this endpoint
+    [HttpPost("bulk")]
+    [SkipControllerResultValidation]
+    public async Task<ExecutionResult> BulkImport([FromBody] string csvData)
+    {
+        // Custom validation logic
+        return await _adminService.BulkImportAsync(csvData);
+    }
+}
+```
 
-IAsyncPagedEnumerable<Product> products = GetProductsAsync();
+### Custom Output Formatters
 
-// Projection
-var names = products.Select(p => p.Name);
-
-// Filtering
-var expensive = products.Where(p => p.Price > 100);
-
-// Aggregation
-int count = await products.CountAsync();
-decimal total = await products.SumAsync(p => p.Price);
-var max = await products.MaxAsync(p => p.Price);
-
-// Materialization
-List<Product> list = await products.ToListAsync();
-Product[] array = await products.ToArrayAsync();
-
-// Grouping
-var grouped = products.GroupBy(p => p.Category);
+```csharp
+builder.Services.AddControllers(options =>
+{
+    // AsyncPaged formatter is added automatically by AddXControllerMvcOptions
+    // But you can add custom formatters
+    options.OutputFormatters.Insert(0, new CustomFormatter());
+});
 ```
 
 ---
 
 ## ?? Best Practices
 
-1. **Use async all the way** - Don't block on async operations
-2. **Stream large datasets** - Avoid materializing entire collections
-3. **Apply filters before pagination** - Better query performance
-4. **Consider caching total counts** - For expensive operations
-5. **Use continuation tokens** - For cursor-based pagination
+1. **Return ExecutionResult** - Use ExecutionResult as return type for consistent responses
+2. **Use validation attributes** - Leverage DataAnnotations for request validation
+3. **Return IAsyncPagedEnumerable** - For paginated collections
+4. **Register AddXControllerMvcOptions()** - Always register for full functionality
+5. **Avoid manual status codes** - Let ExecutionResult determine HTTP status
 
 ---
 
 ## ?? Related Packages
 
-- **Xpandables.Net.AsyncPaged.AspNetCore** - ASP.NET Core integration
-- **Xpandables.Net.Repositories.EntityFramework** - Repository pattern support
+- **AspNetCore.Net** - Core ASP.NET integration
+- **System.ExecutionResults** - ExecutionResult types
+- **System.Collections.AsyncPaged** - Async pagination
 
 ---
 
