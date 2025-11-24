@@ -40,30 +40,38 @@ public static class HttpContentExtensions
         /// Deserializes the HTTP JSON content into an <see cref="IAsyncPagedEnumerable{T}"/> using
         /// the supplied <see cref="JsonSerializerOptions"/>.
         /// </summary>
+        /// <param name="options">The options to use when deserializing the JSON content.</param>
+        /// <param name="strategy">The pagination strategy to use when deserializing the paged data.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
             JsonSerializerOptions options,
+            PaginationStrategy strategy = PaginationStrategy.None,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(options);
 
             PipeReader reader = PipeReader.Create(GetContentStream(content));
-            return JsonSerializer.DeserializeAsyncPagedEnumerable<TValue>(reader, options, cancellationToken);
+            return JsonSerializer.DeserializeAsyncPagedEnumerable<TValue>(reader, options, strategy, cancellationToken);
         }
 
         /// <summary>
         /// Deserializes the HTTP JSON content into an <see cref="IAsyncPagedEnumerable{T}"/> using
         /// the provided <see cref="JsonTypeInfo{T}"/> metadata.
         /// </summary>
+        /// <param name="jsonTypeInfo">The type metadata to use when deserializing the JSON content.</param>
+        /// <param name="strategy">The pagination strategy to use when deserializing the paged data.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
             JsonTypeInfo<TValue> jsonTypeInfo,
+            PaginationStrategy strategy = PaginationStrategy.None,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
             PipeReader reader = PipeReader.Create(GetContentStream(content));
-            return JsonSerializer.DeserializeAsyncPagedEnumerable(reader, jsonTypeInfo, cancellationToken);
+            return JsonSerializer.DeserializeAsyncPagedEnumerable(reader, jsonTypeInfo, strategy, cancellationToken);
         }
     }
 
