@@ -144,7 +144,7 @@ public sealed class JsonSerializationTests
         var paged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
             pipe.Reader,
             typeInfo,
-            CancellationToken.None);
+            cancellationToken: CancellationToken.None);
 
         // Act
         var items = await paged.ToListAsync();
@@ -193,7 +193,7 @@ public sealed class JsonSerializationTests
         var paged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
             pipe.Reader,
             typeInfo,
-            CancellationToken.None);
+            cancellationToken: CancellationToken.None);
 
         // Act
         var items = await paged.ToListAsync();
@@ -227,7 +227,7 @@ public sealed class JsonSerializationTests
         var deserializedPaged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
             pipe.Reader,
             typeInfo,
-            CancellationToken.None);
+            cancellationToken: CancellationToken.None);
 
         var deserializedItems = await deserializedPaged.ToListAsync();
         var deserializedPagination = await deserializedPaged.GetPaginationAsync();

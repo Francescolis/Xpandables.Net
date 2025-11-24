@@ -27,7 +27,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
 {
     private readonly IAsyncEnumerator<T>? _sourceEnumerator;
     private readonly CancellationToken _cancellationToken;
-    private PaginationStrategy _strategy;
+    private readonly PaginationStrategy _strategy;
     private Pagination _pagination;
     private bool _disposed;
     private int _itemIndex;
@@ -37,7 +37,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
 
     /// <inheritdoc/>
     public ref readonly Pagination Pagination => ref _pagination;
-    
+
     /// <summary>
     /// Gets the current element.
     /// </summary>
