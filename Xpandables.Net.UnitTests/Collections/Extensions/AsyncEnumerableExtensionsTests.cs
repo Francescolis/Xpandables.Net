@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 namespace Xpandables.Net.UnitTests.Collections.Extensions;
 
 /// <summary>
