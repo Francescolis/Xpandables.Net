@@ -80,7 +80,8 @@ var options = new JsonSerializerOptions();
 
 IAsyncPagedEnumerable<Product> products = JsonSerializer.DeserializeAsyncPagedEnumerable<Product>(
     stream,
-    options);
+    options,
+    PaginationStrategy.None);
 
 // Enumerate with pagination
 await foreach (var product in products)
@@ -108,7 +109,10 @@ await JsonSerializer.SerializeAsyncPaged(stream, original, options);
 
 // Deserialize back
 stream.Seek(0, SeekOrigin.Begin);
-var restored = JsonSerializer.DeserializeAsyncPagedEnumerable<Product>(stream, options);
+var restored = JsonSerializer.DeserializeAsyncPagedEnumerable<Product>(
+    stream,
+    options,
+    PaginationStrategy.None);
 
 // Both have the same pagination metadata
 var originalPagination = await original.GetPaginationAsync();
@@ -168,7 +172,8 @@ await JsonSerializer.SerializeAsyncPaged(
 ```csharp
 IAsyncPagedEnumerable<T> result = JsonSerializer.DeserializeAsyncPagedEnumerable<T>(
     stream,
-    options);
+    options,
+    PaginationStrategy.None);
 ```
 
 **From PipeReader:**
@@ -176,7 +181,8 @@ IAsyncPagedEnumerable<T> result = JsonSerializer.DeserializeAsyncPagedEnumerable
 PipeReader reader = PipeReader.Create(stream);
 IAsyncPagedEnumerable<T> result = JsonSerializer.DeserializeAsyncPagedEnumerable<T>(
     reader,
-    options);
+    options,
+    PaginationStrategy.None);
 ```
 
 ### 🧠 Adaptive Flushing Strategy
@@ -257,14 +263,21 @@ public async Task ImportProductsAsync(string filePath, CancellationToken cancell
     using var stream = new FileStream(filePath, FileMode.Open);
     var options = new JsonSerializerOptions();
 
-    var products = JsonSerializer.DeserializeAsyncPagedEnumerable<Product>(stream, options);
+    var products = JsonSerializer.DeserializeAsyncPagedEnumerable<Product>(
+        stream,
+        options,
+        PaginationStrategy.None,
+        cancellationToken);
 
     await foreach (var product in products.WithCancellation(cancellationToken))
     {
-        // Validate each product
-        if (await ValidateProductAsync(product, cancellationToken))
+        if (product is not null)
         {
-            await _repository.AddAsync(product, cancellationToken);
+            // Validate each product
+            if (await ValidateProductAsync(product, cancellationToken))
+            {
+                await _repository.AddAsync(product, cancellationToken);
+            }
         }
     }
 
@@ -284,13 +297,20 @@ public async Task TransformAndExportAsync(
     // Deserialize
     using var inputStream = new FileStream(inputPath, FileMode.Open);
     var inputOptions = new JsonSerializerOptions();
-    var input = JsonSerializer.DeserializeAsyncPagedEnumerable<ProductDto>(inputStream, inputOptions);
+    var input = JsonSerializer.DeserializeAsyncPagedEnumerable<ProductDto>(
+        inputStream,
+        inputOptions,
+        PaginationStrategy.None,
+        cancellationToken);
 
     // Transform using LINQ
     var transformed = input.SelectPagedAsync(async product =>
     {
-        product.Price *= 1.1m; // 10% markup
-        product.LastUpdated = DateTime.UtcNow;
+        if (product is not null)
+        {
+            product.Price *= 1.1m; // 10% markup
+            product.LastUpdated = DateTime.UtcNow;
+        }
         return product;
     });
 
@@ -338,23 +358,23 @@ The following benchmarks compare `System.Text.Json.AsyncPaged` serialization/des
 
 | Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Improvement |
 |----------|---------|------------------:|---------------------------:|------------:|
-| Small    | 100     | **77 ?s**          | 85 ?s                      | **+9%**     |
-| Medium   | 1,000   | **935 ?s**         | 968 ?s                     | **+3%**     |
-| Large    | 10,000  | **8,833 ?s**       | 8,896 ?s                   | **+1%**     |
+| Small    | 100     | **77 μs**          | 85 μs                      | **+9%**     |
+| Medium   | 1,000   | **935 μs**         | 968 μs                     | **+3%**     |
+| Large    | 10,000  | **8,833 μs**       | 8,896 μs                   | **+1%**     |
 
 ### Deserialization Performance (Read from JSON)
 
 | Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Improvement |
 |----------|---------|------------------:|---------------------------:|------------:|
-| Small    | 100     | **95 ?s**          | 100 ?s                     | **+5%**     |
-| Medium   | 1,000   | **1,044 ?s**       | 1,346 ?s                   | **+22%**    |
-| Large    | 10,000  | **6,964 ?s**       | 14,834 ?s                  | **+53%**    |
+| Small    | 100     | **95 μs**          | 100 μs                     | **+5%**     |
+| Medium   | 1,000   | **1,044 μs**       | 1,346 μs                   | **+22%**    |
+| Large    | 10,000  | **6,964 μs**       | 14,834 μs                  | **+53%**    |
 
 **Key Findings:**
-- ? **Serialization:** Comparable performance with slightly better memory efficiency for large datasets
-- ? **Deserialization:** Significant performance advantage (22-53% faster), especially for medium and large datasets
-- ? **Memory Allocation:** Efficient buffer management with reduced memory pressure
-- ? **Scalability:** Performance improves relative to dataset size due to adaptive flushing
+- ⚡ **Serialization:** Comparable performance with slightly better memory efficiency for large datasets
+- ⚡ **Deserialization:** Significant performance advantage (22-53% faster), especially for medium and large datasets
+- 💾 **Memory Allocation:** Efficient buffer management with reduced memory pressure
+- 📈 **Scalability:** Performance improves relative to dataset size due to adaptive flushing
 
 ---
 
@@ -377,11 +397,64 @@ Task SerializeAsyncPaged<TValue>(
     JsonSerializerOptions options,
     CancellationToken cancellationToken = default);
 
-// Serialize to PipeWriter
+// Serialize to PipeWriter with JsonTypeInfo
 Task SerializeAsyncPaged<TValue>(
     PipeWriter utf8Json,
     IAsyncPagedEnumerable<TValue> pagedEnumerable,
     JsonTypeInfo<TValue> jsonTypeInfo,
+    CancellationToken cancellationToken = default);
+
+// Serialize to PipeWriter with JsonSerializerOptions
+Task SerializeAsyncPaged<TValue>(
+    PipeWriter utf8Json,
+    IAsyncPagedEnumerable<TValue> pagedEnumerable,
+    JsonSerializerOptions options,
+    CancellationToken cancellationToken = default);
+```
+
+### 🔤 Non-Generic Serialization Extensions
+
+```csharp
+// Serialize (non-generic) to Stream with JsonTypeInfo
+Task SerializeAsyncPaged(
+    Stream utf8Json,
+    IAsyncPagedEnumerable pagedEnumerable,
+    JsonTypeInfo jsonTypeInfo,
+    CancellationToken cancellationToken = default);
+
+// Serialize to Stream with JsonSerializerContext
+Task SerializeAsyncPaged(
+    Stream utf8Json,
+    IAsyncPagedEnumerable pagedEnumerable,
+    JsonSerializerContext context,
+    CancellationToken cancellationToken = default);
+
+// Serialize to Stream with JsonSerializerOptions
+Task SerializeAsyncPaged(
+    Stream utf8Json,
+    IAsyncPagedEnumerable pagedEnumerable,
+    JsonSerializerOptions options,
+    CancellationToken cancellationToken = default);
+
+// Serialize to PipeWriter with JsonTypeInfo
+Task SerializeAsyncPaged(
+    PipeWriter utf8Json,
+    IAsyncPagedEnumerable pagedEnumerable,
+    JsonTypeInfo jsonTypeInfo,
+    CancellationToken cancellationToken = default);
+
+// Serialize to PipeWriter with JsonSerializerContext
+Task SerializeAsyncPaged(
+    PipeWriter utf8Json,
+    IAsyncPagedEnumerable pagedEnumerable,
+    JsonSerializerContext context,
+    CancellationToken cancellationToken = default);
+
+// Serialize to PipeWriter with JsonSerializerOptions
+Task SerializeAsyncPaged(
+    PipeWriter utf8Json,
+    IAsyncPagedEnumerable pagedEnumerable,
+    JsonSerializerOptions options,
     CancellationToken cancellationToken = default);
 ```
 
@@ -392,36 +465,28 @@ Task SerializeAsyncPaged<TValue>(
 IAsyncPagedEnumerable<TValue> DeserializeAsyncPagedEnumerable<TValue>(
     Stream utf8Json,
     JsonTypeInfo<TValue> jsonTypeInfo,
+    PaginationStrategy strategy = PaginationStrategy.None,
     CancellationToken cancellationToken = default);
 
-// Deserialize from Stream with JsonSerializerOptions
-IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
+// Deserialize from Stream with JsonSerializerOptions (returns nullable)
+IAsyncPagedEnumerable<TValue> DeserializeAsyncPagedEnumerable<TValue>(
     Stream utf8Json,
     JsonSerializerOptions options,
+    PaginationStrategy strategy = PaginationStrategy.None,
     CancellationToken cancellationToken = default);
 
-// Deserialize from PipeReader
+// Deserialize from PipeReader with JsonTypeInfo
 IAsyncPagedEnumerable<TValue> DeserializeAsyncPagedEnumerable<TValue>(
     PipeReader utf8Json,
     JsonTypeInfo<TValue> jsonTypeInfo,
-    CancellationToken cancellationToken = default);
-```
-
-### 📦 Non-Generic Serialization Extensions
-
-```csharp
-// Serialize (non-generic) to Stream
-Task SerializeAsyncPaged(
-    Stream utf8Json,
-    IAsyncPagedEnumerable pagedEnumerable,
-    JsonTypeInfo jsonTypeInfo,
+    PaginationStrategy strategy = PaginationStrategy.None,
     CancellationToken cancellationToken = default);
 
-// Serialize using JsonSerializerContext
-Task SerializeAsyncPaged(
-    Stream utf8Json,
-    IAsyncPagedEnumerable pagedEnumerable,
-    JsonSerializerContext context,
+// Deserialize from PipeReader with JsonSerializerOptions (returns nullable)
+IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
+    PipeReader utf8Json,
+    JsonSerializerOptions options,
+    PaginationStrategy strategy = PaginationStrategy.None,
     CancellationToken cancellationToken = default);
 ```
 
@@ -437,6 +502,8 @@ Task SerializeAsyncPaged(
 - **Use PipeWriter for high-throughput scenarios** — Better for server-side streaming
 - **Monitor pagination metadata** — Use pagination info to handle multi-page results correctly
 - **Validate after deserialization** — Check items and pagination before processing
+- **Specify PaginationStrategy** — Use appropriate strategy (None, PerPage, PerItem) for deserialization based on your needs
+- **Handle nullable values** — When using `JsonSerializerOptions` overload, items may be nullable
 
 ### ❌ Don't
 
@@ -446,6 +513,7 @@ Task SerializeAsyncPaged(
 - **Use default JsonSerializerOptions** — Provide explicit options for consistent behavior
 - **Assume pagination is always present** — Handle cases where pagination metadata may be unknown
 - **Reuse streams without resetting** — Always reset position or create new streams for new operations
+- **Forget to check for null** — When using options overload, returned items can be null
 
 ---
 
