@@ -53,6 +53,7 @@
 		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
 		<WarningLevel>9999</WarningLevel>
 		<Copyright>Copyright © Kamersoft 2025</Copyright>
+		<PackageOutputPath>..\..\Nugets</PackageOutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
