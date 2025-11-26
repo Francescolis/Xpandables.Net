@@ -163,7 +163,7 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
                              .SetProperty(e => e.Status, EventStatus.ONERROR)
                              .SetProperty(e => e.ErrorMessage, failure.Error)
                              .SetProperty(e => e.AttemptCount, e => e.AttemptCount + 1)
-                             .SetProperty(e => e.NextAttemptOn, e => GetNextAttempt(now, e.AttemptCount + 1))
+                             .SetProperty(e => e.NextAttemptOn, e => now.AddSeconds(Math.Min(600, 10 * Math.Pow(2, Math.Min(10, e.AttemptCount)))))
                              .SetProperty(e => e.ClaimId, (Guid?)null)
                              .SetProperty(e => e.UpdatedOn, now), cancellationToken)
                          .ConfigureAwait(false);
@@ -188,11 +188,5 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
              }
          })
              .ConfigureAwait(false);
-    }
-
-    private static DateTime GetNextAttempt(DateTime now, int attemptCount)
-    {
-        var delay = TimeSpan.FromSeconds(Math.Min(600, 10 * Math.Pow(2, Math.Min(10, attemptCount - 1))));
-        return now.Add(delay);
     }
 }

@@ -126,16 +126,4 @@ public sealed record SchedulerOptions
     /// Gets a value indicating whether to enable health checks for the scheduler.
     /// </summary>
     public bool EnableHealthChecks { get; set; } = true;
-
-    // Backward compatibility
-    /// <summary>
-    /// Gets the maximum number of events per thread for the scheduler.
-    /// This property is obsolete. Use <see cref="BatchSize"/> instead.
-    /// </summary>
-    [Obsolete("Use BatchSize instead", false)]
-    public ushort MaxSchedulerEventPerThread
-    {
-        get => BatchSize;
-        set => BatchSize = value;
-    }
 }

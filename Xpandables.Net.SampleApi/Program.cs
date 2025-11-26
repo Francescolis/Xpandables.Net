@@ -78,7 +78,9 @@ builder.Services
     .AddXOutboxStore()
     .AddMemoryCache()
     .AddXEventConverterFactory()
-    .AddXCacheTypeResolver([typeof(BankAccount).Assembly]);
+    .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
+    .AddXScheduler()
+    .AddXHostedScheduler();
 
 builder.Services.Configure<JsonOptions>(options =>
 {
