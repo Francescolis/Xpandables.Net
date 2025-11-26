@@ -179,7 +179,7 @@ public static class IEventExtensions
         /// <param name="lifetime">The service lifetime for the publisher registration. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/> instance with the publisher registration added.</returns>
         public IServiceCollection AddXEventPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventPublisher>(
-            ServiceLifetime lifetime = ServiceLifetime.Singleton)
+            ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TEventPublisher : class, IEventPublisher
         {
             services.TryAdd(
@@ -203,19 +203,33 @@ public static class IEventExtensions
         ///     dynamicRegistry.Unregister&lt;PluginEvent&gt;();
         /// </code>
         /// </summary>
+        /// <param name="registryMode">The event registry mode to use. Defaults to <see cref="EventRegistryMode.Default"/>.</param>
         /// <param name="lifetime">The service lifetime for the publisher registration. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
         /// <remarks>This method registers the PublisherSubscriber type as the implementation for
-        /// XPublisher. Call this method during application startup to enable Publisher features in your
+        /// IEventPublisher. Call this method during application startup to enable Publisher features in your
         /// application.</remarks>
         /// <returns>The updated IServiceCollection instance with the Publisher services registered.</returns>
-        public IServiceCollection AddXEventPublisher(ServiceLifetime lifetime = ServiceLifetime.Singleton) =>
+        public IServiceCollection AddXEventPublisher(
+            EventRegistryMode registryMode = EventRegistryMode.Default,
+            ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        {
             services
                 .AddXEventPublisher<EventPublisherSubscriber>(lifetime)
-                .AddSingleton<IEventSubscriber>(sp => (EventPublisherSubscriber)sp.GetRequiredService<IEventPublisher>())
-                .AddSingleton<StaticEventHandlerRegistry>()
-                .AddSingleton<DynamycEventHandlerRegistry>()
-                .AddSingleton<IEventHandlerRegistry, CompositeEventHandlerRegistry>();
+                .AddSingleton<IEventSubscriber>(sp => (EventPublisherSubscriber)sp.GetRequiredService<IEventPublisher>());
 
+            _ = registryMode switch
+            {
+                EventRegistryMode.Default => services.AddScoped<IEventHandlerRegistry, EventHandlerRegistry>(),
+                EventRegistryMode.Static => services.AddSingleton<IEventHandlerRegistry, StaticEventHandlerRegistry>(),
+                EventRegistryMode.Dynamic => services.AddSingleton<IEventHandlerRegistry, DynamicEventHandlerRegistry>(),
+                _ => services
+                    .AddSingleton<StaticEventHandlerRegistry>()
+                    .AddSingleton<DynamicEventHandlerRegistry>()
+                    .AddSingleton<IEventHandlerRegistry, CompositeEventHandlerRegistry>(),
+            };
+
+            return services;
+        }
 
         /// <summary>
         /// Registers a specific event handler for the specified event type.
@@ -265,7 +279,7 @@ public static class IEventExtensions
         /// <returns>The <see cref="IServiceCollection"/> instance with the event handler wrapper registration added.</returns>
         public IServiceCollection AddXEventHandlerWrapper<TEvent>()
             where TEvent : class, IEvent =>
-            services.AddSingleton<IEventHandlerWrapper, EventHandlerWrapper<TEvent>>();
+            services.AddScoped<IEventHandlerWrapper, EventHandlerWrapper<TEvent>>();
 
         /// <summary>
         /// Registers all sealed event handler classes implementing the <see cref="IEventHandler{TEvent}"/> interface from the
@@ -280,7 +294,7 @@ public static class IEventExtensions
         /// with the discovered event handlers registered.</returns>
         [RequiresUnreferencedCode("The event handlers may not be fully referenced.")]
         [RequiresDynamicCode("The event handlers may not be fully referenced.")]
-        public async Task<IServiceCollection> AddXEventHandlers(params Assembly[] assemblies)
+        public IServiceCollection AddXEventHandlers(params Assembly[] assemblies)
         {
             assemblies = assemblies is { Length: > 0 } ? assemblies : [Assembly.GetCallingAssembly()];
 

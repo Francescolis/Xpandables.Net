@@ -9,6 +9,7 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 using Xpandables.Net.SampleApi.EventStorage;
+using Xpandables.Net.SampleApi.ReadStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,18 @@ builder.Services.AddXOutboxStoreDataContext(options =>
         .EnableServiceProviderCaching()
         .ReplaceService<IModelCustomizer, OutboxStoreModelCustomizer>());
 
+builder.Services.AddXDataContext<BankAccountDataContext>(options =>
+    options
+        .UseSqlServer(builder.Configuration.GetConnectionString("ReadStoreDb"),
+        options => options
+            .EnableRetryOnFailure()
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+            .MigrationsHistoryTable("_ReadStoreMigrations")
+            .MigrationsAssembly("Xpandables.Net.SampleApi"))
+        .EnableDetailedErrors()
+        .EnableSensitiveDataLogging()
+        .EnableServiceProviderCaching());
+
 // Register Xpandables.Net services
 builder.Services
     .AddXEndpointRoutes()
@@ -57,6 +70,7 @@ builder.Services
     .AddXJsonSerializerOptions()
     .AddXMediatorWithEventSourcingPipelines()
     .AddXRequestHandlers()
+    .AddXEventHandlers()
     .AddXValidator()
     .AddXEventPublisher()
     .AddXAggregateStore()
@@ -64,8 +78,7 @@ builder.Services
     .AddXOutboxStore()
     .AddMemoryCache()
     .AddXEventConverterFactory()
-    .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
-    .AddXMinimalSupport();
+    .AddXCacheTypeResolver([typeof(BankAccount).Assembly]);
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -97,7 +110,6 @@ var app = builder.Build();
 //}
 
 app.UseHttpsRedirection();
-app.UseXMinimalSupport();
 app.UseSwagger()
     .UseSwaggerUI(options =>
     {
@@ -116,8 +128,10 @@ using (var scope = app.Services.CreateScope())
 {
     var eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
     var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
+    var readDb = scope.ServiceProvider.GetRequiredService<BankAccountDataContext>();
     await eventDb.Database.MigrateAsync().ConfigureAwait(false);
     await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
+    await readDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
 app.UseXEndpointRoutes();

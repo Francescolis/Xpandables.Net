@@ -61,7 +61,7 @@ public sealed class EventHandlerWrapper<TEvent>(IEnumerable<IEventHandler<TEvent
             throw new ArgumentException($"Invalid event type. Expected {typeof(TEvent).Name}, but got {instance.GetType().Name}.", nameof(instance));
         }
 
-        if (handlers.Any())
+        if (!handlers.Any())
         {
             return;
         }

@@ -17,6 +17,35 @@
 namespace System.Events;
 
 /// <summary>
+/// Specifies the available modes for event registry behavior.
+/// </summary>
+/// <remarks>Use this enumeration to select how events are registered and managed within the system. The mode
+/// determines whether event handlers are registered statically, dynamically, or as a composite of multiple strategies.
+/// The default mode provides standard registry behavior as defined by the implementation.</remarks>
+public enum EventRegistryMode
+{
+    /// <summary>
+    /// Use the default event registry behavior.
+    /// </summary>
+    Default,
+
+    /// <summary>
+    /// Use static event registration where handlers are registered at compile-time and do not change at runtime.
+    /// </summary>
+    Static,
+
+    /// <summary>
+    /// Use dynamic event registration where handlers can be added or removed at runtime.
+    /// </summary>
+    Dynamic,
+
+    /// <summary>
+    /// Use a composite approach that combines both static and dynamic event registration strategies.
+    /// </summary>
+    Composite
+}
+
+/// <summary>
 /// Defines a contract for asynchronously publishing events to all registered event handlers.
 /// </summary>
 /// <remarks>Implementations of this interface are responsible for delivering events to all appropriate

@@ -38,10 +38,10 @@ public sealed class ElementCollectionJsonConverterFactory : JsonConverterFactory
         ArgumentNullException.ThrowIfNull(typeToConvert);
         ArgumentNullException.ThrowIfNull(options);
 
-        if (options.TypeInfoResolverChain.FirstOrDefault(resolver => resolver is ElementCollectionContext) is null)
-        {
-            options.TypeInfoResolverChain.Add(ElementCollectionContext.Default);
-        }
+        //if (options.TypeInfoResolverChain.FirstOrDefault(resolver => resolver is ElementCollectionContext) is null)
+        //{
+        //    options.TypeInfoResolverChain.Add(ElementCollectionContext.Default);
+        //}
 
         return new ElementCollectionJsonConverter();
     }

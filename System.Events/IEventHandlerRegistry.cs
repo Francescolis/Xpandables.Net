@@ -39,6 +39,23 @@ public interface IEventHandlerRegistry
 }
 
 /// <summary>
+/// Provides a registry for event handler wrappers, enabling efficient lookup of handlers by event type.
+/// </summary>
+/// <remarks>This registry is immutable after construction. Attempting to register multiple wrappers for the same
+/// event type will result in only one being stored for that type.</remarks>
+/// <param name="wrappers">A collection of event handler wrappers to be registered. Each wrapper must have a unique event type.</param>
+public sealed class EventHandlerRegistry(IEnumerable<IEventHandlerWrapper> wrappers) : IEventHandlerRegistry
+{
+    private readonly ImmutableDictionary<Type, IEventHandlerWrapper> _mapper =
+        wrappers.ToImmutableDictionary(w => w.EventType);
+
+    /// <inheritdoc/>
+    public bool TryGetWrapper(Type eventType, [NotNullWhen(true)] out IEventHandlerWrapper? wrapper) =>
+        _mapper.TryGetValue(eventType, out wrapper);
+}
+
+
+/// <summary>
 /// Provides a thread-safe registry for event handler wrappers, allowing lookup of handlers by event type.
 /// </summary>
 /// <remarks>This registry is immutable after construction and is safe for concurrent access. Attempting to
@@ -61,7 +78,7 @@ public sealed class StaticEventHandlerRegistry(IEnumerable<IEventHandlerWrapper>
 /// at runtime. It is designed for concurrent access and can be safely used in multi-threaded environments. Typically,
 /// consumers use this registry to manage event handler lifetimes and to resolve handlers for event
 /// dispatching.</remarks>
-public sealed class DynamycEventHandlerRegistry : IEventHandlerRegistry
+public sealed class DynamicEventHandlerRegistry : IEventHandlerRegistry
 {
     private readonly ConcurrentDictionary<Type, IEventHandlerWrapper> _mapper = [];
 
@@ -105,7 +122,7 @@ public sealed class DynamycEventHandlerRegistry : IEventHandlerRegistry
 /// <param name="dynamicRegistry">The dynamic event handler registry used for resolving event handlers registered at runtime. Cannot be null.</param>
 public sealed class CompositeEventHandlerRegistry(
     StaticEventHandlerRegistry staticRegistry,
-    DynamycEventHandlerRegistry dynamicRegistry) : IEventHandlerRegistry
+    DynamicEventHandlerRegistry dynamicRegistry) : IEventHandlerRegistry
 {
     /// <inheritdoc/>
     public bool TryGetWrapper(Type eventType, [NotNullWhen(true)] out IEventHandlerWrapper? wrapper) =>

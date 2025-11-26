@@ -70,6 +70,10 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                 {
                     result = execution.Value;
                 }
+                else
+                {
+                    return Results.Empty;
+                }
             }
 
             if (result is IAsyncPagedEnumerable paged)

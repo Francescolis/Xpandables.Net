@@ -1,25 +1,30 @@
-﻿using Xpandables.Net.SampleApi.BankAccounts.Accounts;
+﻿using Microsoft.EntityFrameworkCore;
+
+using Xpandables.Net.SampleApi.ReadStorage;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 
-public sealed class GetBankAccountBalanceHandler(IAggregateStore<BankAccount> aggregateStore) :
+public sealed class GetBankAccountBalanceHandler(BankAccountDataContext context) :
     IRequestHandler<GetBankAccountBalanceQuery, GetBankAccountBalanceResult>
 {
     public async Task<ExecutionResult<GetBankAccountBalanceResult>> HandleAsync(
         GetBankAccountBalanceQuery request,
         CancellationToken cancellationToken = default)
     {
-        var account = await aggregateStore.LoadAsync(
-            request.AccountId,
-            cancellationToken).ConfigureAwait(false);
+        GetBankAccountBalanceResult? account = await context.BankAccounts
+            .AsNoTracking()
+            .Where(a => a.KeyId == request.AccountId)
+            .Select(a => new GetBankAccountBalanceResult
+            {
+                AccountId = a.KeyId.ToString(),
+                AccountNumber = a.AccountNumber,
+                Balance = a.Balance
+            })
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
 
-        var result = new GetBankAccountBalanceResult
-        {
-            AccountId = account.StreamId.ToString(),
-            AccountNumber = account.CurrentState.AccountNumber,
-            Balance = account.CurrentState.Balance
-        };
-
-        return ExecutionResult.SuccessResult(result);
+        return account.HasValue
+            ? ExecutionResult.SuccessResult(account.Value)
+            : ExecutionResult.NotFound(nameof(request.AccountId), "Account not found");
     }
 }
