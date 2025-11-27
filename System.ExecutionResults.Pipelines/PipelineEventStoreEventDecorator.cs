@@ -33,7 +33,7 @@ public sealed class PipelineEventStoreEventDecorator<TRequest>(IEventStore event
     where TRequest : class, IRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)
@@ -43,7 +43,7 @@ public sealed class PipelineEventStoreEventDecorator<TRequest>(IEventStore event
 
         try
         {
-            ExecutionResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
+            OperationResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
             return response;
         }

@@ -29,7 +29,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc />
     [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-    public async Task<ExecutionResult> SendAsync<TRequest>(
+    public async Task<OperationResult> SendAsync<TRequest>(
         TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest
     {
@@ -42,7 +42,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
 
             return await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
         }
-        catch (ExecutionResultException)
+        catch (OperationResultException)
         {
             throw;
         }
@@ -54,7 +54,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
         }
         catch (Exception exception)
         {
-            return exception.ToExecutionResult();
+            return exception.ToOperationResult();
         }
     }
 }

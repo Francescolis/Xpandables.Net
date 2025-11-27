@@ -35,29 +35,29 @@ public static class ExceptionExtensions
     extension(Exception exception)
     {
         /// <summary>
-        /// Creates an <see cref="ExecutionResult"/> representing the outcome of the current exception, optionally using
+        /// Creates an <see cref="OperationResult"/> representing the outcome of the current exception, optionally using
         /// a specified HTTP status code and reason phrase.
         /// </summary>
-        /// <remarks>In development environments, the execution result includes detailed exception
+        /// <remarks>In development environments, the operation result includes detailed exception
         /// information for easier debugging. In other environments, only generic error details are provided to avoid
         /// exposing sensitive information.</remarks>
-        /// <param name="statusCode">The HTTP status code to associate with the execution result. If <see langword="null"/>, the status code is
+        /// <param name="statusCode">The HTTP status code to associate with the operation result. If <see langword="null"/>, the status code is
         /// determined from the exception.</param>
-        /// <param name="reason">An optional reason phrase to include in the execution result. If <see langword="null"/>, the exception
+        /// <param name="reason">An optional reason phrase to include in the operation result. If <see langword="null"/>, the exception
         /// message or status code title is used depending on the environment.</param>
-        /// <returns>An <see cref="ExecutionResult"/> describing the failure, including status code, error details, and exception
+        /// <returns>An <see cref="OperationResult"/> describing the failure, including status code, error details, and exception
         /// information.</returns>
-        public ExecutionResult ToExecutionResult(HttpStatusCode? statusCode = null, string? reason = default)
+        public OperationResult ToOperationResult(HttpStatusCode? statusCode = null, string? reason = default)
         {
             ArgumentNullException.ThrowIfNull(exception);
 
             bool isDevelopment = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";
 
-            if (exception is ExecutionResultException executionResultException)
+            if (exception is OperationResultException operationException)
             {
-                var executionResult = executionResultException.ExecutionResult;
-                return ExecutionResult
-                    .Failure(executionResult.StatusCode)
+                var executionResult = operationException.OperationResult;
+                return OperationResult
+                    .FailureStatus(executionResult.StatusCode)
                     .WithTitle(executionResult.StatusCode.Title)
                     .WithDetail(executionResult.StatusCode.Detail)
                     .WithErrors(executionResult.Errors)
@@ -68,8 +68,8 @@ public static class ExceptionExtensions
 
             statusCode ??= exception.GetHttpStatusCode();
 
-            var builder = ExecutionResult
-                .Failure(statusCode.Value)
+            var builder = OperationResult
+                .FailureStatus(statusCode.Value)
                 .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
                 .WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.Detail)
                 .WithErrors(exception.GetElementEntries());

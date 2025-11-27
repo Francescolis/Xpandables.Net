@@ -29,7 +29,7 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork? unitOfWor
     where TRequest : class, IRequest, IRequiresUnitOfWork
 {
     /// <inheritdoc/>
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)
@@ -39,7 +39,7 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork? unitOfWor
 
         try
         {
-            ExecutionResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
+            OperationResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
             return response;
         }

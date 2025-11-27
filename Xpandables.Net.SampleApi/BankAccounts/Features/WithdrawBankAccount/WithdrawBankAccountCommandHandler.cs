@@ -5,7 +5,7 @@ namespace Xpandables.Net.SampleApi.BankAccounts.Features.WithdrawBankAccount;
 public sealed class WithdrawBankAccountCommandHandler(IAggregateStore<BankAccount> aggregateStore) :
     IRequestHandler<WithdrawBankAccountCommand, WithdrawBankAccountResult>
 {
-    public async Task<ExecutionResult<WithdrawBankAccountResult>> HandleAsync(
+    public async Task<OperationResult<WithdrawBankAccountResult>> HandleAsync(
         WithdrawBankAccountCommand request,
         CancellationToken cancellationToken = default)
     {
@@ -28,6 +28,6 @@ public sealed class WithdrawBankAccountCommandHandler(IAggregateStore<BankAccoun
             Description = request.Description
         };
 
-        return ExecutionResult.SuccessResult(result);
+        return OperationResult.Success(result);
     }
 }

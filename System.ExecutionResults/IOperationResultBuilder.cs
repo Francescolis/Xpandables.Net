@@ -23,200 +23,200 @@ using Microsoft.Extensions.Primitives;
 namespace System.ExecutionResults;
 
 /// <summary>
-/// Base interface for all execution result builders with common functionality.
+/// Base interface for all operation result builders with common functionality.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultBuilderBase<out TBuilder> :
-    IExecutionResultHeaderBuilder<TBuilder>,
-    IExecutionResultLocationBuilder<TBuilder>,
-    IExecutionResultStatusBuilder<TBuilder>,
-    IExecutionResultExtensionBuilder<TBuilder>,
-    IExecutionResultClearBuilder<TBuilder>
-    where TBuilder : class, IExecutionResultBuilder;
+public interface IOperationResultBuilderBase<out TBuilder> :
+    IOperationResultHeaderBuilder<TBuilder>,
+    IOperationResultLocationBuilder<TBuilder>,
+    IOperationResultStatusBuilder<TBuilder>,
+    IOperationResultExtensionBuilder<TBuilder>,
+    IOperationResultClearBuilder<TBuilder>
+    where TBuilder : class, IOperationResultBuilder;
 
 /// <summary>  
-/// Provides a builder interface for constructing failure execution results.  
+/// Provides a builder interface for constructing failure operation results.  
 /// </summary>  
-public interface IExecutionResultFailureBuilder :
-    IExecutionResultBuilderBase<IExecutionResultFailureBuilder>,
-    IExecutionResultErrorBuilder<IExecutionResultFailureBuilder>,
-    IExecutionResultDetailBuilder<IExecutionResultFailureBuilder>,
-    IExecutionResultTitleBuilder<IExecutionResultFailureBuilder>,
-    IExecutionResultMergeBuilder<IExecutionResultFailureBuilder>,
-    IExecutionResultBuilder;
+public interface IOperationResultFailureBuilder :
+    IOperationResultBuilderBase<IOperationResultFailureBuilder>,
+    IOperationResultErrorBuilder<IOperationResultFailureBuilder>,
+    IOperationResultDetailBuilder<IOperationResultFailureBuilder>,
+    IOperationResultTitleBuilder<IOperationResultFailureBuilder>,
+    IOperationResultMergeBuilder<IOperationResultFailureBuilder>,
+    IOperationResultBuilder;
 
 /// <summary>  
-/// Provides a builder interface for constructing failure execution results 
+/// Provides a builder interface for constructing failure operation results 
 /// with a specific result type.  
 /// </summary>  
 /// <typeparam name="TResult">The type of the result.</typeparam>  
-public interface IExecutionResultFailureBuilder<TResult> :
-    IExecutionResultBuilderBase<IExecutionResultFailureBuilder<TResult>>,
-    IExecutionResultErrorBuilder<IExecutionResultFailureBuilder<TResult>>,
-    IExecutionResultDetailBuilder<IExecutionResultFailureBuilder<TResult>>,
-    IExecutionResultTitleBuilder<IExecutionResultFailureBuilder<TResult>>,
-    IExecutionResultMergeBuilder<IExecutionResultFailureBuilder<TResult>>,
-    IExecutionResultBuilder<TResult>;
+public interface IOperationResultFailureBuilder<TResult> :
+    IOperationResultBuilderBase<IOperationResultFailureBuilder<TResult>>,
+    IOperationResultErrorBuilder<IOperationResultFailureBuilder<TResult>>,
+    IOperationResultDetailBuilder<IOperationResultFailureBuilder<TResult>>,
+    IOperationResultTitleBuilder<IOperationResultFailureBuilder<TResult>>,
+    IOperationResultMergeBuilder<IOperationResultFailureBuilder<TResult>>,
+    IOperationResultBuilder<TResult>;
 
 /// <summary>
-/// Interface for building a success execution result.
+/// Interface for building a success operation result.
 /// </summary>
-public interface IExecutionResultSuccessBuilder :
-    IExecutionResultBuilderBase<IExecutionResultSuccessBuilder>,
-    IExecutionResultObjectBuilder<IExecutionResultSuccessBuilder>,
-    IExecutionResultBuilder;
+public interface IOperationResultSuccessBuilder :
+    IOperationResultBuilderBase<IOperationResultSuccessBuilder>,
+    IOperationResultObjectBuilder<IOperationResultSuccessBuilder>,
+    IOperationResultBuilder;
 
 /// <summary>
-/// Interface for building a success execution result with a specific result type.
+/// Interface for building a success operation result with a specific result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IExecutionResultSuccessBuilder<TResult> :
-    IExecutionResultBuilderBase<IExecutionResultSuccessBuilder<TResult>>,
-    IExecutionResultResultBuilder<IExecutionResultSuccessBuilder<TResult>, TResult>,
-    IExecutionResultBuilder<TResult>;
+public interface IOperationResultSuccessBuilder<TResult> :
+    IOperationResultBuilderBase<IOperationResultSuccessBuilder<TResult>>,
+    IOperationResultResultBuilder<IOperationResultSuccessBuilder<TResult>, TResult>,
+    IOperationResultBuilder<TResult>;
 
 /// <summary>
-/// Represents a method for building an <see cref="ExecutionResult"/>.
+/// Represents a method for building an <see cref="OperationResult"/>.
 /// </summary>
-public interface IExecutionResultBuilder
+public interface IOperationResultBuilder
 {
     /// <summary>
     /// Builds an instance that matches the builder information.
     /// </summary>
-    /// <returns>An instance of <see cref="ExecutionResult"/>.</returns>
-    ExecutionResult Build();
+    /// <returns>An instance of <see cref="OperationResult"/>.</returns>
+    OperationResult Build();
 }
 
 /// <summary>
-/// Represents a method for building an <see cref="ExecutionResult{TResult}"/>.
+/// Represents a method for building an <see cref="OperationResult{TResult}"/>.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IExecutionResultBuilder<TResult> : IExecutionResultBuilder
+public interface IOperationResultBuilder<TResult> : IOperationResultBuilder
 {
     /// <summary>
     /// Builds an instance that matches the builder information.
     /// </summary>
-    /// <returns>An instance of <see cref="ExecutionResult{TResult}"/>.</returns>
-    new ExecutionResult<TResult> Build();
+    /// <returns>An instance of <see cref="OperationResult{TResult}"/>.</returns>
+    new OperationResult<TResult> Build();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    ExecutionResult IExecutionResultBuilder.Build() => Build();
+    OperationResult IOperationResultBuilder.Build() => Build().ToOperationResult();
 }
 
 /// <summary>
-/// Represents a method for merging the current execution with another execution result.
+/// Represents a method for merging the current operation with another operation result.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultMergeBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultMergeBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Merges the current execution with the specified execution.
+    /// Merges the current operation with the specified operation.
     /// </summary>
-    /// <param name="execution">The execution to merge with.</param>
+    /// <param name="operation">The operation to merge with.</param>
     /// <returns>The current builder instance.</returns>
-    TBuilder Merge(ExecutionResult execution);
+    TBuilder Merge(OperationResult operation);
 }
 
 /// <summary>
-/// Represents a method for setting the status code of an execution being built.
+/// Represents a method for setting the status code of an operation being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultStatusBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultStatusBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Sets the status code of the execution being built.
+    /// Sets the status code of the operation being built.
     /// </summary>
-    /// <param name="statusCode">The status code of the execution.</param>
+    /// <param name="statusCode">The status code of the operation.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithStatusCode(HttpStatusCode statusCode);
 }
 
 /// <summary>
-/// Represents a method for setting the title of an execution being built.
+/// Represents a method for setting the title of an operation being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultTitleBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultTitleBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Sets the title of the execution being built.
+    /// Sets the title of the operation being built.
     /// </summary>
-    /// <param name="title">The title of the execution.</param>
+    /// <param name="title">The title of the operation.</param>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided title is null.</exception>
     TBuilder WithTitle(string title);
 }
 
 /// <summary>
-/// Represents a method for setting the detail of an execution being built.
+/// Represents a method for setting the detail of an operation being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultDetailBuilder<out TBuilder>
-   where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultDetailBuilder<out TBuilder>
+   where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Sets the detail of the execution being built.
+    /// Sets the detail of the operation being built.
     /// </summary>
-    /// <param name="detail">The detail of the execution.</param>
+    /// <param name="detail">The detail of the operation.</param>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided detail is null.</exception>
     TBuilder WithDetail(string detail);
 }
 
 /// <summary>
-/// Represents a method for setting the location of an execution being built.
+/// Represents a method for setting the location of an operation being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultLocationBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultLocationBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Sets the location of the execution using a URI.
+    /// Sets the location of the operation using a URI.
     /// </summary>
-    /// <param name="location">The URI location of the execution.</param>
+    /// <param name="location">The URI location of the operation.</param>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided location is null.</exception>
     TBuilder WithLocation(Uri location);
 
     /// <summary>
-    /// Sets the location of the execution using a string.
+    /// Sets the location of the operation using a string.
     /// </summary>
-    /// <param name="location">The string location of the execution.</param>
+    /// <param name="location">The string location of the operation.</param>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided location is null.</exception>
     TBuilder WithLocation(string location);
 }
 
 /// <summary>
-/// Represents a method for setting the result of an execution being built.
+/// Represents a method for setting the result of an operation being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultObjectBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultObjectBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Sets the result of the execution being built.
+    /// Sets the result of the operation being built.
     /// </summary>
-    /// <param name="result">The result of the execution.</param>
+    /// <param name="result">The result of the operation.</param>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided result is null.</exception>
     TBuilder WithResult(object result);
 }
 
 /// <summary>
-/// Represents a method for setting the result of an execution being built.
+/// Represents a method for setting the result of an operation being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public interface IExecutionResultResultBuilder<out TBuilder, in TResult> : IExecutionResultObjectBuilder<TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultResultBuilder<out TBuilder, in TResult> : IOperationResultObjectBuilder<TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Sets the result of the execution being built.
+    /// Sets the result of the operation being built.
     /// </summary>
-    /// <param name="result">The result of the execution.</param>
+    /// <param name="result">The result of the operation.</param>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided result is null.</exception>
     TBuilder WithResult(TResult result);
@@ -236,14 +236,14 @@ public interface IExecutionResultResultBuilder<out TBuilder, in TResult> : IExec
 }
 
 /// <summary>
-/// Represents a method for setting headers of an execution being built.
+/// Represents a method for setting headers of an operation being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultHeaderBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultHeaderBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Sets a header for the execution being built.
+    /// Sets a header for the operation being built.
     /// </summary>
     /// <param name="key">The header key.</param>
     /// <param name="value">The header value.</param>
@@ -252,7 +252,7 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
     TBuilder WithHeader(string key, string value);
 
     /// <summary>
-    /// Sets a header with multiple values for the execution being built.
+    /// Sets a header with multiple values for the operation being built.
     /// </summary>
     /// <param name="key">The header key.</param>
     /// <param name="values">The header values.</param>
@@ -261,7 +261,7 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
     TBuilder WithHeader(string key, params string[] values);
 
     /// <summary>
-    /// Sets multiple headers for the execution being built.
+    /// Sets multiple headers for the operation being built.
     /// </summary>
     /// <param name="headers">The headers dictionary.</param>
     /// <returns>The current builder instance.</returns>
@@ -269,7 +269,7 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
     TBuilder WithHeaders(IDictionary<string, string> headers);
 
     /// <summary>
-    /// Sets multiple headers for the execution being built.
+    /// Sets multiple headers for the operation being built.
     /// </summary>
     /// <param name="headers">The headers collection.</param>
     /// <returns>The current builder instance.</returns>
@@ -286,11 +286,11 @@ public interface IExecutionResultHeaderBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Represents a method for building an <see cref="ExecutionResult"/> with error details.
+/// Represents a method for building an <see cref="OperationResult"/> with error details.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultErrorBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultErrorBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
     /// Adds an error with the specified key and error message.
@@ -361,11 +361,11 @@ public interface IExecutionResultErrorBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Represents a method for building an <see cref="ExecutionResult"/> with extensions.
+/// Represents a method for building an <see cref="OperationResult"/> with extensions.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultExtensionBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultExtensionBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
     /// Adds an extension with the specified key and value.
@@ -420,32 +420,32 @@ public interface IExecutionResultExtensionBuilder<out TBuilder>
 }
 
 /// <summary>
-/// Represents a method for clearing various elements of an execution being built.
+/// Represents a method for clearing various elements of an operation being built.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IExecutionResultClearBuilder<out TBuilder>
-    where TBuilder : class, IExecutionResultBuilder
+public interface IOperationResultClearBuilder<out TBuilder>
+    where TBuilder : class, IOperationResultBuilder
 {
     /// <summary>
-    /// Clears all errors from the execution being built.
+    /// Clears all errors from the operation being built.
     /// </summary>
     /// <returns>The current builder instance.</returns>
     TBuilder ClearErrors();
 
     /// <summary>
-    /// Clears all headers from the execution being built.
+    /// Clears all headers from the operation being built.
     /// </summary>
     /// <returns>The current builder instance.</returns>
     TBuilder ClearHeaders();
 
     /// <summary>
-    /// Clears all extensions from the execution being built.
+    /// Clears all extensions from the operation being built.
     /// </summary>
     /// <returns>The current builder instance.</returns>
     TBuilder ClearExtensions();
 
     /// <summary>
-    /// Clears all elements from the execution being built.
+    /// Clears all elements from the operation being built.
     /// </summary>
     /// <returns>The current builder instance.</returns>
     TBuilder ClearAll();

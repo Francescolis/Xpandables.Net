@@ -29,7 +29,7 @@ public sealed class PipelinePostDecorator<TRequest>(
     where TRequest : class, IRequest
 {
     ///<inheritdoc/>
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken)
@@ -37,11 +37,11 @@ public sealed class PipelinePostDecorator<TRequest>(
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nextHandler);
 
-        ExecutionResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
+        OperationResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
         foreach (IRequestPostHandler<TRequest> postHandler in postHandlers)
         {
-            ExecutionResult result = await postHandler
+            OperationResult result = await postHandler
                 .HandleAsync(context, response, cancellationToken)
                 .ConfigureAwait(false);
 

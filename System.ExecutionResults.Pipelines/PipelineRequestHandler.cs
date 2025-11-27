@@ -39,7 +39,7 @@ public sealed class PipelineRequestHandler<TRequest> :
     private readonly IRequestHandler<TRequest> _decoratee;
     private readonly IPipelineDecorator<TRequest>[] _decorators;
     private readonly bool _isContextHandler;
-    private readonly Func<TRequest, CancellationToken, Task<ExecutionResult>>? _fastPath;
+    private readonly Func<TRequest, CancellationToken, Task<OperationResult>>? _fastPath;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PipelineRequestHandler{TRequest}"/> class.
@@ -76,7 +76,7 @@ public sealed class PipelineRequestHandler<TRequest> :
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Task<ExecutionResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
+    public Task<OperationResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -98,7 +98,7 @@ public sealed class PipelineRequestHandler<TRequest> :
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The execution result.</returns>
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    private async Task<ExecutionResult> ExecutePipelineIterativeAsync(
+    private async Task<OperationResult> ExecutePipelineIterativeAsync(
         RequestContext<TRequest> context,
         CancellationToken cancellationToken)
     {

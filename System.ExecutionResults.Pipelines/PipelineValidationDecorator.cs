@@ -33,7 +33,7 @@ public sealed class PipelineValidationDecorator<TRequest>(ICompositeRuleValidato
     where TRequest : class, IRequest, IRequiresValidation
 {
     /// <inheritdoc/>
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)

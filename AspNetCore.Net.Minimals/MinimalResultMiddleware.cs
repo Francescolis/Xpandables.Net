@@ -50,10 +50,10 @@ public sealed class MinimalResultMiddleware : IMiddleware
                 exception = targetInvocation.InnerException ?? targetInvocation;
             }
 
-            ExecutionResult execution = exception switch
+            OperationResult execution = exception switch
             {
-                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToExecutionResult(),
-                _ => exception.ToExecutionResult()
+                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToOperationResult(),
+                _ => exception.ToOperationResult()
             };
 
             await MinimalResultEndpointFilter.WriteProblemDetailsAsync(context, execution).ConfigureAwait(false);

@@ -39,7 +39,7 @@ public sealed class PipelineIntegrationOutboxDecorator<TRequest>(
     private readonly IOutboxStore _outbox = outbox;
 
     /// <inheritdoc/>    
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)

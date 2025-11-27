@@ -28,7 +28,7 @@ namespace AspNetCore.Net;
 /// </summary>
 /// <remarks>When applied to a controller or action, this attribute checks the model state before the action
 /// executes. If the model state is invalid, it sets the result to a <see cref="BadRequestObjectResult"/> containing an
-/// <see cref="ExecutionResult"/> with validation errors, preventing the action from running. This ensures that clients
+/// <see cref="OperationResult"/> with validation errors, preventing the action from running. This ensures that clients
 /// receive consistent error responses for invalid input.</remarks>
 public sealed class ControllerResultValidationFilterAttribute : ActionFilterAttribute
 {
@@ -42,7 +42,7 @@ public sealed class ControllerResultValidationFilterAttribute : ActionFilterAttr
             return;
         }
 
-        ExecutionResult executionResult = context.ModelState.ToExecutionResult();
+        OperationResult executionResult = context.ModelState.ToOperationResult();
 
         context.Result = new BadRequestObjectResult(executionResult);
     }

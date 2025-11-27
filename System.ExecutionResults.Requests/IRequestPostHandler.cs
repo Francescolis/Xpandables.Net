@@ -32,8 +32,8 @@ public interface IRequestPostHandler<TRequest>
     /// <param name="cancellationToken">A token to monitor for cancellation requests, allowing the operation to be cancelled.</param>
     /// <returns>A task representing the asynchronous operation, containing the final execution result after processing the
     /// request.</returns>
-    Task<ExecutionResult> HandleAsync(
+    Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
-        ExecutionResult response,
+        OperationResult response,
         CancellationToken cancellationToken = default);
 }

@@ -51,7 +51,7 @@ public sealed class MinimalResultEndpointValidator(IRuleValidatorProvider valida
 
         ImmutableHashSet<ValidatorDescriptor> validators = GetAppropriateValidators(arguments, validatorProvider);
 
-        ExecutionResult execution = await ApplyValidationAsync(validators).ConfigureAwait(false);
+        OperationResult execution = await ApplyValidationAsync(validators).ConfigureAwait(false);
 
         if (!execution.Errors.IsEmpty)
         {
@@ -62,9 +62,9 @@ public sealed class MinimalResultEndpointValidator(IRuleValidatorProvider valida
     }
 
 
-    static async Task<ExecutionResult> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
+    static async Task<OperationResult> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
     {
-        IExecutionResultFailureBuilder failureBuilder = ExecutionResult.BadRequest();
+        IOperationResultFailureBuilder failureBuilder = OperationResult.BadRequest();
 
         foreach (ValidatorDescriptor descriptor in validators)
         {
@@ -84,11 +84,11 @@ public sealed class MinimalResultEndpointValidator(IRuleValidatorProvider valida
             }
             catch (ValidationException validationException)
             {
-                _ = failureBuilder.Merge(validationException.ToExecutionResult());
+                _ = failureBuilder.Merge(validationException.ToOperationResult());
             }
-            catch (ExecutionResultException executionException)
+            catch (OperationResultException executionException)
             {
-                _ = failureBuilder.Merge(executionException.ExecutionResult);
+                _ = failureBuilder.Merge(executionException.OperationResult);
             }
             catch (Exception exception)
             {

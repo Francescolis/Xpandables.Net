@@ -35,12 +35,12 @@ public interface IStreamRequestHandler<in TRequest, TResponse> : IRequestHandler
     /// <param name="request">The request to be processed.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation, containing a stream of responses.</returns>
-    new Task<ExecutionResult<IAsyncPagedEnumerable<TResponse>>> HandleAsync(
+    new Task<OperationResult<IAsyncPagedEnumerable<TResponse>>> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    async Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
+    async Task<OperationResult> IRequestHandler<TRequest>.HandleAsync(
         TRequest request, CancellationToken cancellationToken) =>
         await HandleAsync(request, cancellationToken).ConfigureAwait(false);
 }

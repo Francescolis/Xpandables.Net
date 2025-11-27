@@ -32,9 +32,9 @@ public interface IRequestPreHandler<TRequest>
     /// <param name="context">The context to be processed. Cannot be null.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="ExecutionResult"/> of
+    /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="OperationResult"/> of
     /// the request processing.</returns>
-    Task<ExecutionResult> HandleAsync(
+    Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         CancellationToken cancellationToken = default);
 }

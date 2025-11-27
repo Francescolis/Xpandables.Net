@@ -22,18 +22,18 @@ using Microsoft.AspNetCore.Http;
 namespace AspNetCore.Net;
 
 /// <summary>
-/// Defines a contract for writing execution result headers to an HTTP response asynchronously.
+/// Defines a contract for writing operation result headers to an HTTP response asynchronously.
 /// </summary>
 /// <remarks>Implementations of this interface are responsible for serializing and writing header information
-/// based on the provided execution result. This is typically used in middleware or endpoint logic to customize response
+/// based on the provided operation result. This is typically used in middleware or endpoint logic to customize response
 /// headers according to the outcome of an operation.</remarks>
-public interface IExecutionResultHeaderWriter
+public interface IOperationResultHeaderWriter
 {
     /// <summary>
-    /// Asynchronously writes the specified execution result to the HTTP response for the given context.
+    /// Asynchronously writes the specified operation result to the HTTP response for the given context.
     /// </summary>
     /// <param name="context">The HTTP context representing the current request and response. Cannot be null.</param>
-    /// <param name="execution">The execution result to be written to the response. Cannot be null.</param>
+    /// <param name="operation">The operation result to be written to the response. Cannot be null.</param>
     /// <returns>A task that represents the asynchronous write operation.</returns>
-    Task WriteAsync(HttpContext context, ExecutionResult execution);
+    Task WriteAsync(HttpContext context, OperationResult operation);
 }

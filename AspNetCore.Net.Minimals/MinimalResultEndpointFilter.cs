@@ -32,13 +32,13 @@ namespace AspNetCore.Net;
 /// Provides an endpoint filter that processes execution results and paged asynchronous enumerables for minimal API
 /// endpoints.
 /// </summary>
-/// <remarks>This filter handles responses of type <see cref="ExecutionResult"/> by writing execution headers and
+/// <remarks>This filter handles responses of type <see cref="OperationResult"/> by writing execution headers and
 /// returning the underlying value. For responses implementing <see cref="IAsyncPagedEnumerable"/>, it serializes the
 /// paged data to the HTTP response using JSON. The filter is intended for use in minimal API pipelines to standardize
 /// result handling and response formatting.</remarks>
 public sealed class MinimalResultEndpointFilter : IEndpointFilter
 {
-    private IExecutionResultHeaderWriter? headerWriter;
+    private IOperationResultHeaderWriter? headerWriter;
 
     /// <inheritdoc/>
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
@@ -50,11 +50,11 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
         {
             object? result = await next(context).ConfigureAwait(false);
 
-            if (result is ExecutionResult execution)
+            if (result is OperationResult execution)
             {
                 headerWriter ??= context.HttpContext
                     .RequestServices
-                    .GetRequiredService<IExecutionResultHeaderWriter>();
+                    .GetRequiredService<IOperationResultHeaderWriter>();
 
                 await headerWriter
                     .WriteAsync(context.HttpContext, execution)
@@ -112,11 +112,11 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                 exception = targetInvocation.InnerException ?? targetInvocation;
             }
 
-            ExecutionResult execution = exception switch
+            OperationResult execution = exception switch
             {
-                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToExecutionResult(),
-                ExecutionResultException executionResultException => executionResultException.ExecutionResult,
-                _ => exception.ToExecutionResult()
+                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToOperationResult(),
+                OperationResultException executionResultException => executionResultException.OperationResult,
+                _ => exception.ToOperationResult()
             };
 
             await WriteProblemDetailsAsync(context.HttpContext, execution).ConfigureAwait(false);
@@ -125,7 +125,7 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
         }
     }
 
-    internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, ExecutionResult execution)
+    internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, OperationResult execution)
     {
         ProblemDetails problem = execution.ToProblemDetails(context);
         if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)

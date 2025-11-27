@@ -22,7 +22,7 @@ namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation
 public sealed class GetBankAccountOperationQueryHandler(IEventStore eventStore) :
     IStreamRequestHandler<GetBankAccountOperationQuery, GetBankAccountOperationResult>
 {
-    public Task<ExecutionResult<IAsyncPagedEnumerable<GetBankAccountOperationResult>>> HandleAsync(
+    public Task<OperationResult<IAsyncPagedEnumerable<GetBankAccountOperationResult>>> HandleAsync(
         GetBankAccountOperationQuery request,
         CancellationToken cancellationToken = default)
     {
@@ -57,6 +57,6 @@ public sealed class GetBankAccountOperationQueryHandler(IEventStore eventStore) 
                     _ => throw new InvalidOperationException("Unexpected event type.")
                 }).ToAsyncPagedEnumerable();
 
-        return Task.FromResult(ExecutionResult.SuccessResult(operations));
+        return Task.FromResult(OperationResult.Success(operations));
     }
 }

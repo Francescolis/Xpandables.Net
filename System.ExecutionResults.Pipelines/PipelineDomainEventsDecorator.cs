@@ -38,7 +38,7 @@ public sealed class PipelineDomainEventsDecorator<TRequest>(
     where TRequest : class, IRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken)

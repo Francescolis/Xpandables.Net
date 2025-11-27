@@ -20,71 +20,73 @@ using System.Runtime.Serialization;
 namespace System.ExecutionResults;
 
 /// <summary>
-/// Represents an exception that is thrown when an execution result has an 
+/// Represents an exception that is thrown when an operation result has an 
 /// unsuccessful status code.
 /// </summary>
-public sealed class ExecutionResultException : Exception
+public sealed class OperationResultException : Exception
 {
     /// <summary>
     /// Gets the executionResult associated with this exception.
     /// </summary>
-    public ExecutionResult ExecutionResult { get; }
+    public OperationResult OperationResult { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
-    /// class with the specified executionResult result.
+    /// Initializes a new instance of the OperationResultException class using the specified operation result. This
+    /// exception indicates that an operation has failed, as represented by the provided OperationResult.
     /// </summary>
-    /// <param name="execution">The executionResult result that caused the exception.</param>
-    /// <exception cref="ArgumentNullException">Thrown when the 
-    /// <paramref name="execution"/> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
-    /// code of the <paramref name="execution"/> is between 200 and 299.</exception>
-    public ExecutionResultException(ExecutionResult execution)
-        : base($"Execution failed with status code: {execution.StatusCode}")
+    /// <remarks>The exception message includes the status code from the provided OperationResult. The
+    /// OperationResult property will reference the same instance passed to this constructor.</remarks>
+    /// <param name="operation">The OperationResult instance that describes the failed operation. Must not be null and must represent a failure
+    /// status.</param>
+    /// <exception cref="ArgumentNullException">Thrown if the operation parameter is null.</exception>
+    public OperationResultException(OperationResult operation)
+        : base($"Execution failed with status code: {operation?.StatusCode ?? throw new ArgumentNullException(nameof(operation))}")
     {
-        execution.StatusCode.EnsureFailure();
-        ExecutionResult = execution;
+        operation.StatusCode.EnsureFailure();
+        OperationResult = operation;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
-    /// class with a specified error message and execution result.
+    /// Initializes a new instance of the <see cref="OperationResultException"/> 
+    /// class with a specified error message and operation result.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
-    /// <param name="execution">The execution result that caused the exception.</param>
-    public ExecutionResultException(string message, ExecutionResult execution)
+    /// <param name="operation">The operation result that caused the exception.</param>
+    public OperationResultException(string message, OperationResult operation)
         : base(message)
     {
-        execution.StatusCode.EnsureFailure();
-        ExecutionResult = execution;
+        ArgumentNullException.ThrowIfNull(operation);
+        operation.StatusCode.EnsureFailure();
+        OperationResult = operation;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExecutionResultException"/> 
-    /// class with a specified error message, execution result, and a reference 
+    /// Initializes a new instance of the <see cref="OperationResultException"/> 
+    /// class with a specified error message, operation result, and a reference 
     /// to the inner exception that is the cause of this exception.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
-    /// <param name="execution">The execution result that caused the exception.</param>
+    /// <param name="operation">The operation result that caused the exception.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public ExecutionResultException(
-        string message, ExecutionResult execution, Exception innerException)
+    public OperationResultException(
+        string message, OperationResult operation, Exception innerException)
         : base(message, innerException)
     {
-        execution.StatusCode.EnsureFailure();
-        ExecutionResult = execution;
+        ArgumentNullException.ThrowIfNull(operation);
+        operation.StatusCode.EnsureFailure();
+        OperationResult = operation;
     }
 
     [Obsolete("Use constructor with ExecutionResult")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    private ExecutionResultException(
+    private OperationResultException(
         SerializationInfo serializationInfo,
         StreamingContext streamingContext)
         : base(serializationInfo, streamingContext)
     {
         ArgumentNullException.ThrowIfNull(serializationInfo);
-        ExecutionResult = (ExecutionResult)serializationInfo
-            .GetValue(nameof(ExecutionResult), typeof(ExecutionResult))!;
+        OperationResult = (OperationResult)serializationInfo
+            .GetValue(nameof(OperationResult), typeof(OperationResult))!;
     }
 
     /// <summary>
@@ -97,29 +99,29 @@ public sealed class ExecutionResultException : Exception
     public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {
         base.GetObjectData(info, context);
-        info.AddValue(nameof(ExecutionResult), ExecutionResult, typeof(ExecutionResult));
+        info.AddValue(nameof(OperationResult), OperationResult, typeof(OperationResult));
     }
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="ExecutionResult"/> parameter</remarks>
+    ///<see cref="OperationResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ExecutionResultException() => throw new NotSupportedException();
+    public OperationResultException() => throw new NotSupportedException();
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="ExecutionResult"/> parameter</remarks>
+    ///<see cref="OperationResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ExecutionResultException(string message) : base(message)
+    public OperationResultException(string message) : base(message)
         => throw new NotSupportedException();
 
     ///<inheritdoc/>
     ///<remarks>Use the constructor with 
-    ///<see cref="ExecutionResult"/> parameter</remarks>
+    ///<see cref="OperationResult"/> parameter</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ExecutionResultException(string message, Exception innerException)
+    public OperationResultException(string message, Exception innerException)
         : base(message, innerException) => throw new NotSupportedException();
 
     ///<inheritdoc/>
-    public override string ToString() => $"{base.ToString()}{Environment.NewLine}{ExecutionResult}";
+    public override string ToString() => $"{base.ToString()}{Environment.NewLine}{OperationResult}";
 }

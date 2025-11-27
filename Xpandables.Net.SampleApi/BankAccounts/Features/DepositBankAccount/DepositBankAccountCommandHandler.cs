@@ -5,7 +5,7 @@ namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 public sealed class DepositBankAccountCommandHandler(IAggregateStore<BankAccount> aggregateStore) :
     IRequestHandler<DepositBankAccountCommand, DepositBankAccountResult>
 {
-    public async Task<ExecutionResult<DepositBankAccountResult>> HandleAsync(
+    public async Task<OperationResult<DepositBankAccountResult>> HandleAsync(
         DepositBankAccountCommand request,
         CancellationToken cancellationToken = default)
     {
@@ -24,6 +24,6 @@ public sealed class DepositBankAccountCommandHandler(IAggregateStore<BankAccount
             Description = request.Description
         };
 
-        return ExecutionResult.SuccessResult(result);
+        return OperationResult.Success(result);
     }
 }

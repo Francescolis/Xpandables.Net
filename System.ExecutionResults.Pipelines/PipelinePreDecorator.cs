@@ -29,7 +29,7 @@ public sealed class PipelinePreDecorator<TRequest>(
     where TRequest : class, IRequest
 {
     ///<inheritdoc/>
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken)
@@ -39,7 +39,7 @@ public sealed class PipelinePreDecorator<TRequest>(
 
         foreach (IRequestPreHandler<TRequest> preHandler in preHandlers)
         {
-            ExecutionResult result = await preHandler
+            OperationResult result = await preHandler
                 .HandleAsync(context, cancellationToken)
                 .ConfigureAwait(false);
 

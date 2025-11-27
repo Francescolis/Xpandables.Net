@@ -32,7 +32,7 @@ public interface IPipelineDecorator<TRequest>
     /// <param name="nextHandler">The next handler in the pipeline to be executed.</param>
     /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response.</returns>
-    Task<ExecutionResult> HandleAsync(
+    Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken);

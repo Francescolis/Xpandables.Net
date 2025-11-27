@@ -22,98 +22,98 @@ using Microsoft.Extensions.Primitives;
 namespace System.ExecutionResults;
 
 /// <summary>
-/// Represents a builder for creating successful execution results.
+/// Represents a builder for creating successful operation results.
 /// </summary>
-public sealed class ExecutionResultSuccessBuilder :
-    ExecutionResultBuilder<IExecutionResultSuccessBuilder>, IExecutionResultSuccessBuilder
+public sealed class OperationResultSuccessBuilder :
+    OperationResultBuilder<IOperationResultSuccessBuilder>, IOperationResultSuccessBuilder
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExecutionResultSuccessBuilder"/> class 
+    /// Initializes a new instance of the <see cref="OperationResultSuccessBuilder"/> class 
     /// with the specified status code.
     /// </summary>
     /// <param name="statusCode">The HTTP status code indicating a 
-    /// successful execution.</param>
+    /// successful operation.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code is not between 200 and 299.</exception>
-    public ExecutionResultSuccessBuilder(HttpStatusCode statusCode) :
+    public OperationResultSuccessBuilder(HttpStatusCode statusCode) :
         base(statusCode) => statusCode.EnsureSuccess();
 }
 
 /// <summary>
-/// Represents a builder for creating successful execution results with a 
+/// Represents a builder for creating successful operation results with a 
 /// specified result type.
 /// </summary>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class ExecutionResultSuccessBuilder<TResult> :
-    ExecutionResultBuilder<IExecutionResultSuccessBuilder<TResult>, TResult>,
-    IExecutionResultSuccessBuilder<TResult>
+public sealed class OperationResultSuccessBuilder<TResult> :
+    ExecutionResultBuilder<IOperationResultSuccessBuilder<TResult>, TResult>,
+    IOperationResultSuccessBuilder<TResult>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExecutionResultSuccessBuilder{TResult}"/> class 
+    /// Initializes a new instance of the <see cref="OperationResultSuccessBuilder{TResult}"/> class 
     /// with the specified status code.
     /// </summary>
     /// <param name="statusCode">The HTTP status code indicating a 
-    /// successful execution.</param>
+    /// successful operation.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code is not between 200 and 299.</exception>
-    public ExecutionResultSuccessBuilder(HttpStatusCode statusCode) :
+    public OperationResultSuccessBuilder(HttpStatusCode statusCode) :
         base(statusCode) => statusCode.EnsureSuccess();
 }
 
 /// <summary>  
-/// Represents a builder for creating failure execution results.  
+/// Represents a builder for creating failure operation results.  
 /// </summary>  
-public sealed class ExecutionResultFailureBuilder :
-    ExecutionResultBuilder<IExecutionResultFailureBuilder>, IExecutionResultFailureBuilder
+public sealed class OperationResultFailureBuilder :
+    OperationResultBuilder<IOperationResultFailureBuilder>, IOperationResultFailureBuilder
 {
     /// <summary>  
-    /// Initializes a new instance of the <see cref="ExecutionResultFailureBuilder"/> class 
+    /// Initializes a new instance of the <see cref="OperationResultFailureBuilder"/> class 
     /// with the specified status code.  
     /// </summary>  
     /// <param name="statusCode">The HTTP status code for the failure.</param>  
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
     /// code is between 200 and 299.</exception>  
-    public ExecutionResultFailureBuilder(HttpStatusCode statusCode) :
+    public OperationResultFailureBuilder(HttpStatusCode statusCode) :
         base(statusCode) => statusCode.EnsureFailure();
 }
 
 /// <summary>  
-/// Represents a builder for creating failure execution results with a specific 
+/// Represents a builder for creating failure operation results with a specific 
 /// result type.  
 /// </summary>  
 /// <typeparam name="TResult">The type of the result.</typeparam>  
-public sealed class ExecutionResultFailureBuilder<TResult> :
-   ExecutionResultBuilder<IExecutionResultFailureBuilder<TResult>, TResult>,
-   IExecutionResultFailureBuilder<TResult>
+public sealed class OperationResultFailureBuilder<TResult> :
+   ExecutionResultBuilder<IOperationResultFailureBuilder<TResult>, TResult>,
+   IOperationResultFailureBuilder<TResult>
 {
     /// <summary>  
-    /// Initializes a new instance of the <see cref="ExecutionResultFailureBuilder{TResult}"/> class  
+    /// Initializes a new instance of the <see cref="OperationResultFailureBuilder{TResult}"/> class  
     /// with the specified status code.  
     /// </summary>  
     /// <param name="statusCode">The HTTP status code for the failure.</param>  
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the status  
     /// code is between 200 and 299.</exception>  
-    public ExecutionResultFailureBuilder(HttpStatusCode statusCode) :
+    public OperationResultFailureBuilder(HttpStatusCode statusCode) :
         base(statusCode) => statusCode.EnsureFailure();
 }
 
 /// <summary>
-/// Represents a builder for creating execution results with various properties.
+/// Represents a builder for creating operation results with various properties.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode) :
-    IExecutionResultObjectBuilder<TBuilder>,
-    IExecutionResultHeaderBuilder<TBuilder>,
-    IExecutionResultLocationBuilder<TBuilder>,
-    IExecutionResultErrorBuilder<TBuilder>,
-    IExecutionResultDetailBuilder<TBuilder>,
-    IExecutionResultTitleBuilder<TBuilder>,
-    IExecutionResultMergeBuilder<TBuilder>,
-    IExecutionResultStatusBuilder<TBuilder>,
-    IExecutionResultExtensionBuilder<TBuilder>,
-    IExecutionResultClearBuilder<TBuilder>,
-    IExecutionResultBuilder
-    where TBuilder : class, IExecutionResultBuilder
+public abstract class OperationResultBuilder<TBuilder>(HttpStatusCode statusCode) :
+    IOperationResultObjectBuilder<TBuilder>,
+    IOperationResultHeaderBuilder<TBuilder>,
+    IOperationResultLocationBuilder<TBuilder>,
+    IOperationResultErrorBuilder<TBuilder>,
+    IOperationResultDetailBuilder<TBuilder>,
+    IOperationResultTitleBuilder<TBuilder>,
+    IOperationResultMergeBuilder<TBuilder>,
+    IOperationResultStatusBuilder<TBuilder>,
+    IOperationResultExtensionBuilder<TBuilder>,
+    IOperationResultClearBuilder<TBuilder>,
+    IOperationResultBuilder
+    where TBuilder : class, IOperationResultBuilder
 {
     private readonly bool _isSuccess = statusCode.IsSuccess;
 
@@ -133,32 +133,32 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     protected ElementCollection Errors { get; } = [];
 
     /// <summary>
-    /// Gets the exception associated with the execution result.
+    /// Gets the exception associated with the operation result.
     /// </summary>
     protected Exception? Exception { get; set; }
 
     /// <summary>
-    /// Gets or sets the HTTP status code for the execution result.
+    /// Gets or sets the HTTP status code for the operation result.
     /// </summary>
     protected HttpStatusCode StatusCode { get; set; } = statusCode;
 
     /// <summary>
-    /// Gets or sets the title for the execution result.
+    /// Gets or sets the title for the operation result.
     /// </summary>
     protected string? Title { get; set; }
 
     /// <summary>  
-    /// Gets or sets the detail for the execution result.  
+    /// Gets or sets the detail for the operation result.  
     /// </summary>  
     protected string? Detail { get; set; }
 
     /// <summary>
-    /// Gets or sets the result object of the execution.
+    /// Gets or sets the result object of the operation.
     /// </summary>
     protected object? Result { get; set; }
 
     /// <summary>
-    /// Gets or sets the location URI for the execution result.
+    /// Gets or sets the location URI for the operation result.
     /// </summary>
     protected Uri? Location { get; set; }
 
@@ -168,7 +168,7 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     private TBuilder AsBuilder => (this as TBuilder)!;
 
     /// <inheritdoc/>
-    public ExecutionResult Build() =>
+    public OperationResult Build() =>
         new()
         {
             StatusCode = StatusCode,
@@ -221,27 +221,28 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
     }
 
     /// <inheritdoc/>
-    public TBuilder Merge(ExecutionResult execution)
+    public TBuilder Merge(OperationResult operation)
     {
-        if (execution.StatusCode != StatusCode)
+        ArgumentNullException.ThrowIfNull(operation);
+        if (operation.StatusCode != StatusCode)
         {
             throw new InvalidOperationException(
-                "Both execution results must have the same status code to merge them.");
+                "Both operation results must have the same status code to merge them.");
         }
 
-        StatusCode = execution.StatusCode;
-        Title = execution.Title ?? Title;
-        Detail = execution.Detail ?? Detail;
-        Location = execution.Location ?? Location;
-        Headers.Merge(execution.Headers);
-        Extensions.Merge(execution.Extensions);
-        Errors.Merge(execution.Errors);
-        Exception = (execution.Exception, Exception) switch
+        StatusCode = operation.StatusCode;
+        Title = operation.Title ?? Title;
+        Detail = operation.Detail ?? Detail;
+        Location = operation.Location ?? Location;
+        Headers.Merge(operation.Headers);
+        Extensions.Merge(operation.Extensions);
+        Errors.Merge(operation.Errors);
+        Exception = (operation.Exception, Exception) switch
         {
             (null, null) => null,
-            (not null, null) => execution.Exception,
+            (not null, null) => operation.Exception,
             (null, not null) => Exception,
-            (not null, not null) => CombineExceptions(execution.Exception, Exception)
+            (not null, not null) => CombineExceptions(operation.Exception, Exception)
         };
 
         return AsBuilder;
@@ -521,19 +522,19 @@ public abstract class ExecutionResultBuilder<TBuilder>(HttpStatusCode statusCode
 }
 
 /// <summary>
-/// Represents a builder for creating execution results with a specific result type.
+/// Represents a builder for creating operation results with a specific result type.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-/// <param name="statusCode">The HTTP status code for the execution result.</param>
+/// <param name="statusCode">The HTTP status code for the operation result.</param>
 public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode statusCode) :
-    ExecutionResultBuilder<TBuilder>(statusCode),
-    IExecutionResultResultBuilder<TBuilder, TResult>,
-    IExecutionResultBuilder<TResult>
-    where TBuilder : class, IExecutionResultBuilder<TResult>
+    OperationResultBuilder<TBuilder>(statusCode),
+    IOperationResultResultBuilder<TBuilder, TResult>,
+    IOperationResultBuilder<TResult>
+    where TBuilder : class, IOperationResultBuilder<TResult>
 {
     /// <summary>
-    /// Gets or sets the result object of the execution.
+    /// Gets or sets the result object of the operation.
     /// </summary>
     protected new TResult? Result
     {
@@ -551,7 +552,7 @@ public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode s
     }
 
     /// <inheritdoc/>
-    public new ExecutionResult<TResult> Build() =>
+    public new OperationResult<TResult> Build() =>
         new()
         {
             StatusCode = StatusCode,

@@ -32,30 +32,31 @@ namespace AspNetCore.Net;
 /// <remarks>This class sets the response content type, appends custom headers, and handles authentication-related
 /// headers when the execution result indicates an unauthorized status. It is typically used to format the HTTP response
 /// for GraphQL or similar APIs based on the execution result.</remarks>
-public sealed class ExecutionResultHeaderWriter : IExecutionResultHeaderWriter
+public sealed class OperationResultHeaderWriter : IOperationResultHeaderWriter
 {
     /// <inheritdoc/>
-    public async Task WriteAsync(HttpContext context, ExecutionResult execution)
+    public async Task WriteAsync(HttpContext context, OperationResult operation)
     {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(operation);
 
         context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
-        context.Response.StatusCode = (int)execution.StatusCode;
+        context.Response.StatusCode = (int)operation.StatusCode;
 
-        if (execution.Location is not null)
+        if (operation.Location is not null)
         {
             context.Response.Headers.Location =
-                new StringValues(execution.Location.ToString());
+                new StringValues(operation.Location.ToString());
         }
 
-        foreach (ElementEntry header in execution.Headers)
+        foreach (ElementEntry header in operation.Headers)
         {
             context.Response.Headers.Append(
                 header.Key,
                 new StringValues([.. header.Values]));
         }
 
-        if (execution.StatusCode == HttpStatusCode.Unauthorized)
+        if (operation.StatusCode == HttpStatusCode.Unauthorized)
         {
             if (context.RequestServices.GetService<IAuthenticationSchemeProvider>()
                 is { } schemeProvider)

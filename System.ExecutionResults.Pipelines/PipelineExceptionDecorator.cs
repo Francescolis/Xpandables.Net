@@ -18,7 +18,7 @@ namespace System.ExecutionResults.Pipelines;
 
 /// <summary>
 /// A pipeline decorator that handles exceptions thrown during the execution 
-/// of a request and transforms them into an <see cref="ExecutionResult"/>.
+/// of a request and transforms them into an <see cref="OperationResult"/>.
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 public sealed class PipelineExceptionDecorator<TRequest>(
@@ -27,7 +27,7 @@ public sealed class PipelineExceptionDecorator<TRequest>(
     where TRequest : class, IRequest
 {
     /// <inheritdoc/>
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)
@@ -39,7 +39,7 @@ public sealed class PipelineExceptionDecorator<TRequest>(
         {
             return await nextHandler(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is not ExecutionResultException)
+        catch (Exception exception) when (exception is not OperationResultException)
         {
             if (exceptionHandler is not null)
             {
@@ -49,18 +49,18 @@ public sealed class PipelineExceptionDecorator<TRequest>(
                         .HandleAsync(context, exception, cancellationToken)
                         .ConfigureAwait(false);
                 }
-                catch (Exception ex) when (ex is not ExecutionResultException)
+                catch (Exception ex) when (ex is not OperationResultException)
                 {
                     AggregateException aggregateException = new(
                         "An error occurred while handling the exception.",
                         ex,
                         exception);
 
-                    return aggregateException.ToExecutionResult();
+                    return aggregateException.ToOperationResult();
                 }
             }
 
-            return exception.ToExecutionResult();
+            return exception.ToOperationResult();
         }
     }
 }

@@ -31,8 +31,8 @@ public interface IRequestExceptionHandler<TRequest>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains the execution result of type
-    /// <see cref="ExecutionResult"/>.</returns>
-    Task<ExecutionResult> HandleAsync(
+    /// <see cref="OperationResult"/>.</returns>
+    Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         Exception exception,
         CancellationToken cancellationToken = default);

@@ -20,13 +20,13 @@ namespace System.ExecutionResults;
 /// Provides extension methods for executing delegates and tasks, capturing their results and exceptions in an
 /// ExecutionResult object.
 /// </summary>
-/// <remarks>These extension methods simplify error handling by wrapping delegate and task execution in an
+/// <remarks>These extension methods simplify error handling by wrapping delegate and task operation in an
 /// ExecutionResult, which encapsulates success, failure, and exception information. This approach enables consistent
-/// handling of execution outcomes without the need for explicit try-catch blocks. The methods support both synchronous
+/// handling of operation outcomes without the need for explicit try-catch blocks. The methods support both synchronous
 /// and asynchronous operations, and are designed to work with delegates and tasks that may throw exceptions. For
 /// asynchronous methods, exceptions are captured and converted to ExecutionResult instances, allowing callers to
 /// inspect the result and any associated errors.</remarks>
-public static class ExecutionResultDelegateExtensions
+public static class OperationResultDelegateExtensions
 {
     /// <summary>
     /// Attempts to execute the specified action and returns an ExecutionResult indicating success or failure.
@@ -34,7 +34,7 @@ public static class ExecutionResultDelegateExtensions
     /// <param name="action">The action to execute. Cannot be null.</param>
     /// <returns>An ExecutionResult that represents the outcome of the action. Indicates whether the action completed
     /// successfully or an error occurred.</returns>
-    public static ExecutionResult Try(this Action action)
+    public static OperationResult Try(this Action action)
     {
         return Try(() => action());
     }
@@ -45,9 +45,9 @@ public static class ExecutionResultDelegateExtensions
     /// </summary>
     /// <typeparam name="TResult">The type of the value returned by the function.</typeparam>
     /// <param name="func">The function to execute. Cannot be null.</param>
-    /// <returns>An <see cref="ExecutionResult{TResult}"/> that contains the result of the function execution and information about success or
+    /// <returns>An <see cref="OperationResult{TResult}"/> that contains the result of the function operation and information about success or
     /// failure.</returns>
-    public static ExecutionResult<TResult> Try<TResult>(this Func<TResult> func)
+    public static OperationResult<TResult> Try<TResult>(this Func<TResult> func)
     {
         return Try(func);
     }
@@ -59,9 +59,9 @@ public static class ExecutionResultDelegateExtensions
     /// <typeparam name="T">The type of the argument to be passed to the action.</typeparam>
     /// <param name="action">The action to execute. Cannot be null.</param>
     /// <param name="args">The argument to pass to the action when it is invoked.</param>
-    /// <returns>An ExecutionResult that represents the outcome of the attempted execution. Indicates whether the action
+    /// <returns>An ExecutionResult that represents the outcome of the attempted operation. Indicates whether the action
     /// completed successfully or an error occurred.</returns>
-    public static ExecutionResult Try<T>(this Action<T> action, T args)
+    public static OperationResult Try<T>(this Action<T> action, T args)
     {
         return Try(() => action(args));
     }
@@ -73,25 +73,25 @@ public static class ExecutionResultDelegateExtensions
     /// For other exceptions, the exception is converted to an ExecutionResult. This method enables consistent error
     /// handling for asynchronous operations.</remarks>
     /// <param name="task">The task to execute asynchronously. Cannot be null.</param>
-    /// <returns>An ExecutionResult representing the result of the task execution. Returns an ExecutionResult with success status
+    /// <returns>An ExecutionResult representing the result of the task operation. Returns an ExecutionResult with success status
     /// if the task completes successfully; otherwise, returns an ExecutionResult describing the error.</returns>
-    public static async Task<ExecutionResult> TryAsync(this Task task)
+    public static async Task<OperationResult> TryAsync(this Task task)
     {
         ArgumentNullException.ThrowIfNull(task);
 
         try
         {
             await task.ConfigureAwait(false);
-            return ExecutionResult.Ok().Build();
+            return OperationResult.Ok().Build();
         }
-        catch (ExecutionResultException executionException)
+        catch (OperationResultException executionException)
         {
-            return executionException.ExecutionResult;
+            return executionException.OperationResult;
         }
         catch (Exception exception)
-            when (exception is not ExecutionResultException)
+            when (exception is not OperationResultException)
         {
-            return exception.ToExecutionResult();
+            return exception.ToOperationResult();
         }
     }
 
@@ -105,9 +105,9 @@ public static class ExecutionResultDelegateExtensions
     /// managed through result objects rather than control flow.</remarks>
     /// <typeparam name="TResult">The type of the result produced by the asynchronous task.</typeparam>
     /// <param name="task">The task to execute asynchronously. Cannot be null.</param>
-    /// <returns>An <see cref="ExecutionResult{TResult}"/> representing either the successful result of the task or details about any exception
-    /// that occurred during execution.</returns>
-    public static async Task<ExecutionResult<TResult>> TryAsync<TResult>(
+    /// <returns>An <see cref="OperationResult{TResult}"/> representing either the successful result of the task or details about any exception
+    /// that occurred during operation.</returns>
+    public static async Task<OperationResult<TResult>> TryAsync<TResult>(
         this Task<TResult> task)
     {
         ArgumentNullException.ThrowIfNull(task);
@@ -115,18 +115,18 @@ public static class ExecutionResultDelegateExtensions
         try
         {
             TResult result = await task.ConfigureAwait(false);
-            return ExecutionResult
+            return OperationResult
                 .Ok(result)
                 .Build();
         }
-        catch (ExecutionResultException executionException)
+        catch (OperationResultException executionException)
         {
-            return executionException.ExecutionResult.ToExecutionResult<TResult>();
+            return executionException.OperationResult.ToOperationResult<TResult>();
         }
         catch (Exception exception)
-            when (exception is not ExecutionResultException)
+            when (exception is not OperationResultException)
         {
-            return exception.ToExecutionResult().ToExecutionResult<TResult>();
+            return exception.ToOperationResult().ToOperationResult<TResult>();
         }
     }
 }

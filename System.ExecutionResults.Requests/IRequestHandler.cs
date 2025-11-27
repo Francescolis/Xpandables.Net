@@ -29,7 +29,7 @@ public interface IRequestHandler<in TRequest>
     /// <param name="request">The input data required to perform the operation.</param>
     /// <param name="cancellationToken">Used to signal the cancellation of the operation if needed.</param>
     /// <returns>An asynchronous task that yields the result of the execution.</returns>
-    Task<ExecutionResult> HandleAsync(
+    Task<OperationResult> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
 }
@@ -54,11 +54,11 @@ public interface IRequestHandler<in TRequest, TResponse> : IRequestHandler<TRequ
     /// The default value is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains the execution result of type
     /// <typeparamref name="TResponse"/>.</returns>
-    new Task<ExecutionResult<TResponse>> HandleAsync(
+    new Task<OperationResult<TResponse>> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
 
-    async Task<ExecutionResult> IRequestHandler<TRequest>.HandleAsync(
+    async Task<OperationResult> IRequestHandler<TRequest>.HandleAsync(
         TRequest request, CancellationToken cancellationToken) =>
         await HandleAsync(request, cancellationToken).ConfigureAwait(false);
 }

@@ -59,7 +59,7 @@
 Install the packages you need via NuGet Package Manager:
 
 ```bash
-# Core execution result handling
+# Core operation result handling
 dotnet add package Xpandables.Net.ExecutionResults
 
 # Optional value handling
@@ -170,7 +170,7 @@ Each package has detailed documentation with examples and API references:
 
 #### Foundation Packages
 - 🔧 [**Abstractions**](./Xpandables.Net.Abstractions/README.md) - Core abstractions and utilities
-- ✅ [**ExecutionResults**](./Xpandables.Net.ExecutionResults/README.md) - Standardized execution result handling
+- ✅ [**ExecutionResults**](./Xpandables.Net.ExecutionResults/README.md) - Standardized operation result handling
 - 🎁 [**Optionals**](./Xpandables.Net.Optionals/README.md) - Null-safe optional value types
 
 #### Application Layer

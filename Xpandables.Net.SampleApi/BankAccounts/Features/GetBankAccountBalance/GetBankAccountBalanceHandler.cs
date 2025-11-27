@@ -7,7 +7,7 @@ namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 public sealed class GetBankAccountBalanceHandler(BankAccountDataContext context) :
     IRequestHandler<GetBankAccountBalanceQuery, GetBankAccountBalanceResult>
 {
-    public async Task<ExecutionResult<GetBankAccountBalanceResult>> HandleAsync(
+    public async Task<OperationResult<GetBankAccountBalanceResult>> HandleAsync(
         GetBankAccountBalanceQuery request,
         CancellationToken cancellationToken = default)
     {
@@ -24,7 +24,7 @@ public sealed class GetBankAccountBalanceHandler(BankAccountDataContext context)
             .ConfigureAwait(false);
 
         return account.HasValue
-            ? ExecutionResult.SuccessResult(account.Value)
-            : ExecutionResult.NotFound(nameof(request.AccountId), "Account not found");
+            ? OperationResult.Success(account.Value)
+            : OperationResult.NotFound(nameof(request.AccountId), "Account not found");
     }
 }

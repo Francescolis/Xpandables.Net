@@ -35,7 +35,7 @@ namespace AspNetCore.Net;
 /// application's filter pipeline.</remarks>
 public sealed class ControllerResultFilter : IAsyncAlwaysRunResultFilter
 {
-    private IExecutionResultHeaderWriter? headerWriter;
+    private IOperationResultHeaderWriter? headerWriter;
 
     /// <inheritdoc/>
     public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
@@ -45,11 +45,11 @@ public sealed class ControllerResultFilter : IAsyncAlwaysRunResultFilter
 
         if (context.Result is ObjectResult objectResult)
         {
-            if (objectResult.Value is ExecutionResult execution)
+            if (objectResult.Value is OperationResult execution)
             {
                 headerWriter ??= context.HttpContext
                 .RequestServices
-                .GetRequiredService<IExecutionResultHeaderWriter>();
+                .GetRequiredService<IOperationResultHeaderWriter>();
 
                 await headerWriter
                     .WriteAsync(context.HttpContext, execution)

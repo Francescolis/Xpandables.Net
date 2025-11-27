@@ -15,10 +15,8 @@
  *
 ********************************************************************************/
 
-namespace System.ExecutionResults;
+// This file is used by Code Analysis to maintain SuppressMessage
+// attributes that are applied to this project.
+// Project-level suppressions either have no target or are given
+// a specific target and scoped to a namespace, type, member, etc.
 
-/// <summary>
-/// Represents the next delegate to be executed on a pipeline.
-/// </summary>
-/// <param name="cancellationToken">Optional cancellation token to observe for cancellation requests.</param>
-public delegate Task<OperationResult> RequestHandler(CancellationToken cancellationToken = default);
