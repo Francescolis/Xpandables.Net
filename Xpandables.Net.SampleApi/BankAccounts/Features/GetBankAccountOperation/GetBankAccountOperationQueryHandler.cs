@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using System.OperationResults;
+
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;

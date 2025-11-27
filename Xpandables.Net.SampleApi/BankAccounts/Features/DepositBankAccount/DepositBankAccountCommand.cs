@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.OperationResults;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 

@@ -1,4 +1,6 @@
-﻿namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
+﻿using System.OperationResults.Tasks;
+
+namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 
 public sealed class GetBankAccountBalanceEndpoint : IEndpointRoute
 {

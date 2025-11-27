@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.OperationResults;
 
 using Microsoft.AspNetCore.Mvc;
 

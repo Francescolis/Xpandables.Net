@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using System.OperationResults.Tasks;
+
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;
 
 public sealed class GetBankAccountOperationEndpoint : IEndpointRoute

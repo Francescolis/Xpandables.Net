@@ -1,4 +1,6 @@
-﻿namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
+﻿using System.OperationResults.Tasks;
+
+namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
 
 public sealed class CreateBankAccountEndpoint : IEndpointRoute
 {
