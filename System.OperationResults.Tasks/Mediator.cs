@@ -49,7 +49,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
         catch (OperationCanceledException)
             when (cancellationToken.IsCancellationRequested)
         {
-            // Don't convert cancellation to ExecutionResult
+            // Don't convert cancellation to OperationResult
             throw;
         }
         catch (Exception exception)

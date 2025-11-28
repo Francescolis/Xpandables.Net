@@ -62,11 +62,11 @@ public sealed record OperationResult<TResult> : OperationResultBase
     public sealed override bool IsSuccess => StatusCode.IsSuccess;
 
     ///// <summary>
-    ///// Converts an ExecutionResult instance to its corresponding HttpStatusCode value.
+    ///// Converts an OperationResult instance to its corresponding HttpStatusCode value.
     ///// </summary>
     ///// <remarks>This operator enables implicit conversion from _ExecutionResult to HttpStatusCode, allowing
-    ///// ExecutionResult objects to be used where an HttpStatusCode is expected.</remarks>
-    ///// <param name="operation">The ExecutionResult instance to convert. Cannot be null.</param>
+    ///// OperationResult objects to be used where an HttpStatusCode is expected.</remarks>
+    ///// <param name="operation">The OperationResult instance to convert. Cannot be null.</param>
     //public static implicit operator HttpStatusCode(OperationResult<TResult> operation) =>
     //    operation.ToHttpStatusCode();
 

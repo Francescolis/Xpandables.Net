@@ -225,7 +225,7 @@ public static class OperationResultExtensions
         /// include the specified exception in its error details.</remarks>
         /// <typeparam name="TResult">The type of the result value associated with the operation result.</typeparam>
         /// <param name="exception">The exception that describes the failure. Cannot be null.</param>
-        /// <returns>An ExecutionResult representing a failed operation containing the provided exception.</returns>
+        /// <returns>An OperationResult representing a failed operation containing the provided exception.</returns>
         public static OperationResult<TResult> Failure<TResult>(Exception exception)
         {
             ArgumentNullException.ThrowIfNull(exception);
@@ -275,7 +275,7 @@ public static class OperationResultExtensions
         /// </summary>
         /// <param name="key">The error key that identifies the source or type of the conflict. Cannot be null.</param>
         /// <param name="message">The error message that describes the conflict. Cannot be null.</param>
-        /// <returns>An ExecutionResult instance containing the conflict error with the provided key and message.</returns>
+        /// <returns>An OperationResult instance containing the conflict error with the provided key and message.</returns>
         public static OperationResult Conflict(string key, string message)
         {
             ArgumentNullException.ThrowIfNull(key);
@@ -330,7 +330,7 @@ public static class OperationResultExtensions
         /// <param name="key">The unique key identifying the error. Cannot be null.</param>
         /// <param name="message">The error message describing the internal server error. Cannot be null.</param>
         /// <param name="exception">The exception that caused the internal server error. Cannot be null.</param>
-        /// <returns>An ExecutionResult instance containing details about the internal server error, including the error key,
+        /// <returns>An OperationResult instance containing details about the internal server error, including the error key,
         /// message, and exception.</returns>
         public static OperationResult InternalServerError(string key, string message, Exception exception)
         {

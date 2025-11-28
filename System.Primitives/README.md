@@ -280,7 +280,7 @@ try
 catch (Exception ex)
 {
     var executionResult = ex.ToExecutionResult();
-    // Converts exception to ExecutionResult
+    // Converts exception to OperationResult
 }
 ```
 

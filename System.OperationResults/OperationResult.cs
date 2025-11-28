@@ -64,30 +64,6 @@ public sealed record OperationResult : OperationResultBase
     /// </summary>
     public sealed override bool IsSuccess => StatusCode.IsSuccess;
 
-    ///// <summary>
-    ///// Converts an operation instance to its corresponding HttpStatusCode value.
-    ///// </summary>
-    ///// <remarks>This operator enables implicit conversion from operation to HttpStatusCode.</remarks>
-    ///// <param name="operation">The operation instance to convert. Cannot be null.</param>
-    //public static implicit operator HttpStatusCode(OperationResult operation)
-    //{
-    //    ArgumentNullException.ThrowIfNull(operation);
-    //    return operation.ToHttpStatusCode();
-    //}
-
-    ///// <summary>
-    ///// Enables implicit conversion of an untyped operation result to a typed operation result with an object payload.
-    ///// </summary>
-    ///// <remarks>This operator allows seamless conversion from an untyped operation result to a generic
-    ///// operation result, preserving the original status and data. Use this conversion when you need to work with a
-    ///// generic payload type but only have an untyped result.</remarks>
-    ///// <param name="operation">The operation result instance to convert. Cannot be null.</param>
-    //public static implicit operator OperationResult<object>(OperationResult operation)
-    //{
-    //    ArgumentNullException.ThrowIfNull(operation);
-    //    return operation.ToOperationResult();
-    //}
-
     /// <summary>
     /// Converts the current instance to an OperationResult of the specified result type.
     /// </summary>
@@ -106,22 +82,4 @@ public sealed record OperationResult : OperationResultBase
             StatusCode = StatusCode,
             Title = Title
         };
-
-    ///// <summary>
-    ///// Creates a new <see langword="ExecutionResult{object}"/> instance that represents the current operation result.
-    ///// </summary>
-    ///// <returns>An <see langword="ExecutionResult{object}"/> containing the detail, errors, extensions, headers, location, value,
-    ///// status code, and title from the current instance.</returns>
-    //public OperationResult<object> ToExecutionResult() =>
-    //    new()
-    //    {
-    //        Detail = Detail,
-    //        Errors = Errors,
-    //        Extensions = Extensions,
-    //        Headers = Headers,
-    //        Location = Location,
-    //        Value = Value,
-    //        StatusCode = StatusCode,
-    //        Title = Title
-    //    };
 }

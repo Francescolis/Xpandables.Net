@@ -3,22 +3,22 @@
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Minimal API Extensions** - ExecutionResult integration, automatic validation, endpoint filters, middleware, and async paged responses for ASP.NET Core Minimal APIs.
+> **Minimal API Extensions** - OperationResult integration, automatic validation, endpoint filters, middleware, and async paged responses for ASP.NET Core Minimal APIs.
 
 ---
 
 ## ?? Overview
 
-`AspNetCore.Net.Minimals` provides comprehensive support for Minimal APIs with ExecutionResult integration, automatic validation, endpoint filters, exception handling middleware, and async paged response formatting.
+`AspNetCore.Net.Minimals` provides comprehensive support for Minimal APIs with OperationResult integration, automatic validation, endpoint filters, exception handling middleware, and async paged response formatting.
 
 ### ? Key Features
 
-- ?? **ExecutionResult Integration** - Automatic conversion of ExecutionResult to HTTP responses
+- ?? **OperationResult Integration** - Automatic conversion of OperationResult to HTTP responses
 - ? **Endpoint Validation Filter** - Automatic request validation for minimal API endpoints
 - ?? **Result Endpoint Filter** - Consistent result transformation for all endpoints
 - ?? **Exception Middleware** - Automatic exception to ProblemDetails conversion
 - ?? **Async Paged Support** - Automatic formatting of IAsyncPagedEnumerable responses
-- ?? **Custom Headers** - ExecutionResult metadata in HTTP response headers
+- ?? **Custom Headers** - OperationResult metadata in HTTP response headers
 
 ---
 
@@ -55,7 +55,7 @@ app.MapGet("/api/users/{id}", GetUser)
 
 app.Run();
 
-async Task<ExecutionResult<User>> GetUser(Guid id, IUserService service)
+async Task<OperationResult<User>> GetUser(Guid id, IUserService service)
 {
     return await service.GetUserAsync(id);
 }
@@ -65,15 +65,15 @@ async Task<ExecutionResult<User>> GetUser(Guid id, IUserService service)
 
 ## ?? Core Features
 
-### Automatic ExecutionResult Handling
+### Automatic OperationResult Handling
 
 ```csharp
 using System.ExecutionResults;
 
-// Endpoint returns ExecutionResult - automatically converted to HTTP response
+// Endpoint returns OperationResult - automatically converted to HTTP response
 app.MapGet("/api/users/{id}", async (Guid id, IUserService service) =>
 {
-    ExecutionResult<User> result = await service.GetUserAsync(id);
+    OperationResult<User> result = await service.GetUserAsync(id);
     // Automatically returns appropriate HTTP status with ProblemDetails if failed
     return result;
 })
@@ -82,7 +82,7 @@ app.MapGet("/api/users/{id}", async (Guid id, IUserService service) =>
 // Success responses
 app.MapPost("/api/users", async (CreateUserRequest request, IUserService service) =>
 {
-    ExecutionResult<User> result = await service.CreateUserAsync(request);
+    OperationResult<User> result = await service.CreateUserAsync(request);
     // Returns 201 Created with Location header if successful
     return result;
 })
@@ -91,8 +91,8 @@ app.MapPost("/api/users", async (CreateUserRequest request, IUserService service
 // Error responses automatically formatted as ProblemDetails
 app.MapPut("/api/users/{id}", async (Guid id, UpdateUserRequest request, IUserService service) =>
 {
-    ExecutionResult result = await service.UpdateUserAsync(id, request);
-    // Returns 400, 404, etc. with ProblemDetails based on ExecutionResult status
+    OperationResult result = await service.UpdateUserAsync(id, request);
+    // Returns 400, 404, etc. with ProblemDetails based on OperationResult status
     return result;
 })
 .WithXMinimalFilter();
@@ -276,7 +276,7 @@ app.UseXMinimalSupport(options =>
 // Custom validation with IMinimalResultEndpointValidator
 public class CustomUserValidator : IMinimalResultEndpointValidator
 {
-    public Task<ExecutionResult> ValidateAsync(
+    public Task<OperationResult> ValidateAsync(
         EndpointFilterInvocationContext context,
         CancellationToken cancellationToken)
     {
@@ -285,18 +285,18 @@ public class CustomUserValidator : IMinimalResultEndpointValidator
             .FirstOrDefault();
         
         if (request is null)
-            return Task.FromResult(ExecutionResult.Ok().Build());
+            return Task.FromResult(OperationResult.Ok().Build());
         
         if (request.Email.EndsWith("@test.com"))
         {
             return Task.FromResult(
-                ExecutionResult
+                OperationResult
                     .BadRequest()
                     .WithError("Email", "Test emails not allowed")
                     .Build());
         }
         
-        return Task.FromResult(ExecutionResult.Ok().Build());
+        return Task.FromResult(OperationResult.Ok().Build());
     }
 }
 
@@ -312,7 +312,7 @@ builder.Services.AddSingleton<IExecutionResultHeaderWriter, CustomHeaderWriter>(
 
 public class CustomHeaderWriter : IExecutionResultHeaderWriter
 {
-    public void WriteHeaders(HttpContext context, ExecutionResult result)
+    public void WriteHeaders(HttpContext context, OperationResult result)
     {
         context.Response.Headers["X-Request-Id"] = context.TraceIdentifier;
         context.Response.Headers["X-Status-Code"] = ((int)result.StatusCode).ToString();
@@ -414,7 +414,7 @@ public record UpdateUserRequest
 2. **Use WithXMinimalFilter()** - For query endpoints (GET)
 3. **Register AddXMinimalSupport()** - Always register services before using middleware
 4. **Configure selectively** - Apply filters based on endpoint requirements
-5. **Return ExecutionResult** - Let filters handle HTTP response conversion
+5. **Return OperationResult** - Let filters handle HTTP response conversion
 6. **Use validation attributes** - Leverage built-in validation on request models
 
 ---
@@ -422,7 +422,7 @@ public record UpdateUserRequest
 ## ?? Related Packages
 
 - **AspNetCore.Net** - Core ASP.NET integration
-- **System.ExecutionResults** - ExecutionResult types
+- **System.ExecutionResults** - OperationResult types
 - **System.Collections.AsyncPaged** - Async pagination support
 
 ---

@@ -179,7 +179,7 @@ public interface IEventSubscriber
 ## ?? Related Packages
 
 - **System.Events.EntityFramework** - EF Core event store implementation
-- **System.ExecutionResults** - ExecutionResult integration
+- **System.ExecutionResults** - OperationResult integration
 - **System.Data.Repositories** - Repository abstractions
 
 ---

@@ -3,22 +3,22 @@
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **ASP.NET Core Integration** - ExecutionResult to HTTP response mapping, endpoint routing, lazy service resolution, and JSON serialization configuration.
+> **ASP.NET Core Integration** - OperationResult to HTTP response mapping, endpoint routing, lazy service resolution, and JSON serialization configuration.
 
 ---
 
 ## ?? Overview
 
-`AspNetCore.Net` provides core ASP.NET Core integration for ExecutionResult types, endpoint routing patterns, and service resolution utilities. It bridges domain-driven design patterns with ASP.NET Core's HTTP pipeline.
+`AspNetCore.Net` provides core ASP.NET Core integration for OperationResult types, endpoint routing patterns, and service resolution utilities. It bridges domain-driven design patterns with ASP.NET Core's HTTP pipeline.
 
 ### ? Key Features
 
-- ?? **ExecutionResult Extensions** - Convert ExecutionResult to IActionResult, ProblemDetails, and ModelStateDictionary
+- ?? **OperationResult Extensions** - Convert OperationResult to IActionResult, ProblemDetails, and ModelStateDictionary
 - ??? **IEndpointRoute** - Interface for modular endpoint route registration
 - ?? **Lazy Resolution** - Lazy<T> dependency injection support
 - ?? **JSON Configuration** - Easy JsonSerializerOptions service registration
-- ?? **ModelState Integration** - Seamless ModelStateDictionary to ExecutionResult conversion
-- ?? **Exception Handling** - BadHttpRequestException to ExecutionResult conversion
+- ?? **ModelState Integration** - Seamless ModelStateDictionary to OperationResult conversion
+- ?? **Exception Handling** - BadHttpRequestException to OperationResult conversion
 
 ---
 
@@ -48,7 +48,7 @@ builder.Services.AddXLazyResolved();
 
 ## ?? Core Features
 
-### ExecutionResult to HTTP Response
+### OperationResult to HTTP Response
 
 ```csharp
 using System.ExecutionResults;
@@ -60,7 +60,7 @@ public class UsersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUser(Guid id)
     {
-        ExecutionResult<User> result = await _userService.GetUserAsync(id);
+        OperationResult<User> result = await _userService.GetUserAsync(id);
         
         // Convert to IActionResult
         return result.ToActionResult();
@@ -71,12 +71,12 @@ public class UsersController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            // Convert ModelState to ExecutionResult
-            ExecutionResult validationResult = ModelState.ToExecutionResult();
+            // Convert ModelState to OperationResult
+            OperationResult validationResult = ModelState.ToExecutionResult();
             return validationResult.ToActionResult();
         }
         
-        ExecutionResult<User> result = await _userService.CreateUserAsync(request);
+        OperationResult<User> result = await _userService.CreateUserAsync(request);
         return result.ToActionResult();
     }
 }
@@ -98,7 +98,7 @@ app.UseExceptionHandler(exceptionHandler =>
         
         if (exceptionFeature?.Error is BadHttpRequestException badRequest)
         {
-            ExecutionResult result = badRequest.ToExecutionResult();
+            OperationResult result = badRequest.ToExecutionResult();
             ProblemDetails problem = result.ToProblemDetails(context);
             
             context.Response.StatusCode = problem.Status ?? 400;
@@ -235,8 +235,8 @@ public class ProductsController : ControllerBase
         
         if (!ModelState.IsValid)
         {
-            // Convert to ExecutionResult with BadRequest status
-            ExecutionResult error = ModelState.ToExecutionResult();
+            // Convert to OperationResult with BadRequest status
+            OperationResult error = ModelState.ToExecutionResult();
             return error.ToActionResult();
         }
         
@@ -246,7 +246,7 @@ public class ProductsController : ControllerBase
 }
 ```
 
-### Exception to ExecutionResult
+### Exception to OperationResult
 
 ```csharp
 using AspNetCore.Net;
@@ -260,7 +260,7 @@ app.Use(async (context, next) =>
     }
     catch (BadHttpRequestException ex)
     {
-        ExecutionResult result = ex.ToExecutionResult();
+        OperationResult result = ex.ToExecutionResult();
         ProblemDetails problem = result.ToProblemDetails(context);
         
         context.Response.StatusCode = (int)result.StatusCode;
@@ -273,17 +273,17 @@ app.Use(async (context, next) =>
 
 ## ?? Best Practices
 
-1. **Use ToActionResult()** - Consistently convert ExecutionResult to HTTP responses
+1. **Use ToActionResult()** - Consistently convert OperationResult to HTTP responses
 2. **Leverage IEndpointRoute** - Organize endpoints into separate classes
 3. **Use Lazy<T>** - For optional or expensive dependencies
 4. **Register JsonSerializerOptions** - Ensure consistent JSON serialization
-5. **Convert exceptions early** - Transform BadHttpRequestException to ExecutionResult
+5. **Convert exceptions early** - Transform BadHttpRequestException to OperationResult
 
 ---
 
 ## ?? Related Packages
 
-- **System.ExecutionResults** - Core ExecutionResult types
+- **System.ExecutionResults** - Core OperationResult types
 - **AspNetCore.Net.Minimals** - Minimal API integration
 - **AspNetCore.Net.Controllers** - Controller-specific extensions
 

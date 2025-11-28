@@ -75,32 +75,32 @@ public record ProcessPaymentRequest(
 
 ### Basic Examples
 
-#### ExecutionResult - Railway Oriented Programming
+#### OperationResult - Railway Oriented Programming
 
 ```csharp
 using Xpandables.Net.ExecutionResults;
 
-public async Task<ExecutionResult<User>> GetUserAsync(Guid userId)
+public async Task<OperationResult<User>> GetUserAsync(Guid userId)
 {
     Optional<User> user = await _repository.FindByIdAsync(userId);
     
     return user
-        .Map(u => ExecutionResult.Success(u))
-        .Empty(() => ExecutionResult
+        .Map(u => OperationResult.Success(u))
+        .Empty(() => OperationResult
             .NotFound()
             .WithError("userId", "User not found")
             .Build<User>());
 }
 
 // Chain operations
-public async Task<ExecutionResult<Order>> CreateOrderAsync(CreateOrderRequest request)
+public async Task<OperationResult<Order>> CreateOrderAsync(CreateOrderRequest request)
 {
     return await ValidateRequest(request)
         .BindAsync(CreateOrder)
         .BindAsync(ProcessPayment)
         .BindAsync(SendConfirmation)
-        .Map(order => ExecutionResult.Created(order))
-        .Empty(() => ExecutionResult
+        .Map(order => OperationResult.Created(order))
+        .Empty(() => OperationResult
             .BadRequest()
             .WithError("request", "Failed to create order")
             .Build<Order>());
@@ -157,7 +157,7 @@ public sealed class CreateUserHandler
     public CreateUserHandler(IRepository repository) 
         => _repository = repository;
     
-    public async Task<ExecutionResult<User>> HandleAsync(
+    public async Task<OperationResult<User>> HandleAsync(
         CreateUserCommand request,
         CancellationToken cancellationToken)
     {
@@ -169,13 +169,13 @@ public sealed class CreateUserHandler
         
         await _repository.AddAsync(cancellationToken, user);
         
-        return ExecutionResult.Created(user);
+        return OperationResult.Created(user);
     }
 }
 
 // Use mediator
 var command = new CreateUserCommand("John", "john@example.com");
-ExecutionResult<User> result = await _mediator.SendAsync(command);
+OperationResult<User> result = await _mediator.SendAsync(command);
 
 if (result.IsSuccess)
 {
@@ -352,13 +352,13 @@ public sealed class LoggingPreHandler<TRequest>
     : IRequestPreHandler<TRequest>
     where TRequest : class, IRequest
 {
-    public Task<ExecutionResult> HandleAsync(
+    public Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Executing: {Request}", 
             typeof(TRequest).Name);
-        return Task.FromResult(ExecutionResult.Ok().Build());
+        return Task.FromResult(OperationResult.Ok().Build());
     }
 }
 
@@ -367,9 +367,9 @@ public sealed class CacheInvalidationPostHandler<TRequest>
     : IRequestPostHandler<TRequest>
     where TRequest : class, IRequest
 {
-    public async Task<ExecutionResult> HandleAsync(
+    public async Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
-        ExecutionResult response,
+        OperationResult response,
         CancellationToken cancellationToken)
     {
         if (response.IsSuccess)
@@ -385,7 +385,7 @@ public sealed class GlobalExceptionHandler<TRequest>
     : IRequestExceptionHandler<TRequest>
     where TRequest : class, IRequest
 {
-    public Task<ExecutionResult> HandleAsync(
+    public Task<OperationResult> HandleAsync(
         RequestContext<TRequest> context,
         Exception exception,
         CancellationToken cancellationToken)
@@ -393,7 +393,7 @@ public sealed class GlobalExceptionHandler<TRequest>
         _logger.LogError(exception, "Request failed");
         
         return Task.FromResult(
-            ExecutionResult
+            OperationResult
                 .InternalServerError(exception)
                 .Build());
     }
@@ -465,7 +465,7 @@ Console.WriteLine($"Total items: {pagination.TotalCount}");
 
 ## 💡 Best Practices
 
-1. **Use ExecutionResult** for all public API boundaries
+1. **Use OperationResult** for all public API boundaries
 2. **Prefer Optional** over null checks
 3. **Encapsulate business rules** in Specifications
 4. **Use CQRS** to separate reads from writes

@@ -100,7 +100,7 @@ public sealed class GetUserHandler : IRequestHandler<GetUserQuery, User>
     public GetUserHandler(IUserRepository repository) 
         => _repository = repository;
     
-    public async Task<ExecutionResult<User>> HandleAsync(
+    public async Task<OperationResult<User>> HandleAsync(
         GetUserQuery request, 
         CancellationToken cancellationToken)
     {
@@ -109,8 +109,8 @@ public sealed class GetUserHandler : IRequestHandler<GetUserQuery, User>
             .FindByIdAsync(request.UserId, cancellationToken);
         
         return user
-            .Map(u => ExecutionResult.Success(u))
-            .Empty(() => ExecutionResult
+            .Map(u => OperationResult.Success(u))
+            .Empty(() => OperationResult
                 .NotFound()
                 .WithError("userId", "User not found")
                 .Build<User>());
@@ -199,7 +199,7 @@ Each package has detailed documentation with examples and API references:
 #### ASP.NET Core Integration
 - 🌐 [**AspNetCore**](./Xpandables.Net.AspNetCore/README.md) - ASP.NET Core integrations
 - 🔄 [**Async.AspNetCore**](./Xpandables.Net.Async.AspNetCore/README.md) - Async utilities for ASP.NET Core
-- ✅ [**ExecutionResults.AspNetCore**](./Xpandables.Net.ExecutionResults.AspNetCore/README.md) - ExecutionResult to IResult mapping
+- ✅ [**ExecutionResults.AspNetCore**](./Xpandables.Net.ExecutionResults.AspNetCore/README.md) - OperationResult to IResult mapping
 - ✔️ [**Validators.AspNetCore**](./Xpandables.Net.Validators.AspNetCore/README.md) - ASP.NET Core validation filters
 
 ---
@@ -248,14 +248,14 @@ Xpandables.Net follows clean architecture principles with clear separation of co
 ### 1. Execution Results - Railway Oriented Programming
 
 ```csharp
-public async Task<ExecutionResult<Order>> CreateOrderAsync(CreateOrderRequest request)
+public async Task<OperationResult<Order>> CreateOrderAsync(CreateOrderRequest request)
 {
     return await ValidateRequest(request)
         .BindAsync(CreateOrder)
         .BindAsync(ProcessPayment)
         .BindAsync(SendConfirmationEmail)
-        .Map(order => ExecutionResult.Created(order))
-        .Empty(() => ExecutionResult
+        .Map(order => OperationResult.Created(order))
+        .Empty(() => OperationResult
             .BadRequest()
             .WithError("request", "Failed to create order")
             .Build<Order>());

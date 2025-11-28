@@ -3,21 +3,21 @@
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **MVC Controller Extensions** - ExecutionResult integration, automatic validation, async paged output formatting, and action filters for ASP.NET Core MVC controllers.
+> **MVC Controller Extensions** - OperationResult integration, automatic validation, async paged output formatting, and action filters for ASP.NET Core MVC controllers.
 
 ---
 
 ## ?? Overview
 
-`AspNetCore.Net.Controllers` provides comprehensive MVC controller support with ExecutionResult integration, automatic model validation, async paged response formatting, and result filters for consistent API responses.
+`AspNetCore.Net.Controllers` provides comprehensive MVC controller support with OperationResult integration, automatic model validation, async paged response formatting, and result filters for consistent API responses.
 
 ### ? Key Features
 
-- ?? **ControllerResultFilter** - Automatic ExecutionResult to HTTP response conversion
+- ?? **ControllerResultFilter** - Automatic OperationResult to HTTP response conversion
 - ? **Validation Filter** - Automatic ModelState validation before action execution
 - ?? **AsyncPaged Output Formatter** - JSON serialization for IAsyncPagedEnumerable responses
-- ?? **MVC Options Configuration** - Pre-configured MVC settings for ExecutionResult support
-- ?? **Header Writing** - ExecutionResult metadata in response headers
+- ?? **MVC Options Configuration** - Pre-configured MVC settings for OperationResult support
+- ?? **Header Writing** - OperationResult metadata in response headers
 
 ---
 
@@ -36,7 +36,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add controllers with ExecutionResult support
+// Add controllers with OperationResult support
 builder.Services
     .AddControllers()
     .AddXControllerMvcOptions();  // Adds validation, filters, and formatters
@@ -50,7 +50,7 @@ app.Run();
 
 ## ?? Core Features
 
-### ExecutionResult in Controllers
+### OperationResult in Controllers
 
 ```csharp
 using System.ExecutionResults;
@@ -66,28 +66,28 @@ public class UsersController : ControllerBase
         _userService = userService;
     
     [HttpGet("{id}")]
-    public async Task<ExecutionResult<User>> GetUser(Guid id)
+    public async Task<OperationResult<User>> GetUser(Guid id)
     {
-        // Return ExecutionResult - automatically converted to HTTP response
+        // Return OperationResult - automatically converted to HTTP response
         return await _userService.GetUserAsync(id);
     }
     
     [HttpPost]
-    public async Task<ExecutionResult<User>> CreateUser(CreateUserRequest request)
+    public async Task<OperationResult<User>> CreateUser(CreateUserRequest request)
     {
         // Validation happens automatically
-        // ExecutionResult is converted to appropriate HTTP status
+        // OperationResult is converted to appropriate HTTP status
         return await _userService.CreateUserAsync(request);
     }
     
     [HttpPut("{id}")]
-    public async Task<ExecutionResult> UpdateUser(Guid id, UpdateUserRequest request)
+    public async Task<OperationResult> UpdateUser(Guid id, UpdateUserRequest request)
     {
         return await _userService.UpdateUserAsync(id, request);
     }
     
     [HttpDelete("{id}")]
-    public async Task<ExecutionResult> DeleteUser(Guid id)
+    public async Task<OperationResult> DeleteUser(Guid id)
     {
         return await _userService.DeleteUserAsync(id);
     }
@@ -136,7 +136,7 @@ public class ProductsController : ControllerBase
 public class OrdersController : ControllerBase
 {
     [HttpPost]
-    public async Task<ExecutionResult<Order>> CreateOrder(
+    public async Task<OperationResult<Order>> CreateOrder(
         CreateOrderRequest request)
     {
         // ModelState is validated automatically
@@ -176,7 +176,7 @@ public class CustomResultFilter : IAsyncResultFilter
         ResultExecutingContext context,
         ResultExecutionDelegate next)
     {
-        if (context.Result is ObjectResult { Value: ExecutionResult execution })
+        if (context.Result is ObjectResult { Value: OperationResult execution })
         {
             // Custom processing
             context.HttpContext.Response.Headers["X-Custom"] = "Value";
@@ -203,7 +203,7 @@ public class AdminController : ControllerBase
     // Skip automatic validation for this endpoint
     [HttpPost("bulk")]
     [SkipControllerResultValidation]
-    public async Task<ExecutionResult> BulkImport([FromBody] string csvData)
+    public async Task<OperationResult> BulkImport([FromBody] string csvData)
     {
         // Custom validation logic
         return await _adminService.BulkImportAsync(csvData);
@@ -226,18 +226,18 @@ builder.Services.AddControllers(options =>
 
 ## ?? Best Practices
 
-1. **Return ExecutionResult** - Use ExecutionResult as return type for consistent responses
+1. **Return OperationResult** - Use OperationResult as return type for consistent responses
 2. **Use validation attributes** - Leverage DataAnnotations for request validation
 3. **Return IAsyncPagedEnumerable** - For paginated collections
 4. **Register AddXControllerMvcOptions()** - Always register for full functionality
-5. **Avoid manual status codes** - Let ExecutionResult determine HTTP status
+5. **Avoid manual status codes** - Let OperationResult determine HTTP status
 
 ---
 
 ## ?? Related Packages
 
 - **AspNetCore.Net** - Core ASP.NET integration
-- **System.ExecutionResults** - ExecutionResult types
+- **System.ExecutionResults** - OperationResult types
 - **System.Collections.AsyncPaged** - Async pagination
 
 ---

@@ -349,7 +349,7 @@ public sealed class OrderService
     public OrderService(IAggregateStore aggregateStore) 
         => _aggregateStore = aggregateStore;
 
-    public async Task<ExecutionResult<OrderAggregate>> CreateOrderAsync(
+    public async Task<OperationResult<OrderAggregate>> CreateOrderAsync(
         CreateOrderCommand command)
     {
         // Create aggregate (generates events)
@@ -360,7 +360,7 @@ public sealed class OrderService
         // Persist events
         await _aggregateStore.AppendAsync(order);
 
-        return ExecutionResult.Created(order);
+        return OperationResult.Created(order);
     }
 
     public async Task<OrderAggregate> GetOrderAsync(Guid orderId)

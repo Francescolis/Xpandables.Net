@@ -129,7 +129,7 @@ public abstract record OperationResultBase
     /// <summary>
     /// Evaluates the specified operation result and returns a corresponding status value indicating success or failure.
     /// </summary>
-    /// <remarks>This operator provides a convenient way to convert an ExecutionResult to a Status based on
+    /// <remarks>This operator provides a convenient way to convert an OperationResult to a Status based on
     /// its success state.</remarks>
     /// <param name="operation">The operation result to evaluate. Determines whether the returned status represents success or failure.</param>
     /// <returns>A Status value of Success if the operation result indicates success; otherwise, Failure.</returns>
