@@ -520,7 +520,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
 
         foreach (var entry in _entries)
         {
-            if (!first) builder.Append(';');
+            if (!first) builder.Append(Environment.NewLine);
             first = false;
 
             builder.Append(entry.Key);
@@ -549,7 +549,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
         bool first = true;
         foreach (var entry in _entries)
         {
-            if (!first) builder.Append(", ");
+            if (!first) builder.Append(Environment.NewLine);
             first = false;
             builder.Append(CultureInfo.InvariantCulture, $"{{ Key = \"{entry.Key}\", Values = [{entry.Values.StringJoin(", ")}] }}");
         }
@@ -561,34 +561,6 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
 
 /// <summary>
 /// Provides a source generation context for serializing and deserializing ElementCollection objects using System.Text.Json.
-/// <code>
-/// // Registration in Console/General Application
-///     var options = new JsonSerializerOptions
-///     {
-///         TypeInfoResolver = JsonTypeInfoResolver.Combine(
-///             ElementCollectionContext.Default,
-///             new DefaultJsonTypeInfoResolver()),
-///         Converters = { new ElementCollectionJsonConverterFactory() }
-///     };
-///     
-/// // AspNet Core Registration
-///     builder.Services.ConfigureHttpJsonOptions(options =>
-///     {
-///         options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(
-///             ElementCollectionContext.Default,
-///             new DefaultJsonTypeInfoResolver());
-///         options.SerializerOptions.Converters.Add(new ElementCollectionJsonConverterFactory());
-///     });
-///     
-/// // Or in Minimal API
-///     builder.Services.Configure&lt;JsonOptions&gt;(options=>
-///     {
-///         options.SerializerOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(
-///             ElementCollectionContext.Default,
-///             new DefaultJsonTypeInfoResolver());
-///         options.SerializerOptions.Converters.Add(new ElementCollectionJsonConverterFactory());
-///     });
-/// </code>
 /// </summary>
 /// <remarks>This context enables efficient, compile-time generation of serialization logic for the ElementCollection
 /// type and its associated ElementEntry and StringValues types. Use this context with System.Text.Json serialization APIs 
