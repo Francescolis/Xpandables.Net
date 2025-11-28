@@ -515,7 +515,8 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     {
         if (IsEmpty) return string.Empty;
 
-        var builder = new StringBuilder();
+        var estimatedCapacity = Count * 32;
+        var builder = new StringBuilder(estimatedCapacity);
         bool first = true;
 
         foreach (var entry in _entries)
@@ -543,7 +544,8 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     {
         if (IsEmpty) return "ElementCollection { Empty }";
 
-        var builder = new StringBuilder();
+        var estimatedCapacity = Count * 32;
+        var builder = new StringBuilder(estimatedCapacity);
         builder.Append(CultureInfo.InvariantCulture, $"ElementCollection {{ Count = {Count}, Entries = [ ");
 
         bool first = true;
