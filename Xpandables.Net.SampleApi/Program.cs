@@ -80,7 +80,8 @@ builder.Services
     .AddXEventConverterFactory()
     .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
     .AddXScheduler()
-    .AddXHostedScheduler();
+    .AddXHostedScheduler()
+    .AddXMinimalSupport();
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -106,11 +107,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-//if (app.Environment.IsDevelopment())
-//{
-//    app.MapOpenApi();
-//}
-
+app.UseMiddleware<MinimalResultMiddleware>();
 app.UseHttpsRedirection();
 app.UseSwagger()
     .UseSwaggerUI(options =>
