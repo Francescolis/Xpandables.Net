@@ -85,8 +85,4 @@
 	  </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\System.OperationResults.Pipelines\System.OperationResults.Pipelines.csproj" />
-  </ItemGroup>
-
 </Project>
