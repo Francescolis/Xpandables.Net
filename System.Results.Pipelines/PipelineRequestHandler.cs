@@ -15,9 +15,10 @@
  *
 ********************************************************************************/
 
+using System.Results.Requests;
 using System.Runtime.CompilerServices;
 
-namespace System.OperationResults.Pipelines;
+namespace System.Results.Pipelines;
 
 /// <summary>
 /// Represents a sealed class that implements the pipeline request handling mechanism for a given request type.
@@ -39,7 +40,7 @@ public sealed class PipelineRequestHandler<TRequest> :
     private readonly IRequestHandler<TRequest> _decoratee;
     private readonly IPipelineDecorator<TRequest>[] _decorators;
     private readonly bool _isContextHandler;
-    private readonly Func<TRequest, CancellationToken, Task<OperationResult>>? _fastPath;
+    private readonly Func<TRequest, CancellationToken, Task<Result>>? _fastPath;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PipelineRequestHandler{TRequest}"/> class.
@@ -76,7 +77,7 @@ public sealed class PipelineRequestHandler<TRequest> :
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Task<OperationResult> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
+    public Task<Result> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -98,7 +99,7 @@ public sealed class PipelineRequestHandler<TRequest> :
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The execution result.</returns>
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    private async Task<OperationResult> ExecutePipelineIterativeAsync(
+    private async Task<Result> ExecutePipelineIterativeAsync(
         RequestContext<TRequest> context,
         CancellationToken cancellationToken)
     {

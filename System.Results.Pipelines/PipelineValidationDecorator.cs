@@ -14,9 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations;
 
-namespace System.OperationResults.Pipelines;
+using System.ComponentModel.DataAnnotations;
+using System.Results.Requests;
+
+namespace System.Results.Pipelines;
 
 /// <summary>
 /// Represents a pipeline decorator that performs validation on the incoming request
@@ -33,7 +35,7 @@ public sealed class PipelineValidationDecorator<TRequest>(ICompositeRuleValidato
     where TRequest : class, IRequest, IRequiresValidation
 {
     /// <inheritdoc/>
-    public async Task<OperationResult> HandleAsync(
+    public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)
@@ -47,7 +49,7 @@ public sealed class PipelineValidationDecorator<TRequest>(ICompositeRuleValidato
 
         if (validationResults.Count != 0)
         {
-            return validationResults.ToExecutionResult();
+            return validationResults.ToResult();
         }
 
         return await nextHandler(cancellationToken).ConfigureAwait(false);

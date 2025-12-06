@@ -16,8 +16,9 @@
 ********************************************************************************/
 using System.Events.Domain;
 using System.Events.Integration;
+using System.Results.Requests;
 
-namespace System.OperationResults.Pipelines;
+namespace System.Results.Pipelines;
 
 /// <summary>
 /// Provides a pipeline decorator that ensures integration events generated during request processing are reliably
@@ -39,7 +40,7 @@ public sealed class PipelineIntegrationOutboxDecorator<TRequest>(
     private readonly IOutboxStore _outbox = outbox;
 
     /// <inheritdoc/>    
-    public async Task<OperationResult> HandleAsync(
+    public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)

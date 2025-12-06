@@ -17,7 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Events.Domain;
 using System.Events.Integration;
-using System.OperationResults.Pipelines;
+using System.Results.Pipelines;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;

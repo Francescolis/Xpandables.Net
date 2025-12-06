@@ -14,7 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.OperationResults.Pipelines;
+using System.Results.Requests;
+
+namespace System.Results.Pipelines;
 
 /// <summary>
 /// Represents a decorator that executes post-handling logic for a request in a pipeline.
@@ -29,7 +31,7 @@ public sealed class PipelinePostDecorator<TRequest>(
     where TRequest : class, IRequest
 {
     ///<inheritdoc/>
-    public async Task<OperationResult> HandleAsync(
+    public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken)
@@ -37,11 +39,11 @@ public sealed class PipelinePostDecorator<TRequest>(
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nextHandler);
 
-        OperationResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
+        Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
         foreach (IRequestPostHandler<TRequest> postHandler in postHandlers)
         {
-            OperationResult result = await postHandler
+            Result result = await postHandler
                 .HandleAsync(context, response, cancellationToken)
                 .ConfigureAwait(false);
 

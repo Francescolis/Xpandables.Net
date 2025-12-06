@@ -16,8 +16,9 @@
 ********************************************************************************/
 using System.Events;
 using System.Events.Domain;
+using System.Results.Requests;
 
-namespace System.OperationResults.Pipelines;
+namespace System.Results.Pipelines;
 
 /// <summary>
 /// A pipeline decorator that processes and publishes domain events after the execution of a request handler.
@@ -38,7 +39,7 @@ public sealed class PipelineDomainEventsDecorator<TRequest>(
     where TRequest : class, IRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>
-    public async Task<OperationResult> HandleAsync(
+    public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken)

@@ -14,7 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.OperationResults.Pipelines;
+using System.Results.Requests;
+
+namespace System.Results.Pipelines;
 
 /// <summary>
 /// Represents a decorator that executes a series of pre-handlers before the main request handler in a pipeline.
@@ -29,7 +31,7 @@ public sealed class PipelinePreDecorator<TRequest>(
     where TRequest : class, IRequest
 {
     ///<inheritdoc/>
-    public async Task<OperationResult> HandleAsync(
+    public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken)
@@ -39,7 +41,7 @@ public sealed class PipelinePreDecorator<TRequest>(
 
         foreach (IRequestPreHandler<TRequest> preHandler in preHandlers)
         {
-            OperationResult result = await preHandler
+            Result result = await preHandler
                 .HandleAsync(context, cancellationToken)
                 .ConfigureAwait(false);
 

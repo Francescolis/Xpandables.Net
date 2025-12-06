@@ -14,9 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Data.Repositories;
 
-namespace System.OperationResults.Pipelines;
+using System.Data.Repositories;
+using System.Results.Requests;
+
+namespace System.Results.Pipelines;
 
 /// <summary>
 /// The PipelineUnitOfWorkDecorator class is a pipeline decorator that ensures
@@ -29,7 +31,7 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork? unitOfWor
     where TRequest : class, IRequest, IRequiresUnitOfWork
 {
     /// <inheritdoc/>
-    public async Task<OperationResult> HandleAsync(
+    public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)
@@ -39,7 +41,7 @@ public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork? unitOfWor
 
         try
         {
-            OperationResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
+            Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
             return response;
         }

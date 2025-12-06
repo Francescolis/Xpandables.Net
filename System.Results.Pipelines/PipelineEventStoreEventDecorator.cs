@@ -15,8 +15,9 @@
  *
 ********************************************************************************/
 using System.Events.Domain;
+using System.Results.Requests;
 
-namespace System.OperationResults.Pipelines;
+namespace System.Results.Pipelines;
 
 /// <summary>
 /// Provides a pipeline decorator that ensures domain events are committed to the event store after handling a request
@@ -33,7 +34,7 @@ public sealed class PipelineEventStoreEventDecorator<TRequest>(IEventStore event
     where TRequest : class, IRequest, IRequiresEventStorage
 {
     /// <inheritdoc/>
-    public async Task<OperationResult> HandleAsync(
+    public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,
         CancellationToken cancellationToken = default)
@@ -43,7 +44,7 @@ public sealed class PipelineEventStoreEventDecorator<TRequest>(IEventStore event
 
         try
         {
-            OperationResult response = await nextHandler(cancellationToken).ConfigureAwait(false);
+            Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
             return response;
         }

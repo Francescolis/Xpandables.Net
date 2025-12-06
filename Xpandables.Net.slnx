@@ -45,7 +45,7 @@
   <Project Path="System.Net.Http.Rests/System.Net.Http.Rests.csproj" Id="d019ebbd-3d81-41be-99e1-2b9e5571e764">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.OperationResults.Pipelines/System.OperationResults.Pipelines.csproj">
+  <Project Path="System.Results.Pipelines/System.Results.Pipelines.csproj">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.OperationResults.Requests/System.OperationResults.Requests.csproj">
