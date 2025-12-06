@@ -6,14 +6,14 @@
 	  <Nullable>enable</Nullable>
 	  <Platforms>x64</Platforms>
 	  <LangVersion>latest</LangVersion>
-	  <Title>System.OperationResults</Title>
-	  <Description>OperationResult pattern implementation.</Description>
+	  <Title>System.Results</Title>
+	  <Description>Result pattern implementation.</Description>
 	  <Company>Kamersoft</Company>
 	  <Authors>Francescolis</Authors>
 
-	  <AssemblyName>System.OperationResults</AssemblyName>
-	  <RootNamespace>System.OperationResults</RootNamespace>
-	  <PackageId>System.OperationResults</PackageId>
+	  <AssemblyName>System.Results</AssemblyName>
+	  <RootNamespace>System.Results</RootNamespace>
+	  <PackageId>System.Results</PackageId>
 	  <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
@@ -30,7 +30,7 @@
 	  <PackageIcon>Xpandables.Net.png</PackageIcon>
 	  <ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
-	  <PackageTags>OperationResult, IOperationResultBuilder</PackageTags>
+	  <PackageTags>Result, IResultBuilder</PackageTags>
 	  <NeutralLanguage>en-US</NeutralLanguage>
 	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>

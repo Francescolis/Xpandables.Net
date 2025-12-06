@@ -19,101 +19,25 @@ using System.Net;
 
 using Microsoft.Extensions.Primitives;
 
-namespace System.OperationResults;
+namespace System.Results;
 
 /// <summary>
-/// Represents a builder for creating successful operation results.
-/// </summary>
-public sealed class OperationResultSuccessBuilder :
-    OperationResultBuilder<IOperationResultSuccessBuilder>, IOperationResultSuccessBuilder
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OperationResultSuccessBuilder"/> class 
-    /// with the specified status code.
-    /// </summary>
-    /// <param name="statusCode">The HTTP status code indicating a 
-    /// successful operation.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
-    /// code is not between 200 and 299.</exception>
-    public OperationResultSuccessBuilder(HttpStatusCode statusCode) :
-        base(statusCode) => statusCode.EnsureSuccess();
-}
-
-/// <summary>
-/// Represents a builder for creating successful operation results with a 
-/// specified result type.
-/// </summary>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public sealed class OperationResultSuccessBuilder<TResult> :
-    ExecutionResultBuilder<IOperationResultSuccessBuilder<TResult>, TResult>,
-    IOperationResultSuccessBuilder<TResult>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OperationResultSuccessBuilder{TResult}"/> class 
-    /// with the specified status code.
-    /// </summary>
-    /// <param name="statusCode">The HTTP status code indicating a 
-    /// successful operation.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
-    /// code is not between 200 and 299.</exception>
-    public OperationResultSuccessBuilder(HttpStatusCode statusCode) :
-        base(statusCode) => statusCode.EnsureSuccess();
-}
-
-/// <summary>  
-/// Represents a builder for creating failure operation results.  
-/// </summary>  
-public sealed class OperationResultFailureBuilder :
-    OperationResultBuilder<IOperationResultFailureBuilder>, IOperationResultFailureBuilder
-{
-    /// <summary>  
-    /// Initializes a new instance of the <see cref="OperationResultFailureBuilder"/> class 
-    /// with the specified status code.  
-    /// </summary>  
-    /// <param name="statusCode">The HTTP status code for the failure.</param>  
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status 
-    /// code is between 200 and 299.</exception>  
-    public OperationResultFailureBuilder(HttpStatusCode statusCode) :
-        base(statusCode) => statusCode.EnsureFailure();
-}
-
-/// <summary>  
-/// Represents a builder for creating failure operation results with a specific 
-/// result type.  
-/// </summary>  
-/// <typeparam name="TResult">The type of the result.</typeparam>  
-public sealed class OperationResultFailureBuilder<TResult> :
-   ExecutionResultBuilder<IOperationResultFailureBuilder<TResult>, TResult>,
-   IOperationResultFailureBuilder<TResult>
-{
-    /// <summary>  
-    /// Initializes a new instance of the <see cref="OperationResultFailureBuilder{TResult}"/> class  
-    /// with the specified status code.  
-    /// </summary>  
-    /// <param name="statusCode">The HTTP status code for the failure.</param>  
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the status  
-    /// code is between 200 and 299.</exception>  
-    public OperationResultFailureBuilder(HttpStatusCode statusCode) :
-        base(statusCode) => statusCode.EnsureFailure();
-}
-
-/// <summary>
-/// Represents a builder for creating operation results with various properties.
+/// Represents a builder for creating result results with various properties.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public abstract class OperationResultBuilder<TBuilder>(HttpStatusCode statusCode) :
-    IOperationResultObjectBuilder<TBuilder>,
-    IOperationResultHeaderBuilder<TBuilder>,
-    IOperationResultLocationBuilder<TBuilder>,
-    IOperationResultErrorBuilder<TBuilder>,
-    IOperationResultDetailBuilder<TBuilder>,
-    IOperationResultTitleBuilder<TBuilder>,
-    IOperationResultMergeBuilder<TBuilder>,
-    IOperationResultStatusBuilder<TBuilder>,
-    IOperationResultExtensionBuilder<TBuilder>,
-    IOperationResultClearBuilder<TBuilder>,
-    IOperationResultBuilder
-    where TBuilder : class, IOperationResultBuilder
+public abstract class ResultBuilder<TBuilder>(HttpStatusCode statusCode) :
+    IObjectResultBuilder<TBuilder>,
+    IHeaderResultBuilder<TBuilder>,
+    ILocationResultBuilder<TBuilder>,
+    IErrorResultBuilder<TBuilder>,
+    IDetailResultBuilder<TBuilder>,
+    ITitleResultBuilder<TBuilder>,
+    IMergeResultBuilder<TBuilder>,
+    IStatusResultBuilder<TBuilder>,
+    IExtensionResultBuilder<TBuilder>,
+    IClearResultBuilder<TBuilder>,
+    IResultBuilder
+    where TBuilder : class, IResultBuilder
 {
     private readonly bool _isSuccess = statusCode.IsSuccess;
 
@@ -133,52 +57,55 @@ public abstract class OperationResultBuilder<TBuilder>(HttpStatusCode statusCode
     protected ElementCollection Errors { get; } = [];
 
     /// <summary>
-    /// Gets the exception associated with the operation result.
+    /// Gets the exception associated with the result result.
     /// </summary>
     protected Exception? Exception { get; set; }
 
     /// <summary>
-    /// Gets or sets the HTTP status code for the operation result.
+    /// Gets or sets the HTTP status code for the result result.
     /// </summary>
     protected HttpStatusCode StatusCode { get; set; } = statusCode;
 
     /// <summary>
-    /// Gets or sets the title for the operation result.
+    /// Gets or sets the title for the result result.
     /// </summary>
     protected string? Title { get; set; }
 
     /// <summary>  
-    /// Gets or sets the detail for the operation result.  
+    /// Gets or sets the detail for the result result.  
     /// </summary>  
     protected string? Detail { get; set; }
 
     /// <summary>
-    /// Gets or sets the result object of the operation.
+    /// Gets or sets the result object of the result.
     /// </summary>
-    protected object? Result { get; set; }
+    protected object? Value { get; set; }
 
     /// <summary>
-    /// Gets or sets the location URI for the operation result.
+    /// Gets or sets the location URI for the result result.
     /// </summary>
     protected Uri? Location { get; set; }
 
     /// <summary>
     /// Returns the current builder instance cast to TBuilder.
     /// </summary>
-    private TBuilder AsBuilder => (this as TBuilder)!;
+    protected TBuilder AsBuilder => (this as TBuilder)!;
 
     /// <inheritdoc/>
-    public OperationResult Build() =>
+    /// <remarks>When implementing this method in a derived class, ensure that all
+    /// properties are correctly set in the returned <see cref="Result"/> instance.
+    /// </remarks>
+    public virtual Result Build() =>
         new()
         {
             StatusCode = StatusCode,
             Title = Title,
             Detail = Detail,
-            Value = Result,
             Location = Location,
+            Value = Value,
+            Errors = Errors,
             Headers = Headers,
             Extensions = Extensions,
-            Errors = Errors,
             Exception = Exception
         };
 
@@ -193,7 +120,7 @@ public abstract class OperationResultBuilder<TBuilder>(HttpStatusCode statusCode
         Title = null;
         Detail = null;
         Location = null;
-        Result = null;
+        Value = null;
         Exception = null;
 
         return AsBuilder;
@@ -221,28 +148,28 @@ public abstract class OperationResultBuilder<TBuilder>(HttpStatusCode statusCode
     }
 
     /// <inheritdoc/>
-    public TBuilder Merge(OperationResult operation)
+    public TBuilder Merge(Result result)
     {
-        ArgumentNullException.ThrowIfNull(operation);
-        if (operation.StatusCode != StatusCode)
+        ArgumentNullException.ThrowIfNull(result);
+        if (result.StatusCode != StatusCode)
         {
             throw new InvalidOperationException(
-                "Both operation results must have the same status code to merge them.");
+                "Both result results must have the same status code to merge them.");
         }
 
-        StatusCode = operation.StatusCode;
-        Title = operation.Title ?? Title;
-        Detail = operation.Detail ?? Detail;
-        Location = operation.Location ?? Location;
-        Headers.Merge(operation.Headers);
-        Extensions.Merge(operation.Extensions);
-        Errors.Merge(operation.Errors);
-        Exception = (operation.Exception, Exception) switch
+        StatusCode = result.StatusCode;
+        Title = result.Title ?? Title;
+        Detail = result.Detail ?? Detail;
+        Location = result.Location ?? Location;
+        Headers.Merge(result.Headers);
+        Extensions.Merge(result.Extensions);
+        Errors.Merge(result.Errors);
+        Exception = (result.Exception, Exception) switch
         {
             (null, null) => null,
-            (not null, null) => operation.Exception,
+            (not null, null) => result.Exception,
             (null, not null) => Exception,
-            (not null, not null) => CombineExceptions(operation.Exception, Exception)
+            (not null, not null) => CombineExceptions(result.Exception, Exception)
         };
 
         return AsBuilder;
@@ -276,11 +203,11 @@ public abstract class OperationResultBuilder<TBuilder>(HttpStatusCode statusCode
     }
 
     /// <inheritdoc/>
-    public TBuilder WithResult(object result)
+    public TBuilder WithValue(object value)
     {
-        ArgumentNullException.ThrowIfNull(result);
+        ArgumentNullException.ThrowIfNull(value);
 
-        Result = result;
+        Value = value;
         return AsBuilder;
     }
 
@@ -522,47 +449,50 @@ public abstract class OperationResultBuilder<TBuilder>(HttpStatusCode statusCode
 }
 
 /// <summary>
-/// Represents a builder for creating operation results with a specific result type.
+/// Represents a builder for creating result results with a specific result type.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-/// <param name="statusCode">The HTTP status code for the operation result.</param>
-public abstract class ExecutionResultBuilder<TBuilder, TResult>(HttpStatusCode statusCode) :
-    OperationResultBuilder<TBuilder>(statusCode),
-    IOperationResultResultBuilder<TBuilder, TResult>,
-    IOperationResultBuilder<TResult>
-    where TBuilder : class, IOperationResultBuilder<TResult>
+/// <typeparam name="TValue">The type of the result.</typeparam>
+/// <param name="statusCode">The HTTP status code for the result result.</param>
+public abstract class ResultBuilder<TBuilder, TValue>(HttpStatusCode statusCode) :
+    ResultBuilder<TBuilder>(statusCode),
+    IValueResultBuilder<TBuilder, TValue>,
+    IResultBuilder<TValue>
+    where TBuilder : class, IResultBuilder<TValue>
 {
     /// <summary>
-    /// Gets or sets the result object of the operation.
+    /// Gets or sets the result object of the result.
     /// </summary>
-    protected new TResult? Result
+    protected new TValue? Value
     {
-        get => base.Result is TResult value ? value : default;
-        set => base.Result = value;
+        get => base.Value is TValue value ? value : default;
+        set => base.Value = value;
     }
 
     /// <inheritdoc/>
-    public TBuilder WithResult(TResult result)
+    public TBuilder WithValue(TValue value)
     {
-        ArgumentNullException.ThrowIfNull(result);
+        ArgumentNullException.ThrowIfNull(value);
 
-        Result = result;
+        Value = value;
         return (this as TBuilder)!;
     }
 
     /// <inheritdoc/>
-    public new OperationResult<TResult> Build() =>
+    /// <remarks>When implementing this method in a derived class, ensure that all
+    /// properties are correctly set in the returned <see cref="Result{TResult}"/> instance.
+    /// </remarks>
+    public new virtual Result<TValue> Build() =>
         new()
         {
             StatusCode = StatusCode,
             Title = Title,
             Detail = Detail,
             Location = Location,
+            Value = Value,
+            Errors = Errors,
             Headers = Headers,
             Extensions = Extensions,
-            Errors = Errors,
-            Value = Result,
             Exception = Exception
         };
 }

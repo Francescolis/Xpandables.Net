@@ -17,7 +17,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
-namespace System.OperationResults;
+namespace System.Results;
 
 /// <summary>
 /// Provides extension methods for mapping exceptions to HTTP status codes.
@@ -35,7 +35,7 @@ public static class ExceptionExtensions
     extension(Exception exception)
     {
         /// <summary>
-        /// Creates an <see cref="OperationResult"/> representing the outcome of the current exception, optionally using
+        /// Creates an <see cref="Result"/> representing the outcome of the current exception, optionally using
         /// a specified HTTP status code and reason phrase.
         /// </summary>
         /// <remarks>In development environments, the operation result includes detailed exception
@@ -45,19 +45,20 @@ public static class ExceptionExtensions
         /// determined from the exception.</param>
         /// <param name="reason">An optional reason phrase to include in the operation result. If <see langword="null"/>, the exception
         /// message or status code title is used depending on the environment.</param>
-        /// <returns>An <see cref="OperationResult"/> describing the failure, including status code, error details, and exception
+        /// <returns>A <see cref="Result"/> describing the failure, including status code, error details, and exception
         /// information.</returns>
-        public OperationResult ToOperationResult(HttpStatusCode? statusCode = null, string? reason = default)
+        public FailureResult ToFailureResult(HttpStatusCode? statusCode = null, string? reason = default)
         {
             ArgumentNullException.ThrowIfNull(exception);
 
             bool isDevelopment = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";
 
-            if (exception is OperationResultException operationException)
+            if (exception is ResultException resultException)
             {
-                var executionResult = operationException.OperationResult;
-                return OperationResult
-                    .FailureStatus(executionResult.StatusCode)
+                var executionResult = resultException.Result;
+                return Result
+                    .Failure()
+                    .WithStatusCode(executionResult.StatusCode)
                     .WithTitle(executionResult.StatusCode.Title)
                     .WithDetail(executionResult.StatusCode.Detail)
                     .WithErrors(executionResult.Errors)
@@ -68,8 +69,55 @@ public static class ExceptionExtensions
 
             statusCode ??= exception.GetHttpStatusCode();
 
-            var builder = OperationResult
-                .FailureStatus(statusCode.Value)
+            var builder = Result
+                .Failure()
+                .WithStatusCode(statusCode.Value)
+                .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
+                .WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.Detail)
+                .WithErrors(exception.GetElementEntries());
+
+            return exception is ValidationException
+                ? builder.Build()
+                : builder.WithException(exception).Build();
+        }
+
+        /// <summary>
+        /// Creates a failure result representing the current exception, optionally specifying an HTTP status code and
+        /// reason.
+        /// </summary>
+        /// <remarks>If the exception is a ResultException, its embedded result is used to construct the
+        /// failure result. In development environments, additional exception details are included in the result for
+        /// debugging purposes.</remarks>
+        /// <typeparam name="TValue">The type of the value associated with the failure result.</typeparam>
+        /// <param name="statusCode">The HTTP status code to associate with the failure result. If null, a status code is inferred from the
+        /// exception.</param>
+        /// <param name="reason">An optional reason phrase to include in the failure result. If null, a default reason is used based on the
+        /// exception or status code.</param>
+        /// <returns>A failure result containing details about the exception, including status code, error information, and
+        /// optional reason.</returns>
+        public FailureResult<TValue> ToFailureResult<TValue>(HttpStatusCode? statusCode = null, string? reason = default)
+        {
+            ArgumentNullException.ThrowIfNull(exception);
+            bool isDevelopment = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";
+            if (exception is ResultException resultException)
+            {
+                var executionResult = resultException.Result;
+                return Result
+                    .Failure<TValue>()
+                    .WithStatusCode(executionResult.StatusCode)
+                    .WithTitle(executionResult.StatusCode.Title)
+                    .WithDetail(executionResult.StatusCode.Detail)
+                    .WithErrors(executionResult.Errors)
+                    .WithExtensions(executionResult.Extensions)
+                    .WithHeaders(executionResult.Headers)
+                    .Build();
+            }
+
+            statusCode ??= exception.GetHttpStatusCode();
+
+            var builder = Result
+                .Failure<TValue>()
+                .WithStatusCode(statusCode.Value)
                 .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
                 .WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.Detail)
                 .WithErrors(exception.GetElementEntries());

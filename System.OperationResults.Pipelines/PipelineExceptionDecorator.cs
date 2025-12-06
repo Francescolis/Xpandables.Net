@@ -31,6 +31,8 @@
  *
 ********************************************************************************/
 
+using System.Results;
+
 namespace System.OperationResults.Pipelines;
 
 /// <summary>
@@ -56,7 +58,7 @@ public sealed class PipelineExceptionDecorator<TRequest>(
         {
             return await nextHandler(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is not OperationResultException)
+        catch (Exception exception) when (exception is not ResultException)
         {
             if (exceptionHandler is not null)
             {
@@ -66,18 +68,18 @@ public sealed class PipelineExceptionDecorator<TRequest>(
                         .HandleAsync(context, exception, cancellationToken)
                         .ConfigureAwait(false);
                 }
-                catch (Exception ex) when (ex is not OperationResultException)
+                catch (Exception ex) when (ex is not ResultException)
                 {
                     AggregateException aggregateException = new(
                         "An error occurred while handling the exception.",
                         ex,
                         exception);
 
-                    return aggregateException.ToOperationResult();
+                    return aggregateException.ToFailureResult();
                 }
             }
 
-            return exception.ToOperationResult();
+            return exception.ToFailureResult();
         }
     }
 }

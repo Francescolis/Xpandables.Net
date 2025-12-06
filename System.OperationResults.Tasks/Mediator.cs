@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.OperationResults.Pipelines;
+using System.Results;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,7 +43,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
 
             return await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationResultException)
+        catch (ResultException)
         {
             throw;
         }
@@ -54,7 +55,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
         }
         catch (Exception exception)
         {
-            return exception.ToOperationResult();
+            return exception.ToFailureResult();
         }
     }
 }

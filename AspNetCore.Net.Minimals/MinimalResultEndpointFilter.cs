@@ -15,8 +15,8 @@
  *
 ********************************************************************************/
 using System.IO.Pipelines;
-using System.OperationResults;
 using System.Reflection;
+using System.Results;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -115,8 +115,8 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
             OperationResult execution = exception switch
             {
                 BadHttpRequestException badHttpRequestException => badHttpRequestException.ToOperationResult(),
-                OperationResultException executionResultException => executionResultException.OperationResult,
-                _ => exception.ToOperationResult()
+                ResultException executionResultException => executionResultException.Result,
+                _ => exception.ToFailureResult()
             };
 
             await WriteProblemDetailsAsync(context.HttpContext, execution).ConfigureAwait(false);

@@ -17,6 +17,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.OperationResults;
+using System.Results;
 
 using AspNetCore.Net;
 
@@ -64,7 +65,7 @@ public sealed class MinimalResultEndpointValidator(IRuleValidatorProvider valida
 
     static async Task<OperationResult> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
     {
-        IOperationResultFailureBuilder failureBuilder = OperationResult.BadRequest();
+        IFailureResultBuilder failureBuilder = OperationResult.BadRequest();
 
         foreach (ValidatorDescriptor descriptor in validators)
         {
@@ -79,16 +80,16 @@ public sealed class MinimalResultEndpointValidator(IRuleValidatorProvider valida
                     continue;
                 }
 
-                _ = failureBuilder.Merge(validationResults.ToExecutionResult());
+                _ = failureBuilder.Merge(validationResults.ToResult());
 
             }
             catch (ValidationException validationException)
             {
-                _ = failureBuilder.Merge(validationException.ToOperationResult());
+                _ = failureBuilder.Merge(validationException.ToFailureResult());
             }
-            catch (OperationResultException executionException)
+            catch (ResultException executionException)
             {
-                _ = failureBuilder.Merge(executionException.OperationResult);
+                _ = failureBuilder.Merge(executionException.Result);
             }
             catch (Exception exception)
             {
