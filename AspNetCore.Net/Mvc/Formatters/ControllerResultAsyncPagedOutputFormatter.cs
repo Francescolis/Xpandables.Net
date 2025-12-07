@@ -21,11 +21,9 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Mvc.Formatters;
 
 /// <summary>
 /// Provides functionality to format and serialize objects implementing <see cref="IAsyncPagedEnumerable{T}"/> to JSON

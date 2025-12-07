@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using AspNetCore.Net;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 

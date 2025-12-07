@@ -15,16 +15,14 @@
  *
 ********************************************************************************/
 using System.IO.Pipelines;
-using System.OperationResults;
+using System.Results;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Mvc.Filters;
 
 /// <summary>
 /// Provides an ASP.NET Core result filter that processes controller action results, handling execution result headers
@@ -46,19 +44,19 @@ public sealed class ControllerResultFilter : IAsyncAlwaysRunResultFilter
 
         if (context.Result is ObjectResult objectResult)
         {
-            if (objectResult.Value is OperationResult execution)
+            if (objectResult.Value is Result result)
             {
                 headerWriter ??= context.HttpContext
                 .RequestServices
                 .GetRequiredService<IResultHeaderWriter>();
 
                 await headerWriter
-                    .WriteAsync(context.HttpContext, execution)
+                    .WriteAsync(context.HttpContext, result)
                     .ConfigureAwait(false);
 
-                if (execution.Value is not null)
+                if (result.Value is not null)
                 {
-                    objectResult.Value = execution.Value;
+                    objectResult.Value = result.Value;
                 }
             }
 

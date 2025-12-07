@@ -19,7 +19,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Mvc.Formatters;
 
 internal static class InternalJsonSerializerExtensions
 {

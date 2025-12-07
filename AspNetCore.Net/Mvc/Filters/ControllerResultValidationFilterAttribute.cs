@@ -14,14 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
-using System.OperationResults;
+using System.Results;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Mvc.Filters;
 
 /// <summary>
 /// An action filter attribute that validates the model state before executing a controller action and returns a
@@ -29,7 +26,7 @@ namespace AspNetCore.Net;
 /// </summary>
 /// <remarks>When applied to a controller or action, this attribute checks the model state before the action
 /// executes. If the model state is invalid, it sets the result to a <see cref="BadRequestObjectResult"/> containing an
-/// <see cref="OperationResult"/> with validation errors, preventing the action from running. This ensures that clients
+/// <see cref="Result"/> with validation errors, preventing the action from running. This ensures that clients
 /// receive consistent error responses for invalid input.</remarks>
 public sealed class ControllerResultValidationFilterAttribute : ActionFilterAttribute
 {
@@ -43,8 +40,8 @@ public sealed class ControllerResultValidationFilterAttribute : ActionFilterAttr
             return;
         }
 
-        OperationResult executionResult = context.ModelState.ToResult();
+        Result result = context.ModelState.ToResult();
 
-        context.Result = new BadRequestObjectResult(executionResult);
+        context.Result = new BadRequestObjectResult(result);
     }
 }
