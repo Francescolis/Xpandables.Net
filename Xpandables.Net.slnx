@@ -22,9 +22,6 @@
       <Platform Project="x64" />
     </Project>
   </Folder>
-  <Project Path="AspNetCore.Net.Composition/AspNetCore.Net.Composition.csproj" Id="9c6a3470-892b-4719-9461-59bdf2857f02">
-    <Platform Project="x64" />
-  </Project>
   <Project Path="AspNetCore.Net/AspNetCore.Net.csproj" Id="a820677a-3901-4f62-a6a0-decd0a485702">
     <Platform Project="x64" />
   </Project>

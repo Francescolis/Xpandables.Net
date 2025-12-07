@@ -14,9 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Builder;
-
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
 /// Interface for exporting services to be used in a web application.
