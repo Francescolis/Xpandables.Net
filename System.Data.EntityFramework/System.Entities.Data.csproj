@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Data.Repositories</Title>
-		<Description>IRepository implementation.</Description>
+		<Title>System.Entities.Data</Title>
+		<Description>IRepository EntityFramework implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Data.Repositories</AssemblyName>
-		<RootNamespace>System.Data.Repositories</RootNamespace>
-		<PackageId>System.Data.Repositories</PackageId>
+		<AssemblyName>System.Entities.Data</AssemblyName>
+		<RootNamespace>System.Entities.Data</RootNamespace>
+		<PackageId>System.Entities.Data</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -86,7 +86,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
 	</ItemGroup>
 
 </Project>

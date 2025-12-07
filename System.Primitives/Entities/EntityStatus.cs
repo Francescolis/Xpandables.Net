@@ -18,7 +18,7 @@ using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Represents an immutable, high-performance entity status primitive.

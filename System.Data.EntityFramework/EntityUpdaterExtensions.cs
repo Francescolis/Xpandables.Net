@@ -19,7 +19,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace System.Data.Repositories;
+namespace System.Entities.Data;
 
 /// <summary>
 /// Provides extension methods for the EntityUpdater type to facilitate dynamic property update operations.

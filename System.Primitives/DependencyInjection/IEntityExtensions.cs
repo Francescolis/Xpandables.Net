@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Data.Repositories;
 using System.Diagnostics.CodeAnalysis;
+using System.Entities;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods for registering Entity repository services.
 /// </summary>
-public static class IRepositoryExtensions
+public static class IEntityExtensions
 {
     /// <summary>
     /// </summary>

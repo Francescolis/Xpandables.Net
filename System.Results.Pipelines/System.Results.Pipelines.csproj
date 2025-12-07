@@ -86,7 +86,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.Data.Repositories\System.Data.Repositories.csproj" />
 	  <ProjectReference Include="..\System.Events\System.Events.csproj" />
 	  <ProjectReference Include="..\System.Primitives.Validation\System.Primitives.Validation.csproj" />
 	  <ProjectReference Include="..\System.Results\System.Results.csproj" />

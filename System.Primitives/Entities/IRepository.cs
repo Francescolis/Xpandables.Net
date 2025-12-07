@@ -17,7 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Defines a generic repository interface for performing asynchronous CRUD operations on entities.

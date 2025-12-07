@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Data.Repositories;
+using System.Entities.Data;
 
 using Microsoft.EntityFrameworkCore;
 

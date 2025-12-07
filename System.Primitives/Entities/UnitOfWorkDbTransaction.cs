@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Data.Common;
 
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Represents a unit of work transaction that encapsulates a database transaction.

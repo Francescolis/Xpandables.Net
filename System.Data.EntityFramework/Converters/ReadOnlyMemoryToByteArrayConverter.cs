@@ -18,7 +18,7 @@
 
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace System.Data.Repositories.Converters;
+namespace System.Entities.Data.Converters;
 
 /// <summary>
 /// Converts a <see cref="ReadOnlyMemory{T}"/> of byte to a byte array and vice versa.

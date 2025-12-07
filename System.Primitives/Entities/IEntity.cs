@@ -17,7 +17,7 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Represents an entity with a unique identifier and lifecycle metadata.

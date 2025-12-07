@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Represents an abstract base class for entities with a specific key type

@@ -17,7 +17,7 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Represents a unit of work that encapsulates a set of operations to 

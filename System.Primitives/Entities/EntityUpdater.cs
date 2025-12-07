@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Linq.Expressions;
 
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Provides static methods for creating entity updaters that specify property updates using either computed or constant

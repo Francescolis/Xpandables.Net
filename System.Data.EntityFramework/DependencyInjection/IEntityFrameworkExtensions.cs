@@ -15,8 +15,9 @@
  *
 ********************************************************************************/
 
-using System.Data.Repositories;
 using System.Diagnostics.CodeAnalysis;
+using System.Entities;
+using System.Entities.Data;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -28,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods for registering Entity Framework repository services.
 /// </summary>
-public static class IRepositoryFrameworkExtensions
+public static class IEntityFrameworkExtensions
 {
     /// <summary>
     /// </summary>
@@ -54,6 +55,26 @@ public static class IRepositoryFrameworkExtensions
             where TDataContext : DataContext =>
             services.AddDbContext<TDataContext>(
                 optionsAction, contextLifetime, optionsLifetime);
+
+        /// <summary>
+        /// Adds a factory for creating instances of the specified data context type to the service collection.
+        /// </summary>
+        /// <remarks>Use this method to enable dependency injection of factories for <typeparamref
+        /// name="TDataContext"/>. The factory can be used to create data context instances with the configured options.
+        /// This is useful for scenarios where data contexts need to be created on demand, such as in background
+        /// services or for multi-tenancy.</remarks>
+        /// <typeparam name="TDataContext">The type of data context to create. Must inherit from <see cref="DataContext"/>.</typeparam>
+        /// <param name="optionsAction">A delegate that configures the <see cref="DbContextOptionsBuilder"/> for the data context. Receives the
+        /// current <see cref="IServiceProvider"/> and the options builder.</param>
+        /// <param name="factoryLifetime">The lifetime with which to register the data context factory. Defaults to <see
+        /// cref="ServiceLifetime.Singleton"/>.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> instance so that additional calls can be chained.</returns>
+        public IServiceCollection AddXDataContextFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TDataContext>(
+            Action<IServiceProvider, DbContextOptionsBuilder> optionsAction,
+            ServiceLifetime factoryLifetime = ServiceLifetime.Singleton)
+            where TDataContext : DataContext
+            => services.AddDbContextFactory<TDataContext>(
+                optionsAction, factoryLifetime);
 
         /// <summary>
         /// Adds Entity Framework Core repository services to the specified service collection.

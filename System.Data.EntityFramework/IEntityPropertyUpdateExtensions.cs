@@ -20,7 +20,7 @@ using System.Reflection;
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace System.Data.Repositories;
+namespace System.Entities.Data;
 
 /// <summary>
 /// Provides extension methods for converting collections of entity property update expressions to the format required

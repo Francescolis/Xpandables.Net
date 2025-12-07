@@ -20,7 +20,7 @@ using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace System.Data.Repositories;
+namespace System.Entities.Data;
 
 /// <summary>
 /// Entity Framework Core implementation of the IRepository interface.
@@ -43,7 +43,7 @@ public class Repository(DataContext context) : IRepository
     protected bool IsDisposed { get; set; }
 
     /// <summary>
-    /// Gets a value indicating whether operations are executed within a unit of work context.
+    /// Gets a value indicating whether persistence operations are executed within a unit of work context.
     /// </summary>
     /// <remarks>This property indicates if the add/updates should be executed as part of a unit of work,
     /// allowing for transactional consistency across multiple operations.

@@ -19,7 +19,7 @@ using System.Data.Common;
 
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace System.Data.Repositories;
+namespace System.Entities.Data;
 
 /// <summary>
 /// Provides an implementation of the unit of work transaction pattern using an Entity Framework database transaction.

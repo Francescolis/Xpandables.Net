@@ -20,7 +20,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace System.Data.Repositories;
+namespace System.Entities.Data;
 
 /// <summary>
 /// Represents a custom database context that extends <see cref="DbContext"/> to manage entity tracking and state

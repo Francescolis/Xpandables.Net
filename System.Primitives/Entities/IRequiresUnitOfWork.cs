@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Marker interface to indicate that a request requires automatic 

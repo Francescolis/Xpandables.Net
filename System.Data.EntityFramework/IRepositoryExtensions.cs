@@ -17,7 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace System.Data.Repositories;
+namespace System.Entities.Data;
 
 /// <summary>
 /// Provides extension methods for repository types to enable advanced behaviors such as ambient context injection.
@@ -46,7 +46,7 @@ public static class IRepositoryExtensions
         /// <param name="context">The <see cref="DataContext"/> to inject into the repository. Cannot be null.</param>
         /// <exception cref="InvalidOperationException">Thrown if the repository does not have a writable property or accessible field of type <see
         /// cref="DataContext"/>, or if the injection fails due to type incompatibility or access restrictions.</exception>
-        [RequiresUnreferencedCode("Injecting repository may need unreerenced code.")]
+        [RequiresUnreferencedCode("Injecting repository may need unreferenced code.")]
         public void InjectAmbientContext(DataContext context)
         {
             var repositoryType = repository.GetType();

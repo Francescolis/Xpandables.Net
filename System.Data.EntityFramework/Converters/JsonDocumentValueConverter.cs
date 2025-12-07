@@ -20,7 +20,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace System.Data.Repositories.Converters;
+namespace System.Entities.Data.Converters;
 
 /// <summary>
 /// Converts a <see cref="JsonDocument"/> to a <see cref="string"/> and vice versa.

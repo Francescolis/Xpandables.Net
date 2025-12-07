@@ -19,7 +19,7 @@ using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace System.Data.Repositories.Converters;
+namespace System.Entities.Data.Converters;
 
 /// <summary>
 /// Provides extension methods for configuring property conversions.

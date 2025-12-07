@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Linq.Expressions;
 
-namespace System.Data.Repositories;
+namespace System.Entities;
 
 /// <summary>
 /// Represents a property update expression for entity update operations.

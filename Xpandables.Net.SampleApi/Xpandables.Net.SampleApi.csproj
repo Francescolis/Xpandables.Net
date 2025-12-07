@@ -25,7 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AspNetCore.Net.Minimals\AspNetCore.Net.Minimals.csproj" />
     <ProjectReference Include="..\AspNetCore.Net\AspNetCore.Net.csproj" />
-    <ProjectReference Include="..\System.Data.EntityFramework\System.Data.EntityFramework.csproj" />
+    <ProjectReference Include="..\System.Data.EntityFramework\System.Entities.Data.csproj" />
     <ProjectReference Include="..\System.Events.EntityFramework\System.Events.EntityFramework.csproj" />
     <ProjectReference Include="..\System.Linq.AsyncPaged\System.Linq.AsyncPaged.csproj" />
     <ProjectReference Include="..\System.OperationResults.Tasks\System.Results.Tasks.csproj" />
