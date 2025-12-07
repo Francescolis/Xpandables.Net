@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Http.Json;
@@ -130,6 +131,20 @@ public static class HttpContextExtensions
         public string GetContentType(string defaultContentType)
         {
             return context.GetContentType() ?? defaultContentType;
+        }
+
+        /// <summary>
+        /// Retrieves the character encoding specified in the current HTTP context's Content-Type header.
+        /// </summary>
+        /// <remarks>Use this method to determine the appropriate encoding for reading or writing HTTP
+        /// request or response bodies based on the Content-Type header. If the header does not specify a charset, UTF-8
+        /// is used by default, which is the recommended encoding for web content.</remarks>
+        /// <returns>An <see cref="Encoding"/> representing the character encoding from the Content-Type header. Returns <see
+        /// cref="Encoding.UTF8"/> if no encoding is specified.</returns>
+        public Encoding GetEncoding()
+        {
+            var contentType = context.GetContentType();
+            return Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Parse(contentType).Encoding ?? Encoding.UTF8;
         }
     }
 }

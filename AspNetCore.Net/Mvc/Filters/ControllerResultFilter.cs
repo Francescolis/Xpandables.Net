@@ -14,13 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.IO.Pipelines;
 using System.Results;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
+using System.Text;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
@@ -62,26 +62,20 @@ public sealed class ControllerResultFilter : IAsyncAlwaysRunResultFilter
 
             if (objectResult.Value is IAsyncPagedEnumerable paged)
             {
-                PipeWriter pipeWriter = context.HttpContext.Response.BodyWriter;
                 context.HttpContext.Response.ContentType ??= context.HttpContext.GetContentType("application/json; charset=utf-8");
-                var cancellationToken = context.HttpContext.RequestAborted;
-                Type itemType = paged.GetArgumentType();
+                Encoding encoding = context.HttpContext.GetEncoding();
+                var jsonOptions = context.HttpContext.RequestServices.GetRequiredService<IOptions<JsonOptions>>().Value;
+                var formatter = ControllerResultAsyncPagedOutputFormatter.CreateFormatter(jsonOptions);
 
-                var options = context.HttpContext.GetJsonSerializerOptions();
-                JsonTypeInfo? jsonTypeInfo = options.GetTypeInfo(itemType);
+                var formatterContext = new OutputFormatterWriteContext(
+                    context.HttpContext,
+                    (stream, encoding) => new StreamWriter(stream, encoding),
+                    paged.GetType(),
+                    paged);
 
-                if (jsonTypeInfo is not null)
-                {
-                    await JsonSerializer
-                        .SerializeAsyncPaged(pipeWriter, paged, jsonTypeInfo, cancellationToken)
-                        .ConfigureAwait(false);
-                }
-                else
-                {
-                    await JsonSerializer
-                        .SerializeAsyncPaged(pipeWriter, paged, options, cancellationToken)
-                        .ConfigureAwait(false);
-                }
+                await formatter
+                    .WriteResponseBodyAsync(formatterContext, encoding)
+                    .ConfigureAwait(false);
 
                 return;
             }
