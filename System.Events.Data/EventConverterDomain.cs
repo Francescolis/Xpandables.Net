@@ -18,7 +18,7 @@ using System.Cache;
 using System.Events.Domain;
 using System.Text.Json;
 
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
 /// Converts event entities to domain events and vice versa.

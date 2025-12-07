@@ -15,13 +15,12 @@
  *
 ********************************************************************************/
 using System.Events.Domain;
-using System.Events.Repositories;
 using System.Runtime.CompilerServices;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace System.Events;
+namespace System.Events.Data;
 
 /// <summary>
 /// Provides an implementation of an event store that persists domain events and snapshots using the specified data

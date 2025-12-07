@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Data;
 using System.Data.Common;
 
 namespace System.Entities;

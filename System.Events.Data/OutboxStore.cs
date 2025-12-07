@@ -15,12 +15,11 @@
  *
 ********************************************************************************/
 using System.Events.Integration;
-using System.Events.Repositories;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace System.Events;
+namespace System.Events.Data;
 
 /// <summary>
 /// Provides an implementation of an outbox pattern for managing integration events.

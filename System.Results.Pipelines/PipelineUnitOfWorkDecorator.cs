@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-using System.Data.Repositories;
+using System.Entities;
 using System.Results.Requests;
 
 namespace System.Results.Pipelines;

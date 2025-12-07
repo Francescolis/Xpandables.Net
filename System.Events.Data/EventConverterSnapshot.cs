@@ -15,18 +15,18 @@
  *
 ********************************************************************************/
 using System.Cache;
-using System.Events.Integration;
+using System.Events.Domain;
 using System.Text.Json;
 
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
-/// Converts event entities to and from <see cref="IIntegrationEvent" />.
+/// Converts event snapshots to and from their entity representations.
 /// </summary>
-public sealed class EventConverterIntegration(ICacheTypeResolver cacheTypeResolver) : EventConverter(cacheTypeResolver)
+public sealed class EventConverterSnapshot(ICacheTypeResolver cacheTypeResolver) : EventConverter(cacheTypeResolver)
 {
     /// <inheritdoc />
-    public override Type EventType => typeof(IIntegrationEvent);
+    public override Type EventType => typeof(ISnapshotEvent);
 
     /// <inheritdoc />
     public override bool CanConvert(Type type)
@@ -49,7 +49,7 @@ public sealed class EventConverterIntegration(ICacheTypeResolver cacheTypeResolv
         {
             IEvent @event = DeserializeEntityToEvent(entityInstance, serializerOptions);
 
-            return (IIntegrationEvent)@event;
+            return (ISnapshotEvent)@event;
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
@@ -64,21 +64,23 @@ public sealed class EventConverterIntegration(ICacheTypeResolver cacheTypeResolv
     /// Converts the specified event instance to an entity event representation.
     /// </summary>
     /// <param name="eventInstance">The event instance to convert. Cannot be null.</param>
-    /// <param name="serializerOptions">Optional JSON serializer options to use during conversion.</param>
+    /// <param name="serializerOptions">JSON serializer options to use during conversion.</param>
     /// <returns>An <see cref="IEntityEvent"/> that represents the converted event.</returns>
+
     public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default)
     {
         ArgumentNullException.ThrowIfNull(eventInstance);
 
         try
         {
-            IIntegrationEvent integrationEvent = (IIntegrationEvent)eventInstance;
+            ISnapshotEvent snapshot = (ISnapshotEvent)eventInstance;
 
-            return new EntityIntegrationEvent
+            return new EntitySnapshotEvent
             {
-                KeyId = integrationEvent.EventId,
-                EventName = integrationEvent.GetEventName(),
-                EventData = SerializeEventToJsonDocument(integrationEvent, serializerOptions)
+                KeyId = snapshot.EventId,
+                OwnerId = snapshot.OwnerId,
+                EventName = snapshot.GetEventName(),
+                EventData = SerializeEventToJsonDocument(snapshot, serializerOptions)
             };
         }
         catch (Exception exception)

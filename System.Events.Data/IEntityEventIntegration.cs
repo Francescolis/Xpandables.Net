@@ -14,7 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Events.Repositories;
+
+namespace System.Events.Data;
 
 /// <summary>
 /// Represents an integration for handling entity events with error information.

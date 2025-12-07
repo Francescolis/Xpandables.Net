@@ -14,12 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Events.Repositories;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace System.Events.Configurations;
+namespace System.Events.Data.Configurations;
 
 /// <summary>
 /// Provides configuration for the Entity Framework Core mapping of the EntitySnapshotEvent entity type.

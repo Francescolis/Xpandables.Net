@@ -18,7 +18,7 @@ using System.Cache;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
 /// Provides static methods for registering, retrieving, serializing, and deserializing event converters used in event

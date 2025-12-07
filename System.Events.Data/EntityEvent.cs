@@ -17,7 +17,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
 /// Represents a domain event associated with an entity, providing event metadata and data payload for event-driven

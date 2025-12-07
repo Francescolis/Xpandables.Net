@@ -14,7 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Events.Repositories;
+
+namespace System.Events.Data;
 
 /// <summary>
 /// Defines the contract for an event that is associated with a specific stream and version within a domain-driven

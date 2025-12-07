@@ -14,7 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Events.Repositories;
+
+namespace System.Events.Data;
 
 /// <summary>
 /// Represents a class for event entities in a domain context.

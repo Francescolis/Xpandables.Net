@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
 /// Represents a snapshot of an entity event, providing access to the event's owner information.

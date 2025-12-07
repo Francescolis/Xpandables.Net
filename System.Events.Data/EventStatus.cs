@@ -18,7 +18,7 @@ using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
 /// Represents an immutable, high-performance event status primitive.

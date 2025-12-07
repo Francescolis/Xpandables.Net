@@ -27,10 +27,10 @@
   <Project Path="System.Collections.AsyncPaged/System.Collections.AsyncPaged.csproj" Id="73a0cebd-fdb7-4fea-8320-65193fec2f12">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Data.EntityFramework/System.Entities.Data.csproj" Id="d3e941fc-222a-4861-bd00-c142052b9d06">
+  <Project Path="System.Entities.Data/System.Entities.Data.csproj" Id="d3e941fc-222a-4861-bd00-c142052b9d06">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Events.EntityFramework/System.Events.EntityFramework.csproj" Id="d5b52978-5f0f-4789-a2d5-0e3819e69975">
+  <Project Path="System.Events.Data/System.Events.Data.csproj" Id="d5b52978-5f0f-4789-a2d5-0e3819e69975">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Events/System.Events.csproj" Id="2ba7d386-a42a-467c-bf64-bb53e3d6dd0c">
@@ -42,7 +42,7 @@
   <Project Path="System.Net.Http.Rests/System.Net.Http.Rests.csproj" Id="d019ebbd-3d81-41be-99e1-2b9e5571e764">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.OperationResults.Tasks/System.Results.Tasks.csproj">
+  <Project Path="System.Results.Tasks/System.Results.Tasks.csproj">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Optionals/System.Optionals.csproj" Id="8bff6792-1c31-40ab-8ef0-f2e2a74347c2">

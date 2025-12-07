@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Events.Repositories;
+using System.Events.Data;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

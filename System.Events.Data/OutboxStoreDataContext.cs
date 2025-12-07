@@ -15,42 +15,36 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Events.Configurations;
-using System.Events.Repositories;
+using System.Events.Data.Configurations;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace System.Events;
+namespace System.Events.Data;
 
 /// <summary>
-/// Represents the data context for handling event entities.
+/// Represents the data context for handling integration event entities.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="EventStoreDataContext" /> class.
+/// Initializes a new instance of the <see cref="OutboxStoreDataContext" /> class.
 /// </remarks>
 /// <param name="options">The options to be used by a <see cref="DbContext" />.</param>
 [RequiresUnreferencedCode("This context may be used with unreferenced code.")]
 [RequiresDynamicCode("This context may be used with dynamic code.")]
-public sealed class EventStoreDataContext(DbContextOptions<EventStoreDataContext> options) : EventDataContext(options)
+public sealed class OutboxStoreDataContext(DbContextOptions<OutboxStoreDataContext> options) : EventDataContext(options)
 {
     /// <summary>
-    /// Gets or sets the DbSet for EventEntityDomain.
+    /// Gets or sets the DbSet for EventEntityIntegration.
     /// </summary>
-    public DbSet<EntityDomainEvent> Domains { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the DbSet for EventEntitySnapshot.
-    /// </summary>
-    public DbSet<EntitySnapshotEvent> Snapshots { get; set; } = null!;
+    public DbSet<EntityIntegrationEvent> Integrations { get; set; } = null!;
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
+
         modelBuilder.HasDefaultSchema("Events");
 
-        _ = modelBuilder.ApplyConfiguration(new EntityDomainEventTypeConfiguration());
-        _ = modelBuilder.ApplyConfiguration(new EntitySnapShotEventTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityIntegrationEventTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

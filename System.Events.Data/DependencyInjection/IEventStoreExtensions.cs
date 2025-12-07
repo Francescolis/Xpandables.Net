@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Events;
+using System.Events.Data;
 using System.Events.Domain;
 using System.Events.Integration;
 

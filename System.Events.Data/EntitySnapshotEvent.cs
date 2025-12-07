@@ -14,27 +14,16 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Events.Repositories;
+
+namespace System.Events.Data;
 
 /// <summary>
-/// Represents an integration event entity.
+/// Represents a snapshot of an event entity.
 /// </summary>
-public sealed class EntityIntegrationEvent : EntityEvent, IEntityEventIntegration
+public sealed class EntitySnapshotEvent : EntityEvent, IEntityEventSnapshot
 {
     /// <summary>
-    /// Constructs a new instance of the <see cref="EntityIntegrationEvent" /> class.
+    /// Gets the owner of the event entity snapshot.
     /// </summary>
-    public EntityIntegrationEvent() => SetStatus(EventStatus.PENDING);
-
-    /// <inheritdoc/>
-    public string? ErrorMessage { get; init; }
-
-    /// <inheritdoc/>
-    public int AttemptCount { get; init; }
-
-    /// <inheritdoc/>
-    public DateTime? NextAttemptOn { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? ClaimId { get; init; }
+    public required Guid OwnerId { get; init; }
 }

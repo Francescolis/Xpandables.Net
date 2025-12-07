@@ -16,12 +16,11 @@
 ********************************************************************************/
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Events.Repositories;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace System.Events;
+namespace System.Events.Data;
 
 /// <summary>
 /// Represents a custom database context that extends <see cref="DbContext"/> to manage entity tracking and state

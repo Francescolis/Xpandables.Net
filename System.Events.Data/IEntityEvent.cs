@@ -17,7 +17,7 @@
 
 using System.Text.Json;
 
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
 /// Represents an event associated with an entity, providing access to event metadata and data payload.

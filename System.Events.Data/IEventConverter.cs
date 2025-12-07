@@ -14,32 +14,31 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Text.Json;
 
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
-/// Defines a factory for retrieving event converters based on event type.
+/// Defines methods for converting between domain event objects and their corresponding entity representations for
+/// persistence or transport purposes.
 /// </summary>
-public interface IEventConverterFactory
+/// <remarks>Implementations of this interface enable serialization and deserialization of events to and from a
+/// format suitable for storage or transmission, such as a database entity or a message payload. This abstraction allows
+/// event handling infrastructure to work with different event types and storage mechanisms in a consistent
+/// manner.</remarks>
+public interface IEventConverter
 {
     /// <summary>
-    /// Gets the event converter for the specified event type.
+    /// Gets the type of the event associated with this instance.
     /// </summary>
-    /// <param name="eventType">The type of the event to get the converter for. Cannot be null.</param>
-    /// <returns>An <see cref="IEventConverter"/> that can convert the specified event type.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when no converter is found for the specified event type.</exception>
-    IEventConverter GetEventConverter(Type eventType);
+    Type EventType { get; }
 
     /// <summary>
-    /// Retrieves an event converter instance for the specified event type.
+    /// Determines whether the specified type can be converted by this converter.
     /// </summary>
-    /// <typeparam name="TEvent">The type of event for which to obtain a converter. Must implement <see cref="IEvent"/>.</typeparam>
-    /// <returns>An <see cref="IEventConverter"/> instance capable of converting events of type <typeparamref name="TEvent"/>.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when no converter is found for the specified event type.</exception>
-    IEventConverter GetEventConverter<TEvent>()
-        where TEvent : IEvent;
+    /// <param name="type">The type to evaluate for conversion support. Cannot be null.</param>
+    /// <returns>true if the specified type can be converted; otherwise, false.</returns>
+    bool CanConvert(Type type);
 
     /// <summary>
     /// Converts the specified event to an entity event representation.

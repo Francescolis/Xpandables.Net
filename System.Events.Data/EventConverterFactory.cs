@@ -19,7 +19,7 @@ using System.Events.Domain;
 using System.Events.Integration;
 using System.Text.Json;
 
-namespace System.Events.Repositories;
+namespace System.Events.Data;
 
 /// <summary>
 /// Provides a factory for retrieving event converters based on event type.
