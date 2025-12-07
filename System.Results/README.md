@@ -1,175 +1,241 @@
-﻿# 🔗 System.Results.Pipelines
+﻿# ✅ System.Results
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Pipeline Decorators** - Pre-built pipeline decorators for validation, transactions, domain events, exception handling, and other cross-cutting concerns in CQRS request pipelines.
+> **Operation Results & Request Handling** - Railway-oriented programming with HTTP-aware result types, request/handler pattern (CQRS), and pipeline infrastructure.
 
 ---
 
-## 🎯 Overview
+## 📋 Overview
 
-`System.Results.Pipelines` provides production-ready pipeline decorators that wrap request handlers with cross-cutting concerns. These decorators execute before and after your main handler logic, enabling clean separation of business logic from infrastructure concerns like validation, transactions, event publishing, and more.
+`System.Results` provides a robust implementation of the Result pattern for representing operation outcomes, along with a request/handler infrastructure for CQRS-style command and query handling. Built for .NET 10, it enables functional error handling and clean separation of concerns.
 
 ### ✨ Key Features
 
-- ✅ **PipelineValidationDecorator** - Automatic request validation with IRequiresValidation
-- 🔄 **PipelineUnitOfWorkDecorator** - Unit of Work pattern with automatic SaveChanges
-- 📡 **PipelineDomainEventsDecorator** - Publish domain events after handler execution
-- 📮 **PipelineIntegrationOutboxDecorator** - Outbox pattern for reliable event publishing
-- 📝 **PipelinePreDecorator** - Execute logic before the main handler
-- 📝 **PipelinePostDecorator** - Execute logic after the main handler
-- ⚠️ **PipelineExceptionDecorator** - Centralized exception handling
-- 💾 **PipelineEventStoreEventDecorator** - Automatic event store persistence
-- 🧩 **Composable** - Chain multiple decorators together
+- ✅ **Result & Result&lt;T&gt;** - Represent success/failure outcomes with HTTP status codes
+- 🏗️ **SuccessResult / FailureResult** - Typed result classes for clear intent
+- 🔧 **Fluent Builders** - SuccessResultBuilder and FailureResultBuilder for composing results
+- 📡 **IRequest / IRequestHandler** - CQRS-style request/handler pattern
+- 🔄 **Pipeline Infrastructure** - IPipelineDecorator and IPipelineRequestHandler
+- 🌊 **IStreamRequestHandler** - Support for streaming results
+- 📦 **HTTP Integration** - Built-in HTTP status codes and headers support
 
 ---
 
 ## 📥 Installation
 
 ```bash
-dotnet add package System.Results.Pipelines
+dotnet add package System.Results
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### Register Pipeline Decorators
+### Basic Result Usage
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
+using System.Results;
 
-var builder = WebApplication.CreateBuilder(args);
+// Create a success result
+Result success = Result.Success();
 
-// Register the pipeline request handler
-builder.Services.AddXPipelineRequestHandler();
+// Create a success result with value
+Result<User> userResult = Result.Success(new User { Name = "John" });
 
-// Add decorators (order matters - first registered runs outermost)
-builder.Services.AddXPipelineExceptionDecorator();       // Handle exceptions
-builder.Services.AddXPipelineValidationDecorator();      // Validate requests
-builder.Services.AddXPipelinePreDecorator();             // Pre-processing
-builder.Services.AddXPipelineUnitOfWorkDecorator();      // Transaction management
-builder.Services.AddXPipelineDomainEventsDecorator();    // Publish domain events
-builder.Services.AddXPipelineIntegrationOutboxDecorator(); // Outbox pattern
-builder.Services.AddXPipelinePostDecorator();            // Post-processing
+// Create a failure result
+Result failure = Result.Failure("email", "Email is required");
+
+// Create a failure with HTTP status
+Result notFound = Result.NotFound("userId", "User not found");
 ```
 
-### Mark Requests for Pipeline Features
+### Checking Results
 
 ```csharp
-using System.Results.Requests;
-using System.ComponentModel.DataAnnotations;
+Result<User> result = await GetUserAsync(userId);
 
-// Request that requires validation
-public sealed record CreateUserCommand(string Name, string Email) 
-    : IRequest<User>, IRequiresValidation;
-
-// Request that requires Unit of Work (transaction)
-public sealed record UpdateOrderCommand(Guid OrderId, OrderStatus Status) 
-    : IRequest, IRequiresUnitOfWork;
-
-// Request that may publish domain events
-public sealed record ProcessPaymentCommand(Guid OrderId, decimal Amount) 
-    : IRequest<PaymentResult>, IRequiresDomainEvents;
+if (result.IsSuccess)
+{
+    Console.WriteLine($"Found user: {result.Value.Name}");
+}
+else
+{
+    Console.WriteLine($"Error: {result.Title}");
+    foreach (var error in result.Errors)
+    {
+        Console.WriteLine($"  {error.Key}: {string.Join(", ", error.Values)}");
+    }
+}
 ```
 
 ---
 
-## 🧩 Available Decorators
+## 🧩 Core Concepts
 
-### PipelineValidationDecorator
-
-Validates requests implementing `IRequiresValidation` before handler execution:
+### Success Results
 
 ```csharp
-// Register
-builder.Services.AddXPipelineValidationDecorator();
+// HTTP 200 OK
+SuccessResult ok = Result.Success();
 
-// Request with validation
-public sealed record CreateProductCommand(string Name, decimal Price) 
-    : IRequest<Product>, IRequiresValidation;
+// HTTP 201 Created
+SuccessResult created = Result.Created();
 
-// Validator
-public sealed class CreateProductValidator : RuleValidator<CreateProductCommand>
+// HTTP 204 No Content  
+SuccessResult noContent = Result.NoContent();
+
+// HTTP 202 Accepted
+SuccessResult accepted = Result.Accepted();
+
+// With value and location
+SuccessResult<User> userCreated = Result.Created<User>()
+    .WithValue(newUser)
+    .WithLocation($"/api/users/{newUser.Id}");
+```
+
+### Failure Results
+
+```csharp
+// HTTP 400 Bad Request (default)
+FailureResult badRequest = Result.Failure();
+
+// With error details
+FailureResult validation = Result.Failure("email", "Invalid email format");
+
+// HTTP 404 Not Found
+FailureResult notFound = Result.NotFound("userId", "User not found");
+
+// HTTP 409 Conflict
+FailureResult conflict = Result.Conflict("email", "Email already exists");
+
+// HTTP 401 Unauthorized
+FailureResult unauthorized = Result.Unauthorized();
+
+// HTTP 403 Forbidden
+FailureResult forbidden = Result.Forbidden();
+
+// HTTP 500 Internal Server Error
+FailureResult serverError = Result.InternalServerError(exception);
+```
+
+### Fluent Builder Pattern
+
+```csharp
+// Build complex success results
+SuccessResult<Order> result = Result.Created<Order>()
+    .WithValue(order)
+    .WithLocation($"/api/orders/{order.Id}")
+    .WithHeader("X-Order-Number", order.Number);
+
+// Build complex failure results
+FailureResult result = Result.BadRequest()
+    .WithError("name", "Name is required")
+    .WithError("email", "Email format is invalid")
+    .WithDetail("Please correct the validation errors")
+    .WithException(validationException);
+```
+
+---
+
+## 📡 Request/Handler Pattern (CQRS)
+
+### Define Requests
+
+```csharp
+using System.Results.Requests;
+
+// Query - returns data
+public sealed record GetUserByIdQuery(Guid UserId) : IRequest<User>;
+
+// Command - performs action
+public sealed record CreateUserCommand(string Name, string Email) : IRequest<User>;
+
+// Command without return value
+public sealed record DeleteUserCommand(Guid UserId) : IRequest;
+
+// Stream request - returns multiple items
+public sealed record GetAllUsersQuery : IStreamRequest<User>;
+```
+
+### Implement Handlers
+
+```csharp
+// Handler for query with response
+public sealed class GetUserByIdHandler : IRequestHandler<GetUserByIdQuery, User>
 {
-    public override IReadOnlyCollection<ValidationResult> Validate(CreateProductCommand instance)
+    private readonly IUserRepository _repository;
+
+    public GetUserByIdHandler(IUserRepository repository)
+        => _repository = repository;
+
+    public async Task<Result<User>> HandleAsync(
+        GetUserByIdQuery request,
+        CancellationToken cancellationToken = default)
     {
-        var results = new List<ValidationResult>();
-        
-        if (string.IsNullOrWhiteSpace(instance.Name))
-            results.Add(new ValidationResult("Name is required", [nameof(instance.Name)]));
-        
-        if (instance.Price <= 0)
-            results.Add(new ValidationResult("Price must be positive", [nameof(instance.Price)]));
-        
-        return results;
+        var user = await _repository.FindByIdAsync(request.UserId, cancellationToken);
+
+        if (user is null)
+        {
+            return Result.NotFound<User>("userId", "User not found");
+        }
+
+        return Result.Success(user);
+    }
+}
+
+// Handler for command without response value
+public sealed class DeleteUserHandler : IRequestHandler<DeleteUserCommand>
+{
+    private readonly IUserRepository _repository;
+
+    public async Task<Result> HandleAsync(
+        DeleteUserCommand request,
+        CancellationToken cancellationToken = default)
+    {
+        var deleted = await _repository.DeleteAsync(request.UserId, cancellationToken);
+
+        if (!deleted)
+        {
+            return Result.NotFound("userId", "User not found");
+        }
+
+        return Result.NoContent();
     }
 }
 ```
 
-### PipelineUnitOfWorkDecorator
+---
 
-Automatically saves changes after handler execution for requests implementing `IRequiresUnitOfWork`:
+## 🔄 Pipeline Infrastructure
 
-```csharp
-// Register
-builder.Services.AddXPipelineUnitOfWorkDecorator();
-
-// Request with unit of work
-public sealed record CreateOrderCommand(Guid CustomerId, List<OrderItem> Items) 
-    : IRequest<Order>, IRequiresUnitOfWork;
-
-// Handler - SaveChanges is called automatically after execution
-public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Order>
-{
-    private readonly IRepository _repository;
-
-    public async Task<Result<Order>> HandleAsync(
-        CreateOrderCommand request,
-        CancellationToken cancellationToken)
-    {
-        var order = new Order { CustomerId = request.CustomerId, Items = request.Items };
-        await _repository.AddAsync(cancellationToken, order);
-        // No need to call SaveChanges - decorator handles it
-        return Result.Created(order);
-    }
-}
-```
-
-### PipelinePreDecorator / PipelinePostDecorator
-
-Execute custom logic before and after the main handler:
+### Pre-Handler (Before Execution)
 
 ```csharp
-// Register
-builder.Services.AddXPipelinePreDecorator();
-builder.Services.AddXPipelinePostDecorator();
+using System.Results.Requests;
 
-// Implement pre-handler
 public sealed class LoggingPreHandler<TRequest> : IRequestPreHandler<TRequest>
     where TRequest : class, IRequest
 {
     private readonly ILogger<LoggingPreHandler<TRequest>> _logger;
 
-    public LoggingPreHandler(ILogger<LoggingPreHandler<TRequest>> logger)
-        => _logger = logger;
-
     public Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting {RequestType}", typeof(TRequest).Name);
+        _logger.LogInformation("Executing {RequestType}", typeof(TRequest).Name);
         return Task.FromResult(Result.Success());
     }
 }
+```
 
-// Implement post-handler
+### Post-Handler (After Execution)
+
+```csharp
 public sealed class AuditPostHandler<TRequest> : IRequestPostHandler<TRequest>
     where TRequest : class, IRequest
 {
-    private readonly IAuditService _auditService;
-
     public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         Result result,
@@ -181,138 +247,55 @@ public sealed class AuditPostHandler<TRequest> : IRequestPostHandler<TRequest>
 }
 ```
 
-### PipelineExceptionDecorator
-
-Catches exceptions and converts them to Result failures:
+### Exception Handler
 
 ```csharp
-// Register
-builder.Services.AddXPipelineExceptionDecorator();
-
-// Implement exception handler
 public sealed class GlobalExceptionHandler<TRequest> : IRequestExceptionHandler<TRequest>
     where TRequest : class, IRequest
 {
-    private readonly ILogger<GlobalExceptionHandler<TRequest>> _logger;
-
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler<TRequest>> logger)
-        => _logger = logger;
-
     public Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         Exception exception,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogError(exception, "Request {Request} failed", typeof(TRequest).Name);
+        _logger.LogError(exception, "Request {RequestType} failed", typeof(TRequest).Name);
         return Task.FromResult(Result.InternalServerError(exception).Build());
-    }
-}
-```
-
-### PipelineDomainEventsDecorator
-
-Buffers and publishes domain events after successful handler execution:
-
-```csharp
-// Register
-builder.Services.AddXPipelineDomainEventsDecorator();
-
-// Events are collected from aggregates and published after handler completes
-public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Order>
-{
-    private readonly IPendingDomainEventsBuffer _eventsBuffer;
-    private readonly IRepository _repository;
-
-    public async Task<Result<Order>> HandleAsync(
-        CreateOrderCommand request,
-        CancellationToken cancellationToken)
-    {
-        var order = Order.Create(request.CustomerId, request.Items);
-        // Order.Create raises OrderCreatedEvent
-        
-        _eventsBuffer.Add(order.DomainEvents);
-        await _repository.AddAsync(cancellationToken, order);
-        
-        return Result.Created(order);
-        // After success, decorator publishes all buffered events
-    }
-}
-```
-
-### PipelineIntegrationOutboxDecorator
-
-Implements the outbox pattern for reliable integration event publishing:
-
-```csharp
-// Register
-builder.Services.AddXPipelineIntegrationOutboxDecorator();
-
-// Integration events are stored in outbox and published reliably
-public sealed class ProcessPaymentHandler : IRequestHandler<ProcessPaymentCommand, PaymentResult>
-{
-    private readonly IPendingIntegrationEventsBuffer _eventsBuffer;
-
-    public async Task<Result<PaymentResult>> HandleAsync(
-        ProcessPaymentCommand request,
-        CancellationToken cancellationToken)
-    {
-        // Process payment...
-        var result = new PaymentResult { Success = true };
-        
-        // Add integration event to outbox buffer
-        _eventsBuffer.Add(new PaymentProcessedEvent(request.OrderId, request.Amount));
-        
-        return Result.Success(result);
-        // Decorator persists events to outbox for reliable delivery
     }
 }
 ```
 
 ---
 
-## ⚙️ Complete Configuration
+## ⚙️ Service Registration
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Core pipeline
-builder.Services.AddXPipelineRequestHandler();
-
-// All decorators (order: outermost to innermost)
-builder.Services.AddXPipelineExceptionDecorator();           // 1. Catch all exceptions
-builder.Services.AddXPipelineValidationDecorator();          // 2. Validate request
-builder.Services.AddXPipelinePreDecorator();                 // 3. Pre-processing
-builder.Services.AddXPipelineEventStoreEventDecorator();     // 4. Event store
-builder.Services.AddXPipelineUnitOfWorkDecorator();          // 5. Transaction
-builder.Services.AddXPipelineDomainEventsDecorator();        // 6. Domain events
-builder.Services.AddXPipelineIntegrationOutboxDecorator();   // 7. Outbox
-builder.Services.AddXPipelinePostDecorator();                // 8. Post-processing
-
-// Register validators
-builder.Services.AddXRuleValidators(typeof(Program).Assembly);
+// Register request handlers from assembly
+builder.Services.AddXRequestHandlers(typeof(Program).Assembly);
 ```
 
 ---
 
 ## ✅ Best Practices
 
-1. **Order decorators carefully** - Exception handler should be outermost
-2. **Use marker interfaces** - IRequiresValidation, IRequiresUnitOfWork enable specific decorators
-3. **Keep handlers focused** - Let decorators handle cross-cutting concerns
-4. **Register all pre/post handlers** - They run for all matching requests
-5. **Buffer events** - Use the provided buffers for domain/integration events
-6. **Test decorators** - Each decorator can be unit tested independently
+1. **Use specific status codes** - NotFound, Conflict, Unauthorized for clear semantics
+2. **Include error details** - Always provide key and message for debugging
+3. **Keep handlers focused** - One handler per request type
+4. **Use pipeline handlers** - For cross-cutting concerns like logging, validation
+5. **Convert exceptions to results** - Don't let exceptions bubble up
+6. **Use builders** - For complex result construction
 
 ---
 
 ## 📚 Related Packages
 
-- **System.Results** - Core Result types and request/handler interfaces
+- **System.Results.Pipelines** - Pre-built pipeline decorators
 - **System.Results.Tasks** - Mediator implementation
-- **System.Primitives.Validation** - Rule validators and specifications
-- **System.Events** - Domain and integration event abstractions
+- **AspNetCore.Net** - ASP.NET Core integration
+- **System.Optionals** - Optional value handling
 
 ---
 

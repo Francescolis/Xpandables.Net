@@ -1,271 +1,181 @@
-﻿# 🔗 System.Results.Pipelines
+﻿# 📡 System.Results.Tasks
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Pipeline Decorators** - Pre-built pipeline decorators for validation, transactions, domain events, exception handling, and other cross-cutting concerns in CQRS request pipelines.
+> **Mediator Implementation** - CQRS mediator for dispatching requests to handlers with built-in pipeline support.
 
 ---
 
-## 🎯 Overview
+## 📋 Overview
 
-`System.Results.Pipelines` provides production-ready pipeline decorators that wrap request handlers with cross-cutting concerns. These decorators execute before and after your main handler logic, enabling clean separation of business logic from infrastructure concerns like validation, transactions, event publishing, and more.
+`System.Results.Tasks` provides the `IMediator` interface and `Mediator` implementation for dispatching requests to their corresponding handlers. It serves as the central dispatcher in CQRS architectures, decoupling request senders from handlers.
 
 ### ✨ Key Features
 
-- ✅ **PipelineValidationDecorator** - Automatic request validation with IRequiresValidation
-- 🔄 **PipelineUnitOfWorkDecorator** - Unit of Work pattern with automatic SaveChanges
-- 📡 **PipelineDomainEventsDecorator** - Publish domain events after handler execution
-- 📮 **PipelineIntegrationOutboxDecorator** - Outbox pattern for reliable event publishing
-- 📝 **PipelinePreDecorator** - Execute logic before the main handler
-- 📝 **PipelinePostDecorator** - Execute logic after the main handler
-- ⚠️ **PipelineExceptionDecorator** - Centralized exception handling
-- 💾 **PipelineEventStoreEventDecorator** - Automatic event store persistence
-- 🧩 **Composable** - Chain multiple decorators together
+- 📡 **IMediator** - Central interface for sending requests to handlers
+- 🎯 **Mediator** - Default implementation with handler resolution
+- 🔄 **Request Dispatch** - Automatic routing to appropriate handlers
+- 🔌 **DI Integration** - Seamless dependency injection support
+- ⚡ **Async First** - Fully asynchronous request handling
+- 🔗 **Pipeline Support** - Works with IPipelineRequestHandler decorators
 
 ---
 
 ## 📥 Installation
 
 ```bash
-dotnet add package System.Results.Pipelines
+dotnet add package System.Results.Tasks
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### Register Pipeline Decorators
+### Service Registration
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register the pipeline request handler
-builder.Services.AddXPipelineRequestHandler();
+// Register mediator
+builder.Services.AddXMediator();
 
-// Add decorators (order matters - first registered runs outermost)
-builder.Services.AddXPipelineExceptionDecorator();       // Handle exceptions
-builder.Services.AddXPipelineValidationDecorator();      // Validate requests
-builder.Services.AddXPipelinePreDecorator();             // Pre-processing
-builder.Services.AddXPipelineUnitOfWorkDecorator();      // Transaction management
-builder.Services.AddXPipelineDomainEventsDecorator();    // Publish domain events
-builder.Services.AddXPipelineIntegrationOutboxDecorator(); // Outbox pattern
-builder.Services.AddXPipelinePostDecorator();            // Post-processing
+// Register request handlers from assembly
+builder.Services.AddXRequestHandlers(typeof(Program).Assembly);
 ```
 
-### Mark Requests for Pipeline Features
+### Define Requests and Handlers
 
 ```csharp
+using System.Results;
 using System.Results.Requests;
-using System.ComponentModel.DataAnnotations;
 
-// Request that requires validation
-public sealed record CreateUserCommand(string Name, string Email) 
-    : IRequest<User>, IRequiresValidation;
+// Define a query
+public sealed record GetUserByIdQuery(Guid UserId) : IRequest<User>;
 
-// Request that requires Unit of Work (transaction)
-public sealed record UpdateOrderCommand(Guid OrderId, OrderStatus Status) 
-    : IRequest, IRequiresUnitOfWork;
+// Implement handler
+public sealed class GetUserByIdHandler : IRequestHandler<GetUserByIdQuery, User>
+{
+    private readonly IUserRepository _repository;
 
-// Request that may publish domain events
-public sealed record ProcessPaymentCommand(Guid OrderId, decimal Amount) 
-    : IRequest<PaymentResult>, IRequiresDomainEvents;
+    public GetUserByIdHandler(IUserRepository repository)
+        => _repository = repository;
+
+    public async Task<Result<User>> HandleAsync(
+        GetUserByIdQuery request,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _repository.FindByIdAsync(request.UserId, cancellationToken);
+
+        if (user is null)
+        {
+            return Result.NotFound<User>("userId", "User not found");
+        }
+
+        return Result.Success(user);
+    }
+}
+```
+
+### Send Requests via Mediator
+
+```csharp
+public class UsersController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public UsersController(IMediator mediator) => _mediator = mediator;
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUser(Guid id)
+    {
+        Result<User> result = await _mediator.SendAsync(new GetUserByIdQuery(id));
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : NotFound(result.Errors);
+    }
+}
 ```
 
 ---
 
-## 🧩 Available Decorators
+## 🧩 Core Concepts
 
-### PipelineValidationDecorator
-
-Validates requests implementing `IRequiresValidation` before handler execution:
+### IMediator Interface
 
 ```csharp
-// Register
-builder.Services.AddXPipelineValidationDecorator();
-
-// Request with validation
-public sealed record CreateProductCommand(string Name, decimal Price) 
-    : IRequest<Product>, IRequiresValidation;
-
-// Validator
-public sealed class CreateProductValidator : RuleValidator<CreateProductCommand>
+public interface IMediator
 {
-    public override IReadOnlyCollection<ValidationResult> Validate(CreateProductCommand instance)
-    {
-        var results = new List<ValidationResult>();
-        
-        if (string.IsNullOrWhiteSpace(instance.Name))
-            results.Add(new ValidationResult("Name is required", [nameof(instance.Name)]));
-        
-        if (instance.Price <= 0)
-            results.Add(new ValidationResult("Price must be positive", [nameof(instance.Price)]));
-        
-        return results;
-    }
+    /// <summary>
+    /// Sends the specified request asynchronously and returns the result.
+    /// </summary>
+    Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+        where TRequest : class, IRequest;
 }
 ```
 
-### PipelineUnitOfWorkDecorator
-
-Automatically saves changes after handler execution for requests implementing `IRequiresUnitOfWork`:
+### Commands and Queries
 
 ```csharp
-// Register
-builder.Services.AddXPipelineUnitOfWorkDecorator();
+// Command - performs an action, may or may not return a value
+public sealed record CreateUserCommand(string Name, string Email) : IRequest<User>;
+public sealed record DeleteUserCommand(Guid UserId) : IRequest;
 
-// Request with unit of work
-public sealed record CreateOrderCommand(Guid CustomerId, List<OrderItem> Items) 
-    : IRequest<Order>, IRequiresUnitOfWork;
+// Query - retrieves data
+public sealed record GetUserByIdQuery(Guid UserId) : IRequest<User>;
+public sealed record GetAllUsersQuery : IRequest<IEnumerable<User>>;
+```
 
-// Handler - SaveChanges is called automatically after execution
-public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Order>
+### Using the Mediator
+
+```csharp
+public class OrderService
 {
-    private readonly IRepository _repository;
+    private readonly IMediator _mediator;
 
-    public async Task<Result<Order>> HandleAsync(
-        CreateOrderCommand request,
+    public OrderService(IMediator mediator) => _mediator = mediator;
+
+    public async Task<Result<Order>> CreateOrderAsync(
+        Guid customerId,
+        List<OrderItem> items,
         CancellationToken cancellationToken)
     {
-        var order = new Order { CustomerId = request.CustomerId, Items = request.Items };
-        await _repository.AddAsync(cancellationToken, order);
-        // No need to call SaveChanges - decorator handles it
-        return Result.Created(order);
+        var command = new CreateOrderCommand(customerId, items);
+        return await _mediator.SendAsync(command, cancellationToken);
+    }
+
+    public async Task<Result<Order>> GetOrderAsync(
+        Guid orderId,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetOrderByIdQuery(orderId);
+        return await _mediator.SendAsync(query, cancellationToken);
     }
 }
 ```
 
-### PipelinePreDecorator / PipelinePostDecorator
+---
 
-Execute custom logic before and after the main handler:
+## 🔄 Pipeline Integration
 
-```csharp
-// Register
-builder.Services.AddXPipelinePreDecorator();
-builder.Services.AddXPipelinePostDecorator();
-
-// Implement pre-handler
-public sealed class LoggingPreHandler<TRequest> : IRequestPreHandler<TRequest>
-    where TRequest : class, IRequest
-{
-    private readonly ILogger<LoggingPreHandler<TRequest>> _logger;
-
-    public LoggingPreHandler(ILogger<LoggingPreHandler<TRequest>> logger)
-        => _logger = logger;
-
-    public Task<Result> HandleAsync(
-        RequestContext<TRequest> context,
-        CancellationToken cancellationToken = default)
-    {
-        _logger.LogInformation("Starting {RequestType}", typeof(TRequest).Name);
-        return Task.FromResult(Result.Success());
-    }
-}
-
-// Implement post-handler
-public sealed class AuditPostHandler<TRequest> : IRequestPostHandler<TRequest>
-    where TRequest : class, IRequest
-{
-    private readonly IAuditService _auditService;
-
-    public async Task<Result> HandleAsync(
-        RequestContext<TRequest> context,
-        Result result,
-        CancellationToken cancellationToken = default)
-    {
-        await _auditService.LogAsync(typeof(TRequest).Name, result.IsSuccess);
-        return result;
-    }
-}
-```
-
-### PipelineExceptionDecorator
-
-Catches exceptions and converts them to Result failures:
+The mediator works seamlessly with pipeline decorators from `System.Results.Pipelines`:
 
 ```csharp
-// Register
+// Register pipeline decorators
+builder.Services.AddXPipelineRequestHandler();
+builder.Services.AddXPipelineValidationDecorator();
+builder.Services.AddXPipelineUnitOfWorkDecorator();
 builder.Services.AddXPipelineExceptionDecorator();
 
-// Implement exception handler
-public sealed class GlobalExceptionHandler<TRequest> : IRequestExceptionHandler<TRequest>
-    where TRequest : class, IRequest
-{
-    private readonly ILogger<GlobalExceptionHandler<TRequest>> _logger;
-
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler<TRequest>> logger)
-        => _logger = logger;
-
-    public Task<Result> HandleAsync(
-        RequestContext<TRequest> context,
-        Exception exception,
-        CancellationToken cancellationToken = default)
-    {
-        _logger.LogError(exception, "Request {Request} failed", typeof(TRequest).Name);
-        return Task.FromResult(Result.InternalServerError(exception).Build());
-    }
-}
-```
-
-### PipelineDomainEventsDecorator
-
-Buffers and publishes domain events after successful handler execution:
-
-```csharp
-// Register
-builder.Services.AddXPipelineDomainEventsDecorator();
-
-// Events are collected from aggregates and published after handler completes
-public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Order>
-{
-    private readonly IPendingDomainEventsBuffer _eventsBuffer;
-    private readonly IRepository _repository;
-
-    public async Task<Result<Order>> HandleAsync(
-        CreateOrderCommand request,
-        CancellationToken cancellationToken)
-    {
-        var order = Order.Create(request.CustomerId, request.Items);
-        // Order.Create raises OrderCreatedEvent
-        
-        _eventsBuffer.Add(order.DomainEvents);
-        await _repository.AddAsync(cancellationToken, order);
-        
-        return Result.Created(order);
-        // After success, decorator publishes all buffered events
-    }
-}
-```
-
-### PipelineIntegrationOutboxDecorator
-
-Implements the outbox pattern for reliable integration event publishing:
-
-```csharp
-// Register
-builder.Services.AddXPipelineIntegrationOutboxDecorator();
-
-// Integration events are stored in outbox and published reliably
-public sealed class ProcessPaymentHandler : IRequestHandler<ProcessPaymentCommand, PaymentResult>
-{
-    private readonly IPendingIntegrationEventsBuffer _eventsBuffer;
-
-    public async Task<Result<PaymentResult>> HandleAsync(
-        ProcessPaymentCommand request,
-        CancellationToken cancellationToken)
-    {
-        // Process payment...
-        var result = new PaymentResult { Success = true };
-        
-        // Add integration event to outbox buffer
-        _eventsBuffer.Add(new PaymentProcessedEvent(request.OrderId, request.Amount));
-        
-        return Result.Success(result);
-        // Decorator persists events to outbox for reliable delivery
-    }
-}
+// Requests are now processed through the pipeline
+var result = await _mediator.SendAsync(new CreateUserCommand("John", "john@example.com"));
+// 1. Exception decorator catches errors
+// 2. Validation decorator validates request
+// 3. Handler executes
+// 4. Unit of work saves changes
 ```
 
 ---
@@ -277,20 +187,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Core pipeline
+// Core mediator
+builder.Services.AddXMediator();
+
+// Request handlers
+builder.Services.AddXRequestHandlers(typeof(Program).Assembly);
+
+// Optional: Pipeline decorators
 builder.Services.AddXPipelineRequestHandler();
+builder.Services.AddXPipelineExceptionDecorator();
+builder.Services.AddXPipelineValidationDecorator();
+builder.Services.AddXPipelinePreDecorator();
+builder.Services.AddXPipelinePostDecorator();
 
-// All decorators (order: outermost to innermost)
-builder.Services.AddXPipelineExceptionDecorator();           // 1. Catch all exceptions
-builder.Services.AddXPipelineValidationDecorator();          // 2. Validate request
-builder.Services.AddXPipelinePreDecorator();                 // 3. Pre-processing
-builder.Services.AddXPipelineEventStoreEventDecorator();     // 4. Event store
-builder.Services.AddXPipelineUnitOfWorkDecorator();          // 5. Transaction
-builder.Services.AddXPipelineDomainEventsDecorator();        // 6. Domain events
-builder.Services.AddXPipelineIntegrationOutboxDecorator();   // 7. Outbox
-builder.Services.AddXPipelinePostDecorator();                // 8. Post-processing
-
-// Register validators
+// Optional: Validators
 builder.Services.AddXRuleValidators(typeof(Program).Assembly);
 ```
 
@@ -298,21 +208,20 @@ builder.Services.AddXRuleValidators(typeof(Program).Assembly);
 
 ## ✅ Best Practices
 
-1. **Order decorators carefully** - Exception handler should be outermost
-2. **Use marker interfaces** - IRequiresValidation, IRequiresUnitOfWork enable specific decorators
-3. **Keep handlers focused** - Let decorators handle cross-cutting concerns
-4. **Register all pre/post handlers** - They run for all matching requests
-5. **Buffer events** - Use the provided buffers for domain/integration events
-6. **Test decorators** - Each decorator can be unit tested independently
+1. **Use CQRS separation** - Commands modify state, queries read state
+2. **One handler per request** - Keep handlers focused and testable
+3. **Use the mediator** - Don't inject handlers directly
+4. **Combine with pipelines** - Add cross-cutting concerns via decorators
+5. **Handle errors as Results** - Return Result.Failure instead of throwing
 
 ---
 
 ## 📚 Related Packages
 
 - **System.Results** - Core Result types and request/handler interfaces
-- **System.Results.Tasks** - Mediator implementation
+- **System.Results.Pipelines** - Pipeline decorators for validation, transactions, etc.
 - **System.Primitives.Validation** - Rule validators and specifications
-- **System.Events** - Domain and integration event abstractions
+- **AspNetCore.Net** - ASP.NET Core integration
 
 ---
 

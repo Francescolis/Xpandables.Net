@@ -1,4 +1,4 @@
-# ?? System.Events.Data
+# ??? System.Events.Data
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -13,7 +13,7 @@
 
 ### ? Key Features
 
-- ??? **EventStoreDataContext** - EF Core context for event persistence
+- ?? **EventStoreDataContext** - EF Core context for event persistence
 - ?? **OutboxStoreDataContext** - Outbox pattern implementation
 - ?? **EventStore** - Store and retrieve domain events
 - ?? **OutboxStore** - Reliable event publishing with transactional outbox

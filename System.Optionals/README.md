@@ -13,7 +13,7 @@
 
 ### ? Key Features
 
-- ??? **Type-Safe Null Handling** - Eliminate null reference exceptions at compile time
+- ? **Type-Safe Null Handling** - Eliminate null reference exceptions at compile time
 - ? **AOT Compatible** - Full Native AOT support with source-generated JSON serialization
 - ?? **LINQ Integration** - Use familiar LINQ query syntax (Select, SelectMany, Where)
 - ?? **Async Support** - First-class async/await support with MapAsync, BindAsync

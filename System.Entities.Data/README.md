@@ -13,7 +13,7 @@
 
 ### ? Key Features
 
-- ??? **DataContext** - Extended DbContext with automatic entity tracking
+- ?? **DataContext** - Extended DbContext with automatic entity tracking
 - ?? **Repository<TDataContext>** - Generic EF Core repository implementation
 - ? **Bulk Operations** - Efficient batch updates with EntityUpdater
 - ?? **Entity Lifecycle** - Automatic CreatedOn/UpdatedOn/DeletedOn timestamps
