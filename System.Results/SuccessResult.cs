@@ -75,7 +75,7 @@ public sealed record SuccessResult<TValue> : Result<TValue>
     /// <summary>
     /// Represents a URI reference that identifies a resource relevant to the result.
     /// </summary>
-    public new Uri? Location { get; init; }
+    public new Uri? Location { get => base.Location; init => base.Location = value; }
 
     /// <summary>
     /// Gets or sets the value of the result.
