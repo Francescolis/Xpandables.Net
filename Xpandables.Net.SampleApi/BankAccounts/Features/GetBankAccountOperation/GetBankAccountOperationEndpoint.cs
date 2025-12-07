@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-using System.OperationResults.Tasks;
+using System.Results.Tasks;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;
 

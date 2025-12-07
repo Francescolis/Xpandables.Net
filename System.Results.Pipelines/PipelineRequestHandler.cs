@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Results.Requests;
 using System.Runtime.CompilerServices;
 

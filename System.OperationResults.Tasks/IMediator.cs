@@ -15,9 +15,9 @@
  *
 ********************************************************************************/
 
-using System.Results;
+using System.Results.Requests;
 
-namespace System.OperationResults.Tasks;
+namespace System.Results.Tasks;
 
 /// <summary>
 /// Defines a contract for sending requests to handlers and receiving execution results asynchronously.
@@ -38,6 +38,6 @@ public interface IMediator
     /// request.</returns>
     /// <exception cref="ResultException">Thrown when the execution result indicates a failure.</exception>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is null.</exception>
-    Task<OperationResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+    Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest;
 }

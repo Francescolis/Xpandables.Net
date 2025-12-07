@@ -6,14 +6,14 @@
 	  <Nullable>enable</Nullable>
 	  <Platforms>x64</Platforms>
 	  <LangVersion>latest</LangVersion>
-	  <Title>System.OperationResults.Tasks</Title>
+	  <Title>System.Results.Tasks</Title>
 	  <Description>IMediator implementation.</Description>
 	  <Company>Kamersoft</Company>
 	  <Authors>Francescolis</Authors>
 
-	  <AssemblyName>System.OperationResults.Tasks</AssemblyName>
-	  <RootNamespace>System.OperationResults.Tasks</RootNamespace>
-	  <PackageId>System.OperationResults.Tasks</PackageId>
+	  <AssemblyName>System.Results.Tasks</AssemblyName>
+	  <RootNamespace>System.Results.Tasks</RootNamespace>
+	  <PackageId>System.Results.Tasks</PackageId>
 	  <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
@@ -83,6 +83,10 @@
 		  <PackagePath>\</PackagePath>
 		  <Pack>True</Pack>
 	  </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Results.Pipelines\System.Results.Pipelines.csproj" />
   </ItemGroup>
 
 </Project>

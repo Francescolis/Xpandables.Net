@@ -45,16 +45,7 @@
   <Project Path="System.Net.Http.Rests/System.Net.Http.Rests.csproj" Id="d019ebbd-3d81-41be-99e1-2b9e5571e764">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Results.Pipelines/System.Results.Pipelines.csproj">
-    <Platform Project="x64" />
-  </Project>
-  <Project Path="System.OperationResults.Requests/System.OperationResults.Requests.csproj">
-    <Platform Project="x64" />
-  </Project>
-  <Project Path="System.OperationResults.Tasks/System.OperationResults.Tasks.csproj">
-    <Platform Project="x64" />
-  </Project>
-  <Project Path="System.Results/System.Results.csproj">
+  <Project Path="System.OperationResults.Tasks/System.Results.Tasks.csproj">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Optionals/System.Optionals.csproj" Id="8bff6792-1c31-40ab-8ef0-f2e2a74347c2">
@@ -67,6 +58,12 @@
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Primitives/System.Primitives.csproj" Id="cb6a404f-1663-43ab-82ed-88d3647797ef">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.Results.Pipelines/System.Results.Pipelines.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.Results/System.Results.csproj">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Text.Json.AsyncPaged/System.Text.Json.AsyncPaged.csproj" Id="dd6e91b8-79e2-4b90-9123-4fabebf66505">

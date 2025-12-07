@@ -28,7 +28,7 @@
     <ProjectReference Include="..\System.Data.EntityFramework\System.Data.EntityFramework.csproj" />
     <ProjectReference Include="..\System.Events.EntityFramework\System.Events.EntityFramework.csproj" />
     <ProjectReference Include="..\System.Linq.AsyncPaged\System.Linq.AsyncPaged.csproj" />
-    <ProjectReference Include="..\System.OperationResults.Tasks\System.OperationResults.Tasks.csproj" />
+    <ProjectReference Include="..\System.OperationResults.Tasks\System.Results.Tasks.csproj" />
   </ItemGroup>
 
   <ItemGroup>

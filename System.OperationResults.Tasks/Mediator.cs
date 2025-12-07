@@ -14,12 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.OperationResults.Pipelines;
-using System.Results;
+using System.Results.Pipelines;
+using System.Results.Requests;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.OperationResults.Tasks;
+namespace System.Results.Tasks;
 
 /// <summary>
 /// Provides a sealed implementation of the IMediator interface that dispatches requests to their corresponding pipeline
@@ -30,7 +30,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc />
     [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-    public async Task<OperationResult> SendAsync<TRequest>(
+    public async Task<Result> SendAsync<TRequest>(
         TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest
     {
@@ -50,7 +50,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
         catch (OperationCanceledException)
             when (cancellationToken.IsCancellationRequested)
         {
-            // Don't convert cancellation to OperationResult
+            // Don't convert cancellation to Result
             throw;
         }
         catch (Exception exception)
