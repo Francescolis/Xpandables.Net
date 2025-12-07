@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-namespace System.Net.Http.Rests.Abstractions;
+namespace System.Rests.Abstractions;
 
 /// <summary>
 /// Defines the contract for a composer responsible for creating REST responses.

@@ -15,11 +15,11 @@
  *
 ********************************************************************************/
 
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.Http.Rests;
+namespace System.Rests;
 
 /// <summary>
 /// Provides a builder that constructs REST responses by delegating to one of multiple response composers based on the

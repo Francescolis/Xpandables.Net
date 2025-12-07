@@ -14,13 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 using System.Text;
 using System.Text.Encodings.Web;
 
-using static System.Net.Http.Rests.Abstractions.RestSettings;
+using static System.Rests.Abstractions.RestSettings;
 
-namespace System.Net.Http.Rests.RequestBuilders;
+namespace System.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes the query string for a REST request based on the provided context. Updates the request URI with the

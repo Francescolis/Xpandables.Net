@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Http.Rests.Abstractions;
+namespace System.Rests.Abstractions;
 
 /// <summary>
 /// Defines a builder for creating <see cref="RestAttribute"/> at runtime.

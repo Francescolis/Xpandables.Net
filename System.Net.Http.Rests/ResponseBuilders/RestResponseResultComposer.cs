@@ -15,11 +15,11 @@
  *
 ********************************************************************************/
 using System.Collections;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace System.Net.Http.Rests.ResponseBuilders;
+namespace System.Rests.ResponseBuilders;
 
 /// <summary>
 /// Composes a result RestResponse asynchronously using the provided RestResponseContext.

@@ -16,9 +16,9 @@
 ********************************************************************************/
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
-namespace System.Net.Http.Rests.ResponseBuilders;
+namespace System.Rests.ResponseBuilders;
 
 /// <summary>
 /// Composes a a NoContent RestResponse asynchronously using the provided RestResponseContext.

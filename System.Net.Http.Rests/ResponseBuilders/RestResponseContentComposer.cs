@@ -15,10 +15,10 @@
  *
 ********************************************************************************/
 using System.Collections;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 using System.Text.Json;
 
-namespace System.Net.Http.Rests.ResponseBuilders;
+namespace System.Rests.ResponseBuilders;
 
 /// <summary>
 /// Compose a generic content RestResponse asynchronously using the provided RestResponseContext.

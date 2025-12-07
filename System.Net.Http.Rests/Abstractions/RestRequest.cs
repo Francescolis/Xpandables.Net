@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Net.Http.Rests.Abstractions;
+namespace System.Rests.Abstractions;
 
 /// <summary>
 /// Gets or sets the underlying HTTP request message to be sent with the REST request.

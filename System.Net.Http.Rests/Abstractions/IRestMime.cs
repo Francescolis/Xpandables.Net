@@ -14,9 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using System.Collections.Frozen;
 
-namespace System.Net.Http.Rests.Abstractions;
+namespace System.Rests.Abstractions;
 
 /// <summary>
 /// Provides with a method to retrieve the MIME type of a file path.

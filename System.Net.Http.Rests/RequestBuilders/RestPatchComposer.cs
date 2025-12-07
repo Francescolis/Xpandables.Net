@@ -15,14 +15,14 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-using static System.Net.Http.Rests.Abstractions.RestSettings;
+using static System.Rests.Abstractions.RestSettings;
 
-namespace System.Net.Http.Rests.RequestBuilders;
+namespace System.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes the HTTP request body for a PATCH operation based on the provided context. It serializes patch operations

@@ -15,10 +15,10 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Rests;
-using System.Net.Http.Rests.Abstractions;
-using System.Net.Http.Rests.RequestBuilders;
-using System.Net.Http.Rests.ResponseBuilders;
+using System.Rests;
+using System.Rests.Abstractions;
+using System.Rests.RequestBuilders;
+using System.Rests.ResponseBuilders;
 
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure

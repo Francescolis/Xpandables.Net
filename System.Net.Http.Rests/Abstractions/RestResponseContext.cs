@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
-namespace System.Net.Http.Rests.Abstractions;
+namespace System.Rests.Abstractions;
 
 /// <summary>
 /// Represents the context for an HTTP response, including the response message and JSON serializer options.

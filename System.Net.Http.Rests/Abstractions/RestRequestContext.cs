@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Text.Json;
 
-namespace System.Net.Http.Rests.Abstractions;
+namespace System.Rests.Abstractions;
 
 /// <summary>
 /// Encapsulates the context for a REST request, including attributes, request details, response message, and

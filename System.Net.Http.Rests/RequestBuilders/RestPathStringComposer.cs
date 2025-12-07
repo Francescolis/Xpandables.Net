@@ -15,11 +15,11 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
-using static System.Net.Http.Rests.Abstractions.RestSettings;
+using static System.Rests.Abstractions.RestSettings;
 
-namespace System.Net.Http.Rests.RequestBuilders;
+namespace System.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes a request URI by adding path string parameters from the request context. It modifies the base path with

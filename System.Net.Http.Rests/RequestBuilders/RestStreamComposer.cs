@@ -14,11 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
-using static System.Net.Http.Rests.Abstractions.RestSettings;
+using static System.Rests.Abstractions.RestSettings;
 
-namespace System.Net.Http.Rests.RequestBuilders;
+namespace System.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes the request content for HTTP requests based on the provided context. It handles stream content and multipart

@@ -15,9 +15,9 @@
  *
 ********************************************************************************/
 using System.Collections;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
-namespace System.Net.Http.Rests;
+namespace System.Rests;
 
 /// <summary>
 /// Provides functionality for sending HTTP requests and receiving responses in a RESTful manner.

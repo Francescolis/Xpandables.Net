@@ -16,11 +16,11 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Net.Http.Rests;
+namespace System.Rests;
 
 /// <summary>
 /// Provides a builder for creating REST requests by composing multiple request composers and applying REST-specific

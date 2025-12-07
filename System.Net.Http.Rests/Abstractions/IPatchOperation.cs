@@ -17,7 +17,7 @@
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 
-namespace System.Net.Http.Rests.Abstractions;
+namespace System.Rests.Abstractions;
 
 /// <summary>
 /// Defines an operation for the PATCH method.

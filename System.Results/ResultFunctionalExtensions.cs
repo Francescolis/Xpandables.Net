@@ -14,9 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Results;
-
-namespace System.OperationResults;
+namespace System.Results;
 
 /// <summary>
 /// 

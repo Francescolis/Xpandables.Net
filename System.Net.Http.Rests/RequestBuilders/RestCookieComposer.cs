@@ -14,11 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
-using static System.Net.Http.Rests.Abstractions.RestSettings;
+using static System.Rests.Abstractions.RestSettings;
 
-namespace System.Net.Http.Rests.RequestBuilders;
+namespace System.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes cookies from the request context if the location is set to Cookie. 

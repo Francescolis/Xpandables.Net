@@ -15,9 +15,9 @@
  *
 ********************************************************************************/
 using System.Collections;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
-namespace System.Net.Http.Rests.ResponseBuilders;
+namespace System.Rests.ResponseBuilders;
 
 /// <summary>
 /// Composes a failure RestResponse asynchronously using the provided RestResponseContext.

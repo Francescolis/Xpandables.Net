@@ -15,10 +15,10 @@
  *
 ********************************************************************************/
 
-using System.Net.Http.Rests.Abstractions;
 using System.Reflection;
+using System.Rests.Abstractions;
 
-namespace System.Net.Http.Rests;
+namespace System.Rests;
 
 /// <summary>
 /// Provides a mechanism for retrieving the associated RestAttribute for a given REST request, using either attribute

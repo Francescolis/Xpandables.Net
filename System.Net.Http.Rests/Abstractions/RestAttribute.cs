@@ -17,9 +17,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 
-using static System.Net.Http.Rests.Abstractions.RestSettings;
+using static System.Rests.Abstractions.RestSettings;
 
-namespace System.Net.Http.Rests.Abstractions;
+namespace System.Rests.Abstractions;
 
 /// <summary>
 /// Specifies REST API metadata for a class or struct, including endpoint path, HTTP method, data format, and

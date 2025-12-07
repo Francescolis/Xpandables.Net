@@ -15,11 +15,11 @@
  *
 ********************************************************************************/
 using System.Net.Http.Headers;
-using System.Net.Http.Rests.Abstractions;
+using System.Rests.Abstractions;
 
-using static System.Net.Http.Rests.Abstractions.RestSettings;
+using static System.Rests.Abstractions.RestSettings;
 
-namespace System.Net.Http.Rests.RequestBuilders;
+namespace System.Rests.RequestBuilders;
 
 /// <summary>
 /// Composes the authorization header for basic authentication in a REST request. It checks the context for basic
