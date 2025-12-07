@@ -105,7 +105,8 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-app.UseMiddleware<ResultMiddleware>();
+//app.UseMiddleware<ResultMiddleware>();
+app.UseXResultSupport();
 app.UseHttpsRedirection();
 app.UseSwagger()
     .UseSwaggerUI(options =>
