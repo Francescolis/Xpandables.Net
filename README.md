@@ -35,14 +35,14 @@
 
 | Feature | Description | Package |
 |---------|-------------|---------|
-| ✅ **Execution Results** | Robust error handling with HTTP-aware result types | [ExecutionResults](#executionresults) |
-| 🎁 **Optional Values** | Null-safe optional value handling (like Rust's Option) | [Optionals](#optionals) |
-| 📡 **Mediator Pattern** | CQRS and request/response pipeline implementation | [Tasks](#tasks) |
-| ✔️ **Validation** | Flexible validation framework with specifications | [Validators](#validators) |
-| 💾 **Repository Pattern** | Generic repository with unit of work support | [Repositories](#repositories) |
-| 🌐 **REST Client** | Type-safe, attribute-based HTTP client | [Rests](#rests) |
-| 📝 **Event Sourcing** | Complete event sourcing and CQRS implementation | [Events](#events) |
-| 🔄 **Async Utilities** | Asynchronous enumerable extensions and pagination | [Async](#async) |
+| ✅ **Operation Results** | Robust error handling with HTTP-aware result types | [System.Results](#systemresults) |
+| 🎁 **Optional Values** | Null-safe optional value handling (like Rust's Option) | [System.Optionals](#systemoptionals) |
+| 📡 **Mediator Pattern** | CQRS and request/response pipeline implementation | [System.Results.Tasks](#systemresultstasks) |
+| ✔️ **Validation** | Flexible validation framework with specifications | [System.Primitives.Validation](#systemprimitivesvalidation) |
+| 💾 **Repository Pattern** | Generic repository with unit of work support | [System.Entities.Data](#systementitiesdata) |
+| 🌐 **REST Client** | Type-safe, attribute-based HTTP client | [System.Rests](#systemrests) |
+| 📝 **Event Sourcing** | Complete event sourcing and CQRS implementation | [System.Events](#systemevents) |
+| 🔄 **Async Paging** | Asynchronous enumerable extensions and pagination | [System.Collections.AsyncPaged](#systemcollectionsasyncpaged) |
 
 ---
 
@@ -60,34 +60,44 @@ Install the packages you need via NuGet Package Manager:
 
 ```bash
 # Core operation result handling
-dotnet add package Xpandables.Net.ExecutionResults
+dotnet add package System.Results
 
 # Optional value handling
-dotnet add package Xpandables.Net.Optionals
+dotnet add package System.Optionals
 
 # Mediator and pipeline support
-dotnet add package Xpandables.Net.Tasks
+dotnet add package System.Results.Tasks
+
+# Pipeline decorators
+dotnet add package System.Results.Pipelines
 
 # Validation framework
-dotnet add package Xpandables.Net.Validators
+dotnet add package System.Primitives.Validation
 
-# Repository pattern
-dotnet add package Xpandables.Net.Repositories
-dotnet add package Xpandables.Net.Repositories.EntityFramework
+# Repository pattern with EF Core
+dotnet add package System.Entities.Data
 
 # REST client
-dotnet add package Xpandables.Net.Rests
+dotnet add package System.Rests
 
 # Event sourcing
-dotnet add package Xpandables.Net.Events
+dotnet add package System.Events
+dotnet add package System.Events.Data
+
+# Async paging
+dotnet add package System.Collections.AsyncPaged
+dotnet add package System.Linq.AsyncPaged
+
+# ASP.NET Core integration
+dotnet add package AspNetCore.Net
 ```
 
 ### Quick Example
 
 ```csharp
-using Xpandables.Net.ExecutionResults;
-using Xpandables.Net.Optionals;
-using Xpandables.Net.Tasks;
+using System.Results;
+using System.Results.Requests;
+using System.Optionals;
 
 // Define a request
 public sealed record GetUserQuery(Guid UserId) : IRequest<User>;
@@ -100,7 +110,7 @@ public sealed class GetUserHandler : IRequestHandler<GetUserQuery, User>
     public GetUserHandler(IUserRepository repository) 
         => _repository = repository;
     
-    public async Task<OperationResult<User>> HandleAsync(
+    public async Task<Result<User>> HandleAsync(
         GetUserQuery request, 
         CancellationToken cancellationToken)
     {
@@ -109,11 +119,9 @@ public sealed class GetUserHandler : IRequestHandler<GetUserQuery, User>
             .FindByIdAsync(request.UserId, cancellationToken);
         
         return user
-            .Map(u => OperationResult.Success(u))
-            .Empty(() => OperationResult
-                .NotFound()
-                .WithError("userId", "User not found")
-                .Build<User>());
+            .Map(u => Result.Success(u))
+            .Empty(() => Result
+                .NotFound<User>("userId", "User not found"));
     }
 }
 ```
@@ -169,38 +177,33 @@ dotnet run
 Each package has detailed documentation with examples and API references:
 
 #### Foundation Packages
-- 🔧 [**Abstractions**](./Xpandables.Net.Abstractions/README.md) - Core abstractions and utilities
-- ✅ [**ExecutionResults**](./Xpandables.Net.ExecutionResults/README.md) - Standardized operation result handling
-- 🎁 [**Optionals**](./Xpandables.Net.Optionals/README.md) - Null-safe optional value types
+- 🔧 [**System.Primitives**](./System.Primitives/README.md) - Core primitives and utilities
+- ✅ [**System.Results**](./System.Results/README.md) - Operation result handling with request/handler pattern
+- 🎁 [**System.Optionals**](./System.Optionals/README.md) - Null-safe optional value types
 
 #### Application Layer
-- 📡 [**Tasks**](./Xpandables.Net.Tasks/README.md) - Mediator pattern and request handlers
-- ✔️ [**Validators**](./Xpandables.Net.Validators/README.md) - Validation framework
-- 🔗 [**Validators.Pipelines**](./Xpandables.Net.Validators.Pipelines/README.md) - Pipeline validation decorators
+- 📡 [**System.Results.Tasks**](./System.Results.Tasks/README.md) - Mediator pattern and request dispatching
+- 🔗 [**System.Results.Pipelines**](./System.Results.Pipelines/README.md) - Pipeline decorators for validation, transactions, events
+- ✔️ [**System.Primitives.Validation**](./System.Primitives.Validation/README.md) - Specification pattern and rule validators
+- 🧩 [**System.Primitives.Composition**](./System.Primitives.Composition/README.md) - MEF-based service composition
 
 #### Data Access
-- 💾 [**Repositories**](./Xpandables.Net.Repositories/README.md) - Generic repository pattern
-- 🗄️ [**Repositories.EntityFramework**](./Xpandables.Net.Repositories.EntityFramework/README.md) - EF Core implementation
-- 🔗 [**Repositories.Pipelines**](./Xpandables.Net.Repositories.Pipelines/README.md) - Repository pipeline decorators
+- 💾 [**System.Entities.Data**](./System.Entities.Data/README.md) - EF Core repository with DataContext
 
 #### Event Handling
-- 📝 [**Events**](./Xpandables.Net.Events/README.md) - Event sourcing and domain events
-- 📦 [**Events.Repositories**](./Xpandables.Net.Events.Repositories/README.md) - Event store abstractions
-- 🗄️ [**Events.EntityFramework**](./Xpandables.Net.Events.EntityFramework/README.md) - EF Core event store
-- 🔗 [**Events.Pipelines**](./Xpandables.Net.Events.Pipelines/README.md) - Event pipeline decorators
+- 📝 [**System.Events**](./System.Events/README.md) - Event sourcing and domain events
+- 🗄️ [**System.Events.Data**](./System.Events.Data/README.md) - EF Core event store implementation
 
 #### HTTP & REST
-- 🌐 [**Rests.Abstractions**](./Xpandables.Net.Rests.Abstractions/README.md) - REST client abstractions
-- 🌐 [**Rests**](./Xpandables.Net.Rests/README.md) - REST client implementation
+- 🌐 [**System.Rests**](./System.Rests/README.md) - Type-safe REST client with attribute-based routing
 
 #### Async & Utilities
-- 🔄 [**Async**](./Xpandables.Net.Async/README.md) - Async enumerable utilities and pagination
+- 🔄 [**System.Collections.AsyncPaged**](./System.Collections.AsyncPaged/README.md) - Async paged collections
+- 🔄 [**System.Linq.AsyncPaged**](./System.Linq.AsyncPaged/README.md) - LINQ extensions for async paging
+- 📄 [**System.Text.Json.AsyncPaged**](./System.Text.Json.AsyncPaged/README.md) - JSON serialization for paged data
 
 #### ASP.NET Core Integration
-- 🌐 [**AspNetCore**](./Xpandables.Net.AspNetCore/README.md) - ASP.NET Core integrations
-- 🔄 [**Async.AspNetCore**](./Xpandables.Net.Async.AspNetCore/README.md) - Async utilities for ASP.NET Core
-- ✅ [**ExecutionResults.AspNetCore**](./Xpandables.Net.ExecutionResults.AspNetCore/README.md) - OperationResult to IResult mapping
-- ✔️ [**Validators.AspNetCore**](./Xpandables.Net.Validators.AspNetCore/README.md) - ASP.NET Core validation filters
+- 🌐 [**AspNetCore.Net**](./AspNetCore.Net/README.md) - ASP.NET Core integrations with endpoint routing
 
 ---
 
@@ -211,22 +214,26 @@ Xpandables.Net follows clean architecture principles with clear separation of co
 ```
 ┌─────────────────────────────────────────┐
 │         Presentation Layer              │
-│    (AspNetCore, Async.AspNetCore)       │
+│           (AspNetCore.Net)              │
 └─────────────────────────────────────────┘
                   ↓
 ┌─────────────────────────────────────────┐
 │         Application Layer               │
-│  (Tasks, Validators, ExecutionResults)  │
+│  (System.Results, System.Results.Tasks, │
+│   System.Results.Pipelines)             │
 └─────────────────────────────────────────┘
                   ↓
 ┌─────────────────────────────────────────┐
 │           Domain Layer                  │
-│   (Events, Optionals, Abstractions)     │
+│ (System.Events, System.Optionals,       │
+│  System.Primitives, System.Primitives.  │
+│  Validation)                            │
 └─────────────────────────────────────────┘
                   ↓
 ┌─────────────────────────────────────────┐
 │       Infrastructure Layer              │
-│  (Repositories.EF, Events.EF)           │
+│  (System.Entities.Data, System.Events.  │
+│   Data, System.Rests)                   │
 └─────────────────────────────────────────┘
 ```
 
@@ -245,26 +252,31 @@ Xpandables.Net follows clean architecture principles with clear separation of co
 
 ## 💎 Highlights
 
-### 1. Execution Results - Railway Oriented Programming
+### 1. Operation Results - Railway Oriented Programming
 
 ```csharp
-public async Task<OperationResult<Order>> CreateOrderAsync(CreateOrderRequest request)
+using System.Results;
+
+public async Task<Result<Order>> CreateOrderAsync(CreateOrderRequest request)
 {
-    return await ValidateRequest(request)
-        .BindAsync(CreateOrder)
-        .BindAsync(ProcessPayment)
-        .BindAsync(SendConfirmationEmail)
-        .Map(order => OperationResult.Created(order))
-        .Empty(() => OperationResult
-            .BadRequest()
-            .WithError("request", "Failed to create order")
-            .Build<Order>());
+    // Validate
+    if (string.IsNullOrEmpty(request.CustomerId))
+        return Result.Failure<Order>("customerId", "Customer ID is required");
+
+    // Create order
+    var order = new Order { CustomerId = request.CustomerId };
+    await _repository.AddAsync(order);
+
+    return Result.Created(order)
+        .WithLocation($"/api/orders/{order.Id}");
 }
 ```
 
 ### 2. Type-Safe REST Client
 
 ```csharp
+using System.Rests;
+
 [RestPost("/api/users")]
 public sealed record CreateUserRequest(string Name, string Email) 
     : IRestRequest<User>, IRestString;
@@ -278,38 +290,69 @@ var user = response.Result;
 ### 3. Fluent Validation with Specifications
 
 ```csharp
-public sealed class UserValidator : Validator<CreateUserRequest>
+using System.ComponentModel.DataAnnotations;
+
+// Create specifications using factory methods
+var nameSpec = Specification.IsNotNull<User, string>(u => u.Name);
+var emailSpec = Specification.Contains<User>(u => u.Email, "@");
+var ageSpec = Specification.GreaterThan<User, int>(u => u.Age, 18);
+
+// Combine specifications
+var validUser = Specification.All(nameSpec, emailSpec, ageSpec);
+
+// Check if satisfied
+if (validUser.IsSatisfiedBy(user))
 {
-    public override IReadOnlyCollection<ValidationResult> Validate(
-        CreateUserRequest instance)
+    Console.WriteLine("User meets all criteria");
+}
+
+// Use in LINQ queries
+var activeAdults = users.Where(validUser.Expression.Compile());
+```
+
+### 4. Event Sourcing with Aggregates
+
+```csharp
+using System.Events.Aggregates;
+
+public sealed class OrderAggregate : Aggregate
+{
+    public string OrderNumber { get; private set; } = string.Empty;
+    public decimal TotalAmount { get; private set; }
+
+    public static OrderAggregate Create(string orderNumber, decimal amount)
     {
-        // Using static factory methods to create specifications
-        var nameSpec = Specification
-            .IsNotNull<CreateUserRequest, string>(u => u.Name);
-        var emailSpec = Specification
-            .Contains<CreateUserRequest>(u => u.Email, "@");
-        var ageSpec = Specification
-            .GreaterThan<CreateUserRequest, int>(u => u.Age, 18);
-        
-        // Combine specifications
-        var combinedSpec = Specification.All(nameSpec, emailSpec, ageSpec);
-        
-        if (!combinedSpec.IsSatisfiedBy(instance))
+        var aggregate = new OrderAggregate();
+        aggregate.AppendEvent(new OrderCreatedEvent
         {
-            return
-            [
-                new ValidationResult("Name is required", 
-                    [nameof(instance.Name)]),
-                new ValidationResult("Invalid email format", 
-                    [nameof(instance.Email)]),
-                new ValidationResult("Must be 18 or older", 
-                    [nameof(instance.Age)])
-            ];
-        }
-        
-        return [];
+            OrderNumber = orderNumber,
+            Amount = amount
+        });
+        return aggregate;
+    }
+
+    public void AddItem(string productId, decimal price)
+    {
+        AppendEvent(new ItemAddedEvent { ProductId = productId, Price = price });
+    }
+
+    // Event handlers (called automatically)
+    private void On(OrderCreatedEvent evt)
+    {
+        OrderNumber = evt.OrderNumber;
+        TotalAmount = evt.Amount;
+    }
+
+    private void On(ItemAddedEvent evt)
+    {
+        TotalAmount += evt.Price;
     }
 }
+
+// Usage
+var order = OrderAggregate.Create("ORD-001", 100m);
+order.AddItem("PROD-1", 25m);
+await _aggregateStore.AppendAsync(order);
 ```
 
 ---
@@ -325,6 +368,28 @@ dotnet test
 # Run specific test project
 dotnet test Xpandables.Net.UnitTests
 ```
+
+---
+
+## 📦 All Packages
+
+| Package | Description |
+|---------|-------------|
+| **System.Results** | Operation result types with request/handler pattern |
+| **System.Results.Tasks** | Mediator for dispatching requests to handlers |
+| **System.Results.Pipelines** | Pipeline decorators (validation, transactions, events) |
+| **System.Optionals** | Null-safe optional value handling |
+| **System.Primitives** | Core primitives and utilities |
+| **System.Primitives.Validation** | Specification pattern and rule validators |
+| **System.Primitives.Composition** | MEF-based service composition |
+| **System.Events** | Domain events and event sourcing abstractions |
+| **System.Events.Data** | EF Core event store implementation |
+| **System.Entities.Data** | EF Core repository with DataContext |
+| **System.Rests** | Type-safe REST client |
+| **System.Collections.AsyncPaged** | Async paged collections |
+| **System.Linq.AsyncPaged** | LINQ extensions for async paging |
+| **System.Text.Json.AsyncPaged** | JSON serialization for paged data |
+| **AspNetCore.Net** | ASP.NET Core integrations |
 
 ---
 
