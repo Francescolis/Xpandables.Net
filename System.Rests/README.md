@@ -1,26 +1,26 @@
-﻿# 🌐 Xpandables.Net.Net.Http.Rests
+﻿# 🌐 System.Rests
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **REST Client** - Type-safe, attribute-based HTTP client with automatic serialization, retry policies, and OperationResult integration.
+> **REST Client** - Type-safe, attribute-based HTTP client with automatic serialization, request composition, and response handling.
 
 ---
 
 ## 📋 Overview
 
-`Xpandables.Net` is the core library providing fundamental building blocks for enterprise .NET applications. It includes implementations of the Result pattern, Optional monad, Mediator pattern (CQRS), Event Sourcing, Repository pattern, REST client, and Specification pattern.
+`System.Rests` provides a type-safe, attribute-based HTTP client for building RESTful API clients. It uses attributes to define endpoints and request types, with automatic request composition and response handling.
 
 ### 🎯 Key Features
 
-- ✅ **OperationResult** - Railway-oriented programming with HTTP-aware result types
-- 🎁 **Optional** - Null-safe value handling (like Rust's Option type)
-- 📡 **Mediator/CQRS** - Request/response pipeline with pre/post handlers
-- 📝 **Event Sourcing** - Complete event sourcing implementation with aggregates
-- 💾 **Repository** - Generic repository pattern with unit of work
-- 🌐 **REST Client** - Type-safe, attribute-based HTTP client
-- ✔️ **Specifications** - Business rules encapsulation with LINQ support
-- 🔄 **Async Paging** - Asynchronous enumerable with pagination
+- 🌐 **IRestClient** - Core HTTP client interface with async support
+- 🏷️ **REST Attributes** - RestGet, RestPost, RestPut, RestDelete, RestPatch
+- 📦 **Request Types** - IRestString, IRestQueryString, IRestFormUrlEncoded, IRestMultipart
+- 🔐 **Authentication** - Built-in Basic Auth and Bearer token support
+- 📤 **Request Composition** - Automatic query string, headers, cookies, path parameters
+- 📥 **Response Handling** - JSON deserialization with RestResponse
+- 🌊 **Streaming** - IRestRequestStream for async enumerable responses
+- ⚙️ **Extensible** - Custom request/response composers
 
 ---
 
@@ -29,416 +29,213 @@
 ### Installation
 
 ```bash
-dotnet add package Xpandables.Net
+dotnet add package System.Rests
 ```
 
-### Basic Examples
-
-#### OperationResult - Railway Oriented Programming
+### Define a REST Request
 
 ```csharp
-using Xpandables.Net.ExecutionResults;
+using System.Rests.Abstractions;
 
-public async Task<OperationResult<User>> GetUserAsync(Guid userId)
-{
-    Optional<User> user = await _repository.FindByIdAsync(userId);
-    
-    return user
-        .Map(u => OperationResult.Success(u))
-        .Empty(() => OperationResult
-            .NotFound()
-            .WithError("userId", "User not found")
-            .Build<User>());
-}
+// GET request with query parameters
+[RestGet("/api/users/{id}")]
+public sealed record GetUserRequest(Guid Id) : IRestRequest<User>, IRestPathString;
 
-// Chain operations
-public async Task<OperationResult<Order>> CreateOrderAsync(CreateOrderRequest request)
-{
-    return await ValidateRequest(request)
-        .BindAsync(CreateOrder)
-        .BindAsync(ProcessPayment)
-        .BindAsync(SendConfirmation)
-        .Map(order => OperationResult.Created(order))
-        .Empty(() => OperationResult
-            .BadRequest()
-            .WithError("request", "Failed to create order")
-            .Build<Order>());
-}
+// POST request with JSON body
+[RestPost("/api/users")]
+public sealed record CreateUserRequest(string Name, string Email) : IRestRequest<User>, IRestString;
+
+// PUT request with JSON body
+[RestPut("/api/users/{id}")]
+public sealed record UpdateUserRequest(Guid Id, string Name, string Email) : IRestRequest<User>, IRestString, IRestPathString;
+
+// DELETE request
+[RestDelete("/api/users/{id}")]
+public sealed record DeleteUserRequest(Guid Id) : IRestRequest, IRestPathString;
 ```
 
-#### Optional - Null-Safe Values
+### Use the REST Client
 
 ```csharp
-using Xpandables.Net.Optionals;
+using System.Rests.Abstractions;
 
-// Create optionals
-var some = Optional.Some("hello");
-var none = Optional.Empty<string>();
-
-// Safe operations
-string result = some
-    .Map(s => s.ToUpper())
-    .GetValueOrDefault("default");  // "HELLO"
-
-// Pattern matching
-user.Map(u => Console.WriteLine($"Found: {u.Name}"))
-    .Empty(() => Console.WriteLine("User not found"));
-
-// LINQ integration
-var users = await repository
-    .GetAllAsync()
-    .FirstOrEmpty();  // Returns Optional<User>
-
-if (users.IsNotEmpty)
+public class UserService
 {
-    Console.WriteLine(users.Value.Name);
-}
-```
+    private readonly IRestClient _restClient;
 
-#### CQRS with Mediator
+    public UserService(IRestClient restClient)
+        => _restClient = restClient;
 
-```csharp
-using Xpandables.Net.Cqrs;
-using Xpandables.Net.Tasks;
-using Xpandables.Net.ExecutionResults;
-
-// Define command
-public sealed record CreateUserCommand(
-    string Name, 
-    string Email) : IRequest<User>;
-
-// Handle command
-public sealed class CreateUserHandler 
-    : IRequestHandler<CreateUserCommand, User>
-{
-    private readonly IRepository _repository;
-    
-    public CreateUserHandler(IRepository repository) 
-        => _repository = repository;
-    
-    public async Task<OperationResult<User>> HandleAsync(
-        CreateUserCommand request,
-        CancellationToken cancellationToken)
+    public async Task<User?> GetUserAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var user = new User 
-        { 
-            Name = request.Name, 
-            Email = request.Email 
-        };
-        
-        await _repository.AddAsync(cancellationToken, user);
-        
-        return OperationResult.Created(user);
-    }
-}
+        using var response = await _restClient.SendAsync(
+            new GetUserRequest(userId),
+            cancellationToken);
 
-// Use mediator
-var command = new CreateUserCommand("John", "john@example.com");
-OperationResult<User> result = await _mediator.SendAsync(command);
+        if (response.IsSuccess)
+        {
+            return response.GetResult<User>();
+        }
 
-if (result.IsSuccess)
-{
-    Console.WriteLine($"User created: {result.Value.Name}");
-}
-```
-
-#### Event Sourcing
-
-```csharp
-using Xpandables.Net.Events;
-using Xpandables.Net.Aggregates;
-
-// Define aggregate
-public sealed class BankAccountAggregate : Aggregate
-{
-    public string AccountNumber { get; private set; } = default!;
-    public decimal Balance { get; private set; }
-
-    public static BankAccountAggregate Create(
-        string accountNumber, 
-        decimal initialBalance)
-    {
-        var aggregate = new BankAccountAggregate();
-        aggregate.AppendEvent(new AccountCreatedEvent(
-            Guid.NewGuid(),
-            accountNumber,
-            initialBalance));
-        return aggregate;
+        return null;
     }
 
-    public void Deposit(decimal amount)
+    public async Task<User?> CreateUserAsync(string name, string email, CancellationToken cancellationToken)
     {
-        if (amount <= 0)
-            throw new InvalidOperationException("Amount must be positive");
+        using var response = await _restClient.SendAsync(
+            new CreateUserRequest(name, email),
+            cancellationToken);
 
-        AppendEvent(new MoneyDepositedEvent(Id, amount));
-    }
-
-    private void On(AccountCreatedEvent @event)
-    {
-        Id = @event.AggregateId;
-        AccountNumber = @event.AccountNumber;
-        Balance = @event.InitialBalance;
-    }
-
-    private void On(MoneyDepositedEvent @event)
-    {
-        Balance += @event.Amount;
+        return response.IsSuccess ? response.GetResult<User>() : null;
     }
 }
-
-// Use aggregate store
-var account = BankAccountAggregate.Create("ACC-001", 1000m);
-account.Deposit(500m);
-
-await _aggregateStore.AppendAsync(account);
-
-// Reload from events
-var reloaded = await _aggregateStore
-    .ReadAsync<BankAccountAggregate>(account.Id);
-```
-
-#### Specifications - Business Rules
-
-```csharp
-using Xpandables.Net.Validators;
-
-// Create specifications
-var isAdult = Specification
-    .GreaterThan<Person, int>(p => p.Age, 18);
-
-var hasValidEmail = Specification
-    .Contains<Person>(p => p.Email, "@");
-
-var isActive = Specification
-    .Equal<Person, bool>(p => p.IsActive, true);
-
-// Combine specifications
-var validUser = Specification.All(isAdult, hasValidEmail, isActive);
-
-// Use with LINQ
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(validUser))
-    .ToListAsync();
-
-// Check satisfaction
-if (validUser.IsSatisfiedBy(person))
-{
-    Console.WriteLine("Person meets all criteria");
-}
-```
-
-#### Repository Pattern
-
-```csharp
-using Xpandables.Net.Repositories;
-
-// Fetch with filtering
-var activeUsers = await _repository
-    .FetchAsync<User, User>(q => q
-        .Where(u => u.IsActive)
-        .OrderBy(u => u.Name))
-    .ToListAsync();
-
-// Add entities
-await _repository.AddAsync(cancellationToken, user1, user2, user3);
-
-// Update with expression
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.Age < 18),
-    u => new User { Status = "Minor" });
-
-// Bulk update
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.LastLoginDate, DateTime.UtcNow)
-    .SetProperty(u => u.LoginCount, u => u.LoginCount + 1);
-
-await _repository.UpdateAsync(
-    q => q.Where(u => u.IsActive),
-    updater);
-
-// Delete
-await _repository.DeleteAsync<User>(
-    q => q.Where(u => !u.IsActive && u.CreatedDate < oldDate));
 ```
 
 ---
 
-## 🔧 Configuration
+## 🧩 Core Concepts
+
+### REST Attributes
+
+```csharp
+// HTTP GET - query parameters by default
+[RestGet("/api/products")]
+public sealed record GetProductsRequest : IRestRequest<Product[]>, IRestQueryString;
+
+// HTTP POST - JSON body by default, secured
+[RestPost("/api/products")]
+public sealed record CreateProductRequest(string Name, decimal Price) : IRestRequest<Product>, IRestString;
+
+// HTTP PUT - JSON body, secured
+[RestPut("/api/products/{id}")]
+public sealed record UpdateProductRequest(Guid Id, string Name, decimal Price) : IRestRequest<Product>, IRestString, IRestPathString;
+
+// HTTP DELETE - secured
+[RestDelete("/api/products/{id}")]
+public sealed record DeleteProductRequest(Guid Id) : IRestRequest, IRestPathString;
+
+// HTTP PATCH - for partial updates
+[RestPatch("/api/products/{id}")]
+public sealed record PatchProductRequest(Guid Id, IEnumerable<IPatchOperation> Operations) : IRestRequest<Product>, IRestPatch, IRestPathString;
+```
+
+### Request Types
+
+```csharp
+// IRestString - JSON body
+[RestPost("/api/users")]
+public sealed record CreateUserRequest(string Name) : IRestRequest<User>, IRestString;
+
+// IRestQueryString - Query parameters
+[RestGet("/api/users")]
+public sealed record SearchUsersRequest(string? Name, int? Page) : IRestRequest<User[]>, IRestQueryString;
+
+// IRestPathString - URL path parameters
+[RestGet("/api/users/{id}")]
+public sealed record GetUserRequest(Guid Id) : IRestRequest<User>, IRestPathString;
+
+// IRestFormUrlEncoded - Form data
+[RestPost("/api/login")]
+public sealed record LoginRequest(string Username, string Password) : IRestRequest<Token>, IRestFormUrlEncoded;
+
+// IRestMultipart - File uploads
+[RestPost("/api/files")]
+public sealed record UploadFileRequest(Stream FileContent, string FileName) : IRestRequest<FileInfo>, IRestMultipart;
+
+// IRestHeader - Custom headers
+[RestGet("/api/secure")]
+public sealed record SecureRequest : IRestRequest<Data>, IRestHeader
+{
+    public IDictionary<string, string> GetHeaders() => new Dictionary<string, string>
+    {
+        ["X-Custom-Header"] = "value"
+    };
+}
+
+// IRestCookie - Cookies
+[RestGet("/api/session")]
+public sealed record SessionRequest : IRestRequest<Session>, IRestCookie
+{
+    public IDictionary<string, string> GetCookies() => new Dictionary<string, string>
+    {
+        ["session_id"] = "abc123"
+    };
+}
+
+// IRestBasicAuthentication - Basic auth
+[RestGet("/api/secure")]
+public sealed record BasicAuthRequest : IRestRequest<Data>, IRestBasicAuthentication
+{
+    public string Username => "user";
+    public string Password => "pass";
+}
+```
+
+### Streaming Responses
+
+```csharp
+// For async enumerable responses
+[RestGet("/api/events")]
+public sealed record GetEventsRequest : IRestRequestStream<Event>;
+
+// Usage
+public async IAsyncEnumerable<Event> GetEventsAsync(CancellationToken cancellationToken)
+{
+    using var response = await _restClient.SendAsync(
+        new GetEventsRequest(),
+        cancellationToken);
+
+    await foreach (var evt in response.GetResultStream<Event>(cancellationToken))
+    {
+        yield return evt;
+    }
+}
+```
+
+---
+
+## ⚙️ Configuration
 
 ### Service Registration
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
-using Xpandables.Net.DependencyInjection;
 
-var services = new ServiceCollection();
+var builder = WebApplication.CreateBuilder(args);
 
-// Add core services
-services.AddXMediator();                    // CQRS Mediator
-services.AddXRequestHandlers();             // Scan for request handlers
-services.AddXPipelineRequestHandler();      // Request pipeline
-
-// Add decorators
-services.AddXPipelinePreDecorator();        // Pre-request processing
-services.AddXPipelinePostDecorator();       // Post-request processing
-services.AddXPipelineExceptionDecorator();  // Exception handling
-services.AddXPipelineValidationDecorator(); // Validation
-
-// Add event sourcing
-services.AddXEventSourcing();
-services.AddXAggregateStore();
-services.AddXEventStore();
-services.AddXPublisher();
-services.AddXSubscriber();
-
-// Add repository
-services.AddXRepository<MyDbContext>();
-```
-
----
-
-## 📚 Advanced Features
-
-### Pipeline Decorators
-
-Add cross-cutting concerns to your request handlers:
-
-```csharp
-// Pre-handler (runs before main handler)
-public sealed class LoggingPreHandler<TRequest> 
-    : IRequestPreHandler<TRequest>
-    where TRequest : class, IRequest
+// Register REST client
+builder.Services.AddXRestClient(options =>
 {
-    public Task<OperationResult> HandleAsync(
-        RequestContext<TRequest> context,
-        CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Executing: {Request}", 
-            typeof(TRequest).Name);
-        return Task.FromResult(OperationResult.Ok().Build());
-    }
-}
-
-// Post-handler (runs after main handler)
-public sealed class CacheInvalidationPostHandler<TRequest> 
-    : IRequestPostHandler<TRequest>
-    where TRequest : class, IRequest
-{
-    public async Task<OperationResult> HandleAsync(
-        RequestContext<TRequest> context,
-        OperationResult response,
-        CancellationToken cancellationToken)
-    {
-        if (response.IsSuccess)
-        {
-            await _cache.InvalidateAsync("users");
-        }
-        return response;
-    }
-}
-
-// Exception handler
-public sealed class GlobalExceptionHandler<TRequest> 
-    : IRequestExceptionHandler<TRequest>
-    where TRequest : class, IRequest
-{
-    public Task<OperationResult> HandleAsync(
-        RequestContext<TRequest> context,
-        Exception exception,
-        CancellationToken cancellationToken)
-    {
-        _logger.LogError(exception, "Request failed");
-        
-        return Task.FromResult(
-            OperationResult
-                .InternalServerError(exception)
-                .Build());
-    }
-}
-```
-
-### Event Publishing & Subscription
-
-```csharp
-// Publish events
-await _publisher.PublishAsync(new UserCreatedEvent(userId, name));
-
-// Subscribe with action
-_subscriber.Subscribe<UserCreatedEvent>(evt => 
-    Console.WriteLine($"User created: {evt.UserId}"));
-
-// Subscribe with async handler
-_subscriber.Subscribe<UserCreatedEvent>(async (evt, ct) =>
-{
-    await SendWelcomeEmail(evt.UserId, ct);
+    options.BaseAddress = new Uri("https://api.example.com");
+    options.Timeout = TimeSpan.FromSeconds(30);
 });
 
-// Subscribe with handler class
-public sealed class UserCreatedHandler : IEventHandler<UserCreatedEvent>
+// With authentication handler
+builder.Services.AddXRestClient(options =>
 {
-    public async Task HandleAsync(
-        UserCreatedEvent @event,
-        CancellationToken cancellationToken)
-    {
-        await SendWelcomeEmail(@event.UserId, cancellationToken);
-    }
-}
-
-_subscriber.Subscribe(new UserCreatedHandler());
-```
-
-### Async Paging
-
-```csharp
-using Xpandables.Net.Collections.Generic;
-
-// Create paged enumerable
-public async Task<IAsyncPagedEnumerable<Product>> GetProductsAsync(
-    int pageSize,
-    int pageIndex)
-{
-    var query = _dbContext.Products
-        .Where(p => p.IsActive)
-        .OrderBy(p => p.Name);
-
-    return query.ToAsyncPagedEnumerable(pageSize, pageIndex);
-}
-
-// Consume paged results
-var products = await GetProductsAsync(20, 1);
-
-await foreach (var product in products)
-{
-    Console.WriteLine(product.Name);
-}
-
-// Get pagination info
-var pagination = await products.GetPaginationAsync();
-Console.WriteLine($"Page {pagination.PageIndex} of {pagination.TotalPages}");
-Console.WriteLine($"Total items: {pagination.TotalCount}");
+    options.BaseAddress = new Uri("https://api.example.com");
+})
+.ConfigurePrimaryHttpMessageHandler<BearerTokenHandler>();
 ```
 
 ---
 
-## 💡 Best Practices
+## ✅ Best Practices
 
-1. **Use OperationResult** for all public API boundaries
-2. **Prefer Optional** over null checks
-3. **Encapsulate business rules** in Specifications
-4. **Use CQRS** to separate reads from writes
-5. **Apply Event Sourcing** for audit trails and temporal queries
-6. **Leverage decorators** for cross-cutting concerns
-7. **Keep aggregates small** and focused
+1. **Use appropriate request interfaces** - IRestString for JSON, IRestQueryString for GET params
+2. **Combine interfaces** - A request can implement multiple interfaces (IRestPathString + IRestString)
+3. **Use records** - Immutable request types work best
+4. **Dispose responses** - Always use `using` with RestResponse
+5. **Handle errors** - Check IsSuccess before accessing results
+6. **Configure timeouts** - Set appropriate timeouts for your API
 
 ---
 
 ## 📚 Related Packages
 
-- **Xpandables.Net.AspNetCore** - ASP.NET Core integrations
-- **Xpandables.Net.EntityFramework** - EF Core repository implementation
-- **Xpandables.Net.SampleApi** - Complete working example
+- **System.Results** - Result types for response handling
+- **AspNetCore.Net** - ASP.NET Core integration
+- **System.Text.Json** - JSON serialization
 
 ---
 

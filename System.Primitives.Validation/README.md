@@ -3,24 +3,23 @@
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Validation & Specifications** - Specification pattern for business rules, composite validators, and reusable validation logic with LINQ integration.
+> **Validation & Specifications** - Specification pattern for business rules, rule validators, and reusable validation logic with LINQ integration.
 
 ---
 
 ## 🎯 Overview
 
-`System.Primitives.Validation` provides the Specification pattern for encapsulating business rules and validation logic. It includes composable validators, rule specifications that work with LINQ, and integration with request pipelines for automatic validation.
+`System.Primitives.Validation` provides the Specification pattern for encapsulating business rules and validation logic. It includes composable specifications with LINQ support, rule validators, and integration with request pipelines for automatic validation.
 
-### 🎯 Key Features
+### ✨ Key Features
 
-- ✅ **OperationResult** - Railway-oriented programming with HTTP-aware result types
-- 🎁 **Optional** - Null-safe value handling (like Rust's Option type)
-- 📡 **Mediator/CQRS** - Request/response pipeline with pre/post handlers
-- 📝 **Event Sourcing** - Complete event sourcing implementation with aggregates
-- 💾 **Repository** - Generic repository pattern with unit of work
-- 🌐 **REST Client** - Type-safe, attribute-based HTTP client
-- ✔️ **Specifications** - Business rules encapsulation with LINQ support
-- 🔄 **Async Paging** - Asynchronous enumerable with pagination
+- 📋 **ISpecification<T>** - Specification pattern with expression-based criteria
+- 🔗 **Combinators** - And, Or, Not, All, Any for composing specifications
+- ✅ **IRuleValidator<T>** - Strongly-typed validation with ValidationResult
+- 🏭 **Factory Methods** - Equal, NotEqual, Contains, GreaterThan, LessThan, etc.
+- 🔍 **LINQ Integration** - Use specifications in Where clauses
+- 🚀 **IRequiresValidation** - Marker interface for auto-validation in pipelines
+- 🧩 **Composite Validators** - Combine multiple validators
 
 ---
 
@@ -32,413 +31,310 @@
 dotnet add package System.Primitives.Validation
 ```
 
-### Basic Examples
-
-#### OperationResult - Railway Oriented Programming
+### Basic Specification Usage
 
 ```csharp
-using Xpandables.Net.ExecutionResults;
+using System.ComponentModel.DataAnnotations;
 
-public async Task<OperationResult<User>> GetUserAsync(Guid userId)
-{
-    Optional<User> user = await _repository.FindByIdAsync(userId);
-    
-    return user
-        .Map(u => OperationResult.Success(u))
-        .Empty(() => OperationResult
-            .NotFound()
-            .WithError("userId", "User not found")
-            .Build<User>());
-}
-
-// Chain operations
-public async Task<OperationResult<Order>> CreateOrderAsync(CreateOrderRequest request)
-{
-    return await ValidateRequest(request)
-        .BindAsync(CreateOrder)
-        .BindAsync(ProcessPayment)
-        .BindAsync(SendConfirmation)
-        .Map(order => OperationResult.Created(order))
-        .Empty(() => OperationResult
-            .BadRequest()
-            .WithError("request", "Failed to create order")
-            .Build<Order>());
-}
-```
-
-#### Optional - Null-Safe Values
-
-```csharp
-using Xpandables.Net.Optionals;
-
-// Create optionals
-var some = Optional.Some("hello");
-var none = Optional.Empty<string>();
-
-// Safe operations
-string result = some
-    .Map(s => s.ToUpper())
-    .GetValueOrDefault("default");  // "HELLO"
-
-// Pattern matching
-user.Map(u => Console.WriteLine($"Found: {u.Name}"))
-    .Empty(() => Console.WriteLine("User not found"));
-
-// LINQ integration
-var users = await repository
-    .GetAllAsync()
-    .FirstOrEmpty();  // Returns Optional<User>
-
-if (users.IsNotEmpty)
-{
-    Console.WriteLine(users.Value.Name);
-}
-```
-
-#### CQRS with Mediator
-
-```csharp
-using Xpandables.Net.Cqrs;
-using Xpandables.Net.Tasks;
-using Xpandables.Net.ExecutionResults;
-
-// Define command
-public sealed record CreateUserCommand(
-    string Name, 
-    string Email) : IRequest<User>;
-
-// Handle command
-public sealed class CreateUserHandler 
-    : IRequestHandler<CreateUserCommand, User>
-{
-    private readonly IRepository _repository;
-    
-    public CreateUserHandler(IRepository repository) 
-        => _repository = repository;
-    
-    public async Task<OperationResult<User>> HandleAsync(
-        CreateUserCommand request,
-        CancellationToken cancellationToken)
-    {
-        var user = new User 
-        { 
-            Name = request.Name, 
-            Email = request.Email 
-        };
-        
-        await _repository.AddAsync(cancellationToken, user);
-        
-        return OperationResult.Created(user);
-    }
-}
-
-// Use mediator
-var command = new CreateUserCommand("John", "john@example.com");
-OperationResult<User> result = await _mediator.SendAsync(command);
-
-if (result.IsSuccess)
-{
-    Console.WriteLine($"User created: {result.Value.Name}");
-}
-```
-
-#### Event Sourcing
-
-```csharp
-using Xpandables.Net.Events;
-using Xpandables.Net.Aggregates;
-
-// Define aggregate
-public sealed class BankAccountAggregate : Aggregate
-{
-    public string AccountNumber { get; private set; } = default!;
-    public decimal Balance { get; private set; }
-
-    public static BankAccountAggregate Create(
-        string accountNumber, 
-        decimal initialBalance)
-    {
-        var aggregate = new BankAccountAggregate();
-        aggregate.AppendEvent(new AccountCreatedEvent(
-            Guid.NewGuid(),
-            accountNumber,
-            initialBalance));
-        return aggregate;
-    }
-
-    public void Deposit(decimal amount)
-    {
-        if (amount <= 0)
-            throw new InvalidOperationException("Amount must be positive");
-
-        AppendEvent(new MoneyDepositedEvent(Id, amount));
-    }
-
-    private void On(AccountCreatedEvent @event)
-    {
-        Id = @event.AggregateId;
-        AccountNumber = @event.AccountNumber;
-        Balance = @event.InitialBalance;
-    }
-
-    private void On(MoneyDepositedEvent @event)
-    {
-        Balance += @event.Amount;
-    }
-}
-
-// Use aggregate store
-var account = BankAccountAggregate.Create("ACC-001", 1000m);
-account.Deposit(500m);
-
-await _aggregateStore.AppendAsync(account);
-
-// Reload from events
-var reloaded = await _aggregateStore
-    .ReadAsync<BankAccountAggregate>(account.Id);
-```
-
-#### Specifications - Business Rules
-
-```csharp
-using Xpandables.Net.Validators;
-
-// Create specifications
-var isAdult = Specification
-    .GreaterThan<Person, int>(p => p.Age, 18);
-
-var hasValidEmail = Specification
-    .Contains<Person>(p => p.Email, "@");
-
-var isActive = Specification
-    .Equal<Person, bool>(p => p.IsActive, true);
+// Create specifications using factory methods
+var isActive = Specification.Equal<User, bool>(u => u.IsActive, true);
+var isAdult = Specification.GreaterThan<User, int>(u => u.Age, 18);
+var hasEmail = Specification.IsNotNull<User, string>(u => u.Email);
 
 // Combine specifications
-var validUser = Specification.All(isAdult, hasValidEmail, isActive);
+var validUser = isActive.And(isAdult).And(hasEmail);
 
-// Use with LINQ
-var users = await _repository
-    .FetchAsync<User, User>(q => q.Where(validUser))
-    .ToListAsync();
-
-// Check satisfaction
-if (validUser.IsSatisfiedBy(person))
+// Check if satisfied
+if (validUser.IsSatisfiedBy(user))
 {
-    Console.WriteLine("Person meets all criteria");
+    Console.WriteLine("User meets all criteria");
 }
-```
 
-#### Repository Pattern
-
-```csharp
-using Xpandables.Net.Repositories;
-
-// Fetch with filtering
-var activeUsers = await _repository
-    .FetchAsync<User, User>(q => q
-        .Where(u => u.IsActive)
-        .OrderBy(u => u.Name))
-    .ToListAsync();
-
-// Add entities
-await _repository.AddAsync(cancellationToken, user1, user2, user3);
-
-// Update with expression
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.Age < 18),
-    u => new User { Status = "Minor" });
-
-// Bulk update
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.LastLoginDate, DateTime.UtcNow)
-    .SetProperty(u => u.LoginCount, u => u.LoginCount + 1);
-
-await _repository.UpdateAsync(
-    q => q.Where(u => u.IsActive),
-    updater);
-
-// Delete
-await _repository.DeleteAsync<User>(
-    q => q.Where(u => !u.IsActive && u.CreatedDate < oldDate));
+// Use in LINQ queries
+var activeAdults = users.Where(validUser.Expression.Compile());
 ```
 
 ---
 
-## 🔧 Configuration
+## 🧩 Core Concepts
+
+### Creating Specifications
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+// From expression
+var customSpec = Specification.FromExpression<Product>(p => p.Price > 0 && p.Stock > 10);
+
+// Factory methods
+var isEqual = Specification.Equal<User, string>(u => u.Status, "Active");
+var isNotEqual = Specification.NotEqual<User, string>(u => u.Role, "Guest");
+var isNull = Specification.IsNull<User, string>(u => u.MiddleName);
+var isNotNull = Specification.IsNotNull<User, string>(u => u.Email);
+var greaterThan = Specification.GreaterThan<Product, decimal>(p => p.Price, 10m);
+var lessThan = Specification.LessThan<Product, int>(p => p.Stock, 100);
+var contains = Specification.Contains<User>(u => u.Email, "@");
+var startsWith = Specification.StartsWith<User>(u => u.Name, "John");
+var endsWith = Specification.EndsWith<User>(u => u.Email, ".com");
+
+// Always true/false
+var alwaysTrue = Specification.True<User>();
+var alwaysFalse = Specification.False<User>();
+```
+
+### Combining Specifications
+
+```csharp
+// Logical AND
+var spec1 = Specification.Equal<User, bool>(u => u.IsActive, true);
+var spec2 = Specification.GreaterThan<User, int>(u => u.Age, 18);
+
+var andSpec = spec1.And(spec2);
+var andAlsoSpec = spec1.AndAlso(spec2); // Short-circuit evaluation
+
+// Logical OR
+var orSpec = spec1.Or(spec2);
+var orElseSpec = spec1.OrElse(spec2); // Short-circuit evaluation
+
+// Logical NOT
+var notSpec = spec1.Not();
+
+// Combine multiple with All (AND) or Any (OR)
+var allSpec = Specification.All(spec1, spec2, notSpec);
+var anySpec = Specification.Any(spec1, spec2);
+
+// Operator syntax
+var combined = spec1 & spec2; // AND
+var either = spec1 | spec2;   // OR
+var negated = !spec1;         // NOT
+```
+
+### Using with LINQ
+
+```csharp
+// In-memory collections
+var activeUsers = users.Where(isActive.Expression.Compile());
+
+// With Entity Framework (expression is preserved)
+var query = dbContext.Users.Where(isActive.Expression);
+
+// Combine with repository pattern
+var spec = Specification.Equal<User, bool>(u => u.IsActive, true)
+    .And(Specification.GreaterThan<User, int>(u => u.Age, 21));
+
+var results = await repository
+    .FetchAsync<User, User>(q => q.Where(spec.Expression))
+    .ToListAsync();
+```
+
+---
+
+## ✔️ Rule Validators
+
+### Define a Validator
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+public sealed record CreateUserRequest(string Name, string Email, int Age) : IRequiresValidation;
+
+public sealed class CreateUserValidator : RuleValidator<CreateUserRequest>
+{
+    public override IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
+    {
+        var results = new List<ValidationResult>();
+
+        if (string.IsNullOrWhiteSpace(instance.Name))
+        {
+            results.Add(new ValidationResult("Name is required", [nameof(instance.Name)]));
+        }
+
+        if (string.IsNullOrWhiteSpace(instance.Email) || !instance.Email.Contains('@'))
+        {
+            results.Add(new ValidationResult("Valid email is required", [nameof(instance.Email)]));
+        }
+
+        if (instance.Age < 18)
+        {
+            results.Add(new ValidationResult("Must be 18 or older", [nameof(instance.Age)]));
+        }
+
+        return results;
+    }
+}
+```
+
+### Using Specifications in Validators
+
+```csharp
+public sealed class ProductValidator : RuleValidator<CreateProductRequest>
+{
+    public override IReadOnlyCollection<ValidationResult> Validate(CreateProductRequest instance)
+    {
+        var results = new List<ValidationResult>();
+
+        var nameSpec = Specification.IsNotNull<CreateProductRequest, string>(p => p.Name);
+        var priceSpec = Specification.GreaterThan<CreateProductRequest, decimal>(p => p.Price, 0);
+        var stockSpec = Specification.GreaterThan<CreateProductRequest, int>(p => p.Stock, 0);
+
+        if (!nameSpec.IsSatisfiedBy(instance))
+        {
+            results.Add(new ValidationResult("Name is required", [nameof(instance.Name)]));
+        }
+
+        if (!priceSpec.IsSatisfiedBy(instance))
+        {
+            results.Add(new ValidationResult("Price must be greater than zero", [nameof(instance.Price)]));
+        }
+
+        if (!stockSpec.IsSatisfiedBy(instance))
+        {
+            results.Add(new ValidationResult("Stock must be greater than zero", [nameof(instance.Stock)]));
+        }
+
+        return results;
+    }
+}
+```
+
+### Async Validation
+
+```csharp
+public sealed class UniqueEmailValidator : RuleValidator<CreateUserRequest>
+{
+    private readonly IUserRepository _repository;
+
+    public UniqueEmailValidator(IUserRepository repository)
+        => _repository = repository;
+
+    public override async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(
+        CreateUserRequest instance)
+    {
+        var results = new List<ValidationResult>();
+
+        var existingUser = await _repository.FindByEmailAsync(instance.Email);
+        if (existingUser is not null)
+        {
+            results.Add(new ValidationResult("Email already exists", [nameof(instance.Email)]));
+        }
+
+        return results;
+    }
+}
+```
+
+---
+
+## ⚙️ Configuration
 
 ### Service Registration
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
-using Xpandables.Net.DependencyInjection;
 
-var services = new ServiceCollection();
+var builder = WebApplication.CreateBuilder(args);
 
-// Add core services
-services.AddXMediator();                    // CQRS Mediator
-services.AddXRequestHandlers();             // Scan for request handlers
-services.AddXPipelineRequestHandler();      // Request pipeline
+// Register validators
+builder.Services.AddXRuleValidators(typeof(CreateUserValidator).Assembly);
 
-// Add decorators
-services.AddXPipelinePreDecorator();        // Pre-request processing
-services.AddXPipelinePostDecorator();       // Post-request processing
-services.AddXPipelineExceptionDecorator();  // Exception handling
-services.AddXPipelineValidationDecorator(); // Validation
-
-// Add event sourcing
-services.AddXEventSourcing();
-services.AddXAggregateStore();
-services.AddXEventStore();
-services.AddXPublisher();
-services.AddXSubscriber();
-
-// Add repository
-services.AddXRepository<MyDbContext>();
+// Register validator resolver
+builder.Services.AddScoped<IRuleValidatorResolver, RuleValidatorResolver>();
 ```
 
 ---
 
-## 📚 Advanced Features
+## 🌍 Real-World Examples
 
-### Pipeline Decorators
-
-Add cross-cutting concerns to your request handlers:
+### Order Validation
 
 ```csharp
-// Pre-handler (runs before main handler)
-public sealed class LoggingPreHandler<TRequest> 
-    : IRequestPreHandler<TRequest>
-    where TRequest : class, IRequest
+public sealed class OrderValidator : RuleValidator<CreateOrderRequest>
 {
-    public Task<OperationResult> HandleAsync(
-        RequestContext<TRequest> context,
-        CancellationToken cancellationToken)
+    public override IReadOnlyCollection<ValidationResult> Validate(CreateOrderRequest instance)
     {
-        _logger.LogInformation("Executing: {Request}", 
-            typeof(TRequest).Name);
-        return Task.FromResult(OperationResult.Ok().Build());
-    }
-}
+        var results = new List<ValidationResult>();
 
-// Post-handler (runs after main handler)
-public sealed class CacheInvalidationPostHandler<TRequest> 
-    : IRequestPostHandler<TRequest>
-    where TRequest : class, IRequest
-{
-    public async Task<OperationResult> HandleAsync(
-        RequestContext<TRequest> context,
-        OperationResult response,
-        CancellationToken cancellationToken)
-    {
-        if (response.IsSuccess)
+        // Customer validation
+        var hasCustomer = Specification.IsNotNull<CreateOrderRequest, Guid?>(o => o.CustomerId);
+        if (!hasCustomer.IsSatisfiedBy(instance))
         {
-            await _cache.InvalidateAsync("users");
+            results.Add(new ValidationResult("Customer is required", [nameof(instance.CustomerId)]));
         }
-        return response;
-    }
-}
 
-// Exception handler
-public sealed class GlobalExceptionHandler<TRequest> 
-    : IRequestExceptionHandler<TRequest>
-    where TRequest : class, IRequest
-{
-    public Task<OperationResult> HandleAsync(
-        RequestContext<TRequest> context,
-        Exception exception,
-        CancellationToken cancellationToken)
-    {
-        _logger.LogError(exception, "Request failed");
-        
-        return Task.FromResult(
-            OperationResult
-                .InternalServerError(exception)
-                .Build());
+        // Items validation
+        if (instance.Items is null || instance.Items.Count == 0)
+        {
+            results.Add(new ValidationResult("At least one item is required", [nameof(instance.Items)]));
+        }
+        else
+        {
+            var validItemSpec = Specification.GreaterThan<OrderItem, int>(i => i.Quantity, 0)
+                .And(Specification.GreaterThan<OrderItem, decimal>(i => i.UnitPrice, 0));
+
+            for (int i = 0; i < instance.Items.Count; i++)
+            {
+                if (!validItemSpec.IsSatisfiedBy(instance.Items[i]))
+                {
+                    results.Add(new ValidationResult(
+                        $"Item {i + 1} must have quantity and price greater than zero",
+                        [$"Items[{i}]"]));
+                }
+            }
+        }
+
+        return results;
     }
 }
 ```
 
-### Event Publishing & Subscription
+### Complex Business Rules
 
 ```csharp
-// Publish events
-await _publisher.PublishAsync(new UserCreatedEvent(userId, name));
-
-// Subscribe with action
-_subscriber.Subscribe<UserCreatedEvent>(evt => 
-    Console.WriteLine($"User created: {evt.UserId}"));
-
-// Subscribe with async handler
-_subscriber.Subscribe<UserCreatedEvent>(async (evt, ct) =>
+public class DiscountEligibilitySpec
 {
-    await SendWelcomeEmail(evt.UserId, ct);
-});
+    // Premium customer with high order value
+    public static ISpecification<Order> PremiumDiscount =>
+        Specification.Equal<Order, CustomerType>(o => o.Customer.Type, CustomerType.Premium)
+            .And(Specification.GreaterThan<Order, decimal>(o => o.TotalAmount, 1000m));
 
-// Subscribe with handler class
-public sealed class UserCreatedHandler : IEventHandler<UserCreatedEvent>
-{
-    public async Task HandleAsync(
-        UserCreatedEvent @event,
-        CancellationToken cancellationToken)
-    {
-        await SendWelcomeEmail(@event.UserId, cancellationToken);
-    }
+    // First-time customer discount
+    public static ISpecification<Order> FirstTimeDiscount =>
+        Specification.Equal<Order, int>(o => o.Customer.OrderCount, 0);
+
+    // Seasonal discount (example: December)
+    public static ISpecification<Order> SeasonalDiscount =>
+        Specification.Equal<Order, int>(o => o.OrderDate.Month, 12);
+
+    // Any discount applies
+    public static ISpecification<Order> AnyDiscount =>
+        Specification.Any(PremiumDiscount, FirstTimeDiscount, SeasonalDiscount);
 }
 
-_subscriber.Subscribe(new UserCreatedHandler());
-```
-
-### Async Paging
-
-```csharp
-using Xpandables.Net.Collections.Generic;
-
-// Create paged enumerable
-public async Task<IAsyncPagedEnumerable<Product>> GetProductsAsync(
-    int pageSize,
-    int pageIndex)
+// Usage
+if (DiscountEligibilitySpec.PremiumDiscount.IsSatisfiedBy(order))
 {
-    var query = _dbContext.Products
-        .Where(p => p.IsActive)
-        .OrderBy(p => p.Name);
-
-    return query.ToAsyncPagedEnumerable(pageSize, pageIndex);
+    order.ApplyDiscount(0.15m); // 15% premium discount
 }
-
-// Consume paged results
-var products = await GetProductsAsync(20, 1);
-
-await foreach (var product in products)
-{
-    Console.WriteLine(product.Name);
-}
-
-// Get pagination info
-var pagination = await products.GetPaginationAsync();
-Console.WriteLine($"Page {pagination.PageIndex} of {pagination.TotalPages}");
-Console.WriteLine($"Total items: {pagination.TotalCount}");
 ```
 
 ---
 
-## 💡 Best Practices
+## ✅ Best Practices
 
-1. **Use OperationResult** for all public API boundaries
-2. **Prefer Optional** over null checks
-3. **Encapsulate business rules** in Specifications
-4. **Use CQRS** to separate reads from writes
-5. **Apply Event Sourcing** for audit trails and temporal queries
-6. **Leverage decorators** for cross-cutting concerns
-7. **Keep aggregates small** and focused
+1. **Create reusable specifications** - Define common business rules as static specifications
+2. **Combine specifications** - Use And, Or, Not for complex rules
+3. **Use factory methods** - Prefer Equal, GreaterThan, Contains over raw expressions
+4. **Implement IRequiresValidation** - Mark requests for automatic pipeline validation
+5. **Keep validators focused** - One validator per request type
+6. **Use async validation** - For database lookups or external service calls
 
 ---
 
 ## 📚 Related Packages
 
-- **Xpandables.Net.AspNetCore** - ASP.NET Core integrations
-- **Xpandables.Net.EntityFramework** - EF Core repository implementation
-- **Xpandables.Net.SampleApi** - Complete working example
+- **System.Primitives** - Core primitives and utilities
+- **System.Results** - Result types with validation integration
+- **System.Results.Pipelines** - Automatic validation in request pipelines
 
 ---
 

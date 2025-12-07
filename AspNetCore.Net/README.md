@@ -15,7 +15,7 @@
 
 - ?? **OperationResult Extensions** - Convert OperationResult to IActionResult, ProblemDetails, and ModelStateDictionary
 - ??? **IEndpointRoute** - Interface for modular endpoint route registration
-- ?? **Lazy Resolution** - Lazy<T> dependency injection support
+- ? **Lazy Resolution** - Lazy<T> dependency injection support
 - ?? **JSON Configuration** - Easy JsonSerializerOptions service registration
 - ?? **ModelState Integration** - Seamless ModelStateDictionary to OperationResult conversion
 - ?? **Exception Handling** - BadHttpRequestException to OperationResult conversion
@@ -271,7 +271,7 @@ app.Use(async (context, next) =>
 
 ---
 
-## ?? Best Practices
+## ? Best Practices
 
 1. **Use ToActionResult()** - Consistently convert OperationResult to HTTP responses
 2. **Leverage IEndpointRoute** - Organize endpoints into separate classes

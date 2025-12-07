@@ -1,4 +1,4 @@
-# ?? Xpandables.Net.Optionals
+# ?? System.Optionals
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -9,7 +9,7 @@
 
 ## ?? Overview
 
-`Xpandables.Net.Optionals` provides a robust implementation of the **Option/Maybe pattern**, eliminating null reference exceptions by explicitly representing the presence or absence of a value. Built for .NET 10 with C# 14+, this library offers a type-safe alternative to nullable references with functional programming semantics.
+`System.Optionals` provides a robust implementation of the **Option/Maybe pattern**, eliminating null reference exceptions by explicitly representing the presence or absence of a value. Built for .NET 10 with C# 14+, this library offers a type-safe alternative to nullable references with functional programming semantics.
 
 ### ? Key Features
 
@@ -27,7 +27,7 @@
 ## ?? Installation
 
 ```bash
-dotnet add package Xpandables.Net.Optionals
+dotnet add package System.Optionals
 ```
 
 ---
@@ -185,7 +185,7 @@ string result = config
 
 ---
 
-## ?? Async Operations
+## ? Async Operations
 
 ### Async Mapping
 
@@ -426,7 +426,7 @@ public class UserController : ControllerBase
 
 ---
 
-## ??? Design Philosophy
+## ?? Design Philosophy
 
 ### Why Optional<T>?
 

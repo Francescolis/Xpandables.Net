@@ -18,7 +18,7 @@
 - ?? **IIntegrationEvent** - Events for cross-service communication
 - ?? **IEventPublisher** - Publish events to subscribers
 - ?? **IEventSubscriber** - Subscribe to events with handlers
-- ?? **IAggregate** - Aggregate root for event sourcing
+- ??? **IAggregate** - Aggregate root for event sourcing
 - ?? **IEventStore** - Store and retrieve domain events
 - ?? **IOutboxStore** - Outbox pattern for reliable event delivery
 
@@ -166,7 +166,7 @@ public interface IEventSubscriber
 
 ---
 
-## ?? Best Practices
+## ? Best Practices
 
 1. **Use DomainEvent for internal** - Within bounded context
 2. **Use IntegrationEvent for external** - Cross-service communication

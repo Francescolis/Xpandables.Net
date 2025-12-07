@@ -1,4 +1,4 @@
-# ?? System.Events.EntityFramework
+# ?? System.Events.Data
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -9,16 +9,16 @@
 
 ## ?? Overview
 
-`System.Events.EntityFramework` provides EF Core-based implementations for event sourcing patterns including event store, outbox pattern, and aggregate reconstruction.
+`System.Events.Data` provides EF Core-based implementations for event sourcing patterns including event store, outbox pattern, and aggregate reconstruction.
 
 ### ? Key Features
 
-- ?? **EventStoreDataContext** - EF Core context for event persistence
+- ??? **EventStoreDataContext** - EF Core context for event persistence
 - ?? **OutboxStoreDataContext** - Outbox pattern implementation
 - ?? **EventStore** - Store and retrieve domain events
 - ?? **OutboxStore** - Reliable event publishing with transactional outbox
-- ?? **AggregateStore** - Save and reconstruct aggregates from events
-- ??? **Snapshot Support** - Aggregate snapshots for performance
+- ??? **AggregateStore** - Save and reconstruct aggregates from events
+- ?? **Snapshot Support** - Aggregate snapshots for performance
 
 ---
 

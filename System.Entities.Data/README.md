@@ -1,4 +1,4 @@
-# ?? System.Data.EntityFramework
+# ??? System.Entities.Data
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -9,11 +9,11 @@
 
 ## ?? Overview
 
-`System.Data.EntityFramework` provides a complete Entity Framework Core implementation of the repository pattern with `DataContext` base class, automatic entity lifecycle tracking (CreatedOn, UpdatedOn, DeletedOn), and support for bulk operations through `EntityUpdater`.
+`System.Entities.Data` provides a complete Entity Framework Core implementation of the repository pattern with `DataContext` base class, automatic entity lifecycle tracking (CreatedOn, UpdatedOn, DeletedOn), and support for bulk operations through `EntityUpdater`.
 
 ### ? Key Features
 
-- ?? **DataContext** - Extended DbContext with automatic entity tracking
+- ??? **DataContext** - Extended DbContext with automatic entity tracking
 - ?? **Repository<TDataContext>** - Generic EF Core repository implementation
 - ? **Bulk Operations** - Efficient batch updates with EntityUpdater
 - ?? **Entity Lifecycle** - Automatic CreatedOn/UpdatedOn/DeletedOn timestamps
@@ -337,7 +337,7 @@ public class DataContext : DbContext
 
 ---
 
-## ?? Best Practices
+## ? Best Practices
 
 1. **Inherit from DataContext** - Get automatic entity tracking
 2. **Implement IEntity** - Enable automatic CreatedOn/UpdatedOn/DeletedOn
