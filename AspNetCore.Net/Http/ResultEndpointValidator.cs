@@ -16,14 +16,11 @@
 ********************************************************************************/
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
-using System.OperationResults;
 using System.Results;
-
-using AspNetCore.Net;
 
 using Microsoft.AspNetCore.Http;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Provides endpoint argument validation for minimal API endpoints using the specified validator provider.
@@ -33,7 +30,7 @@ namespace AspNetCore.Net;
 /// endpoints to handle errors consistently. The validator provider determines which validators are applied to each
 /// argument type.</remarks>
 /// <param name="validatorProvider">The provider used to retrieve validators for endpoint arguments requiring validation.</param>
-public sealed class MinimalResultEndpointValidator(IRuleValidatorProvider validatorProvider) : IMinimalResultEndpointValidator
+public sealed class ResultEndpointValidator(IRuleValidatorProvider validatorProvider) : IResultEndpointValidator
 {
     /// <inheritdoc/>
     public async ValueTask<object?> ValidateAsync(
@@ -52,20 +49,20 @@ public sealed class MinimalResultEndpointValidator(IRuleValidatorProvider valida
 
         ImmutableHashSet<ValidatorDescriptor> validators = GetAppropriateValidators(arguments, validatorProvider);
 
-        OperationResult execution = await ApplyValidationAsync(validators).ConfigureAwait(false);
+        Result result = await ApplyValidationAsync(validators).ConfigureAwait(false);
 
-        if (!execution.Errors.IsEmpty)
+        if (!result.Errors.IsEmpty)
         {
-            return execution;
+            return result;
         }
 
         return await nextDelegate(context).ConfigureAwait(false);
     }
 
 
-    static async Task<OperationResult> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
+    static async Task<Result> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
     {
-        IFailureResultBuilder failureBuilder = OperationResult.BadRequest();
+        FailureResultBuilder failureBuilder = Result.BadRequest();
 
         foreach (ValidatorDescriptor descriptor in validators)
         {

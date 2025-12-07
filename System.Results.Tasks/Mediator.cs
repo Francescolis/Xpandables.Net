@@ -55,7 +55,7 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
         }
         catch (Exception exception)
         {
-            return exception.ToFailureResult();
+            return exception.ToResult();
         }
     }
 }

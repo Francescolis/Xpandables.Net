@@ -59,11 +59,11 @@ public sealed class PipelineExceptionDecorator<TRequest>(
                         ex,
                         exception);
 
-                    return aggregateException.ToFailureResult();
+                    return aggregateException.ToResult();
                 }
             }
 
-            return exception.ToFailureResult();
+            return exception.ToResult();
         }
     }
 }

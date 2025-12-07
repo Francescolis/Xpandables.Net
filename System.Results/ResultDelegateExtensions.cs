@@ -91,7 +91,7 @@ public static class ResultDelegateExtensions
         catch (Exception exception)
             when (exception is not ResultException)
         {
-            return exception.ToFailureResult();
+            return exception.ToResult();
         }
     }
 
@@ -124,7 +124,7 @@ public static class ResultDelegateExtensions
         catch (Exception exception)
             when (exception is not ResultException)
         {
-            return exception.ToFailureResult();
+            return exception.ToResult();
         }
     }
 }

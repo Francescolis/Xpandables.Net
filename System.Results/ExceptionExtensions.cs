@@ -47,7 +47,7 @@ public static class ExceptionExtensions
         /// message or status code title is used depending on the environment.</param>
         /// <returns>A <see cref="Result"/> describing the failure, including status code, error details, and exception
         /// information.</returns>
-        public FailureResult ToFailureResult(HttpStatusCode? statusCode = null, string? reason = default)
+        public FailureResult ToResult(HttpStatusCode? statusCode = null, string? reason = default)
         {
             ArgumentNullException.ThrowIfNull(exception);
 
@@ -95,7 +95,7 @@ public static class ExceptionExtensions
         /// exception or status code.</param>
         /// <returns>A failure result containing details about the exception, including status code, error information, and
         /// optional reason.</returns>
-        public FailureResult<TValue> ToFailureResult<TValue>(HttpStatusCode? statusCode = null, string? reason = default)
+        public FailureResult<TValue> ToResult<TValue>(HttpStatusCode? statusCode = null, string? reason = default)
         {
             ArgumentNullException.ThrowIfNull(exception);
             bool isDevelopment = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";

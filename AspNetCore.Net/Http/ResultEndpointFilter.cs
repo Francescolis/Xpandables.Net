@@ -20,21 +20,20 @@ using System.Results;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Provides an endpoint filter that processes execution results and paged asynchronous enumerables for minimal API
 /// endpoints.
 /// </summary>
-/// <remarks>This filter handles responses of type <see cref="OperationResult"/> by writing execution headers and
+/// <remarks>This filter handles responses of type <see cref="Result"/> by writing execution headers and
 /// returning the underlying value. For responses implementing <see cref="IAsyncPagedEnumerable"/>, it serializes the
 /// paged data to the HTTP response using JSON. The filter is intended for use in minimal API pipelines to standardize
 /// result handling and response formatting.</remarks>
-public sealed class MinimalResultEndpointFilter : IEndpointFilter
+public sealed class ResultEndpointFilter : IEndpointFilter
 {
     private IResultHeaderWriter? headerWriter;
 
@@ -46,27 +45,27 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
 
         try
         {
-            object? result = await next(context).ConfigureAwait(false);
+            object? objectResult = await next(context).ConfigureAwait(false);
 
-            if (result is OperationResult execution)
+            if (objectResult is Result result)
             {
                 headerWriter ??= context.HttpContext
                     .RequestServices
                     .GetRequiredService<IResultHeaderWriter>();
 
                 await headerWriter
-                    .WriteAsync(context.HttpContext, execution)
+                    .WriteAsync(context.HttpContext, result)
                     .ConfigureAwait(false);
 
-                if (execution.IsFailure)
+                if (result.IsFailure)
                 {
-                    await WriteProblemDetailsAsync(context.HttpContext, execution).ConfigureAwait(false);
+                    await WriteProblemDetailsAsync(context.HttpContext, result).ConfigureAwait(false);
                     return Results.Empty;
                 }
 
-                if (execution.Value is not null)
+                if (result.Value is not null)
                 {
-                    result = execution.Value;
+                    objectResult = result.Value;
                 }
                 else
                 {
@@ -74,7 +73,7 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                 }
             }
 
-            if (result is IAsyncPagedEnumerable paged)
+            if (objectResult is IAsyncPagedEnumerable paged)
             {
                 context.HttpContext.Response.ContentType ??= context.HttpContext.GetContentType("application/json; charset=utf-8");
                 var cancellationToken = context.HttpContext.RequestAborted;
@@ -100,7 +99,7 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                 return Results.Empty;
             }
 
-            return result;
+            return objectResult;
         }
         catch (Exception exception)
             when (!context.HttpContext.Response.HasStarted)
@@ -110,22 +109,22 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
                 exception = targetInvocation.InnerException ?? targetInvocation;
             }
 
-            OperationResult execution = exception switch
+            Result result = exception switch
             {
-                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToOperationResult(),
+                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(),
                 ResultException executionResultException => executionResultException.Result,
                 _ => exception.ToResult()
             };
 
-            await WriteProblemDetailsAsync(context.HttpContext, execution).ConfigureAwait(false);
+            await WriteProblemDetailsAsync(context.HttpContext, result).ConfigureAwait(false);
 
             return Results.Empty;
         }
     }
 
-    internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, OperationResult execution)
+    internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, Result result)
     {
-        ProblemDetails problem = execution.ToProblemDetails(context);
+        ProblemDetails problem = result.ToProblemDetails(context);
         if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
         {
             await problemDetailsService.WriteAsync(new ProblemDetailsContext
@@ -136,8 +135,8 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
         }
         else
         {
-            IResult result = Results.Problem(problem);
-            await result.ExecuteAsync(context).ConfigureAwait(false);
+            IResult objectResult = Results.Problem(problem);
+            await objectResult.ExecuteAsync(context).ConfigureAwait(false);
         }
     }
 }
