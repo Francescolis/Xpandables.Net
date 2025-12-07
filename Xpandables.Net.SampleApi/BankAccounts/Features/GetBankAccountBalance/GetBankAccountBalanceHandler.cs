@@ -1,6 +1,4 @@
-﻿using System.OperationResults;
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 using Xpandables.Net.SampleApi.ReadStorage;
 
@@ -9,7 +7,7 @@ namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 public sealed class GetBankAccountBalanceHandler(BankAccountDataContext context) :
     IRequestHandler<GetBankAccountBalanceQuery, GetBankAccountBalanceResult>
 {
-    public async Task<OperationResult<GetBankAccountBalanceResult>> HandleAsync(
+    public async Task<Result<GetBankAccountBalanceResult>> HandleAsync(
         GetBankAccountBalanceQuery request,
         CancellationToken cancellationToken = default)
     {
@@ -25,8 +23,8 @@ public sealed class GetBankAccountBalanceHandler(BankAccountDataContext context)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return account.HasValue
-            ? OperationResult.Success(account.Value)
-            : OperationResult.NotFound(nameof(request.AccountId), "Account not found");
+        return account is { AccountId: not null }
+            ? Result.Success(account.Value)
+            : Result.NotFound<GetBankAccountBalanceResult>(nameof(request.AccountId), "Account not found");
     }
 }

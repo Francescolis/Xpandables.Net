@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Repositories;
 
 namespace Xpandables.Net.SampleApi.ReadStorage;
 

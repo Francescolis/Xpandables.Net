@@ -28,7 +28,7 @@ namespace System.Results;
 /// </summary>
 /// <remarks>This abstract record serves as the internal foundation for operation result types. It should not be
 /// referenced directly in application code. Use <see cref="Result"/> or <see cref="Result{TValue}"/> instead.</remarks>
-[DebuggerDisplay($"{{{nameof(DebuggerDisplay)}(),nq}}")]
+[DebuggerDisplay($"{{{nameof(DebuggerDisplay)},nq}}")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "<Pending>")]
 [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]

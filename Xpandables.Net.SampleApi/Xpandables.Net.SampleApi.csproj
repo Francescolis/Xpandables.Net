@@ -24,18 +24,22 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AspNetCore.Net\AspNetCore.Net.csproj" />
-    <ProjectReference Include="..\System.Data.EntityFramework\System.Entities.Data.csproj" />
-    <ProjectReference Include="..\System.Events.EntityFramework\System.Events.EntityFramework.csproj" />
+    <ProjectReference Include="..\System.Entities.Data\System.Entities.Data.csproj" />
+    <ProjectReference Include="..\System.Events.Data\System.Events.Data.csproj" />
     <ProjectReference Include="..\System.Linq.AsyncPaged\System.Linq.AsyncPaged.csproj" />
-    <ProjectReference Include="..\System.OperationResults.Tasks\System.Results.Tasks.csproj" />
+    <ProjectReference Include="..\System.Results.Tasks\System.Results.Tasks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="AspNetCore.Net" />
+    <Using Include="System.Events" />
+    <Using Include="System.Events.Data" />
+    <Using Include="System.Entities.Data" />
+    <Using Include="System.Entities" />
     <Using Include="System.Events.Aggregates" />
     <Using Include="System.Events.Domain" />
-    <Using Include="System.OperationResults.Tasks" />
-    <Using Include="System.OperationResults.Tasks" />
+    <Using Include="System.Results.Tasks" />
+    <Using Include="System.Results.Requests" />
+    <Using Include="System.Results" />
     <Using Include="System.States" />
   </ItemGroup>
 

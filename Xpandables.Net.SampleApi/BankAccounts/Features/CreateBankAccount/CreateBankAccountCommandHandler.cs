@@ -1,13 +1,11 @@
-﻿using System.OperationResults;
-
-using Xpandables.Net.SampleApi.BankAccounts.Accounts;
+﻿using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
 
 public sealed class CreateBankAccountCommandHandler(
     IAggregateStore<BankAccount> aggregateStore) : IRequestHandler<CreateBankAccountCommand>
 {
-    public async Task<OperationResult> HandleAsync(
+    public async Task<Result> HandleAsync(
         CreateBankAccountCommand request,
         CancellationToken cancellationToken = default)
     {
@@ -26,8 +24,8 @@ public sealed class CreateBankAccountCommandHandler(
             .SaveAsync(bankAccount, cancellationToken)
             .ConfigureAwait(false);
 
-        return OperationResult
-            .Ok()
+        return Result
+            .Success()
             .WithHeader("AccountId", accountId.ToString())
             .WithHeader("AccountNumber", accountNumber)
             .Build();

@@ -1,13 +1,11 @@
-﻿using System.OperationResults;
-
-using Xpandables.Net.SampleApi.BankAccounts.Accounts;
+﻿using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 
 public sealed class DepositBankAccountCommandHandler(IAggregateStore<BankAccount> aggregateStore) :
     IRequestHandler<DepositBankAccountCommand, DepositBankAccountResult>
 {
-    public async Task<OperationResult<DepositBankAccountResult>> HandleAsync(
+    public async Task<Result<DepositBankAccountResult>> HandleAsync(
         DepositBankAccountCommand request,
         CancellationToken cancellationToken = default)
     {
@@ -26,6 +24,6 @@ public sealed class DepositBankAccountCommandHandler(IAggregateStore<BankAccount
             Description = request.Description
         };
 
-        return OperationResult.Success(result);
+        return Result.Success(result);
     }
 }

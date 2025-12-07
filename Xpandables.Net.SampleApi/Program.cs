@@ -1,5 +1,3 @@
-using System.Events;
-
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -66,7 +64,7 @@ builder.Services.AddXDataContext<BankAccountDataContext>(options =>
 // Register Xpandables.Net services
 builder.Services
     .AddXEndpointRoutes()
-    .AddXMinialResultEndpointValidator()
+    .AddXResultEndpointValidator()
     .AddXJsonSerializerOptions()
     .AddXMediatorWithEventSourcingPipelines()
     .AddXRequestHandlers()
@@ -81,7 +79,7 @@ builder.Services
     .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
     .AddXScheduler()
     .AddXHostedScheduler()
-    .AddXMinimalSupport();
+    .AddXResultSupport();
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -107,7 +105,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-app.UseMiddleware<MinimalResultMiddleware>();
+app.UseMiddleware<ResultMiddleware>();
 app.UseHttpsRedirection();
 app.UseSwagger()
     .UseSwaggerUI(options =>

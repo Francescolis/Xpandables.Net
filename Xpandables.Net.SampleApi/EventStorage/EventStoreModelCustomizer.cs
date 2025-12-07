@@ -1,7 +1,6 @@
 ﻿namespace Xpandables.Net.SampleApi.EventStorage;
 
 using System.Entities.Data.Converters;
-using System.Events.Repositories;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;

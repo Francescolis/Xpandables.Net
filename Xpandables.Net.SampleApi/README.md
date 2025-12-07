@@ -234,7 +234,7 @@ public sealed class CreateBankAccountHandler
     public CreateBankAccountHandler(IAggregateStore aggregateStore) 
         => _aggregateStore = aggregateStore;
 
-    public async Task<OperationResult<CreateBankAccountResult>> HandleAsync(
+    public async Task<Result<CreateBankAccountResult>> HandleAsync(
         CreateBankAccountCommand request,
         CancellationToken cancellationToken)
     {
@@ -253,11 +253,11 @@ public sealed class CreateBankAccountHandler
                 account.Id,
                 request.AccountNumber);
 
-            return OperationResult.Created(result);
+            return Result.Created(result);
         }
         catch (InvalidOperationException ex)
         {
-            return OperationResult
+            return Result
                 .BadRequest()
                 .WithError("request", ex.Message)
                 .Build<CreateBankAccountResult>();
@@ -439,7 +439,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Use OperationResult middleware
+// Use Result middleware
 app.UseXExecutionResultMinimalMiddleware();
 
 app.UseHttpsRedirection();

@@ -30,7 +30,7 @@ namespace System.Results;
 /// provided properties to inspect the result, access error information, and handle operation metadata. The type
 /// supports integration with HTTP-based APIs and can be used to standardize result handling across application
 /// layers.</remarks>
-[DebuggerDisplay($"{{{nameof(DebuggerDisplay)}(),nq}}")]
+[DebuggerDisplay($"{{{nameof(DebuggerDisplay)},nq}}")]
 public record Result : _Result
 {
     /// <summary>
