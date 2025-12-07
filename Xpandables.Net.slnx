@@ -2,6 +2,11 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
+  <Folder Name="/Benchmarks/">
+    <Project Path="Xpandables.Net.Benchmarking/Xpandables.Net.Benchmarking.csproj">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/Real Example/">
     <Project Path="Xpandables.Net.SampleApi/Xpandables.Net.SampleApi.csproj" Id="829a0c40-2dec-4ab0-9b14-5979b806c738">
       <Platform Project="x64" />
@@ -11,6 +16,11 @@
     <File Path=".editorconfig" />
     <File Path="README.md" />
     <File Path="Resources.Designer.t4" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Xpandables.Net.UnitTests/Xpandables.Net.UnitTests.csproj">
+      <Platform Project="x64" />
+    </Project>
   </Folder>
   <Project Path="AspNetCore.Net.Composition/AspNetCore.Net.Composition.csproj" Id="9c6a3470-892b-4719-9461-59bdf2857f02">
     <Platform Project="x64" />
@@ -64,12 +74,6 @@
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Text.Json.AsyncPaged/System.Text.Json.AsyncPaged.csproj" Id="dd6e91b8-79e2-4b90-9123-4fabebf66505">
-    <Platform Project="x64" />
-  </Project>
-  <Project Path="Xpandables.Net.Benchmarking/Xpandables.Net.Benchmarking.csproj">
-    <Platform Project="x64" />
-  </Project>
-  <Project Path="Xpandables.Net.UnitTests/Xpandables.Net.UnitTests.csproj">
     <Platform Project="x64" />
   </Project>
 </Solution>
