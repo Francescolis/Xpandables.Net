@@ -25,9 +25,6 @@
   <Project Path="AspNetCore.Net.Composition/AspNetCore.Net.Composition.csproj" Id="9c6a3470-892b-4719-9461-59bdf2857f02">
     <Platform Project="x64" />
   </Project>
-  <Project Path="AspNetCore.Net.Minimals/AspNetCore.Net.Minimals.csproj" Id="12a862bc-b963-4880-a22e-6f9c27aac128">
-    <Platform Project="x64" />
-  </Project>
   <Project Path="AspNetCore.Net/AspNetCore.Net.csproj" Id="a820677a-3901-4f62-a6a0-decd0a485702">
     <Platform Project="x64" />
   </Project>

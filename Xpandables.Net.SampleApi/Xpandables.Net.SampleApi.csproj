@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AspNetCore.Net.Minimals\AspNetCore.Net.Minimals.csproj" />
     <ProjectReference Include="..\AspNetCore.Net\AspNetCore.Net.csproj" />
     <ProjectReference Include="..\System.Data.EntityFramework\System.Entities.Data.csproj" />
     <ProjectReference Include="..\System.Events.EntityFramework\System.Events.EntityFramework.csproj" />

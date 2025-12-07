@@ -16,8 +16,6 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 
-using AspNetCore.Net;
-
 using Microsoft.AspNetCore.Http;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -31,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <remarks>Use this class to enable automatic inclusion of execution result information in HTTP response headers
 /// by configuring dependency injection for default or custom header writers. These methods should be called during
 /// application startup to ensure the appropriate services are available for HTTP response processing.</remarks>
-public static class MinimalResultHeaderExtensions
+public static class ValidatorHeaderExtensions
 {
     extension(IServiceCollection services)
     {
@@ -39,29 +37,29 @@ public static class MinimalResultHeaderExtensions
         /// Adds the default endpoint validator for minimal result endpoints to the service collection.
         /// </summary>
         /// <remarks>Call this method during application startup to enable validation of minimal result
-        /// endpoints. This method registers the <see cref="MinimalResultEndpointValidator"/> as the implementation for
+        /// endpoints. This method registers the <see cref="ResultEndpointValidator"/> as the implementation for
         /// endpoint validation.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with the minimal result endpoint validator registered.</returns>
-        public IServiceCollection AddXMinialResultEndpointValidator()
+        public IServiceCollection AddXResultEndpointValidator()
             => services
-                .AddXMinimalResultEndpointValidator<MinimalResultEndpointValidator>()
+                .AddXResultEndpointValidator<ResultEndpointValidator>()
                 .AddXValidatorProvider()
                 .AddXValidatorFactory()
-                .AddXExecutionResultHeaderWriter();
+                .AddXResultHeaderWriter();
 
         /// <summary>
-        /// Registers a scoped implementation of <see cref="IMinimalResultEndpointValidator"/> using the specified
+        /// Registers a scoped implementation of <see cref="IResultEndpointValidator"/> using the specified
         /// validator type.
         /// </summary>
         /// <remarks>Use this method to add a custom minimal result endpoint validator to the dependency
         /// injection container. The validator will be resolved with scoped lifetime for each request.</remarks>
-        /// <typeparam name="TMinimalResultEndpointValidator">The type of the minimal result endpoint validator to register. Must be a class that implements <see
-        /// cref="IMinimalResultEndpointValidator"/> and have a public constructor.</typeparam>
+        /// <typeparam name="TResultEndpointValidator">The type of the minimal result endpoint validator to register. Must be a class that implements <see
+        /// cref="IResultEndpointValidator"/> and have a public constructor.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> instance with the validator registration added. This enables chaining
         /// additional service registrations.</returns>
-        public IServiceCollection AddXMinimalResultEndpointValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TMinimalResultEndpointValidator>()
-            where TMinimalResultEndpointValidator : class, IMinimalResultEndpointValidator
-            => services.AddScoped<IMinimalResultEndpointValidator, TMinimalResultEndpointValidator>();
+        public IServiceCollection AddXResultEndpointValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResultEndpointValidator>()
+            where TResultEndpointValidator : class, IResultEndpointValidator
+            => services.AddScoped<IResultEndpointValidator, TResultEndpointValidator>();
 
         /// <summary>
         /// Adds the default X-Execution-Result header writer to the service collection for use in HTTP responses.
@@ -70,8 +68,8 @@ public static class MinimalResultHeaderExtensions
         /// for writing X-Execution-Result headers. Call this method during application startup to enable automatic
         /// inclusion of execution result information in HTTP response headers.</remarks>
         /// <returns>The updated <see cref="IServiceCollection"/> instance with the X-Execution-Result header writer registered.</returns>
-        public IServiceCollection AddXExecutionResultHeaderWriter()
-            => services.AddXExecutionResultHeaderWriter<ResultHeaderWriter>();
+        public IServiceCollection AddXResultHeaderWriter()
+            => services.AddXResultHeaderWriter<ResultHeaderWriter>();
 
         /// <summary>
         /// Registers a scoped implementation of <see cref="IResultHeaderWriter"/> using the specified type in
@@ -79,15 +77,15 @@ public static class MinimalResultHeaderExtensions
         /// </summary>
         /// <remarks>Use this method to configure dependency injection for custom execution result header
         /// writers. Each request will receive a new instance of <typeparamref
-        /// name="TExecutionResultHeaderWriter"/>.</remarks>
-        /// <typeparam name="TExecutionResultHeaderWriter">The type that implements <see cref="IResultHeaderWriter"/> and will be registered as a scoped
+        /// name="TResultHeaderWriter"/>.</remarks>
+        /// <typeparam name="TResultHeaderWriter">The type that implements <see cref="IResultHeaderWriter"/> and will be registered as a scoped
         /// service. Must have a public constructor.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> instance with the registration applied.</returns>
-        public IServiceCollection AddXExecutionResultHeaderWriter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TExecutionResultHeaderWriter>()
-            where TExecutionResultHeaderWriter : class, IResultHeaderWriter
+        public IServiceCollection AddXResultHeaderWriter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResultHeaderWriter>()
+            where TResultHeaderWriter : class, IResultHeaderWriter
         {
             ArgumentNullException.ThrowIfNull(services);
-            services.AddScoped<IResultHeaderWriter, TExecutionResultHeaderWriter>();
+            services.AddScoped<IResultHeaderWriter, TResultHeaderWriter>();
             return services;
         }
     }

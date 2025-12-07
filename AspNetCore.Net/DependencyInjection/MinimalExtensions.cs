@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using AspNetCore.Net;
+using System.Results;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -32,17 +32,17 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// features, such as automatic validation, consistent result filtering, and inclusion of execution result information
 /// in HTTP response headers. These extensions are intended to be called during application startup when setting up the
 /// application's request pipeline and dependency injection container.</remarks>
-public static class MinimalResultExtensions
+public static class MinimalExtensions
 {
     /// <summary>
-    /// Adds support for minimal result handling to the application's service collection.
+    /// Adds support for <see cref="Result"/> handling to the application's service collection.
     /// </summary>
     /// <param name="services">The service collection to act on. Cannot be null.</param>
     /// <returns>The same <paramref name="services"/> instance, with minimal result support registered.</returns>
-    public static IServiceCollection AddXMinimalSupport(this IServiceCollection services)
+    public static IServiceCollection AddXResultSupport(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<MinimalResultMiddleware>();
+        services.AddSingleton<ResultMiddleware>();
         return services;
     }
 
@@ -69,24 +69,24 @@ public static class MinimalResultExtensions
         ///     }
         /// </code>
         /// </summary>
-        /// <param name="configure">An action to configure the <see cref="MinimalSupportOptions"/> used for setting up
+        /// <param name="configure">An action to configure the <see cref="ResultSupportOptions"/> used for setting up
         /// the minimal API support.</param>
         /// <remarks>This extension method configures the middleware pipeline to apply validation and
         /// result filters specifically to minimal API endpoints. It should be called during application startup before
         /// mapping minimal API routes. The method does not affect non-minimal API endpoints.</remarks>
         /// <returns>The <see cref="IApplicationBuilder"/> instance with minimal API support filters applied.</returns>
-        public IApplicationBuilder UseXMinimalSupport(Action<MinimalSupportOptions>? configure = default)
+        public IApplicationBuilder UseXResultSupport(Action<ResultSupportOptions>? configure = default)
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            if (builder.ApplicationServices.GetService<MinimalResultMiddleware>() is null)
+            if (builder.ApplicationServices.GetService<ResultMiddleware>() is null)
                 throw new InvalidOperationException(
-                    "MinimalResultMiddleware is not registered. " +
-                    "Please ensure AddXMinialSupport() is called during service registration.");
+                    "ResultMiddleware is not registered. " +
+                    "Please ensure AddXMinimalSupport() is called during service registration.");
 
-            builder.UseMiddleware<MinimalResultMiddleware>();
+            builder.UseMiddleware<ResultMiddleware>();
 
-            var options = new MinimalSupportOptions();
+            var options = new ResultSupportOptions();
             configure?.Invoke(options);
 
             builder.UseRouting();
@@ -156,7 +156,7 @@ public static class MinimalResultExtensions
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            return builder.AddEndpointFilter(new MinimalResultEndpointValidationFilter().InvokeAsync);
+            return builder.AddEndpointFilter(new ResultEndpointValidationFilter().InvokeAsync);
         }
 
         /// <summary>
@@ -167,6 +167,6 @@ public static class MinimalResultExtensions
         /// include additional metadata or formatting.</remarks>
         /// <returns>The builder instance with the minimal result endpoint filter applied.</returns>
         public TBuilder WithXMinimalFilter() =>
-            builder.AddEndpointFilter<TBuilder, MinimalResultEndpointFilter>();
+            builder.AddEndpointFilter<TBuilder, ResultEndpointFilter>();
     }
 }

@@ -17,7 +17,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Represents configuration options for minimal support features, including validation and result filtering, endpoint
