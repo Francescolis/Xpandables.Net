@@ -16,47 +16,46 @@
 ********************************************************************************/
 using System.Collections;
 using System.Net;
-using System.OperationResults;
+using System.Results;
 
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Provides functionality to write HTTP response headers for an execution result in an ASP.NET Core context.
+/// Provides functionality to write HTTP response headers for a result in an ASP.NET Core context.
 /// </summary>
 /// <remarks>This class sets the response content type, appends custom headers, and handles authentication-related
-/// headers when the execution result indicates an unauthorized status. It is typically used to format the HTTP response
-/// for GraphQL or similar APIs based on the execution result.</remarks>
-public sealed class OperationResultHeaderWriter : IOperationResultHeaderWriter
+/// headers when the result indicates an unauthorized status. It is typically used to format the HTTP response
+/// for GraphQL or similar APIs based on the result.</remarks>
+public sealed class ResultHeaderWriter : IResultHeaderWriter
 {
     /// <inheritdoc/>
-    public async Task WriteAsync(HttpContext context, OperationResult operation)
+    public async Task WriteAsync(HttpContext context, Result result)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(result);
 
         context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
-        context.Response.StatusCode = (int)operation.StatusCode;
+        context.Response.StatusCode = (int)result.StatusCode;
 
-        if (operation.Location is not null)
+        if (result.Location is not null)
         {
             context.Response.Headers.Location =
-                new StringValues(operation.Location.ToString());
+                new StringValues(result.Location.ToString());
         }
 
-        foreach (ElementEntry header in operation.Headers)
+        foreach (ElementEntry header in result.Headers)
         {
             context.Response.Headers.Append(
                 header.Key,
                 new StringValues([.. header.Values]));
         }
 
-        if (operation.StatusCode == HttpStatusCode.Unauthorized)
+        if (result.StatusCode == HttpStatusCode.Unauthorized)
         {
             if (context.RequestServices.GetService<IAuthenticationSchemeProvider>()
                 is { } schemeProvider)

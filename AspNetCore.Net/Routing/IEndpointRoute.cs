@@ -17,9 +17,9 @@
 
 using System.Composition;
 
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Builder;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
 /// Defines a contract for adding routes to an <see cref="IEndpointRouteBuilder"/>.

@@ -18,6 +18,8 @@ using System.Diagnostics.CodeAnalysis;
 
 using AspNetCore.Net;
 
+using Microsoft.AspNetCore.Http;
+
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
@@ -64,28 +66,28 @@ public static class MinimalResultHeaderExtensions
         /// <summary>
         /// Adds the default X-Execution-Result header writer to the service collection for use in HTTP responses.
         /// </summary>
-        /// <remarks>This method registers <see cref="OperationResultHeaderWriter"/> as the implementation
+        /// <remarks>This method registers <see cref="ResultHeaderWriter"/> as the implementation
         /// for writing X-Execution-Result headers. Call this method during application startup to enable automatic
         /// inclusion of execution result information in HTTP response headers.</remarks>
         /// <returns>The updated <see cref="IServiceCollection"/> instance with the X-Execution-Result header writer registered.</returns>
         public IServiceCollection AddXExecutionResultHeaderWriter()
-            => services.AddXExecutionResultHeaderWriter<OperationResultHeaderWriter>();
+            => services.AddXExecutionResultHeaderWriter<ResultHeaderWriter>();
 
         /// <summary>
-        /// Registers a scoped implementation of <see cref="IOperationResultHeaderWriter"/> using the specified type in
+        /// Registers a scoped implementation of <see cref="IResultHeaderWriter"/> using the specified type in
         /// the service collection.
         /// </summary>
         /// <remarks>Use this method to configure dependency injection for custom execution result header
         /// writers. Each request will receive a new instance of <typeparamref
         /// name="TExecutionResultHeaderWriter"/>.</remarks>
-        /// <typeparam name="TExecutionResultHeaderWriter">The type that implements <see cref="IOperationResultHeaderWriter"/> and will be registered as a scoped
+        /// <typeparam name="TExecutionResultHeaderWriter">The type that implements <see cref="IResultHeaderWriter"/> and will be registered as a scoped
         /// service. Must have a public constructor.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> instance with the registration applied.</returns>
         public IServiceCollection AddXExecutionResultHeaderWriter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TExecutionResultHeaderWriter>()
-            where TExecutionResultHeaderWriter : class, IOperationResultHeaderWriter
+            where TExecutionResultHeaderWriter : class, IResultHeaderWriter
         {
             ArgumentNullException.ThrowIfNull(services);
-            services.AddScoped<IOperationResultHeaderWriter, TExecutionResultHeaderWriter>();
+            services.AddScoped<IResultHeaderWriter, TExecutionResultHeaderWriter>();
             return services;
         }
     }

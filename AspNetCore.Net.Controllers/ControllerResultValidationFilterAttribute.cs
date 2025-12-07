@@ -17,6 +17,7 @@
 
 using System.OperationResults;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -42,7 +43,7 @@ public sealed class ControllerResultValidationFilterAttribute : ActionFilterAttr
             return;
         }
 
-        OperationResult executionResult = context.ModelState.ToOperationResult();
+        OperationResult executionResult = context.ModelState.ToResult();
 
         context.Result = new BadRequestObjectResult(executionResult);
     }

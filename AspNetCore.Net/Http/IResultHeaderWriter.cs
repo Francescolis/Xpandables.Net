@@ -15,25 +15,23 @@
  *
 ********************************************************************************/
 
-using System.OperationResults;
+using System.Results;
 
-using Microsoft.AspNetCore.Http;
-
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Defines a contract for writing operation result headers to an HTTP response asynchronously.
+/// Defines a contract for writing result headers to an HTTP response asynchronously.
 /// </summary>
 /// <remarks>Implementations of this interface are responsible for serializing and writing header information
-/// based on the provided operation result. This is typically used in middleware or endpoint logic to customize response
+/// based on the provided result. This is typically used in middleware or endpoint logic to customize response
 /// headers according to the outcome of an operation.</remarks>
-public interface IOperationResultHeaderWriter
+public interface IResultHeaderWriter
 {
     /// <summary>
-    /// Asynchronously writes the specified operation result to the HTTP response for the given context.
+    /// Asynchronously writes the specified result to the HTTP response for the given context.
     /// </summary>
     /// <param name="context">The HTTP context representing the current request and response. Cannot be null.</param>
-    /// <param name="operation">The operation result to be written to the response. Cannot be null.</param>
+    /// <param name="result">The result to be written to the response. Cannot be null.</param>
     /// <returns>A task that represents the asynchronous write operation.</returns>
-    Task WriteAsync(HttpContext context, OperationResult operation);
+    Task WriteAsync(HttpContext context, Result result);
 }

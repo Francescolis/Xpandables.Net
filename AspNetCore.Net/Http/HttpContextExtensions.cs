@@ -17,13 +17,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Provides extension methods for accessing JSON serialization options and content type information from an <see
@@ -60,7 +59,7 @@ public static class HttpContextExtensions
         /// <returns>The Mvc <see cref="JsonSerializerOptions"/> instance associated with the current request.</returns>
         public JsonSerializerOptions GetMvcJsonSerializerOptions()
         {
-            var optionsProvider = context.RequestServices.GetRequiredService<IOptions<Microsoft.AspNetCore.Mvc.JsonOptions>>();
+            var optionsProvider = context.RequestServices.GetRequiredService<IOptions<Mvc.JsonOptions>>();
             return optionsProvider.Value.JsonSerializerOptions;
         }
 
@@ -96,7 +95,7 @@ public static class HttpContextExtensions
         [RequiresDynamicCode("Calls System.Text.Json.JsonSerializerOptions.Default")]
         public JsonSerializerOptions GetMvcJsonSerializerOptionsOrDefault()
         {
-            var optionsProvider = context.RequestServices.GetService<IOptions<Microsoft.AspNetCore.Mvc.JsonOptions>>();
+            var optionsProvider = context.RequestServices.GetService<IOptions<Mvc.JsonOptions>>();
             var options = optionsProvider?.Value?.JsonSerializerOptions ?? JsonSerializerOptions.Default;
             //options.MakeReadOnly(true);
             return options;

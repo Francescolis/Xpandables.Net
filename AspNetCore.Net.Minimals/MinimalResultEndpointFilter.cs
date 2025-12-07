@@ -20,8 +20,6 @@ using System.Results;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-using AspNetCore.Net;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +36,7 @@ namespace AspNetCore.Net;
 /// result handling and response formatting.</remarks>
 public sealed class MinimalResultEndpointFilter : IEndpointFilter
 {
-    private IOperationResultHeaderWriter? headerWriter;
+    private IResultHeaderWriter? headerWriter;
 
     /// <inheritdoc/>
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
@@ -54,7 +52,7 @@ public sealed class MinimalResultEndpointFilter : IEndpointFilter
             {
                 headerWriter ??= context.HttpContext
                     .RequestServices
-                    .GetRequiredService<IOperationResultHeaderWriter>();
+                    .GetRequiredService<IResultHeaderWriter>();
 
                 await headerWriter
                     .WriteAsync(context.HttpContext, execution)

@@ -16,40 +16,40 @@
 ********************************************************************************/
 using System.Collections;
 using System.Net;
-using System.OperationResults;
+using System.Results;
 
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Provides extension methods for the OperationResult type to facilitate integration with ASP.NET Core model validation
+/// Provides extension methods for the <see cref="Result"/> type to facilitate integration with ASP.NET Core model validation
 /// and related workflows.
 /// </summary>
-public static class OperationResultExtensions
+public static class ResultExtensions
 {
     /// <summary>
-    /// Converts the specified model state to an operation result containing validation errors and an HTTP status code.
+    /// Converts the specified model state to a result containing validation errors and an HTTP status code.
     /// </summary>
-    /// <remarks>Only model state entries with one or more errors are included in the operation result. This
+    /// <remarks>Only model state entries with one or more errors are included in the result. This
     /// method is typically used to translate model validation errors into a standardized error response.</remarks>
-    /// <param name="modelState">The model state dictionary containing validation errors to include in the operation result. Cannot be null.</param>
-    /// <param name="statusCode">The HTTP status code to associate with the operation result. The default is BadRequest (400).</param>
-    /// <returns>An operation result representing a failure, populated with validation errors from the model state and the
+    /// <param name="modelState">The model state dictionary containing validation errors to include in the result. Cannot be null.</param>
+    /// <param name="statusCode">The HTTP status code to associate with the result. The default is BadRequest (400).</param>
+    /// <returns>A result representing a failure, populated with validation errors from the model state and the
     /// specified HTTP status code.</returns>
-    public static OperationResult ToOperationResult(
+    public static Result ToResult(
         this ModelStateDictionary modelState,
         HttpStatusCode statusCode = HttpStatusCode.BadRequest)
     {
         ArgumentNullException.ThrowIfNull(modelState);
 
-        return OperationResult
-            .FailureStatus(statusCode)
+        return Result
+            .Failure()
+            .WithStatusCode(statusCode)
             .WithErrors(ElementCollection.With(
                 [.. modelState
                     .Keys
@@ -71,7 +71,7 @@ public static class OperationResultExtensions
     /// <param name="exception">The BadHttpRequestException instance to convert. Cannot be null.</param>
     /// <returns>An OperationResult containing details about the bad HTTP request, including status code, error title, and error
     /// details.</returns>
-    public static OperationResult ToOperationResult(this BadHttpRequestException exception)
+    public static Result ToResult(this BadHttpRequestException exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
@@ -94,7 +94,7 @@ public static class OperationResultExtensions
             .Replace("\\", string.Empty, StringComparison.InvariantCulture)
             .Replace("\"", string.Empty, StringComparison.InvariantCulture);
 
-        return OperationResult
+        return Result
             .BadRequest()
             .WithTitle(((HttpStatusCode)exception.StatusCode).Title)
             .WithDetail(isDevelopment ? exception.ToString() : ((HttpStatusCode)exception.StatusCode).Detail)
@@ -104,9 +104,9 @@ public static class OperationResultExtensions
     }
 
     /// <summary>
-    /// Extensions for <see cref="OperationResult"/>.
+    /// Extensions for <see cref="Result"/>.
     /// </summary>   
-    extension(OperationResult operation)
+    extension(Result result)
     {
         /// <summary>
         /// Converts the current operation result's errors to a new ModelStateDictionary instance.
@@ -120,7 +120,7 @@ public static class OperationResultExtensions
         {
             ModelStateDictionary modelStateDictionary = new();
 
-            foreach (ElementEntry entry in operation.Errors)
+            foreach (ElementEntry entry in result.Errors)
             {
                 foreach (string? value in entry.Values)
                 {
@@ -129,9 +129,9 @@ public static class OperationResultExtensions
                 }
             }
 
-            if (isDevelopment && operation.Exception is not null)
+            if (isDevelopment && result.Exception is not null)
             {
-                modelStateDictionary.AddModelError("exception", operation.Exception.ToString());
+                modelStateDictionary.AddModelError("exception", result.Exception.ToString());
             }
 
             return modelStateDictionary;
@@ -144,9 +144,9 @@ public static class OperationResultExtensions
         /// <returns>An <see cref="ObjectResult"/> containing the operation result and its associated status code.</returns>
         public IActionResult ToActionResult()
         {
-            return new ObjectResult(operation)
+            return new ObjectResult(result)
             {
-                StatusCode = (int)operation.StatusCode,
+                StatusCode = (int)result.StatusCode,
             };
         }
 
@@ -169,15 +169,15 @@ public static class OperationResultExtensions
                 .GetRequiredService<IWebHostEnvironment>()
                 .IsDevelopment();
 
-            var title = operation.Title ?? operation.StatusCode.Title;
-            var detail = operation.Detail ?? operation.StatusCode.Detail;
-            var status = (int)operation.StatusCode;
+            var title = result.Title ?? result.StatusCode.Title;
+            var detail = result.Detail ?? result.StatusCode.Detail;
+            var status = (int)result.StatusCode;
             var instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}";
-            var type = isDevelopment ? operation.GetType().Name : null;
-            var extensions = operation.Extensions.ToDictionaryObject();
+            var type = isDevelopment ? result.GetType().Name : null;
+            var extensions = result.Extensions.ToDictionaryObject();
 
-            ProblemDetails problemDetails = operation.StatusCode.IsValidationProblem
-                    ? new ValidationProblemDetails(operation.ToModelStateDictionary(isDevelopment))
+            ProblemDetails problemDetails = result.StatusCode.IsValidationProblem
+                    ? new ValidationProblemDetails(result.ToModelStateDictionary(isDevelopment))
                     {
                         Title = title,
                         Detail = detail,

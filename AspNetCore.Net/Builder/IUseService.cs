@@ -14,9 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.AspNetCore.Builder;
-
-namespace AspNetCore.Net;
+namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>  
 /// Defines a contract for a service that configures middleware for a 

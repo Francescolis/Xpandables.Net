@@ -12,7 +12,7 @@
 		<Authors>Francescolis</Authors>
 
 		<AssemblyName>AspNetCore.Net</AssemblyName>
-		<RootNamespace>AspNetCore.Net</RootNamespace>
+		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
 		<PackageId>AspNetCore.Net</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
@@ -90,7 +90,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.OperationResults\System.Results.csproj" />
+	  <ProjectReference Include="..\System.Results\System.Results.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -18,7 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AspNetCore.Net;
+namespace System;
 
 /// <summary>
 /// Provides a lazy initialization of a service resolved 

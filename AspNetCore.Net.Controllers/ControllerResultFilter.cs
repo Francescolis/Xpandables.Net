@@ -19,6 +19,7 @@ using System.OperationResults;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,7 @@ namespace AspNetCore.Net;
 /// application's filter pipeline.</remarks>
 public sealed class ControllerResultFilter : IAsyncAlwaysRunResultFilter
 {
-    private IOperationResultHeaderWriter? headerWriter;
+    private IResultHeaderWriter? headerWriter;
 
     /// <inheritdoc/>
     public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
@@ -49,7 +50,7 @@ public sealed class ControllerResultFilter : IAsyncAlwaysRunResultFilter
             {
                 headerWriter ??= context.HttpContext
                 .RequestServices
-                .GetRequiredService<IOperationResultHeaderWriter>();
+                .GetRequiredService<IResultHeaderWriter>();
 
                 await headerWriter
                     .WriteAsync(context.HttpContext, execution)
