@@ -8,7 +8,7 @@ public sealed class CreateBankAccountEndpoint : IEndpointRoute
     {
         app.MapPost("/bank-accounts", async (CreateBankAccountCommand command, IMediator mediator) =>
             await mediator.SendAsync(command).ConfigureAwait(false))
-            .WithXMinimalApi()
+            .WithXResultSupport()
             .AllowAnonymous()
             .WithTags("BankAccounts")
             .WithName("CreateBankAccount")

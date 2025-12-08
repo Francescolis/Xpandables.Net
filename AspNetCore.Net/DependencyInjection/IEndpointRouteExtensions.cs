@@ -41,6 +41,8 @@ public static class IEndpointRouteExtensions
     /// <param name="assemblies">The assemblies to scan for endpoint routes. 
     /// If no assemblies are specified, the calling assembly is used.</param>
     /// <returns>The updated service collection.</returns>
+    /// <remarks>If you want Result support, you need to configure the <see cref="ResultSupportOptions"/> using 
+    /// <see cref="IResultExtensions.AddXResultSupport(IServiceCollection, Action{ResultSupportOptions}?)"/>.</remarks>
     [RequiresUnreferencedCode("This method may be trimmed.")]
     public static IServiceCollection AddXEndpointRoutes(
         this IServiceCollection services,
@@ -78,16 +80,20 @@ public static class IEndpointRouteExtensions
     /// </summary>
     /// <param name="application">The <see cref="WebApplication"/> to configure.</param>
     /// <returns>The configured <see cref="WebApplication"/>.</returns>
+    /// <remarks>If you want Result support, you need to configure the <see cref="ResultSupportOptions"/> using
+    /// <see cref="IResultExtensions.AddXResultSupport(IServiceCollection, Action{ResultSupportOptions}?)"/>, then call
+    /// <see cref="IResultExtensions.UseXResultSupport(IApplicationBuilder)"/> before this call.</remarks>
     public static WebApplication UseXEndpointRoutes(this WebApplication application)
     {
         ArgumentNullException.ThrowIfNull(application);
 
+        ResultSupportOptions? options = application.Services.GetService<ResultSupportOptions>();
         IEnumerable<IEndpointRoute> endpointRoutes = application.Services
             .GetServices<IEndpointRoute>();
 
         foreach (var route in endpointRoutes)
         {
-            route.AddRoutes(application);
+            route.AddRoutes(new EndpointRouteBuilderWrapper(application, options));
         }
 
         return application;

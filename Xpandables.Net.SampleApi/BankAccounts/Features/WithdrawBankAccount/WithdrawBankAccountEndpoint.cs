@@ -14,7 +14,7 @@ public sealed class WithdrawBankAccountEndpoint : IEndpointRoute
                 WithdrawBankAccountCommand command,
                 IMediator mediator) =>
             await mediator.SendAsync(command with { AccountId = accountId }).ConfigureAwait(false))
-            .WithXMinimalApi()
+            .WithXResultSupport()
             .AllowAnonymous()
             .WithTags("BankAccounts")
             .WithName("WithdrawBankAccount")

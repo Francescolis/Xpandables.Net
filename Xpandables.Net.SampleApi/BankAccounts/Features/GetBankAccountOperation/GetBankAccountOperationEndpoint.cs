@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Results.Tasks;
-
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;
 
 public sealed class GetBankAccountOperationEndpoint : IEndpointRoute
@@ -26,7 +24,7 @@ public sealed class GetBankAccountOperationEndpoint : IEndpointRoute
         app.MapGet("/bank-accounts/{accountId}/operations",
             async (Guid accountId, IMediator mediator) =>
                 await mediator.SendAsync(new GetBankAccountOperationQuery { AccountId = accountId }).ConfigureAwait(false))
-            .WithXMinimalApi()
+            .WithXResultSupport()
             .AllowAnonymous()
             .WithTags("BankAccounts")
             .WithName("GetBankAccountOperation")

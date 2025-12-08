@@ -1,6 +1,4 @@
-﻿using System.Results.Tasks;
-
-namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
+﻿namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 
 public sealed class GetBankAccountBalanceEndpoint : IEndpointRoute
 {
@@ -8,7 +6,7 @@ public sealed class GetBankAccountBalanceEndpoint : IEndpointRoute
     {
         app.MapGet("/bank-accounts/{accountId}/balance", async (Guid accountId, IMediator mediator) =>
             await mediator.SendAsync(new GetBankAccountBalanceQuery { AccountId = accountId }).ConfigureAwait(false))
-            .WithXMinimalApi()
+            .WithXResultSupport()
             .AllowAnonymous()
             .WithTags("BankAccounts")
             .WithName("GetBankAccountBalance")
