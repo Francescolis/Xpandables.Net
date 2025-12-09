@@ -1,12 +1,10 @@
-﻿using System.Results.Tasks;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.WithdrawBankAccount;
 
 public sealed class WithdrawBankAccountEndpoint : IEndpointRoute
 {
-    public void AddRoutes(IEndpointRouteBuilder app)
+    public void AddRoutes(EndpointRouteBuilder app)
     {
         app.MapPost("/bank-accounts/{accountId}/withdraw",
             async (
@@ -14,7 +12,6 @@ public sealed class WithdrawBankAccountEndpoint : IEndpointRoute
                 WithdrawBankAccountCommand command,
                 IMediator mediator) =>
             await mediator.SendAsync(command with { AccountId = accountId }).ConfigureAwait(false))
-            .WithXResultSupport()
             .AllowAnonymous()
             .WithTags("BankAccounts")
             .WithName("WithdrawBankAccount")

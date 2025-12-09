@@ -1,14 +1,11 @@
-﻿using System.Results.Tasks;
-
-namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
+﻿namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
 
 public sealed class CreateBankAccountEndpoint : IEndpointRoute
 {
-    public void AddRoutes(IEndpointRouteBuilder app)
+    public void AddRoutes(EndpointRouteBuilder app)
     {
         app.MapPost("/bank-accounts", async (CreateBankAccountCommand command, IMediator mediator) =>
             await mediator.SendAsync(command).ConfigureAwait(false))
-            .WithXResultSupport()
             .AllowAnonymous()
             .WithTags("BankAccounts")
             .WithName("CreateBankAccount")

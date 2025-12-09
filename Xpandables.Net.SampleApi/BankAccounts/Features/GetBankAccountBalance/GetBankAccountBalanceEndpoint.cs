@@ -2,11 +2,10 @@
 
 public sealed class GetBankAccountBalanceEndpoint : IEndpointRoute
 {
-    public void AddRoutes(IEndpointRouteBuilder app)
+    public void AddRoutes(EndpointRouteBuilder app)
     {
         app.MapGet("/bank-accounts/{accountId}/balance", async (Guid accountId, IMediator mediator) =>
             await mediator.SendAsync(new GetBankAccountBalanceQuery { AccountId = accountId }).ConfigureAwait(false))
-            .WithXResultSupport()
             .AllowAnonymous()
             .WithTags("BankAccounts")
             .WithName("GetBankAccountBalance")

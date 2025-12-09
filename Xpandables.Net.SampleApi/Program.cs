@@ -78,7 +78,12 @@ builder.Services
     .AddXEventConverterFactory()
     .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
     .AddXScheduler()
-    .AddXHostedScheduler();
+    .AddXHostedScheduler()
+    .AddXResultSupport(options =>
+    {
+        options.EnableResultFilter = true;
+        options.EnableValidationFilter = true;
+    });
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -130,6 +135,7 @@ using (var scope = app.Services.CreateScope())
     await readDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
+app.UseXResultSupport();
 app.UseXEndpointRoutes();
 
 await app.RunAsync();
