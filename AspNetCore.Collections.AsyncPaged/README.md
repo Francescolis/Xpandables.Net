@@ -1,4 +1,4 @@
-﻿# 🌐 AspNetCore.Net
+﻿# 🌐 AspNetCore.Collections.AsyncPaged
 
 [![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
