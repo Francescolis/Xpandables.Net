@@ -20,7 +20,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System.Net.Http.Json;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Provides extension methods for <see cref="HttpContent"/> that deserialize JSON payloads
