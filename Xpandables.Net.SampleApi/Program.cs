@@ -81,8 +81,9 @@ builder.Services
     .AddXHostedScheduler()
     .AddXResultSupport(options =>
     {
-        options.EnableResultFilter = true;
-        options.EnableValidationFilter = true;
+        options.EnableResultFilter = false;
+        options.EnableValidationFilter = false;
+        options.ConfigureEndpoint = builder => builder.WithXAsyncPagedFilter().WithXResultSupport();
     });
 
 builder.Services.Configure<JsonOptions>(options =>

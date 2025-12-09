@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -42,5 +44,21 @@ public static class IAsyncPagedRouteExtensions
         services.AddSingleton<IConfigureOptions<MvcOptions>, ControllerAsyncPagedMvcOptions>();
 
         return services;
+    }
+
+    /// <summary>
+    /// </summary>
+    extension<TBuilder>(TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        /// <summary>
+        /// Adds an asynchronous paged endpoint filter to the builder configuration.
+        /// </summary>
+        /// <remarks>Use this method to enable support for paged asynchronous operations on endpoints.
+        /// This is typically used when implementing APIs that return large datasets in pages. The filter must be
+        /// compatible with the builder's endpoint configuration.</remarks>
+        /// <returns>The builder instance with the asynchronous paged filter applied.</returns>
+        public TBuilder WithXAsyncPagedFilter() =>
+            builder.AddEndpointFilter<TBuilder, AsyncPagedEnpointFilter>();
     }
 }

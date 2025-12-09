@@ -51,14 +51,14 @@ public sealed class EndpointRouteBuilder : IEndpointRouteBuilder
         _rootGroup = EndpointRouteBuilderExtensions.MapGroup(inner, string.Empty);
 
         // Apply default filters to the root group if no custom configuration is provided
-        if (_options.EndpointPredicate is null && _options.ConfigureEndpoint is null)
+        if (!RequiresPerEndpointConfiguration)
         {
-            if (options.EnableValidationFilter)
+            if (_options.EnableValidationFilter)
             {
                 _rootGroup.AddEndpointFilter(new ResultEndpointValidationFilter().InvokeAsync);
             }
 
-            if (options.EnableResultFilter)
+            if (_options.EnableResultFilter)
             {
                 _rootGroup.AddEndpointFilter<ResultEndpointFilter>();
             }
@@ -75,23 +75,51 @@ public sealed class EndpointRouteBuilder : IEndpointRouteBuilder
     public IApplicationBuilder CreateApplicationBuilder() => _inner.CreateApplicationBuilder();
 
     private bool RequiresPerEndpointConfiguration =>
-        _options?.EndpointPredicate is not null || _options?.ConfigureEndpoint is not null;
+        _options.EndpointPredicate is not null || _options.ConfigureEndpoint is not null;
 
     private RouteHandlerBuilder ApplyFilters(RouteHandlerBuilder builder)
     {
-        if (_options is null || !RequiresPerEndpointConfiguration)
+        if (!RequiresPerEndpointConfiguration)
         {
+            // Filters already applied at root group level
             return builder;
         }
 
-        if (_options.EnableValidationFilter)
+        // When predicate exists, wrap filters to evaluate at runtime
+        if (_options.EndpointPredicate is not null)
         {
-            builder.WithXResultValidation();
+            if (_options.EnableValidationFilter)
+            {
+                builder.AddEndpointFilter(CreateConditionalFilter(
+                    _options.EndpointPredicate,
+                    new ResultEndpointValidationFilter().InvokeAsync));
+            }
+
+            if (_options.EnableResultFilter)
+            {
+                builder.AddEndpointFilter(CreateConditionalFilter(
+                    _options.EndpointPredicate,
+                    new ResultEndpointFilter().InvokeAsync));
+            }
+        }
+        else
+        {
+            // No predicate, apply filters directly
+            if (_options.EnableValidationFilter)
+            {
+                builder.WithXResultValidation();
+            }
+
+            if (_options.EnableResultFilter)
+            {
+                builder.WithXResultFilter();
+            }
         }
 
-        if (_options.EnableResultFilter)
+        // Apply custom configuration before building (conventions are still allowed here)
+        if (_options.ConfigureEndpoint is not null)
         {
-            builder.WithXResultFilter();
+            _options.ConfigureEndpoint(builder);
         }
 
         return builder;
@@ -99,22 +127,38 @@ public sealed class EndpointRouteBuilder : IEndpointRouteBuilder
 
     private IEndpointConventionBuilder ApplyFilters(IEndpointConventionBuilder builder)
     {
-        if (_options is null || RequiresPerEndpointConfiguration)
+        if (!RequiresPerEndpointConfiguration)
         {
+            // Filters already applied at root group level
             return builder;
         }
 
-        if (_options.EnableValidationFilter)
+        // For RequestDelegate handlers, we can only apply custom configuration
+        // Endpoint filters are not supported on IEndpointConventionBuilder
+        if (_options.ConfigureEndpoint is not null)
         {
-            builder.AddEndpointFilter(new ResultEndpointValidationFilter().InvokeAsync);
-        }
-
-        if (_options.EnableResultFilter)
-        {
-            builder.AddEndpointFilter(new ResultEndpointFilter().InvokeAsync);
+            _options.ConfigureEndpoint(builder);
         }
 
         return builder;
+    }
+
+    private static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> CreateConditionalFilter(
+        Func<RouteEndpoint, bool> predicate,
+        Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> filterDelegate)
+    {
+        return async (context, next) =>
+        {
+            // Evaluate predicate at runtime using the current endpoint
+            if (context.HttpContext.GetEndpoint() is RouteEndpoint routeEndpoint
+                && predicate(routeEndpoint))
+            {
+                return await filterDelegate(context, next).ConfigureAwait(false);
+            }
+
+            // Skip filter if predicate doesn't match
+            return await next(context).ConfigureAwait(false);
+        };
     }
 
     #region MapGroup

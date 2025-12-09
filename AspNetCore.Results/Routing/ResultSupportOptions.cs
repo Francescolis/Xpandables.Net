@@ -22,10 +22,6 @@ namespace Microsoft.AspNetCore.Routing;
 /// Represents configuration options for minimal support features, including validation and result filtering, endpoint
 /// selection, and endpoint customization during route registration.
 /// </summary>
-/// <remarks>Use this type to control the behavior of minimal support features in the routing system. Options
-/// include enabling or disabling request validation and result filtering, specifying custom logic for endpoint
-/// inclusion, and applying additional configuration to endpoints as they are registered. All properties are optional
-/// and can be tailored to meet specific application requirements.</remarks>
 public sealed record ResultSupportOptions
 {
     /// <summary>
@@ -39,18 +35,17 @@ public sealed record ResultSupportOptions
     public bool EnableResultFilter { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a predicate used to determine whether a given <see cref="RouteEndpoint"/> should be included.
+    /// Gets or sets a predicate used to determine whether a given <see cref="RouteEndpoint"/> should have filters applied.
     /// </summary>
-    /// <remarks>If set to <see langword="null"/>, all endpoints are considered eligible. The predicate is
-    /// invoked for each endpoint to filter the set based on custom logic.</remarks>
+    /// <remarks>If set to <see langword="null"/>, all endpoints have filters applied. The predicate is
+    /// evaluated at runtime for each request.</remarks>
     public Func<RouteEndpoint, bool>? EndpointPredicate { get; set; }
 
     /// <summary>
-    /// Gets or sets a delegate that configures the endpoint during route registration.
+    /// Gets or sets a delegate that configures the endpoint convention builder during route registration.
     /// </summary>
-    /// <remarks>The delegate receives the endpoint convention builder and the route endpoint, allowing
-    /// customization of endpoint metadata, conventions, or behavior. This property is typically used to apply
-    /// additional configuration, such as authorization policies or custom metadata, to endpoints as they are added to
-    /// the routing system.</remarks>
-    public Action<IEndpointConventionBuilder, RouteEndpoint>? ConfigureEndpoint { get; set; }
+    /// <remarks>The delegate receives the endpoint convention builder, allowing customization of endpoint 
+    /// metadata, conventions, or behavior. This is called during endpoint registration, before the endpoint 
+    /// is built.</remarks>
+    public Action<IEndpointConventionBuilder>? ConfigureEndpoint { get; set; }
 }
