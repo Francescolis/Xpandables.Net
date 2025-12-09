@@ -91,9 +91,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\System.Primitives.Composition\System.Primitives.Composition.csproj" />
-	  <ProjectReference Include="..\System.Primitives.Validation\System.Primitives.Validation.csproj" />
-	  <ProjectReference Include="..\System.Results\System.Results.csproj" />
-	  <ProjectReference Include="..\System.Text.Json.AsyncPaged\System.Text.Json.AsyncPaged.csproj" />
 	</ItemGroup>
 
 </Project>
