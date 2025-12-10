@@ -1,278 +1,417 @@
-# ?? System.Optionals
+﻿# 🎯 System.Optionals
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Optionals)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Optional Values** - Type-safe null handling with functional programming patterns for .NET 10 with full AOT support.
-
----
-
-## ?? Overview
-
-`System.Optionals` provides a robust implementation of the **Option/Maybe pattern**, eliminating null reference exceptions by explicitly representing the presence or absence of a value. Built for .NET 10 with C# 14+, this library offers a type-safe alternative to nullable references with functional programming semantics.
-
-### ? Key Features
-
-- ? **Type-Safe Null Handling** - Eliminate null reference exceptions at compile time
-- ? **AOT Compatible** - Full Native AOT support with source-generated JSON serialization
-- ?? **LINQ Integration** - Use familiar LINQ query syntax (Select, SelectMany, Where)
-- ?? **Async Support** - First-class async/await support with MapAsync, BindAsync
-- ?? **Functional API** - Map, Bind, Empty for composable transformations
-- ?? **Zero Allocation** - Readonly struct design minimizes GC pressure
-- ?? **JSON Serialization** - Built-in System.Text.Json support
-- ?? **Enumerable** - Implements IEnumerable<T> for seamless collection integration
+> **Functional Optional Type for .NET** — A type-safe alternative to null references with monadic operations, LINQ support, async extensions, and AOT-compatible JSON serialization.
 
 ---
 
-## ?? Installation
+## 📋 Overview
+
+`System.Optionals` provides a robust `Optional<T>` type that explicitly represents the presence or absence of a value without using null references. The library includes functional operations (`Map`, `Bind`, `Empty`), LINQ query syntax support, async extensions, operator overloads, and source-generated JSON serialization for AOT compatibility.
+
+Built for .NET 10 with C# 14 extension members, this package enables writing safer, more expressive code by making the absence of values explicit in your type system.
+
+### ✨ Key Features
+
+- 🎯 **`Optional<T>`** — Value type representing presence (`Some`) or absence (`Empty`) of a value
+- 🔄 **Functional Operations** — `Map`, `Bind`, `Empty` for transformations and chaining
+- 📝 **LINQ Support** — `Select`, `SelectMany`, `Where` for query syntax
+- ⚡ **Async Extensions** — `MapAsync`, `BindAsync`, `EmptyAsync` for async workflows
+- 🔢 **Operator Overloads** — Implicit conversions, comparison operators (`<`, `>`, `<=`, `>=`)
+- 📦 **Enumerable Extensions** — `FirstOrEmpty`, `WhereSome` for collections
+- 🚀 **AOT Compatible** — Source-generated JSON serialization via `OptionalJsonContext`
+- 🔧 **IEnumerable Support** — Optional implements `IEnumerable<T>` for foreach iteration
+
+---
+
+## 📦 Installation
 
 ```bash
 dotnet add package System.Optionals
 ```
 
----
+Or via NuGet Package Manager:
 
-## ?? Quick Start
-
-### Basic Usage
-
-```csharp
-using System.Optionals;
-
-// Creating optional values
-Optional<string> some = Optional.Some("Hello");
-Optional<string> empty = Optional.Empty<string>();
-
-// Checking for values
-if (some.IsNotEmpty)
-{
-    Console.WriteLine(some.Value); // "Hello"
-}
-
-// Safe value access
-string value = some.GetValueOrDefault("Default");
-
-// Converting nullable to optional
-int? nullableValue = 42;
-Optional<int> optional = nullableValue.ToOptional();
-```
-
-### Null-Safe Operations
-
-```csharp
-public Optional<User> FindUserById(Guid id)
-{
-    User? user = _database.Users.Find(id);
-    return user.ToOptional();
-}
-
-public async Task<string> GetUserEmailAsync(Guid userId)
-{
-    return await FindUserById(userId)
-        .Map(user => user.Email)
-        .GetValueOrDefault("noreply@example.com");
-}
+```powershell
+Install-Package System.Optionals
 ```
 
 ---
 
-## ?? Core Concepts
+## 🚀 Quick Start
 
 ### Creating Optionals
 
 ```csharp
-// From a value
-Optional<int> some = Optional.Some(42);
+using System.Optionals;
 
-// Empty optional
-Optional<int> empty = Optional.Empty<int>();
+// Create an optional with a value
+Optional<string> name = Optional.Some("John");
 
-// From nullable
-string? maybeNull = GetNullableString();
-Optional<string> optional = maybeNull.ToOptional();
+// Create an empty optional
+Optional<string> empty = Optional.Empty<string>();
 
-// Conditional creation
-Optional<string> result = condition
-    ? Optional.Some("value")
-    : Optional.Empty<string>();
+// Convert from nullable using extension method
+string? nullableName = GetNameOrNull();
+Optional<string> optionalName = nullableName.ToOptional();
+
+// Implicit conversion from value
+Optional<int> age = 25; // Implicitly converts to Optional.Some(25)
+
+// Implicit conversion from null
+Optional<string?> nullValue = null; // Becomes Optional.Empty<string>()
 ```
 
-### Checking Values
+### Checking and Accessing Values
 
 ```csharp
-Optional<string> optional = Optional.Some("Hello");
+Optional<User> user = GetUserById(userId);
 
-// Property checks
-bool hasValue = optional.IsNotEmpty;  // true
-bool isEmpty = optional.IsEmpty;       // false
-
-// Safe pattern matching
-if (optional.TryGetValue(out string value))
+// Check if value is present
+if (user.IsNotEmpty)
 {
-    Console.WriteLine(value);
+    Console.WriteLine($"Found user: {user.Value.Name}");
 }
 
-// Enumerable behavior
-foreach (var item in optional)
+// Check if empty
+if (user.IsEmpty)
 {
-    // Executes only if value is present
-    Console.WriteLine(item);
+    Console.WriteLine("User not found");
+}
+
+// Get value with default
+string userName = user
+    .Bind(u => u.Name)
+    .GetValueOrDefault("Unknown");
+
+// Get value with factory
+string userName = user
+    .Bind(u => u.Name)
+    .GetValueOrDefault(() => GenerateDefaultName());
+
+// Try pattern
+if (user.TryGetValue(out var foundUser))
+{
+    Console.WriteLine(foundUser.Name);
 }
 ```
 
 ---
 
-## ?? Functional Operations
+## 🔄 Functional Operations
 
-### Map - Transform Values
+### Map — Transform the Value
 
 ```csharp
-Optional<int> age = Optional.Some(25);
+Optional<User> user = GetUserById(userId);
 
-// Transform the value if present
-Optional<string> ageGroup = age.Map(a => 
-    a < 18 ? "Minor" : a < 65 ? "Adult" : "Senior");
+// Map transforms the value if present
+Optional<User> updatedUser = user.Map(u =>
+{
+    u.LastAccessedAt = DateTime.UtcNow;
+    return u;
+});
 
-// Chain multiple transformations
-Optional<string> formatted = Optional.Some(42)
-    .Map(x => x * 2)        // 84
-    .Map(x => x.ToString()) // "84"
-    .Map(x => $"Result: {x}"); // "Result: 84"
+// Map with action (side effect)
+user.Map(u => Console.WriteLine($"Processing user: {u.Name}"));
 
-// With action (side effects)
-Optional.Some("Log this")
-    .Map(msg => Console.WriteLine(msg));  // Prints if present
+// Map returning Optional
+Optional<User> validated = user.Map(u =>
+    u.IsValid ? Optional.Some(u) : Optional.Empty<User>());
 ```
 
-### Bind - Flat Map Operations
+### Bind — Transform to Different Type
 
 ```csharp
-Optional<User> user = FindUserById(userId);
+Optional<User> user = GetUserById(userId);
 
-// Chain operations that return Optional
-Optional<Address> address = user
-    .Bind(u => FindAddressByUserId(u.Id));
+// Bind transforms to a different type
+Optional<string> email = user.Bind(u => u.Email);
 
+// Bind with Optional return (flatMap)
+Optional<Address> address = user.Bind(u =>
+    u.AddressId.HasValue
+        ? GetAddressById(u.AddressId.Value)
+        : Optional.Empty<Address>());
+
+// Chain multiple binds
 Optional<string> city = user
-    .Bind(u => FindAddressByUserId(u.Id))
-    .Bind(a => Optional.Some(a.City));
-
-// Equivalent LINQ syntax
-Optional<string> cityLinq = 
-    from u in user
-    from a in FindAddressByUserId(u.Id)
-    select a.City;
+    .Bind(u => u.Address.ToOptional())
+    .Bind(a => a.City);
 ```
 
-### Empty - Handle Missing Values
+### Empty — Handle Missing Values
 
 ```csharp
-Optional<string> config = GetConfigValue("key");
+Optional<User> user = GetUserById(userId);
 
-// Provide fallback value
-Optional<string> withFallback = config
-    .Empty(() => "default-value");
+// Provide default value when empty
+Optional<User> userOrDefault = user.Empty(() => new User { Name = "Guest" });
+
+// Provide default Optional when empty
+Optional<User> fallbackUser = user.Empty(() => GetDefaultUser());
 
 // Execute action when empty
-config.Empty(() => Console.WriteLine("Config not found!"));
-
-// Chain with other operations
-string result = config
-    .Map(c => c.ToUpper())
-    .Empty(() => "DEFAULT")
-    .Value;
+user.Empty(() => LogWarning("User not found"));
 ```
 
 ---
 
-## ? Async Operations
-
-### Async Mapping
+## 📝 LINQ Query Syntax
 
 ```csharp
-Optional<int> userId = Optional.Some(123);
+// Use LINQ query syntax with Optional
+var result =
+    from user in GetUserById(userId)
+    from address in user.Address.ToOptional()
+    from city in address.City.ToOptional()
+    select new { user.Name, City = city };
 
-// Async transformation
-Optional<User> user = await userId
-    .MapAsync(async id => await _repository.GetUserAsync(id));
+// Equivalent fluent syntax
+var result = GetUserById(userId)
+    .SelectMany(user => user.Address.ToOptional(),
+        (user, address) => new { user, address })
+    .SelectMany(x => x.address.City.ToOptional(),
+        (x, city) => new { x.user.Name, City = city });
 
-// Async binding
-Optional<Order> latestOrder = await userId
-    .BindAsync(async id => await GetLatestOrderAsync(id));
+// Where filtering
+Optional<User> activeUser = GetUserById(userId)
+    .Where(u => u.IsActive);
 
-// Async empty handling
-Optional<Config> config = await GetConfigAsync()
-    .EmptyAsync(async () => await LoadDefaultConfigAsync());
-```
-
-### Task<Optional<T>> Extensions
-
-```csharp
-Task<Optional<User>> userTask = GetUserAsync(userId);
-
-// Transform async optional
-Task<Optional<string>> emailTask = userTask
-    .SelectAsync(async user => 
-        await _emailService.GetEmailAsync(user));
-
-// Async LINQ support
-Task<Optional<string>> result = 
-    from user in userTask
-    from order in GetLatestOrderAsync(user.Id)
-    select order.TotalAmount.ToString();
+// Select projection
+Optional<string> userName = GetUserById(userId)
+    .Select(u => u.Name);
 ```
 
 ---
 
-## ?? LINQ Query Syntax
+## ⚡ Async Operations
 
-### Query Expressions
+### MapAsync — Async Transformations
 
 ```csharp
-Optional<Customer> customer = GetCustomer();
-Optional<Order> order = GetOrder();
+Optional<User> user = GetUserById(userId);
 
-// LINQ syntax
-var result = 
-    from c in customer
-    from o in order
-    where o.CustomerId == c.Id
-    select new { c.Name, o.Total };
+// Async map with value transformation
+Optional<User> enriched = await user.MapAsync(async u =>
+{
+    u.Profile = await LoadProfileAsync(u.Id);
+    return u;
+});
 
-// Method syntax equivalent
-var result2 = customer
-    .SelectMany(c => order
-        .Where(o => o.CustomerId == c.Id)
-        .Select(o => new { c.Name, o.Total }));
+// Async map with Optional return
+Optional<User> validated = await user.MapAsync(async u =>
+{
+    bool isValid = await ValidateUserAsync(u);
+    return isValid ? Optional.Some(u) : Optional.Empty<User>();
+});
+
+// Async map with action
+await user.MapAsync(async u =>
+{
+    await SendNotificationAsync(u.Email);
+});
 ```
 
-### Filtering with Where
+### BindAsync — Async Type Transformation
 
 ```csharp
-Optional<int> age = Optional.Some(30);
+Optional<User> user = GetUserById(userId);
 
-// Filter based on predicate
-Optional<int> adult = age.Where(a => a >= 18);
+// Bind to async operation
+Optional<Profile> profile = await user.BindAsync(async u =>
+    await LoadProfileAsync(u.Id));
 
-// Chaining filters
-Optional<User> validUser = GetUser()
-    .Where(u => !string.IsNullOrEmpty(u.Email))
-    .Where(u => u.IsActive)
-    .Where(u => u.Age >= 18);
+// Bind with Optional return
+Optional<Order> lastOrder = await user.BindAsync(async u =>
+    await GetLastOrderAsync(u.Id)); // Returns Optional<Order>
+```
+
+### EmptyAsync — Async Fallback
+
+```csharp
+Optional<User> user = GetUserById(userId);
+
+// Async fallback when empty
+Optional<User> userOrDefault = await user.EmptyAsync(async () =>
+    await CreateGuestUserAsync());
+
+// Async action when empty
+await user.EmptyAsync(async () =>
+    await LogMissingUserAsync(userId));
+```
+
+### Chaining Async Operations
+
+```csharp
+// Chain async operations on Task<Optional<T>>
+Task<Optional<User>> userTask = GetUserByIdAsync(userId);
+
+var result = await userTask
+    .MapAsync(async u => await EnrichUserAsync(u))
+    .BindAsync(async u => await LoadOrdersAsync(u.Id))
+    .EmptyAsync(async () => await GetDefaultOrdersAsync());
+
+// LINQ-style async chaining
+var orderSummary = await userTask
+    .SelectAsync(async u => await LoadOrdersAsync(u.Id))
+    .SelectManyAsync(
+        async orders => await GetLatestOrderAsync(orders),
+        async (orders, latest) => await CreateSummaryAsync(orders, latest));
 ```
 
 ---
 
-## ?? JSON Serialization
+## 📦 Collection Extensions
 
-### Setup for AOT
+### FirstOrEmpty
 
 ```csharp
-using System.Optionals;
+List<User> users = GetAllUsers();
+
+// Get first or empty (sync)
+Optional<User> firstUser = users.FirstOrEmpty();
+
+// Get first matching or empty
+Optional<User> activeUser = users.FirstOrEmpty(u => u.IsActive);
+
+// Async version
+IAsyncEnumerable<User> usersAsync = GetAllUsersAsync();
+Optional<User> firstAsync = await usersAsync.FirstOrEmptyAsync();
+Optional<User> matchingAsync = await usersAsync.FirstOrEmptyAsync(u => u.IsActive);
+```
+
+### WhereSome — Filter Non-Empty Optionals
+
+```csharp
+IEnumerable<Optional<User>> optionalUsers = userIds
+    .Select(id => GetUserById(id));
+
+// Extract only present values
+IEnumerable<User> presentUsers = optionalUsers.WhereSome();
+
+// Async version
+IAsyncEnumerable<Optional<User>> asyncOptionals = GetUsersAsync();
+IAsyncEnumerable<User> presentAsync = asyncOptionals.WhereSomeAsync();
+```
+
+---
+
+## 🔢 Operators and Conversions
+
+### Implicit Conversions
+
+```csharp
+// Value to Optional
+Optional<int> age = 25; // Implicit conversion to Some(25)
+
+// Optional to value (throws if empty)
+int value = age; // Implicit conversion, throws InvalidOperationException if empty
+
+// Nested Optional flattening
+Optional<Optional<string>> nested = Optional.Some(Optional.Some("value"));
+Optional<string> flattened = nested; // Implicitly flattens
+```
+
+### Comparison Operators
+
+```csharp
+Optional<int> a = Optional.Some(5);
+Optional<int> b = Optional.Some(10);
+Optional<int> empty = Optional.Empty<int>();
+
+// Compare optionals
+bool less = a < b;      // true
+bool greater = b > a;   // true
+bool lessEq = a <= 5;   // true (compares with value)
+bool greaterEq = b >= 10; // true
+
+// Empty comparisons
+bool emptyLess = empty < a; // true (empty is always less than any value)
+```
+
+### Enumeration Support
+
+```csharp
+Optional<User> user = GetUserById(userId);
+
+// Optional implements IEnumerable<T>
+foreach (var u in user)
+{
+    Console.WriteLine(u.Name); // Executes only if present
+}
+
+// Use with LINQ methods
+bool hasAdminRole = user.Any(u => u.Role == "Admin");
+```
+
+---
+
+## 🚀 JSON Serialization (AOT Compatible)
+
+### Basic Serialization
+
+```csharp
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Optionals;
 
-// Configure JSON options
+var options = new JsonSerializerOptions
+{
+    Converters = { new OptionalJsonConverterFactory() }
+};
+
+// Serialize - Some becomes value, Empty becomes null
+Optional<string> name = Optional.Some("John");
+string json = JsonSerializer.Serialize(name, options); // "John"
+
+Optional<string> empty = Optional.Empty<string>();
+string nullJson = JsonSerializer.Serialize(empty, options); // null
+
+// Deserialize
+Optional<string> deserialized = JsonSerializer.Deserialize<Optional<string>>(json, options);
+// Returns Optional.Some("John")
+
+Optional<string> fromNull = JsonSerializer.Deserialize<Optional<string>>("null", options);
+// Returns Optional.Empty<string>()
+```
+
+### AOT-Compatible Configuration
+
+```csharp
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using System.Optionals;
+
+// Use source-generated context for AOT compatibility
+var options = new JsonSerializerOptions
+{
+    Converters = { new OptionalJsonConverterFactory() },
+    TypeInfoResolver = JsonTypeInfoResolver.Combine(
+        OptionalJsonContext.Default,  // Built-in primitive types
+        MyCustomContext.Default)      // Your custom types
+};
+
+// Supported primitive types in OptionalJsonContext:
+// - Optional<string>, Optional<int>, Optional<long>, Optional<float>
+// - Optional<double>, Optional<decimal>, Optional<short>, Optional<ushort>
+// - Optional<byte>, Optional<bool>, Optional<DateTime>, Optional<DateTimeOffset>
+// - Optional<Guid>
+```
+
+### Custom Types
+
+```csharp
+// Define your own JsonSerializerContext for custom types
+[JsonSerializable(typeof(Optional<User>))]
+[JsonSerializable(typeof(Optional<Order>))]
+[JsonSerializable(typeof(User))]
+[JsonSerializable(typeof(Order))]
+public partial class MyCustomContext : JsonSerializerContext { }
+
+// Usage
 var options = new JsonSerializerOptions
 {
     Converters = { new OptionalJsonConverterFactory() },
@@ -281,58 +420,36 @@ var options = new JsonSerializerOptions
         MyCustomContext.Default)
 };
 
-// Serialize/Deserialize
-var user = new User 
-{ 
-    Name = "John",
-    MiddleName = Optional.Some("Robert"),
-    Suffix = Optional.Empty<string>()
-};
-
+var user = Optional.Some(new User { Name = "John" });
 string json = JsonSerializer.Serialize(user, options);
-User? deserialized = JsonSerializer.Deserialize<User>(json, options);
-```
-
-### Custom Source Generation
-
-```csharp
-// Define your context for AOT compatibility
-[JsonSourceGenerationOptions(WriteIndented = true)]
-[JsonSerializable(typeof(Optional<MyCustomType>))]
-[JsonSerializable(typeof(UserDto))]
-internal partial class MyCustomContext : JsonSerializerContext
-{
-}
-
-// Use in combination with built-in support
-var options = new JsonSerializerOptions
-{
-    Converters = { new OptionalJsonConverterFactory() },
-    TypeInfoResolver = JsonTypeInfoResolver.Combine(
-        OptionalJsonContext.Default,  // Primitives
-        MyCustomContext.Default)      // Your types
-};
+// {"name":"John"}
 ```
 
 ---
 
-## ?? Real-World Examples
+## 💡 Common Patterns
 
 ### Repository Pattern
 
 ```csharp
-public class UserRepository
+public interface IUserRepository
 {
-    public async Task<Optional<User>> FindByIdAsync(Guid id)
+    Optional<User> GetById(Guid id);
+    Task<Optional<User>> GetByIdAsync(Guid id);
+    Task<Optional<User>> GetByEmailAsync(string email);
+}
+
+public class UserRepository : IUserRepository
+{
+    public Optional<User> GetById(Guid id)
     {
-        User? user = await _dbContext.Users.FindAsync(id);
+        var user = _context.Users.FirstOrDefault(u => u.Id == id);
         return user.ToOptional();
     }
 
-    public async Task<Optional<User>> FindByEmailAsync(string email)
+    public async Task<Optional<User>> GetByIdAsync(Guid id)
     {
-        User? user = await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Email == email);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         return user.ToOptional();
     }
 }
@@ -341,243 +458,134 @@ public class UserRepository
 ### Service Layer
 
 ```csharp
-public class OrderService
+public class UserService(IUserRepository repository)
 {
-    public async Task<Optional<OrderDto>> GetOrderDetailsAsync(Guid orderId)
+    public async Task<Optional<UserDto>> GetUserProfileAsync(Guid userId)
     {
-        return await _repository.FindByIdAsync(orderId)
-            .SelectAsync(async order => new OrderDto
+        return await repository.GetByIdAsync(userId)
+            .BindAsync(async user =>
             {
-                Id = order.Id,
-                CustomerName = await GetCustomerNameAsync(order.CustomerId),
-                Items = order.Items.Count
+                var profile = await LoadProfileAsync(user.Id);
+                return new UserDto
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Profile = profile
+                };
             });
     }
 
-    public async Task<string> ProcessOrderAsync(Guid orderId)
+    public async Task<string> GetUserDisplayNameAsync(Guid userId)
     {
-        Optional<Order> order = await _repository.FindByIdAsync(orderId);
-
-        return await order
-            .MapAsync(async o =>
-            {
-                await ValidateOrderAsync(o);
-                await ProcessPaymentAsync(o);
-                return "Order processed successfully";
-            })
-            .EmptyAsync(() => Task.FromResult("Order not found"))
-            .GetValueOrDefault("An error occurred");
-    }
-}
-```
-
-### Configuration Management
-
-```csharp
-public class ConfigService
-{
-    public Optional<string> GetConnectionString(string name)
-    {
-        string? value = _configuration.GetConnectionString(name);
-        return value.ToOptional();
-    }
-
-    public string GetRequiredConfig(string key)
-    {
-        return GetConfigValue(key)
-            .Empty(() => throw new InvalidOperationException(
-                $"Required configuration '{key}' is missing"))
-            .Value;
-    }
-
-    public T GetConfig<T>(string key, T defaultValue)
-    {
-        return _configuration.GetValue<T>(key).ToOptional()
-            .GetValueOrDefault(defaultValue);
-    }
-}
-```
-
-### API Response Handling
-
-```csharp
-public class UserController : ControllerBase
-{
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(Guid id)
-    {
-        Optional<User> user = await _userService.FindByIdAsync(id);
-
+        var user = await repository.GetByIdAsync(userId);
         return user
-            .Map<IActionResult>(u => Ok(u))
-            .GetValueOrDefault(NotFound());
-    }
-
-    [HttpGet("{id}/email")]
-    public async Task<ActionResult<string>> GetUserEmail(Guid id)
-    {
-        return await _userService.FindByIdAsync(id)
-            .SelectAsync(async user => user.Email)
-            .EmptyAsync(() => Task.FromResult("No email available"))
-            .Value;
+            .Bind(u => u.DisplayName ?? u.Email)
+            .GetValueOrDefault("Anonymous");
     }
 }
 ```
 
----
-
-## ?? Design Philosophy
-
-### Why Optional<T>?
-
-**Problem:**
-```csharp
-// Traditional approach - prone to NullReferenceException
-public string GetUserEmail(Guid userId)
-{
-    User user = _repository.FindById(userId); // Could be null!
-    return user.Email; // ?? NullReferenceException if user is null
-}
-```
-
-**Solution:**
-```csharp
-// Optional approach - null safety enforced
-public Optional<string> GetUserEmail(Guid userId)
-{
-    return _repository.FindById(userId) // Returns Optional<User>
-        .Map(user => user.Email);        // Safe transformation
-}
-```
-
-### Zero-Allocation Design
+### Validation Chains
 
 ```csharp
-// Readonly struct minimizes heap allocations
-public readonly partial record struct Optional<T>
+public Optional<Order> ValidateOrder(Order order)
 {
-    private readonly object? _value;
-    // No boxing for reference types
-    // Value types stored directly
-}
-```
-
-### Functional Composition
-
-```csharp
-// Compose operations declaratively
-var result = GetUser(id)
-    .Bind(u => GetOrders(u.Id))
-    .Map(orders => orders.Where(o => o.IsActive))
-    .Map(orders => orders.Sum(o => o.Total))
-    .GetValueOrDefault(0m);
-```
-
----
-
-## ?? Enumerable Integration
-
-```csharp
-// Optional implements IEnumerable<T>
-Optional<int> some = Optional.Some(42);
-Optional<int> empty = Optional.Empty<int>();
-
-// Use in LINQ queries
-IEnumerable<int> numbers = new[] 
-{
-    Optional.Some(1),
-    Optional.Empty<int>(),
-    Optional.Some(3)
-};
-
-List<int> values = numbers
-    .SelectMany(opt => opt) // Flatten optionals
-    .ToList(); // [1, 3]
-
-// Use in foreach
-foreach (var value in some)
-{
-    Console.WriteLine(value); // Executes once
+    return Optional.Some(order)
+        .Where(o => o.Items.Any())
+        .Where(o => o.Total > 0)
+        .Where(o => o.CustomerId != Guid.Empty)
+        .Map(o =>
+        {
+            o.ValidatedAt = DateTime.UtcNow;
+            return o;
+        });
 }
 
-foreach (var value in empty)
+// Usage
+var result = ValidateOrder(order);
+if (result.IsEmpty)
 {
-    // Never executes
+    return BadRequest("Order validation failed");
 }
+return Ok(result.Value);
 ```
 
 ---
 
-## ? Performance Considerations
+## 📊 API Reference
 
-### Allocation-Conscious Design
+### Optional Factory Methods
 
-- **Readonly struct**: Stack-allocated, no GC pressure
-- **No boxing**: Reference types stored as `object?` internally
-- **Minimal overhead**: Single field + boolean flag check
-- **Inlineable operations**: Most operations can be inlined by JIT/AOT
+| Method | Description |
+|--------|-------------|
+| `Optional.Some<T>(T value)` | Creates an Optional containing a value |
+| `Optional.Empty<T>()` | Creates an empty Optional |
 
-### Benchmarks
+### Optional<T> Properties
 
-```
-| Method                  | Mean     | Allocated |
-|-------------------------|----------|-----------|
-| Optional.Some           | 0.5 ns   | 0 B       |
-| Optional.Map            | 2.1 ns   | 0 B       |
-| Optional.Bind           | 2.8 ns   | 0 B       |
-| Nullable<T> (baseline)  | 0.3 ns   | 0 B       |
-```
+| Property | Description |
+|----------|-------------|
+| `Value` | Gets the value (throws if empty) |
+| `IsEmpty` | Returns true if no value is present |
+| `IsNotEmpty` | Returns true if a value is present |
 
----
+### Optional<T> Methods
 
-## ?? Testing Support
+| Method | Description |
+|--------|-------------|
+| `GetValueOrDefault(T)` | Returns value or specified default |
+| `GetValueOrDefault(Func<T>)` | Returns value or factory result |
+| `TryGetValue(out T)` | Safely tries to get the value |
+| `ToOptional<TU>()` | Converts to Optional of different type |
+| `Map(Func<T, T>)` | Transforms value if present |
+| `Bind<TU>(Func<T, TU>)` | Transforms to different type |
+| `Bind<TU>(Func<T, Optional<TU>>)` | FlatMaps to Optional |
+| `Empty(Func<T>)` | Provides fallback when empty |
 
-```csharp
-[Fact]
-public void Optional_WithValue_ShouldExecuteMap()
-{
-    // Arrange
-    Optional<int> optional = Optional.Some(10);
-    
-    // Act
-    Optional<string> result = optional.Map(x => x.ToString());
-    
-    // Assert
-    Assert.True(result.IsNotEmpty);
-    Assert.Equal("10", result.Value);
-}
+### Extension Methods
 
-[Fact]
-public void Optional_Empty_ShouldNotExecuteMap()
-{
-    // Arrange
-    Optional<int> optional = Optional.Empty<int>();
-    bool executed = false;
-    
-    // Act
-    optional.Map(x => { executed = true; return x; });
-    
-    // Assert
-    Assert.False(executed);
-}
-```
+| Method | Description |
+|--------|-------------|
+| `ToOptional()` | Converts nullable to Optional |
+| `Select<TU>()` | LINQ projection |
+| `SelectMany<TU>()` | LINQ flat-map |
+| `Where()` | LINQ filtering |
+| `FirstOrEmpty()` | First element as Optional |
+| `WhereSome()` | Filters non-empty Optionals |
 
 ---
 
-## ?? Related Packages
+## ✅ Best Practices
 
-- **Xpandables.Net.Primitives** - Core abstractions and interfaces
-- **Xpandables.Net.ExecutionResults** - Result pattern implementation
-- **Xpandables.Net.Repositories** - Repository abstractions with Optional support
+### ✅ Do
+
+- **Use `Optional<T>` for potentially absent values** — Make absence explicit in your API
+- **Chain operations with `Map` and `Bind`** — Avoid nested if-checks
+- **Use `GetValueOrDefault()` with meaningful defaults** — Never return null from Optional methods
+- **Leverage LINQ syntax** — `from x in optional select ...` is readable
+- **Use `TryGetValue` for performance-critical paths** — Avoids exceptions
+- **Configure JSON with `OptionalJsonContext`** — Ensures AOT compatibility
+
+### ❌ Don't
+
+- **Access `Value` without checking `IsNotEmpty`** — Throws `InvalidOperationException`
+- **Return `Optional<T?>` (nullable inside Optional)** — Confusing, pick one approach
+- **Use Optional for error handling** — Use `Result<T>` pattern instead
+- **Create `Optional<Optional<T>>`** — Flatten immediately with implicit conversion
 
 ---
 
-## ?? Contributing
+## 📚 Related Packages
 
-Contributions are welcome! Please follow the coding conventions and include tests for new features.
+| Package | Description |
+|---------|-------------|
+| **System.Results** | Result pattern for success/failure outcomes |
+| **System.Primitives** | Core primitives and value objects |
 
 ---
 
-## ?? License
+## 📄 License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © Kamersoft 2025
+
+Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).
